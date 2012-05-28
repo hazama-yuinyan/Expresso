@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
+    <ProductVersion>10.0.0</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{4E28200A-5808-419F-8A57-F504842991AF}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <RootNamespace>Expresso</RootNamespace>
+    <AssemblyName>Expresso</AssemblyName>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug</OutputPath>
+    <DefineConstants>DEBUG;</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <PlatformTarget>x86</PlatformTarget>
+    <ConsolePause>false</ConsolePause>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
+    <DebugType>none</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Release</OutputPath>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <PlatformTarget>x86</PlatformTarget>
+    <ConsolePause>false</ConsolePause>
+  </PropertyGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <ItemGroup>
+    <Compile Include="Ast\Assignment.cs" />
+    <Compile Include="Ast\BinaryExpression.cs" />
+    <Compile Include="Ast\Block.cs" />
+    <Compile Include="Ast\Call.cs" />
+    <Compile Include="Ast\ConditionalExpression.cs" />
+    <Compile Include="Ast\Constant.cs" />
+    <Compile Include="Ast\Expression.cs" />
+    <Compile Include="Ast\Function.cs" />
+    <Compile Include="Ast\Node.cs" />
+    <Compile Include="Ast\Parameter.cs" />
+    <Compile Include="Ast\Return.cs" />
+    <Compile Include="Ast\Statement.cs" />
+    <Compile Include="Ast\UnaryExpression.cs" />
+    <Compile Include="Compiler\Scope.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="VM\Instruction.cs" />
+    <Compile Include="VM\Machine.cs" />
+    <Compile Include="VM\StackItem.cs" />
+    <Compile Include="Interpreter\Interpreter.cs" />
+    <Compile Include="Ast\Print.cs" />
+    <Compile Include="Ast\Range.cs" />
+    <Compile Include="BuiltIns\ExpressoObj.cs" />
+    <Compile Include="BuiltIns\Primitives.cs" />
+    <Compile Include="Parser.cs" />
+    <Compile Include="Scanner.cs" />
+    <Compile Include="Interpreter\VariableStore.cs" />
+    <Compile Include="Interpreter\EvalException.cs" />
+    <Compile Include="Ast\VarDeclaration.cs" />
+    <Compile Include="Ast\ExprStatement.cs" />
+    <Compile Include="Ast\IfStatement.cs" />
+    <Compile Include="Ast\WhileStatement.cs" />
+    <Compile Include="Ast\ForStatement.cs" />
+    <Compile Include="BuiltIns\Functions.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="System.Xml" />
+    <Reference Include="System.Xml.Linq" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Expresso.ATG" />
+    <None Include="tests\test.exs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Interpreter\" />
+    <Folder Include="BuiltIns\" />
+  </ItemGroup>
+</Project>
