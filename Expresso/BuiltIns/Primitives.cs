@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 
 namespace Expresso.BuiltIns
 {
@@ -16,6 +17,9 @@ namespace Expresso.BuiltIns
 	/// </summary>
 	public class ExpressoTuple : ExpressoObj
 	{
+		/// <summary>
+		/// tupleの中身
+		/// </summary>
 		private List<ExpressoObj> contents;
 		
 		public List<ExpressoObj> Contents{get{return this.contents;}}
@@ -26,10 +30,18 @@ namespace Expresso.BuiltIns
 		}
 	}
 	
+	public abstract class Iterable<T> : ExpressoObj
+	{
+		public virtual IEnumerable<T> GetEnumerator()
+		{
+			return null;
+		}
+	}
+	
 	/// <summary>
 	/// ExpressoのRangeオブジェクト。
 	/// </summary>
-	public class ExpressoRange : ExpressoObj
+	public class ExpressoRange : Iterable<int>
 	{
 		/// <summary>
 		/// 範囲の下限
@@ -76,6 +88,36 @@ namespace Expresso.BuiltIns
 			
 			return tmp;
 		}
+		
+		public override IEnumerable<int> GetEnumerator()
+		{
+			return Range;
+		}
 	}
+	
+	public class ExpressoList : Iterable<object>
+	{
+		public List<object> Contents{get; internal set;}
+		
+		public override IEnumerable<object> GetEnumerator()
+		{
+			return Contents.GetEnumerator();
+		}
+	}
+	
+	public class ExpressoDict : Iterable<object>
+	{
+		public Dictionary<ExpressoObj, object> Contents{get; internal set;}
+		
+		public override IEnumerable<object> GetEnumerator()
+		{
+			return Contents.GetEnumerator();
+		}
+	}
+	
+	/*public class FileWrapper : ExpressoObj
+	{
+		public fi
+	}*/
 }
 

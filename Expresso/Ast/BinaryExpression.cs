@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Expresso.Interpreter;
 
 namespace Expresso.Ast
 {
@@ -43,7 +44,7 @@ namespace Expresso.Ast
             return this.Operator.GetHashCode() ^ this.Left.GetHashCode() ^ this.Right.GetHashCode();
         }
 
-        protected internal override IEnumerable<Expresso.Emulator.Instruction> Compile(Dictionary<Parameter, int> localTable, Dictionary<Function, int> addressTable, Dictionary<Function, IEnumerable<Expresso.Emulator.Instruction>> functionTable)
+        protected internal override object Run(VariableStore localTable, Scope functions)
         {
             foreach (var instruction in this.Left.Compile(localTable, addressTable, functionTable))
             {

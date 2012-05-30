@@ -5,7 +5,7 @@ namespace Expresso.Ast
 {
 	public class PrintStatement : Statement
 	{
-		public Expression Expression{get; internal set;}
+		public List<Expression> Expressions{get; internal set;}
 		
 		public override NodeType Type
         {
@@ -18,12 +18,12 @@ namespace Expresso.Ast
 
             if (x == null) return false;
 
-            return this.Expression.Equals(x.Expression);
+            return this.Expressions.Equals(x.Expressions);
         }
 
         public override int GetHashCode()
         {
-            return this.Expression.GetHashCode();
+            return this.Expressions.GetHashCode();
         }
 
         protected internal override IEnumerable<Expresso.Emulator.Instruction> Compile(Dictionary<Parameter, int> localTable, Dictionary<Function, int> addressTable, Dictionary<Function, IEnumerable<Expresso.Emulator.Instruction>> functionTable)

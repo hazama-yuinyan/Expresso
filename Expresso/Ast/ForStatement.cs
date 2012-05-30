@@ -9,9 +9,10 @@ namespace Expresso.Ast
 	public class ForStatement : Statement
 	{
 		/// <summary>
-        /// 条件式。
+        /// body内で操作対象となるオブジェクトを参照するのに使用する式群。
+        /// 評価結果はlvalueにならなければならない。
         /// </summary>
-        public Expression Condition { get; internal set; }
+        public List<Expression> LValues { get; internal set; }
 
         /// <summary>
         /// 操作する対象の式群。
@@ -21,7 +22,7 @@ namespace Expresso.Ast
         /// <summary>
         /// 操作対象のオブジェクトが存在する間評価し続けるブロック。
         /// </summary>
-        public Block Body { get; internal set; }
+        public Statement Body { get; internal set; }
 
         public override NodeType Type
         {
@@ -34,12 +35,12 @@ namespace Expresso.Ast
 
             if (x == null) return false;
 			
-			return true;
+			return LValues.Equals(x.LValues) && Targets.Equals(x.Targets) && Body.Equals(x.Body);
         }
 
         public override int GetHashCode()
         {
-            return this.Condition.GetHashCode() ^ this.Targets.GetHashCode() ^ this.Body.GetHashCode();
+            return this.LValues.GetHashCode() ^ this.Targets.GetHashCode() ^ this.Body.GetHashCode();
         }
 
         protected internal override IEnumerable<Expresso.Emulator.Instruction> Compile(Dictionary<Parameter, int> localTable, Dictionary<Function, int> addressTable, Dictionary<Function, IEnumerable<Expresso.Emulator.Instruction>> functionTable)

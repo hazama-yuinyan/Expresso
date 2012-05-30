@@ -1,14 +1,11 @@
 using System.Collections.Generic;
 using Expresso.Ast;
-using Expresso.Compiler;
 using Expresso.BuiltIns;
+using Expresso.Interpreter;
 
 
 
 COMPILER Expresso
-
-	const int // object kinds
-	  var = 0, func = 1;
 
 	internal Scope cur_scope = new Scope();		//the current scope of variables
 	private Scope funcs = new Scope();			//the namespace for functions
@@ -46,10 +43,30 @@ COMPILER Expresso
 	bool NotFollowedByDoubleDots()
 	{
 		Token x = la;
-		while(x.kind == _integer)   x = scanner.Peek();
-		return x.kind != _dot || scanner.Peek().kind != _dot;
+		while(x.kind == _integer) x = scanner.Peek();
+		return x.kind != _double_dots;
 	}
-  
+	
+	bool NotLookAtCurly()
+	{
+		return t.kind != _lcurly;
+	}
+	
+	Parameter DeclareVariable(ref Expression rhs, string name, TYPES type)
+	{
+		var variable = new Parameter{
+  			Name = name,
+  			ParamType = type
+  		};
+  		if(rhs == null){
+  			if(type == TYPES.VAR) SemErr("Can not declare a variable of \"var\" without initialization!");
+  			rhs = CreateConstant(type);
+  		}
+  							
+ 		cur_scope.AddLocal(variable);
+ 		return variable;
+	}
+	
 /*--------------------------------------------------------------------------*/
 CHARACTERS
   letter = 'A'..'Z' + 'a'..'z'.
@@ -62,9 +79,12 @@ CHARACTERS
 TOKENS
   ident  = letter {letter | digit}.
   integer = digit {digit}.
-  float = digit {digit} "." ["e"] ["+" | "-"] {digit}.
+  float = digit {digit} "." ["e"] ["+" | "-"] digit {digit}.
   string_literal = '"' {quotedLetter} '"'.
-  dot = '.'.
+  double_dots = "..".
+  colon = ':'.
+  semicolon = ';'.
+  lcurly = '{'.
 
 COMMENTS FROM "/*" TO "*/" NESTED
 COMMENTS FROM "//" TO lf
@@ -87,116 +107,6 @@ Expresso                    (. Statement stmt; .)
 /*ProgramDefinition
 = RequireStat<out file_name>	(. top_level.AddExternalReference(file_name) .)*/
 /*------------------------------------------------------------------------*/
-Stmt<out Statement stmt>			(. stmt = null; .)
-=
-  SimpleStmt<out stmt>
-  | CompoundStmt<out stmt> .
-/*------------------------------------------------------------------------*/
-SimpleStmt<out Statement stmt>		(. stmt = null; .)
-=
-    ExprStmt<out stmt>
-  | PrintStmt<out stmt>
-  | ReturnStmt<out stmt>
-  | VarDecl<out stmt> .
-/*------------------------------------------------------------------------*/
-PrintStmt<out Statement stmt>		(. Expression expr; .)
-=
-  "print"
-  Expr<out expr>
-  SYNC ';'							(. stmt = new PrintStatement{Expression = expr}; .).
-/*------------------------------------------------------------------------*/
-ReturnStmt<out Statement stmt>		(. List<Expression> target_list = new List<Expression>(); .)
-=
-  "return"
-  [TargetList<out target_list>]
-  SYNC ';'							(. stmt = new Return{Expressions = target_list}; .).
-/*------------------------------------------------------------------------*/
-/*AugAssignOpe<TYPES type>
-=
-  (  "+="					(. .)
-  |  "-="
-  |  "*="
-  |  "/="
-  |  "**="
-  |  "%="
-  ).*/
-/*------------------------------------------------------------------------*/
-ExprStmt<out Statement stmt>				(. List<Expression> targets; List<Expression> expr_list; stmt = null; .)
-=
-  TargetList<out targets>
-  {  //AugAssignOpe
-     //ExprList<out expr_list>
-    '='
-	 ExprList<out expr_list>				(. stmt = new Assignment{
-													Targets = targets,
-													Expressions = expr_list
-											   };
-											.)
-  }
-  SYNC ';' 									(. if(stmt == null){
-  											   		stmt = new ExprStatement{Expressions = targets};
-  											   }
-  											.).
-/*------------------------------------------------------------------------*/
-CompoundStmt<out Statement stmt>	(. stmt = null; .)
-=
-    IfStmt<out stmt>					
-  | WhileStmt<out stmt>
-  | FuncDecl<out stmt>
-  | Block<out stmt> .
-/*------------------------------------------------------------------------*/
-IfStmt<out Statement stmt>			(. Expression tmp; Statement true_block, false_block = null; .)
-=
-  "if" 
-  '(' Expr<out tmp> ')'
-  Stmt<out true_block>
-  [ "else"
-     Stmt<out false_block>
-  ]                      			(. stmt = new IfStatement{
-  											Condition = tmp,
-  											TrueBlock = true_block,
-  											FalseBlock = false_block
-  									   };
-  									.).
-/*------------------------------------------------------------------------*/
-WhileStmt<out Statement stmt>		(. Expression cond; Statement body = null; .)
-=
-  "while"
-  '(' Expr<out cond> ')'
-  Stmt<out body>                   	(. stmt = new WhileStatement{
-  											Condition = cond,
-  											Body = body
-  									   };
-  									.).
-/*------------------------------------------------------------------------*/
-/*ForStmt<out Statement stmt>			(. Expression )
-=
-  "for"
-  '('
-  
-  "in"
-  
-  ')'
-  Stmt<out body>					(. stmt = new ForStatement{
-  
-  									   }
-  									.).*/
-/*------------------------------------------------------------------------*/
-Block<out Statement block>			(. Block tmp; Scope scope = new Scope{Parent = cur_scope}; cur_scope = scope; Statement stmt; .)
-=
-  '{'								(. tmp = new Block(); .)
-  Stmt<out stmt>					(. tmp.Statements.Add(stmt); .)
-  { Stmt<out stmt>					(. tmp.Statements.Add(stmt); .)
-  }
-  SYNC '}' 							(. cur_scope = cur_scope.Parent; block = tmp; .).
-/*------------------------------------------------------------------------*/
-TargetList<. out List<Expression> targets .>		(. Expression tmp; .)
-=													(. targets = new List<Expression>(); .)
-  CondExpr<out tmp>									(. targets.Add(tmp); .)
-  { WEAK ','
-    CondExpr<out tmp>								(. targets.Add(tmp); .)
-  }.
-/*------------------------------------------------------------------------*/
 Type<out TYPES type>
 =                        (. type = TYPES.UNDEF; .)
  ( "int"                 (. type = TYPES.INTEGER; .)
@@ -214,6 +124,120 @@ Type<out TYPES type>
  | "function"			 (. type = TYPES.FUNCTION; .)
  ).
 /*------------------------------------------------------------------------*/
+Stmt<out Statement stmt>			(. stmt = null; .)
+=
+  SimpleStmt<out stmt>
+  | CompoundStmt<out stmt> .
+/*------------------------------------------------------------------------*/
+SimpleStmt<out Statement stmt>		(. stmt = null; .)
+=		/* For DictMaker and Block conflict. Since DictMaker should not be a lvalue, we always choose the first(Block).*/
+    Block<out stmt>
+  | ExprStmt<out stmt>
+  | PrintStmt<out stmt>
+  | ReturnStmt<out stmt>
+  | VarDecl<out stmt>.
+/*------------------------------------------------------------------------*/
+PrintStmt<out Statement stmt>		(. List<Expression> exprs; .)
+=
+  "print"
+  RValueList<out exprs>
+  SYNC ';'							(. stmt = new PrintStatement{Expressions = exprs}; .).
+/*------------------------------------------------------------------------*/
+ReturnStmt<out Statement stmt>		(. List<Expression> target_list = new List<Expression>(); .)
+=
+  "return"
+  [RValueList<out target_list>]
+  SYNC ';'							(. stmt = new Return{Expressions = target_list}; .).
+/*------------------------------------------------------------------------*/
+/*AugAssignOpe<TYPES type>
+=
+  (  "+="					(. .)
+  |  "-="
+  |  "*="
+  |  "/="
+  |  "**="
+  |  "%="
+  ).*/
+/*------------------------------------------------------------------------*/
+ExprStmt<out Statement stmt>				(. List<Expression> targets; List<Expression> expr_list; stmt = null; .)
+=
+  RValueList<out targets>
+  {  //AugAssignOpe
+     //ExprList<out expr_list>
+  /*|*/  '='
+	 RValueList<out expr_list>				(. stmt = new Assignment{
+													Targets = targets,
+													Expressions = expr_list
+											   };
+											.)
+  }
+  SYNC ';' 									(. if(stmt == null){
+  											   		stmt = new ExprStatement{Expressions = targets};
+  											   }
+  											.).
+/*------------------------------------------------------------------------*/
+Block<out Statement block>			(. Block tmp; Scope scope = new Scope{Parent = cur_scope}; cur_scope = scope; Statement stmt; .)
+=
+  '{'								(. tmp = new Block(); .)
+  Stmt<out stmt>					(. tmp.Statements.Add(stmt); .)
+  { Stmt<out stmt>					(. tmp.Statements.Add(stmt); .)
+  }
+  SYNC '}' 							(. cur_scope = cur_scope.Parent; block = tmp; .).
+/*------------------------------------------------------------------------*/
+CompoundStmt<out Statement stmt>	(. stmt = null; .)
+=
+    IfStmt<out stmt>					
+  | WhileStmt<out stmt>
+  | ForStmt<out stmt>
+  | FuncDecl<out stmt>.
+/*------------------------------------------------------------------------*/
+IfStmt<out Statement stmt>			(. Expression tmp; Statement true_block, false_block = null; .)
+=
+  "if" 
+  '(' CondExpr<out tmp> ')'
+  Stmt<out true_block>
+  [ "else"
+     Stmt<out false_block>
+  ]                      			(. stmt = new IfStatement{
+  											Condition = tmp,
+  											TrueBlock = true_block,
+  											FalseBlock = false_block
+  									   };
+  									.).
+/*------------------------------------------------------------------------*/
+WhileStmt<out Statement stmt>		(. Expression cond; Statement body = null; .)
+=
+  "while"
+  '(' CondExpr<out cond> ')'
+  Stmt<out body>                   	(. stmt = new WhileStatement{
+  											Condition = cond,
+  											Body = body
+  									   };
+  									.).
+/*------------------------------------------------------------------------*/
+ForStmt<out Statement stmt>			(. List<Expression> expr_list, target_list; Statement body; .)
+=
+  "for"
+  '('
+  LValueList<out target_list>
+  "in"
+  RValueList<out expr_list>
+  ')'
+  Stmt<out body>					(. stmt = new ForStatement{
+  											LValues = target_list,
+  											Targets = expr_list,
+  											Body = body
+  									   };
+  									.).
+/*------------------------------------------------------------------------*/
+LValueList<. out List<Expression> targets .>		(. Expression tmp; .)
+=													(. targets = new List<Expression>(); .)
+  AddOpe<out tmp>									(. targets.Add(tmp); .)
+  { WEAK ','
+    AddOpe<out tmp>								(. targets.Add(tmp); .)
+  }
+  /*[',']*/ .
+/*------------------------------------------------------------------------*/
 VarDecl<out Statement stmt> 	(. string name; TYPES type; Expression rhs = null; Parameter variable;
 								   var vars = new List<Parameter>(); var exprs = new List<Expression>();
 								.)
@@ -224,18 +248,9 @@ VarDecl<out Statement stmt> 	(. string name; TYPES type; Expression rhs = null; 
     Type<out type>
   ]
   [ '='
-    Expr<out rhs>
+    CondExpr<out rhs>
   ]
-  { ','					 (. variable = new Parameter{
-  								Name = name,
-  								ParamType = type
-  							};
-  							if(rhs == null){
-  								if(type == TYPES.VAR) SemErr("Can not declare a variable of \"var\" without initialization!");
-  								rhs = CreateConstant(type);
-  							}
-  							
- 							cur_scope.AddLocal(variable);
+  { ','					 (. variable = DeclareVariable(ref rhs, name, type);
  						 	vars.Add(variable);
   						 	exprs.Add(rhs);
   						 .)
@@ -244,17 +259,9 @@ VarDecl<out Statement stmt> 	(. string name; TYPES type; Expression rhs = null; 
    	  Type<out type>
   	]
   	[ '='
-  	  Expr<out rhs>
+  	  CondExpr<out rhs>
   	]
-  } SYNC ';'			(. variable = new Parameter{
-  								Name = name,
-  								ParamType = type
-  						   };
-  					   	   if(rhs == null){
-  					   	   		if(type == TYPES.VAR) SemErr("Can not declare a variable of \"var\" without initialization!");
-  					   			rhs = CreateConstant(type);
-  					   	   }
-  					   	   cur_scope.AddLocal(variable);
+  } SYNC ';'			(. variable = DeclareVariable(ref rhs, name, type);
   					   	   vars.Add(variable);
   					   	   exprs.Add(rhs);
   					   
@@ -281,45 +288,27 @@ FuncDecl<out Statement func>    (. string name; TYPES type; Statement block; .)
   								   funcs.AddFunction(func as Function);
   								.).
 /*------------------------------------------------------------------------*/
-ExprList<. out List<Expression> exprs .>		(. Expression tmp; .)
+RValueList<. out List<Expression> exprs .>		(. Expression tmp; .)
 =												(. exprs = new List<Expression>(); .)
-  Expr<out tmp>									(. exprs.Add(tmp); .)
+  CondExpr<out tmp>								(. exprs.Add(tmp); .)
   { ','
-    Expr<out tmp>								(. exprs.Add(tmp); .)
-  } .
+    CondExpr<out tmp>							(. exprs.Add(tmp); .)
+  }
+  /*[',']*/ .
 /*------------------------------------------------------------------------*/
-Expr<out Expression expr>				(. expr = null; .)
-= IF(NotFollowedByDoubleDots())
-  CondExpr<out expr>
-  | RangeExpr<out expr>.
-/*------------------------------------------------------------------------*/
-CondExpr<out Expression expr>	(. Expression true_expr, false_expr; .)
+CondExpr<out Expression expr>		(. Expression true_expr, false_expr; .)
 =
   OrTest<out expr>
   [ '?'
     OrTest<out true_expr>
     ':'
-    Expr<out false_expr>			(. expr = new ConditionalExpression{
+    CondExpr<out false_expr>		(. expr = new ConditionalExpression{
     										Condition = expr,
     										TrueExpression = true_expr,
     										FalseExpression = false_expr
     								   };
     								.)
   ].
-/*------------------------------------------------------------------------*/
-RangeExpr<out Expression expr>	(. int start, end, step; .)
-=
-  integer							(. start = Convert.ToInt32(t.val); end = -1; step = 1; .)
-  ".."
-  [integer]							(. end = Convert.ToInt32(t.val); .)
-  [ ':'
-    integer							(. step = Convert.ToInt32(t.val); .)
-  ]									(. expr = new RangeExpression{
-  											Start = start,
-  											End = end,
-  											Step = step
-  									   };
-  									.).
 /*------------------------------------------------------------------------*/
 OrTest<out Expression expr>			(. Expression rhs; .)
 =
@@ -403,7 +392,8 @@ Factor<out Expression expr> (. OperatorType type; Expression factor; expr = null
   Factor<out factor>	 	(. expr = Node.Unary(type, factor); .).
 /*------------------------------------------------------------------------*/
 PowerOpe<out Expression expr>    (. Expression rhs; .)
-= Primary<out expr>
+= 
+  Primary<out expr>
   [ "**"
     Factor<out rhs>              (. expr = Node.Power(expr, rhs); .)
   ].
@@ -432,16 +422,100 @@ Atom<out Expression expr>			(. string name; expr = null; .)
   									   		SemErr(string.Format("Attempt to refer to an undefined variable \"{0}\"", name));
   									   }
   									.)
-  | Literal<out expr>.
-  //| Enclosure<out expr>.
+  | Literal<out expr>
+  | '('
+    [TupleOrRange<out expr>]
+    SYNC ')'
+  | '['
+    [ListMaker<out expr>]
+    SYNC ']'
+  | '{'
+    [DictMaker<out expr>]
+    SYNC '}' .
 /*------------------------------------------------------------------------*/
-/*Enclosure<out Expression expr>		(. List<Expression> expr_list; .)
-= '('
-  [ExprList]<out expr_list>				(. if(expr_list.length == 1)
-  												expr = expr_list[0];
-  										   else
+RangeExpr<out Expression expr>		(. int start, end, step; .)
+=
+  integer							(. start = Convert.ToInt32(t.val); end = -1; step = 1; .)
+  ".."
+  [integer]							(. end = Convert.ToInt32(t.val); .)
+  [ ':'
+    integer							(. step = Convert.ToInt32(t.val); .)
+  ]									(. expr = new RangeExpression{
+  											Start = start,
+  											End = end,
+  											Step = step
+  									   };
+  									.).
+/*------------------------------------------------------------------------*/
+TupleOrRange<out Expression expr>		(. Expression tmp; List<Expression> list = new List<Expression>(); expr = null; .)
+= IF(NotFollowedByDoubleDots())		/*For float and RangeExpr conflict.*/
+  CondExpr<out tmp>						(. list.Add(tmp); .)
+  (  //CompFor<out comp_expr>
+  /*|*/  {  ','
+        CondExpr<out tmp>				(. list.Add(tmp); .)
+     }
+     /*[',']*/
+  )										(. expr = new ObjectInitializer{
+  												InitializeList = list,
+  												ObjType = TYPES.TUPLE
+  										   };
   										.)
-  SYNC ')'.*/
+  | RangeExpr<out expr>.
+/*------------------------------------------------------------------------*/
+ListMaker<out Expression expr>			(. Expression tmp; List<Expression> list = new List<Expression>(); .)
+=
+  CondExpr<out tmp>						(. list.Add(tmp); .)
+  (
+    {  ','
+       CondExpr<out tmp>				(. list.Add(tmp); .)
+    }
+    /*[',']*/
+  )										(. expr = new ObjectInitializer{
+  												InitializeList = list,
+  												ObjType = TYPES.LIST
+  										   };
+  										.).
+/*------------------------------------------------------------------------*/
+DictMaker<out Expression expr>			(. Expression lhs, rhs; List<Expression> list = new List<Expression>(); .)
+=
+  CondExpr<out lhs>						(. list.Add(lhs); .)
+  ':'
+  CondExpr<out rhs>						(. list.Add(rhs); .)
+  (
+    {  ','
+       CondExpr<out lhs>				(. list.Add(lhs); .)
+       ':'
+       CondExpr<out rhs>				(. list.Add(rhs); .)
+    }
+    /*[',']*/
+  )										(. expr = new ObjectInitializer{
+  												InitializeList = list,
+  												ObjType = TYPES.DICT
+  										   };
+  										.).
+/*------------------------------------------------------------------------*/
+/*CompIter<out Expression expr>
+=
+  CompFor<out expr>
+  |  CompIf<out expr> .*/
+/*------------------------------------------------------------------------*/
+/*CompFor<out Expression expr>
+=
+  (  "for"
+  |  '|'
+  )
+  ExprList<out expr_list>
+  "in"
+  TestList<out test_list>
+  [CompIter].*/
+/*------------------------------------------------------------------------*/
+/*CompIf<out Expression expr>
+=
+  (  "if"
+  |  '|'
+  )
+  OrTest<out expr>
+  [CompIter].*/
 /*------------------------------------------------------------------------*/
 Variable<out string name>
 = WEAK '$'

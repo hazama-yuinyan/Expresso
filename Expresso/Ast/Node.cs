@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Expresso.Interpreter;
 
 namespace Expresso.Ast
 {
@@ -25,7 +26,8 @@ namespace Expresso.Ast
 		WhileStatement,
 		ForStatement,
 		AssertStatement,
-		TryStatement
+		TryStatement,
+		Initializer
     }
 
     /// <summary>
@@ -83,19 +85,14 @@ namespace Expresso.Ast
         }
 
         /// <summary>
-        /// コンパイル作業の本体。
+        /// インタプリターの実行。このノードがあらわす処理を実行する。
         /// </summary>
-        /// <remarks>
-        /// Compile() の方では、関数ごとに得られたコードをつないで、関数のアドレス解決をしてるだけ。
-        /// </remarks>
-        /// <param name="localTable">ローカル変数テーブル。どの識別子が何番目のローカル変数か。</param>
-        /// <param name="addressTable">関数アドレステーブル。アドレス解決は後からするけど、とりあえずテーブルの参照だけ渡しておく。</param>
-        /// <param name="functionTable">関数テーブル。関数のコンパイル結果はいったんこのテーブルに格納しておく。Compile()内でつなぐ。</param>
-        /// <returns>部分木のコンパイル結果。</returns>
-        protected internal abstract IEnumerable<Emulator.Instruction> Compile(
-            Dictionary<Parameter, int> localTable,
-            Dictionary<Function, int> addressTable,
-            Dictionary<Function, IEnumerable<Emulator.Instruction>> functionTable);
+        /// <param name="local">ローカル変数テーブル。</param>
+        /// <param name="functions">関数テーブル。現在のスコープで参照できる関数の実体を格納してある。</param>
+        /// <returns>そのコードを評価した結果の戻り値など。</returns>
+        protected internal abstract object Run(
+            VariableStore local,
+            Scope functions);
 
         #endregion
         #region 生成関数群

@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Expresso.Ast;
 using Expresso.BuiltIns;
-using Expresso.Compiler;
 
 namespace Expresso.Interpreter
 {
@@ -90,12 +90,8 @@ namespace Expresso.Interpreter
 				break;
 				
 			case NodeType.Print:
-			{
-				Ast.PrintStatement print = (PrintStatement)stmt;
-				object obj = EvalExpression(print.Expression, localVars);
-				Console.WriteLine(obj.ToString());
+				EvalPrintStatement((PrintStatement)stmt, localVars);
 				break;
-			}
 				
 			case NodeType.Return:
 				Ast.Return return_stmt = (Return)stmt;
@@ -136,13 +132,16 @@ namespace Expresso.Interpreter
 				EvalWhileStatement((WhileStatement)stmt, localVars);
 				break;
 				
+			case NodeType.ForStatement:
+				EvalForStatement((ForStatement)stmt, localVars);
+				break;
+				
 			case NodeType.Block:
 				EvalBlock((Block)stmt, localVars);
 				break;
 				
 			default:
 				throw new Exception("Unknown statement type!");
-				break;
 			}
 			
 			return result;
@@ -200,6 +199,10 @@ namespace Expresso.Interpreter
 					throw new EvalException("Can not find variable store");
 				
 				result = localVars.Get(param.Name);
+				break;
+				
+			case NodeType.Initializer:
+				result = EvalInitializerList((ObjectInitializer)expr, localVars);
 				break;
 				
 			default:
@@ -342,13 +345,12 @@ namespace Expresso.Interpreter
 			object ope = EvalExpression(expr.Operand, localVars);
 			
 			if(expr.Operator == OperatorType.MINUS){
-				if(ope is int){
+				if(ope is int)
 					return -(int)ope;
-				}else if(ope is double){
+				else if(ope is double)
 					return -(double)ope;
-				}else{
+				else
 					throw new EvalException("The minus operator is not applicable to the operand!");
-				}
 			}
 			
 			return null;
@@ -372,16 +374,69 @@ namespace Expresso.Interpreter
 		
 		private object EvalCondExpr(ConditionalExpression expr, VariableStore localVars)
 		{
-			if((bool)EvalExpression(expr.Condition, localVars)){
+			if((bool)EvalExpression(expr.Condition, localVars))
 				return EvalExpression(expr.TrueExpression, localVars);
-			}else{
+			else
 				return EvalExpression(expr.FalseExpression, localVars);
-			}
 		}
 		
-		private object EvalRangeExpr(RangeExpression range)
+		private ExpressoObj EvalRangeExpr(RangeExpression range)
 		{
 			return new ExpressoRange(range.Start, range.End, range.Step);
+		}
+		
+		private ExpressoObj EvalInitializerList(ObjectInitializer expr, VariableStore local)
+		{
+			ExpressoObj result = null;
+			switch (expr.ObjType) {
+			case TYPES.TUPLE:
+			{
+				var tmp_list = new List<ExpressoObj>();
+				foreach (var item in expr.InitializeList) {
+					tmp_list.Add((ExpressoObj)EvalExpression(item, local));
+				}
+				result = ExpressoFunctions.MakeTuple(tmp_list);
+				break;
+			}
+				
+			case TYPES.LIST:
+			{
+				var tmp_list = new List<object>();
+				foreach (var item in expr.InitializeList) {
+					tmp_list.Add(EvalExpression(item, local));
+				}
+				result = ExpressoFunctions.MakeList(tmp_list);
+				break;
+			}
+				
+			case TYPES.DICT:
+			{
+				var key_list = new List<ExpressoObj>();
+				var value_list = new List<object>();
+				for (int i = 0; i < expr.InitializeList.Count; ++i) {
+					if(i % 2 == 0)
+						key_list.Add((ExpressoObj)EvalExpression(expr.InitializeList[i], local));
+					else
+						value_list.Add(EvalExpression(expr.InitializeList[i], local));
+				}
+				result = ExpressoFunctions.MakeDict(key_list, value_list, key_list.Count);
+				break;
+			}
+				
+			default:
+				throw new EvalException("Unknown type of initializer");
+			}
+			
+			return result;
+		}
+		
+		private void EvalPrintStatement(PrintStatement stmt, VariableStore local)
+		{
+			foreach (var expr in stmt.Expressions) {
+				object obj = EvalExpression(expr, local);
+				Console.Write("{0} ", obj.ToString());
+			}
+			Console.WriteLine();
 		}
 		
 		private void EvalWhileStatement(WhileStatement stmt, VariableStore local)
@@ -394,6 +449,12 @@ namespace Expresso.Interpreter
 			
 			if(cond == null)
 				throw new EvalException("Invalid expression! The condition of a while statement must yields a boolean!");
+		}
+		
+		private void EvalForStatement(ForStatement stmt, VariableStore local)
+		{
+			ExpressoObj iterable = (stmt.Targets[0] is RangeExpression) ? EvalRangeExpr((RangeExpression)stmt.Targets[0]) :
+				EvalInitializerList((ObjectInitializer)stmt.Targets, local);
 		}
 	}
 }
