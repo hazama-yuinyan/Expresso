@@ -7,9 +7,9 @@ def GetInt()
 	return 10;
 }
 
-def Print100()
+def PrintInt($n)
 {
-	print 100;
+	print $n;
 }
 
 def MakeList()
@@ -32,7 +32,7 @@ def main()
 	$w, $y = $x, $z;
 	let $str = "This is a test. blah blah...", $str2 = "これはテストです。あーあー";
 	let $flag = true;
-	Print100();
+	PrintInt(100);
 	print $x, $y, $z, $w;
 	print $str, $str2;
 	print $flag;
@@ -41,9 +41,11 @@ def main()
 		print $w;
 	}
 	while($x > 0){
-		Print100();
+		PrintInt($x);
 		$x = $x - 1;
 	}
-	let $list1 = MakeList();
-	let $range = MakeRange();
+	let $list_obj = MakeList();
+	let $range_obj = MakeRange();
+	for($x in $range_obj)
+		print $x;
 }

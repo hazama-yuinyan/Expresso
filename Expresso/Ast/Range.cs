@@ -1,4 +1,6 @@
 using System.Collections.Generic;
+using Expresso.BuiltIns;
+using Expresso.Interpreter;
 
 namespace Expresso.Ast
 {
@@ -41,9 +43,9 @@ namespace Expresso.Ast
             return this.Start.GetHashCode() ^ this.End.GetHashCode() ^ this.Step.GetHashCode();
         }
 		
-		protected internal override IEnumerable<Expresso.Emulator.Instruction> Compile(Dictionary<Parameter, int> localTable, Dictionary<Function, int> addressTable, Dictionary<Function, IEnumerable<Expresso.Emulator.Instruction>> functionTable)
+		internal override object Run(VariableStore varStore, Scope funcTable)
 		{
-			return null;
+			return new ExpressoRange(Start, End, Step);
 		}
 	}
 }

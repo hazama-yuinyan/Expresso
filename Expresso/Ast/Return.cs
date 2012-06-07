@@ -1,4 +1,6 @@
 ﻿using System.Collections.Generic;
+using Expresso.BuiltIns;
+using Expresso.Interpreter;
 
 namespace Expresso.Ast
 {
@@ -31,9 +33,20 @@ namespace Expresso.Ast
             return this.Expressions.GetHashCode();
         }
 
-        protected internal override IEnumerable<Expresso.Emulator.Instruction> Compile(Dictionary<Parameter, int> localTable, Dictionary<Function, int> addressTable, Dictionary<Function, IEnumerable<Expresso.Emulator.Instruction>> functionTable)
+        internal override object Run(VariableStore varStore, Scope funcTable)
         {
-            return null;
+            if(Expressions.Count == 0){
+				return new ExpressoTuple(new List<ExpressoObj>());
+			}else if(Expressions.Count == 1){
+				return Expressions[0].Run(varStore, funcTable);
+			}else{
+				var objs = new List<ExpressoObj>();
+				foreach (Expression expr in Expressions) {
+					objs.Add((ExpressoObj)expr.Run(varStore, funcTable));
+				}
+				
+				return new ExpressoTuple(objs);
+			}
         }
     }
 }

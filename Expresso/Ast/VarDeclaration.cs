@@ -1,10 +1,17 @@
 using System;
 using System.Collections.Generic;
+using Expresso.Interpreter;
 
 namespace Expresso.Ast
 {
-	public class VarDeclaration : Statement
+	/// <summary>
+	/// 変数宣言式。
+	/// </summary>
+	public class VarDeclaration : Expression
 	{
+		/// <summary>
+		/// 代入先の左辺値の式。
+		/// </summary>
 		public List<Parameter> Variables { get; internal set; }
 
         /// <summary>
@@ -32,8 +39,13 @@ namespace Expresso.Ast
             return this.Variables.GetHashCode() ^ this.Expressions.GetHashCode();
         }
 
-        protected internal override IEnumerable<Expresso.Emulator.Instruction> Compile(Dictionary<Parameter, int> localTable, Dictionary<Function, int> addressTable, Dictionary<Function, IEnumerable<Expresso.Emulator.Instruction>> functionTable)
+        internal override object Run(VariableStore varStore, Scope funcTable)
         {
+			object obj;
+			for (int i = 0; i < Variables.Count; ++i) {
+				obj = Expressions[i].Run(varStore, funcTable);
+				varStore.Add(Variables[i].Name, obj);
+			}
 			return null;
         }
 	}

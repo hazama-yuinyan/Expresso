@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Expresso.Interpreter;
 
 namespace Expresso.Ast
 {
@@ -37,8 +38,19 @@ namespace Expresso.Ast
 			return this.Operator.GetHashCode () ^ this.Operand.GetHashCode ();
 		}
 
-		protected internal override IEnumerable<Expresso.Emulator.Instruction> Compile (Dictionary<Parameter, int> localTable, Dictionary<Function, int> addressTable, Dictionary<Function, IEnumerable<Expresso.Emulator.Instruction>> functionTable)
+		internal override object Run(VariableStore varStore, Scope funcTable)
 		{
+			object ope = Operand.Run(varStore, funcTable);
+			
+			if(Operator == OperatorType.MINUS){
+				if(ope is int)
+					return -(int)ope;
+				else if(ope is double)
+					return -(double)ope;
+				else
+					throw new EvalException("The minus operator is not applicable to the operand!");
+			}
+			
 			return null;
 		}
 	}

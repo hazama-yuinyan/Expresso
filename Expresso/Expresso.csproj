@@ -66,6 +66,8 @@
     <Compile Include="BuiltIns\Functions.cs" />
     <Compile Include="Ast\ObjectInitializer.cs" />
     <Compile Include="Interpreter\Scope.cs" />
+    <Compile Include="Ast\Argument.cs" />
+    <Compile Include="Ast\ControlFlow.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System" />

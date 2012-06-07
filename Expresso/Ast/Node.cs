@@ -1,10 +1,12 @@
 ﻿using System.Collections.Generic;
+using Expresso.BuiltIns;
 using Expresso.Interpreter;
 
 namespace Expresso.Ast
 {
     /// <summary>
     /// 抽象構文木のノードタイプ。
+	/// The node type of AST.
     /// </summary>
     public enum NodeType
     {
@@ -14,6 +16,7 @@ namespace Expresso.Ast
         ConditionalExpression,
         Constant,
         Parameter,
+		Argument,
         Call,
         Assignment,
         Function,
@@ -25,24 +28,29 @@ namespace Expresso.Ast
 		IfStatement,
 		WhileStatement,
 		ForStatement,
+		BreakStatement,
+		ContinueStatement,
 		AssertStatement,
 		TryStatement,
-		Initializer
+		Initializer,
+		StatementList
     }
 
     /// <summary>
     /// 抽象構文木のノードの共通基底。
+    /// The base class for all the abstract syntax trees.
     /// </summary>
     public abstract class Node
     {
         /// <summary>
         /// ノートタイプ。
+		/// The node's type.
         /// </summary>
         public abstract NodeType Type { get; }
 
         internal protected Node() { }
 
-        #region 抽象構文木から仮想マシン語コードを生成。
+        #region 抽象構文木を実行する。
 
         /// <summary>
         /// operator== とかをオーバーロードしてるクラスでも、参照に基づいてDictionaryとかを使うために。
@@ -61,45 +69,22 @@ namespace Expresso.Ast
         }
 
         /// <summary>
-        /// 抽象構文木をコンパイルして、仮想マシン語コードを得る。
-        /// </summary>
-        /// <returns>コード列。</returns>
-        public IEnumerable<Emulator.Instruction> Compile()
-        {
-            var localTable = new Dictionary<Parameter, int>();
-            var addressTable = new Dictionary<Function, int>(new ReferenceEqual<Function>());
-            var functionTable = new Dictionary<Function, IEnumerable<Emulator.Instruction>>(new ReferenceEqual<Function>());
-
-            var main = this.Compile(localTable, addressTable, functionTable);
-
-            var list = new List<Expresso.Emulator.Instruction>(main);
-            list.Add(Expresso.Emulator.Instruction.Halt);
-
-            foreach (var f in functionTable)
-            {
-                addressTable[f.Key] = list.Count;
-                list.AddRange(f.Value);
-            }
-
-            return list;
-        }
-
-        /// <summary>
         /// インタプリターの実行。このノードがあらわす処理を実行する。
+        /// Run the code.
         /// </summary>
-        /// <param name="local">ローカル変数テーブル。</param>
-        /// <param name="functions">関数テーブル。現在のスコープで参照できる関数の実体を格納してある。</param>
+        /// <param name="varStore">ローカル変数テーブル。</param>
+        /// <param name="funcTable">関数テーブル。現在のスコープで参照できる関数の実体を格納してある。</param>
         /// <returns>そのコードを評価した結果の戻り値など。</returns>
-        protected internal abstract object Run(
-            VariableStore local,
-            Scope functions);
+        internal abstract object Run(
+            VariableStore varStore,
+            Scope funcTable);
 
         #endregion
         #region 生成関数群
 
-        public static Parameter Parameter(string name)
+        public static Parameter Parameter(string name, TYPES type)
         {
-            return new Parameter { Name = name };
+            return new Parameter {Name = name, ParamType = type};
         }
 		
 		public static UnaryExpression Negate(Expression expr)

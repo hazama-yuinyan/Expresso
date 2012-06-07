@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using Expresso.Ast;
-using ;
 using Expresso.BuiltIns;
+using Expresso.Interpreter;
 
 
 
@@ -21,7 +21,7 @@ public class Parser {
 	public const int _colon = 6;
 	public const int _semicolon = 7;
 	public const int _lcurly = 8;
-	public const int maxT = 58;
+	public const int maxT = 62;
 
 	const bool T = true;
 	const bool x = false;
@@ -35,7 +35,7 @@ public class Parser {
 	int errDist = minErrDist;
 
 internal Scope cur_scope = new Scope();		//the current scope of variables
-	private Scope funcs = new Scope();			//the namespace for functions
+	private Scope funcs = new Scope();			//the namespace for funcTable
 	public Block root = new Block();
 	
 	Constant CreateConstant(TYPES type)
@@ -158,9 +158,9 @@ internal Scope cur_scope = new Scope();		//the current scope of variables
 		Statement stmt; 
 		FuncDecl(out stmt);
 		root.Statements.Add(stmt); 
-		while (la.kind == 34 || la.kind == 36) {
-			if (la.kind == 34) {
-				VarDecl(out stmt);
+		while (StartOf(1)) {
+			if (StartOf(2)) {
+				ExprStmt(out stmt);
 				root.Statements.Add(stmt); 
 			} else {
 				FuncDecl(out stmt);
@@ -170,21 +170,22 @@ internal Scope cur_scope = new Scope();		//the current scope of variables
 	}
 
 	void FuncDecl(out Statement func) {
-		string name; TYPES type; Statement block; 
-		Expect(36);
+		string name; TYPES type; Statement block; List<Argument>@params; 
+		Expect(40);
 		type = TYPES.VAR; block = null; 
 		Expect(1);
 		name = t.val; 
-		Expect(27);
-		Expect(28);
-		if (la.kind == 35) {
+		Expect(31);
+		ParamList(out @params);
+		Expect(32);
+		if (la.kind == 39) {
 			Get();
 			Type(out type);
 		}
 		Block(out block);
 		func = new Function{
 		Name = name,
-		Parameters = new List<Parameter>(),
+		Parameters = @params,
 		Body = (Block)block,
 		ReturnType = type
 		};
@@ -192,47 +193,27 @@ internal Scope cur_scope = new Scope();		//the current scope of variables
 		
 	}
 
-	void VarDecl(out Statement stmt) {
-		string name; TYPES type; Expression rhs = null; Parameter variable;
-		var vars = new List<Parameter>(); var exprs = new List<Expression>();
-		
-		Expect(34);
-		type = TYPES.VAR; 
-		Variable(out name);
-		if (la.kind == 35) {
-			Get();
-			Type(out type);
-		}
-		if (la.kind == 24) {
-			Get();
-			CondExpr(out rhs);
-		}
-		while (la.kind == 33) {
-			Get();
-			variable = DeclareVariable(ref rhs, name, type);
-			vars.Add(variable);
-			exprs.Add(rhs);
-			
-			Variable(out name);
-			if (la.kind == 35) {
+	void ExprStmt(out Statement stmt) {
+		List<Expression> targets = null; List<Expression> expr_list; stmt = null; 
+		if (la.kind == 38) {
+			VarDecl(out targets);
+		} else if (StartOf(3)) {
+			RValueList(out targets);
+			while (la.kind == 28) {
 				Get();
-				Type(out type);
+				RValueList(out expr_list);
+				stmt = new Assignment{
+				Targets = targets,
+				Expressions = expr_list
+				};
+				
 			}
-			if (la.kind == 24) {
-				Get();
-				CondExpr(out rhs);
-			}
-		}
-		while (!(la.kind == 0 || la.kind == 7)) {SynErr(59); Get();}
+		} else SynErr(63);
+		while (!(la.kind == 0 || la.kind == 7)) {SynErr(64); Get();}
 		Expect(7);
-		variable = DeclareVariable(ref rhs, name, type);
-		vars.Add(variable);
-		exprs.Add(rhs);
-		
-		stmt = new VarDeclaration{
-		Variables = vars,
-		Expressions = exprs
-		};
+		if(stmt == null){
+		stmt = new ExprStatement{Expressions = targets};
+		}
 		
 	}
 
@@ -304,45 +285,52 @@ internal Scope cur_scope = new Scope();		//the current scope of variables
 			type = TYPES.FUNCTION; 
 			break;
 		}
-		default: SynErr(60); break;
+		case 22: {
+			Get();
+			type = TYPES.RANGE; 
+			break;
+		}
+		default: SynErr(65); break;
 		}
 	}
 
 	void Stmt(out Statement stmt) {
 		stmt = null; 
-		if (StartOf(1)) {
+		if (StartOf(4)) {
 			SimpleStmt(out stmt);
-		} else if (StartOf(2)) {
+		} else if (StartOf(5)) {
 			CompoundStmt(out stmt);
-		} else SynErr(61);
+		} else SynErr(66);
 	}
 
 	void SimpleStmt(out Statement stmt) {
 		stmt = null; 
 		if (la.kind == 8) {
 			Block(out stmt);
-		} else if (StartOf(3)) {
+		} else if (StartOf(2)) {
 			ExprStmt(out stmt);
-		} else if (la.kind == 22) {
-			PrintStmt(out stmt);
 		} else if (la.kind == 23) {
+			PrintStmt(out stmt);
+		} else if (la.kind == 24) {
 			ReturnStmt(out stmt);
-		} else if (la.kind == 34) {
-			VarDecl(out stmt);
-		} else SynErr(62);
+		} else if (la.kind == 25) {
+			BreakStmt(out stmt);
+		} else if (la.kind == 27) {
+			ContinueStmt(out stmt);
+		} else SynErr(67);
 	}
 
 	void CompoundStmt(out Statement stmt) {
 		stmt = null; 
-		if (la.kind == 26) {
+		if (la.kind == 30) {
 			IfStmt(out stmt);
-		} else if (la.kind == 30) {
+		} else if (la.kind == 34) {
 			WhileStmt(out stmt);
-		} else if (la.kind == 31) {
+		} else if (la.kind == 35) {
 			ForStmt(out stmt);
-		} else if (la.kind == 36) {
+		} else if (la.kind == 40) {
 			FuncDecl(out stmt);
-		} else SynErr(63);
+		} else SynErr(68);
 	}
 
 	void Block(out Statement block) {
@@ -351,53 +339,59 @@ internal Scope cur_scope = new Scope();		//the current scope of variables
 		tmp = new Block(); 
 		Stmt(out stmt);
 		tmp.Statements.Add(stmt); 
-		while (StartOf(4)) {
+		while (StartOf(6)) {
 			Stmt(out stmt);
 			tmp.Statements.Add(stmt); 
 		}
-		while (!(la.kind == 0 || la.kind == 25)) {SynErr(64); Get();}
-		Expect(25);
+		while (!(la.kind == 0 || la.kind == 29)) {SynErr(69); Get();}
+		Expect(29);
 		cur_scope = cur_scope.Parent; block = tmp; 
-	}
-
-	void ExprStmt(out Statement stmt) {
-		List<Expression> targets; List<Expression> expr_list; stmt = null; 
-		RValueList(out targets);
-		while (la.kind == 24) {
-			Get();
-			RValueList(out expr_list);
-			stmt = new Assignment{
-			Targets = targets,
-			Expressions = expr_list
-			};
-			
-		}
-		while (!(la.kind == 0 || la.kind == 7)) {SynErr(65); Get();}
-		Expect(7);
-		if(stmt == null){
-		stmt = new ExprStatement{Expressions = targets};
-		}
-		
 	}
 
 	void PrintStmt(out Statement stmt) {
 		List<Expression> exprs; 
-		Expect(22);
+		Expect(23);
 		RValueList(out exprs);
-		while (!(la.kind == 0 || la.kind == 7)) {SynErr(66); Get();}
+		while (!(la.kind == 0 || la.kind == 7)) {SynErr(70); Get();}
 		Expect(7);
 		stmt = new PrintStatement{Expressions = exprs}; 
 	}
 
 	void ReturnStmt(out Statement stmt) {
 		List<Expression> target_list = new List<Expression>(); 
-		Expect(23);
+		Expect(24);
 		if (StartOf(3)) {
 			RValueList(out target_list);
 		}
-		while (!(la.kind == 0 || la.kind == 7)) {SynErr(67); Get();}
+		while (!(la.kind == 0 || la.kind == 7)) {SynErr(71); Get();}
 		Expect(7);
 		stmt = new Return{Expressions = target_list}; 
+	}
+
+	void BreakStmt(out Statement stmt) {
+		int count = 1; 
+		Expect(25);
+		if (la.kind == 26) {
+			Get();
+			Expect(2);
+			count = t.val; 
+		}
+		while (!(la.kind == 0 || la.kind == 7)) {SynErr(72); Get();}
+		Expect(7);
+		stmt = new BreakStatement{Count = count}; 
+	}
+
+	void ContinueStmt(out Statement stmt) {
+		int count = 1; 
+		Expect(27);
+		if (la.kind == 26) {
+			Get();
+			Expect(2);
+			count = t.val; 
+		}
+		while (!(la.kind == 0 || la.kind == 7)) {SynErr(73); Get();}
+		Expect(7);
+		stmt = new ContinueStatement{Count = count}; 
 	}
 
 	void RValueList(out List<Expression> exprs ) {
@@ -405,21 +399,63 @@ internal Scope cur_scope = new Scope();		//the current scope of variables
 		exprs = new List<Expression>(); 
 		CondExpr(out tmp);
 		exprs.Add(tmp); 
-		while (la.kind == 33) {
+		while (la.kind == 37) {
 			Get();
 			CondExpr(out tmp);
 			exprs.Add(tmp); 
 		}
 	}
 
+	void VarDecl(out List<Expression> outs ) {
+		string name; TYPES type; Expression rhs = null; Parameter variable; outs = new List<Expression>();
+		var vars = new List<Parameter>(); var exprs = new List<Expression>();
+		
+		Expect(38);
+		type = TYPES.VAR; 
+		Variable(out name);
+		if (la.kind == 39) {
+			Get();
+			Type(out type);
+		}
+		if (la.kind == 28) {
+			Get();
+			CondExpr(out rhs);
+		}
+		while (la.kind == 37) {
+			Get();
+			variable = DeclareVariable(ref rhs, name, type);
+			vars.Add(variable);
+			exprs.Add(rhs);
+			
+			Variable(out name);
+			if (la.kind == 39) {
+				Get();
+				Type(out type);
+			}
+			if (la.kind == 28) {
+				Get();
+				CondExpr(out rhs);
+			}
+		}
+		variable = DeclareVariable(ref rhs, name, type);
+		 vars.Add(variable);
+		 exprs.Add(rhs);
+		
+		 outs.Add(new VarDeclaration{
+		Variables = vars,
+		Expressions = exprs
+		 });
+		
+	}
+
 	void IfStmt(out Statement stmt) {
 		Expression tmp; Statement true_block, false_block = null; 
-		Expect(26);
-		Expect(27);
+		Expect(30);
+		Expect(31);
 		CondExpr(out tmp);
-		Expect(28);
+		Expect(32);
 		Stmt(out true_block);
-		if (la.kind == 29) {
+		if (la.kind == 33) {
 			Get();
 			Stmt(out false_block);
 		}
@@ -433,10 +469,10 @@ internal Scope cur_scope = new Scope();		//the current scope of variables
 
 	void WhileStmt(out Statement stmt) {
 		Expression cond; Statement body = null; 
-		Expect(30);
-		Expect(27);
+		Expect(34);
+		Expect(31);
 		CondExpr(out cond);
-		Expect(28);
+		Expect(32);
 		Stmt(out body);
 		stmt = new WhileStatement{
 		Condition = cond,
@@ -446,17 +482,17 @@ internal Scope cur_scope = new Scope();		//the current scope of variables
 	}
 
 	void ForStmt(out Statement stmt) {
-		List<Expression> expr_list, target_list; Statement body; 
+		List<Expression> target_list; Expression rvalue; Statement body; 
+		Expect(35);
 		Expect(31);
-		Expect(27);
 		LValueList(out target_list);
+		Expect(36);
+		CondExpr(out rvalue);
 		Expect(32);
-		RValueList(out expr_list);
-		Expect(28);
 		Stmt(out body);
 		stmt = new ForStatement{
 		LValues = target_list,
-		Targets = expr_list,
+		Target = rvalue,
 		Body = body
 		};
 		
@@ -465,7 +501,7 @@ internal Scope cur_scope = new Scope();		//the current scope of variables
 	void CondExpr(out Expression expr) {
 		Expression true_expr, false_expr; 
 		OrTest(out expr);
-		if (la.kind == 37) {
+		if (la.kind == 41) {
 			Get();
 			OrTest(out true_expr);
 			Expect(6);
@@ -484,7 +520,7 @@ internal Scope cur_scope = new Scope();		//the current scope of variables
 		targets = new List<Expression>(); 
 		AddOpe(out tmp);
 		targets.Add(tmp); 
-		while (WeakSeparator(33,5,6) ) {
+		while (WeakSeparator(37,7,8) ) {
 			AddOpe(out tmp);
 			targets.Add(tmp); 
 		}
@@ -493,8 +529,8 @@ internal Scope cur_scope = new Scope();		//the current scope of variables
 	void AddOpe(out Expression expr) {
 		Expression rhs; OperatorType type; 
 		Term(out expr);
-		while (la.kind == 47 || la.kind == 48) {
-			if (la.kind == 47) {
+		while (la.kind == 51 || la.kind == 52) {
+			if (la.kind == 51) {
 				Get();
 				type = OperatorType.PLUS; 
 			} else {
@@ -512,196 +548,30 @@ internal Scope cur_scope = new Scope();		//the current scope of variables
 	}
 
 	void Variable(out string name) {
-		ExpectWeak(55, 7);
+		ExpectWeak(59, 9);
 		Expect(1);
 		name = t.val; 
 	}
 
-	void OrTest(out Expression expr) {
-		Expression rhs; 
-		AndTest(out expr);
-		while (la.kind == 38) {
+	void Argument(out Argument arg) {
+		string name; Expression default_val = null; TYPES type = TYPES.VAR; 
+		Variable(out name);
+		if (la.kind == 39) {
 			Get();
-			AndTest(out rhs);
-			expr = Node.Or(expr, rhs); 
+			Type(out type);
 		}
-	}
-
-	void AndTest(out Expression expr) {
-		Expression rhs; 
-		NotTest(out expr);
-		while (la.kind == 39) {
+		if (la.kind == 28) {
 			Get();
-			NotTest(out rhs);
-			expr = Node.And(expr, rhs); 
+			Literal(out default_val);
 		}
-	}
-
-	void NotTest(out Expression expr) {
-		Expression term; expr = null; 
-		if (la.kind == 40) {
-			Get();
-			NotTest(out term);
-			expr = Node.Negate(term); 
-		} else if (StartOf(5)) {
-			Comparison(out expr);
-		} else SynErr(68);
-	}
-
-	void Comparison(out Expression expr) {
-		Expression rhs; OperatorType type; 
-		AddOpe(out expr);
-		type = OperatorType.EQUAL; 
-		if (StartOf(8)) {
-			switch (la.kind) {
-			case 41: {
-				Get();
-				type = OperatorType.EQUAL; 
-				break;
-			}
-			case 42: {
-				Get();
-				type = OperatorType.NOTEQ; 
-				break;
-			}
-			case 43: {
-				Get();
-				type = OperatorType.LESS; 
-				break;
-			}
-			case 44: {
-				Get();
-				type = OperatorType.GREAT; 
-				break;
-			}
-			case 45: {
-				Get();
-				type = OperatorType.LESE; 
-				break;
-			}
-			case 46: {
-				Get();
-				type = OperatorType.GRTE; 
-				break;
-			}
-			}
-			AddOpe(out rhs);
-			expr = new BinaryExpression{
-			Operator = type,
-			Left = expr,
-			Right = rhs
-			};
-			
-		}
-	}
-
-	void Term(out Expression expr) {
-		Expression rhs; OperatorType type; 
-		Factor(out expr);
-		while (la.kind == 49 || la.kind == 50 || la.kind == 51) {
-			if (la.kind == 49) {
-				Get();
-				type = OperatorType.TIMES; 
-			} else if (la.kind == 50) {
-				Get();
-				type = OperatorType.DIV; 
-			} else {
-				Get();
-				type = OperatorType.MOD; 
-			}
-			Factor(out rhs);
-			expr = new BinaryExpression{
-			Operator = type,
-			Left = expr,
-			Right = rhs
-			}; 
-			
-		}
-	}
-
-	void Factor(out Expression expr) {
-		OperatorType type; Expression factor; expr = null; 
-		if (StartOf(9)) {
-			PowerOpe(out expr);
-		} else if (la.kind == 47 || la.kind == 48) {
-			if (la.kind == 48) {
-				Get();
-				type = OperatorType.MINUS; 
-			} else {
-				Get();
-				type = OperatorType.PLUS; 
-			}
-			Factor(out factor);
-			expr = Node.Unary(type, factor); 
-		} else SynErr(69);
-	}
-
-	void PowerOpe(out Expression expr) {
-		Expression rhs; 
-		Primary(out expr);
-		if (la.kind == 52) {
-			Get();
-			Factor(out rhs);
-			expr = Node.Power(expr, rhs); 
-		}
-	}
-
-	void Primary(out Expression expr) {
-		string name = ""; expr = null; Function func; 
-		if (StartOf(10)) {
-			Atom(out expr);
-		} else if (la.kind == 1) {
-			Get();
-			name = t.val; 
-		} else SynErr(70);
-		while (la.kind == 27) {
-			Get();
-			Expect(28);
-			func = funcs.GetFunction(name);
-			if(func == null){
-			SemErr("The function is not defined : " + name);
-			}
-			expr = new Call{
-			Function = func,
-			Arguments = new List<Expression>()
-			};
-			
-		}
-	}
-
-	void Atom(out Expression expr) {
-		string name; expr = null; 
-		if (la.kind == 55) {
-			Variable(out name);
-			expr = cur_scope.GetVariable(name);
-			if(expr == null){
-			SemErr(string.Format("Attempt to refer to an undefined variable \"{0}\"", name));
-			}
-			
-		} else if (StartOf(11)) {
-			Literal(out expr);
-		} else if (la.kind == 27) {
-			Get();
-			if (StartOf(3)) {
-				TupleOrRange(out expr);
-			}
-			while (!(la.kind == 0 || la.kind == 28)) {SynErr(71); Get();}
-			Expect(28);
-		} else if (la.kind == 53) {
-			Get();
-			if (StartOf(3)) {
-				ListMaker(out expr);
-			}
-			while (!(la.kind == 0 || la.kind == 54)) {SynErr(72); Get();}
-			Expect(54);
-		} else if (la.kind == 8) {
-			Get();
-			if (StartOf(3)) {
-				DictMaker(out expr);
-			}
-			while (!(la.kind == 0 || la.kind == 25)) {SynErr(73); Get();}
-			Expect(25);
-		} else SynErr(74);
+		Parameter param = new Parameter{Name = name, ParamType = type};
+		cur_scope.AddLocal(param);
+		arg = new Argument{
+		Name = name,
+		ParamType = type,
+		Option = default_val
+		};
+		
 	}
 
 	void Literal(out Expression expr) {
@@ -729,8 +599,8 @@ internal Scope cur_scope = new Scope();		//the current scope of variables
 			Value = new ExpressoPrimitive{Value = tmp}
 			};
 			
-		} else if (la.kind == 56 || la.kind == 57) {
-			if (la.kind == 56) {
+		} else if (la.kind == 60 || la.kind == 61) {
+			if (la.kind == 60) {
 				Get();
 			} else {
 				Get();
@@ -740,7 +610,221 @@ internal Scope cur_scope = new Scope();		//the current scope of variables
 			Value = new ExpressoPrimitive{Value = Convert.ToBoolean(t.val)}
 			};
 			
+		} else SynErr(74);
+	}
+
+	void ParamList(out List<Argument> @params ) {
+		@params = new List<Argument>(); Argument expr; 
+		if (la.kind == 59) {
+			Argument(out expr);
+			@params.Add(expr); 
+			while (la.kind == 37) {
+				Get();
+				Argument(out expr);
+				@params.Add(expr); 
+			}
+		}
+	}
+
+	void OrTest(out Expression expr) {
+		Expression rhs; 
+		AndTest(out expr);
+		while (la.kind == 42) {
+			Get();
+			AndTest(out rhs);
+			expr = Node.Or(expr, rhs); 
+		}
+	}
+
+	void AndTest(out Expression expr) {
+		Expression rhs; 
+		NotTest(out expr);
+		while (la.kind == 43) {
+			Get();
+			NotTest(out rhs);
+			expr = Node.And(expr, rhs); 
+		}
+	}
+
+	void NotTest(out Expression expr) {
+		Expression term; expr = null; 
+		if (la.kind == 44) {
+			Get();
+			NotTest(out term);
+			expr = Node.Negate(term); 
+		} else if (StartOf(7)) {
+			Comparison(out expr);
 		} else SynErr(75);
+	}
+
+	void Comparison(out Expression expr) {
+		Expression rhs; OperatorType type; 
+		AddOpe(out expr);
+		type = OperatorType.EQUAL; 
+		if (StartOf(10)) {
+			switch (la.kind) {
+			case 45: {
+				Get();
+				type = OperatorType.EQUAL; 
+				break;
+			}
+			case 46: {
+				Get();
+				type = OperatorType.NOTEQ; 
+				break;
+			}
+			case 47: {
+				Get();
+				type = OperatorType.LESS; 
+				break;
+			}
+			case 48: {
+				Get();
+				type = OperatorType.GREAT; 
+				break;
+			}
+			case 49: {
+				Get();
+				type = OperatorType.LESE; 
+				break;
+			}
+			case 50: {
+				Get();
+				type = OperatorType.GRTE; 
+				break;
+			}
+			}
+			AddOpe(out rhs);
+			expr = new BinaryExpression{
+			Operator = type,
+			Left = expr,
+			Right = rhs
+			};
+			
+		}
+	}
+
+	void Term(out Expression expr) {
+		Expression rhs; OperatorType type; 
+		Factor(out expr);
+		while (la.kind == 53 || la.kind == 54 || la.kind == 55) {
+			if (la.kind == 53) {
+				Get();
+				type = OperatorType.TIMES; 
+			} else if (la.kind == 54) {
+				Get();
+				type = OperatorType.DIV; 
+			} else {
+				Get();
+				type = OperatorType.MOD; 
+			}
+			Factor(out rhs);
+			expr = new BinaryExpression{
+			Operator = type,
+			Left = expr,
+			Right = rhs
+			}; 
+			
+		}
+	}
+
+	void Factor(out Expression expr) {
+		OperatorType type; Expression factor; expr = null; 
+		if (StartOf(11)) {
+			PowerOpe(out expr);
+		} else if (la.kind == 51 || la.kind == 52) {
+			if (la.kind == 52) {
+				Get();
+				type = OperatorType.MINUS; 
+			} else {
+				Get();
+				type = OperatorType.PLUS; 
+			}
+			Factor(out factor);
+			expr = Node.Unary(type, factor); 
+		} else SynErr(76);
+	}
+
+	void PowerOpe(out Expression expr) {
+		Expression rhs; 
+		Primary(out expr);
+		if (la.kind == 56) {
+			Get();
+			Factor(out rhs);
+			expr = Node.Power(expr, rhs); 
+		}
+	}
+
+	void Primary(out Expression expr) {
+		string name = ""; expr = null; Function func; List<Expression> args; 
+		if (StartOf(12)) {
+			Atom(out expr);
+		} else if (la.kind == 1) {
+			Get();
+			name = t.val; 
+		} else SynErr(77);
+		while (la.kind == 31) {
+			Get();
+			ArgList(out args);
+			Expect(32);
+			func = funcs.GetFunction(name);
+			if(func == null){
+			SemErr("The function is not defined : " + name);
+			}
+			expr = new Call{
+			Function = func,
+			Arguments = args
+			};
+			
+		}
+	}
+
+	void ArgList(out List<Expression> args ) {
+		args = new List<Expression>(); Expression expr; 
+		if (StartOf(11)) {
+			Primary(out expr);
+			args.Add(expr); 
+			while (la.kind == 37) {
+				Get();
+				Primary(out expr);
+				args.Add(expr); 
+			}
+		}
+	}
+
+	void Atom(out Expression expr) {
+		string name; expr = null; 
+		if (la.kind == 59) {
+			Variable(out name);
+			expr = cur_scope.GetVariable(name);
+			if(expr == null){
+			SemErr(string.Format("Attempt to refer to an undefined variable \"{0}\"", name));
+			}
+			
+		} else if (StartOf(13)) {
+			Literal(out expr);
+		} else if (la.kind == 31) {
+			Get();
+			if (StartOf(3)) {
+				TupleOrRange(out expr);
+			}
+			while (!(la.kind == 0 || la.kind == 32)) {SynErr(78); Get();}
+			Expect(32);
+		} else if (la.kind == 57) {
+			Get();
+			if (StartOf(3)) {
+				ListMaker(out expr);
+			}
+			while (!(la.kind == 0 || la.kind == 58)) {SynErr(79); Get();}
+			Expect(58);
+		} else if (la.kind == 8) {
+			Get();
+			if (StartOf(3)) {
+				DictMaker(out expr);
+			}
+			while (!(la.kind == 0 || la.kind == 29)) {SynErr(80); Get();}
+			Expect(29);
+		} else SynErr(81);
 	}
 
 	void TupleOrRange(out Expression expr) {
@@ -748,7 +832,7 @@ internal Scope cur_scope = new Scope();		//the current scope of variables
 		if (NotFollowedByDoubleDots()) {
 			CondExpr(out tmp);
 			list.Add(tmp); 
-			while (la.kind == 33) {
+			while (la.kind == 37) {
 				Get();
 				CondExpr(out tmp);
 				list.Add(tmp); 
@@ -760,14 +844,14 @@ internal Scope cur_scope = new Scope();		//the current scope of variables
 			
 		} else if (la.kind == 2) {
 			RangeExpr(out expr);
-		} else SynErr(76);
+		} else SynErr(82);
 	}
 
 	void ListMaker(out Expression expr) {
 		Expression tmp; List<Expression> list = new List<Expression>(); 
 		CondExpr(out tmp);
 		list.Add(tmp); 
-		while (la.kind == 33) {
+		while (la.kind == 37) {
 			Get();
 			CondExpr(out tmp);
 			list.Add(tmp); 
@@ -786,7 +870,7 @@ internal Scope cur_scope = new Scope();		//the current scope of variables
 		Expect(6);
 		CondExpr(out rhs);
 		list.Add(rhs); 
-		while (la.kind == 33) {
+		while (la.kind == 37) {
 			Get();
 			CondExpr(out lhs);
 			list.Add(lhs); 
@@ -835,18 +919,20 @@ internal Scope cur_scope = new Scope();		//the current scope of variables
 	}
 	
 	static readonly bool[,] set = {
-		{T,x,x,x, x,x,x,T, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,T,x,x, T,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,T,x, x,x,x,x},
-		{x,T,T,T, T,x,x,x, T,x,x,x, x,x,x,x, x,x,x,x, x,x,T,T, x,x,x,T, x,x,x,x, x,x,T,x, x,x,x,x, T,x,x,x, x,x,x,T, T,x,x,x, x,T,x,T, T,T,x,x},
-		{x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,T,x, x,x,T,T, x,x,x,x, T,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x},
-		{x,T,T,T, T,x,x,x, T,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,T, x,x,x,x, x,x,x,x, x,x,x,x, T,x,x,x, x,x,x,T, T,x,x,x, x,T,x,T, T,T,x,x},
-		{x,T,T,T, T,x,x,x, T,x,x,x, x,x,x,x, x,x,x,x, x,x,T,T, x,x,T,T, x,x,T,T, x,x,T,x, T,x,x,x, T,x,x,x, x,x,x,T, T,x,x,x, x,T,x,T, T,T,x,x},
-		{x,T,T,T, T,x,x,x, T,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,T, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,T, T,x,x,x, x,T,x,T, T,T,x,x},
-		{x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, T,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x},
-		{T,T,x,x, x,x,x,T, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,T,x,x, T,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,T,x, x,x,x,x},
-		{x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,T,T,T, T,T,T,x, x,x,x,x, x,x,x,x, x,x,x,x},
-		{x,T,T,T, T,x,x,x, T,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,T, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,T,x,T, T,T,x,x},
-		{x,x,T,T, T,x,x,x, T,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,T, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,T,x,T, T,T,x,x},
-		{x,x,T,T, T,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, T,T,x,x}
+		{T,x,x,x, x,x,x,T, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,T,x,x, T,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,T,x, x,x,x,x},
+		{x,T,T,T, T,x,x,x, T,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,T, x,x,x,x, x,x,T,x, T,x,x,x, T,x,x,x, x,x,x,T, T,x,x,x, x,T,x,T, T,T,x,x},
+		{x,T,T,T, T,x,x,x, T,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,T, x,x,x,x, x,x,T,x, x,x,x,x, T,x,x,x, x,x,x,T, T,x,x,x, x,T,x,T, T,T,x,x},
+		{x,T,T,T, T,x,x,x, T,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,T, x,x,x,x, x,x,x,x, x,x,x,x, T,x,x,x, x,x,x,T, T,x,x,x, x,T,x,T, T,T,x,x},
+		{x,T,T,T, T,x,x,x, T,x,x,x, x,x,x,x, x,x,x,x, x,x,x,T, T,T,x,T, x,x,x,T, x,x,x,x, x,x,T,x, x,x,x,x, T,x,x,x, x,x,x,T, T,x,x,x, x,T,x,T, T,T,x,x},
+		{x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,T,x, x,x,T,T, x,x,x,x, T,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x},
+		{x,T,T,T, T,x,x,x, T,x,x,x, x,x,x,x, x,x,x,x, x,x,x,T, T,T,x,T, x,x,T,T, x,x,T,T, x,x,T,x, T,x,x,x, T,x,x,x, x,x,x,T, T,x,x,x, x,T,x,T, T,T,x,x},
+		{x,T,T,T, T,x,x,x, T,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,T, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,T, T,x,x,x, x,T,x,T, T,T,x,x},
+		{x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, T,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x},
+		{T,T,x,x, x,x,x,T, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,T,x,x, T,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,T,x, x,x,x,x},
+		{x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,T,T,T, T,T,T,x, x,x,x,x, x,x,x,x, x,x,x,x},
+		{x,T,T,T, T,x,x,x, T,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,T, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,T,x,T, T,T,x,x},
+		{x,x,T,T, T,x,x,x, T,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,T, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,T,x,T, T,T,x,x},
+		{x,x,T,T, T,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, T,T,x,x}
 
 	};
 } // end Parser
@@ -882,61 +968,67 @@ public class Errors {
 			case 19: s = "\"dictionary\" expected"; break;
 			case 20: s = "\"expression\" expected"; break;
 			case 21: s = "\"function\" expected"; break;
-			case 22: s = "\"print\" expected"; break;
-			case 23: s = "\"return\" expected"; break;
-			case 24: s = "\"=\" expected"; break;
-			case 25: s = "\"}\" expected"; break;
-			case 26: s = "\"if\" expected"; break;
-			case 27: s = "\"(\" expected"; break;
-			case 28: s = "\")\" expected"; break;
-			case 29: s = "\"else\" expected"; break;
-			case 30: s = "\"while\" expected"; break;
-			case 31: s = "\"for\" expected"; break;
-			case 32: s = "\"in\" expected"; break;
-			case 33: s = "\",\" expected"; break;
-			case 34: s = "\"let\" expected"; break;
-			case 35: s = "\"(-\" expected"; break;
-			case 36: s = "\"def\" expected"; break;
-			case 37: s = "\"?\" expected"; break;
-			case 38: s = "\"or\" expected"; break;
-			case 39: s = "\"and\" expected"; break;
-			case 40: s = "\"not\" expected"; break;
-			case 41: s = "\"==\" expected"; break;
-			case 42: s = "\"!=\" expected"; break;
-			case 43: s = "\"<\" expected"; break;
-			case 44: s = "\">\" expected"; break;
-			case 45: s = "\"<=\" expected"; break;
-			case 46: s = "\">=\" expected"; break;
-			case 47: s = "\"+\" expected"; break;
-			case 48: s = "\"-\" expected"; break;
-			case 49: s = "\"*\" expected"; break;
-			case 50: s = "\"/\" expected"; break;
-			case 51: s = "\"%\" expected"; break;
-			case 52: s = "\"**\" expected"; break;
-			case 53: s = "\"[\" expected"; break;
-			case 54: s = "\"]\" expected"; break;
-			case 55: s = "\"$\" expected"; break;
-			case 56: s = "\"true\" expected"; break;
-			case 57: s = "\"false\" expected"; break;
-			case 58: s = "??? expected"; break;
-			case 59: s = "this symbol not expected in VarDecl"; break;
-			case 60: s = "invalid Type"; break;
-			case 61: s = "invalid Stmt"; break;
-			case 62: s = "invalid SimpleStmt"; break;
-			case 63: s = "invalid CompoundStmt"; break;
-			case 64: s = "this symbol not expected in Block"; break;
-			case 65: s = "this symbol not expected in ExprStmt"; break;
-			case 66: s = "this symbol not expected in PrintStmt"; break;
-			case 67: s = "this symbol not expected in ReturnStmt"; break;
-			case 68: s = "invalid NotTest"; break;
-			case 69: s = "invalid Factor"; break;
-			case 70: s = "invalid Primary"; break;
-			case 71: s = "this symbol not expected in Atom"; break;
-			case 72: s = "this symbol not expected in Atom"; break;
-			case 73: s = "this symbol not expected in Atom"; break;
-			case 74: s = "invalid Atom"; break;
-			case 75: s = "invalid Literal"; break;
-			case 76: s = "invalid TupleOrRange"; break;
+			case 22: s = "\"range\" expected"; break;
+			case 23: s = "\"print\" expected"; break;
+			case 24: s = "\"return\" expected"; break;
+			case 25: s = "\"break\" expected"; break;
+			case 26: s = "\"upto\" expected"; break;
+			case 27: s = "\"continue\" expected"; break;
+			case 28: s = "\"=\" expected"; break;
+			case 29: s = "\"}\" expected"; break;
+			case 30: s = "\"if\" expected"; break;
+			case 31: s = "\"(\" expected"; break;
+			case 32: s = "\")\" expected"; break;
+			case 33: s = "\"else\" expected"; break;
+			case 34: s = "\"while\" expected"; break;
+			case 35: s = "\"for\" expected"; break;
+			case 36: s = "\"in\" expected"; break;
+			case 37: s = "\",\" expected"; break;
+			case 38: s = "\"let\" expected"; break;
+			case 39: s = "\"(-\" expected"; break;
+			case 40: s = "\"def\" expected"; break;
+			case 41: s = "\"?\" expected"; break;
+			case 42: s = "\"or\" expected"; break;
+			case 43: s = "\"and\" expected"; break;
+			case 44: s = "\"not\" expected"; break;
+			case 45: s = "\"==\" expected"; break;
+			case 46: s = "\"!=\" expected"; break;
+			case 47: s = "\"<\" expected"; break;
+			case 48: s = "\">\" expected"; break;
+			case 49: s = "\"<=\" expected"; break;
+			case 50: s = "\">=\" expected"; break;
+			case 51: s = "\"+\" expected"; break;
+			case 52: s = "\"-\" expected"; break;
+			case 53: s = "\"*\" expected"; break;
+			case 54: s = "\"/\" expected"; break;
+			case 55: s = "\"%\" expected"; break;
+			case 56: s = "\"**\" expected"; break;
+			case 57: s = "\"[\" expected"; break;
+			case 58: s = "\"]\" expected"; break;
+			case 59: s = "\"$\" expected"; break;
+			case 60: s = "\"true\" expected"; break;
+			case 61: s = "\"false\" expected"; break;
+			case 62: s = "??? expected"; break;
+			case 63: s = "invalid ExprStmt"; break;
+			case 64: s = "this symbol not expected in ExprStmt"; break;
+			case 65: s = "invalid Type"; break;
+			case 66: s = "invalid Stmt"; break;
+			case 67: s = "invalid SimpleStmt"; break;
+			case 68: s = "invalid CompoundStmt"; break;
+			case 69: s = "this symbol not expected in Block"; break;
+			case 70: s = "this symbol not expected in PrintStmt"; break;
+			case 71: s = "this symbol not expected in ReturnStmt"; break;
+			case 72: s = "this symbol not expected in BreakStmt"; break;
+			case 73: s = "this symbol not expected in ContinueStmt"; break;
+			case 74: s = "invalid Literal"; break;
+			case 75: s = "invalid NotTest"; break;
+			case 76: s = "invalid Factor"; break;
+			case 77: s = "invalid Primary"; break;
+			case 78: s = "this symbol not expected in Atom"; break;
+			case 79: s = "this symbol not expected in Atom"; break;
+			case 80: s = "this symbol not expected in Atom"; break;
+			case 81: s = "invalid Atom"; break;
+			case 82: s = "invalid TupleOrRange"; break;
 
 			default: s = "error " + n; break;
 		}

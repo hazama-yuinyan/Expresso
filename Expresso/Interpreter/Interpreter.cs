@@ -4,17 +4,50 @@ using System.Linq;
 using Expresso.Ast;
 using Expresso.BuiltIns;
 
+/**
+ *----------------------------------------------------
+ * Expressoの簡易仕様書
+ * 1.基本的には動的型付けであり、変数に型はなく値のみが型を持つ。
+ * ただし、宣言文で変数の型を明示した場合は例外でこの場合、変数自体がインスタンスとなる。（つまり、代入文を書けばそれはオブジェクトの
+ * ディープコピーを意味することになり、関数に渡せば値渡しとなってスタックにそのオブジェクトのコピーが作られることになる）
+ * 一方で、宣言時に型名を省略した場合、または明示的に"var"型を宣言した場合には変数は参照となり代入や関数に渡してもオブジェクトは
+ * コピーされなくなる。なお、Expressoでは"var(variadic)"型を「参照型」、それ以外の組み込み型も含めた全ての型を「値型」と呼ぶ。
+ * 値型を関数に参照渡しするための演算子もある。（いずれ実装予定）
+ * 2.Expressoの組み込み型の一つである"expression"型は式の先頭にバッククォートを付した形をしており、特に述語関数などとして使用する。
+ * その実態はごく短小な定義を持つ関数であり、故に遅延評価される。
+ * 3.他の大多数のスクリプト言語同様、関数は第一級オブジェクトであり、関数の引数や戻り値として扱うことができる。
+ * 4.Python譲りのcomprehension構文とHaskell系の記号によるcomprehension構文を備える。
+ * 5.組み込み型としてFraction型や任意精度演算もサポートする。
+ * 6.組み込み型の一種であるRange型は、その名の通り整数の範囲を表す型で、カウントアップ式のfor文が存在しないExpressoで
+ * C言語におけるfor(int i = 0; i < max; ++i){...}のような処理を実現する他、配列やリストなどPythonにおいてSequenceと呼ばれる
+ * オブジェクトに作用してそのシーケンスオブジェクトの一部または全体をコピーする際に用いられる。
+ *----------------------------------------------------
+ */
+
 namespace Expresso.Interpreter
 {
 	/// <summary>
 	/// Expressoのインタプリタ.
+	/// The Expresso's intepreter.
 	/// </summary>
 	public class Interpreter
 	{
+		/// <summary>
+		/// 抽象構文木のルート要素を保持する。
+		/// The root element for the AST.
+		/// </summary>
 		public Ast.Block Root{get; internal set;}
 		
+		/// <summary>
+		/// グローバルな環境。主にそのプログラム中で定義されている関数を保持する。
+		/// The global environment which holds all the functions defined in the program.
+		/// </summary>
 		private Scope environ = new Scope();
 		
+		/// <summary>
+		/// グローバルな変数ストア。main関数を含む子スコープは、この変数ストアを親として持つ。
+		/// The global variable store.
+		/// </summary>
 		private VariableStore var_store = new VariableStore();
 		
 		public Interpreter(Block root)
@@ -24,6 +57,7 @@ namespace Expresso.Interpreter
 		
 		/// <summary>
 		/// main関数をエントリーポイントとしてプログラムを実行する。
+		/// Run the program with the "main" function as the entry point.
 		/// </summary>
 		/// <exception cref='EvalException'>
 		/// Is thrown when the eval exception.
@@ -34,427 +68,30 @@ namespace Expresso.Interpreter
 			if(main_fn == null)
 				throw new EvalException("No entry point");
 			
-			Ast.Call call = new Ast.Call{
+			var call = new Call{
 				Function = main_fn,
 				Arguments = new List<Ast.Expression>()
 			};
 			
-			EvalExpression(call, var_store);
+			call.Run(var_store, environ);
 		}
 		
 		/// <summary>
 		/// グローバルに存在する変数宣言や関数定義文を実行して
 		/// グローバルの環境を初期化する。
+		/// Executes all the definitions of variables and functions in global
+		/// in order to initialize the global environment.
 		/// </summary>
 		/// <exception cref='Exception'>
 		/// Represents errors that occur during application execution.
 		/// </exception>
 		public void Initialize()
 		{
-			Ast.Block topmost = Root as Ast.Block;
+			Block topmost = Root as Block;
 			if(topmost == null)
 				throw new Exception("Topmost block not found!");
 			
-			EvalBlock(topmost, var_store);
-		}
-		
-		private object EvalBlock(Block block, VariableStore varTable)
-		{
-			object result = null;
-			
-			foreach (var stmt in block.Statements) {
-				result = EvalStatement(stmt, varTable);
-			}
-			
-			return result;
-		}
-		
-		private object EvalStatement(Statement stmt, VariableStore localVars)
-		{
-			object result = null;
-			
-			switch(stmt.Type){
-			case NodeType.Assignment:
-				Ast.Assignment assign = (Assignment)stmt;
-				object rvalue;
-				for (int i = 0; i < assign.Targets.Count; ++i) {
-					Parameter lvalue = (Parameter)assign.Targets[i];
-					rvalue = EvalExpression(assign.Expressions[i], localVars);
-					localVars.Assign(lvalue.Name, rvalue);
-				}
-				break;
-				
-			case NodeType.Function:
-				Ast.Function func = (Function)stmt;
-				environ.AddFunction(func);
-				break;
-				
-			case NodeType.Print:
-				EvalPrintStatement((PrintStatement)stmt, localVars);
-				break;
-				
-			case NodeType.Return:
-				Ast.Return return_stmt = (Return)stmt;
-				result = EvalExpressions(return_stmt.Expressions, localVars);
-				break;
-				
-			case NodeType.VarDecl:
-			{
-				Ast.VarDeclaration var_decl = (VarDeclaration)stmt;
-				object obj;
-				for (int i = 0; i < var_decl.Variables.Count; ++i) {
-					obj = EvalExpression(var_decl.Expressions[i], localVars);
-					localVars.Add(var_decl.Variables[i].Name, obj);
-				}
-				break;
-			}
-				
-			case NodeType.ExprStatement:
-				Ast.ExprStatement expr_stmt = (ExprStatement)stmt;
-				for (int i = 0; i < expr_stmt.Expressions.Count; ++i) {
-					EvalExpression(expr_stmt.Expressions[i], localVars);
-				}
-				break;
-				
-			case NodeType.IfStatement:
-			{
-				Ast.IfStatement if_stmt = (IfStatement)stmt;
-				object obj = EvalExpression(if_stmt.Condition, localVars);
-				Nullable<bool> bool_obj = obj as Nullable<bool>;
-				if(bool_obj == null)
-					throw new EvalException("Invalid expression! The condition of an if statement must yields a boolean!");
-				
-				EvalStatement(((bool)bool_obj) ? if_stmt.TrueBlock : if_stmt.FalseBlock, new VariableStore());
-				break;
-			}
-				
-			case NodeType.WhileStatement:
-				EvalWhileStatement((WhileStatement)stmt, localVars);
-				break;
-				
-			case NodeType.ForStatement:
-				EvalForStatement((ForStatement)stmt, localVars);
-				break;
-				
-			case NodeType.Block:
-				EvalBlock((Block)stmt, localVars);
-				break;
-				
-			default:
-				throw new Exception("Unknown statement type!");
-			}
-			
-			return result;
-		}
-		
-		private object EvalExpressions(List<Expression> exprs, VariableStore localVars)
-		{
-			if(exprs.Count == 0){
-				return new ExpressoTuple(new List<ExpressoObj>());
-			}else if(exprs.Count == 1){
-				return EvalExpression(exprs[0], localVars);
-			}else{
-				var objs = new List<ExpressoObj>();
-				for (int i = 0; i < exprs.Count; ++i) {
-					objs.Add((ExpressoObj)EvalExpression(exprs[i], localVars));
-				}
-				
-				return new ExpressoTuple(objs);
-			}
-		}
-		
-		private object EvalExpression(Expression expr, VariableStore localVars = null)
-		{
-			object result = null;
-			
-			switch (expr.Type) {
-			case NodeType.BinaryExpression:
-				result = EvalBinaryExpr((BinaryExpression)expr, localVars);
-				break;
-				
-			case NodeType.UnaryExpression:
-				result = EvalUnaryExpr((UnaryExpression)expr, localVars);
-				break;
-				
-			case NodeType.Call:
-				result = EvalFunctionCall((Call)expr, localVars);
-				break;
-				
-			case NodeType.ConditionalExpression:
-				result = EvalCondExpr((ConditionalExpression)expr, localVars);
-				break;
-				
-			case NodeType.Range:
-				result = EvalRangeExpr((RangeExpression)expr);
-				break;
-				
-			case NodeType.Constant:
-				var constant = (Constant)expr;
-				result = constant.Value.Value;
-				break;
-				
-			case NodeType.Parameter:
-				var param = (Parameter)expr;
-				if(localVars == null)
-					throw new EvalException("Can not find variable store");
-				
-				result = localVars.Get(param.Name);
-				break;
-				
-			case NodeType.Initializer:
-				result = EvalInitializerList((ObjectInitializer)expr, localVars);
-				break;
-				
-			default:
-				result = null;
-				break;
-			}
-			
-			return result;
-		}
-		
-		private object EvalBinaryExpr(BinaryExpression expr, VariableStore localVars)
-		{
-			object first = EvalExpression(expr.Left, localVars), second = EvalExpression(expr.Right, localVars);
-			if((int)expr.Operator <= (int)OperatorType.MOD){
-				if(first is int){
-					return BinaryExprAsInt((int)first, (int)second, expr.Operator);
-				}else{
-					return BinaryExprAsDouble((double)first, (double)second, expr.Operator);
-				}
-			}else if((int)expr.Operator < (int)OperatorType.AND){
-				return EvalComparison(first as IComparable, second as IComparable, expr.Operator);
-			}
-			bool lhs = (bool)first, rhs = (bool)second;
-			
-			switch (expr.Operator) {
-			case OperatorType.AND:
-				return lhs && rhs;
-				
-			case OperatorType.OR:
-				return lhs || rhs;
-				
-			default:
-				throw new EvalException("Invalid operator type!");
-			}
-		}
-		
-		private int BinaryExprAsInt(int lhs, int rhs, OperatorType opType)
-		{
-			int result;
-			
-			switch (opType) {
-			case OperatorType.PLUS:
-				result = lhs + rhs;
-				break;
-				
-			case OperatorType.MINUS:
-				result = lhs - rhs;
-				break;
-				
-			case OperatorType.TIMES:
-				result = lhs * rhs;
-				break;
-				
-			case OperatorType.DIV:
-				result = lhs / rhs;
-				break;
-				
-			case OperatorType.POWER:
-				result = (int)Math.Pow(lhs, rhs);
-				break;
-				
-			case OperatorType.MOD:
-				result = lhs % rhs;
-				break;
-				
-			default:
-				throw new EvalException("Unreachable code");
-			}
-			
-			return result;
-		}
-		
-		private double BinaryExprAsDouble(double lhs, double rhs, OperatorType opType)
-		{
-			double result;
-			
-			switch (opType) {
-			case OperatorType.PLUS:
-				result = lhs + rhs;
-				break;
-				
-			case OperatorType.MINUS:
-				result = lhs - rhs;
-				break;
-				
-			case OperatorType.TIMES:
-				result = lhs * rhs;
-				break;
-				
-			case OperatorType.DIV:
-				result = lhs / rhs;
-				break;
-				
-			case OperatorType.POWER:
-				result = Math.Pow(lhs, rhs);
-				break;
-				
-			case OperatorType.MOD:
-				result = Math.IEEERemainder(lhs, rhs);
-				break;
-				
-			default:
-				throw new EvalException("Unreachable code");
-			}
-			
-			return result;
-		}
-		
-		private bool EvalComparison(IComparable lhs, IComparable rhs, OperatorType opType)
-		{
-			if(lhs == null || rhs == null)
-				throw new EvalException("The operands can not be compared");
-			
-			switch (opType) {
-			case OperatorType.EQUAL:
-				return object.Equals(lhs, rhs);
-				
-			case OperatorType.GREAT:
-				return lhs.CompareTo(rhs) > 0;
-				
-			case OperatorType.GRTE:
-				return lhs.CompareTo(rhs) >= 0;
-				
-			case OperatorType.LESE:
-				return lhs.CompareTo(rhs) <= 0;
-				
-			case OperatorType.LESS:
-				return lhs.CompareTo(rhs) < 0;
-				
-			case OperatorType.NOTEQ:
-				return !object.Equals(lhs, rhs);
-				
-			default:
-				return false;
-			}
-		}
-		
-		private object EvalUnaryExpr(UnaryExpression expr, VariableStore localVars)
-		{
-			object ope = EvalExpression(expr.Operand, localVars);
-			
-			if(expr.Operator == OperatorType.MINUS){
-				if(ope is int)
-					return -(int)ope;
-				else if(ope is double)
-					return -(double)ope;
-				else
-					throw new EvalException("The minus operator is not applicable to the operand!");
-			}
-			
-			return null;
-		}
-		
-		private object EvalFunctionCall(Call expr, VariableStore parent)
-		{
-			Function fn = expr.Function;
-			var local = new VariableStore{Parent = parent};
-			for (int i = 0; i < expr.Arguments.Count; ++i) {
-				//local.Add(fn.Parameters[i].Name, );
-			}
-			
-			return Apply(fn, local);
-		}
-		
-		private object Apply(Function fn, VariableStore localStore)
-		{
-			return EvalBlock(fn.Body, localStore);
-		}
-		
-		private object EvalCondExpr(ConditionalExpression expr, VariableStore localVars)
-		{
-			if((bool)EvalExpression(expr.Condition, localVars))
-				return EvalExpression(expr.TrueExpression, localVars);
-			else
-				return EvalExpression(expr.FalseExpression, localVars);
-		}
-		
-		private ExpressoObj EvalRangeExpr(RangeExpression range)
-		{
-			return new ExpressoRange(range.Start, range.End, range.Step);
-		}
-		
-		private ExpressoObj EvalInitializerList(ObjectInitializer expr, VariableStore local)
-		{
-			ExpressoObj result = null;
-			switch (expr.ObjType) {
-			case TYPES.TUPLE:
-			{
-				var tmp_list = new List<ExpressoObj>();
-				foreach (var item in expr.InitializeList) {
-					tmp_list.Add((ExpressoObj)EvalExpression(item, local));
-				}
-				result = ExpressoFunctions.MakeTuple(tmp_list);
-				break;
-			}
-				
-			case TYPES.LIST:
-			{
-				var tmp_list = new List<object>();
-				foreach (var item in expr.InitializeList) {
-					tmp_list.Add(EvalExpression(item, local));
-				}
-				result = ExpressoFunctions.MakeList(tmp_list);
-				break;
-			}
-				
-			case TYPES.DICT:
-			{
-				var key_list = new List<ExpressoObj>();
-				var value_list = new List<object>();
-				for (int i = 0; i < expr.InitializeList.Count; ++i) {
-					if(i % 2 == 0)
-						key_list.Add((ExpressoObj)EvalExpression(expr.InitializeList[i], local));
-					else
-						value_list.Add(EvalExpression(expr.InitializeList[i], local));
-				}
-				result = ExpressoFunctions.MakeDict(key_list, value_list, key_list.Count);
-				break;
-			}
-				
-			default:
-				throw new EvalException("Unknown type of initializer");
-			}
-			
-			return result;
-		}
-		
-		private void EvalPrintStatement(PrintStatement stmt, VariableStore local)
-		{
-			foreach (var expr in stmt.Expressions) {
-				object obj = EvalExpression(expr, local);
-				Console.Write("{0} ", obj.ToString());
-			}
-			Console.WriteLine();
-		}
-		
-		private void EvalWhileStatement(WhileStatement stmt, VariableStore local)
-		{
-			Nullable<bool> cond;
-			
-			while((cond = EvalExpression(stmt.Condition, local) as Nullable<bool>) != null && (bool)cond){
-				EvalStatement(stmt.Body, local);
-			}
-			
-			if(cond == null)
-				throw new EvalException("Invalid expression! The condition of a while statement must yields a boolean!");
-		}
-		
-		private void EvalForStatement(ForStatement stmt, VariableStore local)
-		{
-			ExpressoObj iterable = (stmt.Targets[0] is RangeExpression) ? EvalRangeExpr((RangeExpression)stmt.Targets[0]) :
-				EvalInitializerList((ObjectInitializer)stmt.Targets, local);
+			topmost.Run(var_store, environ);
 		}
 	}
 }

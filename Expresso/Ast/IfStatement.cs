@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Expresso.Interpreter;
 
 namespace Expresso.Ast
 {
@@ -44,9 +45,18 @@ namespace Expresso.Ast
             return this.Condition.GetHashCode() ^ this.TrueBlock.GetHashCode() ^ this.FalseBlock.GetHashCode();
         }
 
-        protected internal override IEnumerable<Expresso.Emulator.Instruction> Compile(Dictionary<Parameter, int> localTable, Dictionary<Function, int> addressTable, Dictionary<Function, IEnumerable<Expresso.Emulator.Instruction>> functionTable)
+        internal override object Run(VariableStore varStore, Scope funcTable)
         {
-            return null;
+            Nullable<bool> cond = Condition.Run(varStore, funcTable) as Nullable<bool>;
+			if(cond == null)
+				throw new EvalException("Invalid expression! The condition of an if statement must yields a boolean!");
+			
+			if((bool)cond)
+				TrueBlock.Run(new VariableStore{Parent = varStore}, funcTable);
+			else
+				FalseBlock.Run(new VariableStore{Parent = varStore}, funcTable);
+			
+			return null;
         }
 	}
 }

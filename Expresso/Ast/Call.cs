@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Expresso.Interpreter;
 
 namespace Expresso.Ast
 {
@@ -50,9 +51,20 @@ namespace Expresso.Ast
             return this.Name.GetHashCode() ^ this.Arguments.GetHashCode();
         }
 
-        protected internal override IEnumerable<Expresso.Emulator.Instruction> Compile(Dictionary<Parameter, int> localTable, Dictionary<Function, int> addressTable, Dictionary<Function, IEnumerable<Expresso.Emulator.Instruction>> functionTable)
+        internal override object Run(VariableStore varStore, Scope funcTable)
         {
-            return null;
+            Function fn = Function;
+			var child = new VariableStore{Parent = varStore};
+			for (int i = 0; i < Arguments.Count; ++i) {
+				child.Add(fn.Parameters[i].Name, (Arguments.Count <= i) ? fn.Parameters[i].Option : Arguments[i].Run(varStore, funcTable));
+			}
+			
+			return Apply(fn, child, funcTable);
         }
+		
+		private object Apply(Function fn, VariableStore child, Scope funcTable)
+		{
+			return fn.Body.Run(child, funcTable);
+		}
     }
 }

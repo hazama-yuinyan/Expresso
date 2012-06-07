@@ -17,7 +17,8 @@ namespace Expresso.BuiltIns
 		LIST,
 		DICT,
 		EXPRESSION,
-		FUNCTION
+		FUNCTION,
+		RANGE
 	};
 	
 	/// <summary>

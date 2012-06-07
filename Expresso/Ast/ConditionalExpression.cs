@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using Expresso.Interpreter;
 
 namespace Expresso.Ast
 {
@@ -44,29 +45,12 @@ namespace Expresso.Ast
             return this.Condition.GetHashCode() ^ this.TrueExpression.GetHashCode() ^ this.FalseExpression.GetHashCode();
         }
 
-        protected internal override IEnumerable<Expresso.Emulator.Instruction> Compile(Dictionary<Parameter, int> localTable, Dictionary<Function, int> addressTable, Dictionary<Function, IEnumerable<Expresso.Emulator.Instruction>> functionTable)
+        internal override object Run(VariableStore varStore, Scope funcTable)
         {
-            foreach (var instruction in this.Condition.Compile(localTable, addressTable, functionTable))
-            {
-                yield return instruction;
-            }
-
-            var t = this.TrueExpression.Compile(localTable, addressTable, functionTable);
-            var f = this.FalseExpression.Compile(localTable, addressTable, functionTable);
-
-            yield return Expresso.Emulator.Instruction.Branch(f.Count() + 1);
-
-            foreach (var instruction in f)
-            {
-                yield return instruction;
-            }
-
-            yield return Expresso.Emulator.Instruction.Jump(t.Count());
-
-            foreach (var instruction in t)
-            {
-                yield return instruction;
-            }
+            if((bool)Condition.Run(varStore, funcTable))
+				return TrueExpression.Run(varStore, funcTable);
+			else
+				return FalseExpression.Run(varStore, funcTable);
         }
     }
 }

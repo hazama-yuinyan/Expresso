@@ -73,11 +73,11 @@ namespace Expresso.Interpreter
 						return v;
 				}
 				
-				throw new EvalException("Attempt to refer to a inexsistent variable");
+				throw new EvalException("Attempt to refer to an inexsistent variable");
 			}else{
 				var v = Get (name, this);
 				if(v == null)
-					throw new EvalException("Attempt to refer to a inexsistent variable");
+					throw new EvalException("Attempt to refer to an inexsistent variable");
 				
 				return v;
 			}

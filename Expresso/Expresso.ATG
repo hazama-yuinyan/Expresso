@@ -8,7 +8,7 @@ using Expresso.Interpreter;
 COMPILER Expresso
 
 	internal Scope cur_scope = new Scope();		//the current scope of variables
-	private Scope funcs = new Scope();			//the namespace for functions
+	private Scope funcs = new Scope();			//the namespace for funcTable
 	public Block root = new Block();
 	
 	Constant CreateConstant(TYPES type)
@@ -77,7 +77,7 @@ CHARACTERS
   quotedLetter = ANY - '"' - '\''.
 
 TOKENS
-  ident  = letter {letter | digit}.
+  ident  = (letter | '_') {'_' | letter | digit}.
   integer = digit {digit}.
   float = digit {digit} "." ["e"] ["+" | "-"] digit {digit}.
   string_literal = '"' {quotedLetter} '"'.
@@ -100,12 +100,13 @@ Expresso                    (. Statement stmt; .)
   //ProgramDefinition
   FuncDecl<out stmt>		(. root.Statements.Add(stmt); .)
     
-  {  VarDecl<out stmt>		(. root.Statements.Add(stmt); .)
+  {  ExprStmt<out stmt>		(. root.Statements.Add(stmt); .)
   |  FuncDecl<out stmt>		(. root.Statements.Add(stmt); .)
   }.
 /*------------------------------------------------------------------------*/
-/*ProgramDefinition
-= RequireStat<out file_name>	(. top_level.AddExternalReference(file_name) .)*/
+/*ProgramDefinition<out Statement require>
+=
+  RequireStmt<out require>.*/
 /*------------------------------------------------------------------------*/
 Type<out TYPES type>
 =                        (. type = TYPES.UNDEF; .)
@@ -122,6 +123,7 @@ Type<out TYPES type>
  | "dictionary"			 (. type = TYPES.DICT; .)
  | "expression"			 (. type = TYPES.EXPRESSION; .)
  | "function"			 (. type = TYPES.FUNCTION; .)
+ | "range"				 (. type = TYPES.RANGE; .)
  ).
 /*------------------------------------------------------------------------*/
 Stmt<out Statement stmt>			(. stmt = null; .)
@@ -135,7 +137,8 @@ SimpleStmt<out Statement stmt>		(. stmt = null; .)
   | ExprStmt<out stmt>
   | PrintStmt<out stmt>
   | ReturnStmt<out stmt>
-  | VarDecl<out stmt>.
+  | BreakStmt<out stmt>
+  | ContinueStmt<out stmt>.
 /*------------------------------------------------------------------------*/
 PrintStmt<out Statement stmt>		(. List<Expression> exprs; .)
 =
@@ -149,6 +152,37 @@ ReturnStmt<out Statement stmt>		(. List<Expression> target_list = new List<Expre
   [RValueList<out target_list>]
   SYNC ';'							(. stmt = new Return{Expressions = target_list}; .).
 /*------------------------------------------------------------------------*/
+BreakStmt<out Statement stmt>		(. int count = 1; .)
+=
+  "break"
+  [  "upto"
+     integer						(. count = Convert.ToInt32(t.val); .)
+  ]
+  SYNC ';' 							(. stmt = new BreakStatement{Count = count}; .).
+/*------------------------------------------------------------------------*/
+ContinueStmt<out Statement stmt>	(. int count = 1; .)
+= 
+  "continue"
+  [  "upto"
+     integer						(. count = Convert.ToInt32(t.val); .)
+  ]
+  SYNC ';' 							(. stmt = new ContinueStatement{Count = count}; .).
+/*------------------------------------------------------------------------*/
+/*RequireStmt<out Statement stmt>
+=
+  "require"
+  Module<out module>
+  [  "as"
+     Name<out name>
+  ]
+  {  ','
+     Module<out module>
+     [  "as"
+        Name<out name>
+     ]
+  }
+  SYNC ';' .*/
+/*------------------------------------------------------------------------*/
 /*AugAssignOpe<TYPES type>
 =
   (  "+="					(. .)
@@ -159,19 +193,20 @@ ReturnStmt<out Statement stmt>		(. List<Expression> target_list = new List<Expre
   |  "%="
   ).*/
 /*------------------------------------------------------------------------*/
-ExprStmt<out Statement stmt>				(. List<Expression> targets; List<Expression> expr_list; stmt = null; .)
+ExprStmt<out Statement stmt>				(. List<Expression> targets = null; List<Expression> expr_list; stmt = null; .)
 =
-  RValueList<out targets>
-  {  //AugAssignOpe
-     //ExprList<out expr_list>
-  /*|*/  '='
-	 RValueList<out expr_list>				(. stmt = new Assignment{
+  (  VarDecl<out targets>
+  |  RValueList<out targets>
+    {  //AugAssignOpe
+       //ExprList<out expr_list>
+    /*|*/  '='
+	   RValueList<out expr_list>			(. stmt = new Assignment{
 													Targets = targets,
 													Expressions = expr_list
 											   };
 											.)
   }
-  SYNC ';' 									(. if(stmt == null){
+  )SYNC ';' 								(. if(stmt == null){
   											   		stmt = new ExprStatement{Expressions = targets};
   											   }
   											.).
@@ -215,17 +250,17 @@ WhileStmt<out Statement stmt>		(. Expression cond; Statement body = null; .)
   									   };
   									.).
 /*------------------------------------------------------------------------*/
-ForStmt<out Statement stmt>			(. List<Expression> expr_list, target_list; Statement body; .)
+ForStmt<out Statement stmt>			(. List<Expression> target_list; Expression rvalue; Statement body; .)
 =
   "for"
   '('
   LValueList<out target_list>
   "in"
-  RValueList<out expr_list>
+  CondExpr<out rvalue>
   ')'
   Stmt<out body>					(. stmt = new ForStatement{
   											LValues = target_list,
-  											Targets = expr_list,
+  											Target = rvalue,
   											Body = body
   									   };
   									.).
@@ -234,13 +269,13 @@ LValueList<. out List<Expression> targets .>		(. Expression tmp; .)
 =													(. targets = new List<Expression>(); .)
   AddOpe<out tmp>									(. targets.Add(tmp); .)
   { WEAK ','
-    AddOpe<out tmp>								(. targets.Add(tmp); .)
+    AddOpe<out tmp>									(. targets.Add(tmp); .)
   }
   /*[',']*/ .
 /*------------------------------------------------------------------------*/
-VarDecl<out Statement stmt> 	(. string name; TYPES type; Expression rhs = null; Parameter variable;
-								   var vars = new List<Parameter>(); var exprs = new List<Expression>();
-								.)
+VarDecl<. out List<Expression> outs .> 	(. string name; TYPES type; Expression rhs = null; Parameter variable; outs = new List<Expression>();
+								   			var vars = new List<Parameter>(); var exprs = new List<Expression>();
+										.)
 = 
   "let"							(. type = TYPES.VAR; .)
   Variable<out name>
@@ -261,27 +296,54 @@ VarDecl<out Statement stmt> 	(. string name; TYPES type; Expression rhs = null; 
   	[ '='
   	  CondExpr<out rhs>
   	]
-  } SYNC ';'			(. variable = DeclareVariable(ref rhs, name, type);
+  }						(. variable = DeclareVariable(ref rhs, name, type);
   					   	   vars.Add(variable);
   					   	   exprs.Add(rhs);
   					   
-  					   	   stmt = new VarDeclaration{
+  					   	   outs.Add(new VarDeclaration{
   					   			Variables = vars,
   					   			Expressions = exprs
-  					   	   };
+  					   	   });
   						.).
 /*------------------------------------------------------------------------*/
-FuncDecl<out Statement func>    (. string name; TYPES type; Statement block; .)
+Argument<out Argument arg>		(. string name; Expression default_val = null; TYPES type = TYPES.VAR; .)
+=
+  Variable<out name>
+  [ "(-"
+    Type<out type>
+  ]
+  [ '='
+    Literal<out default_val>
+  ]									(. Parameter param = new Parameter{Name = name, ParamType = type};
+  									   cur_scope.AddLocal(param);
+  									   arg = new Argument{
+  											Name = name,
+  											ParamType = type,
+  											Option = default_val
+  									   };
+  									.).
+/*------------------------------------------------------------------------*/
+ParamList<. out List<Argument> @params .>		(. @params = new List<Argument>(); Argument expr; .)
+=
+  [  Argument<out expr>							(. @params.Add(expr); .)
+     { ','
+       Argument<out expr>						(. @params.Add(expr); .)
+     }
+  ] .
+/*------------------------------------------------------------------------*/
+FuncDecl<out Statement func>    (. string name; TYPES type; Statement block; List<Argument>@params; .)
 =
   "def"							(. type = TYPES.VAR; block = null; .)
   ident							(. name = t.val; .)
-  '(' ')'
+  '('
+  ParamList<out @params>
+  ')'
   [  "(-"
      Type<out type>
   ]
   Block<out block> 				(. func = new Function{
   										Name = name,
-  										Parameters = new List<Parameter>(),
+  										Parameters = @params,
   										Body = (Block)block,
   										ReturnType = type
   								   };
@@ -398,19 +460,28 @@ PowerOpe<out Expression expr>    (. Expression rhs; .)
     Factor<out rhs>              (. expr = Node.Power(expr, rhs); .)
   ].
 /*------------------------------------------------------------------------*/
-Primary<out Expression expr>	(. string name = ""; expr = null; Function func; .)
+ArgList<. out List<Expression> args .>		(. args = new List<Expression>(); Expression expr; .)
+=
+  [  Primary<out expr>						(. args.Add(expr); .)
+    {  ','
+       Primary<out expr>					(. args.Add(expr); .)
+    }
+  ].
+/*------------------------------------------------------------------------*/
+Primary<out Expression expr>	(. string name = ""; expr = null; Function func; List<Expression> args; .)
 =
   (  Atom<out expr>
   |  ident						(. name = t.val; .)
   )
   {  '('
+     ArgList<out args>
      ')'						(. func = funcs.GetFunction(name);
   								   if(func == null){
   								   		SemErr("The function is not defined : " + name);
   								   }
   								   expr = new Call{
   								   		Function = func,
-  										Arguments = new List<Expression>()
+  										Arguments = args
   								   };
   						 		.)
   } .

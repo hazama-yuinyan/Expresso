@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Expresso.BuiltIns;
+using Expresso.Interpreter;
 
 namespace Expresso.Ast
 {
@@ -37,9 +38,12 @@ namespace Expresso.Ast
             return this.Name.GetHashCode();
         }
 
-        protected internal override IEnumerable<Expresso.Emulator.Instruction> Compile(Dictionary<Parameter, int> localTable, Dictionary<Function, int> addressTable, Dictionary<Function, IEnumerable<Expresso.Emulator.Instruction>> functionTable)
+        internal override object Run(VariableStore varStore, Scope funcTable)
         {
-            yield return Expresso.Emulator.Instruction.LoadLocal(localTable[this]);
+            if(varStore == null)
+				throw new EvalException("Can not find variable store");
+				
+			return varStore.Get(Name);
         }
     }
 }

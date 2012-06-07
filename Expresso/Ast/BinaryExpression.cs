@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Expresso.Interpreter;
 
 namespace Expresso.Ast
@@ -44,34 +45,131 @@ namespace Expresso.Ast
             return this.Operator.GetHashCode() ^ this.Left.GetHashCode() ^ this.Right.GetHashCode();
         }
 
-        protected internal override object Run(VariableStore localTable, Scope functions)
+        internal override object Run(VariableStore varStore, Scope funcTable)
         {
-            foreach (var instruction in this.Left.Compile(localTable, addressTable, functionTable))
-            {
-                yield return instruction;
-            }
-
-            foreach (var instruction in this.Right.Compile(localTable, addressTable, functionTable))
-            {
-                yield return instruction;
-            }
-
-            switch (this.Operator)
-            {
-			case OperatorType.PLUS: yield return Expresso.Emulator.Instruction.Add(); break;
-			case OperatorType.MINUS: yield return Expresso.Emulator.Instruction.Subtract(); break;
-			case OperatorType.TIMES: yield return Expresso.Emulator.Instruction.Multiply(); break;
-			case OperatorType.DIV: yield return Expresso.Emulator.Instruction.Divide(); break;
-			case OperatorType.LESS: yield return Expresso.Emulator.Instruction.LessThan(); break;
-			case OperatorType.LESE: yield return Expresso.Emulator.Instruction.LessEqual(); break;
-			case OperatorType.GREAT: yield return Expresso.Emulator.Instruction.GreaterThan(); break;
-			case OperatorType.GRTE: yield return Expresso.Emulator.Instruction.GreaterEqual(); break;
-			case OperatorType.EQUAL: yield return Expresso.Emulator.Instruction.Equal(); break;
-			case OperatorType.NOTEQ: yield return Expresso.Emulator.Instruction.NotEqual(); break;
-			case OperatorType.AND: yield return Expresso.Emulator.Instruction.And(); break;
-			case OperatorType.OR: yield return Expresso.Emulator.Instruction.Or(); break;
-            }
+            object first = Left.Run(varStore, funcTable), second = Right.Run(varStore, funcTable);
+			if((int)Operator <= (int)OperatorType.MOD){
+				if(first is int)
+					return BinaryExprAsInt((int)first, (int)second, Operator);
+				else
+					return BinaryExprAsDouble((double)first, (double)second, Operator);
+			}else if((int)Operator < (int)OperatorType.AND){
+				return EvalComparison(first as IComparable, second as IComparable, Operator);
+			}
+			bool lhs = (bool)first, rhs = (bool)second;
+			
+			switch (Operator) {
+			case OperatorType.AND:
+				return lhs && rhs;
+				
+			case OperatorType.OR:
+				return lhs || rhs;
+				
+			default:
+				throw new EvalException("Invalid operator type!");
+			}
         }
+		
+		private int BinaryExprAsInt(int lhs, int rhs, OperatorType opType)
+		{
+			int result;
+			
+			switch (opType) {
+			case OperatorType.PLUS:
+				result = lhs + rhs;
+				break;
+				
+			case OperatorType.MINUS:
+				result = lhs - rhs;
+				break;
+				
+			case OperatorType.TIMES:
+				result = lhs * rhs;
+				break;
+				
+			case OperatorType.DIV:
+				result = lhs / rhs;
+				break;
+				
+			case OperatorType.POWER:
+				result = (int)Math.Pow(lhs, rhs);
+				break;
+				
+			case OperatorType.MOD:
+				result = lhs % rhs;
+				break;
+				
+			default:
+				throw new EvalException("Unreachable code");
+			}
+			
+			return result;
+		}
+		
+		private double BinaryExprAsDouble(double lhs, double rhs, OperatorType opType)
+		{
+			double result;
+			
+			switch (opType) {
+			case OperatorType.PLUS:
+				result = lhs + rhs;
+				break;
+				
+			case OperatorType.MINUS:
+				result = lhs - rhs;
+				break;
+				
+			case OperatorType.TIMES:
+				result = lhs * rhs;
+				break;
+				
+			case OperatorType.DIV:
+				result = lhs / rhs;
+				break;
+				
+			case OperatorType.POWER:
+				result = Math.Pow(lhs, rhs);
+				break;
+				
+			case OperatorType.MOD:
+				result = Math.IEEERemainder(lhs, rhs);
+				break;
+				
+			default:
+				throw new EvalException("Unreachable code");
+			}
+			
+			return result;
+		}
+		
+		private bool EvalComparison(IComparable lhs, IComparable rhs, OperatorType opType)
+		{
+			if(lhs == null || rhs == null)
+				throw new EvalException("The operands can not be compared");
+			
+			switch (opType) {
+			case OperatorType.EQUAL:
+				return object.Equals(lhs, rhs);
+				
+			case OperatorType.GREAT:
+				return lhs.CompareTo(rhs) > 0;
+				
+			case OperatorType.GRTE:
+				return lhs.CompareTo(rhs) >= 0;
+				
+			case OperatorType.LESE:
+				return lhs.CompareTo(rhs) <= 0;
+				
+			case OperatorType.LESS:
+				return lhs.CompareTo(rhs) < 0;
+				
+			case OperatorType.NOTEQ:
+				return !object.Equals(lhs, rhs);
+				
+			default:
+				return false;
+			}
+		}
 		
 		public override string ToString()
 		{

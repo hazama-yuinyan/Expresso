@@ -176,17 +176,17 @@ namespace Expresso.Emulator
 		/// <param name="index">ローカル変数の番号。</param>
 		public void LoadLocal (int index)
 		{
-			var local = this.stack [this.BasePointer + index];
-			Debug.Assert (local.Usage == StackItemUsage.Local);
+			var varStore = this.stack [this.BasePointer + index];
+			Debug.Assert (varStore.Usage == StackItemUsage.Local);
 
 			this.Push (new StackItem
             {
-                Value = local.Value,
+                Value = varStore.Value,
                 Usage = StackItemUsage.Temporary,
                 NestLevel = this.NestLevel,
             });
 
-			this.LastOperation = string.Format ("Load {0}th Local Varible: {1}", index, local.Value);
+			this.LastOperation = string.Format ("Load {0}th Local Varible: {1}", index, varStore.Value);
 		}
 
 		/// <summary>
@@ -210,10 +210,10 @@ namespace Expresso.Emulator
 		/// <param name="value">値。</param>
 		private void SetLocal (int index, int value)
 		{
-			var local = this.stack [this.BasePointer + index];
-			Debug.Assert (local.Usage == StackItemUsage.Local);
+			var varStore = this.stack [this.BasePointer + index];
+			Debug.Assert (varStore.Usage == StackItemUsage.Local);
 
-			local.Value = value;
+			varStore.Value = value;
 		}
 
 		/// <summary>

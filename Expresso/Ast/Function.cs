@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Text;
 using Expresso.BuiltIns;
+using Expresso.Interpreter;
 
 namespace Expresso.Ast
 {
@@ -18,7 +19,7 @@ namespace Expresso.Ast
         /// <summary>
         /// 仮引数リスト。
         /// </summary>
-        public List<Parameter> Parameters { get; internal set; }
+        public List<Argument> Parameters { get; internal set; }
 
         /// <summary>
         /// 関数本体。
@@ -96,9 +97,10 @@ namespace Expresso.Ast
             return this.Name.GetHashCode() ^ this.Parameters.GetHashCode() ^ this.Body.GetHashCode();
         }
 
-        protected internal override IEnumerable<Expresso.Emulator.Instruction> Compile(Dictionary<Parameter, int> localTable, Dictionary<Function, int> addressTable, Dictionary<Function, IEnumerable<Expresso.Emulator.Instruction>> functionTable)
+        internal override object Run(VariableStore varStore, Scope funcTable)
         {
-            return null;
+			funcTable.AddFunction(this);
+			return null;
         }
 		
 		public override string ToString()

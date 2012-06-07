@@ -9,7 +9,8 @@ namespace Expresso.Ast
     public class Assignment : Statement
     {
         /// <summary>
-        /// 代入先の変数。
+        /// 代入先の変数郡。
+        /// The target expressions that will be bounded.
         /// </summary>
         public List<Expression> Targets { get; internal set; }
 
@@ -38,9 +39,15 @@ namespace Expresso.Ast
             return this.Targets.GetHashCode() ^ this.Expressions.GetHashCode();
         }
 
-        protected internal override object Run(VariableStore local, Scope functions)
+        internal override object Run(VariableStore varStore, Scope funcTable)
         {
-			return null;
+			object rvalue = null;
+			for (int i = 0; i < Targets.Count; ++i) {
+				Parameter lvalue = (Parameter)Targets[i];
+				rvalue = Expressions[i].Run(varStore, funcTable);
+				varStore.Assign(lvalue.Name, rvalue);
+			}
+			return rvalue;
         }
 		
 		public override string ToString()

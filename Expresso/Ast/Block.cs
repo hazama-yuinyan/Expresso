@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using Expresso.Interpreter;
 
 namespace Expresso.Ast
 {
@@ -14,6 +15,11 @@ namespace Expresso.Ast
         /// ブロックの中身の文。
         /// </summary>
         public List<Statement> Statements { get { return this.statements; } }
+
+		/// <summary>
+		/// このブロックの親のブロック。
+		/// </summary>
+		public Statement Parent{get; internal set;}
 
         /// <summary>
         /// ブロック中で定義された変数一覧。
@@ -62,30 +68,15 @@ namespace Expresso.Ast
             return max;
         }
 
-        protected internal override IEnumerable<Expresso.Emulator.Instruction> Compile(Dictionary<Parameter, int> localTable, Dictionary<Function, int> addressTable, Dictionary<Function, IEnumerable<Expresso.Emulator.Instruction>> functionTable)
+        internal override object Run(VariableStore varStore, Scope funcTable)
         {
-            var variables = this.LocalVariables;
-
-            int nArgs = Max(localTable.Values);
-            int i = nArgs;
-            foreach (var v in variables)
-            {
-                localTable.Add(v, i);
-                ++i;
-            }
-
-            if (i - nArgs != 0)
-            {
-                yield return Expresso.Emulator.Instruction.PrepareLocal(i - nArgs);
-            }
-
-            foreach (var s in this.Statements)
-            {
-                foreach (var instruction in s.Compile(localTable, addressTable, functionTable))
-                {
-                    yield return instruction;
-                }
-            }
+            object result = null;
+			
+			foreach (var stmt in Statements) {
+				result = stmt.Run(varStore, funcTable);
+			}
+			
+			return result;
         }
 		
 		public override string ToString()
