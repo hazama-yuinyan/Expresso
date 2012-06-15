@@ -68,6 +68,7 @@
     <Compile Include="Interpreter\Scope.cs" />
     <Compile Include="Ast\Argument.cs" />
     <Compile Include="Ast\ControlFlow.cs" />
+    <Compile Include="Ast\SwitchStatement.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System" />

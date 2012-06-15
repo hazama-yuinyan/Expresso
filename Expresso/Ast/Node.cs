@@ -33,7 +33,8 @@ namespace Expresso.Ast
 		AssertStatement,
 		TryStatement,
 		Initializer,
-		StatementList
+		StatementList,
+		SwitchStatement
     }
 
     /// <summary>

@@ -26,6 +26,11 @@ namespace Expresso.Ast
         EQUAL,
         NOTEQ,
         AND,
-        OR
+        OR,
+		BIT_OR,
+		BIT_AND,
+		BIT_XOR,
+		BIT_LSHIFT,
+		BIT_RSHIFT
     }
 }

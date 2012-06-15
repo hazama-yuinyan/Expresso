@@ -347,5 +347,14 @@ namespace Expresso.BuiltIns
 				_writer.Dispose();
 		}
 	}
+
+	/// <summary>
+	/// Expressoの組み込み型の一つ、Expression型。基本的にはワンライナーのクロージャーだが、
+	/// 記号演算もサポートする。
+	/// </summary>
+	public class ExpressoExpression : ExpressoObj
+	{
+
+	}
 }
 

@@ -48,4 +48,6 @@ def main()
 	let $range_obj = MakeRange();
 	for($x in $range_obj)
 		print $x;
+	
+	print "Left shift:", $w << 1;
 }

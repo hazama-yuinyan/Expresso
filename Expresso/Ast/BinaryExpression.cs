@@ -55,18 +55,10 @@ namespace Expresso.Ast
 					return BinaryExprAsDouble((double)first, (double)second, Operator);
 			}else if((int)Operator < (int)OperatorType.AND){
 				return EvalComparison(first as IComparable, second as IComparable, Operator);
-			}
-			bool lhs = (bool)first, rhs = (bool)second;
-			
-			switch (Operator) {
-			case OperatorType.AND:
-				return lhs && rhs;
-				
-			case OperatorType.OR:
-				return lhs || rhs;
-				
-			default:
-				throw new EvalException("Invalid operator type!");
+			}else if((int)Operator < (int)OperatorType.BIT_OR){
+				return EvalLogicalOperation((bool)first, (bool)second, Operator);
+			}else{
+				return EvalBitOperation((int)first, (int)second, Operator);
 			}
         }
 		
@@ -168,6 +160,43 @@ namespace Expresso.Ast
 				
 			default:
 				return false;
+			}
+		}
+
+		private bool EvalLogicalOperation(bool lhs, bool rhs, OperatorType opType)
+		{
+			switch (opType) {
+			case OperatorType.AND:
+				return lhs && rhs;
+
+			case OperatorType.OR:
+				return lhs || rhs;
+
+			default:
+				return false;
+			}
+		}
+
+		private int EvalBitOperation(int lhs, int rhs, OperatorType opType)
+		{
+			switch (opType) {
+			case OperatorType.BIT_AND:
+				return lhs & rhs;
+
+			case OperatorType.BIT_XOR:
+				return lhs ^ rhs;
+
+			case OperatorType.BIT_OR:
+				return lhs | rhs;
+
+			case OperatorType.BIT_LSHIFT:
+				return lhs << rhs;
+
+			case OperatorType.BIT_RSHIFT:
+				return lhs >> rhs;
+
+			default:
+				throw new EvalException("Invalid Operation!");
 			}
 		}
 		

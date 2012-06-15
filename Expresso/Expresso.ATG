@@ -265,6 +265,33 @@ ForStmt<out Statement stmt>			(. List<Expression> target_list; Expression rvalue
   									   };
   									.).
 /*------------------------------------------------------------------------*/
+/*SwitchStmt<out Statement stmt>		(. Statement inner; .)
+=
+  "switch"
+  '('
+  ')'
+  '{'
+  CaseLabelList
+  Stmt<out inner>
+  {  CaseLabelList
+     Stmt<out inner>
+  }
+  '}' .*/
+/*------------------------------------------------------------------------*/
+/*CaseLabelList
+=
+  CaseLabel
+  {  CaseLabel
+  }.*/
+/*------------------------------------------------------------------------*/
+/*CaseLabel
+=
+  ( "case"
+    Literal
+  | "default"
+  )
+  ':' .*/
+/*------------------------------------------------------------------------*/
 LValueList<. out List<Expression> targets .>		(. Expression tmp; .)
 =													(. targets = new List<Expression>(); .)
   AddOpe<out tmp>									(. targets.Add(tmp); .)
@@ -397,7 +424,7 @@ NotTest<out Expression expr>		(. Expression term; expr = null; .)
 /*------------------------------------------------------------------------*/
 Comparison<out Expression expr>		(. Expression rhs; OperatorType type; .)
 =
-  AddOpe<out expr>			(. type = OperatorType.EQUAL; .)
+  BitOr<out expr>			(. type = OperatorType.EQUAL; .)
   [
     ( "=="               	(. type = OperatorType.EQUAL; .)
     | "!="					(. type = OperatorType.NOTEQ; .)
@@ -406,13 +433,63 @@ Comparison<out Expression expr>		(. Expression rhs; OperatorType type; .)
     | "<="				 	(. type = OperatorType.LESE; .)
     | ">="				 	(. type = OperatorType.GRTE; .)
     )
-    AddOpe<out rhs>			(. expr = new BinaryExpression{
+    BitOr<out rhs>			(. expr = new BinaryExpression{
     								Operator = type,
     								Left = expr,
     								Right = rhs
     						   };
     						.)
   ].
+/*------------------------------------------------------------------------*/
+BitOr<out Expression expr>			(. Expression rhs; .)
+=
+  BitXor<out expr>
+  {  '|'
+     BitXor<out rhs>				(. expr = new BinaryExpression{
+     										Operator = OperatorType.BIT_OR,
+     										Left = expr,
+     										Right = rhs
+     								   };
+     								.)
+  }.
+/*------------------------------------------------------------------------*/
+BitXor<out Expression expr>			(. Expression rhs; .)
+=
+  BitAnd<out expr>
+  {  '^'
+     BitAnd<out rhs>				(. expr = new BinaryExpression{
+     										Operator = OperatorType.BIT_XOR,
+     										Left = expr,
+     										Right = rhs
+     								   };
+     								.)
+  }.
+/*------------------------------------------------------------------------*/
+BitAnd<out Expression expr>			(. Expression rhs; .)
+=
+  ShiftOpe<out expr>
+  {  '&'
+     ShiftOpe<out rhs>				(. expr = new BinaryExpression{
+     										Operator = OperatorType.BIT_AND,
+     										Left = expr,
+     										Right = rhs
+     								   };
+     								.)
+  }.
+/*------------------------------------------------------------------------*/
+ShiftOpe<out Expression expr>		(. Expression rhs; OperatorType type; .)
+=
+  AddOpe<out expr>
+  {  ( "<<" 						(. type = OperatorType.BIT_LSHIFT; .)
+     | ">>"							(. type = OperatorType.BIT_RSHIFT; .)
+     )
+     AddOpe<out rhs>				(. expr = new BinaryExpression{
+     										Operator = type,
+     										Left = expr,
+     										Right = rhs
+     								   };
+     								.)
+  }.
 /*------------------------------------------------------------------------*/
 AddOpe<out Expression expr>    (. Expression rhs; OperatorType type; .)
 = 
@@ -504,20 +581,6 @@ Atom<out Expression expr>			(. string name; expr = null; .)
     [DictMaker<out expr>]
     SYNC '}' .
 /*------------------------------------------------------------------------*/
-RangeExpr<out Expression expr>		(. int start, end, step; .)
-=
-  integer							(. start = Convert.ToInt32(t.val); end = -1; step = 1; .)
-  ".."
-  [integer]							(. end = Convert.ToInt32(t.val); .)
-  [ ':'
-    integer							(. step = Convert.ToInt32(t.val); .)
-  ]									(. expr = new RangeExpression{
-  											Start = start,
-  											End = end,
-  											Step = step
-  									   };
-  									.).
-/*------------------------------------------------------------------------*/
 TupleOrRange<out Expression expr>		(. Expression tmp; List<Expression> list = new List<Expression>(); expr = null; .)
 = IF(NotFollowedByDoubleDots())		/*For float and RangeExpr conflict.*/
   CondExpr<out tmp>						(. list.Add(tmp); .)
@@ -532,6 +595,20 @@ TupleOrRange<out Expression expr>		(. Expression tmp; List<Expression> list = ne
   										   };
   										.)
   | RangeExpr<out expr>.
+/*------------------------------------------------------------------------*/
+RangeExpr<out Expression expr>		(. int start, end, step; .)
+=
+  integer							(. start = Convert.ToInt32(t.val); end = -1; step = 1; .)
+  ".."
+  [integer]							(. end = Convert.ToInt32(t.val); .)
+  [ ':'
+    integer							(. step = Convert.ToInt32(t.val); .)
+  ]									(. expr = new RangeExpression{
+  											Start = start,
+  											End = end,
+  											Step = step
+  									   };
+  									.).
 /*------------------------------------------------------------------------*/
 ListMaker<out Expression expr>			(. Expression tmp; List<Expression> list = new List<Expression>(); .)
 =
@@ -572,19 +649,15 @@ DictMaker<out Expression expr>			(. Expression lhs, rhs; List<Expression> list =
 /*------------------------------------------------------------------------*/
 /*CompFor<out Expression expr>
 =
-  (  "for"
-  |  '|'
-  )
-  ExprList<out expr_list>
+  "for"
+  LValueList<out expr_list>
   "in"
-  TestList<out test_list>
+  ExprList<out test_list>
   [CompIter].*/
 /*------------------------------------------------------------------------*/
 /*CompIf<out Expression expr>
 =
-  (  "if"
-  |  '|'
-  )
+  "if"
   OrTest<out expr>
   [CompIter].*/
 /*------------------------------------------------------------------------*/
