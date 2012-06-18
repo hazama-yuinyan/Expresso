@@ -20,7 +20,7 @@ namespace Expresso.Interpreter
 		/// <summary>
 		/// 変数の実体を保持する辞書。
 		/// </summary>
-		private Dictionary<string, object> store = new Dictionary<string, object>();
+		private Dictionary<string, ExpressoObj> store = new Dictionary<string, ExpressoObj>();
 		
 		/// <summary>
 		/// 変数の実体をスコープに追加する。
@@ -31,9 +31,18 @@ namespace Expresso.Interpreter
 		/// <param name='obj'>
 		/// 変数の中身
 		/// </param>
-		public void Add(string name, object obj)
+		public void Add(string name, ExpressoObj obj)
 		{
 			store.Add(name, obj);
+		}
+
+		public void Add(string name, object obj)
+		{
+			ExpressoObj tmp = obj as ExpressoObj;
+			if(tmp == null)
+				throw new EvalException("Invalid object!");
+
+			Add (name, tmp);
 		}
 		
 		/// <summary>
@@ -45,7 +54,7 @@ namespace Expresso.Interpreter
 		/// <param name='obj'>
 		/// 変更先の値
 		/// </param>
-		public void Assign(string name, object obj)
+		public void Assign(string name, ExpressoObj obj)
 		{
 			store[name] = obj;
 		}

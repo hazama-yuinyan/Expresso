@@ -5,17 +5,17 @@ using Expresso.Interpreter;
 namespace Expresso.Ast
 {
 	/// <summary>
-	/// 整数の範囲をあらわす式
+	/// 整数の数列をあらわす式
 	/// </summary>
-	public class RangeExpression : Expression
+	public class IntSeqExpression : Expression
 	{
 		/// <summary>
-		/// 範囲の下限
+		/// 整数列の下限
 		/// </summary>
 		public int Start{get; internal set;}
-		
+
 		/// <summary>
-		/// 範囲の上限
+		/// 整数列の上限
 		/// </summary>
 		public int End{get; internal set;}
 		
@@ -26,12 +26,12 @@ namespace Expresso.Ast
 		
 		public override NodeType Type
         {
-            get { return NodeType.Range; }
+            get { return NodeType.Sequence; }
         }
 
         public override bool Equals(object obj)
         {
-            var x = obj as RangeExpression;
+            var x = obj as IntSeqExpression;
 
             if (x == null) return false;
 
@@ -45,7 +45,7 @@ namespace Expresso.Ast
 		
 		internal override object Run(VariableStore varStore, Scope funcTable)
 		{
-			return new ExpressoRange(Start, End, Step);
+			return new ExpressoIntegerSequence(Start, End, Step);
 		}
 	}
 }

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Expresso.BuiltIns;
 using Expresso.Interpreter;
 
 namespace Expresso.Ast
@@ -41,9 +42,9 @@ namespace Expresso.Ast
 
         internal override object Run(VariableStore varStore, Scope funcTable)
         {
-			object obj;
+			ExpressoObj obj;
 			for (int i = 0; i < Variables.Count; ++i) {
-				obj = Expressions[i].Run(varStore, funcTable);
+				obj = (ExpressoObj)Expressions[i].Run(varStore, funcTable);
 				varStore.Add(Variables[i].Name, obj);
 			}
 			return null;

@@ -1,5 +1,7 @@
 ﻿using System.Collections.Generic;
+using Expresso.BuiltIns;
 using Expresso.Interpreter;
+using Expresso.Helpers;
 
 namespace Expresso.Ast
 {
@@ -40,18 +42,20 @@ namespace Expresso.Ast
 
 		internal override object Run(VariableStore varStore, Scope funcTable)
 		{
-			object ope = Operand.Run(varStore, funcTable);
+			var ope = Operand.Run(varStore, funcTable) as ExpressoPrimitive;
+			if(ope == null)
+				throw new EvalException("Invalid object type!");
 			
 			if(Operator == OperatorType.MINUS){
-				if(ope is int)
-					return -(int)ope;
-				else if(ope is double)
-					return -(double)ope;
+				if(ImplementaionHelpers.IsOfType(ope, TYPES.INTEGER))
+					ope.Value = -(int)ope.Value;
+				else if(ImplementaionHelpers.IsOfType(ope, TYPES.FLOAT))
+					ope.Value = -(double)ope.Value;
 				else
 					throw new EvalException("The minus operator is not applicable to the operand!");
 			}
 			
-			return null;
+			return ope;
 		}
 	}
 }

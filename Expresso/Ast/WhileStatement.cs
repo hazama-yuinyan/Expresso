@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using Expresso.BuiltIns;
+using Expresso.Helpers;
 using Expresso.Interpreter;
 
 namespace Expresso.Ast
@@ -18,8 +20,6 @@ namespace Expresso.Ast
         /// 条件が真の間評価し続ける文(郡)。
         /// </summary>
         public Statement Body { get; internal set; }
-
-		bool going_to_break = false;
 
         public override NodeType Type
         {
@@ -43,13 +43,18 @@ namespace Expresso.Ast
 
         internal override object Run(VariableStore varStore, Scope funcTable)
         {
-            Nullable<bool> cond;
+            ExpressoPrimitive cond;
 			
-			while((cond = Condition.Run(varStore, funcTable) as Nullable<bool>) != null && (bool)cond){
+			while((cond = Condition.Run(varStore, funcTable) as ExpressoPrimitive) != null && (bool)cond.Value){
+				if(Body.Type == NodeType.BreakStatement)
+					break;
+				else if(Body.Type == NodeType.ContinueStatement)
+					continue;
+
 				Body.Run(varStore, funcTable);
 			}
 			
-			if(cond == null)
+			if(!ImplementaionHelpers.IsOfType(cond, TYPES.BOOL))
 				throw new EvalException("Invalid expression! The condition of a while statement must yields a boolean!");
 			
 			return null;

@@ -7,18 +7,24 @@ namespace Expresso.Ast
 {
     /// <summary>
     /// 定数。
+	/// Represents a constant.
     /// </summary>
     /// <remarks>
     /// 今作ってる言語だと、直定数しかないけども。
     /// </remarks>
     public class Constant : Expression
     {
+		/// <summary>
+		/// この定数値の型。
+		/// The type of this constant.
+		/// </summary>
 		public TYPES ValType{get; internal set;}
 		
         /// <summary>
         /// 定数の値。
+		/// The value.
         /// </summary>
-        public ExpressoPrimitive Value{get; internal set;}
+        public object Value{get; internal set;}
 
         public override NodeType Type
         {
@@ -41,7 +47,7 @@ namespace Expresso.Ast
 
         internal override object Run(VariableStore varStore, Scope funcTable)
         {
-			return Value.Value;
+			return new ExpressoPrimitive{Value = Value, Type = ValType};
         }
     }
 }

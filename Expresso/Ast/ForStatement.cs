@@ -37,8 +37,6 @@ namespace Expresso.Ast
         /// </summary>
         public Statement Body { get; internal set; }
 
-		bool going_to_break = false;
-
         public override NodeType Type
         {
             get { return NodeType.ForStatement; }
@@ -67,11 +65,6 @@ namespace Expresso.Ast
 			return block.Parent;
 		}*/
 
-		public void SetGoingToBreak()
-		{
-			going_to_break = true;
-		}
-
         internal override object Run(VariableStore varStore, Scope funcTable)
         {
             IEnumerable iterable = Target.Run(varStore, funcTable) as IEnumerable;
@@ -87,11 +80,13 @@ namespace Expresso.Ast
 			var enumerator = iterable.GetEnumerator();
 			while (true) {
 				foreach (var lvalue in lvalues) {
-					var val = enumerator.Current;
+					var val = (ExpressoObj)enumerator.Current;
 					varStore.Assign(lvalue.Name, val);
 				}
-				if(going_to_break || !enumerator.MoveNext())
+				if(Body.Type == NodeType.BreakStatement || !enumerator.MoveNext())
 					break;
+				else if(Body.Type == NodeType.ContinueStatement)
+					continue;
 
 				Body.Run(varStore, funcTable);
 			}

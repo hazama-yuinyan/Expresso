@@ -7,6 +7,10 @@ namespace Expresso.Interpreter
 		public EvalException (string msg) : base(msg)
 		{
 		}
+
+		public EvalException(string format, params object[] objs) : base(string.Format(format, objs))
+		{
+		}
 	}
 }
 

@@ -1,15 +1,17 @@
 using System;
 using System.Collections.Generic;
+using Expresso.Helpers;
 
 namespace Expresso.BuiltIns
 {
 	/// <summary>
 	/// Expressoの組み込み関数郡。
+	/// The built-in functions for Expresso.
 	/// </summary>
 	public static class ExpressoFunctions
 	{
 		#region Expressoの組み込み関数郡
-		public static List<object> Take(ExpressoRange range, int count)
+		public static ExpressoList Take(ExpressoIntegerSequence range, int count)
 		{
 			return range.Take(count);
 		}
@@ -26,14 +28,14 @@ namespace Expresso.BuiltIns
 			return new ExpressoTuple(objs);
 		}
 		
-		public static ExpressoList MakeList(List<object> objs)
+		public static ExpressoList MakeList(List<ExpressoObj> objs)
 		{
 			return new ExpressoList{Contents = objs};
 		}
 		
-		public static ExpressoDict MakeDict(List<ExpressoObj> keys, List<object> values, int count)
+		public static ExpressoDict MakeDict(List<ExpressoObj> keys, List<ExpressoObj> values, int count)
 		{
-			Dictionary<ExpressoObj, object> tmp = new Dictionary<ExpressoObj, object>(count);
+			var tmp = new Dictionary<ExpressoObj, ExpressoObj>(count);
 			for (int i = 0; i < count; ++i) {
 				tmp.Add(keys[i], values[i]);
 			}

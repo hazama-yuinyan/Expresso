@@ -67,6 +67,21 @@ COMPILER Expresso
  		return variable;
 	}
 	
+	static UnaryExpression UnaryExpr(OperatorType op, Expression operand)
+	{
+		return new UnaryExpression{Operator = op, Operand = operand};
+	}
+	
+	static BinaryExpression BinaryExpr(OperatorType op, Expression lhs, Expression rhs)
+	{
+		return new BinaryExpression{Operator = op, Left = lhs, Right = rhs};
+	}
+	
+	static ObjectInitializer ObjInitializer(TYPES type, List<Expression> initializeList)
+	{
+		return new ObjectInitializer{InitializeList = initializeList, ObjType = type};
+	}
+	
 /*--------------------------------------------------------------------------*/
 CHARACTERS
   letter = 'A'..'Z' + 'a'..'z'.
@@ -123,7 +138,7 @@ Type<out TYPES type>
  | "dictionary"			 (. type = TYPES.DICT; .)
  | "expression"			 (. type = TYPES.EXPRESSION; .)
  | "function"			 (. type = TYPES.FUNCTION; .)
- | "range"				 (. type = TYPES.RANGE; .)
+ | "int_seq"			 (. type = TYPES.SEQ; .)
  ).
 /*------------------------------------------------------------------------*/
 Stmt<out Statement stmt>			(. stmt = null; .)
@@ -404,7 +419,7 @@ OrTest<out Expression expr>			(. Expression rhs; .)
   AndTest<out expr>
   {
     "or"
-    AndTest<out rhs>				(. expr = Node.Or(expr, rhs); .)
+    AndTest<out rhs>				(. expr = BinaryExpr(OperatorType.OR, expr, rhs); .)
   }.
 /*------------------------------------------------------------------------*/
 AndTest<out Expression expr>		(. Expression rhs; .)
@@ -412,13 +427,13 @@ AndTest<out Expression expr>		(. Expression rhs; .)
   NotTest<out expr>
   {
     "and"
-    NotTest<out rhs>				(. expr = Node.And(expr, rhs); .)
+    NotTest<out rhs>				(. expr = BinaryExpr(OperatorType.AND, expr, rhs); .)
   }.
 /*------------------------------------------------------------------------*/
 NotTest<out Expression expr>		(. Expression term; expr = null; .)
 =
   ( "not"
-    NotTest<out term>				(. expr = Node.Negate(term); .)
+    NotTest<out term>				(. expr = UnaryExpr(OperatorType.MINUS, term); .)
   | Comparison<out expr>
   ).
 /*------------------------------------------------------------------------*/
@@ -433,48 +448,28 @@ Comparison<out Expression expr>		(. Expression rhs; OperatorType type; .)
     | "<="				 	(. type = OperatorType.LESE; .)
     | ">="				 	(. type = OperatorType.GRTE; .)
     )
-    BitOr<out rhs>			(. expr = new BinaryExpression{
-    								Operator = type,
-    								Left = expr,
-    								Right = rhs
-    						   };
-    						.)
+    BitOr<out rhs>			(. expr = BinaryExpr(type, expr, rhs); .)
   ].
 /*------------------------------------------------------------------------*/
 BitOr<out Expression expr>			(. Expression rhs; .)
 =
   BitXor<out expr>
   {  '|'
-     BitXor<out rhs>				(. expr = new BinaryExpression{
-     										Operator = OperatorType.BIT_OR,
-     										Left = expr,
-     										Right = rhs
-     								   };
-     								.)
+     BitXor<out rhs>				(. expr = BinaryExpr(OperatorType.BIT_OR, expr, rhs); .)
   }.
 /*------------------------------------------------------------------------*/
 BitXor<out Expression expr>			(. Expression rhs; .)
 =
   BitAnd<out expr>
   {  '^'
-     BitAnd<out rhs>				(. expr = new BinaryExpression{
-     										Operator = OperatorType.BIT_XOR,
-     										Left = expr,
-     										Right = rhs
-     								   };
-     								.)
+     BitAnd<out rhs>				(. expr = BinaryExpr(OperatorType.BIT_XOR, expr, rhs); .)
   }.
 /*------------------------------------------------------------------------*/
 BitAnd<out Expression expr>			(. Expression rhs; .)
 =
   ShiftOpe<out expr>
   {  '&'
-     ShiftOpe<out rhs>				(. expr = new BinaryExpression{
-     										Operator = OperatorType.BIT_AND,
-     										Left = expr,
-     										Right = rhs
-     								   };
-     								.)
+     ShiftOpe<out rhs>				(. expr = BinaryExpr(OperatorType.BIT_AND, expr, rhs); .)
   }.
 /*------------------------------------------------------------------------*/
 ShiftOpe<out Expression expr>		(. Expression rhs; OperatorType type; .)
@@ -483,12 +478,7 @@ ShiftOpe<out Expression expr>		(. Expression rhs; OperatorType type; .)
   {  ( "<<" 						(. type = OperatorType.BIT_LSHIFT; .)
      | ">>"							(. type = OperatorType.BIT_RSHIFT; .)
      )
-     AddOpe<out rhs>				(. expr = new BinaryExpression{
-     										Operator = type,
-     										Left = expr,
-     										Right = rhs
-     								   };
-     								.)
+     AddOpe<out rhs>				(. expr = BinaryExpr(type, expr, rhs); .)
   }.
 /*------------------------------------------------------------------------*/
 AddOpe<out Expression expr>    (. Expression rhs; OperatorType type; .)
@@ -498,28 +488,18 @@ AddOpe<out Expression expr>    (. Expression rhs; OperatorType type; .)
     ( '+'							(. type = OperatorType.PLUS; .)
     | '-'							(. type = OperatorType.MINUS; .)
     )
-    Term<out rhs>					(. expr = new BinaryExpression{
-    										Operator = type,
-    										Left = expr,
-    										Right = rhs
-    							   	   };
-    							   	.)
+    Term<out rhs>					(. expr = BinaryExpr(type, expr, rhs); .)
   }.
 /*------------------------------------------------------------------------*/
 Term<out Expression expr>   (. Expression rhs; OperatorType type; .)
 = 
   Factor<out expr>
   {
-    ( '*'						(. type = OperatorType.TIMES; .)
-    | '/'						(. type = OperatorType.DIV; .)
-    | '%'						(. type = OperatorType.MOD; .)
+    ( '*'					(. type = OperatorType.TIMES; .)
+    | '/'					(. type = OperatorType.DIV; .)
+    | '%'					(. type = OperatorType.MOD; .)
     )
-    Factor<out rhs>				(. expr = new BinaryExpression{
-    									Operator = type,
-    									Left = expr,
-    									Right = rhs
-    							   }; 
-    							.)
+    Factor<out rhs>			(. expr = BinaryExpr(type, expr, rhs); .)
   }.
 /*------------------------------------------------------------------------*/
 Factor<out Expression expr> (. OperatorType type; Expression factor; expr = null; .)
@@ -528,31 +508,28 @@ Factor<out Expression expr> (. OperatorType type; Expression factor; expr = null
   | ( '-' 					(. type = OperatorType.MINUS; .)
     | '+'			 		(. type = OperatorType.PLUS; .)
     )
-  Factor<out factor>	 	(. expr = Node.Unary(type, factor); .).
+  Factor<out factor>	 	(. expr = UnaryExpr(type, factor); .).
 /*------------------------------------------------------------------------*/
 PowerOpe<out Expression expr>    (. Expression rhs; .)
 = 
   Primary<out expr>
   [ "**"
-    Factor<out rhs>              (. expr = Node.Power(expr, rhs); .)
+    Factor<out rhs>              (. expr = BinaryExpr(OperatorType.POWER, expr, rhs); .)
   ].
 /*------------------------------------------------------------------------*/
-ArgList<. out List<Expression> args .>		(. args = new List<Expression>(); Expression expr; .)
-=
-  [  Primary<out expr>						(. args.Add(expr); .)
-    {  ','
-       Primary<out expr>					(. args.Add(expr); .)
-    }
-  ].
-/*------------------------------------------------------------------------*/
-Primary<out Expression expr>	(. string name = ""; expr = null; Function func; List<Expression> args; .)
+Primary<out Expression expr>	(. string name = ""; expr = null; .)
 =
   (  Atom<out expr>
   |  ident						(. name = t.val; .)
   )
-  {  '('
-     ArgList<out args>
-     ')'						(. func = funcs.GetFunction(name);
+  {  Trailer<ref expr, name>
+  }.
+/*------------------------------------------------------------------------*/
+Trailer<ref Expression expr, string name>	(. Function func; List<Expression> args; Expression subscript; .)
+=
+  '('
+  ArgList<out args>
+  ')'							(. func = funcs.GetFunction(name);
   								   if(func == null){
   								   		SemErr("The function is not defined : " + name);
   								   }
@@ -561,7 +538,36 @@ Primary<out Expression expr>	(. string name = ""; expr = null; Function func; Li
   										Arguments = args
   								   };
   						 		.)
-  } .
+  |  '['
+     Subscript<out subscript>
+     ']'						(. expr = new MemberReference{
+     									Parent = expr,
+     									Subscription = subscript
+     							   };
+     							.)
+  |  '.'
+     ident						(. subscript = new Parameter{
+     									Name = t.val,
+     									ParamType = TYPES.SUBSCRIPT
+     							   };
+     							   expr = new MemberReference{
+     							   		Parent = expr,
+     							   		Subscription = subscript
+     							   };
+     							.).
+/*------------------------------------------------------------------------*/
+Subscript<out Expression subscript>	(. subscript = null; .)
+= IF(NotFollowedByDoubleDots())		/* For float and IntSeqExpr confilct.*/
+  CondExpr<out subscript>
+  |  IntSeqExpr<out subscript>.
+/*------------------------------------------------------------------------*/
+ArgList<. out List<Expression> args .>		(. args = new List<Expression>(); Expression expr; .)
+=
+  [  Primary<out expr>						(. args.Add(expr); .)
+    {  ','
+       Primary<out expr>					(. args.Add(expr); .)
+    }
+  ].
 /*------------------------------------------------------------------------*/
 Atom<out Expression expr>			(. string name; expr = null; .)
 =
@@ -572,7 +578,7 @@ Atom<out Expression expr>			(. string name; expr = null; .)
   									.)
   | Literal<out expr>
   | '('
-    [TupleOrRange<out expr>]
+    [TupleOrSeq<out expr>]
     SYNC ')'
   | '['
     [ListMaker<out expr>]
@@ -581,29 +587,25 @@ Atom<out Expression expr>			(. string name; expr = null; .)
     [DictMaker<out expr>]
     SYNC '}' .
 /*------------------------------------------------------------------------*/
-TupleOrRange<out Expression expr>		(. Expression tmp; List<Expression> list = new List<Expression>(); expr = null; .)
-= IF(NotFollowedByDoubleDots())		/*For float and RangeExpr conflict.*/
+TupleOrSeq<out Expression expr>			(. Expression tmp; List<Expression> list = new List<Expression>(); expr = null; .)
+= IF(NotFollowedByDoubleDots())			/*For float and IntSeqExpr conflict.*/
   CondExpr<out tmp>						(. list.Add(tmp); .)
   (  //CompFor<out comp_expr>
   /*|*/  {  ','
         CondExpr<out tmp>				(. list.Add(tmp); .)
      }
      /*[',']*/
-  )										(. expr = new ObjectInitializer{
-  												InitializeList = list,
-  												ObjType = TYPES.TUPLE
-  										   };
-  										.)
-  | RangeExpr<out expr>.
+  )										(. expr = ObjInitializer(TYPES.TUPLE, list); .)
+  | IntSeqExpr<out expr>.
 /*------------------------------------------------------------------------*/
-RangeExpr<out Expression expr>		(. int start, end, step; .)
+IntSeqExpr<out Expression expr>		(. int start, end, step; .)
 =
   integer							(. start = Convert.ToInt32(t.val); end = -1; step = 1; .)
   ".."
   [integer]							(. end = Convert.ToInt32(t.val); .)
   [ ':'
     integer							(. step = Convert.ToInt32(t.val); .)
-  ]									(. expr = new RangeExpression{
+  ]									(. expr = new IntSeqExpression{
   											Start = start,
   											End = end,
   											Step = step
@@ -613,16 +615,12 @@ RangeExpr<out Expression expr>		(. int start, end, step; .)
 ListMaker<out Expression expr>			(. Expression tmp; List<Expression> list = new List<Expression>(); .)
 =
   CondExpr<out tmp>						(. list.Add(tmp); .)
-  (
-    {  ','
+  ( CompFor<out tmp>
+  | {  ','
        CondExpr<out tmp>				(. list.Add(tmp); .)
     }
     /*[',']*/
-  )										(. expr = new ObjectInitializer{
-  												InitializeList = list,
-  												ObjType = TYPES.LIST
-  										   };
-  										.).
+  )										(. expr = ObjInitializer(TYPES.LIST, list); .).
 /*------------------------------------------------------------------------*/
 DictMaker<out Expression expr>			(. Expression lhs, rhs; List<Expression> list = new List<Expression>(); .)
 =
@@ -636,30 +634,26 @@ DictMaker<out Expression expr>			(. Expression lhs, rhs; List<Expression> list =
        CondExpr<out rhs>				(. list.Add(rhs); .)
     }
     /*[',']*/
-  )										(. expr = new ObjectInitializer{
-  												InitializeList = list,
-  												ObjType = TYPES.DICT
-  										   };
-  										.).
+  )										(. expr = ObjInitializer(TYPES.DICT, list); .).
 /*------------------------------------------------------------------------*/
-/*CompIter<out Expression expr>
+CompIter<out Expression expr>
 =
   CompFor<out expr>
-  |  CompIf<out expr> .*/
+  |  CompIf<out expr> .
 /*------------------------------------------------------------------------*/
-/*CompFor<out Expression expr>
+CompFor<out Expression expr>
 =
   "for"
   LValueList<out expr_list>
   "in"
   ExprList<out test_list>
-  [CompIter].*/
+  [CompIter].
 /*------------------------------------------------------------------------*/
-/*CompIf<out Expression expr>
+CompIf<out Expression expr>
 =
   "if"
   OrTest<out expr>
-  [CompIter].*/
+  [CompIter].
 /*------------------------------------------------------------------------*/
 Variable<out string name>
 = WEAK '$'
@@ -668,27 +662,32 @@ Variable<out string name>
 Literal<out Expression expr>	(. expr = null; .)
 =
   integer				(. expr = new Constant{
-							ValType = TYPES.INTEGER,
-							Value = new ExpressoPrimitive{Value = Convert.ToInt32(t.val)}
-						};
+								ValType = TYPES.INTEGER,
+								Value = Convert.ToInt32(t.val)
+						   };
 						.)
   |  float				(. expr = new Constant{
-  							ValType = TYPES.FLOAT,
-  							Value = new ExpressoPrimitive{Value = Convert.ToDouble(t.val)}
-  						};
+  								ValType = TYPES.FLOAT,
+  								Value = Convert.ToDouble(t.val)
+  						   };
   						.)
   |  string_literal		(. string tmp = t.val;
   						   tmp = tmp.Substring(1, tmp.Length - 2);
   						   expr = new Constant{
   						   		ValType = TYPES.STRING,
-  						   		Value = new ExpressoPrimitive{Value = tmp}
+  						   		Value = tmp
   						   };
   						.)
   |  (  "true"				
   	 |  "false"
   	 )					(. expr = new Constant{
   								ValType = TYPES.BOOL,
-  								Value = new ExpressoPrimitive{Value = Convert.ToBoolean(t.val)}
+  								Value = Convert.ToBoolean(t.val)
+  						   };
+  						.)
+  |  "null"				(. expr = new Constant{
+  								ValType = TYPES.NULL,
+  								Value = null
   						   };
   						.).
 /*------------------------------------------------------------------------*/

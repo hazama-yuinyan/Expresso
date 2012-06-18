@@ -51,7 +51,6 @@
     <Compile Include="VM\StackItem.cs" />
     <Compile Include="Interpreter\Interpreter.cs" />
     <Compile Include="Ast\Print.cs" />
-    <Compile Include="Ast\Range.cs" />
     <Compile Include="BuiltIns\ExpressoObj.cs" />
     <Compile Include="BuiltIns\Primitives.cs" />
     <Compile Include="Parser.cs" />
@@ -69,6 +68,11 @@
     <Compile Include="Ast\Argument.cs" />
     <Compile Include="Ast\ControlFlow.cs" />
     <Compile Include="Ast\SwitchStatement.cs" />
+    <Compile Include="BuiltIns\ImplementaionHelpers.cs" />
+    <Compile Include="Ast\IntegerSequence.cs" />
+    <Compile Include="Ast\MemberReference.cs" />
+    <Compile Include="Ast\Comprehension.cs" />
+    <Compile Include="Ast\RValueExpressions.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System" />

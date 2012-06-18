@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Expresso.BuiltIns;
 using Expresso.Interpreter;
 
 namespace Expresso.Ast
@@ -47,18 +48,21 @@ namespace Expresso.Ast
 
         internal override object Run(VariableStore varStore, Scope funcTable)
         {
-            object first = Left.Run(varStore, funcTable), second = Right.Run(varStore, funcTable);
+            ExpressoPrimitive first = Left.Run(varStore, funcTable) as ExpressoPrimitive, second = Right.Run(varStore, funcTable) as ExpressoPrimitive;
+			if(first == null || second == null)
+				throw new EvalException("Can not apply the operation to non-primitive types.");
+
 			if((int)Operator <= (int)OperatorType.MOD){
-				if(first is int)
-					return BinaryExprAsInt((int)first, (int)second, Operator);
+				if(first.Value is int)
+					return new ExpressoPrimitive{Value = BinaryExprAsInt((int)first.Value, (int)second.Value, Operator), Type = TYPES.INTEGER};
 				else
-					return BinaryExprAsDouble((double)first, (double)second, Operator);
+					return new ExpressoPrimitive{Value = BinaryExprAsDouble((double)first.Value, (double)second.Value, Operator), Type = TYPES.FLOAT};
 			}else if((int)Operator < (int)OperatorType.AND){
-				return EvalComparison(first as IComparable, second as IComparable, Operator);
+				return new ExpressoPrimitive{Value = EvalComparison(first.Value as IComparable, second.Value as IComparable, Operator), Type = TYPES.BOOL};
 			}else if((int)Operator < (int)OperatorType.BIT_OR){
-				return EvalLogicalOperation((bool)first, (bool)second, Operator);
+				return new ExpressoPrimitive{Value = EvalLogicalOperation((bool)first.Value, (bool)second.Value, Operator), Type = TYPES.BOOL};
 			}else{
-				return EvalBitOperation((int)first, (int)second, Operator);
+				return new ExpressoPrimitive{Value = EvalBitOperation((int)first.Value, (int)second.Value, Operator), Type = TYPES.INTEGER};
 			}
         }
 		

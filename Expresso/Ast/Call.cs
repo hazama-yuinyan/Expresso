@@ -38,7 +38,7 @@ namespace Expresso.Ast
 
             if (this.Arguments.Count != x.Arguments.Count) return false;
 
-            for (int i = 0; i < this.Arguments.Count; i++)
+            for (int i = 0; i < this.Arguments.Count; ++i)
             {
                 if (!this.Arguments[i].Equals(x.Arguments[i])) return false;
             }
@@ -55,8 +55,8 @@ namespace Expresso.Ast
         {
             Function fn = Function;
 			var child = new VariableStore{Parent = varStore};
-			for (int i = 0; i < Arguments.Count; ++i) {
-				child.Add(fn.Parameters[i].Name, (Arguments.Count <= i) ? fn.Parameters[i].Option : Arguments[i].Run(varStore, funcTable));
+			for (int i = 0; i < Arguments.Count; ++i) {	//実引数をローカル変数として変数テーブルに追加する
+				child.Add(fn.Parameters[i].Name, (Arguments.Count <= i) ? fn.Parameters[i].Option.Run(varStore, funcTable) : Arguments[i].Run(varStore, funcTable));
 			}
 			
 			return Apply(fn, child, funcTable);

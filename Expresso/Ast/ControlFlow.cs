@@ -36,14 +36,6 @@ namespace Expresso.Ast
 
         internal override object Run(VariableStore varStore, Scope funcTable)
         {
-            /*var for_stmt = Enclosing as ForStatement;
-			if(for_stmt == null){
-				var while_stmt = Enclosing as WhileStatement;
-				if(while_stmt == null)
-					throw new EvalException("Something wrong has occurred! This \"break\" statement might be in a non-brekable block.");
-
-				while_stmt
-			}*/
 			return null;
         }
 	}

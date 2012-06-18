@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Expresso.BuiltIns;
 using Expresso.Interpreter;
 
 namespace Expresso.Ast
@@ -16,6 +17,7 @@ namespace Expresso.Ast
 
         /// <summary>
         /// 右辺値の式。
+		/// The expressions that will be assigned.
         /// </summary>
         public List<Expression> Expressions { get; internal set; }
 
@@ -41,13 +43,16 @@ namespace Expresso.Ast
 
         internal override object Run(VariableStore varStore, Scope funcTable)
         {
-			object rvalue = null;
-			for (int i = 0; i < Targets.Count; ++i) {
+			int i;
+			var rvalues = new List<ExpressoObj>();
+			for(i = 0; i < Expressions.Count; ++i)	//まず右辺をすべて評価する
+				rvalues.Add((ExpressoObj)Expressions[i].Run(varStore, funcTable));
+
+			for (i = 0; i < Targets.Count; ++i) {	//その後左辺値に代入する
 				Parameter lvalue = (Parameter)Targets[i];
-				rvalue = Expressions[i].Run(varStore, funcTable);
-				varStore.Assign(lvalue.Name, rvalue);
+				varStore.Assign(lvalue.Name, rvalues[i]);
 			}
-			return rvalue;
+			return rvalues;
         }
 		
 		public override string ToString()

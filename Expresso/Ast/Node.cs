@@ -22,7 +22,11 @@ namespace Expresso.Ast
         Function,
         Return,
 		Print,
-		Range,
+		Sequence,
+		RValue,
+		MemRef,
+		ComprehensionFor,
+		ComprehensionIf,
 		VarDecl,
 		ExprStatement,
 		IfStatement,
@@ -79,50 +83,6 @@ namespace Expresso.Ast
         internal abstract object Run(
             VariableStore varStore,
             Scope funcTable);
-
-        #endregion
-        #region 生成関数群
-
-        public static Parameter Parameter(string name, TYPES type)
-        {
-            return new Parameter {Name = name, ParamType = type};
-        }
-		
-		public static UnaryExpression Negate(Expression expr)
-		{
-			return Unary(OperatorType.MINUS, expr);
-		}
-
-        public static UnaryExpression Unary(OperatorType op, Expression ex)
-        {
-            return new UnaryExpression { Operator = op, Operand = ex};
-        }
-
-        static BinaryExpression Binary(OperatorType op, Expression l, Expression r)
-        {
-            return new BinaryExpression { Operator = op, Left = l, Right = r };
-        }
-
-        public static BinaryExpression Add(Expression l, Expression r) { return Binary(OperatorType.PLUS, l, r); }
-        public static BinaryExpression Subtract(Expression l, Expression r) { return Binary(OperatorType.MINUS, l, r); }
-        public static BinaryExpression Multiply(Expression l, Expression r) { return Binary(OperatorType.TIMES, l, r); }
-        public static BinaryExpression Divide(Expression l, Expression r) { return Binary(OperatorType.DIV, l, r); }
-		public static BinaryExpression Power(Expression l, Expression r){return Binary(OperatorType.POWER, l, r);}
-        public static BinaryExpression LessThan(Expression l, Expression r) { return Binary(OperatorType.LESS, l, r); }
-        public static BinaryExpression LessEqual(Expression l, Expression r) { return Binary(OperatorType.LESE, l, r); }
-        public static BinaryExpression GreaterThan(Expression l, Expression r) { return Binary(OperatorType.GREAT, l, r); }
-        public static BinaryExpression GreaterEqual(Expression l, Expression r) { return Binary(OperatorType.GRTE, l, r); }
-        public static BinaryExpression Equal(Expression l, Expression r) { return Binary(OperatorType.EQUAL, l, r); }
-        public static BinaryExpression NotEqual(Expression l, Expression r) { return Binary(OperatorType.NOTEQ, l, r); }
-        public static BinaryExpression And(Expression l, Expression r) { return Binary(OperatorType.AND, l, r); }
-        public static BinaryExpression Or(Expression l, Expression r) { return Binary(OperatorType.OR, l, r); }
-
-        public static Block Block(params Statement[] statements)
-        {
-            var block = new Block();
-            block.Statements.AddRange(statements);
-            return block;
-        }
 
         #endregion
     }

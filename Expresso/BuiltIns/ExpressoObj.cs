@@ -5,6 +5,7 @@ namespace Expresso.BuiltIns
 	public enum TYPES // types
 	{
 		UNDEF = 0,
+		NULL,
 		INTEGER,
 		BOOL,
 		FLOAT,
@@ -18,7 +19,9 @@ namespace Expresso.BuiltIns
 		DICT,
 		EXPRESSION,
 		FUNCTION,
-		RANGE
+		SEQ,
+		ARRAY,
+		SUBSCRIPT
 	};
 	
 	/// <summary>
@@ -26,10 +29,16 @@ namespace Expresso.BuiltIns
 	/// </summary>
 	public abstract class ExpressoObj
 	{
-		public TYPES Type{get; internal set;}
-		
-		public ExpressoObj ()
+		public virtual TYPES Type{
+			get{
+				return TYPES.UNDEF;
+			}
+			internal set{}
+		}
+
+		public virtual ExpressoObj AccessMember(ExpressoObj subscription)
 		{
+			throw new NotImplementedException();
 		}
 	}
 }

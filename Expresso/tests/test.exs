@@ -22,18 +22,35 @@ def MakeRange()
 	return (1..5);
 }
 
+def MakeDict()
+{
+	return {"あかり" : 13, "京子" : 14, "結衣" : 14, "ちなつ" : 13};
+}
+
+def MakeTuple()
+{
+	return "あかりちゃん", "かわいいよ、あかりちゃん", 130;
+}
+
+def PrintList($input)
+{
+	let $tmp = null;
+	for($tmp in (0..5))
+		print $tmp + 1, "番目の項目:", $input[$tmp];
+}
+
 def main()
 {
 	let $x = 0, $y = 1;
 	$x = $x + 5;
 	let $z = $x * $y - 1;
-	print $x, $y, $z;
+	print "(x, y, z) = ", $x, $y, $z;
 	let $w (- int;
 	$w, $y = $x, $z;
 	let $str = "This is a test. blah blah...", $str2 = "これはテストです。あーあー";
 	let $flag = true;
 	PrintInt(100);
-	print $x, $y, $z, $w;
+	print "(x, y, z, w) = ", $x, $y, $z, $w;
 	print $str, $str2;
 	print $flag;
 	if($flag){
@@ -46,8 +63,16 @@ def main()
 	}
 	let $list_obj = MakeList();
 	let $range_obj = MakeRange();
+	let $dict_obj = MakeDict();
+	let $tuple_obj = MakeTuple(), $tuple_obj2 = ("あかりちゃん", "ちなつちゃん", 2424);
+	let $item = null;
 	for($x in $range_obj)
 		print $x;
 	
+	/*for($item in $dict_obj)
+		print $item;*/
+	
+	PrintList($list_obj);
 	print "Left shift:", $w << 1;
+	print "$x + 1 + 3 * 2 = ", $x + 1 + 3 * 2;
 }

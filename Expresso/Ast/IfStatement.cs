@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using Expresso.BuiltIns;
+using Expresso.Helpers;
 using Expresso.Interpreter;
 
 namespace Expresso.Ast
@@ -47,16 +49,14 @@ namespace Expresso.Ast
 
         internal override object Run(VariableStore varStore, Scope funcTable)
         {
-            Nullable<bool> cond = Condition.Run(varStore, funcTable) as Nullable<bool>;
-			if(cond == null)
+            var cond = Condition.Run(varStore, funcTable) as ExpressoPrimitive;
+			if(!ImplementaionHelpers.IsOfType(cond, TYPES.BOOL))
 				throw new EvalException("Invalid expression! The condition of an if statement must yields a boolean!");
 			
-			if((bool)cond)
-				TrueBlock.Run(new VariableStore{Parent = varStore}, funcTable);
+			if((bool)cond.Value)
+				return TrueBlock.Run(new VariableStore{Parent = varStore}, funcTable);
 			else
-				FalseBlock.Run(new VariableStore{Parent = varStore}, funcTable);
-			
-			return null;
+				return FalseBlock.Run(new VariableStore{Parent = varStore}, funcTable);
         }
 	}
 }
