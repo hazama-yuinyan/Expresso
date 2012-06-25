@@ -15,7 +15,23 @@ namespace Expresso.BuiltIns
 	{
 		public object Value{get; internal set;}
 
+		/// <summary>
+		/// The type of the stored value.
+		/// </summary>
 		public override TYPES Type{get; internal set;}
+
+		public override bool Equals(object obj)
+		{
+			var other = obj as ExpressoPrimitive;
+			if(other == null) return false;
+
+			return Type == other.Type && Value.Equals(other.Value);
+		}
+
+		public override int GetHashCode()
+		{
+			return Value.GetHashCode();
+		}
 
 		public override string ToString()
 		{
@@ -28,9 +44,9 @@ namespace Expresso.BuiltIns
 	/// Expresso組み込みのIntSeqオブジェクト。
 	/// The IntSeq object, which represents a sequence of integers.
 	/// As such, it can be used like the "slice" operation in Python.
-	/// I mean, we have some sequence named "seq" and an expression like "seq[1..5]"
+	/// I mean, we have some sequence named <c>seq</c> and an expression like <c>seq[1..5]</c>
 	/// returns a new sequence which holds the elements from #1 to #5 of the original sequence
-	/// ("seq" this time).
+	/// (<c>seq</c> this time).
 	/// </summary>
 	public class ExpressoIntegerSequence : ExpressoObj, IEnumerable<ExpressoPrimitive>, SequenceGenerator<ExpressoList, ExpressoPrimitive>
 	{
@@ -43,6 +59,7 @@ namespace Expresso.BuiltIns
 		/// <summary>
 		/// 数列の終点。-1のときは無限リストを生成する。
 		/// The upper bound. When set to -1, it generates a infinite series of list.
+		/// Note that the upper bound will not be included in the resulting sequence.
 		/// </summary>
 		private int _end;
 		
@@ -184,26 +201,31 @@ namespace Expresso.BuiltIns
 
 	/// <summary>
 	/// Expressoのコンテナ型のベースクラス。
+	/// The base class for Expresso's container classes.
 	/// </summary>
 	public interface ExpressoContainer : IEnumerable
 	{
 		/// <summary>
 		/// このコンテナのサイズを返す。
+		/// Returns the number of elements the container has.
 		/// </summary>
 		int Size();
 
 		/// <summary>
 		/// このコンテナが空かどうか返す。
+		/// Determines whether the container is empty or not.
 		/// </summary>
 		bool Empty();
 
 		/// <summary>
 		/// このコンテナ内に指定された要素が存在するかどうか調べる。
+		/// Inspects whether the container has a specific element.
 		/// </summary>
 		bool Contains(object obj);
 
 		/// <summary>
 		/// IntegerSequenceを使ってコンテナの一部の要素をコピーした新しいコンテナを生成する。
+		/// Do the "slice" operation on the container with an IntegerSequence.
 		/// </summary>
 		ExpressoObj Slice(ExpressoIntegerSequence seq);
 	}
@@ -212,6 +234,7 @@ namespace Expresso.BuiltIns
 	/// Expresso組み込みのtupleオブジェクト。
 	/// The built-in Tuple.
 	/// </summary>
+	/// <seealso cref="ExpressoContainer"/>
 	public class ExpressoTuple : ExpressoObj, ExpressoContainer
 	{
 		/// <summary>
@@ -269,7 +292,7 @@ namespace Expresso.BuiltIns
 		public override ExpressoObj AccessMember(ExpressoObj subscription)
 		{
 			if(!ImplementaionHelpers.IsOfType(subscription, TYPES.INTEGER))
-				throw new EvalException("The expression can not be evaluated as an int.");
+				throw new EvalException("The expression can not be evaluated to an int.");
 
 			int index = (int)((ExpressoPrimitive)subscription).Value;
 			return Contents[index];
@@ -280,6 +303,7 @@ namespace Expresso.BuiltIns
 	/// Expressoの組み込み配列。
 	/// The Built-in Array.
 	/// </summary>
+	/// <seealso cref="ExpressoContainer"/>
 	public class ExpressoArray : ExpressoObj, ExpressoContainer
 	{
 		public ExpressoObj[] Contents{get; internal set;}
@@ -332,7 +356,7 @@ namespace Expresso.BuiltIns
 		public override ExpressoObj AccessMember(ExpressoObj subscription)
 		{
 			if(!ImplementaionHelpers.IsOfType(subscription, TYPES.INTEGER))
-				throw new EvalException("The expression can not be evaluated as an int.");
+				throw new EvalException("The expression can not be evaluated to an int.");
 
 			int index = (int)((ExpressoPrimitive)subscription).Value;
 			return Contents[index];
@@ -343,6 +367,7 @@ namespace Expresso.BuiltIns
 	/// Expressoの組み込みListクラス。
 	/// The built-in List class.
 	/// </summary>
+	/// <seealso cref="ExpressoContainer"/>
 	public class ExpressoList : ExpressoObj, ExpressoContainer
 	{
 		public List<ExpressoObj> Contents{get; internal set;}
@@ -393,7 +418,7 @@ namespace Expresso.BuiltIns
 		public override ExpressoObj AccessMember(ExpressoObj subscription)
 		{
 			if(!ImplementaionHelpers.IsOfType(subscription, TYPES.INTEGER))
-				throw new EvalException("The expression can not be evaluated as an int.");
+				throw new EvalException("The expression can not be evaluated to an int.");
 
 			int index = (int)((ExpressoPrimitive)subscription).Value;
 			return Contents[index];
@@ -404,6 +429,7 @@ namespace Expresso.BuiltIns
 	/// Expressoの組み込みDictionaryクラス。
 	/// The built-in Dictionary class.
 	/// </summary>
+	/// <seealso cref="ExpressoContainer"/>
 	public class ExpressoDict : ExpressoObj, ExpressoContainer
 	{
 		public Dictionary<ExpressoObj, ExpressoObj> Contents{get; internal set;}
@@ -451,16 +477,96 @@ namespace Expresso.BuiltIns
 		}
 	}
 
+	/// <summary>
+	/// The built-in fraction class, which represents a fraction as it is.
+	/// </summary>
 	public class ExpressoFraction : ExpressoObj, IComparable
 	{
-		public long Denominator{get; internal set;}
+		/// <summary>
+		/// Gets or sets the denominator.
+		/// </summary>
+		/// <value>
+		/// The denominator.
+		/// </value>
+		public ulong Denominator{get; internal set;}
 
-		public long Nominator{get; internal set;}
+		/// <summary>
+		/// Gets or sets the numerator.
+		/// </summary>
+		/// <value>
+		/// The numerator.
+		/// </value>
+		public ulong Numerator{get; internal set;}
 
-		public ExpressoFraction(long nominator, long denominator)
+		/// <summary>
+		/// Gets or sets a value indicating whether this instance is positive.
+		/// </summary>
+		/// <value>
+		/// <c>true</c> if this object represents a positive fraction; otherwise, <c>false</c>.
+		/// </value>
+		public bool IsPositive{get; internal set;}
+
+		public ExpressoFraction(ulong numerator, ulong denominator, bool isPositive = true)
 		{
 			Denominator = denominator;
-			Nominator = nominator;
+			Numerator = numerator;
+			IsPositive = isPositive;
+		}
+
+		/// <summary>
+		/// Initializes a new instance of the <see cref="Expresso.BuiltIns.ExpressoFraction"/> class with an integer.
+		/// </summary>
+		/// <param name='integer'>
+		/// Integer.
+		/// </param>
+		public ExpressoFraction(long integer)
+		{
+			Denominator = 1;
+			Numerator = (ulong)Math.Abs(integer);
+			IsPositive = integer > 0 ? true : false;
+		}
+
+		private static ulong CalcGDC(ulong first, ulong second)
+		{
+			ulong r, a = (first > second) ? first : second, b = (first > second) ? second : first, last = b;
+			while(true){
+				r = a - b;
+				if(r == 0) break;
+				last = r;
+				a = (b > r) ? b : r; b = (b > r) ? r : b;
+			}
+			
+			return last;
+		}
+		
+		private static ulong CalcLCM(ulong first, ulong second)
+		{
+			ulong gdc = CalcGDC(first, second);
+			return first * second / gdc;
+		}
+
+		/// <summary>
+		/// 約分を行う。
+		/// </summary>
+		public ExpressoFraction Reduce()
+		{
+			var gdc = CalcGDC(Numerator, Denominator);
+			Numerator /= gdc;
+			Denominator /= gdc;
+			return this;
+		}
+
+		/// <summary>
+		/// 通分を行う。
+		/// </summary>
+		/// <param name='other'>
+		/// 通分をする対象。
+		/// </param>
+		public ExpressoFraction Reduce(ExpressoFraction other)
+		{
+			var lcm = CalcLCM(Denominator, other.Denominator);
+			Numerator *= lcm / Denominator;
+			return new ExpressoFraction(other.Numerator * lcm / other.Denominator, lcm, other.IsPositive);
 		}
 
 		public int CompareTo(object obj)
@@ -485,22 +591,44 @@ namespace Expresso.BuiltIns
 
 		public override int GetHashCode()
 		{
-			return Nominator.GetHashCode() ^ Denominator.GetHashCode();
+			return Numerator.GetHashCode() ^ Denominator.GetHashCode() ^ IsPositive.GetHashCode();
+		}
+
+		public override string ToString ()
+		{
+			return string.Format ("[ExpressoFraction: {0}{1} / {2}]", IsPositive ? "" : "-", Numerator, Denominator);
 		}
 
 		public static bool operator>(ExpressoFraction lhs, ExpressoFraction rhs)
 		{
-			return true;
+			if(lhs.IsPositive && !rhs.IsPositive)
+				return true;
+			else if(!lhs.IsPositive && rhs.IsPositive)
+				return false;
+			else if(lhs.Denominator == rhs.Denominator)
+				return lhs.Numerator > rhs.Numerator;
+
+			var rhs_reduced = lhs.Reduce(rhs);
+			return lhs.Numerator > rhs_reduced.Numerator;
 		}
 
 		public static bool operator<(ExpressoFraction lhs, ExpressoFraction rhs)
 		{
-			return true;
+			if(lhs.IsPositive && !rhs.IsPositive)
+				return false;
+			else if(!lhs.IsPositive && rhs.IsPositive)
+				return true;
+			else if(lhs.Denominator == rhs.Denominator)
+				return lhs.Numerator < rhs.Numerator;
+
+			var rhs_reduced = lhs.Reduce(rhs);
+			return lhs.Numerator < rhs_reduced.Numerator;
 		}
 
 		public static bool operator==(ExpressoFraction lhs, ExpressoFraction rhs)
 		{
-			return (lhs.Nominator == rhs.Nominator && lhs.Denominator == rhs.Denominator);
+			if(lhs.IsPositive != rhs.IsPositive) return false;
+			return (lhs.Numerator == rhs.Numerator && lhs.Denominator == rhs.Denominator);
 		}
 
 		public static bool operator!=(ExpressoFraction lhs, ExpressoFraction rhs)
@@ -562,7 +690,9 @@ namespace Expresso.BuiltIns
 	/// <summary>
 	/// Expressoの組み込み型の一つ、Expression型。基本的にはワンライナーのクロージャーだが、
 	/// 記号演算もサポートする。
-	/// The built-in expression class.
+	/// The built-in expression class. It is, in most cases, just a function object
+	/// with one line of code, but may contain symbolic expression. Therefore,
+	/// it has the capability of symbolic computation.
 	/// </summary>
 	public class ExpressoExpression : ExpressoObj
 	{

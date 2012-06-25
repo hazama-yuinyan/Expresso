@@ -35,7 +35,7 @@ namespace Expresso.Ast
         {
             var obj = Parent.Run(varStore, funcTable) as ExpressoObj;
 			if(obj == null)
-				throw new EvalException("Can not evaluate the object as a valid one.");
+				throw new EvalException("Can not evaluate the object to a valid one.");
 
 			var subscription = (ExpressoObj)Subscription.Run(varStore, funcTable);
 			if(subscription is ExpressoIntegerSequence)

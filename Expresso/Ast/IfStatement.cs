@@ -8,6 +8,7 @@ namespace Expresso.Ast
 {
 	/// <summary>
 	/// If文。
+	/// The If statement.
 	/// </summary>
 	public class IfStatement : Statement
 	{

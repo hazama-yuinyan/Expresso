@@ -6,6 +6,8 @@ namespace Expresso.Interpreter
 {
 	/// <summary>
 	/// あるスコープ内に存在する変数の実体を保持する。
+	/// Holds instances of variables existing in a scope.
+	/// This is not a symbol table, which holds just the names of variables.
 	/// </summary>
 	/// <exception cref='EvalException'>
 	/// Represents errors that occur during application execution.
@@ -14,6 +16,7 @@ namespace Expresso.Interpreter
 	{
 		/// <summary>
 		/// 親のスコープの変数ストア。
+		/// The parent variable store.
 		/// </summary>
 		public VariableStore Parent{get; internal set;}
 		
@@ -24,12 +27,15 @@ namespace Expresso.Interpreter
 		
 		/// <summary>
 		/// 変数の実体をスコープに追加する。
+		/// Add an instance of a variable.
 		/// </summary>
 		/// <param name='name'>
 		/// 変数名
+		/// The name of the variable.
 		/// </param>
 		/// <param name='obj'>
 		/// 変数の中身
+		/// The value.
 		/// </param>
 		public void Add(string name, ExpressoObj obj)
 		{
@@ -46,7 +52,8 @@ namespace Expresso.Interpreter
 		}
 		
 		/// <summary>
-		/// スコープに存在する変数の値を変える
+		/// スコープに存在する変数の値を変える。
+		/// Changes the value of a variable.
 		/// </summary>
 		/// <param name='name'>
 		/// 変数名
@@ -61,6 +68,7 @@ namespace Expresso.Interpreter
 		
 		/// <summary>
 		/// スコープ内に存在する変数を参照する。
+		/// Refer to a variable.
 		/// </summary>
 		/// <param name='name'>
 		/// 参照する変数名
@@ -101,7 +109,8 @@ namespace Expresso.Interpreter
 		}
 		
 		/// <summary>
-		/// スコープからある特定の変数を削除する
+		/// スコープからある特定の変数を削除する。
+		/// Delete a variable.
 		/// </summary>
 		/// <param name='name'>
 		/// Name.

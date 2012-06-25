@@ -24,16 +24,13 @@ namespace Expresso.Interpreter
 
 	/// <summary>
 	/// スコープ内の識別子管理用のクラス。
+	/// Class for managing identifiers in a scope.
 	/// </summary>
-	/// <remarks>
-	/// 今回作った言語の場合、
-	/// 変数はローカルスコープのものしか参照不可で、
-	/// 関数は上位のスコープを参照できる。
-	/// </remarks>
 	internal class Scope
 	{
 		/// <summary>
 		/// 親スコープ。
+		/// The parent scope.
 		/// </summary>
 		public Scope Parent { get; set; }
 
@@ -44,9 +41,16 @@ namespace Expresso.Interpreter
 
 		/// <summary>
 		/// 識別子がスコープ内に含まれるかどうか。
+		/// Determines whether the scope has the specified identifier.
 		/// </summary>
-		/// <param name="name">識別子名。</param>
-		/// <returns>含まれていればtrue。</returns>
+		/// <param name="name">
+		/// 識別子名。
+		/// The name of the identifier.
+		/// </param>
+		/// <returns>
+		/// 含まれていればtrue。
+		/// Returns true if the scope has the identifier; otherwise returns false.
+		/// </returns>
 		public bool Contains(string name)
 		{
 			return this.table.ContainsKey(name);
@@ -55,9 +59,16 @@ namespace Expresso.Interpreter
 		/// <summary>
 		/// 変数を取得。
 		/// 親スコープもたどって探索（GetVariable(name, true) と同じ）。
+		/// Gets a variable.
 		/// </summary>
-		/// <param name="name">識別子名。</param>
-		/// <returns>その名前の変数があれば変数の詳細を、なければnullを。</returns>
+		/// <param name="name">
+		/// 識別子名。
+		/// The name of the identifier.
+		/// </param>
+		/// <returns>
+		/// その名前の変数があれば変数の詳細を、なければnullを。
+		/// If exists, returns the information on that variable, otherwise returns null.
+		/// </returns>
 		public Ast.Parameter GetVariable(string name)
 		{
 			return GetVariable(name, true);
@@ -144,6 +155,7 @@ namespace Expresso.Interpreter
 
 		/// <summary>
 		/// スコープにローカル変数を追加。
+		/// Add a local variable to the scope.
 		/// </summary>
 		/// <param name="p">変数。</param>
 		public void AddLocal(Ast.Parameter p)
@@ -172,6 +184,7 @@ namespace Expresso.Interpreter
 
 		/// <summary>
 		/// スコープに関数を追加。
+		/// Add a function to the scope.
 		/// </summary>
 		/// <param name="f">関数。</param>
 		public void AddFunction(Ast.Function f)

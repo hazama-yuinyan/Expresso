@@ -67,19 +67,89 @@ COMPILER Expresso
  		return variable;
 	}
 	
-	static UnaryExpression UnaryExpr(OperatorType op, Expression operand)
+	static ExprStatement MakeExprStatement(List<Expression> exprs)
+	{
+		return new ExprStatement{Expressions = exprs};
+	}
+	
+	static IfStatement MakeIfStatement(Expression condition, Statement trueBlock, Statement falseBlock)
+	{
+		return new IfStatement{Condition = condition, TrueBlock = trueBlock, FalseBlock = falseBlock};
+	}
+	
+	static WhileStatement MakeWhileStatement(Expression condition, Statement body)
+	{
+		return new WhileStatement{Condition = condition, Body = body};
+	}
+	
+	static ForStatement MakeForStatement(List<Expression> lValues, Expression rValue, Statement body)
+	{
+		return new ForStatement{LValues = lValues, Target = rValue, Body = body};
+	}
+	
+	static SwitchStatement MakeSwitchStatement(Expression target, List<CaseClause> cases)
+	{
+		return new SwitchStatement{Target = target, Cases = cases};
+	}
+	
+	static CaseClause MakeCaseClause(List<Expression> labels, Statement body)
+	{
+		return new CaseClause{Labels = labels, Body = body};
+	}
+	
+	static Function MakeFunc(string name, List<Argument> parameters, Block body, TYPES returnType)
+	{
+		return new Function{Name = name, Parameters = parameters, Body = body, ReturnType = returnType};
+	}
+	
+	static UnaryExpression MakeUnaryExpr(OperatorType op, Expression operand)
 	{
 		return new UnaryExpression{Operator = op, Operand = operand};
 	}
 	
-	static BinaryExpression BinaryExpr(OperatorType op, Expression lhs, Expression rhs)
+	static BinaryExpression MakeBinaryExpr(OperatorType op, Expression lhs, Expression rhs)
 	{
 		return new BinaryExpression{Operator = op, Left = lhs, Right = rhs};
 	}
 	
-	static ObjectInitializer ObjInitializer(TYPES type, List<Expression> initializeList)
+	static ObjectInitializer MakeObjInitializer(TYPES type, List<Expression> initializeList)
 	{
 		return new ObjectInitializer{InitializeList = initializeList, ObjType = type};
+	}
+	
+	static Assignment MakeAssignment(List<Expression> targets, List<Expression> expressions)
+	{
+		return new Assignment{Targets = targets, Expressions = expressions};
+	}
+	
+	static Iteration MakeIteration(List<Expression> targets, List<Expression> exprs)
+	{
+		return new Iteration{Targets = targets, Expressions = exprs};
+	}
+	
+	static Comprehension MakeComp(Expression body, Expression child)
+	{
+		return new Comprehension{Body = body, Child = child};
+	}
+	
+	static ComprehensionFor MakeCompFor(Expression iteration, Expression body)
+	{
+		return new ComprehensionFor{Iteration = iteration, Body = body};
+	}
+	
+	static ComprehensionIf MakeCompIf(Expression condition, Expression body)
+	{
+		return new ComprehensionIf{Condition = condition, Body = body};
+	}
+	
+	static Constant MakeConstant(TYPES type, object val)
+	{
+		return new Constant{ValType = type, Value = val};
+	}
+	
+	static IntSeqExpression MakeIntSeq(int start, int end, int step)
+	{
+		return new IntSeqExpression{Start = start, End = end, Step = step};
 	}
 	
 /*--------------------------------------------------------------------------*/
@@ -215,18 +285,11 @@ ExprStmt<out Statement stmt>				(. List<Expression> targets = null; List<Express
     {  //AugAssignOpe
        //ExprList<out expr_list>
     /*|*/  '='
-	   RValueList<out expr_list>			(. stmt = new Assignment{
-													Targets = targets,
-													Expressions = expr_list
-											   };
-											.)
+	   RValueList<out expr_list>			(. stmt = MakeAssignment(targets, expr_list); .)
   }
-  )SYNC ';' 								(. if(stmt == null){
-  											   		stmt = new ExprStatement{Expressions = targets};
-  											   }
-  											.).
+  )SYNC ';' 								(. if(stmt == null) stmt = MakeExprStatement(targets); .).
 /*------------------------------------------------------------------------*/
-Block<out Statement block>			(. Block tmp; Scope scope = new Scope{Parent = cur_scope}; cur_scope = scope; Statement stmt; .)
+Block<out Statement block, bool needsScope = true>	(. Block tmp; if(needsScope) cur_scope = new Scope{Parent = cur_scope}; Statement stmt; .)
 =
   '{'								(. tmp = new Block(); .)
   Stmt<out stmt>					(. tmp.Statements.Add(stmt); .)
@@ -239,6 +302,7 @@ CompoundStmt<out Statement stmt>	(. stmt = null; .)
     IfStmt<out stmt>					
   | WhileStmt<out stmt>
   | ForStmt<out stmt>
+  | SwitchStmt<out stmt>
   | FuncDecl<out stmt>.
 /*------------------------------------------------------------------------*/
 IfStmt<out Statement stmt>			(. Expression tmp; Statement true_block, false_block = null; .)
@@ -248,22 +312,13 @@ IfStmt<out Statement stmt>			(. Expression tmp; Statement true_block, false_bloc
   Stmt<out true_block>
   [ "else"
      Stmt<out false_block>
-  ]                      			(. stmt = new IfStatement{
-  											Condition = tmp,
-  											TrueBlock = true_block,
-  											FalseBlock = false_block
-  									   };
-  									.).
+  ]                      			(. stmt = MakeIfStatement(tmp, true_block, false_block); .).
 /*------------------------------------------------------------------------*/
 WhileStmt<out Statement stmt>		(. Expression cond; Statement body = null; .)
 =
   "while"
   '(' CondExpr<out cond> ')'
-  Stmt<out body>                   	(. stmt = new WhileStatement{
-  											Condition = cond,
-  											Body = body
-  									   };
-  									.).
+  Stmt<out body>                   	(. stmt = MakeWhileStatement(cond, body); .).
 /*------------------------------------------------------------------------*/
 ForStmt<out Statement stmt>			(. List<Expression> target_list; Expression rvalue; Statement body; .)
 =
@@ -273,39 +328,44 @@ ForStmt<out Statement stmt>			(. List<Expression> target_list; Expression rvalue
   "in"
   CondExpr<out rvalue>
   ')'
-  Stmt<out body>					(. stmt = new ForStatement{
-  											LValues = target_list,
-  											Target = rvalue,
-  											Body = body
-  									   };
-  									.).
+  Stmt<out body>					(. stmt = MakeForStatement(target_list, rvalue, body); .).
 /*------------------------------------------------------------------------*/
-/*SwitchStmt<out Statement stmt>		(. Statement inner; .)
+SwitchStmt<out Statement stmt>		(. Expression target; List<CaseClause> cases; .)
 =
   "switch"
   '('
+  CondExpr<out target>
   ')'
   '{'
-  CaseLabelList
-  Stmt<out inner>
-  {  CaseLabelList
-     Stmt<out inner>
-  }
-  '}' .*/
+  CaseClauseList<out cases>
+  SYNC '}'							(. stmt = MakeSwitchStatement(target, cases); .).
 /*------------------------------------------------------------------------*/
-/*CaseLabelList
+CaseClauseList<. out List<CaseClause> clauses .>	(. clauses = new List<CaseClause>(); List<Expression> label_list; Statement inner; .)
 =
-  CaseLabel
-  {  CaseLabel
-  }.*/
+  CaseLabelList<out label_list>
+  Stmt<out inner>									(. clauses.Add(MakeCaseClause(label_list, inner)); .)
+  {  CaseLabelList<out label_list>
+     Stmt<out inner>								(. clauses.Add(MakeCaseClause(label_list, inner)); .)
+  }.
 /*------------------------------------------------------------------------*/
-/*CaseLabel
+CaseLabelList<. out List<Expression> label_list .>	(. label_list = new List<Expression>(); Expression tmp; .)
 =
-  ( "case"
-    Literal
-  | "default"
+  CaseLabel<out tmp>								(. label_list.Add(tmp); .)
+  {  CaseLabel<out tmp>								(. label_list.Add(tmp); .)
+  }.
+/*------------------------------------------------------------------------*/
+CaseLabel<out Expression expr>						(. expr = null; .)
+=
+  "case"
+  (
+    Literal<out expr>
+  | ( '('
+      IntSeqExpr<out expr>
+      ')'
+    )
+  | "default"										(. expr = MakeConstant(TYPES._CASE_DEFAULT, "default"); .)
   )
-  ':' .*/
+  SYNC ':' .
 /*------------------------------------------------------------------------*/
 LValueList<. out List<Expression> targets .>		(. Expression tmp; .)
 =													(. targets = new List<Expression>(); .)
@@ -348,6 +408,27 @@ VarDecl<. out List<Expression> outs .> 	(. string name; TYPES type; Expression r
   					   	   });
   						.).
 /*------------------------------------------------------------------------*/
+FuncDecl<out Statement func>    (. string name; TYPES type; Statement block; List<Argument>@params = new List<Argument>(); .)
+=
+  "def"							(. type = TYPES.VAR; block = null; cur_scope = new Scope{Parent = cur_scope}; .)
+  ident							(. name = t.val; .)
+  '('
+  [ParamList<ref @params>]
+  ')'
+  [  "(-"
+     Type<out type>
+  ]
+  Block<out block, false> 		(. func = MakeFunc(name, @params, (Block)block, type);
+  								   funcs.AddFunction(func as Function);
+  								.).
+/*------------------------------------------------------------------------*/
+ParamList<. ref List<Argument> @params .>		(. Argument expr; .)
+=
+  Argument<out expr>							(. @params.Add(expr); .)
+  {  ','
+     Argument<out expr>							(. @params.Add(expr); .)
+  }.
+/*------------------------------------------------------------------------*/
 Argument<out Argument arg>		(. string name; Expression default_val = null; TYPES type = TYPES.VAR; .)
 =
   Variable<out name>
@@ -364,33 +445,6 @@ Argument<out Argument arg>		(. string name; Expression default_val = null; TYPES
   											Option = default_val
   									   };
   									.).
-/*------------------------------------------------------------------------*/
-ParamList<. out List<Argument> @params .>		(. @params = new List<Argument>(); Argument expr; .)
-=
-  [  Argument<out expr>							(. @params.Add(expr); .)
-     { ','
-       Argument<out expr>						(. @params.Add(expr); .)
-     }
-  ] .
-/*------------------------------------------------------------------------*/
-FuncDecl<out Statement func>    (. string name; TYPES type; Statement block; List<Argument>@params; .)
-=
-  "def"							(. type = TYPES.VAR; block = null; .)
-  ident							(. name = t.val; .)
-  '('
-  ParamList<out @params>
-  ')'
-  [  "(-"
-     Type<out type>
-  ]
-  Block<out block> 				(. func = new Function{
-  										Name = name,
-  										Parameters = @params,
-  										Body = (Block)block,
-  										ReturnType = type
-  								   };
-  								   funcs.AddFunction(func as Function);
-  								.).
 /*------------------------------------------------------------------------*/
 RValueList<. out List<Expression> exprs .>		(. Expression tmp; .)
 =												(. exprs = new List<Expression>(); .)
@@ -419,7 +473,7 @@ OrTest<out Expression expr>			(. Expression rhs; .)
   AndTest<out expr>
   {
     "or"
-    AndTest<out rhs>				(. expr = BinaryExpr(OperatorType.OR, expr, rhs); .)
+    AndTest<out rhs>				(. expr = MakeBinaryExpr(OperatorType.OR, expr, rhs); .)
   }.
 /*------------------------------------------------------------------------*/
 AndTest<out Expression expr>		(. Expression rhs; .)
@@ -427,13 +481,13 @@ AndTest<out Expression expr>		(. Expression rhs; .)
   NotTest<out expr>
   {
     "and"
-    NotTest<out rhs>				(. expr = BinaryExpr(OperatorType.AND, expr, rhs); .)
+    NotTest<out rhs>				(. expr = MakeBinaryExpr(OperatorType.AND, expr, rhs); .)
   }.
 /*------------------------------------------------------------------------*/
 NotTest<out Expression expr>		(. Expression term; expr = null; .)
 =
   ( "not"
-    NotTest<out term>				(. expr = UnaryExpr(OperatorType.MINUS, term); .)
+    NotTest<out term>				(. expr = MakeUnaryExpr(OperatorType.MINUS, term); .)
   | Comparison<out expr>
   ).
 /*------------------------------------------------------------------------*/
@@ -448,28 +502,28 @@ Comparison<out Expression expr>		(. Expression rhs; OperatorType type; .)
     | "<="				 	(. type = OperatorType.LESE; .)
     | ">="				 	(. type = OperatorType.GRTE; .)
     )
-    BitOr<out rhs>			(. expr = BinaryExpr(type, expr, rhs); .)
+    BitOr<out rhs>			(. expr = MakeBinaryExpr(type, expr, rhs); .)
   ].
 /*------------------------------------------------------------------------*/
 BitOr<out Expression expr>			(. Expression rhs; .)
 =
   BitXor<out expr>
   {  '|'
-     BitXor<out rhs>				(. expr = BinaryExpr(OperatorType.BIT_OR, expr, rhs); .)
+     BitXor<out rhs>				(. expr = MakeBinaryExpr(OperatorType.BIT_OR, expr, rhs); .)
   }.
 /*------------------------------------------------------------------------*/
 BitXor<out Expression expr>			(. Expression rhs; .)
 =
   BitAnd<out expr>
   {  '^'
-     BitAnd<out rhs>				(. expr = BinaryExpr(OperatorType.BIT_XOR, expr, rhs); .)
+     BitAnd<out rhs>				(. expr = MakeBinaryExpr(OperatorType.BIT_XOR, expr, rhs); .)
   }.
 /*------------------------------------------------------------------------*/
 BitAnd<out Expression expr>			(. Expression rhs; .)
 =
   ShiftOpe<out expr>
   {  '&'
-     ShiftOpe<out rhs>				(. expr = BinaryExpr(OperatorType.BIT_AND, expr, rhs); .)
+     ShiftOpe<out rhs>				(. expr = MakeBinaryExpr(OperatorType.BIT_AND, expr, rhs); .)
   }.
 /*------------------------------------------------------------------------*/
 ShiftOpe<out Expression expr>		(. Expression rhs; OperatorType type; .)
@@ -478,7 +532,7 @@ ShiftOpe<out Expression expr>		(. Expression rhs; OperatorType type; .)
   {  ( "<<" 						(. type = OperatorType.BIT_LSHIFT; .)
      | ">>"							(. type = OperatorType.BIT_RSHIFT; .)
      )
-     AddOpe<out rhs>				(. expr = BinaryExpr(type, expr, rhs); .)
+     AddOpe<out rhs>				(. expr = MakeBinaryExpr(type, expr, rhs); .)
   }.
 /*------------------------------------------------------------------------*/
 AddOpe<out Expression expr>    (. Expression rhs; OperatorType type; .)
@@ -488,7 +542,7 @@ AddOpe<out Expression expr>    (. Expression rhs; OperatorType type; .)
     ( '+'							(. type = OperatorType.PLUS; .)
     | '-'							(. type = OperatorType.MINUS; .)
     )
-    Term<out rhs>					(. expr = BinaryExpr(type, expr, rhs); .)
+    Term<out rhs>					(. expr = MakeBinaryExpr(type, expr, rhs); .)
   }.
 /*------------------------------------------------------------------------*/
 Term<out Expression expr>   (. Expression rhs; OperatorType type; .)
@@ -499,7 +553,7 @@ Term<out Expression expr>   (. Expression rhs; OperatorType type; .)
     | '/'					(. type = OperatorType.DIV; .)
     | '%'					(. type = OperatorType.MOD; .)
     )
-    Factor<out rhs>			(. expr = BinaryExpr(type, expr, rhs); .)
+    Factor<out rhs>			(. expr = MakeBinaryExpr(type, expr, rhs); .)
   }.
 /*------------------------------------------------------------------------*/
 Factor<out Expression expr> (. OperatorType type; Expression factor; expr = null; .)
@@ -508,13 +562,13 @@ Factor<out Expression expr> (. OperatorType type; Expression factor; expr = null
   | ( '-' 					(. type = OperatorType.MINUS; .)
     | '+'			 		(. type = OperatorType.PLUS; .)
     )
-  Factor<out factor>	 	(. expr = UnaryExpr(type, factor); .).
+  Factor<out factor>	 	(. expr = MakeUnaryExpr(type, factor); .).
 /*------------------------------------------------------------------------*/
 PowerOpe<out Expression expr>    (. Expression rhs; .)
 = 
   Primary<out expr>
   [ "**"
-    Factor<out rhs>              (. expr = BinaryExpr(OperatorType.POWER, expr, rhs); .)
+    Factor<out rhs>              (. expr = MakeBinaryExpr(OperatorType.POWER, expr, rhs); .)
   ].
 /*------------------------------------------------------------------------*/
 Primary<out Expression expr>	(. string name = ""; expr = null; .)
@@ -525,10 +579,10 @@ Primary<out Expression expr>	(. string name = ""; expr = null; .)
   {  Trailer<ref expr, name>
   }.
 /*------------------------------------------------------------------------*/
-Trailer<ref Expression expr, string name>	(. Function func; List<Expression> args; Expression subscript; .)
+Trailer<ref Expression expr, string name>	(. Function func; List<Expression> args = new List<Expression>(); Expression subscript; .)
 =
   '('
-  ArgList<out args>
+  [ArgList<ref args>]
   ')'							(. func = funcs.GetFunction(name);
   								   if(func == null){
   								   		SemErr("The function is not defined : " + name);
@@ -557,17 +611,15 @@ Trailer<ref Expression expr, string name>	(. Function func; List<Expression> arg
      							.).
 /*------------------------------------------------------------------------*/
 Subscript<out Expression subscript>	(. subscript = null; .)
-= IF(NotFollowedByDoubleDots())		/* For float and IntSeqExpr confilct.*/
-  CondExpr<out subscript>
-  |  IntSeqExpr<out subscript>.
-/*------------------------------------------------------------------------*/
-ArgList<. out List<Expression> args .>		(. args = new List<Expression>(); Expression expr; .)
 =
-  [  Primary<out expr>						(. args.Add(expr); .)
-    {  ','
-       Primary<out expr>					(. args.Add(expr); .)
-    }
-  ].
+  CondExpr<out subscript>.
+/*------------------------------------------------------------------------*/
+ArgList<. ref List<Expression> args .>		(. Expression expr; .)
+=
+  Primary<out expr>							(. args.Add(expr); .)
+  {  ','
+     Primary<out expr>						(. args.Add(expr); .)
+  }.
 /*------------------------------------------------------------------------*/
 Atom<out Expression expr>			(. string name; expr = null; .)
 =
@@ -576,9 +628,12 @@ Atom<out Expression expr>			(. string name; expr = null; .)
   									   		SemErr(string.Format("Attempt to refer to an undefined variable \"{0}\"", name));
   									   }
   									.)
-  | Literal<out expr>
+  | (  IF(NotFollowedByDoubleDots())		/* For float and IntSeqExpr confilct.*/
+       Literal<out expr>
+    |  IntSeqExpr<out expr>
+    )
   | '('
-    [TupleOrSeq<out expr>]
+    [TupleMaker<out expr>]
     SYNC ')'
   | '['
     [ListMaker<out expr>]
@@ -587,17 +642,6 @@ Atom<out Expression expr>			(. string name; expr = null; .)
     [DictMaker<out expr>]
     SYNC '}' .
 /*------------------------------------------------------------------------*/
-TupleOrSeq<out Expression expr>			(. Expression tmp; List<Expression> list = new List<Expression>(); expr = null; .)
-= IF(NotFollowedByDoubleDots())			/*For float and IntSeqExpr conflict.*/
-  CondExpr<out tmp>						(. list.Add(tmp); .)
-  (  //CompFor<out comp_expr>
-  /*|*/  {  ','
-        CondExpr<out tmp>				(. list.Add(tmp); .)
-     }
-     /*[',']*/
-  )										(. expr = ObjInitializer(TYPES.TUPLE, list); .)
-  | IntSeqExpr<out expr>.
-/*------------------------------------------------------------------------*/
 IntSeqExpr<out Expression expr>		(. int start, end, step; .)
 =
   integer							(. start = Convert.ToInt32(t.val); end = -1; step = 1; .)
@@ -605,22 +649,27 @@ IntSeqExpr<out Expression expr>		(. int start, end, step; .)
   [integer]							(. end = Convert.ToInt32(t.val); .)
   [ ':'
     integer							(. step = Convert.ToInt32(t.val); .)
-  ]									(. expr = new IntSeqExpression{
-  											Start = start,
-  											End = end,
-  											Step = step
-  									   };
-  									.).
+  ]									(. expr = MakeIntSeq(start, end, step); .).
 /*------------------------------------------------------------------------*/
-ListMaker<out Expression expr>			(. Expression tmp; List<Expression> list = new List<Expression>(); .)
+TupleMaker<out Expression expr>			(. Expression tmp; List<Expression> list = new List<Expression>(); expr = null; .)
 =
   CondExpr<out tmp>						(. list.Add(tmp); .)
-  ( CompFor<out tmp>
+  (  //CompFor<out comp_expr>
+  /*|*/  {  ','
+        CondExpr<out tmp>				(. list.Add(tmp); .)
+     }
+     /*[',']*/
+  )										(. expr = MakeObjInitializer(TYPES.TUPLE, list); .).
+/*------------------------------------------------------------------------*/
+ListMaker<out Expression expr>			(. expr = null; Expression tmp; List<Expression> list = new List<Expression>(); .)
+=
+  CondExpr<out tmp>						(. list.Add(tmp); .)
+  ( CompFor<out tmp>					(. expr = MakeComp(list[0], tmp); .)
   | {  ','
        CondExpr<out tmp>				(. list.Add(tmp); .)
     }
     /*[',']*/
-  )										(. expr = ObjInitializer(TYPES.LIST, list); .).
+  )										(. if(expr == null) expr = MakeObjInitializer(TYPES.LIST, list); .).
 /*------------------------------------------------------------------------*/
 DictMaker<out Expression expr>			(. Expression lhs, rhs; List<Expression> list = new List<Expression>(); .)
 =
@@ -634,61 +683,42 @@ DictMaker<out Expression expr>			(. Expression lhs, rhs; List<Expression> list =
        CondExpr<out rhs>				(. list.Add(rhs); .)
     }
     /*[',']*/
-  )										(. expr = ObjInitializer(TYPES.DICT, list); .).
+  )										(. expr = MakeObjInitializer(TYPES.DICT, list); .).
 /*------------------------------------------------------------------------*/
-CompIter<out Expression expr>
+CompIter<out Expression expr>			(. expr = null; .)
 =
   CompFor<out expr>
   |  CompIf<out expr> .
 /*------------------------------------------------------------------------*/
-CompFor<out Expression expr>
+CompFor<out Expression expr>			(. Expression iter, body = null; List<Expression> expr_list, test_list; .)
 =
   "for"
   LValueList<out expr_list>
   "in"
-  ExprList<out test_list>
-  [CompIter].
+  RValueList<out test_list>				(. iter = MakeIteration(expr_list, test_list); .)
+  [CompIter<out body>]					(. expr = MakeCompFor(iter, body); .).
 /*------------------------------------------------------------------------*/
-CompIf<out Expression expr>
+CompIf<out Expression expr>				(. Expression tmp, body = null; .)
 =
   "if"
-  OrTest<out expr>
-  [CompIter].
+  OrTest<out tmp>
+  [CompIter<out body>]					(. expr = MakeCompIf(tmp, body); .).
 /*------------------------------------------------------------------------*/
 Variable<out string name>
 = WEAK '$'
   ident				(. name = t.val; .).
 /*------------------------------------------------------------------------*/
 Literal<out Expression expr>	(. expr = null; .)
-=
-  integer				(. expr = new Constant{
-								ValType = TYPES.INTEGER,
-								Value = Convert.ToInt32(t.val)
-						   };
-						.)
-  |  float				(. expr = new Constant{
-  								ValType = TYPES.FLOAT,
-  								Value = Convert.ToDouble(t.val)
-  						   };
-  						.)
+= 
+  integer				(. expr = MakeConstant(TYPES.INTEGER, Convert.ToInt32(t.val)); .)
+  |  float				(. expr = MakeConstant(TYPES.FLOAT, Convert.ToDouble(t.val)); .)
   |  string_literal		(. string tmp = t.val;
   						   tmp = tmp.Substring(1, tmp.Length - 2);
-  						   expr = new Constant{
-  						   		ValType = TYPES.STRING,
-  						   		Value = tmp
-  						   };
+  						   expr = MakeConstant(TYPES.STRING, tmp);
   						.)
   |  (  "true"				
   	 |  "false"
-  	 )					(. expr = new Constant{
-  								ValType = TYPES.BOOL,
-  								Value = Convert.ToBoolean(t.val)
-  						   };
-  						.)
-  |  "null"				(. expr = new Constant{
-  								ValType = TYPES.NULL,
-  								Value = null
-  						   };
-  						.).
+  	 )					(. expr = MakeConstant(TYPES.BOOL, Convert.ToBoolean(t.val)); .)
+  |  "null"				(. expr = MakeConstant(TYPES.NULL, null); .).
 /*------------------------------------------------------------------------*/
 END Expresso.

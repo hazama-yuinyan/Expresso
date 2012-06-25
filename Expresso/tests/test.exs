@@ -19,7 +19,7 @@ def MakeList()
 
 def MakeRange()
 {
-	return (1..5);
+	return 1..5;
 }
 
 def MakeDict()
@@ -29,14 +29,28 @@ def MakeDict()
 
 def MakeTuple()
 {
-	return "あかりちゃん", "かわいいよ、あかりちゃん", 130;
+	return "あかりちゃん", "かわいいよ、あかりちゃん", 130; //A return statement containing a list of expressions must yield a tuple.
 }
 
 def PrintList($input)
 {
 	let $tmp = null;
-	for($tmp in (0..5))
+	for($tmp in 0..5)
 		print $tmp + 1, "番目の項目:", $input[$tmp];
+}
+
+def TestSwitch($input)
+{
+	switch($input){
+	case "abc":
+		print "Detects a string";
+	
+	case "あかりちゃん":
+		print "あかりんかわかわ";
+		
+	case (0..10):
+		print "The value in the range of 0 to 10";
+	}
 }
 
 def main()
@@ -75,4 +89,7 @@ def main()
 	PrintList($list_obj);
 	print "Left shift:", $w << 1;
 	print "$x + 1 + 3 * 2 = ", $x + 1 + 3 * 2;
+	TestSwitch("abc");
+	TestSwitch(5);
+	TestSwitch($tuple_obj2[0]);
 }

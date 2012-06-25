@@ -8,6 +8,7 @@ namespace Expresso.Ast
 {
 	/// <summary>
 	/// For文。
+	/// The For statement.
 	/// </summary>
 	public class ForStatement : Statement
 	{
@@ -69,7 +70,7 @@ namespace Expresso.Ast
         {
             IEnumerable iterable = Target.Run(varStore, funcTable) as IEnumerable;
 			if(iterable == null)
-				throw new EvalException("Can not evaluate the expression as a valid object");
+				throw new EvalException("Can not evaluate the expression to a valid object");
 
 			Parameter[] lvalues = new Parameter[LValues.Count];
 			for (int i = 0; i < LValues.Count; ++i) {

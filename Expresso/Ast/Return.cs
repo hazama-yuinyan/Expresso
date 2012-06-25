@@ -6,6 +6,7 @@ namespace Expresso.Ast
 {
     /// <summary>
     /// リターン文。
+	/// The Return statement.
     /// </summary>
     public class Return : Statement
     {
@@ -45,7 +46,7 @@ namespace Expresso.Ast
 					objs.Add((ExpressoObj)expr.Run(varStore, funcTable));
 				}
 				
-				return new ExpressoTuple(objs);
+				return ExpressoFunctions.MakeTuple(objs);
 			}
         }
     }

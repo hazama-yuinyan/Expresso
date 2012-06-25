@@ -6,13 +6,46 @@ using Expresso.Interpreter;
 
 namespace Expresso.Ast
 {
+	public class Comprehension : Expression
+	{
+		public Expression Body{get; internal set;}
+
+		public Expression Child{get; internal set;}
+
+		public override NodeType Type
+        {
+            get { return NodeType.Comprehension; }
+        }
+
+        public override bool Equals(object obj)
+        {
+            var x = obj as Comprehension;
+
+            if (x == null) return false;
+
+            return this.Body.Equals(x.Body) && this.Child.Equals(x.Child);
+        }
+
+        public override int GetHashCode()
+        {
+            return this.Body.GetHashCode() ^ this.Child.GetHashCode();
+        }
+
+        internal override object Run(VariableStore varStore, Scope funcTable)
+        {
+			var child_store = new VariableStore{Parent = varStore};
+			Child.Run(child_store, funcTable);
+			return Body.Run(child_store, funcTable);
+        }
+	}
+
 	public class ComprehensionFor : Expression
 	{
 		/// <summary>
-        /// 実行対象の文。
+        /// コンテナを走査する式。
         /// The body that will be executed.
         /// </summary>
-        public Expression Condition { get; internal set; }
+        public Expression Iteration { get; internal set; }
 
 		/// <summary>
         /// 実行対象の文。
@@ -31,21 +64,18 @@ namespace Expresso.Ast
 
             if (x == null) return false;
 
-            return this.Condition.Equals(x.Condition) && this.Body.Equals(x.Body);
+            return this.Iteration.Equals(x.Iteration) && this.Body.Equals(x.Body);
         }
 
         public override int GetHashCode()
         {
-            return this.Condition.GetHashCode() ^ this.Body.GetHashCode();
+            return this.Iteration.GetHashCode() ^ this.Body.GetHashCode();
         }
 
         internal override object Run(VariableStore varStore, Scope funcTable)
         {
-			ExpressoPrimitive cond;
-			while((cond = Condition.Run(varStore, funcTable) as ExpressoPrimitive) != null && (bool)cond.Value){
-				Body.Run(varStore, funcTable);
-			}
-			return null;
+			Iteration.Run(varStore, funcTable);
+			return Body.Run(varStore, funcTable);
         }
 	}
 
@@ -86,7 +116,7 @@ namespace Expresso.Ast
         {
 			var cond = Condition.Run(varStore, funcTable) as ExpressoPrimitive;
 			if(cond == null)
-				throw new EvalException("Cannot evaluate the expression as a boolean.");
+				throw new EvalException("Cannot evaluate the expression to a boolean.");
 
 			return Body.Run(varStore, funcTable);
         }

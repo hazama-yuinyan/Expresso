@@ -4,6 +4,9 @@ using Expresso.Interpreter;
 
 namespace Expresso.Ast
 {
+	/// <summary>
+	/// The Print statement.
+	/// </summary>
 	public class PrintStatement : Statement
 	{
 		public List<Expression> Expressions{get; internal set;}
@@ -31,7 +34,7 @@ namespace Expresso.Ast
         {
 			foreach (var expr in Expressions) {
 				object obj = expr.Run(varStore, funcTable);
-				Console.Write("{0} ", obj.ToString());
+				Console.Write("{0}", obj.ToString());
 			}
 			Console.WriteLine();
 			return null;

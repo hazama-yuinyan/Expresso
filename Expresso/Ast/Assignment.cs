@@ -6,6 +6,7 @@ namespace Expresso.Ast
 {
     /// <summary>
     /// 代入文。
+	/// The assignment statement.
     /// </summary>
     public class Assignment : Statement
     {

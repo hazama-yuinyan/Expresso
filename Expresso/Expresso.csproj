@@ -72,7 +72,7 @@
     <Compile Include="Ast\IntegerSequence.cs" />
     <Compile Include="Ast\MemberReference.cs" />
     <Compile Include="Ast\Comprehension.cs" />
-    <Compile Include="Ast\RValueExpressions.cs" />
+    <Compile Include="Ast\Iteration.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System" />

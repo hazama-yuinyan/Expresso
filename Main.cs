@@ -17,8 +17,16 @@ namespace ExpressoConsole
 			var parser = new Parser(new Scanner(file_name));
 			parser.Parse();
 			var interp = new Interpreter(parser.root);
-			interp.Initialize();
-			interp.Run();
+			try{
+				interp.Initialize();
+				interp.Run();
+			}
+			catch(EvalException eval_ex){
+				Console.WriteLine(eval_ex.Message);
+			}
+			catch(Exception e){
+				Console.WriteLine(e.Message);
+			}
 		}
 	}
 }

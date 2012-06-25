@@ -8,7 +8,9 @@ namespace Expresso.Ast
 {
 	/// <summary>
 	/// While文.
-	/// </summary>/
+	/// The While statement.
+	/// </summary>
+	/// <seealso cref="Node"/>
 	public class WhileStatement : Statement
 	{
 		/// <summary>

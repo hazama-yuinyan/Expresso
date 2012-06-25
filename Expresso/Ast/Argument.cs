@@ -14,7 +14,7 @@ namespace Expresso.Ast
 
         /// <summary>
         /// この引数のデフォルト値。
-		/// The optional value for this argument. It's null if none is specified.
+		/// The optional value for this argument. It would be null if none is specified.
         /// </summary>
         public Expression Option {get; internal set;}
 
@@ -43,11 +43,6 @@ namespace Expresso.Ast
         {
             return Option;
         }
-		
-		private object Apply(Function fn, VariableStore varStoreStore, Scope funcTable)
-		{
-			return fn.Body.Run(varStoreStore, funcTable);
-		}
 	}
 }
 

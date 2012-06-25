@@ -9,9 +9,6 @@ namespace Expresso.Ast
     /// 定数。
 	/// Represents a constant.
     /// </summary>
-    /// <remarks>
-    /// 今作ってる言語だと、直定数しかないけども。
-    /// </remarks>
     public class Constant : Expression
     {
 		/// <summary>

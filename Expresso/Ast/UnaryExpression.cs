@@ -7,6 +7,7 @@ namespace Expresso.Ast
 {
 	/// <summary>
 	/// 単項演算。
+	/// Reperesents an unary expression.
 	/// </summary>
 	public class UnaryExpression : Expression
 	{
@@ -17,6 +18,7 @@ namespace Expresso.Ast
 
 		/// <summary>
 		/// オペランド。
+		/// The operand.
 		/// </summary>
 		public Expression Operand { get; internal set; }
 

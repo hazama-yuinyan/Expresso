@@ -114,10 +114,10 @@ namespace Expresso.Emulator
         /// <param name="f">関数のASTノード。</param>
         /// <param name="addressTable">関数アドレステーブル。</param>
         /// <returns>Call 命令。</returns>
-        /// <remarks>
+        /// <summary>
         /// 関数アドレス解決は、Call が呼ばれた時点でなくても、
         /// 実際に Instruction.Action が呼ばれるまでの間に解決されてればOK。
-        /// </remarks>
+        /// </summary>
         public static Instruction Call(Ast.Function f, Dictionary<Ast.Function, int> addressTable)
         {
             return new Instruction(

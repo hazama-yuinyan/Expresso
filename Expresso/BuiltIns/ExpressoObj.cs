@@ -21,7 +21,8 @@ namespace Expresso.BuiltIns
 		FUNCTION,
 		SEQ,
 		ARRAY,
-		SUBSCRIPT
+		SUBSCRIPT,
+		_CASE_DEFAULT
 	};
 	
 	/// <summary>

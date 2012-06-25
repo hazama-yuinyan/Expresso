@@ -43,9 +43,9 @@ namespace Expresso.Emulator
 		/// <summary>
 		/// プログラム実行停止しているかどうか。
 		/// </summary>
-		/// <remarks>
+		/// <summary>
 		/// Halt 命令が実行されたら実行停止。
-		/// </remarks>
+		/// </summary>
 		public bool IsHalted { get; private set; }
 
 		/// <summary>
@@ -56,10 +56,10 @@ namespace Expresso.Emulator
 		/// <summary>
 		/// 値の出力先。
 		/// </summary>
-		/// <remarks>
+		/// <summary>
 		/// トップレベルのスコープで Return 命令が実行された場合、
 		/// 値を出力する。
-		/// </remarks>
+		/// </summary>
 		public event Action<int> Output;
 
 		/// <summary>

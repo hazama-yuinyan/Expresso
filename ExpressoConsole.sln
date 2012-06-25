@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Expresso", "Expresso\Expres
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExpressoTest", "ExpressoTest\ExpressoTest.csproj", "{0E5E78FF-13EF-4A1A-B568-3F8A1CDE6F8B}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SymbolicComputation", "SymbolicComputation\SymbolicComputation.csproj", "{F4F22C1D-3EAA-455B-9461-AEA206B44208}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x86 = Debug|x86
@@ -25,6 +27,10 @@ Global
 		{7429CF14-72B5-4019-94A4-4BA593C6FB4C}.Debug|x86.Build.0 = Debug|x86
 		{7429CF14-72B5-4019-94A4-4BA593C6FB4C}.Release|x86.ActiveCfg = Release|x86
 		{7429CF14-72B5-4019-94A4-4BA593C6FB4C}.Release|x86.Build.0 = Release|x86
+		{F4F22C1D-3EAA-455B-9461-AEA206B44208}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{F4F22C1D-3EAA-455B-9461-AEA206B44208}.Debug|x86.Build.0 = Debug|Any CPU
+		{F4F22C1D-3EAA-455B-9461-AEA206B44208}.Release|x86.ActiveCfg = Release|Any CPU
+		{F4F22C1D-3EAA-455B-9461-AEA206B44208}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(MonoDevelopProperties) = preSolution
 		StartupItem = ExpressoConsole.csproj
