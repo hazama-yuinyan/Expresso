@@ -9,7 +9,7 @@
     <OutputType>Exe</OutputType>
     <RootNamespace>ExpressoConsole</RootNamespace>
     <AssemblyName>ExpressoConsole</AssemblyName>
-    <StartupObject>ExpressoConsole.ExpressoMain</StartupObject>
+    <StartupObject>Expresso.Terminal.ExpressoMain</StartupObject>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
     <DebugSymbols>true</DebugSymbols>

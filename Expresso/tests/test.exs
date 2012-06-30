@@ -32,8 +32,9 @@ def MakeTuple()
 	return "あかりちゃん", "かわいいよ、あかりちゃん", 130; //A return statement containing a list of expressions must yield a tuple.
 }
 
-def PrintList($input)
+def PrintList($input, $header = "")
 {
+	print $header;
 	let $tmp = null;
 	for($tmp in 0..5)
 		print $tmp + 1, "番目の項目:", $input[$tmp];
@@ -49,7 +50,7 @@ def TestSwitch($input)
 		print "あかりんかわかわ";
 		
 	case (0..10):
-		print "The value in the range of 0 to 10";
+		print "The value is in the range of 0 to 10";
 	}
 }
 
@@ -87,6 +88,8 @@ def main()
 		print $item;*/
 	
 	PrintList($list_obj);
+	let $list_obj2 = $list_obj[0..2];
+	PrintList($list_obj2, "Sliced list:");
 	print "Left shift:", $w << 1;
 	print "$x + 1 + 3 * 2 = ", $x + 1 + 3 * 2;
 	TestSwitch("abc");

@@ -8,9 +8,8 @@
     <ProjectGuid>{F4F22C1D-3EAA-455B-9461-AEA206B44208}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>MyMath</RootNamespace>
-    <AssemblyName>MyMath</AssemblyName>
-    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
+    <RootNamespace>Expresso.Symbolic</RootNamespace>
+    <AssemblyName>SymbolicComputation</AssemblyName>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
@@ -46,22 +45,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="CodeDom.cs" />
-    <Compile Include="Numeric\DynamicalSystem.cs" />
-    <Compile Include="Numeric\Function.cs" />
-    <Compile Include="Numeric\Function4D.cs" />
-    <Compile Include="Numeric\SurfaceDynamics.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Symbolic\BinaryExpression.cs" />
-    <Compile Include="Symbolic\CallExpression.cs" />
-    <Compile Include="Symbolic\ConstantExpression.cs" />
-    <Compile Include="Symbolic\Expression.cs">
-    </Compile>
-    <Compile Include="Symbolic\Lambda.cs" />
-    <Compile Include="Symbolic\LambdaException.cs" />
-    <Compile Include="Symbolic\UnaryExpression.cs" />
-    <Compile Include="Util.cs" />
-    <Compile Include="Symbolic\ParameterExpression.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
@@ -71,4 +55,17 @@
   <Target Name="AfterBuild">
   </Target>
   -->
+  <ItemGroup>
+    <None Include="Symbolic\Equation.cs" />
+    <None Include="Symbolic\Interfaces.cs" />
+    <None Include="Symbolic\PridefinedConstants.cs" />
+    <None Include="Symbolic\Symbol.cs" />
+    <None Include="Symbolic\Symbolic.cs" />
+    <None Include="CodeDom.cs" />
+    <None Include="Util.cs" />
+    <None Include="Numeric\DynamicalSystem.cs" />
+    <None Include="Numeric\Function.cs" />
+    <None Include="Numeric\Function4D.cs" />
+    <None Include="Numeric\SurfaceDynamics.cs" />
+  </ItemGroup>
 </Project>

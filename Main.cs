@@ -1,7 +1,7 @@
 using System;
 using Expresso.Interpreter;
 
-namespace ExpressoConsole
+namespace Expresso.Terminal
 {
 	class ExpressoMain
 	{
@@ -16,7 +16,7 @@ namespace ExpressoConsole
 			var file_name = args[0];
 			var parser = new Parser(new Scanner(file_name));
 			parser.Parse();
-			var interp = new Interpreter(parser.root);
+			var interp = new Expresso.Interpreter.Interpreter(parser.root);
 			try{
 				interp.Initialize();
 				interp.Run();
