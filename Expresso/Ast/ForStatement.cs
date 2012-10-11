@@ -68,7 +68,7 @@ namespace Expresso.Ast
 
         internal override object Run(VariableStore varStore, Scope funcTable)
         {
-            IEnumerable iterable = Target.Run(varStore, funcTable) as IEnumerable;
+            IEnumerable<ExpressoObj> iterable = Target.Run(varStore, funcTable) as IEnumerable<ExpressoObj>;
 			if(iterable == null)
 				throw new EvalException("Can not evaluate the expression to a valid object");
 
@@ -80,14 +80,15 @@ namespace Expresso.Ast
 			}
 			var enumerator = iterable.GetEnumerator();
 			while (true) {
-				foreach (var lvalue in lvalues) {
-					var val = (ExpressoObj)enumerator.Current;
-					varStore.Assign(lvalue.Name, val);
-				}
 				if(Body.Type == NodeType.BreakStatement || !enumerator.MoveNext())
 					break;
 				else if(Body.Type == NodeType.ContinueStatement)
 					continue;
+
+				foreach (var lvalue in lvalues) {
+					var val = enumerator.Current;
+					varStore.Assign(lvalue.Name, val);
+				}
 
 				Body.Run(varStore, funcTable);
 			}

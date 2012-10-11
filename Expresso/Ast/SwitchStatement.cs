@@ -106,7 +106,7 @@ namespace Expresso.Ast
 			foreach (var item in Labels) {
 				var label_obj = item.Run(varStore, funcTable) as ExpressoObj;
 				var pl = label_obj as ExpressoPrimitive;
-				if(ImplementaionHelpers.IsOfType(label_obj, TYPES.SEQ)){
+				if(ImplementaionHelpers.IsOfType(pt, TYPES.INTEGER) && ImplementaionHelpers.IsOfType(label_obj, TYPES.SEQ)){
 					var int_seq = label_obj as ExpressoIntegerSequence;
 					if(int_seq == null)
 						throw new EvalException("Something wrong has occurred!");

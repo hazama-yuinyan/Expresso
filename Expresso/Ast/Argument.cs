@@ -18,6 +18,10 @@ namespace Expresso.Ast
         /// </summary>
         public Expression Option {get; internal set;}
 
+		/// <summary>
+		/// この引数の型。
+		/// The type of the argument.
+		/// </summary>
 		public TYPES ParamType{get; internal set;}
 
         public override NodeType Type

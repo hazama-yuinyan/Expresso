@@ -36,8 +36,11 @@ def PrintList($input, $header = "")
 {
 	print $header;
 	let $tmp = null;
-	for($tmp in 0..5)
-		print $tmp + 1, "番目の項目:", $input[$tmp];
+	print "リストの中身は";
+	for($tmp in $input)
+		print $tmp;
+	
+	print "です。";
 }
 
 def TestSwitch($input)
@@ -47,6 +50,7 @@ def TestSwitch($input)
 		print "Detects a string";
 	
 	case "あかりちゃん":
+	case "akarichan":
 		print "あかりんかわかわ";
 		
 	case (0..10):
@@ -81,6 +85,7 @@ def main()
 	let $dict_obj = MakeDict();
 	let $tuple_obj = MakeTuple(), $tuple_obj2 = ("あかりちゃん", "ちなつちゃん", 2424);
 	let $item = null;
+	print "Print range object:";
 	for($x in $range_obj)
 		print $x;
 	
@@ -95,4 +100,5 @@ def main()
 	TestSwitch("abc");
 	TestSwitch(5);
 	TestSwitch($tuple_obj2[0]);
+	TestSwitch("akarichan");
 }

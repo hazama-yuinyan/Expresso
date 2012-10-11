@@ -5,21 +5,25 @@ namespace Expresso.Ast
 {
     /// <summary>
     /// 関数呼び出し。
+	/// Reperesents a function call.
     /// </summary>
     public class Call : Expression
     {
         /// <summary>
         /// 呼び出す対象。
+		/// The target function to be called.
         /// </summary>
         public Function Function { get; internal set; }
 
         /// <summary>
         /// 呼び出す対象の関数名。
+		/// The target function name.
         /// </summary>
         public string Name { get { return this.Function.Name; } }
 
         /// <summary>
         /// 与える実引数リスト。
+		/// The argument list to be supplied to the call.
         /// </summary>
         public List<Expression> Arguments { get; internal set; }
 
@@ -55,7 +59,7 @@ namespace Expresso.Ast
         {
             Function fn = Function;
 			var child = new VariableStore{Parent = varStore};
-			for (int i = 0; i < Arguments.Count; ++i) {	//実引数をローカル変数として変数テーブルに追加する
+			for (int i = 0; i < fn.Parameters.Count; ++i) {	//実引数をローカル変数として変数テーブルに追加する
 				child.Add(fn.Parameters[i].Name, (Arguments.Count <= i) ? fn.Parameters[i].Option.Run(varStore, funcTable) : Arguments[i].Run(varStore, funcTable));
 			}
 			
