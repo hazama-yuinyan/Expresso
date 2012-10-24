@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using Expresso.Interpreter;
 using Expresso.BuiltIns;
+using Expresso.Helpers;
 
 namespace Expresso.Ast
 {
@@ -10,7 +11,7 @@ namespace Expresso.Ast
 	/// For文。
 	/// The For statement.
 	/// </summary>
-	public class ForStatement : Statement
+	public class ForStatement : BreakableStatement
 	{
 		/// <summary>
         /// body内で操作対象となるオブジェクトを参照するのに使用する式群。
@@ -66,11 +67,13 @@ namespace Expresso.Ast
 			return block.Parent;
 		}*/
 
-        internal override object Run(VariableStore varStore, Scope funcTable)
+        internal override object Run(VariableStore varStore)
         {
-            IEnumerable<ExpressoObj> iterable = Target.Run(varStore, funcTable) as IEnumerable<ExpressoObj>;
+            IEnumerable<ExpressoObj> iterable = Target.Run(varStore) as IEnumerable<ExpressoObj>;
 			if(iterable == null)
 				throw new EvalException("Can not evaluate the expression to a valid object");
+
+			can_continue = true;
 
 			Parameter[] lvalues = new Parameter[LValues.Count];
 			for (int i = 0; i < LValues.Count; ++i) {
@@ -79,18 +82,16 @@ namespace Expresso.Ast
 					throw new EvalException("The left-hand-side of the \"in\" keyword must yield a lvalue(an referencible value such as variables)");
 			}
 			var enumerator = iterable.GetEnumerator();
-			while (true) {
-				if(Body.Type == NodeType.BreakStatement || !enumerator.MoveNext())
+			while (can_continue) {
+				if(!enumerator.MoveNext())
 					break;
-				else if(Body.Type == NodeType.ContinueStatement)
-					continue;
 
 				foreach (var lvalue in lvalues) {
 					var val = enumerator.Current;
 					varStore.Assign(lvalue.Name, val);
 				}
 
-				Body.Run(varStore, funcTable);
+				Body.Run(varStore);
 			}
 			return null;
         }

@@ -34,12 +34,12 @@ namespace Expresso.Ast
             return this.Targets.GetHashCode() ^ this.Expressions.GetHashCode();
         }
 
-        internal override object Run(VariableStore varStore, Scope funcTable)
+        internal override object Run(VariableStore varStore)
         {
 			if(enumerators == null){
 				enumerators = new IEnumerator[Expressions.Count];
 				for (int i = 0; i < Expressions.Count; ++i) {
-					var iterable = Expressions[i].Run(varStore, funcTable) as IEnumerable;
+					var iterable = Expressions[i].Run(varStore) as IEnumerable;
 					if(iterable == null)
 						throw new EvalException("{0} isn't evaluated to an iterable.", Expressions[i]);
 
@@ -54,7 +54,7 @@ namespace Expresso.Ast
 			}
 
 			for (int i = 0; i < Targets.Count; ++i) {
-				varStore.Assign(((Parameter)Targets[i].Run(varStore, funcTable)).Name, objs[i]);
+				varStore.Assign(((Parameter)Targets[i].Run(varStore)).Name, objs[i]);
 			}
 
 			return null;

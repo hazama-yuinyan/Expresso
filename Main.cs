@@ -16,7 +16,7 @@ namespace Expresso.Terminal
 			var file_name = args[0];
 			var parser = new Parser(new Scanner(file_name));
 			parser.Parse();
-			var interp = new Expresso.Interpreter.Interpreter(parser.root);
+			var interp = new Expresso.Interpreter.Interpreter{Root = parser.root, MainFunc = Parser.main_func};
 			try{
 				interp.Initialize();
 				interp.Run();

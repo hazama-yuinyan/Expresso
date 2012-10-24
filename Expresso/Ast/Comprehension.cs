@@ -31,11 +31,11 @@ namespace Expresso.Ast
             return this.Body.GetHashCode() ^ this.Child.GetHashCode();
         }
 
-        internal override object Run(VariableStore varStore, Scope funcTable)
+        internal override object Run(VariableStore varStore)
         {
 			var child_store = new VariableStore{Parent = varStore};
-			Child.Run(child_store, funcTable);
-			return Body.Run(child_store, funcTable);
+			Child.Run(child_store);
+			return Body.Run(child_store);
         }
 	}
 
@@ -72,10 +72,10 @@ namespace Expresso.Ast
             return this.Iteration.GetHashCode() ^ this.Body.GetHashCode();
         }
 
-        internal override object Run(VariableStore varStore, Scope funcTable)
+        internal override object Run(VariableStore varStore)
         {
-			Iteration.Run(varStore, funcTable);
-			return Body.Run(varStore, funcTable);
+			Iteration.Run(varStore);
+			return Body.Run(varStore);
         }
 	}
 
@@ -112,13 +112,13 @@ namespace Expresso.Ast
             return this.Body.GetHashCode() ^ this.Condition.GetHashCode();
         }
 
-        internal override object Run(VariableStore varStore, Scope funcTable)
+        internal override object Run(VariableStore varStore)
         {
-			var cond = Condition.Run(varStore, funcTable) as ExpressoPrimitive;
+			var cond = Condition.Run(varStore) as ExpressoPrimitive;
 			if(cond == null)
 				throw new EvalException("Cannot evaluate the expression to a boolean.");
 
-			return Body.Run(varStore, funcTable);
+			return Body.Run(varStore);
         }
 	}
 }

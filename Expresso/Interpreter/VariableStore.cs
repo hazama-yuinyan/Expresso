@@ -76,12 +76,12 @@ namespace Expresso.Interpreter
 		/// <exception cref='EvalException'>
 		/// スコープ内にその識別子の変数が存在しない場合に発生する。
 		/// </exception>
-		public object Get(string name)
+		public ExpressoObj Get(string name)
 		{
 			return Get(name, true);
 		}
 		
-		public object Get(string name, bool searchParent)
+		public ExpressoObj Get(string name, bool searchParent)
 		{
 			if(searchParent){
 				for(VariableStore vars = this; vars != null; vars = vars.Parent){
@@ -100,7 +100,7 @@ namespace Expresso.Interpreter
 			}
 		}
 		
-		static object Get(string name, VariableStore vars)
+		static ExpressoObj Get(string name, VariableStore vars)
 		{
 			if(!vars.store.ContainsKey(name))
 				return null;

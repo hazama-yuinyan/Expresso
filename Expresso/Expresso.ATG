@@ -2,14 +2,34 @@ using System.Collections.Generic;
 using Expresso.Ast;
 using Expresso.BuiltIns;
 using Expresso.Interpreter;
+using Expresso.Helpers;
 
 
 
 COMPILER Expresso
 
 	internal Scope cur_scope = new Scope();		//the current scope of variables
-	private Scope funcs = new Scope();			//the namespace for funcTable
+	static private Scope funcs = new Scope();	//the namespace for funcTable
 	public Block root = new Block();
+	static public Function main_func = null;	//the main function
+	static private List<BreakableStatement> breakables = new List<BreakableStatement>();	//the current parent breakbles
+	
+	static Parser()
+	{			//Add built-in functions
+		Function[] native_funcs = {
+			new NativeFunctionUnary<double, double>(
+				"abs", new Argument{Name = "val", ParamType = TYPES.FLOAT}, Math.Abs
+			),
+			new NativeFunctionUnary<double, double>(
+				"sqrt", new Argument{Name = "val", ParamType = TYPES.FLOAT}, Math.Sqrt
+			),
+			new NativeFunctionUnary<int, double>(
+				"ToInt", new Argument{Name = "val", ParamType = TYPES.FLOAT}, (double x) => (int)x
+			)
+		};
+		foreach(var tmp in native_funcs)
+			funcs.AddFunction(tmp);
+	}
 	
 	Constant CreateConstant(TYPES type)
 	{
@@ -52,6 +72,12 @@ COMPILER Expresso
 		return t.kind != _lcurly;
 	}
 	
+	bool IdentIsNotCallable()
+	{
+		Token x = scanner.Peek();
+		return x.kind != _lparen;
+	}
+	
 	Parameter DeclareVariable(ref Expression rhs, string name, TYPES type)
 	{
 		var variable = new Parameter{
@@ -72,19 +98,30 @@ COMPILER Expresso
 		return new ExprStatement{Expressions = exprs};
 	}
 	
+	static BreakStatement MakeBreakStatement(int count)
+	{
+		var tmp = new List<BreakableStatement>();
+		for(int len = Parser.breakables.Count, i = 0, j = count; j > 0; ++i){
+			var enclosing = Parser.breakables[len - 1 - i];
+			tmp.Add(enclosing);
+			if(enclosing.Type == NodeType.WhileStatement || enclosing.Type == NodeType.ForStatement) --j;
+		}
+		return new BreakStatement{Count = count, Enclosings = tmp};
+	}
+	
 	static IfStatement MakeIfStatement(Expression condition, Statement trueBlock, Statement falseBlock)
 	{
 		return new IfStatement{Condition = condition, TrueBlock = trueBlock, FalseBlock = falseBlock};
 	}
 	
-	static WhileStatement MakeWhileStatement(Expression condition, Statement body)
+	static WhileStatement MakeWhileStatement()
 	{
-		return new WhileStatement{Condition = condition, Body = body};
+		return new WhileStatement();
 	}
 	
-	static ForStatement MakeForStatement(List<Expression> lValues, Expression rValue, Statement body)
+	static ForStatement MakeForStatement()
 	{
-		return new ForStatement{LValues = lValues, Target = rValue, Body = body};
+		return new ForStatement();
 	}
 	
 	static SwitchStatement MakeSwitchStatement(Expression target, List<CaseClause> cases)
@@ -170,6 +207,7 @@ TOKENS
   colon = ':'.
   semicolon = ';'.
   lcurly = '{'.
+  lparen = '('.
 
 COMMENTS FROM "/*" TO "*/" NESTED
 COMMENTS FROM "//" TO lf
@@ -180,18 +218,36 @@ IGNORE cr + lf + tab
 
 PRODUCTIONS
 /*------------------------------------------------------------------------*/
-Expresso                    (. Statement stmt; .)
+Expresso                    (. Statement stmt = null; .)
 = 
   //ProgramDefinition
-  FuncDecl<out stmt>		(. root.Statements.Add(stmt); .)
-    
+  
+  (  ExprStmt<out stmt>
+  |  FuncDecl<out stmt>
+  )							(. root.Statements.Add(stmt); .)
   {  ExprStmt<out stmt>		(. root.Statements.Add(stmt); .)
   |  FuncDecl<out stmt>		(. root.Statements.Add(stmt); .)
-  }.
+  }							(. Parser.main_func = funcs.GetFunction("main"); .).
 /*------------------------------------------------------------------------*/
 /*ProgramDefinition<out Statement require>
 =
-  RequireStmt<out require>.*/
+  {RequireStmt<out require>}.*/
+/*------------------------------------------------------------------------*/
+/*RequireStmt<out Statement stmt>
+=
+  SYNC
+  "require"
+  Module<out module>
+  [  "as"
+     Name<out name>
+  ]
+  {  ','
+     Module<out module>
+     [  "as"
+        Name<out name>
+     ]
+  }
+  SYNC ';' .*/
 /*------------------------------------------------------------------------*/
 Type<out TYPES type>
 =                        (. type = TYPES.UNDEF; .)
@@ -243,7 +299,7 @@ BreakStmt<out Statement stmt>		(. int count = 1; .)
   [  "upto"
      integer						(. count = Convert.ToInt32(t.val); .)
   ]
-  SYNC ';' 							(. stmt = new BreakStatement{Count = count}; .).
+  SYNC ';' 							(. stmt = MakeBreakStatement(count); .).
 /*------------------------------------------------------------------------*/
 ContinueStmt<out Statement stmt>	(. int count = 1; .)
 = 
@@ -252,21 +308,6 @@ ContinueStmt<out Statement stmt>	(. int count = 1; .)
      integer						(. count = Convert.ToInt32(t.val); .)
   ]
   SYNC ';' 							(. stmt = new ContinueStatement{Count = count}; .).
-/*------------------------------------------------------------------------*/
-/*RequireStmt<out Statement stmt>
-=
-  "require"
-  Module<out module>
-  [  "as"
-     Name<out name>
-  ]
-  {  ','
-     Module<out module>
-     [  "as"
-        Name<out name>
-     ]
-  }
-  SYNC ';' .*/
 /*------------------------------------------------------------------------*/
 /*AugAssignOpe<TYPES type>
 =
@@ -289,16 +330,26 @@ ExprStmt<out Statement stmt>				(. List<Expression> targets = null; List<Express
   }
   )SYNC ';' 								(. if(stmt == null) stmt = MakeExprStatement(targets); .).
 /*------------------------------------------------------------------------*/
-Block<out Statement block, bool needsScope = true>	(. Block tmp; if(needsScope) cur_scope = new Scope{Parent = cur_scope}; Statement stmt; .)
+Block<out Statement block, bool needsScope = true>	(.
+														Block tmp;
+														if(needsScope) cur_scope = new Scope{Parent = cur_scope}; Statement stmt;
+													.)
 =
-  '{'								(. tmp = new Block(); .)
+  '{'								(.
+  										tmp = new Block();
+  										Parser.breakables.Add(tmp);
+  									.)
   Stmt<out stmt>					(. tmp.Statements.Add(stmt); .)
   { Stmt<out stmt>					(. tmp.Statements.Add(stmt); .)
   }
-  SYNC '}' 							(. cur_scope = cur_scope.Parent; block = tmp; .).
+  '}' 								(.
+  										cur_scope = cur_scope.Parent; block = tmp;
+  										Parser.breakables.RemoveLast();
+  									.).
 /*------------------------------------------------------------------------*/
 CompoundStmt<out Statement stmt>	(. stmt = null; .)
 =
+  SYNC
     IfStmt<out stmt>					
   | WhileStmt<out stmt>
   | ForStmt<out stmt>
@@ -314,21 +365,38 @@ IfStmt<out Statement stmt>			(. Expression tmp; Statement true_block, false_bloc
      Stmt<out false_block>
   ]                      			(. stmt = MakeIfStatement(tmp, true_block, false_block); .).
 /*------------------------------------------------------------------------*/
-WhileStmt<out Statement stmt>		(. Expression cond; Statement body = null; .)
+WhileStmt<out Statement stmt>		(. Expression cond; Statement body = null; WhileStatement tmp; .)
 =
-  "while"
+  "while"							(.
+  										tmp = MakeWhileStatement();
+  										Parser.breakables.Add(tmp);
+  									.)
   '(' CondExpr<out cond> ')'
-  Stmt<out body>                   	(. stmt = MakeWhileStatement(cond, body); .).
+  Stmt<out body>                   	(. 
+  										tmp.Condition = cond;
+  										tmp.Body = body;
+  										Parser.breakables.RemoveLast();
+  										stmt = tmp;
+  									.).
 /*------------------------------------------------------------------------*/
-ForStmt<out Statement stmt>			(. List<Expression> target_list; Expression rvalue; Statement body; .)
+ForStmt<out Statement stmt>			(. List<Expression> target_list; Expression rvalue; Statement body; ForStatement tmp; .)
 =
-  "for"
+  "for"								(.
+  										tmp = MakeForStatement();
+  										Parser.breakables.Add(tmp);
+  									.)
   '('
   LValueList<out target_list>
   "in"
   CondExpr<out rvalue>
   ')'
-  Stmt<out body>					(. stmt = MakeForStatement(target_list, rvalue, body); .).
+  Stmt<out body>					(. 
+  										tmp.LValues = target_list;
+  										tmp.Target = rvalue;
+  										tmp.Body = body;
+  										Parser.breakables.RemoveLast();
+  										stmt = tmp;
+  									.).
 /*------------------------------------------------------------------------*/
 SwitchStmt<out Statement stmt>		(. Expression target; List<CaseClause> cases; .)
 =
@@ -338,7 +406,7 @@ SwitchStmt<out Statement stmt>		(. Expression target; List<CaseClause> cases; .)
   ')'
   '{'
   CaseClauseList<out cases>
-  SYNC '}'							(. stmt = MakeSwitchStatement(target, cases); .).
+  '}'								(. stmt = MakeSwitchStatement(target, cases); .).
 /*------------------------------------------------------------------------*/
 CaseClauseList<. out List<CaseClause> clauses .>	(. clauses = new List<CaseClause>(); List<Expression> label_list; Statement inner; .)
 =
@@ -410,6 +478,7 @@ VarDecl<. out List<Expression> outs .> 	(. string name; TYPES type; Expression r
 /*------------------------------------------------------------------------*/
 FuncDecl<out Statement func>    (. string name; TYPES type; Statement block; List<Argument>@params = new List<Argument>(); .)
 =
+  SYNC
   "def"							(. type = TYPES.VAR; block = null; cur_scope = new Scope{Parent = cur_scope}; .)
   ident							(. name = t.val; .)
   '('
@@ -488,8 +557,8 @@ NotTest<out Expression expr>		(. Expression term; expr = null; .)
 =
   ( "not"
     NotTest<out term>				(. expr = MakeUnaryExpr(OperatorType.MINUS, term); .)
-  | Comparison<out expr>
-  ).
+  )
+  | Comparison<out expr>.
 /*------------------------------------------------------------------------*/
 Comparison<out Expression expr>		(. Expression rhs; OperatorType type; .)
 =
@@ -573,7 +642,8 @@ PowerOpe<out Expression expr>    (. Expression rhs; .)
 /*------------------------------------------------------------------------*/
 Primary<out Expression expr>	(. string name = ""; expr = null; .)
 =
-  (  Atom<out expr>
+  (  IF(IdentIsNotCallable())
+     Atom<out expr>
   |  ident						(. name = t.val; .)
   )
   {  Trailer<ref expr, name>
@@ -616,9 +686,9 @@ Subscript<out Expression subscript>	(. subscript = null; .)
 /*------------------------------------------------------------------------*/
 ArgList<. ref List<Expression> args .>		(. Expression expr; .)
 =
-  Primary<out expr>							(. args.Add(expr); .)
+  CondExpr<out expr>						(. args.Add(expr); .)
   {  ','
-     Primary<out expr>						(. args.Add(expr); .)
+     CondExpr<out expr>						(. args.Add(expr); .)
   }.
 /*------------------------------------------------------------------------*/
 Atom<out Expression expr>			(. string name; expr = null; .)
@@ -705,7 +775,7 @@ CompIf<out Expression expr>				(. Expression tmp, body = null; .)
   [CompIter<out body>]					(. expr = MakeCompIf(tmp, body); .).
 /*------------------------------------------------------------------------*/
 Variable<out string name>
-= WEAK '$'
+= 
   ident				(. name = t.val; .).
 /*------------------------------------------------------------------------*/
 Literal<out Expression expr>	(. expr = null; .)

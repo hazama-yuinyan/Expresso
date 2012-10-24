@@ -42,9 +42,14 @@ namespace Expresso.Ast
             return this.Value.GetHashCode();
         }
 
-        internal override object Run(VariableStore varStore, Scope funcTable)
+        internal override object Run(VariableStore varStore)
         {
 			return new ExpressoPrimitive{Value = Value, Type = ValType};
         }
+
+		public override string ToString ()
+		{
+			return string.Format("{0}", Value);
+		}
     }
 }

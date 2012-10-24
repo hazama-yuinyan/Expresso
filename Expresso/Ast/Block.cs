@@ -1,13 +1,15 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using Expresso.Interpreter;
+using Expresso.Helpers;
 
 namespace Expresso.Ast
 {
     /// <summary>
     /// 複文ブロック。
+	/// Represents a block of statements.
     /// </summary>
-    public class Block : Statement
+    public class Block : BreakableStatement
     {
         private List<Statement> statements = new List<Statement>();
 
@@ -28,7 +30,7 @@ namespace Expresso.Ast
         {
             get
             {
-                return this.Statements.OfType<VarDeclaration>().Select(x => x.Variables[0]);
+                return ImplementaionHelpers.CollectLocalVars(this);
             }
         }
 
@@ -68,12 +70,15 @@ namespace Expresso.Ast
             return max;
         }
 
-        internal override object Run(VariableStore varStore, Scope funcTable)
+        internal override object Run(VariableStore varStore)
         {
             object result = null;
+
+			can_continue = true;
 			
 			foreach (var stmt in Statements) {
-				result = stmt.Run(varStore, funcTable);
+				result = stmt.Run(varStore);
+				if(!can_continue) break;
 			}
 			
 			return result;
@@ -81,7 +86,7 @@ namespace Expresso.Ast
 		
 		public override string ToString()
 		{
-			return string.Format("[Block: Statements={0}, LocalVariables={1}, Type={2}]", Statements, LocalVariables, Type);
+			return string.Format("[Statements.length={0}, ({1})]", Statements.Count, LocalVariables);
 		}
     }
 }

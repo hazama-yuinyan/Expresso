@@ -1,19 +1,33 @@
 using System;
+using System.Collections.Generic;
 using Expresso.Interpreter;
 
 namespace Expresso.Ast
 {
+	public abstract class BreakableStatement : Statement
+	{
+		protected bool can_continue = true;
+
+		public bool CanContinue
+		{
+			get {return this.can_continue;}
+			internal set {this.can_continue = value;}
+		}
+	}
+
 	public class BreakStatement : Statement
 	{
 		/// <summary>
 		/// breakの際に何階層分ループ構造を遡るか。
+		/// Indicates how many loops we will break out.
 		/// </summary>
 		public int Count{get; internal set;}
 
 		/// <summary>
 		/// このbreak文が含まれるループ構文。
+		/// Loops that have this statement as a child.
 		/// </summary>
-		public Statement Enclosing{get; internal set;}
+		public List<BreakableStatement> Enclosings{get; internal set;}
 
 		public override NodeType Type
         {
@@ -34,8 +48,12 @@ namespace Expresso.Ast
             return this.Count.GetHashCode();
         }
 
-        internal override object Run(VariableStore varStore, Scope funcTable)
+        internal override object Run(VariableStore varStore)
         {
+			foreach(var enclosing in Enclosings){
+				enclosing.CanContinue = false;
+			}
+
 			return null;
         }
 	}
@@ -63,7 +81,7 @@ namespace Expresso.Ast
             return this.Count.GetHashCode();
         }
 
-        internal override object Run(VariableStore varStore, Scope funcTable)
+        internal override object Run(VariableStore varStore)
         {
 			return null;
         }

@@ -48,16 +48,16 @@ namespace Expresso.Ast
             return this.Condition.GetHashCode() ^ this.TrueBlock.GetHashCode() ^ this.FalseBlock.GetHashCode();
         }
 
-        internal override object Run(VariableStore varStore, Scope funcTable)
+        internal override object Run(VariableStore varStore)
         {
-            var cond = Condition.Run(varStore, funcTable) as ExpressoPrimitive;
+            var cond = Condition.Run(varStore) as ExpressoPrimitive;
 			if(!ImplementaionHelpers.IsOfType(cond, TYPES.BOOL))
 				throw new EvalException("Invalid expression! The condition of an if statement must yields a boolean!");
 			
 			if((bool)cond.Value)
-				return TrueBlock.Run(new VariableStore{Parent = varStore}, funcTable);
+				return TrueBlock.Run(varStore);
 			else
-				return FalseBlock.Run(new VariableStore{Parent = varStore}, funcTable);
+				return (FalseBlock != null) ? FalseBlock.Run(varStore) : null;
         }
 	}
 }

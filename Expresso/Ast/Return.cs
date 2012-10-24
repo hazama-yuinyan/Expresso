@@ -34,16 +34,16 @@ namespace Expresso.Ast
             return this.Expressions.GetHashCode();
         }
 
-        internal override object Run(VariableStore varStore, Scope funcTable)
+        internal override object Run(VariableStore varStore)
         {
             if(Expressions.Count == 0){
 				return new ExpressoTuple(new List<ExpressoObj>());
 			}else if(Expressions.Count == 1){
-				return Expressions[0].Run(varStore, funcTable);
+				return Expressions[0].Run(varStore);
 			}else{
 				var objs = new List<ExpressoObj>();
 				foreach (Expression expr in Expressions) {
-					objs.Add((ExpressoObj)expr.Run(varStore, funcTable));
+					objs.Add((ExpressoObj)expr.Run(varStore));
 				}
 				
 				return ExpressoFunctions.MakeTuple(objs);

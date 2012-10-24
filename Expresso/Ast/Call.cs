@@ -1,5 +1,7 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using Expresso.Interpreter;
+using Expresso.Helpers;
 
 namespace Expresso.Ast
 {
@@ -55,20 +57,26 @@ namespace Expresso.Ast
             return this.Name.GetHashCode() ^ this.Arguments.GetHashCode();
         }
 
-        internal override object Run(VariableStore varStore, Scope funcTable)
+        internal override object Run(VariableStore varStore)
         {
             Function fn = Function;
 			var child = new VariableStore{Parent = varStore};
 			for (int i = 0; i < fn.Parameters.Count; ++i) {	//実引数をローカル変数として変数テーブルに追加する
-				child.Add(fn.Parameters[i].Name, (Arguments.Count <= i) ? fn.Parameters[i].Option.Run(varStore, funcTable) : Arguments[i].Run(varStore, funcTable));
+				child.Add(fn.Parameters[i].Name, (i < Arguments.Count) ? Arguments[i].Run(varStore) : fn.Parameters[i].Option.Run(varStore));
 			}
-			
-			return Apply(fn, child, funcTable);
+			var local_vars = fn.LocalVariables;
+			if(local_vars.Any()){					//Checking for its emptiness
+				foreach(var local in local_vars){	//ローカル変数を予め変数テーブルに追加しておく
+					child.Add(local.Name, ImplementaionHelpers.GetDefaultValueFor(local.ParamType));
+				}
+			}
+
+			return fn.Run(child);
         }
-		
-		private object Apply(Function fn, VariableStore child, Scope funcTable)
+
+		public override string ToString ()
 		{
-			return fn.Body.Run(child, funcTable);
+			return string.Format("[Call for {0} with ({1})]", Name, Arguments);
 		}
     }
 }

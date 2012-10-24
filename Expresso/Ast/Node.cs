@@ -80,9 +80,8 @@ namespace Expresso.Ast
         /// Run the code.
         /// </summary>
         /// <param name="varStore">ローカル変数テーブル。</param>
-        /// <param name="funcTable">関数テーブル。現在のスコープで参照できる関数の実体を格納してある。</param>
         /// <returns>そのコードを評価した結果の戻り値など。</returns>
-        internal abstract object Run(VariableStore varStore, Scope funcTable);
+        internal abstract object Run(VariableStore varStore);
         #endregion
     }
 }

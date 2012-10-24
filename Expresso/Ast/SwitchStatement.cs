@@ -42,15 +42,15 @@ namespace Expresso.Ast
             return this.Target.GetHashCode() ^ this.Cases.GetHashCode();
         }
 
-        internal override object Run(VariableStore varStore, Scope funcTable)
+        internal override object Run(VariableStore varStore)
         {
-			var target = Target.Run(varStore, funcTable) as ExpressoPrimitive;
+			var target = Target.Run(varStore) as ExpressoPrimitive;
 			if(target == null)
 				throw new EvalException("Can not evaluate the expression to a primitive object.");
 
             foreach (var clause in Cases) {
 				clause.Target = target;
-				if((bool)clause.Run(varStore, funcTable)) break;
+				if((bool)clause.Run(varStore)) break;
             }
 			return null;
         }
@@ -68,9 +68,14 @@ namespace Expresso.Ast
 
         /// <summary>
         /// 実行対象の文(ブロック)。
+		/// The body statement or block.
         /// </summary>
         public Statement Body { get; internal set; }
 
+		/// <summary>
+		/// 評価対象となるオブジェクト。
+		/// The target object to be evaluated.
+		/// </summary>
 		public ExpressoObj Target{private get; set;}
 
         public override NodeType Type
@@ -93,18 +98,18 @@ namespace Expresso.Ast
             return this.Labels.GetHashCode() ^ this.Body.GetHashCode();
         }
 
-        internal override object Run(VariableStore varStore, Scope funcTable)
+        internal override object Run(VariableStore varStore)
         {
-			return Run(varStore, funcTable, Target);
+			return Run(varStore, Target);
         }
 
-		private object Run(VariableStore varStore, Scope funcTable, ExpressoObj target)
+		private object Run(VariableStore varStore, ExpressoObj target)
 		{
 			var pt = target as ExpressoPrimitive;
 			bool result = false;
 
 			foreach (var item in Labels) {
-				var label_obj = item.Run(varStore, funcTable) as ExpressoObj;
+				var label_obj = item.Run(varStore) as ExpressoObj;
 				var pl = label_obj as ExpressoPrimitive;
 				if(ImplementaionHelpers.IsOfType(pt, TYPES.INTEGER) && ImplementaionHelpers.IsOfType(label_obj, TYPES.SEQ)){
 					var int_seq = label_obj as ExpressoIntegerSequence;
@@ -112,16 +117,16 @@ namespace Expresso.Ast
 						throw new EvalException("Something wrong has occurred!");
 
 					if(int_seq.Includes((int)pt.Value)){
-						Body.Run(varStore, funcTable);
+						Body.Run(varStore);
 						result = true;
 						break;
 					}
 				}else if(ImplementaionHelpers.IsOfType(label_obj, TYPES._CASE_DEFAULT)){
-					Body.Run(varStore, funcTable);
+					Body.Run(varStore);
 					result = true;
 					break;
 				}else if(pl != null && pl.Equals(pt)){
-					Body.Run(varStore, funcTable);
+					Body.Run(varStore);
 					result = true;
 					break;
 				}

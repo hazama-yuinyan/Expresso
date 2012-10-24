@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Expresso.Ast;
 using Expresso.BuiltIns;
+using Expresso.Helpers;
 
 /**
  *----------------------------------------------------
@@ -22,6 +23,7 @@ using Expresso.BuiltIns;
  * 6.組み込み型の一種であるIntSeq型は、その名の通り整数の数列を表す型で、カウントアップ式のfor文が存在しないExpressoで
  * C言語におけるfor(int i = 0; i < max; ++i){...}のような処理を実現する他、配列やリストなどPythonにおいてSequenceと呼ばれる
  * オブジェクトに作用してそのシーケンスオブジェクトの一部または全体をコピーする際に用いられる。(PythonにおけるSliceに相当)
+ * 7.変数のスコープは、JavaScriptなど同様、関数のみが持つ。
  * 
  * Expresso組み込みの型に関して
  * int : いわゆる整数型。C#のint型を使用。
@@ -35,9 +37,9 @@ using Expresso.BuiltIns;
  * tuple : Pythonなどで実装されているタプル型と同じ。長さ不変、書き換え不可な配列とも言える。
  * list : データ構造でよく話題に上るリスト型と同じ。長さ可変、書き換え可能な配列とも言える。C#では、Listクラスで実装。
  * dictionary : いわゆる辞書型。言語によっては、連想配列とも呼ばれるもの。C#では、Dictionaryクラスで実装。
- * expression : ワンライナーのクロージャーの糖衣構文。
+ * expression : 基本的にはワンライナーのクロージャーの糖衣構文。記号演算もサポートする点が通常のクロージャーと異なる。
  * function : 普通の関数型。構文は違えど、クロージャーも実装上はこの型になる。
- * int_seq : Pythonの RubyのRangeオブジェクトと似たようなもの。整数の数列を作り出すジェネレーターと思えばいい。
+ * int_seq : PythonのxrangeオブジェクトやRubyのRangeオブジェクトと似たようなもの。整数の数列を作り出すジェネレーターと思えばいい。
  *----------------------------------------------------
  */
 
@@ -53,7 +55,9 @@ namespace Expresso.Interpreter
 		/// 抽象構文木のルート要素を保持する。
 		/// The root element for the AST.
 		/// </summary>
-		public Ast.Block Root{get; internal set;}
+		public Block Root{get; set;}
+
+		public Function MainFunc{get; set;}
 		
 		/// <summary>
 		/// グローバルな環境。主にそのプログラム中で定義されている関数を保持する。
@@ -67,11 +71,6 @@ namespace Expresso.Interpreter
 		/// </summary>
 		private VariableStore var_store = new VariableStore();
 		
-		public Interpreter(Block root)
-		{
-			Root = root;
-		}
-		
 		/// <summary>
 		/// main関数をエントリーポイントとしてプログラムを実行する。
 		/// Run the program with the "main" function as the entry point.
@@ -81,22 +80,21 @@ namespace Expresso.Interpreter
 		/// </exception>
 		public void Run()
 		{
-			Ast.Function main_fn = environ.GetFunction("main");
-			if(main_fn == null)
+			if(MainFunc == null)
 				throw new EvalException("No entry point");
 			
 			var call = new Call{
-				Function = main_fn,
+				Function = MainFunc,
 				Arguments = new List<Ast.Expression>()
 			};
 			
-			call.Run(var_store, environ);
+			call.Run(var_store);
 		}
 		
 		/// <summary>
-		/// グローバルに存在する変数宣言や関数定義文を実行して
+		/// グローバルに存在する変数宣言文を実行して
 		/// グローバルの環境を初期化する。
-		/// Executes all the definitions of variables and functions in global
+		/// Executes all the definitions of variables in global
 		/// in order to initialize the global environment.
 		/// </summary>
 		/// <exception cref='Exception'>
@@ -107,8 +105,19 @@ namespace Expresso.Interpreter
 			Block topmost = Root as Block;
 			if(topmost == null)
 				throw new Exception("Topmost block not found!");
-			
-			topmost.Run(var_store, environ);
+
+			foreach(var global_var in topmost.LocalVariables){	//グローバル変数を予め変数ストアに追加しておく
+				var_store.Add(global_var.Name, ImplementaionHelpers.GetDefaultValueFor(global_var.ParamType));
+			}
+
+			foreach(var var_decl in topmost.Statements.OfType<VarDeclaration>().ToArray()){
+				var_decl.Run(var_store);
+			}
+		}
+
+		public VariableStore GetGlobalVarStore()
+		{
+			return var_store;
 		}
 	}
 }

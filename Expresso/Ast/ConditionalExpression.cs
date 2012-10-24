@@ -45,12 +45,17 @@ namespace Expresso.Ast
             return this.Condition.GetHashCode() ^ this.TrueExpression.GetHashCode() ^ this.FalseExpression.GetHashCode();
         }
 
-        internal override object Run(VariableStore varStore, Scope funcTable)
+        internal override object Run(VariableStore varStore)
         {
-            if((bool)Condition.Run(varStore, funcTable))
-				return TrueExpression.Run(varStore, funcTable);
+            if((bool)Condition.Run(varStore))
+				return TrueExpression.Run(varStore);
 			else
-				return FalseExpression.Run(varStore, funcTable);
+				return FalseExpression.Run(varStore);
         }
+
+		public override string ToString ()
+		{
+			return string.Format("{0} ? {1} : {2}", Condition, TrueExpression, FalseExpression);
+		}
     }
 }

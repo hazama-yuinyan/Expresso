@@ -43,7 +43,7 @@ namespace Expresso.Ast
             return this.Start.GetHashCode() ^ this.End.GetHashCode() ^ this.Step.GetHashCode();
         }
 		
-		internal override object Run(VariableStore varStore, Scope funcTable)
+		internal override object Run(VariableStore varStore)
 		{
 			return new ExpressoIntegerSequence(Start, End, Step);
 		}

@@ -43,10 +43,16 @@ namespace Expresso.Ast
             return this.Name.GetHashCode() ^ this.Option.GetHashCode();
         }
 
-        internal override object Run(VariableStore varStore, Scope funcTable)
+        internal override object Run(VariableStore varStore)
         {
             return Option;
         }
+
+		public override string ToString ()
+		{
+			return (Option != null) ? string.Format("{0} (- {1} [= {2}]", Name, ParamType, Option)
+				: string.Format("{0} (- {1}", Name, ParamType);
+		}
 	}
 }
 

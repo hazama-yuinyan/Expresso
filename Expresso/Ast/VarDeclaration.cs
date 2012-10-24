@@ -7,6 +7,7 @@ namespace Expresso.Ast
 {
 	/// <summary>
 	/// 変数宣言式。
+	/// The variable declaration.
 	/// </summary>
 	public class VarDeclaration : Expression
 	{
@@ -40,15 +41,20 @@ namespace Expresso.Ast
             return this.Variables.GetHashCode() ^ this.Expressions.GetHashCode();
         }
 
-        internal override object Run(VariableStore varStore, Scope funcTable)
+        internal override object Run(VariableStore varStore)
         {
 			ExpressoObj obj;
 			for (int i = 0; i < Variables.Count; ++i) {
-				obj = (ExpressoObj)Expressions[i].Run(varStore, funcTable);
-				varStore.Add(Variables[i].Name, obj);
+				obj = (ExpressoObj)Expressions[i].Run(varStore);
+				varStore.Assign(Variables[i].Name, obj);
 			}
 			return null;
         }
+
+		public override string ToString ()
+		{
+			return string.Format("let {0} : {1}", Variables, Expressions);
+		}
 	}
 }
 

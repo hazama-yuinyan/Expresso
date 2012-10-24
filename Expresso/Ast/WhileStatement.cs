@@ -11,15 +11,17 @@ namespace Expresso.Ast
 	/// The While statement.
 	/// </summary>
 	/// <seealso cref="Node"/>
-	public class WhileStatement : Statement
+	public class WhileStatement : BreakableStatement
 	{
 		/// <summary>
         /// 条件式。
+		/// The condition.
         /// </summary>
         public Expression Condition { get; internal set; }
 
         /// <summary>
         /// 条件が真の間評価し続ける文(郡)。
+		/// A statement or a block to be processed while the condition is true.
         /// </summary>
         public Statement Body { get; internal set; }
 
@@ -43,17 +45,14 @@ namespace Expresso.Ast
             return this.Condition.GetHashCode() ^ this.Body.GetHashCode();
         }
 
-        internal override object Run(VariableStore varStore, Scope funcTable)
+        internal override object Run(VariableStore varStore)
         {
-            ExpressoPrimitive cond;
-			
-			while((cond = Condition.Run(varStore, funcTable) as ExpressoPrimitive) != null && (bool)cond.Value){
-				if(Body.Type == NodeType.BreakStatement)
-					break;
-				else if(Body.Type == NodeType.ContinueStatement)
-					continue;
+			ExpressoPrimitive cond;
 
-				Body.Run(varStore, funcTable);
+			can_continue = true;
+			
+			while(can_continue && (cond = Condition.Run(varStore) as ExpressoPrimitive) != null && (bool)cond.Value){
+				Body.Run(varStore);
 			}
 			
 			if(!ImplementaionHelpers.IsOfType(cond, TYPES.BOOL))

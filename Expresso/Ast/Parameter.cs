@@ -44,12 +44,17 @@ namespace Expresso.Ast
             return this.Name.GetHashCode();
         }
 
-        internal override object Run(VariableStore varStore, Scope funcTable)
+        internal override object Run(VariableStore varStore)
         {
             if(varStore == null)
 				throw new EvalException("Can not find variable store");
 				
 			return varStore.Get(Name);
         }
+
+		public override string ToString()
+		{
+			return string.Format("{0} (- {1}", Name, ParamType);
+		}
     }
 }

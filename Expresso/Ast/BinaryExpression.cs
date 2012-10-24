@@ -46,9 +46,9 @@ namespace Expresso.Ast
             return this.Operator.GetHashCode() ^ this.Left.GetHashCode() ^ this.Right.GetHashCode();
         }
 
-        internal override object Run(VariableStore varStore, Scope funcTable)
+        internal override object Run(VariableStore varStore)
         {
-            ExpressoPrimitive first = Left.Run(varStore, funcTable) as ExpressoPrimitive, second = Right.Run(varStore, funcTable) as ExpressoPrimitive;
+            ExpressoPrimitive first = Left.Run(varStore) as ExpressoPrimitive, second = Right.Run(varStore) as ExpressoPrimitive;
 			if(first == null || second == null)
 				throw new EvalException("Can not apply the operation to non-primitive types.");
 
@@ -268,7 +268,7 @@ namespace Expresso.Ast
 				op = "";
 				break;
 			}
-			return string.Format("[BinaryExpression: {1} {0} {2}]", op, Left, Right);
+			return string.Format("{1} {0} {2}", op, Left, Right);
 		}
     }
 }

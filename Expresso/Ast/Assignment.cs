@@ -42,12 +42,12 @@ namespace Expresso.Ast
             return this.Targets.GetHashCode() ^ this.Expressions.GetHashCode();
         }
 
-        internal override object Run(VariableStore varStore, Scope funcTable)
+        internal override object Run(VariableStore varStore)
         {
 			int i;
 			var rvalues = new List<ExpressoObj>();
 			for(i = 0; i < Expressions.Count; ++i)	//まず右辺をすべて評価する
-				rvalues.Add((ExpressoObj)Expressions[i].Run(varStore, funcTable));
+				rvalues.Add((ExpressoObj)Expressions[i].Run(varStore));
 
 			for (i = 0; i < Targets.Count; ++i) {	//その後左辺値に代入する
 				Parameter lvalue = (Parameter)Targets[i];
@@ -58,7 +58,7 @@ namespace Expresso.Ast
 		
 		public override string ToString()
 		{
-			return string.Format("[Assignment: Variables={0}, Expressions={1}]", Targets.ToString(), Expressions.ToString());
+			return string.Format("{0} = {1}", Targets, Expressions);
 		}
     }
 }

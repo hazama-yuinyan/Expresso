@@ -30,10 +30,10 @@ namespace Expresso.Ast
             return this.Expressions.GetHashCode();
         }
 
-        internal override object Run(VariableStore varStore, Scope funcTable)
+        internal override object Run(VariableStore varStore)
         {
 			foreach (Expression expr in Expressions) {
-				expr.Run(varStore, funcTable);
+				expr.Run(varStore);
 			}
 			
 			return null;

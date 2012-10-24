@@ -42,9 +42,9 @@ namespace Expresso.Ast
 			return this.Operator.GetHashCode () ^ this.Operand.GetHashCode ();
 		}
 
-		internal override object Run(VariableStore varStore, Scope funcTable)
+		internal override object Run(VariableStore varStore)
 		{
-			var ope = Operand.Run(varStore, funcTable) as ExpressoPrimitive;
+			var ope = Operand.Run(varStore) as ExpressoPrimitive;
 			if(ope == null)
 				throw new EvalException("Invalid object type!");
 			

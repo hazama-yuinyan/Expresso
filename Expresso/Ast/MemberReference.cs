@@ -31,13 +31,13 @@ namespace Expresso.Ast
             return this.Parent.GetHashCode() ^ this.Subscription.GetHashCode();
         }
 
-        internal override object Run(VariableStore varStore, Scope funcTable)
+        internal override object Run(VariableStore varStore)
         {
-            var obj = Parent.Run(varStore, funcTable) as ExpressoObj;
+            var obj = Parent.Run(varStore) as ExpressoObj;
 			if(obj == null)
 				throw new EvalException("Can not evaluate the object to a valid one.");
 
-			var subscription = (ExpressoObj)Subscription.Run(varStore, funcTable);
+			var subscription = (ExpressoObj)Subscription.Run(varStore);
 			if(subscription is ExpressoIntegerSequence)
 				return ((ExpressoContainer)obj).Slice((ExpressoIntegerSequence)subscription);
 

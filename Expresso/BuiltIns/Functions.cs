@@ -68,7 +68,7 @@ namespace Expresso.BuiltIns
 		}
 
 		/// <summary>
-		/// Format the specified str in the way like the printf of C language does.
+		/// Format the specified str in the way like the printf of the C language does.
 		/// </summary>
 		/// <param name='str'>
 		/// The string containing formats.
@@ -92,6 +92,11 @@ namespace Expresso.BuiltIns
 
 			}
 			return null;
+		}
+
+		public static int CastToInt(double val)
+		{
+			return (int)val;
 		}
 		#endregion
 		#region Expressoのシーケンス生成関数郡

@@ -38,7 +38,7 @@ namespace Expresso.Ast
             return this.InitializeList.GetHashCode();
         }
 
-        internal override object Run(VariableStore varStore, Scope funcTable)
+        internal override object Run(VariableStore varStore)
         {
             ExpressoObj result = null;
 			switch (ObjType) {
@@ -46,7 +46,7 @@ namespace Expresso.Ast
 			{
 				var tmp_list = new List<ExpressoObj>();
 				foreach (var item in InitializeList) {
-					tmp_list.Add((ExpressoObj)item.Run(varStore, funcTable));
+					tmp_list.Add((ExpressoObj)item.Run(varStore));
 				}
 				result = ExpressoFunctions.MakeTuple(tmp_list);
 				break;
@@ -56,7 +56,7 @@ namespace Expresso.Ast
 			{
 				var tmp_list = new List<ExpressoObj>();
 				foreach (var item in InitializeList) {
-					tmp_list.Add((ExpressoObj)item.Run(varStore, funcTable));
+					tmp_list.Add((ExpressoObj)item.Run(varStore));
 				}
 				result = ExpressoFunctions.MakeList(tmp_list);
 				break;
@@ -68,9 +68,9 @@ namespace Expresso.Ast
 				var value_list = new List<ExpressoObj>();
 				for (int i = 0; i < InitializeList.Count; ++i) {
 					if(i % 2 == 0)
-						key_list.Add((ExpressoObj)InitializeList[i].Run(varStore, funcTable));
+						key_list.Add((ExpressoObj)InitializeList[i].Run(varStore));
 					else
-						value_list.Add((ExpressoObj)InitializeList[i].Run(varStore, funcTable));
+						value_list.Add((ExpressoObj)InitializeList[i].Run(varStore));
 				}
 				result = ExpressoFunctions.MakeDict(key_list, value_list, key_list.Count);
 				break;
