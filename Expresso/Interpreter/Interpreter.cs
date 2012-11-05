@@ -8,7 +8,7 @@ using Expresso.Helpers;
 /**
  *----------------------------------------------------
  * Expressoの簡易仕様書
- * 1.基本的には動的型付けであり、変数に型はなく値のみが型を持つ。
+ * 1.基本的には静的型付けであるが、極力プログラマーが型を明示しなくてもいいようになっている。
  * ただし、宣言文で変数の型を明示した場合は例外でこの場合、変数自体がインスタンスとなる。（つまり、代入文を書けばそれはオブジェクトの
  * ディープコピーを意味することになり、関数に渡せば値渡しとなってスタックにそのオブジェクトのコピーが作られることになる）
  * 一方で、宣言時に型名を省略した場合、または明示的に"var"型を宣言した場合には変数は参照となり代入や関数に渡してもオブジェクトは
@@ -29,17 +29,17 @@ using Expresso.Helpers;
  * int : いわゆる整数型。C#のint型を使用。
  * bool : C#のboolean型を使用。
  * float : いわゆる浮動小数点型。６４ビット精度版のみ実装。C#ではdoubleを使用。
- * big_int : いわゆる多倍長整数型。C#では、BigIntegerクラスを使用。
+ * bigint : いわゆる多倍長整数型。C#では、BigIntegerクラスを使用。
  * rational : 分数型。分子と分母を整数型でもつため、実用上有理数を完璧な精度で保持できる。
  * string : いわゆる文字列型。C#のstring型を使用。C#以外で実装する場合、文字列の比較をオブジェクトの参照の比較で行うように実装すること。
- * char_seq : Cで言うところのchar[]型。C#では、char型の配列で実装。
+ * bytearray : Cで言うところのchar[]型。要するにバイトの配列。C#では、char型の配列で実装。
  * var(variadic) : 総称型。実装上は、どんな型の変数でも指し示すことのできるポインターや参照。
  * tuple : Pythonなどで実装されているタプル型と同じ。長さ不変、書き換え不可な配列とも言える。
  * list : データ構造でよく話題に上るリスト型と同じ。長さ可変、書き換え可能な配列とも言える。C#では、Listクラスで実装。
  * dictionary : いわゆる辞書型。言語によっては、連想配列とも呼ばれるもの。C#では、Dictionaryクラスで実装。
  * expression : 基本的にはワンライナーのクロージャーの糖衣構文。記号演算もサポートする点が通常のクロージャーと異なる。
  * function : 普通の関数型。構文は違えど、クロージャーも実装上はこの型になる。
- * int_seq : PythonのxrangeオブジェクトやRubyのRangeオブジェクトと似たようなもの。整数の数列を作り出すジェネレーターと思えばいい。
+ * intseq : PythonのxrangeオブジェクトやRubyのRangeオブジェクトと似たようなもの。整数の数列を作り出すジェネレーターと思えばいい。
  *----------------------------------------------------
  */
 
@@ -78,7 +78,8 @@ namespace Expresso.Interpreter
 		/// <exception cref='EvalException'>
 		/// Is thrown when the eval exception.
 		/// </exception>
-		public void Run()
+		/// <returns>The return value of the main function</returns>
+		public ExpressoObj Run()
 		{
 			if(MainFunc == null)
 				throw new EvalException("No entry point");
@@ -88,7 +89,7 @@ namespace Expresso.Interpreter
 				Arguments = new List<Ast.Expression>()
 			};
 			
-			call.Run(var_store);
+			return call.Run(var_store) as ExpressoObj;
 		}
 		
 		/// <summary>

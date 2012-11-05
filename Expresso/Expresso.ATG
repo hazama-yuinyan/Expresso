@@ -24,7 +24,7 @@ COMPILER Expresso
 				"sqrt", new Argument{Name = "val", ParamType = TYPES.FLOAT}, Math.Sqrt
 			),
 			new NativeFunctionUnary<int, double>(
-				"ToInt", new Argument{Name = "val", ParamType = TYPES.FLOAT}, (double x) => (int)x
+				"toInt", new Argument{Name = "val", ParamType = TYPES.FLOAT}, (double x) => (int)x
 			)
 		};
 		foreach(var tmp in native_funcs)
@@ -255,16 +255,16 @@ Type<out TYPES type>
  | "bool"                (. type = TYPES.BOOL; .)
  | "float"				 (. type = TYPES.FLOAT; .)
  | "rational"			 (. type = TYPES.RATIONAL; .)
- | "big_int"			 (. type = TYPES.BIGINT; .)
+ | "bigint"				 (. type = TYPES.BIGINT; .)
  | "string"				 (. type = TYPES.STRING; .)
- | "char_seq"			 (. type = TYPES.CHARSEQ; .)
+ | "bytearray"			 (. type = TYPES.BYTEARRAY; .)
  | "var"				 (. type = TYPES.VAR; .)
  | "tuple"				 (. type = TYPES.TUPLE; .)
  | "list"				 (. type = TYPES.LIST; .)
  | "dictionary"			 (. type = TYPES.DICT; .)
  | "expression"			 (. type = TYPES.EXPRESSION; .)
  | "function"			 (. type = TYPES.FUNCTION; .)
- | "int_seq"			 (. type = TYPES.SEQ; .)
+ | "intseq"				 (. type = TYPES.SEQ; .)
  ).
 /*------------------------------------------------------------------------*/
 Stmt<out Statement stmt>			(. stmt = null; .)
@@ -317,6 +317,10 @@ ContinueStmt<out Statement stmt>	(. int count = 1; .)
   |  "/="
   |  "**="
   |  "%="
+  |  "&="
+  |  "|="
+  |  "<<="
+  |  ">>="
   ).*/
 /*------------------------------------------------------------------------*/
 ExprStmt<out Statement stmt>				(. List<Expression> targets = null; List<Expression> expr_list; stmt = null; .)
@@ -386,6 +390,7 @@ ForStmt<out Statement stmt>			(. List<Expression> target_list; Expression rvalue
   										Parser.breakables.Add(tmp);
   									.)
   '('
+  ["let"]
   LValueList<out target_list>
   "in"
   CondExpr<out rvalue>
@@ -712,48 +717,42 @@ Atom<out Expression expr>			(. string name; expr = null; .)
     [DictMaker<out expr>]
     SYNC '}' .
 /*------------------------------------------------------------------------*/
-IntSeqExpr<out Expression expr>		(. int start, end, step; .)
+IntSeqExpr<out Expression expr>		(. int start = 0, end = -1, step = 1; .)
 =
-  integer							(. start = Convert.ToInt32(t.val); end = -1; step = 1; .)
+  [integer]							(. start = Convert.ToInt32(t.val); .)
   ".."
-  [integer]							(. end = Convert.ToInt32(t.val); .)
+  integer							(. end = Convert.ToInt32(t.val); .)
   [ ':'
     integer							(. step = Convert.ToInt32(t.val); .)
   ]									(. expr = MakeIntSeq(start, end, step); .).
 /*------------------------------------------------------------------------*/
 TupleMaker<out Expression expr>			(. Expression tmp; List<Expression> list = new List<Expression>(); expr = null; .)
 =
-  CondExpr<out tmp>						(. list.Add(tmp); .)
-  (  //CompFor<out comp_expr>
-  /*|*/  {  ','
+  { CondExpr<out tmp>						(. list.Add(tmp); .)
+    [',']
+  }
+  /*(  //CompFor<out comp_expr>
         CondExpr<out tmp>				(. list.Add(tmp); .)
      }
-     /*[',']*/
-  )										(. expr = MakeObjInitializer(TYPES.TUPLE, list); .).
+  )*/									(. expr = MakeObjInitializer(TYPES.TUPLE, list); .).
 /*------------------------------------------------------------------------*/
 ListMaker<out Expression expr>			(. expr = null; Expression tmp; List<Expression> list = new List<Expression>(); .)
 =
-  CondExpr<out tmp>						(. list.Add(tmp); .)
+  { CondExpr<out tmp>					(. list.Add(tmp); .)
+    [',']
+  }
+  /*|
   ( CompFor<out tmp>					(. expr = MakeComp(list[0], tmp); .)
-  | {  ','
-       CondExpr<out tmp>				(. list.Add(tmp); .)
-    }
-    /*[',']*/
-  )										(. if(expr == null) expr = MakeObjInitializer(TYPES.LIST, list); .).
+  )*/										(. if(expr == null) expr = MakeObjInitializer(TYPES.LIST, list); .).
 /*------------------------------------------------------------------------*/
 DictMaker<out Expression expr>			(. Expression lhs, rhs; List<Expression> list = new List<Expression>(); .)
 =
-  CondExpr<out lhs>						(. list.Add(lhs); .)
-  ':'
-  CondExpr<out rhs>						(. list.Add(rhs); .)
-  (
-    {  ','
-       CondExpr<out lhs>				(. list.Add(lhs); .)
-       ':'
-       CondExpr<out rhs>				(. list.Add(rhs); .)
-    }
-    /*[',']*/
-  )										(. expr = MakeObjInitializer(TYPES.DICT, list); .).
+  { CondExpr<out lhs>					(. list.Add(lhs); .)
+    ':'
+    CondExpr<out rhs>					(. list.Add(rhs); .)
+    [',']
+  }
+  										(. expr = MakeObjInitializer(TYPES.DICT, list); .).
 /*------------------------------------------------------------------------*/
 CompIter<out Expression expr>			(. expr = null; .)
 =
@@ -763,6 +762,7 @@ CompIter<out Expression expr>			(. expr = null; .)
 CompFor<out Expression expr>			(. Expression iter, body = null; List<Expression> expr_list, test_list; .)
 =
   "for"
+  ["let"]
   LValueList<out expr_list>
   "in"
   RValueList<out test_list>				(. iter = MakeIteration(expr_list, test_list); .)

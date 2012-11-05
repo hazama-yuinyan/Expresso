@@ -41,13 +41,6 @@ namespace Expresso.Helpers
 			return reg.Replace(str, replacer);
 		}
 
-		public static Primitive AutoCast<Primitive>(ExpressoPrimitive target)
-		{
-			if(target == null) throw new Exception("Something wrong has occurred. The target is null!");
-
-			return (Primitive)target.Value;
-		}
-
 		public static TYPES GetTypeInExpresso(Type t)
 		{
 			switch(t.Name){

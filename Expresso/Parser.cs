@@ -52,7 +52,7 @@ internal Scope cur_scope = new Scope();		//the current scope of variables
 				"sqrt", new Argument{Name = "val", ParamType = TYPES.FLOAT}, Math.Sqrt
 			),
 			new NativeFunctionUnary<int, double>(
-				"ToInt", new Argument{Name = "val", ParamType = TYPES.FLOAT}, (double x) => (int)x
+				"toInt", new Argument{Name = "val", ParamType = TYPES.FLOAT}, (double x) => (int)x
 			)
 		};
 		foreach(var tmp in native_funcs)
@@ -299,7 +299,7 @@ internal Scope cur_scope = new Scope();		//the current scope of variables
 
 	void ExprStmt(out Statement stmt) {
 		List<Expression> targets = null; List<Expression> expr_list; stmt = null; 
-		if (la.kind == 41) {
+		if (la.kind == 36) {
 			VarDecl(out targets);
 		} else if (StartOf(3)) {
 			RValueList(out targets);
@@ -371,7 +371,7 @@ internal Scope cur_scope = new Scope();		//the current scope of variables
 		}
 		case 16: {
 			Get();
-			type = TYPES.CHARSEQ; 
+			type = TYPES.BYTEARRAY; 
 			break;
 		}
 		case 17: {
@@ -448,7 +448,7 @@ internal Scope cur_scope = new Scope();		//the current scope of variables
 			WhileStmt(out stmt);
 		} else if (la.kind == 35) {
 			ForStmt(out stmt);
-		} else if (la.kind == 37) {
+		} else if (la.kind == 38) {
 			SwitchStmt(out stmt);
 		} else if (la.kind == 43) {
 			FuncDecl(out stmt);
@@ -526,7 +526,7 @@ internal Scope cur_scope = new Scope();		//the current scope of variables
 		exprs = new List<Expression>(); 
 		CondExpr(out tmp);
 		exprs.Add(tmp); 
-		while (la.kind == 40) {
+		while (la.kind == 41) {
 			Get();
 			CondExpr(out tmp);
 			exprs.Add(tmp); 
@@ -537,7 +537,7 @@ internal Scope cur_scope = new Scope();		//the current scope of variables
 		string name; TYPES type; Expression rhs = null; Parameter variable; outs = new List<Expression>();
 		var vars = new List<Parameter>(); var exprs = new List<Expression>();
 		
-		Expect(41);
+		Expect(36);
 		type = TYPES.VAR; 
 		Variable(out name);
 		if (la.kind == 42) {
@@ -548,7 +548,7 @@ internal Scope cur_scope = new Scope();		//the current scope of variables
 			Get();
 			CondExpr(out rhs);
 		}
-		while (la.kind == 40) {
+		while (la.kind == 41) {
 			Get();
 			variable = DeclareVariable(ref rhs, name, type);
 			vars.Add(variable);
@@ -613,8 +613,11 @@ internal Scope cur_scope = new Scope();		//the current scope of variables
 		Parser.breakables.Add(tmp);
 		
 		Expect(9);
+		if (la.kind == 36) {
+			Get();
+		}
 		LValueList(out target_list);
-		Expect(36);
+		Expect(37);
 		CondExpr(out rvalue);
 		Expect(32);
 		Stmt(out body);
@@ -628,7 +631,7 @@ internal Scope cur_scope = new Scope();		//the current scope of variables
 
 	void SwitchStmt(out Statement stmt) {
 		Expression target; List<CaseClause> cases; 
-		Expect(37);
+		Expect(38);
 		Expect(9);
 		CondExpr(out target);
 		Expect(32);
@@ -660,7 +663,7 @@ internal Scope cur_scope = new Scope();		//the current scope of variables
 		targets = new List<Expression>(); 
 		AddOpe(out tmp);
 		targets.Add(tmp); 
-		while (WeakSeparator(40,7,8) ) {
+		while (WeakSeparator(41,7,8) ) {
 			AddOpe(out tmp);
 			targets.Add(tmp); 
 		}
@@ -671,7 +674,7 @@ internal Scope cur_scope = new Scope();		//the current scope of variables
 		CaseLabelList(out label_list);
 		Stmt(out inner);
 		clauses.Add(MakeCaseClause(label_list, inner)); 
-		while (la.kind == 38) {
+		while (la.kind == 39) {
 			CaseLabelList(out label_list);
 			Stmt(out inner);
 			clauses.Add(MakeCaseClause(label_list, inner)); 
@@ -682,7 +685,7 @@ internal Scope cur_scope = new Scope();		//the current scope of variables
 		label_list = new List<Expression>(); Expression tmp; 
 		CaseLabel(out tmp);
 		label_list.Add(tmp); 
-		while (la.kind == 38) {
+		while (la.kind == 39) {
 			CaseLabel(out tmp);
 			label_list.Add(tmp); 
 		}
@@ -690,14 +693,14 @@ internal Scope cur_scope = new Scope();		//the current scope of variables
 
 	void CaseLabel(out Expression expr) {
 		expr = null; 
-		Expect(38);
+		Expect(39);
 		if (StartOf(9)) {
 			Literal(out expr);
 		} else if (la.kind == 9) {
 			Get();
 			IntSeqExpr(out expr);
 			Expect(32);
-		} else if (la.kind == 39) {
+		} else if (la.kind == 40) {
 			Get();
 			expr = MakeConstant(TYPES._CASE_DEFAULT, "default"); 
 		} else SynErr(85);
@@ -733,13 +736,13 @@ internal Scope cur_scope = new Scope();		//the current scope of variables
 	}
 
 	void IntSeqExpr(out Expression expr) {
-		int start, end, step; 
-		Expect(2);
-		start = Convert.ToInt32(t.val); end = -1; step = 1; 
-		Expect(5);
+		int start = 0, end = -1, step = 1; 
 		if (la.kind == 2) {
 			Get();
 		}
+		start = Convert.ToInt32(t.val); 
+		Expect(5);
+		Expect(2);
 		end = Convert.ToInt32(t.val); 
 		if (la.kind == 6) {
 			Get();
@@ -774,7 +777,7 @@ internal Scope cur_scope = new Scope();		//the current scope of variables
 		Argument expr; 
 		Argument(out expr);
 		@params.Add(expr); 
-		while (la.kind == 40) {
+		while (la.kind == 41) {
 			Get();
 			Argument(out expr);
 			@params.Add(expr); 
@@ -989,7 +992,7 @@ internal Scope cur_scope = new Scope();		//the current scope of variables
 			SemErr(string.Format("Attempt to refer to an undefined variable \"{0}\"", name));
 			}
 			
-		} else if (StartOf(9)) {
+		} else if (StartOf(12)) {
 			if (NotFollowedByDoubleDots()) {
 				Literal(out expr);
 			} else {
@@ -1064,7 +1067,7 @@ internal Scope cur_scope = new Scope();		//the current scope of variables
 		Expression expr; 
 		CondExpr(out expr);
 		args.Add(expr); 
-		while (la.kind == 40) {
+		while (la.kind == 41) {
 			Get();
 			CondExpr(out expr);
 			args.Add(expr); 
@@ -1080,7 +1083,7 @@ internal Scope cur_scope = new Scope();		//the current scope of variables
 		Expression tmp; List<Expression> list = new List<Expression>(); expr = null; 
 		CondExpr(out tmp);
 		list.Add(tmp); 
-		while (la.kind == 40) {
+		while (la.kind == 41) {
 			Get();
 			CondExpr(out tmp);
 			list.Add(tmp); 
@@ -1095,8 +1098,8 @@ internal Scope cur_scope = new Scope();		//the current scope of variables
 		if (la.kind == 35) {
 			CompFor(out tmp);
 			expr = MakeComp(list[0], tmp); 
-		} else if (la.kind == 40 || la.kind == 66) {
-			while (la.kind == 40) {
+		} else if (la.kind == 41 || la.kind == 66) {
+			while (la.kind == 41) {
 				Get();
 				CondExpr(out tmp);
 				list.Add(tmp); 
@@ -1112,7 +1115,7 @@ internal Scope cur_scope = new Scope();		//the current scope of variables
 		Expect(6);
 		CondExpr(out rhs);
 		list.Add(rhs); 
-		while (la.kind == 40) {
+		while (la.kind == 41) {
 			Get();
 			CondExpr(out lhs);
 			list.Add(lhs); 
@@ -1126,8 +1129,11 @@ internal Scope cur_scope = new Scope();		//the current scope of variables
 	void CompFor(out Expression expr) {
 		Expression iter, body = null; List<Expression> expr_list, test_list; 
 		Expect(35);
+		if (la.kind == 36) {
+			Get();
+		}
 		LValueList(out expr_list);
-		Expect(36);
+		Expect(37);
 		RValueList(out test_list);
 		iter = MakeIteration(expr_list, test_list); 
 		if (la.kind == 31 || la.kind == 35) {
@@ -1168,17 +1174,18 @@ internal Scope cur_scope = new Scope();		//the current scope of variables
 	
 	static readonly bool[,] set = {
 		{T,x,x,x, x,x,T,T, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,T,T, T,x,x,x, x,x,x,x, x,x,x,T, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,T,x, x,x,x,x, x},
-		{x,T,T,T, T,x,x,x, T,T,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,T,x,x, x,x,x,T, x,x,x,x, x,x,x,x, x,x,x,T, T,x,x,x, x,T,x,x, T,T,T,x, x},
-		{x,T,T,T, T,x,x,x, T,T,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,T,x,T, x,x,x,T, x,x,x,x, x,x,x,x, x,x,x,T, T,x,x,x, x,T,x,x, T,T,T,x, x},
-		{x,T,T,T, T,x,x,x, T,T,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,T, x,x,x,x, x,x,x,x, x,x,x,T, T,x,x,x, x,T,x,x, T,T,T,x, x},
-		{x,T,T,T, T,x,x,x, T,T,x,x, x,x,x,x, x,x,x,x, x,x,x,x, T,T,T,x, T,x,x,x, x,x,x,x, x,x,x,x, x,T,x,x, x,x,x,T, x,x,x,x, x,x,x,x, x,x,x,T, T,x,x,x, x,T,x,x, T,T,T,x, x},
-		{x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,T, x,x,T,T, x,T,x,x, x,x,x,T, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x},
-		{x,T,T,T, T,x,x,x, T,T,x,x, x,x,x,x, x,x,x,x, x,x,x,x, T,T,T,x, T,x,x,T, x,x,T,T, x,T,x,x, x,T,x,T, x,x,x,T, x,x,x,x, x,x,x,x, x,x,x,T, T,x,x,x, x,T,x,x, T,T,T,x, x},
-		{x,T,T,T, T,x,x,x, T,T,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,T, T,x,x,x, x,T,x,x, T,T,T,x, x},
-		{x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, T,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x},
+		{x,T,T,T, T,T,x,x, T,T,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, T,x,x,x, x,x,x,x, x,x,x,T, x,x,x,x, x,x,x,x, x,x,x,T, T,x,x,x, x,T,x,x, T,T,T,x, x},
+		{x,T,T,T, T,T,x,x, T,T,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, T,x,x,x, x,x,x,T, x,x,x,T, x,x,x,x, x,x,x,x, x,x,x,T, T,x,x,x, x,T,x,x, T,T,T,x, x},
+		{x,T,T,T, T,T,x,x, T,T,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,T, x,x,x,x, x,x,x,x, x,x,x,T, T,x,x,x, x,T,x,x, T,T,T,x, x},
+		{x,T,T,T, T,T,x,x, T,T,x,x, x,x,x,x, x,x,x,x, x,x,x,x, T,T,T,x, T,x,x,x, x,x,x,x, T,x,x,x, x,x,x,x, x,x,x,T, x,x,x,x, x,x,x,x, x,x,x,T, T,x,x,x, x,T,x,x, T,T,T,x, x},
+		{x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,T, x,x,T,T, x,x,T,x, x,x,x,T, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x},
+		{x,T,T,T, T,T,x,x, T,T,x,x, x,x,x,x, x,x,x,x, x,x,x,x, T,T,T,x, T,x,x,T, x,x,T,T, T,x,T,x, x,x,x,T, x,x,x,T, x,x,x,x, x,x,x,x, x,x,x,T, T,x,x,x, x,T,x,x, T,T,T,x, x},
+		{x,T,T,T, T,T,x,x, T,T,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,T, T,x,x,x, x,T,x,x, T,T,T,x, x},
+		{x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,T,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x},
 		{x,x,T,T, T,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, T,T,T,x, x},
 		{x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, T,T,T,T, T,T,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x},
-		{x,T,T,T, T,x,x,x, T,T,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,T,x,x, T,T,T,x, x}
+		{x,T,T,T, T,T,x,x, T,T,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,T,x,x, T,T,T,x, x},
+		{x,x,T,T, T,T,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, T,T,T,x, x}
 
 	};
 } // end Parser
@@ -1206,16 +1213,16 @@ public class Errors {
 			case 11: s = "\"bool\" expected"; break;
 			case 12: s = "\"float\" expected"; break;
 			case 13: s = "\"rational\" expected"; break;
-			case 14: s = "\"big_int\" expected"; break;
+			case 14: s = "\"bigint\" expected"; break;
 			case 15: s = "\"string\" expected"; break;
-			case 16: s = "\"char_seq\" expected"; break;
+			case 16: s = "\"bytearray\" expected"; break;
 			case 17: s = "\"var\" expected"; break;
 			case 18: s = "\"tuple\" expected"; break;
 			case 19: s = "\"list\" expected"; break;
 			case 20: s = "\"dictionary\" expected"; break;
 			case 21: s = "\"expression\" expected"; break;
 			case 22: s = "\"function\" expected"; break;
-			case 23: s = "\"int_seq\" expected"; break;
+			case 23: s = "\"intseq\" expected"; break;
 			case 24: s = "\"print\" expected"; break;
 			case 25: s = "\"return\" expected"; break;
 			case 26: s = "\"break\" expected"; break;
@@ -1228,12 +1235,12 @@ public class Errors {
 			case 33: s = "\"else\" expected"; break;
 			case 34: s = "\"while\" expected"; break;
 			case 35: s = "\"for\" expected"; break;
-			case 36: s = "\"in\" expected"; break;
-			case 37: s = "\"switch\" expected"; break;
-			case 38: s = "\"case\" expected"; break;
-			case 39: s = "\"default\" expected"; break;
-			case 40: s = "\",\" expected"; break;
-			case 41: s = "\"let\" expected"; break;
+			case 36: s = "\"let\" expected"; break;
+			case 37: s = "\"in\" expected"; break;
+			case 38: s = "\"switch\" expected"; break;
+			case 39: s = "\"case\" expected"; break;
+			case 40: s = "\"default\" expected"; break;
+			case 41: s = "\",\" expected"; break;
 			case 42: s = "\"(-\" expected"; break;
 			case 43: s = "\"def\" expected"; break;
 			case 44: s = "\"?\" expected"; break;

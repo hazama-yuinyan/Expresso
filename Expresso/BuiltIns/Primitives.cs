@@ -669,6 +669,22 @@ namespace Expresso.BuiltIns
 			IsPositive = integer > 0 ? true : false;
 		}
 
+		public ExpressoFraction(double val)
+		{
+			long floored = (long)val, denominator = 1;
+			double tmp = val - (double)floored;
+			while(tmp < 1.0){
+				tmp *= 10.0;
+				floored *= 10;
+				denominator *= 10;
+			}
+
+			this.IsPositive = tmp > 0 ? true : false;
+			this.Numerator = (ulong)Math.Abs((long)tmp + floored);
+			this.Denominator = (ulong)denominator;
+			this.Reduce();
+		}
+
 		private static ulong CalcGDC(ulong first, ulong second)
 		{
 			ulong r, a = (first > second) ? first : second, b = (first > second) ? second : first, last = b;
@@ -712,6 +728,11 @@ namespace Expresso.BuiltIns
 			return new ExpressoFraction(other.Numerator * lcm / other.Denominator, lcm, other.IsPositive);
 		}
 
+		public ExpressoFraction Copy()
+		{
+			return new ExpressoFraction(Numerator, Denominator, IsPositive);
+		}
+
 		public int CompareTo(object obj)
 		{
 			var other = obj as ExpressoFraction;
@@ -742,6 +763,64 @@ namespace Expresso.BuiltIns
 			return string.Format("[ExpressoFraction: {0}{1} / {2}]", IsPositive ? "" : "-", Numerator, Denominator);
 		}
 
+		#region Arithmetic operators
+		public static ExpressoFraction operator+(ExpressoFraction lhs, ExpressoFraction rhs)
+		{
+			if(object.Equals(lhs.Denominator, rhs.Denominator)){
+				return new ExpressoFraction(lhs.Numerator + rhs.Numerator, lhs.Denominator);
+			}else{
+				ExpressoFraction tmp = lhs.Copy();
+				ExpressoFraction other_reduced = tmp.Reduce(tmp);
+				tmp.Numerator = tmp.Numerator + other_reduced.Numerator;
+				return tmp;
+			}
+		}
+		
+		public static ExpressoFraction operator+(ExpressoFraction lhs, ulong rhs)
+		{
+			return new ExpressoFraction(lhs.Numerator + rhs * lhs.Denominator, lhs.Denominator, lhs.IsPositive);
+		}
+
+		public static ExpressoFraction operator+(ExpressoFraction lhs, long rhs)
+		{
+			var rhs_numerator = rhs * (long)lhs.Denominator;
+			return new ExpressoFraction((rhs > 0) ? lhs.Numerator + (ulong)rhs_numerator : lhs.Numerator - (ulong)rhs_numerator, lhs.Denominator,
+			                            lhs.IsPositive);
+		}
+		
+		public static ExpressoFraction operator+(ExpressoFraction lhs, double rhs)
+		{
+			ExpressoFraction tmp = lhs.Copy(), other = new ExpressoFraction(rhs);
+			ExpressoFraction new_self = other.Reduce(tmp);
+			new_self.Numerator = new_self.Numerator + other.Numerator;
+			return new_self;
+		}
+		
+		public static ExpressoFraction operator*(ExpressoFraction lhs, ExpressoFraction rhs)
+		{
+			return new ExpressoFraction(lhs.Numerator * rhs.Numerator, lhs.Denominator * rhs.Denominator,
+			                            (lhs.IsPositive && rhs.IsPositive || !lhs.IsPositive && !rhs.IsPositive) ? true : false);
+		}
+		
+		public static ExpressoFraction operator*(ExpressoFraction lhs, ulong rhs)
+		{
+			return new ExpressoFraction(lhs.Numerator * rhs, lhs.Denominator, lhs.IsPositive);
+		}
+
+		public static ExpressoFraction operator*(ExpressoFraction lhs, long rhs)
+		{
+			return new ExpressoFraction(lhs.Numerator * (ulong)rhs, lhs.Denominator,
+			                            (lhs.IsPositive && rhs > 0 || !lhs.IsPositive && rhs < 0) ? true : false);
+		}
+		
+		public static ExpressoFraction operator*(ExpressoFraction lhs, double rhs)
+		{
+			var other = new ExpressoFraction(rhs);
+			return lhs * other;
+		}
+		#endregion
+
+		#region Comparison operators
 		public static bool operator>(ExpressoFraction lhs, ExpressoFraction rhs)
 		{
 			if(lhs.IsPositive && !rhs.IsPositive)
@@ -778,6 +857,7 @@ namespace Expresso.BuiltIns
 		{
 			return !(lhs == rhs);
 		}
+		#endregion
 	}
 	#endregion
 	

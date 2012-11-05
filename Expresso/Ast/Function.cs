@@ -171,11 +171,11 @@ namespace Expresso.Ast
 		}
 	}
 
-	public class NativeFunctionBiary<ReturnType, Param1, Param2> : NativeFunction
+	public class NativeFunctionBinary<ReturnType, Param1, Param2> : NativeFunction
 	{
 		private Func<Param1, Param2, ReturnType> func;
 
-		public NativeFunctionBiary(string Name, Argument Parameter1, Argument Parameter2, Func<Param1, Param2, ReturnType> Func)
+		public NativeFunctionBinary(string Name, Argument Parameter1, Argument Parameter2, Func<Param1, Param2, ReturnType> Func)
 		{
 			this.Name = Name;
 			this.Parameters = new List<Argument>{Parameter1, Parameter2};

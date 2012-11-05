@@ -22,6 +22,7 @@ namespace Expresso.Interpreter
 		
 		/// <summary>
 		/// 変数の実体を保持する辞書。
+		/// The dictionary holding instances of variables.
 		/// </summary>
 		private Dictionary<string, ExpressoObj> store = new Dictionary<string, ExpressoObj>();
 		
@@ -92,7 +93,7 @@ namespace Expresso.Interpreter
 				
 				throw new EvalException("Attempt to refer to an inexsistent variable");
 			}else{
-				var v = Get (name, this);
+				var v = Get(name, this);
 				if(v == null)
 					throw new EvalException("Attempt to refer to an inexsistent variable");
 				

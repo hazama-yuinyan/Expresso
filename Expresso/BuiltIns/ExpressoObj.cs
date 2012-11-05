@@ -12,7 +12,7 @@ namespace Expresso.BuiltIns
 		RATIONAL,
 		BIGINT,
 		STRING,
-		CHARSEQ,
+		BYTEARRAY,
 		VAR,
 		TUPLE,
 		LIST,
@@ -37,6 +37,10 @@ namespace Expresso.BuiltIns
 			internal set{}
 		}
 
+		/// <summary>
+		/// このインスタンスのメンバーにアクセスする。
+		/// Accesses one of the members of this instance.
+		/// </summary>
 		public virtual ExpressoObj AccessMember(ExpressoObj subscription)
 		{
 			throw new NotImplementedException();

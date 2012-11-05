@@ -370,16 +370,16 @@ public class Scanner {
 			case "bool": t.kind = 11; break;
 			case "float": t.kind = 12; break;
 			case "rational": t.kind = 13; break;
-			case "big_int": t.kind = 14; break;
+			case "bigint": t.kind = 14; break;
 			case "string": t.kind = 15; break;
-			case "char_seq": t.kind = 16; break;
+			case "bytearray": t.kind = 16; break;
 			case "var": t.kind = 17; break;
 			case "tuple": t.kind = 18; break;
 			case "list": t.kind = 19; break;
 			case "dictionary": t.kind = 20; break;
 			case "expression": t.kind = 21; break;
 			case "function": t.kind = 22; break;
-			case "int_seq": t.kind = 23; break;
+			case "intseq": t.kind = 23; break;
 			case "print": t.kind = 24; break;
 			case "return": t.kind = 25; break;
 			case "break": t.kind = 26; break;
@@ -389,11 +389,11 @@ public class Scanner {
 			case "else": t.kind = 33; break;
 			case "while": t.kind = 34; break;
 			case "for": t.kind = 35; break;
-			case "in": t.kind = 36; break;
-			case "switch": t.kind = 37; break;
-			case "case": t.kind = 38; break;
-			case "default": t.kind = 39; break;
-			case "let": t.kind = 41; break;
+			case "let": t.kind = 36; break;
+			case "in": t.kind = 37; break;
+			case "switch": t.kind = 38; break;
+			case "case": t.kind = 39; break;
+			case "default": t.kind = 40; break;
 			case "def": t.kind = 43; break;
 			case "or": t.kind = 45; break;
 			case "and": t.kind = 46; break;
@@ -472,7 +472,7 @@ public class Scanner {
 			case 14:
 				{t.kind = 32; break;}
 			case 15:
-				{t.kind = 40; break;}
+				{t.kind = 41; break;}
 			case 16:
 				{t.kind = 42; break;}
 			case 17:
