@@ -34,7 +34,10 @@ namespace Expresso.Ast
         {
 			foreach (var expr in Expressions) {
 				object obj = expr.Run(varStore);
-				Console.Write("{0}", obj.ToString());
+				if(obj is string)
+					Console.Write("{0}", (string)obj);
+				else
+					Console.Write("{0}, ", obj.ToString());
 			}
 			Console.WriteLine();
 			return null;

@@ -50,11 +50,11 @@ namespace Expresso.Ast
 
         internal override object Run(VariableStore varStore)
         {
-            var cond = Condition.Run(varStore) as ExpressoPrimitive;
-			if(!ImplementaionHelpers.IsOfType(cond, TYPES.BOOL))
+            var cond = Condition.Run(varStore);
+			if(!(cond is bool))
 				throw new EvalException("Invalid expression! The condition of an if statement must yields a boolean!");
 			
-			if((bool)cond.Value)
+			if((bool)cond)
 				return TrueBlock.Run(varStore);
 			else
 				return (FalseBlock != null) ? FalseBlock.Run(varStore) : null;

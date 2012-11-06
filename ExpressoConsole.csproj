@@ -21,7 +21,7 @@
     <WarningLevel>4</WarningLevel>
     <PlatformTarget>x86</PlatformTarget>
     <Externalconsole>true</Externalconsole>
-    <Commandlineparameters>../../ExpressoTest/sources/simple_arithmetic.exs</Commandlineparameters>
+    <Commandlineparameters>../../ExpressoTest/sources/statements.exs</Commandlineparameters>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
     <DebugType>none</DebugType>
@@ -31,7 +31,7 @@
     <WarningLevel>4</WarningLevel>
     <PlatformTarget>x86</PlatformTarget>
     <Externalconsole>true</Externalconsole>
-    <Commandlineparameters>../../Expresso/tests/calc_prime_nums.exs</Commandlineparameters>
+    <Commandlineparameters>../../ExpressoTest/sources/statements.exs</Commandlineparameters>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />

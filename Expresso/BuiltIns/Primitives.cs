@@ -2,50 +2,12 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using Expresso.Ast;
 using Expresso.Interpreter;
 using Expresso.Helpers;
 
 namespace Expresso.BuiltIns
 {
-	/// <summary>
-	/// Expressoの組み込み型（数値型、文字列型など）。
-	/// The primitives for Expresso.
-	/// </summary>
-	public class ExpressoPrimitive : ExpressoObj
-	{
-		public object Value{get; internal set;}
-
-		/// <summary>
-		/// The type of the stored value.
-		/// </summary>
-		public override TYPES Type{get; internal set;}
-
-		public override bool Equals(object obj)
-		{
-			var other = obj as ExpressoPrimitive;
-			if(other == null) return false;
-
-			return Type == other.Type && Value.Equals(other.Value);
-		}
-
-		public override int GetHashCode()
-		{
-			return Value.GetHashCode();
-		}
-
-		public override string ToString()
-		{
-			return Value.ToString();
-		}
-	}
-
-	public class ExpressoPair : ExpressoObj
-	{
-		public ExpressoObj First{get; internal set;}
-
-		public ExpressoObj Second{get; internal set;}
-	}
-
 	#region Expressoの組み込みオブジェクト型郡
 	/// <summary>
 	/// Expresso組み込みのIntSeqオブジェクト。
@@ -55,7 +17,7 @@ namespace Expresso.BuiltIns
 	/// returns a new sequence which holds the elements from #1 to #5 of the original sequence
 	/// (<c>seq</c> this time).
 	/// </summary>
-	public class ExpressoIntegerSequence : ExpressoObj, IEnumerable<ExpressoPrimitive>, SequenceGenerator<ExpressoList, ExpressoPrimitive>
+	public class ExpressoIntegerSequence : IEnumerable<object>, SequenceGenerator<List<object>, object>
 	{
 		/// <summary>
 		/// 数列の開始点。
@@ -76,7 +38,7 @@ namespace Expresso.BuiltIns
 		/// </summary>
 		private int _step;
 
-		public IEnumerator<int> Val
+		public IEnumerator<object> Val
 		{
 			get{
 				int i = this._start;
@@ -90,7 +52,7 @@ namespace Expresso.BuiltIns
 			}
 		}
 
-		public override TYPES Type{
+		public TYPES Type{
 			get{
 				return TYPES.SEQ;
 			}
@@ -110,33 +72,31 @@ namespace Expresso.BuiltIns
 			return this.GetEnumerator();
 		}
 
-		public IEnumerator<ExpressoPrimitive> GetEnumerator()
+		public IEnumerator<object> GetEnumerator()
 		{
 			return new Enumerator(this);
 		}
 		#endregion
 
 		#region SequenceGenerator implementation
-		public ExpressoPrimitive Generate()
+		public object Generate()
 		{
-			return null;
+			return -1;
 		}
 
-		public ExpressoList Take(int count)
+		public List<object> Take(int count)
 		{
-			var objs = new List<ExpressoObj>(count);
+			var objs = new List<object>(count);
 			var enumerator = Val;
-			for(int i = 0; i < count; ++i){
-				var tmp = new ExpressoPrimitive{Value = enumerator.Current, Type = TYPES.INTEGER};
-				objs.Add(tmp);
-			}
+			for(int i = 0; i < count; ++i)
+				objs.Add(enumerator.Current);
 
-			return ExpressoFunctions.MakeList(objs);
+			return objs;
 		}
 		#endregion
 
 		#region The enumerator for IntegerSequence
-		public struct Enumerator : IEnumerator<ExpressoPrimitive>, IEnumerator
+		public struct Enumerator : IEnumerator<object>, IEnumerator
 		{
 			private ExpressoIntegerSequence seq;
 			private int next;
@@ -150,7 +110,7 @@ namespace Expresso.BuiltIns
 				}
 			}
 
-			public ExpressoPrimitive Current
+			public object Current
 			{
 				get
 				{
@@ -158,7 +118,7 @@ namespace Expresso.BuiltIns
 						throw new InvalidOperationException();
 
 					this.current = this.next;
-					return new ExpressoPrimitive{Value = this.current, Type = TYPES.INTEGER};
+					return this.current;
 				}
 			}
 
@@ -211,7 +171,7 @@ namespace Expresso.BuiltIns
 	/// Expressoのコンテナ型のベースクラス。
 	/// The base class for Expresso's container classes.
 	/// </summary>
-	public interface ExpressoContainer : IEnumerable<ExpressoObj>
+	public interface ExpressoContainer : IEnumerable<object>
 	{
 		/// <summary>
 		/// このコンテナのサイズを返す。
@@ -235,7 +195,7 @@ namespace Expresso.BuiltIns
 		/// IntegerSequenceを使ってコンテナの一部の要素をコピーした新しいコンテナを生成する。
 		/// Do the "slice" operation on the container with an IntegerSequence.
 		/// </summary>
-		ExpressoObj Slice(ExpressoIntegerSequence seq);
+		object Slice(ExpressoIntegerSequence seq);
 	}
 
 	/// <summary>
@@ -243,18 +203,18 @@ namespace Expresso.BuiltIns
 	/// The built-in Tuple.
 	/// </summary>
 	/// <seealso cref="ExpressoContainer"/>
-	public class ExpressoTuple : ExpressoObj, ExpressoContainer
+	public class ExpressoTuple : ExpressoContainer
 	{
 		/// <summary>
 		/// tupleの中身
 		/// </summary>
-		private List<ExpressoObj> _contents;
+		private List<object> _contents;
 		
-		public List<ExpressoObj> Contents{get{return this._contents;}}
+		public List<object> Contents{get{return this._contents;}}
 
-		public override TYPES Type{get{return TYPES.TUPLE;}}
-		
-		public ExpressoTuple(List<ExpressoObj> contents)
+		public TYPES Type{get{return TYPES.TUPLE;}}
+
+		public ExpressoTuple(List<object> contents)
 		{
 			this._contents = contents;
 		}
@@ -272,11 +232,7 @@ namespace Expresso.BuiltIns
 
 		public bool Contains(object obj)
 		{
-			var expresso_obj = obj as ExpressoObj;
-			if(expresso_obj == null)
-				return false;
-
-			return _contents.Contains(expresso_obj);
+			return _contents.Contains(obj);
 		}
 
 		IEnumerator IEnumerable.GetEnumerator()
@@ -284,346 +240,43 @@ namespace Expresso.BuiltIns
 			return _contents.GetEnumerator();
 		}
 
-		public IEnumerator<ExpressoObj> GetEnumerator()
+		public IEnumerator<object> GetEnumerator()
 		{
 			return _contents.GetEnumerator();
 		}
 
-		public ExpressoObj Slice(ExpressoIntegerSequence seq)
+		public object Slice(ExpressoIntegerSequence seq)
 		{
-			var sliced = new List<ExpressoObj>();
+			var sliced = new List<object>();
 			var enumerator = seq.GetEnumerator();
 			if(!enumerator.MoveNext())
 				throw new InvalidOperationException();
 
-			int index = (int)enumerator.Current.Value;
+			int index = (int)enumerator.Current;
 			do{
 				sliced.Add(Contents[index]);
-			}while(enumerator.MoveNext() && (index = (int)enumerator.Current.Value) < Contents.Count);
+			}while(enumerator.MoveNext() && (index = (int)enumerator.Current) < Contents.Count);
 
 			return new ExpressoTuple(sliced);
 		}
 		#endregion
 
-		public override ExpressoObj AccessMember(ExpressoObj subscription)
+		public object AccessMember(object subscription)
 		{
-			if(!ImplementaionHelpers.IsOfType(subscription, TYPES.INTEGER))
-				throw new EvalException("The expression can not be evaluated to an int.");
-
-			int index = (int)((ExpressoPrimitive)subscription).Value;
-			return Contents[index];
-		}
-	}
-
-	/// <summary>
-	/// Expressoの組み込み配列。
-	/// The Built-in Array.
-	/// </summary>
-	/// <seealso cref="ExpressoContainer"/>
-	public class ExpressoArray : ExpressoObj, ExpressoContainer
-	{
-		public ExpressoObj[] Contents{get; internal set;}
-
-		public override TYPES Type{get{return TYPES.ARRAY;}}
-
-		#region The enumerator for ExpressoArray
-		public struct Enumerator : IEnumerator<ExpressoObj>, IEnumerator
-		{
-			private ExpressoArray src;
-			private int next;
-			private int cur_pos;
-
-			object IEnumerator.Current
-			{
-				get
-				{
-					return this.Current;
-				}
+			if(subscription is int){
+				int index = (int)subscription;
+				return Contents[index];
+			}else if(subscription is string){
+				return null;
 			}
-
-			public ExpressoObj Current
-			{
-				get
-				{
-					if(next < 0)
-						throw new InvalidOperationException();
-
-					this.cur_pos = this.next;
-					return this.src.Contents[this.cur_pos];
-				}
-			}
-
-			internal Enumerator(ExpressoArray array)
-			{
-				this.src = array;
-				this.next = -1;
-				this.cur_pos = -127;
-			}
-
-			public void Dispose()
-			{
-			}
-
-			void IEnumerator.Reset()
-			{
-				this.cur_pos = -127;
-				this.next = -1;
-			}
-
-			public bool MoveNext()
-			{
-				if(next == int.MinValue)
-					return false;
-
-				if(next < src.Contents.Length){
-					cur_pos = next;
-					++next;
-					return true;
-				}
-
-				next = int.MinValue;
-				return false;
-			}
-		}
-		#endregion
-
-		#region ExpressoContainer implementations
-		public int Size()
-		{
-			return Contents.Length;
-		}
-
-		public bool Empty()
-		{
-			return Contents.Length == 0;
-		}
-
-		public bool Contains(object obj)
-		{
-			var expresso_obj = obj as ExpressoObj;
-			if(expresso_obj == null)
-				return false;
-
-			foreach (var item in Contents) {
-				if(item == expresso_obj)
-					return true;
-			}
-
-			return false;
-		}
-
-		IEnumerator IEnumerable.GetEnumerator()
-		{
-			return Contents.GetEnumerator();
-		}
-
-		public IEnumerator<ExpressoObj> GetEnumerator()
-		{
-			return new ExpressoArray.Enumerator(this);
-		}
-
-		public ExpressoObj Slice(ExpressoIntegerSequence seq)
-		{
-			var sliced = new List<ExpressoObj>();
-			var enumerator = seq.GetEnumerator();
-			if(!enumerator.MoveNext())
-				throw new InvalidOperationException();
-
-			int index = (int)enumerator.Current.Value;
-			do{
-				sliced.Add(Contents[index]);
-			}while(enumerator.MoveNext() && (index = (int)enumerator.Current.Value) < Contents.Length);
-
-			return new ExpressoArray{Contents = sliced.ToArray()};
-		}
-		#endregion
-
-		public override ExpressoObj AccessMember(ExpressoObj subscription)
-		{
-			if(!ImplementaionHelpers.IsOfType(subscription, TYPES.INTEGER))
-				throw new EvalException("The expression can not be evaluated to an int.");
-
-			int index = (int)((ExpressoPrimitive)subscription).Value;
-			return Contents[index];
-		}
-	}
-	
-	/// <summary>
-	/// Expressoの組み込みListクラス。
-	/// The built-in List class.
-	/// </summary>
-	/// <seealso cref="ExpressoContainer"/>
-	public class ExpressoList : ExpressoObj, ExpressoContainer
-	{
-		public List<ExpressoObj> Contents{get; internal set;}
-
-		public override TYPES Type{get{return TYPES.LIST;}}
-
-		#region ExpressoContainer implementations
-		public int Size()
-		{
-			return Contents.Count;
-		}
-
-		public bool Empty()
-		{
-			return Contents.Count == 0;
-		}
-
-		public bool Contains(object obj)
-		{
-			if(obj == null)
-				return false;
-
-			var tmp = obj as ExpressoObj;
-			if(tmp == null)
-				throw new EvalException("Invalid object!");
-
-			return Contents.Contains(tmp);
-		}
-
-		IEnumerator IEnumerable.GetEnumerator()
-		{
-			return Contents.GetEnumerator();
-		}
-
-		public IEnumerator<ExpressoObj> GetEnumerator()
-		{
-			return Contents.GetEnumerator();
-		}
-
-		public ExpressoObj Slice(ExpressoIntegerSequence seq)
-		{
-			var sliced = new List<ExpressoObj>();
-			var enumerator = seq.GetEnumerator();
-			if(!enumerator.MoveNext())
-				throw new InvalidOperationException();
-
-			int index = (int)enumerator.Current.Value;
-			do{
-				sliced.Add(Contents[index]);
-			}while(enumerator.MoveNext() && (index = (int)enumerator.Current.Value) < Contents.Count);
-
-			return new ExpressoList{Contents = sliced};
-		}
-		#endregion
-
-		public override ExpressoObj AccessMember(ExpressoObj subscription)
-		{
-			if(!ImplementaionHelpers.IsOfType(subscription, TYPES.INTEGER))
-				throw new EvalException("The expression can not be evaluated to an int.");
-
-			int index = (int)((ExpressoPrimitive)subscription).Value;
-			if(index >= Contents.Count || -index >= Contents.Count)
-				throw new EvalException("The index is out of range!");
-
-			return (index < 0) ? Contents[Contents.Count + index] : Contents[index];
-		}
-	}
-	
-	/// <summary>
-	/// Expressoの組み込みDictionaryクラス。
-	/// The built-in Dictionary class.
-	/// </summary>
-	/// <seealso cref="ExpressoContainer"/>
-	public class ExpressoDict : ExpressoObj, ExpressoContainer
-	{
-		public Dictionary<ExpressoObj, ExpressoObj> Contents{get; internal set;}
-
-		public override TYPES Type{get{return TYPES.DICT;}}
-
-		#region The enumerator for ExpressoDict
-		public struct Enumerator : IEnumerator<ExpressoObj>, IEnumerator
-		{
-			private Dictionary<ExpressoObj, ExpressoObj>.Enumerator src;
-
-			object IEnumerator.Current
-			{
-				get
-				{
-					return src.Current;
-				}
-			}
-
-			public ExpressoObj Current
-			{
-				get
-				{
-					var tmp = src.Current;
-					return new ExpressoPair{First = tmp.Key, Second = tmp.Value};
-				}
-			}
-
-			internal Enumerator(Dictionary<ExpressoObj, ExpressoObj>.Enumerator src)
-			{
-				this.src = src;
-			}
-
-			public void Dispose()
-			{
-			}
-
-			void IEnumerator.Reset()
-			{
-			}
-
-			public bool MoveNext()
-			{
-				return this.src.MoveNext();
-			}
-		}
-		#endregion
-
-		#region ExpressoContainer implementations
-		public int Size()
-		{
-			return Contents.Count;
-		}
-
-		public bool Empty()
-		{
-			return Contents.Count == 0;
-		}
-
-		public bool Contains(object obj)
-		{
-			var expresso_obj = obj as ExpressoObj;
-			if(expresso_obj == null)
-				return false;
-
-			return Contents.ContainsKey(expresso_obj);
-		}
-		
-		IEnumerator IEnumerable.GetEnumerator()
-		{
-			return Contents.GetEnumerator();
-		}
-
-		public IEnumerator<ExpressoObj> GetEnumerator()
-		{
-			return new ExpressoDict.Enumerator(Contents.GetEnumerator());
-		}
-
-		public ExpressoObj Slice(ExpressoIntegerSequence seq)
-		{
 			return null;
-		}
-		#endregion
-
-		public override ExpressoObj AccessMember(ExpressoObj subscription)
-		{
-			ExpressoObj obj;
-			if(!Contents.TryGetValue(subscription, out obj))
-				throw new EvalException("The dictionary doesn't have a value corresponding to {0}", subscription.ToString());
-
-			return obj;
 		}
 	}
 
 	/// <summary>
 	/// The built-in fraction class, which represents a fraction as it is.
 	/// </summary>
-	public class ExpressoFraction : ExpressoObj, IComparable
+	public class ExpressoFraction : IComparable
 	{
 		/// <summary>
 		/// Gets or sets the denominator.
@@ -866,7 +519,7 @@ namespace Expresso.BuiltIns
 	/// プログラム中でただひとつ存在するように、シングルトンによる実装になっている。
 	/// This class manages just one file on a program.
 	/// </summary>
-	public class FileWrapper : ExpressoObj, IDisposable
+	public class FileWrapper : IDisposable
 	{
 		private StreamReader _reader = null;
 		private StreamWriter _writer = null;
@@ -917,9 +570,9 @@ namespace Expresso.BuiltIns
 	/// with one line of code, but may contain symbolic expression. Therefore,
 	/// it has the capability of symbolic computation.
 	/// </summary>
-	public class ExpressoExpression : ExpressoObj
+	public class ExpressoExpression
 	{
-		public override TYPES Type{get{return TYPES.EXPRESSION;}}
+		public TYPES Type{get{return TYPES.EXPRESSION;}}
 	}
 }
 

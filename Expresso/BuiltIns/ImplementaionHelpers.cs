@@ -26,9 +26,9 @@ namespace Expresso.Helpers
 		/// <param name='type'>
 		/// The target type that the object will be tested against.
 		/// </param>
-		public static bool IsOfType(ExpressoObj target, TYPES type)
+		public static bool IsOfType(TYPES target, TYPES type)
 		{
-			return target.Type == type;
+			return target == type;
 		}
 
 		public static string Replace(this string str, Regex reg, string replacedWith)
@@ -59,20 +59,20 @@ namespace Expresso.Helpers
 			}
 		}
 
-		public static ExpressoObj GetDefaultValueFor(TYPES type)
+		public static object GetDefaultValueFor(TYPES type)
 		{
 			switch(type){
 			case TYPES.INTEGER:
-				return new ExpressoPrimitive{Value = default(int)};
+				return default(int);
 				
 			case TYPES.BOOL:
-				return new ExpressoPrimitive{Value = default(bool)};
+				return default(bool);
 				
 			case TYPES.FLOAT:
-				return new ExpressoPrimitive{Value = default(double)};
+				return default(double);
 				
 			case TYPES.STRING:
-				return new ExpressoPrimitive{Value = default(string)};
+				return default(string);
 
 			case TYPES.VAR:
 				return null;
@@ -82,7 +82,7 @@ namespace Expresso.Helpers
 			}
 		}
 
-		public static IEnumerable<Parameter> CollectLocalVars(Expression expr)
+		public static IEnumerable<Identifier> CollectLocalVars(Expression expr)
 		{
 			if(expr.Type == NodeType.VarDecl)
 				return ((VarDeclaration)expr).Variables;
@@ -90,11 +90,11 @@ namespace Expresso.Helpers
 				throw new EvalException("Unreachable code reached!");
 		}
 
-		public static IEnumerable<Parameter> CollectLocalVars(Statement stmt)
+		public static IEnumerable<Identifier> CollectLocalVars(Statement stmt)
 		{
-			if(stmt == null) return Enumerable.Empty<Parameter>();
+			if(stmt == null) return Enumerable.Empty<Identifier>();
 
-			IEnumerable<Parameter> result = Enumerable.Empty<Parameter>();
+			IEnumerable<Identifier> result = Enumerable.Empty<Identifier>();
 			switch(stmt.Type){
 			case NodeType.ExprStatement:
 				var expr_stmt = (ExprStatement)stmt;
@@ -135,7 +135,7 @@ namespace Expresso.Helpers
 			return result;
 		}
 
-		public static IEnumerable<Parameter> CollectLocalVars(Block root)
+		public static IEnumerable<Identifier> CollectLocalVars(Block root)
 		{
 			var vars = 
 				from p in root.Statements
@@ -167,16 +167,16 @@ namespace Expresso.Helpers
 	/// <summary>
 	/// リストのジェネレーター。Comprehension構文から生成される。
 	/// </summary>
-	public class ListGenerator : SequenceGenerator<ExpressoList, ExpressoObj>
+	public class ListGenerator : SequenceGenerator<List<object>, object>
 	{
-		public ExpressoObj Generate()
+		public object Generate()
 		{
 			return null;
 		}
 
-		public ExpressoList Take(int count)
+		public List<object> Take(int count)
 		{
-			var tmp = new List<ExpressoObj>();
+			var tmp = new List<object>();
 			for(int i = 0; i < count; ++i){
 
 			}

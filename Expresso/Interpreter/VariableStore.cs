@@ -24,7 +24,7 @@ namespace Expresso.Interpreter
 		/// 変数の実体を保持する辞書。
 		/// The dictionary holding instances of variables.
 		/// </summary>
-		private Dictionary<string, ExpressoObj> store = new Dictionary<string, ExpressoObj>();
+		private Dictionary<string, object> store = new Dictionary<string, object>();
 		
 		/// <summary>
 		/// 変数の実体をスコープに追加する。
@@ -38,20 +38,11 @@ namespace Expresso.Interpreter
 		/// 変数の中身
 		/// The value.
 		/// </param>
-		public void Add(string name, ExpressoObj obj)
+		public void Add(string name, object obj)
 		{
 			store.Add(name, obj);
 		}
 
-		public void Add(string name, object obj)
-		{
-			ExpressoObj tmp = obj as ExpressoObj;
-			if(tmp == null)
-				throw new EvalException("Invalid object!");
-
-			Add (name, tmp);
-		}
-		
 		/// <summary>
 		/// スコープに存在する変数の値を変える。
 		/// Changes the value of a variable.
@@ -62,7 +53,7 @@ namespace Expresso.Interpreter
 		/// <param name='obj'>
 		/// 変更先の値
 		/// </param>
-		public void Assign(string name, ExpressoObj obj)
+		public void Assign(string name, object obj)
 		{
 			store[name] = obj;
 		}
@@ -77,12 +68,12 @@ namespace Expresso.Interpreter
 		/// <exception cref='EvalException'>
 		/// スコープ内にその識別子の変数が存在しない場合に発生する。
 		/// </exception>
-		public ExpressoObj Get(string name)
+		public object Get(string name)
 		{
 			return Get(name, true);
 		}
 		
-		public ExpressoObj Get(string name, bool searchParent)
+		public object Get(string name, bool searchParent)
 		{
 			if(searchParent){
 				for(VariableStore vars = this; vars != null; vars = vars.Parent){
@@ -101,7 +92,7 @@ namespace Expresso.Interpreter
 			}
 		}
 		
-		static ExpressoObj Get(string name, VariableStore vars)
+		static object Get(string name, VariableStore vars)
 		{
 			if(!vars.store.ContainsKey(name))
 				return null;

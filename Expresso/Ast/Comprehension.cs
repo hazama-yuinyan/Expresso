@@ -114,8 +114,8 @@ namespace Expresso.Ast
 
         internal override object Run(VariableStore varStore)
         {
-			var cond = Condition.Run(varStore) as ExpressoPrimitive;
-			if(cond == null)
+			var cond = Condition.Run(varStore);
+			if(!(cond is bool))
 				throw new EvalException("Cannot evaluate the expression to a boolean.");
 
 			return Body.Run(varStore);

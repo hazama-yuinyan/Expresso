@@ -47,14 +47,14 @@ namespace Expresso.Ast
 				}
 			}
 
-			var objs = new List<ExpressoObj>(Expressions.Count);
+			var objs = new List<object>(Expressions.Count);
 			foreach (var item in enumerators) {
 				if(!item.MoveNext()) continue;
-				objs.Add((ExpressoObj)item.Current);
+				objs.Add(item.Current);
 			}
 
 			for (int i = 0; i < Targets.Count; ++i) {
-				varStore.Assign(((Parameter)Targets[i].Run(varStore)).Name, objs[i]);
+				varStore.Assign(((Identifier)Targets[i].Run(varStore)).Name, objs[i]);
 			}
 
 			return null;

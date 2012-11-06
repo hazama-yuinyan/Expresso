@@ -69,15 +69,15 @@ namespace Expresso.Ast
 
         internal override object Run(VariableStore varStore)
         {
-            IEnumerable<ExpressoObj> iterable = Target.Run(varStore) as IEnumerable<ExpressoObj>;
+            IEnumerable<object> iterable = Target.Run(varStore) as IEnumerable<object>;
 			if(iterable == null)
 				throw new EvalException("Can not evaluate the expression to a valid object");
 
 			can_continue = true;
 
-			Parameter[] lvalues = new Parameter[LValues.Count];
+			Identifier[] lvalues = new Identifier[LValues.Count];
 			for (int i = 0; i < LValues.Count; ++i) {
-				lvalues[i] = LValues[i] as Parameter;
+				lvalues[i] = LValues[i] as Identifier;
 				if(lvalues[i] == null)
 					throw new EvalException("The left-hand-side of the \"in\" keyword must yield a lvalue(an referencible value such as variables)");
 			}

@@ -29,6 +29,8 @@ namespace Expresso.Ast
         /// </summary>
         public List<Expression> Arguments { get; internal set; }
 
+		public Expression Reference {get; internal set;}
+
         public override NodeType Type
         {
             get { return NodeType.Call; }
@@ -59,7 +61,16 @@ namespace Expresso.Ast
 
         internal override object Run(VariableStore varStore)
         {
-            Function fn = Function;
+			Function fn;
+			if(Reference != null){
+				var callable = Reference.Run(varStore) as Function;
+				if(callable == null)
+					throw new EvalException("Not callable: " + callable.ToString());
+
+				fn = callable;
+			}else{
+    	        fn = Function;
+			}
 			var child = new VariableStore{Parent = varStore};
 			for (int i = 0; i < fn.Parameters.Count; ++i) {	//実引数をローカル変数として変数テーブルに追加する
 				child.Add(fn.Parameters[i].Name, (i < Arguments.Count) ? Arguments[i].Run(varStore) : fn.Parameters[i].Option.Run(varStore));

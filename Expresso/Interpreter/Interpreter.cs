@@ -79,7 +79,7 @@ namespace Expresso.Interpreter
 		/// Is thrown when the eval exception.
 		/// </exception>
 		/// <returns>The return value of the main function</returns>
-		public ExpressoObj Run()
+		public object Run()
 		{
 			if(MainFunc == null)
 				throw new EvalException("No entry point");
@@ -89,7 +89,7 @@ namespace Expresso.Interpreter
 				Arguments = new List<Ast.Expression>()
 			};
 			
-			return call.Run(var_store) as ExpressoObj;
+			return call.Run(var_store);
 		}
 		
 		/// <summary>

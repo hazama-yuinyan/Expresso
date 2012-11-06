@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text;
+using System.Linq;
 using Expresso.BuiltIns;
 using Expresso.Interpreter;
 
@@ -48,21 +50,23 @@ namespace Expresso.Ast
 
         internal override object Run(VariableStore varStore)
         {
-            ExpressoPrimitive first = Left.Run(varStore) as ExpressoPrimitive, second = Right.Run(varStore) as ExpressoPrimitive;
+            object first = Left.Run(varStore), second = Right.Run(varStore);
 			if(first == null || second == null)
 				throw new EvalException("Can not apply the operation to non-primitive types.");
 
 			if((int)Operator <= (int)OperatorType.MOD){
-				if(first.Value is int)
-					return new ExpressoPrimitive{Value = BinaryExprAsInt((int)first.Value, (int)second.Value, Operator), Type = TYPES.INTEGER};
+				if(first is int)
+					return BinaryExprAsInt((int)first, (int)second, Operator);
+				else if(first is double)
+					return BinaryExprAsDouble((double)first, (double)second, Operator);
 				else
-					return new ExpressoPrimitive{Value = BinaryExprAsDouble((double)first.Value, (double)second.Value, Operator), Type = TYPES.FLOAT};
+					return BinaryExprAsString((string)first, second, Operator);
 			}else if((int)Operator < (int)OperatorType.AND){
-				return new ExpressoPrimitive{Value = EvalComparison(first.Value as IComparable, second.Value as IComparable, Operator), Type = TYPES.BOOL};
+				return EvalComparison(first as IComparable, second as IComparable, Operator);
 			}else if((int)Operator < (int)OperatorType.BIT_OR){
-				return new ExpressoPrimitive{Value = EvalLogicalOperation((bool)first.Value, (bool)second.Value, Operator), Type = TYPES.BOOL};
+				return EvalLogicalOperation((bool)first, (bool)second, Operator);
 			}else{
-				return new ExpressoPrimitive{Value = EvalBitOperation((int)first.Value, (int)second.Value, Operator), Type = TYPES.INTEGER};
+				return EvalBitOperation((int)first, (int)second, Operator);
 			}
         }
 		
@@ -135,6 +139,33 @@ namespace Expresso.Ast
 				throw new EvalException("Unreachable code");
 			}
 			
+			return result;
+		}
+
+		private string BinaryExprAsString(string lhs, object rhs, OperatorType opType)
+		{
+			string result;
+
+			switch(opType){
+			case OperatorType.PLUS:
+				result = String.Concat(lhs, rhs.ToString());
+				break;
+
+			case OperatorType.TIMES:
+				if(!(rhs is int))
+					throw new EvalException("Can not muliply string by objects other than an integer.");
+
+				int times = (int)rhs;
+				var sb = new StringBuilder(lhs.Length * times);
+				for(; times > 0; --times) sb.Append(lhs);
+
+				result = sb.ToString();
+				break;
+
+			default:
+				throw new EvalException("Strings don't support that operation!");
+			}
+
 			return result;
 		}
 		

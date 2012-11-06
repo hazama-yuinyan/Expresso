@@ -33,15 +33,46 @@ namespace Expresso.Ast
 
         internal override object Run(VariableStore varStore)
         {
-            var obj = Parent.Run(varStore) as ExpressoObj;
+            var obj = Parent.Run(varStore);
 			if(obj == null)
 				throw new EvalException("Can not evaluate the object to a valid one.");
 
-			var subscription = (ExpressoObj)Subscription.Run(varStore);
-			if(subscription is ExpressoIntegerSequence)
-				return ((ExpressoContainer)obj).Slice((ExpressoIntegerSequence)subscription);
+			var subscription = Subscription.Run(varStore);
+			if(subscription is ExpressoIntegerSequence){
+				var seq = (ExpressoIntegerSequence)subscription;
+				if(obj is List<object>)
+					return ((List<object>)obj).Slice(seq);
+				else if(obj is ExpressoContainer)
+					return ((ExpressoContainer)obj).Slice(seq);
+				else if(obj is Array)
+					return ((object[])obj).Slice(seq);
+			}
 
-			return obj.AccessMember(subscription);
+			if(obj is List<object>){
+				if(!(subscription is int))
+					throw new EvalException("Can not evaluate the subscription to an int value");
+
+				int index = (int)subscription;
+				return ((List<object>)obj)[index];
+			}else if(obj is Dictionary<object, object>){
+				object value = null;
+				((Dictionary<object, object>)obj).TryGetValue(subscription, out value);
+				return value;
+			}else if(obj is Array){
+				if(!(subscription is int))
+					throw new EvalException("Can not evaluate the subscription to an int value.");
+
+				int index = (int)subscription;
+				return ((object[])obj)[index];
+			}else if(obj is ExpressoTuple){
+				if(!(subscription is int))
+					throw new EvalException("Can not evaluate the subscription to an int value.");
+
+				int index = (int)subscription;
+				return ((ExpressoTuple)obj).Contents[index];
+			}
+
+			return null;
         }
 	}
 }

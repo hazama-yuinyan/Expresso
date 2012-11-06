@@ -41,7 +41,6 @@
     <Compile Include="Ast\Expression.cs" />
     <Compile Include="Ast\Function.cs" />
     <Compile Include="Ast\Node.cs" />
-    <Compile Include="Ast\Parameter.cs" />
     <Compile Include="Ast\Return.cs" />
     <Compile Include="Ast\Statement.cs" />
     <Compile Include="Ast\UnaryExpression.cs" />
@@ -73,6 +72,7 @@
     <Compile Include="Ast\MemberReference.cs" />
     <Compile Include="Ast\Comprehension.cs" />
     <Compile Include="Ast\Iteration.cs" />
+    <Compile Include="Ast\Identifier.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System" />

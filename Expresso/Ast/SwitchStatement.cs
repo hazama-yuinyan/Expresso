@@ -44,7 +44,7 @@ namespace Expresso.Ast
 
         internal override object Run(VariableStore varStore)
         {
-			var target = Target.Run(varStore) as ExpressoPrimitive;
+			var target = Target.Run(varStore);
 			if(target == null)
 				throw new EvalException("Can not evaluate the expression to a primitive object.");
 
@@ -76,7 +76,7 @@ namespace Expresso.Ast
 		/// 評価対象となるオブジェクト。
 		/// The target object to be evaluated.
 		/// </summary>
-		public ExpressoObj Target{private get; set;}
+		public object Target{private get; set;}
 
         public override NodeType Type
         {
@@ -103,25 +103,25 @@ namespace Expresso.Ast
 			return Run(varStore, Target);
         }
 
-		private object Run(VariableStore varStore, ExpressoObj target)
+		private object Run(VariableStore varStore, object target)
 		{
-			var pt = target as ExpressoPrimitive;
+			var pt = target;
 			bool result = false;
 
 			foreach (var item in Labels) {
-				var label_obj = item.Run(varStore) as ExpressoObj;
-				var pl = label_obj as ExpressoPrimitive;
-				if(ImplementaionHelpers.IsOfType(pt, TYPES.INTEGER) && ImplementaionHelpers.IsOfType(label_obj, TYPES.SEQ)){
+				var label_obj = item.Run(varStore);
+				var pl = label_obj;
+				if(pt is int && label_obj is ExpressoIntegerSequence){
 					var int_seq = label_obj as ExpressoIntegerSequence;
 					if(int_seq == null)
 						throw new EvalException("Something wrong has occurred!");
 
-					if(int_seq.Includes((int)pt.Value)){
+					if(int_seq.Includes((int)pt)){
 						Body.Run(varStore);
 						result = true;
 						break;
 					}
-				}else if(ImplementaionHelpers.IsOfType(label_obj, TYPES._CASE_DEFAULT)){
+				}else if(label_obj is Constant && ImplementaionHelpers.IsOfType(((Constant)label_obj).ValType, TYPES._CASE_DEFAULT)){
 					Body.Run(varStore);
 					result = true;
 					break;

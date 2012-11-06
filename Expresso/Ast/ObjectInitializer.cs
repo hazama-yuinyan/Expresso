@@ -40,13 +40,13 @@ namespace Expresso.Ast
 
         internal override object Run(VariableStore varStore)
         {
-            ExpressoObj result = null;
+            object result = null;
 			switch (ObjType) {
 			case TYPES.TUPLE:
 			{
-				var tmp_list = new List<ExpressoObj>();
+				var tmp_list = new List<object>();
 				foreach (var item in InitializeList) {
-					tmp_list.Add((ExpressoObj)item.Run(varStore));
+					tmp_list.Add(item.Run(varStore));
 				}
 				result = ExpressoFunctions.MakeTuple(tmp_list);
 				break;
@@ -54,23 +54,23 @@ namespace Expresso.Ast
 				
 			case TYPES.LIST:
 			{
-				var tmp_list = new List<ExpressoObj>();
+				var tmp_list = new List<object>();
 				foreach (var item in InitializeList) {
-					tmp_list.Add((ExpressoObj)item.Run(varStore));
+					tmp_list.Add(item.Run(varStore));
 				}
-				result = ExpressoFunctions.MakeList(tmp_list);
+				result = tmp_list;
 				break;
 			}
 				
 			case TYPES.DICT:
 			{
-				var key_list = new List<ExpressoObj>();
-				var value_list = new List<ExpressoObj>();
+				var key_list = new List<object>();
+				var value_list = new List<object>();
 				for (int i = 0; i < InitializeList.Count; ++i) {
 					if(i % 2 == 0)
-						key_list.Add((ExpressoObj)InitializeList[i].Run(varStore));
+						key_list.Add(InitializeList[i].Run(varStore));
 					else
-						value_list.Add((ExpressoObj)InitializeList[i].Run(varStore));
+						value_list.Add(InitializeList[i].Run(varStore));
 				}
 				result = ExpressoFunctions.MakeDict(key_list, value_list, key_list.Count);
 				break;

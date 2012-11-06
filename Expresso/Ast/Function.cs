@@ -42,11 +42,11 @@ namespace Expresso.Ast
         /// 関数内で定義されたローカル変数一覧。
 		/// The list of local variables defined in this function.
         /// </summary>
-        public IEnumerable<Parameter> LocalVariables
+        public IEnumerable<Identifier> LocalVariables
         {
             get
             {
-				if(Body == null) return Enumerable.Empty<Parameter>();
+				if(Body == null) return Enumerable.Empty<Identifier>();
                 return this.Body.LocalVariables;
             }
         }
@@ -144,7 +144,7 @@ namespace Expresso.Ast
 		internal override object Run(VariableStore varStore)
 		{
 			ReturnType result = func.Invoke();
-			return new ExpressoPrimitive{Value = result, Type = this.ReturnType};
+			return result;
 		}
 	}
 
@@ -164,10 +164,9 @@ namespace Expresso.Ast
 
 		internal override object Run(VariableStore varStore)
 		{
-			ExpressoPrimitive arg = varStore.Get(this.Parameters[0].Name) as ExpressoPrimitive;
-			dynamic val = arg.Value;
-			ReturnType result = func.Invoke(val);
-			return new ExpressoPrimitive{Value = result, Type = this.ReturnType};
+			dynamic arg = varStore.Get(this.Parameters[0].Name);
+			ReturnType result = func.Invoke(arg);
+			return result;
 		}
 	}
 
@@ -187,12 +186,10 @@ namespace Expresso.Ast
 
 		internal override object Run(VariableStore varStore)
 		{
-			ExpressoPrimitive arg1 = varStore.Get(this.Parameters[0].Name) as ExpressoPrimitive;
-			ExpressoPrimitive arg2 = varStore.Get(this.Parameters[1].Name) as ExpressoPrimitive;
-			dynamic val1 = arg1.Value;
-			dynamic val2 = arg2.Value;
-			ReturnType result = func.Invoke(val1, val2);
-			return new ExpressoPrimitive{Value = result, Type = this.ReturnType};
+			dynamic arg1 = varStore.Get(this.Parameters[0].Name);
+			dynamic arg2 = varStore.Get(this.Parameters[1].Name);
+			ReturnType result = func.Invoke(arg1, arg2);
+			return result;
 		}
 	}
 }

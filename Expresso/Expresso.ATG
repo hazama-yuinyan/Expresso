@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using Expresso.Ast;
 using Expresso.BuiltIns;
 using Expresso.Interpreter;
@@ -37,19 +38,19 @@ COMPILER Expresso
 		
 		switch(type){
 		case TYPES.INTEGER:
-			result = new Constant{ValType = type, Value = new ExpressoPrimitive{Value = 0}};
+			result = new Constant{ValType = type, Value = 0};
 			break;
 			
 		case TYPES.BOOL:
-			result = new Constant{ValType = type, Value = new ExpressoPrimitive{Value = false}};
+			result = new Constant{ValType = type, Value = false};
 			break;
 			
 		case TYPES.FLOAT:
-			result = new Constant{ValType = type, Value = new ExpressoPrimitive{Value = 0.0}};
+			result = new Constant{ValType = type, Value = 0.0};
 			break;
 			
 		case TYPES.STRING:
-			result = new Constant{ValType = type, Value = new ExpressoPrimitive{Value = ""}};
+			result = new Constant{ValType = type, Value = ""};
 			break;
 			
 		default:
@@ -63,6 +64,7 @@ COMPILER Expresso
 	bool NotFollowedByDoubleDots()
 	{
 		Token x = la;
+		scanner.ResetPeek();
 		while(x.kind == _integer) x = scanner.Peek();
 		return x.kind != _double_dots;
 	}
@@ -78,9 +80,9 @@ COMPILER Expresso
 		return x.kind != _lparen;
 	}
 	
-	Parameter DeclareVariable(ref Expression rhs, string name, TYPES type)
+	Identifier DeclareVariable(ref Expression rhs, string name, TYPES type)
 	{
-		var variable = new Parameter{
+		var variable = new Identifier{
   			Name = name,
   			ParamType = type
   		};
@@ -199,15 +201,16 @@ CHARACTERS
   quotedLetter = ANY - '"' - '\''.
 
 TOKENS
-  ident  = (letter | '_') {'_' | letter | digit}.
-  integer = digit {digit}.
-  float = digit {digit} "." ["e"] ["+" | "-"] digit {digit}.
-  string_literal = '"' {quotedLetter} '"'.
   double_dots = "..".
   colon = ':'.
   semicolon = ';'.
   lcurly = '{'.
   lparen = '('.
+  ident  = (letter | '_') {'_' | letter | digit}.
+  integer = digit {digit}
+  			| digit {digit} CONTEXT("..").
+  float = digit {digit} "." {digit} ["e" ["+" | "-"] digit {digit}].
+  string_literal = '"' {quotedLetter} '"'.
 
 COMMENTS FROM "/*" TO "*/" NESTED
 COMMENTS FROM "//" TO lf
@@ -448,8 +451,8 @@ LValueList<. out List<Expression> targets .>		(. Expression tmp; .)
   }
   /*[',']*/ .
 /*------------------------------------------------------------------------*/
-VarDecl<. out List<Expression> outs .> 	(. string name; TYPES type; Expression rhs = null; Parameter variable; outs = new List<Expression>();
-								   			var vars = new List<Parameter>(); var exprs = new List<Expression>();
+VarDecl<. out List<Expression> outs .> 	(. string name; TYPES type; Expression rhs = null; Identifier variable; outs = new List<Expression>();
+								   			var vars = new List<Identifier>(); var exprs = new List<Expression>();
 										.)
 = 
   "let"							(. type = TYPES.VAR; .)
@@ -511,7 +514,7 @@ Argument<out Argument arg>		(. string name; Expression default_val = null; TYPES
   ]
   [ '='
     Literal<out default_val>
-  ]									(. Parameter param = new Parameter{Name = name, ParamType = type};
+  ]									(. Identifier param = new Identifier{Name = name, ParamType = type};
   									   cur_scope.AddLocal(param);
   									   arg = new Argument{
   											Name = name,
@@ -658,13 +661,23 @@ Trailer<ref Expression expr, string name>	(. Function func; List<Expression> arg
 =
   '('
   [ArgList<ref args>]
-  ')'							(. func = funcs.GetFunction(name);
+  ')'							(. 
+  								   if(expr != null){
+  								   		expr = new Call{
+  								   			Function = null,
+  								   			Arguments = args,
+  								   			Reference = expr
+  								   		};
+  								   		return;
+  								   }
+  								   func = funcs.GetFunction(name);
   								   if(func == null){
   								   		SemErr("The function is not defined : " + name);
   								   }
   								   expr = new Call{
   								   		Function = func,
-  										Arguments = args
+  										Arguments = args,
+  										Reference = null
   								   };
   						 		.)
   |  '['
@@ -675,9 +688,9 @@ Trailer<ref Expression expr, string name>	(. Function func; List<Expression> arg
      							   };
      							.)
   |  '.'
-     ident						(. subscript = new Parameter{
+     ident						(. subscript = new Identifier{
      									Name = t.val,
-     									ParamType = TYPES.SUBSCRIPT
+     									ParamType = TYPES._SUBSCRIPT
      							   };
      							   expr = new MemberReference{
      							   		Parent = expr,
@@ -708,14 +721,14 @@ Atom<out Expression expr>			(. string name; expr = null; .)
     |  IntSeqExpr<out expr>
     )
   | '('
-    [TupleMaker<out expr>]
-    SYNC ')'
+    TupleMaker<out expr>
+    SYNC ')'						(. if(expr == null) expr = MakeObjInitializer(TYPES.TUPLE, new List<Expression>()); .)
   | '['
-    [ListMaker<out expr>]
-    SYNC ']'
+    ListMaker<out expr>
+    SYNC ']'						(. if(expr == null) expr = MakeObjInitializer(TYPES.LIST, new List<Expression>()); .)
   | '{'
-    [DictMaker<out expr>]
-    SYNC '}' .
+    DictMaker<out expr>
+    SYNC '}' 						(. if(expr == null) expr = MakeObjInitializer(TYPES.DICT, new List<Expression>()); .).
 /*------------------------------------------------------------------------*/
 IntSeqExpr<out Expression expr>		(. int start = 0, end = -1, step = 1; .)
 =
@@ -728,51 +741,57 @@ IntSeqExpr<out Expression expr>		(. int start = 0, end = -1, step = 1; .)
 /*------------------------------------------------------------------------*/
 TupleMaker<out Expression expr>			(. Expression tmp; List<Expression> list = new List<Expression>(); expr = null; .)
 =
-  { CondExpr<out tmp>						(. list.Add(tmp); .)
-    [',']
+  CondExpr<out tmp>						(. if(tmp != null) list.Add(tmp); .)
+  { ','
+    CondExpr<out tmp>					(. if(tmp != null) list.Add(tmp); .)
   }
   /*(  //CompFor<out comp_expr>
         CondExpr<out tmp>				(. list.Add(tmp); .)
      }
-  )*/									(. expr = MakeObjInitializer(TYPES.TUPLE, list); .).
+  )*/									(. if(list.Count > 0) expr = MakeObjInitializer(TYPES.TUPLE, list); .).
 /*------------------------------------------------------------------------*/
 ListMaker<out Expression expr>			(. expr = null; Expression tmp; List<Expression> list = new List<Expression>(); .)
 =
-  { CondExpr<out tmp>					(. list.Add(tmp); .)
-    [',']
+  CondExpr<out tmp>						(. if(tmp != null) list.Add(tmp); .)
+  { ','
+    CondExpr<out tmp>					(. if(tmp != null) list.Add(tmp); .)
   }
   /*|
   ( CompFor<out tmp>					(. expr = MakeComp(list[0], tmp); .)
-  )*/										(. if(expr == null) expr = MakeObjInitializer(TYPES.LIST, list); .).
+  )*/									(. if(list.Count > 0) expr = MakeObjInitializer(TYPES.LIST, list); .).
 /*------------------------------------------------------------------------*/
-DictMaker<out Expression expr>			(. Expression lhs, rhs; List<Expression> list = new List<Expression>(); .)
+DictMaker<out Expression expr>			(. Expression lhs, rhs; List<Expression> list = new List<Expression>(); expr = null; .)
 =
-  { CondExpr<out lhs>					(. list.Add(lhs); .)
+  ( CondExpr<out lhs>					(. if(lhs != null) list.Add(lhs); .)
     ':'
-    CondExpr<out rhs>					(. list.Add(rhs); .)
-    [',']
+    CondExpr<out rhs>					(. if(rhs != null) list.Add(rhs); .)
+  )
+  { ','
+    CondExpr<out lhs>					(. if(lhs != null) list.Add(lhs); .)
+    ':'
+    CondExpr<out rhs>					(. if(rhs != null) list.Add(rhs); .)
   }
-  										(. expr = MakeObjInitializer(TYPES.DICT, list); .).
+  										(. if(list.Count > 0) expr = MakeObjInitializer(TYPES.DICT, list); .).
 /*------------------------------------------------------------------------*/
-CompIter<out Expression expr>			(. expr = null; .)
+/*CompIter<out Expression expr>			(. expr = null; .)
 =
   CompFor<out expr>
-  |  CompIf<out expr> .
+  |  CompIf<out expr> .*/
 /*------------------------------------------------------------------------*/
-CompFor<out Expression expr>			(. Expression iter, body = null; List<Expression> expr_list, test_list; .)
+/*CompFor<out Expression expr>			(. Expression iter, body = null; List<Expression> expr_list, test_list; .)
 =
   "for"
   ["let"]
   LValueList<out expr_list>
   "in"
   RValueList<out test_list>				(. iter = MakeIteration(expr_list, test_list); .)
-  [CompIter<out body>]					(. expr = MakeCompFor(iter, body); .).
+  [CompIter<out body>]					(. expr = MakeCompFor(iter, body); .).*/
 /*------------------------------------------------------------------------*/
-CompIf<out Expression expr>				(. Expression tmp, body = null; .)
+/*CompIf<out Expression expr>				(. Expression tmp, body = null; .)
 =
   "if"
   OrTest<out tmp>
-  [CompIter<out body>]					(. expr = MakeCompIf(tmp, body); .).
+  [CompIter<out body>]					(. expr = MakeCompIf(tmp, body); .).*/
 /*------------------------------------------------------------------------*/
 Variable<out string name>
 = 

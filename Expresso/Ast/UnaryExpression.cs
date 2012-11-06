@@ -44,15 +44,15 @@ namespace Expresso.Ast
 
 		internal override object Run(VariableStore varStore)
 		{
-			var ope = Operand.Run(varStore) as ExpressoPrimitive;
+			var ope = Operand.Run(varStore);
 			if(ope == null)
 				throw new EvalException("Invalid object type!");
 			
 			if(Operator == OperatorType.MINUS){
-				if(ImplementaionHelpers.IsOfType(ope, TYPES.INTEGER))
-					ope.Value = -(int)ope.Value;
-				else if(ImplementaionHelpers.IsOfType(ope, TYPES.FLOAT))
-					ope.Value = -(double)ope.Value;
+				if(ope is int)
+					ope = -(int)ope;
+				else if(ope is double)
+					ope = -(double)ope;
 				else
 					throw new EvalException("The minus operator is not applicable to the operand!");
 			}

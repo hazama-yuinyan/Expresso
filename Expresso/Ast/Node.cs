@@ -15,7 +15,7 @@ namespace Expresso.Ast
         BinaryExpression,
         ConditionalExpression,
         Constant,
-        Parameter,
+        Identifier,
 		Argument,
         Call,
         Assignment,

@@ -26,7 +26,7 @@ namespace Expresso.Ast
         /// <summary>
         /// ブロック中で定義された変数一覧。
         /// </summary>
-        public IEnumerable<Parameter> LocalVariables
+        public IEnumerable<Identifier> LocalVariables
         {
             get
             {

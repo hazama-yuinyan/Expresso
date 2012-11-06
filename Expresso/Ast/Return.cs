@@ -37,13 +37,13 @@ namespace Expresso.Ast
         internal override object Run(VariableStore varStore)
         {
             if(Expressions.Count == 0){
-				return new ExpressoTuple(new List<ExpressoObj>());
+				return new ExpressoTuple(new List<object>());
 			}else if(Expressions.Count == 1){
 				return Expressions[0].Run(varStore);
 			}else{
-				var objs = new List<ExpressoObj>();
+				var objs = new List<object>();
 				foreach (Expression expr in Expressions) {
-					objs.Add((ExpressoObj)expr.Run(varStore));
+					objs.Add(expr.Run(varStore));
 				}
 				
 				return ExpressoFunctions.MakeTuple(objs);

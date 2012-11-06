@@ -11,7 +11,7 @@ namespace Expresso.Ast
     /// 変数。
 	/// Reperesents a variable.
     /// </summary>
-    public class Parameter : Expression
+    public class Identifier : Expression
     {
         /// <summary>
         /// 変数名。
@@ -27,12 +27,12 @@ namespace Expresso.Ast
 
         public override NodeType Type
         {
-            get { return NodeType.Parameter; }
+            get { return NodeType.Identifier; }
         }
 
         public override bool Equals(object obj)
         {
-            var x = obj as Parameter;
+            var x = obj as Identifier;
 
             if (x == null) return false;
 

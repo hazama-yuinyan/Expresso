@@ -45,12 +45,12 @@ namespace Expresso.Ast
         internal override object Run(VariableStore varStore)
         {
 			int i;
-			var rvalues = new List<ExpressoObj>();
+			var rvalues = new List<object>();
 			for(i = 0; i < Expressions.Count; ++i)	//まず右辺をすべて評価する
-				rvalues.Add((ExpressoObj)Expressions[i].Run(varStore));
+				rvalues.Add(Expressions[i].Run(varStore));
 
 			for (i = 0; i < Targets.Count; ++i) {	//その後左辺値に代入する
-				Parameter lvalue = (Parameter)Targets[i];
+				Identifier lvalue = (Identifier)Targets[i];
 				varStore.Assign(lvalue.Name, rvalues[i]);
 			}
 			return rvalues;

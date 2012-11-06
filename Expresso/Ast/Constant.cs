@@ -44,7 +44,7 @@ namespace Expresso.Ast
 
         internal override object Run(VariableStore varStore)
         {
-			return new ExpressoPrimitive{Value = Value, Type = ValType};
+			return Value;
         }
 
 		public override string ToString ()

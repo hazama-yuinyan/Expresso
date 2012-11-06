@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using Expresso.Ast;
 
 namespace Expresso.BuiltIns
 {
@@ -21,14 +23,15 @@ namespace Expresso.BuiltIns
 		FUNCTION,
 		SEQ,
 		ARRAY,
-		SUBSCRIPT,
+		_SUBSCRIPT,
+		_METHOD,
 		_CASE_DEFAULT
 	};
 	
 	/// <summary>
 	/// Expresso object.
 	/// </summary>
-	public abstract class ExpressoObj
+	/*public abstract class ExpressoObj
 	{
 		public virtual TYPES Type{
 			get{
@@ -36,6 +39,10 @@ namespace Expresso.BuiltIns
 			}
 			internal set{}
 		}
+
+		protected List<ExpressoObj> members;
+
+		static protected List<Function> methods;
 
 		/// <summary>
 		/// このインスタンスのメンバーにアクセスする。
@@ -45,6 +52,6 @@ namespace Expresso.BuiltIns
 		{
 			throw new NotImplementedException();
 		}
-	}
+	}*/
 }
 

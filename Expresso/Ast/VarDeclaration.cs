@@ -14,7 +14,7 @@ namespace Expresso.Ast
 		/// <summary>
 		/// 代入先の左辺値の式。
 		/// </summary>
-		public List<Parameter> Variables { get; internal set; }
+		public List<Identifier> Variables { get; internal set; }
 
         /// <summary>
         /// 右辺値の式。
@@ -43,9 +43,9 @@ namespace Expresso.Ast
 
         internal override object Run(VariableStore varStore)
         {
-			ExpressoObj obj;
+			object obj;
 			for (int i = 0; i < Variables.Count; ++i) {
-				obj = (ExpressoObj)Expressions[i].Run(varStore);
+				obj = Expressions[i].Run(varStore);
 				varStore.Assign(Variables[i].Name, obj);
 			}
 			return null;
