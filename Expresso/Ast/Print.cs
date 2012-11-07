@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Text;
+using Expresso.BuiltIns;
 using Expresso.Interpreter;
 
 namespace Expresso.Ast
@@ -32,14 +34,32 @@ namespace Expresso.Ast
 
         internal override object Run(VariableStore varStore)
         {
-			foreach (var expr in Expressions) {
-				object obj = expr.Run(varStore);
-				if(obj is string)
-					Console.Write("{0}", (string)obj);
-				else
-					Console.Write("{0}, ", obj.ToString());
+			var first = Expressions[0].Run(varStore);
+			if(first is string){
+				var values = new List<object>();
+				var sb = new StringBuilder((string)first);
+				for(int i = 1; i < Expressions.Count; ++i){
+					values.Add(Expressions[i].Run(varStore));
+					sb.Append("%s");
+					if(i + 1 != Expressions.Count)
+						sb.Append(", ");
+				}
+
+				var text = ExpressoFunctions.Format(sb.ToString(), values.ToArray());
+				Console.WriteLine(text);
+			}else{
+				bool print_comma = false;
+				foreach(var expr in Expressions){
+					if(print_comma)
+						Console.Write(", ");
+
+					object obj = expr.Run(varStore);
+					Console.Write(obj);
+					print_comma = (obj is string) ? false : true;
+				}
+				Console.WriteLine();
 			}
-			Console.WriteLine();
+
 			return null;
         }
 	}

@@ -34,7 +34,7 @@ namespace Expresso.BuiltIns
 		
 		/// <summary>
 		/// ステップ。
-		/// The step by which the iteration proceeds.
+		/// The step by which the iteration proceeds at a time.
 		/// </summary>
 		private int _step;
 
@@ -205,11 +205,15 @@ namespace Expresso.BuiltIns
 	/// <seealso cref="ExpressoContainer"/>
 	public class ExpressoTuple : ExpressoContainer
 	{
-		/// <summary>
-		/// tupleの中身
-		/// </summary>
 		private List<object> _contents;
-		
+
+		/// <summary>
+		/// Tupleの中身。
+		/// The content of the tuple.
+		/// </summary>
+		/// <value>
+		/// The contents.
+		/// </value>
 		public List<object> Contents{get{return this._contents;}}
 
 		public TYPES Type{get{return TYPES.TUPLE;}}
@@ -279,7 +283,7 @@ namespace Expresso.BuiltIns
 	public class ExpressoFraction : IComparable
 	{
 		/// <summary>
-		/// Gets or sets the denominator.
+		/// Represents the dominator of the fraction.
 		/// </summary>
 		/// <value>
 		/// The denominator.
@@ -287,7 +291,7 @@ namespace Expresso.BuiltIns
 		public ulong Denominator{get; internal set;}
 
 		/// <summary>
-		/// Gets or sets the numerator.
+		/// Represents the numerator of the fraction.
 		/// </summary>
 		/// <value>
 		/// The numerator.
@@ -295,13 +299,25 @@ namespace Expresso.BuiltIns
 		public ulong Numerator{get; internal set;}
 
 		/// <summary>
-		/// Gets or sets a value indicating whether this instance is positive.
+		/// Indicates whether the fraction is positive or not.
 		/// </summary>
 		/// <value>
 		/// <c>true</c> if this object represents a positive fraction; otherwise, <c>false</c>.
 		/// </value>
 		public bool IsPositive{get; internal set;}
 
+		/// <summary>
+		/// Initializes a new instance of the <see cref="Expresso.BuiltIns.ExpressoFraction"/> class.
+		/// </summary>
+		/// <param name='numerator'>
+		/// Numerator.
+		/// </param>
+		/// <param name='denominator'>
+		/// Denominator.
+		/// </param>
+		/// <param name='isPositive'>
+		/// Is positive.
+		/// </param>
 		public ExpressoFraction(ulong numerator, ulong denominator, bool isPositive = true)
 		{
 			Denominator = denominator;
@@ -322,6 +338,12 @@ namespace Expresso.BuiltIns
 			IsPositive = integer > 0 ? true : false;
 		}
 
+		/// <summary>
+		/// Initializes a new instance of the <see cref="Expresso.BuiltIns.ExpressoFraction"/> class with a floating-point value.
+		/// </summary>
+		/// <param name='val'>
+		/// The value in double.
+		/// </param>
 		public ExpressoFraction(double val)
 		{
 			long floored = (long)val, denominator = 1;
@@ -381,6 +403,17 @@ namespace Expresso.BuiltIns
 			return new ExpressoFraction(other.Numerator * lcm / other.Denominator, lcm, other.IsPositive);
 		}
 
+		/// <summary>
+		/// Returns the inverse of the fraction.
+		/// </summary>
+		public ExpressoFraction GetInverse()
+		{
+			return new ExpressoFraction(Denominator, Numerator, IsPositive);
+		}
+
+		/// <summary>
+		/// Clones this instance.
+		/// </summary>
 		public ExpressoFraction Copy()
 		{
 			return new ExpressoFraction(Numerator, Denominator, IsPositive);
@@ -448,6 +481,36 @@ namespace Expresso.BuiltIns
 			new_self.Numerator = new_self.Numerator + other.Numerator;
 			return new_self;
 		}
+
+		/// <param name='src'>
+		/// Source.
+		/// </param>
+		/// <remarks>The unary operator minus.</remarks>
+		public static ExpressoFraction operator-(ExpressoFraction src)
+		{
+			return new ExpressoFraction(src.Numerator, src.Denominator, !src.IsPositive);
+		}
+
+		public static ExpressoFraction operator-(ExpressoFraction lhs, ExpressoFraction rhs)
+		{
+			return lhs + (-rhs);
+		}
+
+		public static ExpressoFraction operator-(ExpressoFraction lhs, ulong rhs)
+		{
+			var long_rhs = (long)rhs;
+			return lhs + (-long_rhs);
+		}
+
+		public static ExpressoFraction operator-(ExpressoFraction lhs, long rhs)
+		{
+			return lhs + (-rhs);
+		}
+
+		public static ExpressoFraction operator-(ExpressoFraction lhs, double rhs)
+		{
+			return lhs + (-rhs);
+		}
 		
 		public static ExpressoFraction operator*(ExpressoFraction lhs, ExpressoFraction rhs)
 		{
@@ -470,6 +533,31 @@ namespace Expresso.BuiltIns
 		{
 			var other = new ExpressoFraction(rhs);
 			return lhs * other;
+		}
+
+		public static ExpressoFraction operator/(ExpressoFraction lhs, ExpressoFraction rhs)
+		{
+			var rhs_inversed = rhs.GetInverse();
+			return lhs * rhs_inversed;
+		}
+
+		public static ExpressoFraction operator/(ExpressoFraction lhs, ulong rhs)
+		{
+			var rhs_inversed = new ExpressoFraction(1, rhs, true);
+			return lhs * rhs_inversed;
+		}
+
+		public static ExpressoFraction operator/(ExpressoFraction lhs, long rhs)
+		{
+			var rhs_is_positive = rhs > 0;
+			var rhs_inversed = new ExpressoFraction(1, (ulong)rhs, rhs_is_positive);
+			return lhs * rhs_inversed;
+		}
+
+		public static ExpressoFraction operator/(ExpressoFraction lhs, double rhs)
+		{
+			var rhs_inversed = new ExpressoFraction(rhs).GetInverse();
+			return lhs * rhs_inversed;
 		}
 		#endregion
 
@@ -511,6 +599,27 @@ namespace Expresso.BuiltIns
 			return !(lhs == rhs);
 		}
 		#endregion
+
+		public static explicit operator double(ExpressoFraction src)
+		{
+			double result = (double)src.Numerator / (double)src.Denominator;
+			if(!src.IsPositive)
+				result = -result;
+
+			return result;
+		}
+	}
+
+	/// <summary>
+	/// Expressoの組み込み型の一つ、Expression型。基本的にはワンライナーのクロージャーだが、
+	/// 記号演算もサポートする。
+	/// The built-in expression class. It is, in most cases, just a function object
+	/// with one line of code, but may contain symbolic expression. Therefore,
+	/// it has the capability of symbolic computation.
+	/// </summary>
+	public class ExpressoExpression
+	{
+		public TYPES Type{get{return TYPES.EXPRESSION;}}
 	}
 	#endregion
 	
@@ -562,17 +671,4 @@ namespace Expresso.BuiltIns
 				_writer.Dispose();
 		}
 	}
-
-	/// <summary>
-	/// Expressoの組み込み型の一つ、Expression型。基本的にはワンライナーのクロージャーだが、
-	/// 記号演算もサポートする。
-	/// The built-in expression class. It is, in most cases, just a function object
-	/// with one line of code, but may contain symbolic expression. Therefore,
-	/// it has the capability of symbolic computation.
-	/// </summary>
-	public class ExpressoExpression
-	{
-		public TYPES Type{get{return TYPES.EXPRESSION;}}
-	}
 }
-

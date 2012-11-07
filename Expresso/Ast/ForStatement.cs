@@ -58,20 +58,11 @@ namespace Expresso.Ast
             return this.LValues.GetHashCode() ^ this.Target.GetHashCode() ^ this.Body.GetHashCode();
         }
 
-		/*public Statement GetParent()
-		{
-			var block = Body as Block;
-			if(block == null)
-				throw new EvalException("Something wrong has occurred when evalating the body of a for loop.");
-
-			return block.Parent;
-		}*/
-
         internal override object Run(VariableStore varStore)
         {
             IEnumerable<object> iterable = Target.Run(varStore) as IEnumerable<object>;
 			if(iterable == null)
-				throw new EvalException("Can not evaluate the expression to a valid object");
+				throw new EvalException("Can not evaluate the expression to an iterable object!");
 
 			can_continue = true;
 

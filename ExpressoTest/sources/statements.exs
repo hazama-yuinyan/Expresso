@@ -16,7 +16,7 @@ def main(){
 		flag = false;
 
 	let sum = 0;
-	for(p in 0..100){
+	for(p in [0..y]){
 		sum = sum + p;
 		print p, sum;
 	}

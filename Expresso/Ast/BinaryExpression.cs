@@ -9,21 +9,25 @@ namespace Expresso.Ast
 {
     /// <summary>
     /// 二項演算。
+	/// Represents a binary expression.
     /// </summary>
     public class BinaryExpression : Expression
     {
         /// <summary>
         /// 演算子のタイプ。
+		/// The type of the operator.
         /// </summary>
         public OperatorType Operator { get; internal set; }
 
         /// <summary>
         /// 左辺のオペランド。
+		/// The left operand.
         /// </summary>
         public Expression Left { get; internal set; }
 
         /// <summary>
         /// 右辺のオペランド。
+		/// The right operand.
         /// </summary>
         public Expression Right { get; internal set; }
 

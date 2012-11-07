@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
+using System.Text;
 using System.Text.RegularExpressions;
+using System.Linq;
 using Expresso.BuiltIns;
 using Expresso.Interpreter;
 using Expresso.Helpers;
@@ -15,7 +17,7 @@ namespace Expresso.BuiltIns
 	{
 		private static Regex substitution_refs = new Regex(@"\$\{(\d+|[a-zA-Z_][a-zA-Z_0-9]+)\}");
 
-		private static Regex format_refs = new Regex(@"%[0-9.]*[sdfc]");
+		private static Regex format_refs = new Regex(@"%([0-9.]*)([boxXsdfcueEgG])");
 
 		#region Expressoの組み込み関数郡
 		/// <summary>
@@ -79,24 +81,31 @@ namespace Expresso.BuiltIns
 		public static string Format(string str, params object[] vars)
 		{
 			if(str == null)
-				throw new EvalException("This function takes a string as the first parameter.");
+				throw new ArgumentNullException("str");
 
 			string tmp = str;
-			var matches = format_refs.Matches(tmp);
-			if(matches.Count < vars.Length)
-				throw new EvalException("Too many arguments passed in.");
-			else if(matches.Count > vars.Length)
-				throw new EvalException("Too few arguments passed in.");
+			int i = 0;
+			tmp = tmp.Replace(format_refs, m => {
+				if(m.Groups[2].Value == "b"){
+					if(!(vars[i] is int))
+						throw new EvalException("Can not format objects in binary except an integer!");
 
-			foreach (var item in matches) {
+					var sb = new StringBuilder();
+				
+					uint target = (uint)vars[i];
+					int max_digits = (m.Groups[1].Value == "") ? -1 : Convert.ToInt32(m.Groups[1].Value);
+					for(int bit_pos = 0; target > 0 && max_digits < bit_pos; ++bit_pos){
+						var bit = target & (0x01 << bit_pos);
+						sb.Append(bit);
+					}
+					++i;
+					return new string(sb.ToString().Reverse().ToArray());
+				}else{
+					return "{" + i++ + ":" + m.Groups[1].Value + "}";
+				}
+			});
 
-			}
-			return null;
-		}
-
-		public static int CastToInt(double val)
-		{
-			return (int)val;
+			return string.Format(tmp, vars);
 		}
 		#endregion
 		#region Expressoのシーケンス生成関数郡

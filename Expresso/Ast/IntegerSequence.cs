@@ -5,24 +5,31 @@ using Expresso.Interpreter;
 namespace Expresso.Ast
 {
 	/// <summary>
-	/// 整数の数列をあらわす式
+	/// 整数の数列をあらわす式.
+	/// Represents an integer sequence.
 	/// </summary>
 	public class IntSeqExpression : Expression
 	{
 		/// <summary>
-		/// 整数列の下限
+		/// 整数列の下限.
+		/// The lower bound of the integer sequence.
+		/// The expression have to yield an integer.
 		/// </summary>
-		public int Start{get; internal set;}
+		public Expression Start{get; internal set;}
 
 		/// <summary>
-		/// 整数列の上限
+		/// 整数列の上限.
+		/// The upper bound of the integer sequence.
+		/// The expression have to yield an integer.
 		/// </summary>
-		public int End{get; internal set;}
+		public Expression End{get; internal set;}
 		
 		/// <summary>
-		/// ステップ
+		/// ステップ.
+		/// The step by which an iteration proceeds at a time.
+		/// The expression have to yield an integer.
 		/// </summary>
-		public int Step{get; internal set;}
+		public Expression Step{get; internal set;}
 		
 		public override NodeType Type
         {
@@ -45,7 +52,19 @@ namespace Expresso.Ast
 		
 		internal override object Run(VariableStore varStore)
 		{
-			return new ExpressoIntegerSequence(Start, End, Step);
+			var start = Start.Run(varStore);
+			if(!(start is int))
+				throw new EvalException("The start expression of the IntSeq expression have to yield an integer!");
+
+			var end = End.Run(varStore);
+			if(!(end is int))
+				throw new EvalException("The end expression of the IntSeq expression have to yield an integer!");
+
+			var step = Step.Run(varStore);
+			if(!(step is int))
+				throw new EvalException("The step expression of the IntSeq expression have to yield an integer!");
+
+			return new ExpressoIntegerSequence((int)start, (int)end, (int)step);
 		}
 	}
 }

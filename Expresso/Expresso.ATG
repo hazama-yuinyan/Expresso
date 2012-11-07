@@ -65,7 +65,7 @@ COMPILER Expresso
 	{
 		Token x = la;
 		scanner.ResetPeek();
-		while(x.kind == _integer) x = scanner.Peek();
+		while(x.kind != _double_dots && x.kind != _rbracket) x = scanner.Peek();
 		return x.kind != _double_dots;
 	}
 	
@@ -186,7 +186,7 @@ COMPILER Expresso
 		return new Constant{ValType = type, Value = val};
 	}
 	
-	static IntSeqExpression MakeIntSeq(int start, int end, int step)
+	static IntSeqExpression MakeIntSeq(Expression start, Expression end, Expression step)
 	{
 		return new IntSeqExpression{Start = start, End = end, Step = step};
 	}
@@ -202,6 +202,7 @@ CHARACTERS
 
 TOKENS
   double_dots = "..".
+  rbracket = ']'.
   colon = ':'.
   semicolon = ';'.
   lcurly = '{'.
@@ -386,7 +387,7 @@ WhileStmt<out Statement stmt>		(. Expression cond; Statement body = null; WhileS
   										stmt = tmp;
   									.).
 /*------------------------------------------------------------------------*/
-ForStmt<out Statement stmt>			(. List<Expression> target_list; Expression rvalue; Statement body; ForStatement tmp; .)
+ForStmt<out Statement stmt>			(. List<Expression> target_list; Expression rvalue = null; Statement body; ForStatement tmp; .)
 =
   "for"								(.
   										tmp = MakeForStatement();
@@ -396,7 +397,10 @@ ForStmt<out Statement stmt>			(. List<Expression> target_list; Expression rvalue
   ["let"]
   LValueList<out target_list>
   "in"
-  CondExpr<out rvalue>
+  (  IF(NotFollowedByDoubleDots())
+     CondExpr<out rvalue>
+  |  IntSeqExpr<out rvalue>
+  )
   ')'
   Stmt<out body>					(. 
   										tmp.LValues = target_list;
@@ -435,10 +439,7 @@ CaseLabel<out Expression expr>						(. expr = null; .)
   "case"
   (
     Literal<out expr>
-  | ( '('
-      IntSeqExpr<out expr>
-      ')'
-    )
+  | IntSeqExpr<out expr>
   | "default"										(. expr = MakeConstant(TYPES._CASE_DEFAULT, "default"); .)
   )
   SYNC ':' .
@@ -544,6 +545,21 @@ CondExpr<out Expression expr>		(. Expression true_expr, false_expr; .)
     								   };
     								.)
   ].
+/*------------------------------------------------------------------------*/
+IntSeqExpr<out Expression expr>		(. Expression start = null, end = null, step = null; .)
+=
+  '['
+  [OrTest<out start>]
+  ".."
+  OrTest<out end>
+  [ ':'
+    OrTest<out step>
+  ]
+  ']'								(. 
+  										if(start == null) start = CreateConstant(TYPES.INTEGER);
+  										if(step == null) step = MakeConstant(TYPES.INTEGER, 1);
+  										expr = MakeIntSeq(start, end, step);
+  									.).
 /*------------------------------------------------------------------------*/
 OrTest<out Expression expr>			(. Expression rhs; .)
 =
@@ -700,7 +716,9 @@ Trailer<ref Expression expr, string name>	(. Function func; List<Expression> arg
 /*------------------------------------------------------------------------*/
 Subscript<out Expression subscript>	(. subscript = null; .)
 =
-  CondExpr<out subscript>.
+  IF(NotFollowedByDoubleDots())
+  CondExpr<out subscript>
+  |  IntSeqExpr<out subscript>.
 /*------------------------------------------------------------------------*/
 ArgList<. ref List<Expression> args .>		(. Expression expr; .)
 =
@@ -716,10 +734,7 @@ Atom<out Expression expr>			(. string name; expr = null; .)
   									   		SemErr(string.Format("Attempt to refer to an undefined variable \"{0}\"", name));
   									   }
   									.)
-  | (  IF(NotFollowedByDoubleDots())		/* For float and IntSeqExpr confilct.*/
-       Literal<out expr>
-    |  IntSeqExpr<out expr>
-    )
+  | Literal<out expr>
   | '('
     TupleMaker<out expr>
     SYNC ')'						(. if(expr == null) expr = MakeObjInitializer(TYPES.TUPLE, new List<Expression>()); .)
@@ -729,15 +744,6 @@ Atom<out Expression expr>			(. string name; expr = null; .)
   | '{'
     DictMaker<out expr>
     SYNC '}' 						(. if(expr == null) expr = MakeObjInitializer(TYPES.DICT, new List<Expression>()); .).
-/*------------------------------------------------------------------------*/
-IntSeqExpr<out Expression expr>		(. int start = 0, end = -1, step = 1; .)
-=
-  [integer]							(. start = Convert.ToInt32(t.val); .)
-  ".."
-  integer							(. end = Convert.ToInt32(t.val); .)
-  [ ':'
-    integer							(. step = Convert.ToInt32(t.val); .)
-  ]									(. expr = MakeIntSeq(start, end, step); .).
 /*------------------------------------------------------------------------*/
 TupleMaker<out Expression expr>			(. Expression tmp; List<Expression> list = new List<Expression>(); expr = null; .)
 =

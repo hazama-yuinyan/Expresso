@@ -8,18 +8,14 @@
 def main(){
 	let n = 100000, i = 2/*, results = []*/;
 	let j (- int;
-	while(i <= n){
+	for(i in [2..n + 1]){
 		let SQRT_I = toInt(sqrt(i) + 1.0);
-		j = 2;
-		while(j <= SQRT_I){
+		for(j in [2..SQRT_I]){
 			if(j == SQRT_I)
 				print i;
 			else if(i % j == 0)
 				break;
-
-			j = j + 1;
 		}
-		i = i + 1;
 	}
 	
 	/*print "Results: ";
