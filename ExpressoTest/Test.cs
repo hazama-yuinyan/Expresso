@@ -27,7 +27,6 @@ namespace Expresso.Test
 		{
 			//var parser = new Parser(new Scanner(new StringReader(source)));
 			
-			
 		}
 		
 		[Test]
@@ -50,7 +49,8 @@ namespace Expresso.Test
 			var results = interp.Run() as List<object>;
 			Assert.IsNotNull(results);
 			object x = results[0], a = results[1], b = results[2], c = results[3];
-			object d = results[4], e = results[5], f = results[6];
+			object d = results[4], e = results[5], f = results[6], xp = results[7];
+			object xm = results[8], xt = results[9], xd = results[10], xmod = results[11], xpower = results[12];
 
 			Assert.IsTrue(x is int);
 			Assert.AreEqual(3, Helpers.AutoCast<int>(x));
@@ -72,6 +72,24 @@ namespace Expresso.Test
 
 			Assert.IsTrue(f is int);
 			Assert.AreEqual(9, Helpers.AutoCast<int>(f));
+
+			Assert.IsTrue(xp is int);
+			Assert.AreEqual(7, Helpers.AutoCast<int>(xp));
+
+			Assert.IsTrue(xm is int);
+			Assert.AreEqual(-1, Helpers.AutoCast<int>(xm));
+
+			Assert.IsTrue(xt is int);
+			Assert.AreEqual(12, Helpers.AutoCast<int>(xt));
+
+			Assert.IsTrue(xd is int);
+			Assert.AreEqual(2, Helpers.AutoCast<int>(xd));
+
+			Assert.IsTrue(xmod is int);
+			Assert.AreEqual(0, Helpers.AutoCast<int>(xmod));
+
+			Assert.IsTrue(xpower is int);
+			Assert.AreEqual(9, Helpers.AutoCast<int>(xmod));
 		}
 
 		[TestCase]

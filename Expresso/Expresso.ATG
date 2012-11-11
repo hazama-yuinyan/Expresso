@@ -161,6 +161,16 @@ COMPILER Expresso
 		return new Assignment{Targets = targets, Expressions = expressions};
 	}
 	
+	static Assignment MakeAugumentedAssignment(List<Expression> targets, List<Expression> expressions, OperatorType opType)
+	{
+		var rvalues = new List<Expression>();
+		for(int i = 0; i < expressions.Count; ++i){
+			var rvalue = new BinaryExpression{Left = targets[i], Right = expressions[i], Operator = opType};
+			rvalues.Add(rvalue);
+		}
+		return new Assignment{Targets = targets, Expressions = rvalues};
+	}
+	
 	static Iteration MakeIteration(List<Expression> targets, List<Expression> exprs)
 	{
 		return new Iteration{Targets = targets, Expressions = exprs};
@@ -285,13 +295,14 @@ SimpleStmt<out Statement stmt>		(. stmt = null; .)
   | BreakStmt<out stmt>
   | ContinueStmt<out stmt>.
 /*------------------------------------------------------------------------*/
-PrintStmt<out Statement stmt>		(. List<Expression> exprs; .)
+PrintStmt<out Statement stmt>		(. List<Expression> exprs = null; bool trailing_comma = false; .)
 =
   "print"
-  RValueList<out exprs>
+  [RValueList<out exprs>]
+  [',']								(. trailing_comma = true; .)
   SYNC ';'							(. stmt = new PrintStatement{Expressions = exprs}; .).
 /*------------------------------------------------------------------------*/
-ReturnStmt<out Statement stmt>		(. List<Expression> target_list = new List<Expression>(); .)
+ReturnStmt<out Statement stmt>		(. List<Expression> target_list = new List<Expression>(); bool trailing_comma; .)
 =
   "return"
   [RValueList<out target_list>]
@@ -313,30 +324,35 @@ ContinueStmt<out Statement stmt>	(. int count = 1; .)
   ]
   SYNC ';' 							(. stmt = new ContinueStatement{Count = count}; .).
 /*------------------------------------------------------------------------*/
-/*AugAssignOpe<TYPES type>
+AugAssignOpe<ref OperatorType type>
 =
-  (  "+="					(. .)
-  |  "-="
-  |  "*="
-  |  "/="
-  |  "**="
-  |  "%="
-  |  "&="
-  |  "|="
-  |  "<<="
-  |  ">>="
-  ).*/
+  (  "+="							(. type = OperatorType.PLUS; .)
+  |  "-="							(. type = OperatorType.MINUS; .)
+  |  "*="							(. type = OperatorType.TIMES; .)
+  |  "/="							(. type = OperatorType.DIV; .)
+  |  "**="							(. type = OperatorType.POWER; .)
+  |  "%="							(. type = OperatorType.MOD; .)
+  |  "&="							(. type = OperatorType.BIT_AND; .)
+  |  "|="							(. type = OperatorType.BIT_OR; .)
+  |  "<<="							(. type = OperatorType.BIT_LSHIFT; .)
+  |  ">>="							(. type = OperatorType.BIT_RSHIFT; .)
+  ).
 /*------------------------------------------------------------------------*/
-ExprStmt<out Statement stmt>				(. List<Expression> targets = null; List<Expression> expr_list; stmt = null; .)
+ExprStmt<out Statement stmt>					(.
+													List<Expression> targets = null; List<Expression> expr_list;
+													stmt = null; bool trailing_comma; OperatorType op_type = OperatorType.NONE;
+												.)
 =
   (  VarDecl<out targets>
   |  RValueList<out targets>
-    {  //AugAssignOpe
-       //ExprList<out expr_list>
-    /*|*/  '='
-	   RValueList<out expr_list>			(. stmt = MakeAssignment(targets, expr_list); .)
-  }
-  )SYNC ';' 								(. if(stmt == null) stmt = MakeExprStatement(targets); .).
+    (  AugAssignOpe<ref op_type>
+       RValueList<out expr_list>				(. stmt = MakeAugumentedAssignment(targets, expr_list, op_type); .)
+    |
+    {  '='
+	   RValueList<out expr_list>				(. stmt = MakeAssignment(targets, expr_list); .)
+    }
+    )
+  )SYNC ';' 									(. if(stmt == null) stmt = MakeExprStatement(targets); .).
 /*------------------------------------------------------------------------*/
 Block<out Statement block, bool needsScope = true>	(.
 														Block tmp;
@@ -528,9 +544,8 @@ RValueList<. out List<Expression> exprs .>		(. Expression tmp; .)
 =												(. exprs = new List<Expression>(); .)
   CondExpr<out tmp>								(. exprs.Add(tmp); .)
   { ','
-    CondExpr<out tmp>							(. exprs.Add(tmp); .)
-  }
-  /*[',']*/ .
+    CondExpr<out tmp>							(. exprs.Add(tmp);	.)
+  }.
 /*------------------------------------------------------------------------*/
 CondExpr<out Expression expr>		(. Expression true_expr, false_expr; .)
 =
@@ -784,13 +799,18 @@ DictMaker<out Expression expr>			(. Expression lhs, rhs; List<Expression> list =
   CompFor<out expr>
   |  CompIf<out expr> .*/
 /*------------------------------------------------------------------------*/
-/*CompFor<out Expression expr>			(. Expression iter, body = null; List<Expression> expr_list, test_list; .)
+/*CompFor<out Expression expr>			(. Expression rvalue, body = null; List<Expression> target_list, test_list; ForStatement tmp; .)
 =
-  "for"
+  "for"									(.
+  											tmp = MakeForStatement();
+  											Parser.breakables.Add(tmp);
+  										.)
   ["let"]
-  LValueList<out expr_list>
+  LValueList<out target_list>
   "in"
-  RValueList<out test_list>				(. iter = MakeIteration(expr_list, test_list); .)
+  ( CondExpr<out rvalue>
+  | IntSeqExpr<out rvalue>				(. iter = MakeIteration(expr_list, test_list); .)
+  )
   [CompIter<out body>]					(. expr = MakeCompFor(iter, body); .).*/
 /*------------------------------------------------------------------------*/
 /*CompIf<out Expression expr>				(. Expression tmp, body = null; .)

@@ -13,6 +13,7 @@ namespace Expresso.Ast
     /// </summary>
     public enum OperatorType
     {
+		NONE,
         PLUS,
         MINUS,
         TIMES,

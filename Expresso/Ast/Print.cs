@@ -48,12 +48,13 @@ namespace Expresso.Ast
 				var text = ExpressoFunctions.Format(sb.ToString(), values.ToArray());
 				Console.WriteLine(text);
 			}else{
-				bool print_comma = false;
-				foreach(var expr in Expressions){
+				Console.Write(first);
+				bool print_comma = true;
+				for(int i = 1; i < Expressions.Count; ++i){
 					if(print_comma)
 						Console.Write(", ");
 
-					object obj = expr.Run(varStore);
+					object obj = Expressions[i].Run(varStore);
 					Console.Write(obj);
 					print_comma = (obj is string) ? false : true;
 				}

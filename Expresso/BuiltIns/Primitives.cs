@@ -88,7 +88,7 @@ namespace Expresso.BuiltIns
 		{
 			var objs = new List<object>(count);
 			var enumerator = Val;
-			for(int i = 0; i < count; ++i)
+			for(int i = 0; enumerator.MoveNext() && i < count; ++i)
 				objs.Add(enumerator.Current);
 
 			return objs;
@@ -164,6 +164,23 @@ namespace Expresso.BuiltIns
 		public bool IsSequential()
 		{
 			return this._step == 1;
+		}
+
+		static public void AddClassDefinitions()
+		{
+			var privates = new Dictionary<string, int>();
+			privates.Add("start", 0);
+			privates.Add("end", 1);
+			privates.Add("step", 2);
+
+			var publics = new Dictionary<string, int>();
+			publics.Add("includes", 3);
+			publics.Add("isSequential", 4);
+			publics.Add("take", 5);
+			publics.Add("generate", 6);
+
+			var definitions = new ExpressoClass.ClassDefinition("IntSeq", privates, publics);
+			ExpressoClass.AddClass("IntSeq", definitions);
 		}
 	}
 

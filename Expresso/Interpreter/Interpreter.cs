@@ -26,20 +26,20 @@ using Expresso.Helpers;
  * 7.変数のスコープは、JavaScriptなど同様、関数のみが持つ。
  * 
  * Expresso組み込みの型に関して
- * int : いわゆる整数型。C#のint型を使用。
- * bool : C#のboolean型を使用。
- * float : いわゆる浮動小数点型。６４ビット精度版のみ実装。C#ではdoubleを使用。
- * bigint : いわゆる多倍長整数型。C#では、BigIntegerクラスを使用。
- * rational : 分数型。分子と分母を整数型でもつため、実用上有理数を完璧な精度で保持できる。
- * string : いわゆる文字列型。C#のstring型を使用。C#以外で実装する場合、文字列の比較をオブジェクトの参照の比較で行うように実装すること。
- * bytearray : Cで言うところのchar[]型。要するにバイトの配列。C#では、char型の配列で実装。
+ * int           : いわゆる整数型。C#のint型を使用。
+ * bool          : C#のboolean型を使用。
+ * float         : いわゆる浮動小数点型。６４ビット精度版のみ実装。C#ではdoubleを使用。
+ * bigint        : いわゆる多倍長整数型。C#では、BigIntegerクラスを使用。
+ * rational      : 分数型。分子と分母を整数型でもつため、実用上有理数を完璧な精度で保持できる。
+ * string        : いわゆる文字列型。C#のstring型を使用。C#以外で実装する場合、文字列の比較をオブジェクトの参照の比較で行うように実装すること。
+ * bytearray     : Cで言うところのchar[]型。要するにバイトの配列。C#では、char型の配列で実装。
  * var(variadic) : 総称型。実装上は、どんな型の変数でも指し示すことのできるポインターや参照。
- * tuple : Pythonなどで実装されているタプル型と同じ。長さ不変、書き換え不可な配列とも言える。
- * list : データ構造でよく話題に上るリスト型と同じ。長さ可変、書き換え可能な配列とも言える。C#では、Listクラスで実装。
- * dictionary : いわゆる辞書型。言語によっては、連想配列とも呼ばれるもの。C#では、Dictionaryクラスで実装。
- * expression : 基本的にはワンライナーのクロージャーの糖衣構文。記号演算もサポートする点が通常のクロージャーと異なる。
- * function : 普通の関数型。構文は違えど、クロージャーも実装上はこの型になる。
- * intseq : PythonのxrangeオブジェクトやRubyのRangeオブジェクトと似たようなもの。整数の数列を作り出すジェネレーターと思えばいい。
+ * tuple         : Pythonなどで実装されているタプル型と同じ。長さ不変、書き換え不可な配列とも言える。
+ * list          : データ構造でよく話題に上るリスト型と同じ。長さ可変、書き換え可能な配列とも言える。C#では、Listクラスで実装。
+ * dictionary    : いわゆる辞書型。言語によっては、連想配列とも呼ばれるもの。C#では、Dictionaryクラスで実装。
+ * expression    : 基本的にはワンライナーのクロージャーの糖衣構文。記号演算もサポートする点が通常のクロージャーと異なる。
+ * function      : 普通の関数型。構文は違えど、クロージャーも実装上はこの型になる。
+ * intseq        : PythonのxrangeオブジェクトやRubyのRangeオブジェクトと似たようなもの。整数の数列を作り出すジェネレーターと思えばいい。
  *----------------------------------------------------
  */
 
@@ -58,12 +58,6 @@ namespace Expresso.Interpreter
 		public Block Root{get; set;}
 
 		public Function MainFunc{get; set;}
-		
-		/// <summary>
-		/// グローバルな環境。主にそのプログラム中で定義されている関数を保持する。
-		/// The global environment which holds all the functions defined in the program.
-		/// </summary>
-		private Scope environ = new Scope();
 		
 		/// <summary>
 		/// グローバルな変数ストア。main関数を含む子スコープは、この変数ストアを親として持つ。

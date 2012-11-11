@@ -13,21 +13,21 @@ namespace Expresso.Ast
 		/// <summary>
 		/// 整数列の下限.
 		/// The lower bound of the integer sequence.
-		/// The expression have to yield an integer.
+		/// The expression has to yield an integer.
 		/// </summary>
 		public Expression Start{get; internal set;}
 
 		/// <summary>
 		/// 整数列の上限.
 		/// The upper bound of the integer sequence.
-		/// The expression have to yield an integer.
+		/// The expression has to yield an integer.
 		/// </summary>
 		public Expression End{get; internal set;}
 		
 		/// <summary>
 		/// ステップ.
 		/// The step by which an iteration proceeds at a time.
-		/// The expression have to yield an integer.
+		/// The expression has to yield an integer.
 		/// </summary>
 		public Expression Step{get; internal set;}
 		
