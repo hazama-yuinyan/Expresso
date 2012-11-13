@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.IO;
 using Expresso.Ast;
 using Expresso.Interpreter;
@@ -26,8 +27,8 @@ namespace Expresso.BuiltIns
 		private int _start;
 		
 		/// <summary>
-		/// 数列の終点。-1のときは無限リストを生成する。
-		/// The upper bound. When set to -1, it generates a infinite series of list.
+		/// 数列の終点。int.MinValueのときは無限リストを生成する。
+		/// The upper bound. When set to "int.MinValue", it generates an infinite series of list.
 		/// Note that the upper bound will not be included in the resulting sequence.
 		/// </summary>
 		private int _end;
@@ -52,12 +53,6 @@ namespace Expresso.BuiltIns
 			}
 		}
 
-		public TYPES Type{
-			get{
-				return TYPES.SEQ;
-			}
-		}
-		
 		public ExpressoIntegerSequence(int start, int end, int step)
 		{
 			this._start = start;
@@ -93,6 +88,19 @@ namespace Expresso.BuiltIns
 
 			return objs;
 		}
+
+		public List<object> TakeAll()
+		{
+			if(_end == int.MinValue)
+				throw new EvalException("Can not take all elements from an infinite series of list!");
+
+			var er = new Enumerator(this);
+			var tmp = new List<object>();
+			while(er.MoveNext())
+				tmp.Add(er.Current);
+
+			return tmp;
+		}
 		#endregion
 
 		#region The enumerator for IntegerSequence
@@ -114,7 +122,7 @@ namespace Expresso.BuiltIns
 			{
 				get
 				{
-					if(next < 0)
+					if(next == int.MinValue)
 						throw new InvalidOperationException();
 
 					this.current = this.next;
@@ -144,7 +152,7 @@ namespace Expresso.BuiltIns
 				if(this.next == int.MinValue)
 					return false;
 
-				if(this.seq._end == -1 || this.next < this.seq._end){
+				if(this.seq._end == int.MinValue || this.next < this.seq._end){
 					this.next += this.seq._step;
 					return true;
 				}
@@ -155,18 +163,30 @@ namespace Expresso.BuiltIns
 		}
 		#endregion
 
+		/// <summary>
+		/// Checks whether the integer sequence includes the specified n or not.
+		/// </summary>
+		/// <param name='n'>
+		/// <c>true</c>; if n is in the sequence; otherwise, <c>false</c>.
+		/// </param>
 		public bool Includes(int n)
 		{
 			var remaining = n % this._step;
 			return remaining - this._start == 0;
 		}
 
+		/// <summary>
+		/// Determines whether the sequence is sequential.
+		/// </summary>
+		/// <returns>
+		/// <c>true</c>; if the sequence is sequential, that is, the step is 1; otherwise, <c>false</c>.
+		/// </returns>
 		public bool IsSequential()
 		{
 			return this._step == 1;
 		}
 
-		static public void AddClassDefinitions()
+		static public ExpressoClass.ExpressoObj Construct(ExpressoIntegerSequence inst)
 		{
 			var privates = new Dictionary<string, int>();
 			privates.Add("start", 0);
@@ -178,9 +198,31 @@ namespace Expresso.BuiltIns
 			publics.Add("isSequential", 4);
 			publics.Add("take", 5);
 			publics.Add("generate", 6);
+			publics.Add("takeAll", 7);
 
-			var definitions = new ExpressoClass.ClassDefinition("IntSeq", privates, publics);
-			ExpressoClass.AddClass("IntSeq", definitions);
+			var definition = new ExpressoClass.ClassDefinition("IntSeq", privates, publics);
+			definition.Members = new object[]{
+				inst._start,
+				inst._end,
+				inst._step,
+				new NativeFunctionUnary<bool, int>(
+					"includes", new Argument{Name = "n", ParamType = TYPES.INTEGER}, inst.Includes
+				),
+				new NativeFunctionNullary<bool>(
+					"isSequential", inst.IsSequential
+				),
+				new NativeFunctionUnary<List<object>, int>(
+					"take", new Argument{Name = "count", ParamType = TYPES.INTEGER}, inst.Take
+				),
+				new NativeFunctionNullary<object>(
+					"generate", inst.Generate
+				),
+				new NativeFunctionNullary<List<object>>(
+					"takeAll", inst.TakeAll
+				)
+			};
+
+			return new ExpressoClass.ExpressoObj(definition, TYPES.SEQ);
 		}
 	}
 
@@ -194,7 +236,7 @@ namespace Expresso.BuiltIns
 		/// このコンテナのサイズを返す。
 		/// Returns the number of elements the container has.
 		/// </summary>
-		int Size();
+		int Size{get;}
 
 		/// <summary>
 		/// このコンテナが空かどうか返す。
@@ -222,7 +264,7 @@ namespace Expresso.BuiltIns
 	/// <seealso cref="ExpressoContainer"/>
 	public class ExpressoTuple : ExpressoContainer
 	{
-		private List<object> _contents;
+		private object[] _content;
 
 		/// <summary>
 		/// Tupleの中身。
@@ -231,39 +273,51 @@ namespace Expresso.BuiltIns
 		/// <value>
 		/// The contents.
 		/// </value>
-		public List<object> Contents{get{return this._contents;}}
+		public object[] Content{get{return this._content;}}
 
-		public TYPES Type{get{return TYPES.TUPLE;}}
-
-		public ExpressoTuple(List<object> contents)
+		public ExpressoTuple(object[] content)
 		{
-			this._contents = contents;
+			this._content = content;
+		}
+
+		public ExpressoTuple(List<object> content)
+		{
+			this._content = content.ToArray();
+		}
+
+		public object this[int index]
+		{
+			get{
+				return _content[index];
+			}
 		}
 
 		#region ExpressoContainer implementations
-		public int Size()
+		public int Size
 		{
-			return _contents.Count;
+			get{
+				return _content.Length;
+			}
 		}
 
 		public bool Empty()
 		{
-			return _contents.Count == 0;
+			return _content.Length == 0;
 		}
 
 		public bool Contains(object obj)
 		{
-			return _contents.Contains(obj);
+			return _content.Contains(obj);
 		}
 
 		IEnumerator IEnumerable.GetEnumerator()
 		{
-			return _contents.GetEnumerator();
+			return _content.GetEnumerator();
 		}
 
 		public IEnumerator<object> GetEnumerator()
 		{
-			return _contents.GetEnumerator();
+			return new Enumerator(this);
 		}
 
 		public object Slice(ExpressoIntegerSequence seq)
@@ -275,22 +329,80 @@ namespace Expresso.BuiltIns
 
 			int index = (int)enumerator.Current;
 			do{
-				sliced.Add(Contents[index]);
-			}while(enumerator.MoveNext() && (index = (int)enumerator.Current) < Contents.Count);
+				sliced.Add(Content[index]);
+			}while(enumerator.MoveNext() && (index = (int)enumerator.Current) < Content.Length);
 
 			return new ExpressoTuple(sliced);
 		}
 		#endregion
 
-		public object AccessMember(object subscription)
+		#region The enumerator for ExpressoTuple
+		public struct Enumerator : IEnumerator<object>, IEnumerator
 		{
-			if(subscription is int){
-				int index = (int)subscription;
-				return Contents[index];
-			}else if(subscription is string){
-				return null;
+			private IEnumerator er;
+
+			object IEnumerator.Current
+			{
+				get
+				{
+					return this.Current;
+				}
 			}
-			return null;
+
+			public object Current
+			{
+				get
+				{
+					return er.Current;
+				}
+			}
+
+			internal Enumerator(ExpressoTuple tuple)
+			{
+				this.er = tuple.GetEnumerator();
+			}
+
+			public void Dispose()
+			{
+			}
+
+			void IEnumerator.Reset()
+			{
+				er.Reset();
+			}
+
+			public bool MoveNext()
+			{
+				return er.MoveNext();
+			}
+		}
+		#endregion
+
+		static public ExpressoClass.ExpressoObj Construct(ExpressoTuple inst)
+		{
+			var privates = new Dictionary<string, int>();
+			privates.Add("content", 0);
+
+			var publics = new Dictionary<string, int>();
+			publics.Add("length", 1);
+			publics.Add("empty", 2);
+			publics.Add("contains", 3);
+
+			var definition = new ExpressoClass.ClassDefinition("Tuple", privates, publics);
+			definition.Members = new object[]{
+				inst,
+				new NativeFunctionNullary<int>(
+					"length", () => inst.Size
+				),
+				new NativeFunctionNullary<bool>(
+					"empty", inst.Empty
+				),
+				new NativeFunctionUnary<bool, object>(
+					"contains", new Argument{Name = "elem", ParamType = TYPES.VAR}, inst.Contains
+				)
+			};
+
+			return new ExpressoClass.ExpressoObj(definition, TYPES.TUPLE);
 		}
 	}
 
@@ -377,31 +489,12 @@ namespace Expresso.BuiltIns
 			this.Reduce();
 		}
 
-		private static ulong CalcGDC(ulong first, ulong second)
-		{
-			ulong r, a = (first > second) ? first : second, b = (first > second) ? second : first, last = b;
-			while(true){
-				r = a - b;
-				if(r == 0) break;
-				last = r;
-				a = (b > r) ? b : r; b = (b > r) ? r : b;
-			}
-			
-			return last;
-		}
-		
-		private static ulong CalcLCM(ulong first, ulong second)
-		{
-			ulong gdc = CalcGDC(first, second);
-			return first * second / gdc;
-		}
-
 		/// <summary>
 		/// 約分を行う。
 		/// </summary>
 		public ExpressoFraction Reduce()
 		{
-			var gdc = CalcGDC(Numerator, Denominator);
+			var gdc = ImplementaionHelpers.CalcGDC(Numerator, Denominator);
 			Numerator /= gdc;
 			Denominator /= gdc;
 			return this;
@@ -415,7 +508,7 @@ namespace Expresso.BuiltIns
 		/// </param>
 		public ExpressoFraction Reduce(ExpressoFraction other)
 		{
-			var lcm = CalcLCM(Denominator, other.Denominator);
+			var lcm = ImplementaionHelpers.CalcLCM(Denominator, other.Denominator);
 			Numerator *= lcm / Denominator;
 			return new ExpressoFraction(other.Numerator * lcm / other.Denominator, lcm, other.IsPositive);
 		}
@@ -461,9 +554,46 @@ namespace Expresso.BuiltIns
 			return Numerator.GetHashCode() ^ Denominator.GetHashCode() ^ IsPositive.GetHashCode();
 		}
 
-		public override string ToString ()
+		public override string ToString()
 		{
 			return string.Format("[ExpressoFraction: {0}{1} / {2}]", IsPositive ? "" : "-", Numerator, Denominator);
+		}
+
+		public ExpressoFraction Power(ExpressoFraction y)
+		{
+			return new ExpressoFraction(0, 0, true);
+		}
+
+		public ExpressoFraction Power(long y)
+		{
+			var tmp_y = new ExpressoFraction(y);
+			return Power(tmp_y);
+		}
+
+		public ExpressoFraction Power(ulong y)
+		{
+			var tmp_y = new ExpressoFraction(y);
+			return Power(tmp_y);
+		}
+
+		public ExpressoFraction Power(double y)
+		{
+			var tmp_y = new ExpressoFraction(y);
+			return Power(tmp_y);
+		}
+
+		public ExpressoFraction Power(object y)
+		{
+			if(y is ExpressoFraction)
+				return Power((ExpressoFraction)y);
+			else if(y is long)
+				return Power((long)y);
+			else if(y is ulong)
+				return Power((ulong)y);
+			else if(y is double)
+				return Power((double)y);
+			else
+				throw new EvalException("The power operation cann't take that type of object as the right operand.");
 		}
 
 		#region Arithmetic operators
@@ -499,9 +629,20 @@ namespace Expresso.BuiltIns
 			return new_self;
 		}
 
-		/// <param name='src'>
-		/// Source.
-		/// </param>
+		public static ExpressoFraction operator+(ExpressoFraction lhs, object rhs)
+		{
+			if(rhs is ExpressoFraction)
+				return lhs + (ExpressoFraction)rhs;
+			else if(rhs is long)
+				return lhs + (long)rhs;
+			else if(rhs is ulong)
+				return lhs + (ulong)rhs;
+			else if(rhs is double)
+				return lhs + (double)rhs;
+			else
+				throw new EvalException("Can not apply the + operator on that type of object.");
+		}
+
 		/// <remarks>The unary operator minus.</remarks>
 		public static ExpressoFraction operator-(ExpressoFraction src)
 		{
@@ -528,6 +669,20 @@ namespace Expresso.BuiltIns
 		{
 			return lhs + (-rhs);
 		}
+
+		public static ExpressoFraction operator-(ExpressoFraction lhs, object rhs)
+		{
+			if(rhs is ExpressoFraction)
+				return lhs - (ExpressoFraction)rhs;
+			else if(rhs is long)
+				return lhs - (long)rhs;
+			else if(rhs is ulong)
+				return lhs - (ulong)rhs;
+			else if(rhs is double)
+				return lhs - (double)rhs;
+			else
+				throw new EvalException("Can not apply the - operator on that type of object.");
+		}
 		
 		public static ExpressoFraction operator*(ExpressoFraction lhs, ExpressoFraction rhs)
 		{
@@ -550,6 +705,20 @@ namespace Expresso.BuiltIns
 		{
 			var other = new ExpressoFraction(rhs);
 			return lhs * other;
+		}
+
+		public static ExpressoFraction operator*(ExpressoFraction lhs, object rhs)
+		{
+			if(rhs is ExpressoFraction)
+				return lhs * (ExpressoFraction)rhs;
+			else if(rhs is long)
+				return lhs * (long)rhs;
+			else if(rhs is ulong)
+				return lhs * (ulong)rhs;
+			else if(rhs is double)
+				return lhs * (double)rhs;
+			else
+				throw new EvalException("Can not apply the * operator on that type of object.");
 		}
 
 		public static ExpressoFraction operator/(ExpressoFraction lhs, ExpressoFraction rhs)
@@ -575,6 +744,65 @@ namespace Expresso.BuiltIns
 		{
 			var rhs_inversed = new ExpressoFraction(rhs).GetInverse();
 			return lhs * rhs_inversed;
+		}
+
+		public static ExpressoFraction operator/(ExpressoFraction lhs, object rhs)
+		{
+			if(rhs is ExpressoFraction)
+				return lhs / (ExpressoFraction)rhs;
+			else if(rhs is long)
+				return lhs / (long)rhs;
+			else if(rhs is ulong)
+				return lhs / (ulong)rhs;
+			else if(rhs is double)
+				return lhs / (double)rhs;
+			else
+				throw new EvalException("Can not apply the / operator on that type of object.");
+		}
+
+		public static ExpressoFraction operator%(ExpressoFraction lhs, ExpressoFraction rhs)
+		{
+			var tmp_rhs = rhs.Copy();
+			var tmp_lhs = lhs.Copy();
+			if(lhs.Denominator != rhs.Denominator)
+				tmp_lhs = tmp_rhs.Reduce(lhs);
+
+			long lhs_numerator = (tmp_lhs.IsPositive) ? (long)tmp_lhs.Numerator : -(long)tmp_lhs.Numerator;
+			long rhs_numerator = (tmp_rhs.IsPositive) ? (long)tmp_rhs.Numerator : -(long)tmp_rhs.Numerator;
+			var remaining = lhs_numerator % rhs_numerator;
+			return new ExpressoFraction((ulong)remaining, tmp_lhs.Denominator, remaining > 0);
+		}
+
+		public static ExpressoFraction operator%(ExpressoFraction lhs, ulong rhs)
+		{
+			var rhs_fraction = new ExpressoFraction(rhs);
+			return lhs % rhs_fraction;
+		}
+
+		public static ExpressoFraction operator%(ExpressoFraction lhs, long rhs)
+		{
+			var rhs_fraction = new ExpressoFraction(rhs);
+			return lhs % rhs_fraction;
+		}
+
+		public static ExpressoFraction operator%(ExpressoFraction lhs, double rhs)
+		{
+			var rhs_fraction = new ExpressoFraction(rhs);
+			return lhs % rhs_fraction;
+		}
+
+		public static ExpressoFraction operator%(ExpressoFraction lhs, object rhs)
+		{
+			if(rhs is ExpressoFraction)
+				return lhs % (ExpressoFraction)rhs;
+			else if(rhs is long)
+				return lhs % (long)rhs;
+			else if(rhs is ulong)
+				return lhs % (ulong)rhs;
+			else if(rhs is double)
+				return lhs % (double)rhs;
+			else
+				throw new EvalException("Can not apply the % operator on that type of object.");
 		}
 		#endregion
 

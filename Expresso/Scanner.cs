@@ -389,11 +389,11 @@ public class Scanner {
 			case "else": t.kind = 45; break;
 			case "while": t.kind = 46; break;
 			case "for": t.kind = 47; break;
-			case "let": t.kind = 48; break;
-			case "in": t.kind = 49; break;
-			case "switch": t.kind = 50; break;
-			case "case": t.kind = 51; break;
-			case "default": t.kind = 52; break;
+			case "in": t.kind = 48; break;
+			case "switch": t.kind = 49; break;
+			case "case": t.kind = 50; break;
+			case "default": t.kind = 51; break;
+			case "let": t.kind = 52; break;
 			case "def": t.kind = 54; break;
 			case "or": t.kind = 57; break;
 			case "and": t.kind = 58; break;

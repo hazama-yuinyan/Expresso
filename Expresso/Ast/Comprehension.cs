@@ -8,9 +8,11 @@ namespace Expresso.Ast
 {
 	public class Comprehension : Expression
 	{
-		public Expression Body{get; internal set;}
+		public Expression YieldExpr{get; internal set;}
 
-		public Expression Child{get; internal set;}
+		public ComprehensionFor Body{get; internal set;}
+
+		public TYPES ObjType{get; internal set;}
 
 		public override NodeType Type
         {
@@ -23,35 +25,85 @@ namespace Expresso.Ast
 
             if (x == null) return false;
 
-            return this.Body.Equals(x.Body) && this.Child.Equals(x.Child);
+            return this.Body.Equals(x.Body) && this.YieldExpr.Equals(x.YieldExpr);
         }
 
         public override int GetHashCode()
         {
-            return this.Body.GetHashCode() ^ this.Child.GetHashCode();
+            return this.Body.GetHashCode() ^ this.YieldExpr.GetHashCode();
         }
 
         internal override object Run(VariableStore varStore)
         {
 			var child_store = new VariableStore{Parent = varStore};
-			Child.Run(child_store);
-			return Body.Run(child_store);
+			ExpressoClass.ExpressoObj obj = null;
+
+			if(ObjType == TYPES.LIST || ObjType == TYPES.TUPLE){
+				var container = new List<object>();
+
+				foreach(var result in Body.Run(child_store, YieldExpr)){
+					if(result != null)
+						container.Add(result);
+				}
+				if(ObjType == TYPES.LIST)
+					obj = ExpressoFunctions.MakeList(container);
+				else
+					obj = ExpressoFunctions.MakeTuple(container);
+			}else if(ObjType == TYPES.DICT){
+				var keys = new List<object>();
+				var values = new List<object>();
+
+				var i = 0;
+				foreach(var result in Body.Run(varStore, YieldExpr)){
+					if(result != null){
+						if(i % 2 == 0)
+							keys.Add(result);
+						else
+							values.Add(result);
+					}
+				}
+				obj = ExpressoFunctions.MakeDict(keys, values, keys.Count);
+			}
+
+			return obj;
         }
 	}
 
-	public class ComprehensionFor : Expression
+	public abstract class ComprehensionIter
 	{
+		public abstract NodeType Type{get;}
+		internal abstract IEnumerable<object> Run(VariableStore varStore, Expression yieldExpr);
+	}
+
+	public class ComprehensionFor : ComprehensionIter
+	{
+		public bool HasLet{get; internal set;}
+
 		/// <summary>
-        /// コンテナを走査する式。
-        /// The body that will be executed.
+        /// body内で操作対象となるオブジェクトを参照するのに使用する式群。
+        /// 評価結果はlvalueにならなければならない。
+        /// なお、走査の対象を捕捉する際には普通の代入と同じルールが適用される。
+        /// つまり、複数の変数にいっせいにオブジェクトを捕捉させることもできる。
+        /// When evaluating the both sides of the "in" keyword,
+        /// the same rule as the assignment applies.
+        /// So for example,
+        /// for(let x, y in [1,2,3,4,5,6])...
+        /// the x and y captures the first and second element of the list at the first time,
+        /// the third and forth the next time, and the fifth and sixth at last.
         /// </summary>
-        public Expression Iteration { get; internal set; }
+        public List<Expression> LValues { get; internal set; }
+
+        /// <summary>
+        /// 操作する対象の式。
+        /// The target expression.
+        /// </summary>
+        public Expression Target { get; internal set; }
 
 		/// <summary>
         /// 実行対象の文。
         /// The body that will be executed.
         /// </summary>
-		public Expression Body{get; internal set;}
+		public ComprehensionIter Body{get; internal set;}
 
         public override NodeType Type
         {
@@ -64,22 +116,46 @@ namespace Expresso.Ast
 
             if (x == null) return false;
 
-            return this.Iteration.Equals(x.Iteration) && this.Body.Equals(x.Body);
+            return this.LValues.Equals(x.LValues) && this.Target.Equals(x.Target) && this.Body.Equals(x.Body);
         }
 
         public override int GetHashCode()
         {
-            return this.Iteration.GetHashCode() ^ this.Body.GetHashCode();
+            return this.LValues.GetHashCode() ^ this.Target.GetHashCode() ^ this.Body.GetHashCode();
         }
 
-        internal override object Run(VariableStore varStore)
+        internal override IEnumerable<object> Run(VariableStore varStore, Expression yieldExpr)
         {
-			Iteration.Run(varStore);
-			return Body.Run(varStore);
+			IEnumerable<object> iterable = Target.Run(varStore) as IEnumerable<object>;
+			if(iterable == null)
+				throw new EvalException("Can not evaluate the expression to an iterable object!");
+
+			var can_continue = true;
+
+			Identifier[] lvalues = new Identifier[LValues.Count];
+			for (int i = 0; i < LValues.Count; ++i) {
+				lvalues[i] = LValues[i] as Identifier;
+				if(lvalues[i] == null)
+					throw new EvalException("The left-hand-side of the \"in\" keyword must yield a lvalue(a referencible value such as variables)");
+			}
+			var enumerator = iterable.GetEnumerator();
+			while(enumerator.MoveNext()) {
+				foreach (var lvalue in lvalues) {
+					var val = enumerator.Current;
+					varStore.Assign(lvalue.Name, val);
+				}
+
+				if(Body == null){
+					yield return yieldExpr.Run(varStore);
+				}else{
+					foreach(var result in Body.Run(varStore, yieldExpr))
+						yield return result;
+				}
+			}
         }
 	}
 
-	public class ComprehensionIf : Expression
+	public class ComprehensionIf : ComprehensionIter
 	{
 		/// <summary>
         /// 実行対象の文。
@@ -91,7 +167,7 @@ namespace Expresso.Ast
         /// 実行対象の文。
         /// The body that will be executed.
         /// </summary>
-		public Expression Body{get; internal set;}
+		public ComprehensionIter Body{get; internal set;}
 
         public override NodeType Type
         {
@@ -112,13 +188,22 @@ namespace Expresso.Ast
             return this.Body.GetHashCode() ^ this.Condition.GetHashCode();
         }
 
-        internal override object Run(VariableStore varStore)
+        internal override IEnumerable<object> Run(VariableStore varStore, Expression yieldExpr)
         {
-			var cond = Condition.Run(varStore);
-			if(!(cond is bool))
+			var cond = Condition.Run(varStore) as Nullable<bool>;
+			if(cond == null)
 				throw new EvalException("Cannot evaluate the expression to a boolean.");
 
-			return Body.Run(varStore);
+			if((bool)cond){
+				if(Body == null){
+					yield return yieldExpr.Run(varStore);
+				}else{
+					foreach(var result in Body.Run(varStore, yieldExpr))
+						yield return result;
+				}
+			}else{
+				yield return null;
+			}
         }
 	}
 }

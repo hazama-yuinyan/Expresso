@@ -46,10 +46,10 @@ namespace Expresso.Ast
 
         internal override object Run(VariableStore varStore)
         {
-            if(varStore == null)
-				throw new EvalException("Can not find variable store");
-				
-			return varStore.Get(Name);
+			if(ParamType == TYPES._SUBSCRIPT)
+				return this;
+			else
+				return varStore.Get(Name);
         }
 
 		public override string ToString()

@@ -13,6 +13,8 @@ namespace Expresso.Ast
 	/// </summary>
 	public class ForStatement : BreakableStatement
 	{
+		public bool HasLet{get; internal set;}
+
 		/// <summary>
         /// body内で操作対象となるオブジェクトを参照するのに使用する式群。
         /// 評価結果はlvalueにならなければならない。
@@ -23,7 +25,7 @@ namespace Expresso.Ast
         /// So for example,
         /// for(let x, y in [1,2,3,4,5,6])...
         /// the x and y captures the first and second element of the list at the first time,
-        /// the third and forth the next time and the fifth and sixth at last.
+        /// the third and forth the next time, and the fifth and sixth at last.
         /// </summary>
         public List<Expression> LValues { get; internal set; }
 
@@ -70,7 +72,7 @@ namespace Expresso.Ast
 			for (int i = 0; i < LValues.Count; ++i) {
 				lvalues[i] = LValues[i] as Identifier;
 				if(lvalues[i] == null)
-					throw new EvalException("The left-hand-side of the \"in\" keyword must yield a lvalue(an referencible value such as variables)");
+					throw new EvalException("The left-hand-side of the \"in\" keyword must yield a lvalue(a referencible value such as variables)");
 			}
 			var enumerator = iterable.GetEnumerator();
 			while (can_continue) {

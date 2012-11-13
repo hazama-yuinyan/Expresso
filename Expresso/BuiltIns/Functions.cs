@@ -109,18 +109,23 @@ namespace Expresso.BuiltIns
 		}
 		#endregion
 		#region Expressoのシーケンス生成関数郡
-		public static ExpressoTuple MakeTuple(List<object> objs)
+		public static ExpressoClass.ExpressoObj MakeTuple(List<object> objs)
 		{
-			return new ExpressoTuple(objs);
+			return ExpressoTuple.Construct(new ExpressoTuple(objs));
 		}
 		
-		public static Dictionary<object, object> MakeDict(List<object> keys, List<object> values, int count)
+		public static ExpressoClass.ExpressoObj MakeDict(List<object> keys, List<object> values, int count)
 		{
 			var tmp = new Dictionary<object, object>(count);
-			for (int i = 0; i < count; ++i) {
+			for (int i = 0; i < count; ++i)
 				tmp.Add(keys[i], values[i]);
-			}
-			return tmp;
+
+			return ExpressoDictionary.Construct(tmp);
+		}
+
+		public static ExpressoClass.ExpressoObj MakeList(List<object> objs)
+		{
+			return ExpressoList.Construct(objs);
 		}
 
 		private static IEnumerable<object> SliceImpl(IEnumerable<object> src, ExpressoIntegerSequence seq)

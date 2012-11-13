@@ -63,6 +63,8 @@ namespace Expresso.Ast
 					return BinaryExprAsInt((int)first, (int)second, Operator);
 				else if(first is double)
 					return BinaryExprAsDouble((double)first, (double)second, Operator);
+				else if(first is ExpressoFraction)
+					return BinaryExprAsFraction((ExpressoFraction)first, second, Operator);
 				else
 					return BinaryExprAsString((string)first, second, Operator);
 			}else if((int)Operator < (int)OperatorType.AND){
@@ -143,6 +145,45 @@ namespace Expresso.Ast
 				throw new EvalException("Unreachable code");
 			}
 			
+			return result;
+		}
+
+		private ExpressoFraction BinaryExprAsFraction(ExpressoFraction lhs, object rhs, OperatorType opType)
+		{
+			if(!(rhs is ExpressoFraction) && !(rhs is long) && !(rhs is int) && !(rhs is double))
+				throw new EvalException("The right operand have to be either a long, int, double or fraction!");
+
+			ExpressoFraction result;
+
+			switch(opType){
+			case OperatorType.PLUS:
+				result = lhs + rhs;
+				break;
+
+			case OperatorType.MINUS:
+				result = lhs - rhs;
+				break;
+
+			case OperatorType.TIMES:
+				result = lhs * rhs;
+				break;
+
+			case OperatorType.DIV:
+				result = lhs / rhs;
+				break;
+
+			case OperatorType.POWER:
+				result = lhs.Power(rhs);
+				break;
+
+			case OperatorType.MOD:
+				result = lhs % rhs;
+				break;
+
+			default:
+				throw new EvalException("Unreachable code");
+			}
+
 			return result;
 		}
 

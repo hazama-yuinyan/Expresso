@@ -5,7 +5,6 @@
 
 def main(){
 	let x = 100, y = 200, z = 300, w = 400;
-	let p (- int;
 	let flag (- bool;
 
 	print "(x, y, z, w) = ", x, y, z, w;
@@ -16,14 +15,13 @@ def main(){
 		flag = false;
 
 	let sum = 0;
-	for(p in [0..y]){
-		sum = sum + p;
+	for(let p in [0..y]){
+		sum += p;
 		print p, sum;
 	}
 
-	let tmp = "";
 	let strs = ["akarichan", "chinatsu", "kyoko", "yui"];
-	for(tmp in strs){
+	for(let tmp in strs){
 		switch(tmp){
 		case "akarichan":
 			print "kawakawa";

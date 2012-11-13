@@ -26,7 +26,7 @@ namespace Expresso.Ast
 			get { return NodeType.UnaryExpression; }
 		}
 
-		public override bool Equals (object obj)
+		public override bool Equals(object obj)
 		{
 			var x = obj as UnaryExpression;
 
@@ -34,12 +34,12 @@ namespace Expresso.Ast
 				return false;
 
 			return this.Operator == x.Operator
-                && this.Operand.Equals (x.Operand);
+                && this.Operand.Equals(x.Operand);
 		}
 
-		public override int GetHashCode ()
+		public override int GetHashCode()
 		{
-			return this.Operator.GetHashCode () ^ this.Operand.GetHashCode ();
+			return this.Operator.GetHashCode() ^ this.Operand.GetHashCode();
 		}
 
 		internal override object Run(VariableStore varStore)
@@ -53,6 +53,8 @@ namespace Expresso.Ast
 					ope = -(int)ope;
 				else if(ope is double)
 					ope = -(double)ope;
+				else if(ope is ExpressoFraction)
+					ope = -(ExpressoFraction)ope;
 				else
 					throw new EvalException("The minus operator is not applicable to the operand!");
 			}

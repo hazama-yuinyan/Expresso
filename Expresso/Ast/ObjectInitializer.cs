@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Expresso.BuiltIns;
 using Expresso.Interpreter;
 
@@ -11,7 +12,7 @@ namespace Expresso.Ast
         /// オブジェクト生成に使用する式群。
 		/// Expressions generating a sequence object.
         /// </summary>
-        public List<Expression> InitializeList { get; internal set; }
+        public IEnumerable<Expression> Initializer { get; internal set; }
 		
 		/// <summary>
 		/// この式群を評価した結果生成されるオブジェクトのタイプ。
@@ -30,7 +31,7 @@ namespace Expresso.Ast
 
             if (x == null) return false;
 			
-			return InitializeList.Equals(x.InitializeList);
+			return Initializer.Equals(x.Initializer);
         }
 
         public override int GetHashCode()
@@ -44,8 +45,8 @@ namespace Expresso.Ast
 			switch (ObjType) {
 			case TYPES.TUPLE:
 			{
-				var tmp_list = new List<object>();
-				foreach (var item in InitializeList) {
+				var tmp_list = new List<object>(Initializer.Count());
+				foreach (var item in Initializer) {
 					tmp_list.Add(item.Run(varStore));
 				}
 				result = ExpressoFunctions.MakeTuple(tmp_list);
@@ -54,25 +55,26 @@ namespace Expresso.Ast
 				
 			case TYPES.LIST:
 			{
-				var tmp_list = new List<object>();
-				foreach (var item in InitializeList) {
+				var tmp_list = new List<object>(Initializer.Count());
+				foreach (var item in Initializer) {
 					tmp_list.Add(item.Run(varStore));
 				}
-				result = tmp_list;
+				result = ExpressoFunctions.MakeList(tmp_list);
 				break;
 			}
 				
 			case TYPES.DICT:
 			{
-				var key_list = new List<object>();
-				var value_list = new List<object>();
+				var len = Initializer.Count();
+				var key_list = new List<object>(len / 2);
+				var value_list = new List<object>(len / 2);
 				for (int i = 0; i < InitializeList.Count; ++i) {
 					if(i % 2 == 0)
 						key_list.Add(InitializeList[i].Run(varStore));
 					else
 						value_list.Add(InitializeList[i].Run(varStore));
 				}
-				result = ExpressoFunctions.MakeDict(key_list, value_list, key_list.Count);
+				result = ExpressoFunctions.MakeDict(key_list, value_list, len);
 				break;
 			}
 				

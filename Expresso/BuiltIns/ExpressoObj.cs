@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using Expresso.Ast;
 using Expresso.Interpreter;
@@ -31,7 +32,7 @@ namespace Expresso.BuiltIns
 	};
 	
 	/// <summary>
-	/// Expresso object.
+	/// Represents a class.
 	/// </summary>
 	public class ExpressoClass
 	{
@@ -58,8 +59,6 @@ namespace Expresso.BuiltIns
 				Name = name;
 				PrivateMembers = privateMembers;
 				PublicMembers = publicMembers;
-				int num_mems = privateMembers.Count + publicMembers.Count;
-				Members = new object[num_mems];
 			}
 
 			public int GetNumberMembers()
@@ -68,13 +67,10 @@ namespace Expresso.BuiltIns
 			}
 		}
 
-		public class ExpressoObj
+		public class ExpressoObj : IEnumerable<object>, IEnumerable
 		{
 			public TYPES Type{
-				get{
-					return TYPES.CLASS;
-				}
-				internal set{}
+				get; internal set;
 			}
 
 			private ClassDefinition definition;
@@ -85,13 +81,29 @@ namespace Expresso.BuiltIns
 				get{return definition.Name;}
 			}
 
-			public ExpressoObj(ClassDefinition definition)
+			public ExpressoObj(ClassDefinition definition, TYPES objType = TYPES.CLASS)
 			{
 				this.definition = definition;
 				int num_mems = definition.GetNumberMembers();
 				this.members = new object[num_mems];
 				for(int i = 0; i < definition.Members.Length; ++i)
 					this.members[i] = definition.Members[i];
+
+				this.Type = objType;
+			}
+
+			IEnumerator IEnumerable.GetEnumerator()
+			{
+				return this.GetEnumerator();
+			}
+
+			public IEnumerator<object> GetEnumerator()
+			{
+				if(members[0] is IEnumerable<object>){
+					var enumerable = (IEnumerable<object>)members[0];
+					return enumerable.GetEnumerator();
+				}else
+					throw new EvalException("Can not evaluate the object to an iterable.");
 			}
 
 			/// <summary>
@@ -100,17 +112,42 @@ namespace Expresso.BuiltIns
 			/// </summary>
 			public object AccessMember(object subscription)
 			{
-				if(subscription is string){
-					string mem_name = (string)subscription;
+				if(Type == TYPES.DICT){
+					object value = null;
+					((Dictionary<object, object>)members[0]).TryGetValue(subscription, out value);
+					return value;
+				}else if(subscription is Identifier){
+					Identifier mem_name = (Identifier)subscription;
 					var public_mems = definition.PublicMembers;
 					int offset;
-					if(!public_mems.TryGetValue(mem_name, out offset))
+					if(!public_mems.TryGetValue(mem_name.Name, out offset))
 						throw new EvalException(mem_name + " is not accessible.");
 
 					return members[offset];
-				}
+				}else if(subscription is int){
+					int index = (int)subscription;
 
-				return null;
+					switch(Type){
+					case TYPES.LIST:
+						return ((List<object>)members[0])[index];
+
+					case TYPES.ARRAY:
+						return ((object[])members[0])[index];
+
+					case TYPES.TUPLE:
+						return ((ExpressoTuple)members[0])[index];
+
+					default:
+						throw new EvalException("Can not apply the [] operator on that type of object!");
+					}
+				}else{
+					throw new EvalException("Invalid use of accessor!");
+				}
+			}
+
+			public object GetMember(int index)
+			{
+				return members[index];
 			}
 		}
 
@@ -129,11 +166,6 @@ namespace Expresso.BuiltIns
 
 			var new_instance = new ExpressoObj(target_class);
 			return new_instance;
-		}
-
-		static public void DefineBuiltins()
-		{
-			ExpressoIntegerSequence.AddClassDefinitions();
 		}
 	}
 }

@@ -65,7 +65,7 @@ COMPILER Expresso
 	{
 		Token x = la;
 		scanner.ResetPeek();
-		while(x.kind != _double_dots && x.kind != _rbracket) x = scanner.Peek();
+		while(x.kind != 0 && x.kind != _double_dots && x.kind != _rbracket) x = scanner.Peek();
 		return x.kind != _double_dots;
 	}
 	
@@ -153,7 +153,7 @@ COMPILER Expresso
 	
 	static ObjectInitializer MakeObjInitializer(TYPES type, List<Expression> initializeList)
 	{
-		return new ObjectInitializer{InitializeList = initializeList, ObjType = type};
+		return new ObjectInitializer{Initializer = initializeList, ObjType = type};
 	}
 	
 	static Assignment MakeAssignment(List<Expression> targets, List<Expression> expressions)
@@ -176,17 +176,17 @@ COMPILER Expresso
 		return new Iteration{Targets = targets, Expressions = exprs};
 	}
 	
-	static Comprehension MakeComp(Expression body, Expression child)
+	static Comprehension MakeComp(Expression yieldExpr, ComprehensionFor body)
 	{
-		return new Comprehension{Body = body, Child = child};
+		return new Comprehension{YieldExpr = yieldExpr, Body = body};
 	}
 	
-	static ComprehensionFor MakeCompFor(Expression iteration, Expression body)
+	static ComprehensionFor MakeCompFor(List<Expression> lValues, Expression target, ComprehensionIter body)
 	{
-		return new ComprehensionFor{Iteration = iteration, Body = body};
+		return new ComprehensionFor{LValues = lValues, Target = target, Body = body};
 	}
 	
-	static ComprehensionIf MakeCompIf(Expression condition, Expression body)
+	static ComprehensionIf MakeCompIf(Expression condition, ComprehensionIter body)
 	{
 		return new ComprehensionIf{Condition = condition, Body = body};
 	}
@@ -262,6 +262,31 @@ Expresso                    (. Statement stmt = null; .)
      ]
   }
   SYNC ';' .*/
+/*------------------------------------------------------------------------*/
+/*ClassDecl<out Statement stmt>
+=
+  SYNC
+  "class"
+  ident
+  [ ':'
+    ident
+    { ','
+      ident
+    }
+  ]
+  '{'
+  { "public:"
+  | "private:"
+  | FuncDecl<out tmp>
+  | Variable<out expr>
+    [ "(-"
+      Type<out var_type>
+    ]
+    [ '='
+      NotTest<out expr>
+    ]
+  }
+  SYNC '}' .*/
 /*------------------------------------------------------------------------*/
 Type<out TYPES type>
 =                        (. type = TYPES.UNDEF; .)
@@ -403,15 +428,19 @@ WhileStmt<out Statement stmt>		(. Expression cond; Statement body = null; WhileS
   										stmt = tmp;
   									.).
 /*------------------------------------------------------------------------*/
-ForStmt<out Statement stmt>			(. List<Expression> target_list; Expression rvalue = null; Statement body; ForStatement tmp; .)
+ForStmt<out Statement stmt>				(. 
+											List<Expression> target_list = null; Expression rvalue = null; Statement body;
+											ForStatement tmp; bool has_let = false;
+										.)
 =
-  "for"								(.
-  										tmp = MakeForStatement();
-  										Parser.breakables.Add(tmp);
-  									.)
+  "for"									(.
+	  										tmp = MakeForStatement();
+	  										Parser.breakables.Add(tmp);
+	  									.)
   '('
-  ["let"]
-  LValueList<out target_list>
+  ( LValueListWithLet<out target_list>	(. if(target_list != null) has_let = true; .)
+  | LValueList<out target_list>
+  )
   "in"
   (  IF(NotFollowedByDoubleDots())
      CondExpr<out rvalue>
@@ -422,6 +451,16 @@ ForStmt<out Statement stmt>			(. List<Expression> target_list; Expression rvalue
   										tmp.LValues = target_list;
   										tmp.Target = rvalue;
   										tmp.Body = body;
+  										tmp.HasLet = has_let;
+  										if(has_let){
+  											foreach(var lvalue in target_list){
+  												var identifier = lvalue as Identifier;
+  												if(identifier == null)
+  													SemErr("The left operand of the \"in\" keyword have to be a lvalue.");
+  													
+  												cur_scope.AddLocal(identifier);
+  											}
+  										}
   										Parser.breakables.RemoveLast();
   										stmt = tmp;
   									.).
@@ -453,8 +492,7 @@ CaseLabelList<. out List<Expression> label_list .>	(. label_list = new List<Expr
 CaseLabel<out Expression expr>						(. expr = null; .)
 =
   "case"
-  (
-    Literal<out expr>
+  ( Literal<out expr>
   | IntSeqExpr<out expr>
   | "default"										(. expr = MakeConstant(TYPES._CASE_DEFAULT, "default"); .)
   )
@@ -467,6 +505,14 @@ LValueList<. out List<Expression> targets .>		(. Expression tmp; .)
     AddOpe<out tmp>									(. targets.Add(tmp); .)
   }
   /*[',']*/ .
+/*------------------------------------------------------------------------*/
+LValueListWithLet<. out List<Expression> targets .>	(. Expression tmp; .)
+=													(. targets = null; .)
+  "let"												(. targets = new List<Expression>(); .)
+  AddOpe<out tmp>									(. targets.Add(tmp); .)
+  { WEAK ','
+    AddOpe<out tmp>									(. targets.Add(tmp); .)
+  }.
 /*------------------------------------------------------------------------*/
 VarDecl<. out List<Expression> outs .> 	(. string name; TYPES type; Expression rhs = null; Identifier variable; outs = new List<Expression>();
 								   			var vars = new List<Identifier>(); var exprs = new List<Expression>();
@@ -744,42 +790,41 @@ ArgList<. ref List<Expression> args .>		(. Expression expr; .)
 /*------------------------------------------------------------------------*/
 Atom<out Expression expr>			(. string name; expr = null; .)
 =
-  Variable<out name>				(. expr = cur_scope.GetVariable(name);
-  									   if(expr == null){
-  									   		SemErr(string.Format("Attempt to refer to an undefined variable \"{0}\"", name));
-  									   }
-  									.)
+  Variable<out name>				(. expr = new Identifier{Name = name, ParamType = TYPES.VAR}; .)
   | Literal<out expr>
   | '('
-    TupleMaker<out expr>
+    [TupleMaker<out expr>]
     SYNC ')'						(. if(expr == null) expr = MakeObjInitializer(TYPES.TUPLE, new List<Expression>()); .)
   | '['
-    ListMaker<out expr>
+    [ListMaker<out expr>]
     SYNC ']'						(. if(expr == null) expr = MakeObjInitializer(TYPES.LIST, new List<Expression>()); .)
   | '{'
-    DictMaker<out expr>
+    [DictMaker<out expr>]
     SYNC '}' 						(. if(expr == null) expr = MakeObjInitializer(TYPES.DICT, new List<Expression>()); .).
 /*------------------------------------------------------------------------*/
 TupleMaker<out Expression expr>			(. Expression tmp; List<Expression> list = new List<Expression>(); expr = null; .)
 =
-  CondExpr<out tmp>						(. if(tmp != null) list.Add(tmp); .)
-  { ','
-    CondExpr<out tmp>					(. if(tmp != null) list.Add(tmp); .)
-  }
-  /*(  //CompFor<out comp_expr>
-        CondExpr<out tmp>				(. list.Add(tmp); .)
-     }
-  )*/									(. if(list.Count > 0) expr = MakeObjInitializer(TYPES.TUPLE, list); .).
+  (
+    ( CondExpr<out tmp>						(. if(tmp != null) list.Add(tmp); .)
+      { ','
+        CondExpr<out tmp>					(. if(tmp != null) list.Add(tmp); .)
+      }
+    )
+    | CondExpr<out expr>
+      CompFor<out tmp>					(. expr = MakeComp(expr, tmp); .)
+  )										(. if(list.Count > 0) expr = MakeObjInitializer(TYPES.TUPLE, list); .).
 /*------------------------------------------------------------------------*/
 ListMaker<out Expression expr>			(. expr = null; Expression tmp; List<Expression> list = new List<Expression>(); .)
 =
-  CondExpr<out tmp>						(. if(tmp != null) list.Add(tmp); .)
-  { ','
-    CondExpr<out tmp>					(. if(tmp != null) list.Add(tmp); .)
-  }
-  /*|
-  ( CompFor<out tmp>					(. expr = MakeComp(list[0], tmp); .)
-  )*/									(. if(list.Count > 0) expr = MakeObjInitializer(TYPES.LIST, list); .).
+  (
+    ( CondExpr<out tmp>						(. if(tmp != null) list.Add(tmp); .)
+      { ','
+        CondExpr<out tmp>					(. if(tmp != null) list.Add(tmp); .)
+      }
+    )
+    | CondExpr<out expr>
+      CompFor<out tmp>					(. expr = MakeComp(expr, tmp); .)
+  )										(. if(list.Count > 0) expr = MakeObjInitializer(TYPES.LIST, list); .).
 /*------------------------------------------------------------------------*/
 DictMaker<out Expression expr>			(. Expression lhs, rhs; List<Expression> list = new List<Expression>(); expr = null; .)
 =
@@ -794,46 +839,42 @@ DictMaker<out Expression expr>			(. Expression lhs, rhs; List<Expression> list =
   }
   										(. if(list.Count > 0) expr = MakeObjInitializer(TYPES.DICT, list); .).
 /*------------------------------------------------------------------------*/
-/*CompIter<out Expression expr>			(. expr = null; .)
+CompIter<out ComprehensionIter expr>			(. expr = null; .)
 =
   CompFor<out expr>
-  |  CompIf<out expr> .*/
+  |  CompIf<out expr> .
 /*------------------------------------------------------------------------*/
-/*CompFor<out Expression expr>			(. Expression rvalue, body = null; List<Expression> target_list, test_list; ForStatement tmp; .)
+CompFor<out ComprehensionIter expr>		(. Expression rvalue, body = null; List<Expression> target_list; .)
 =
-  "for"									(.
-  											tmp = MakeForStatement();
-  											Parser.breakables.Add(tmp);
-  										.)
-  ["let"]
+  "for"									
   LValueList<out target_list>
   "in"
   ( CondExpr<out rvalue>
-  | IntSeqExpr<out rvalue>				(. iter = MakeIteration(expr_list, test_list); .)
+  | IntSeqExpr<out rvalue>
   )
-  [CompIter<out body>]					(. expr = MakeCompFor(iter, body); .).*/
+  [CompIter<out body>]					(. expr = MakeCompFor(target_list, rvalue, body); .).
 /*------------------------------------------------------------------------*/
-/*CompIf<out Expression expr>				(. Expression tmp, body = null; .)
+CompIf<out Expression expr>			(. Expression tmp, body = null; .)
 =
   "if"
   OrTest<out tmp>
-  [CompIter<out body>]					(. expr = MakeCompIf(tmp, body); .).*/
+  [CompIter<out body>]					(. expr = MakeCompIf(tmp, body); .).
 /*------------------------------------------------------------------------*/
 Variable<out string name>
 = 
-  ident				(. name = t.val; .).
+  ident							(. name = t.val; .).
 /*------------------------------------------------------------------------*/
 Literal<out Expression expr>	(. expr = null; .)
 = 
-  integer				(. expr = MakeConstant(TYPES.INTEGER, Convert.ToInt32(t.val)); .)
-  |  float				(. expr = MakeConstant(TYPES.FLOAT, Convert.ToDouble(t.val)); .)
-  |  string_literal		(. string tmp = t.val;
-  						   tmp = tmp.Substring(1, tmp.Length - 2);
-  						   expr = MakeConstant(TYPES.STRING, tmp);
-  						.)
+  integer						(. expr = MakeConstant(TYPES.INTEGER, Convert.ToInt32(t.val)); .)
+  |  float						(. expr = MakeConstant(TYPES.FLOAT, Convert.ToDouble(t.val)); .)
+  |  string_literal				(. string tmp = t.val;
+  								   tmp = tmp.Substring(1, tmp.Length - 2);
+  								   expr = MakeConstant(TYPES.STRING, tmp);
+  								.)
   |  (  "true"				
   	 |  "false"
-  	 )					(. expr = MakeConstant(TYPES.BOOL, Convert.ToBoolean(t.val)); .)
-  |  "null"				(. expr = MakeConstant(TYPES.NULL, null); .).
+  	 )							(. expr = MakeConstant(TYPES.BOOL, Convert.ToBoolean(t.val)); .)
+  |  "null"						(. expr = MakeConstant(TYPES.NULL, null); .).
 /*------------------------------------------------------------------------*/
 END Expresso.

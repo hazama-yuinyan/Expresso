@@ -17,6 +17,15 @@ namespace Expresso.Test
 
 			return (Primitive)target;
 		}
+
+		public static int CalcSum(int start, int max)
+		{
+			var result = 0;
+			for(int i = start; i <= max; ++i)
+				result += i;
+
+			return result;
+		}
 	}
 
 	[TestFixture]
@@ -53,43 +62,43 @@ namespace Expresso.Test
 			object xm = results[8], xt = results[9], xd = results[10], xmod = results[11], xpower = results[12];
 
 			Assert.IsTrue(x is int);
-			Assert.AreEqual(3, Helpers.AutoCast<int>(x));
+			Assert.AreEqual(3, x);
 
 			Assert.IsTrue(a is int);
-			Assert.AreEqual(7, Helpers.AutoCast<int>(a));
+			Assert.AreEqual(7, a);
 
 			Assert.IsTrue(b is int);
-			Assert.AreEqual(-1, Helpers.AutoCast<int>(b));
+			Assert.AreEqual(-1, b);
 
 			Assert.IsTrue(c is int);
-			Assert.AreEqual(12, Helpers.AutoCast<int>(c));
+			Assert.AreEqual(12, c);
 
 			Assert.IsTrue(d is int);
-			Assert.AreEqual(2, Helpers.AutoCast<int>(d));
+			Assert.AreEqual(2, d);
 
 			Assert.IsTrue(e is int);
-			Assert.AreEqual(0, Helpers.AutoCast<int>(e));
+			Assert.AreEqual(0, e);
 
 			Assert.IsTrue(f is int);
-			Assert.AreEqual(9, Helpers.AutoCast<int>(f));
+			Assert.AreEqual(9, f);
 
 			Assert.IsTrue(xp is int);
-			Assert.AreEqual(7, Helpers.AutoCast<int>(xp));
+			Assert.AreEqual(7, xp);
 
 			Assert.IsTrue(xm is int);
-			Assert.AreEqual(-1, Helpers.AutoCast<int>(xm));
+			Assert.AreEqual(-1, xm);
 
 			Assert.IsTrue(xt is int);
-			Assert.AreEqual(12, Helpers.AutoCast<int>(xt));
+			Assert.AreEqual(12, xt);
 
 			Assert.IsTrue(xd is int);
-			Assert.AreEqual(2, Helpers.AutoCast<int>(xd));
+			Assert.AreEqual(2, xd);
 
 			Assert.IsTrue(xmod is int);
-			Assert.AreEqual(0, Helpers.AutoCast<int>(xmod));
+			Assert.AreEqual(0, xmod);
 
 			Assert.IsTrue(xpower is int);
-			Assert.AreEqual(9, Helpers.AutoCast<int>(xmod));
+			Assert.AreEqual(9, xpower);
 		}
 
 		[TestCase]
@@ -120,40 +129,82 @@ namespace Expresso.Test
 			var expected_v = expected_c + expected_d;
 
 			Assert.IsTrue(a is List<object>);
-			Assert.AreEqual(a, expected_a);
+			Assert.AreEqual(expected_a, a);
 
 			Assert.IsTrue(b is Dictionary<object, object>);
-			Assert.AreEqual(b, expected_b);
+			Assert.AreEqual(expected_b, b);
 
 			Assert.IsTrue(c is string);
-			Assert.AreEqual(c, expected_c);
+			Assert.AreEqual(expected_c, c);
 
 			Assert.IsTrue(d is string);
-			Assert.AreEqual(d, expected_d);
+			Assert.AreEqual(expected_d, d);
 
 			Assert.IsTrue(x is int);
-			Assert.AreEqual(x, expected_x);
+			Assert.AreEqual(expected_x, x);
 
 			Assert.IsTrue(p is int);
-			Assert.AreEqual(p, expected_p);
+			Assert.AreEqual(expected_p, p);
 
 			Assert.IsTrue(q is int);
-			Assert.AreEqual(q, expected_q);
+			Assert.AreEqual(expected_q, q);
 
 			Assert.IsTrue(r is int);
-			Assert.AreEqual(r, expected_r);
+			Assert.AreEqual(expected_r, r);
 
 			Assert.IsTrue(s is int);
-			Assert.AreEqual(s, expected_s);
+			Assert.AreEqual(expected_s, s);
 
 			Assert.IsTrue(t is int);
-			Assert.AreEqual(t, expected_t);
+			Assert.AreEqual(expected_t, t);
 
 			Assert.IsTrue(u is int);
-			Assert.AreEqual(u, expected_u);
+			Assert.AreEqual(expected_u, u);
 
 			Assert.IsTrue(v is string);
-			Assert.AreEqual(v, expected_v);
+			Assert.AreEqual(expected_v, v);
+		}
+
+		[TestCase]
+		public void Statements()
+		{
+			var parser = new Parser(new Scanner("../../sources/statements.exs"));
+			parser.Parse();
+			var interp = new Expresso.Interpreter.Interpreter{Root = parser.root, MainFunc = Parser.main_func};
+			interp.Initialize();
+			var results = interp.Run() as List<object>;
+			Assert.IsNotNull(results);
+			object x = results[0], y = results[1], z = results[2], w = results[3];
+			object flag = results[4], sum = results[5], strs = results[6];
+
+			var expected_x = 100;
+			var expected_y = 200;
+			var expected_z = 300;
+			var expected_w = 400;
+			var expected_flag = true;
+			var expected_sum = Helpers.CalcSum(0, expected_y);
+			var expected_strs = new List<object>{"akarichan", "chinatsu", "kyoko", "yui"};
+
+			Assert.IsTrue(x is int);
+			Assert.AreEqual(expected_x, x);
+
+			Assert.IsTrue(y is int);
+			Assert.AreEqual(expected_y, y);
+
+			Assert.IsTrue(z is int);
+			Assert.AreEqual(expected_z, z);
+
+			Assert.IsTrue(w is int);
+			Assert.AreEqual(expected_w, w);
+
+			Assert.IsTrue(flag is bool);
+			Assert.AreEqual(expected_flag, flag);
+
+			Assert.IsTrue(sum is int);
+			Assert.AreEqual(expected_sum, sum);
+
+			Assert.IsTrue(strs is List<object>);
+			Assert.AreEqual(expected_strs, strs);
 		}
 	}
 }

@@ -54,8 +54,20 @@ namespace Expresso.Helpers
 			case "String":
 				return TYPES.STRING;
 
+			case "Boolean":
+				return TYPES.BOOL;
+
+			case "Object":
+				return TYPES.VAR;
+
+			case "Void":
+				return TYPES.UNDEF;
+
 			default:
-				throw new EvalException(string.Format("{0} is not a primitive type in Expresso.", t.FullName));
+				if(t.Name.StartsWith("List"))
+					return TYPES.LIST;
+				else
+					throw new EvalException(string.Format("{0} is not a primitive type in Expresso.", t.FullName));
 			}
 		}
 
@@ -86,6 +98,8 @@ namespace Expresso.Helpers
 		{
 			if(expr.Type == NodeType.VarDecl)
 				return ((VarDeclaration)expr).Variables;
+			else if(expr.Type == NodeType.Identifier)
+				return new Identifier[]{(Identifier)expr};
 			else
 				throw new EvalException("Unreachable code reached!");
 		}
@@ -119,7 +133,17 @@ namespace Expresso.Helpers
 
 			case NodeType.ForStatement:
 				var for_stmt = (ForStatement)stmt;
-				result = ImplementaionHelpers.CollectLocalVars(for_stmt.Body);
+				IEnumerable<Identifier> in_cond = Enumerable.Empty<Identifier>();
+				if(for_stmt.HasLet){
+					in_cond =
+						from p in for_stmt.LValues
+						select ImplementaionHelpers.CollectLocalVars(p) into t
+						from q in t
+						select q;
+				}
+
+				var in_body = ImplementaionHelpers.CollectLocalVars(for_stmt.Body);
+				result = in_cond.Concat(in_body);
 				break;
 
 			case NodeType.WhileStatement:
@@ -153,15 +177,40 @@ namespace Expresso.Helpers
 			if(len <= 0) throw new Exception("Can not delete last element of a list with zero elements!");
 			list.RemoveAt(len - 1);
 		}
+
+		public static ulong CalcGDC(ulong first, ulong second)
+		{
+			ulong r, a = (first > second) ? first : second, b = (first > second) ? second : first, last = b;
+			while(true){
+				r = a - b;
+				if(r == 0) break;
+				last = r;
+				a = (b > r) ? b : r; b = (b > r) ? r : b;
+			}
+			
+			return last;
+		}
+		
+		public static ulong CalcLCM(ulong first, ulong second)
+		{
+			ulong gdc = CalcGDC(first, second);
+			return first * second / gdc;
+		}
+
+		public static void DefineBuiltinObjects()
+		{
+
+		}
 	}
 
 	/// <summary>
 	/// ExpressoのSequenceを生成するクラスの実装用のインターフェイス。
 	/// </summary>
-	public interface SequenceGenerator<C, V>
+	public interface SequenceGenerator<Container, Value>
 	{
-		V Generate();
-		C Take(int count);
+		Value Generate();
+		Container Take(int count);
+		Container TakeAll();
 	}
 
 	/// <summary>
@@ -169,6 +218,13 @@ namespace Expresso.Helpers
 	/// </summary>
 	public class ListGenerator : SequenceGenerator<List<object>, object>
 	{
+		private IEnumerable<object> source;
+
+		public ListGenerator(IEnumerable<object> source)
+		{
+			this.source = source;
+		}
+
 		public object Generate()
 		{
 			return null;
@@ -176,11 +232,155 @@ namespace Expresso.Helpers
 
 		public List<object> Take(int count)
 		{
-			var tmp = new List<object>();
-			for(int i = 0; i < count; ++i){
+			var tmp = new List<object>(count);
+			int i = 0;
+			foreach(var elem in source){
+				if(i >= count) break;
 
+				tmp.Add(elem);
+				++i;
 			}
-			return null;
+
+			return tmp;
+		}
+
+		public List<object> TakeAll()
+		{
+			var tmp = new List<object>(source);
+			return tmp;
+		}
+	}
+
+	internal class ExpressoList
+	{
+		public static ExpressoClass.ExpressoObj Construct(List<object> inst)
+		{
+			var privates = new Dictionary<string, int>();
+			privates.Add("content", 0);
+
+			var publics = new Dictionary<string, int>();
+			publics.Add("length", 1);
+			publics.Add("add", 2);
+			publics.Add("addRange", 3);
+			publics.Add("clear", 4);
+			publics.Add("contains", 5);
+			publics.Add("exists", 6);
+			publics.Add("find", 7);
+			publics.Add("findAll", 8);
+			publics.Add("findLast", 9);
+			publics.Add("each", 10);
+			publics.Add("indexOf", 11);
+			publics.Add("insert", 12);
+			publics.Add("remove", 13);
+			publics.Add("removeAt", 14);
+			publics.Add("removeAll", 15);
+			publics.Add("reverse", 16);
+			publics.Add("sort", 17);
+
+			var definition = new ExpressoClass.ClassDefinition("List", privates, publics);
+			definition.Members = new object[]{
+				inst,
+				new NativeFunctionNullary<int>(
+					"length", () => inst.Count
+				),
+				new NativeFunctionUnary<Void, object>(
+					"add", new Argument{Name = "elem", ParamType = TYPES.VAR}, new Func<object, Void>(inst.Add)
+				),
+				new NativeFunctionUnary<Void, IEnumerable<object>>(
+					"addRange", new Argument{Name = "elems", ParamType = TYPES.VAR}, new Func<IEnumerable<object>, Void>(inst.AddRange)
+				),
+				new NativeFunctionNullary<Void>(
+					"clear", new Func<Void>(inst.Clear)
+				),
+				new NativeFunctionUnary<bool, object>(
+					"contains", new Argument{Name = "elem", ParamType = TYPES.VAR}, new Func<object, bool>(inst.Contains)
+				),
+				new NativeFunctionUnary<bool, Predicate<object>>(
+					"exists", new Argument{Name = "pred", ParamType = TYPES.FUNCTION}, new Func<Predicate<object>, bool>(inst.Exists)
+				),
+				new NativeFunctionUnary<object, Predicate<object>>(
+					"find", new Argument{Name = "pred", ParamType = TYPES.FUNCTION}, new Func<Predicate<object>, object>(inst.Find)
+				),
+				new NativeFunctionUnary<List<object>, Predicate<object>>(
+					"findAll", new Argument{Name = "pred", ParamType = TYPES.FUNCTION},
+					new Func<Predicate<object>, List<object>>(inst.FindAll)
+				),
+				new NativeFunctionUnary<object, Predicate<object>>(
+					"findLast", new Argument{Name = "pred", ParamType = TYPES.FUNCTION}, new Func<Predicate<object>, object>(inst.FindLast)
+				),
+				new NativeFunctionUnary<Void, Action<object>>(
+					"each", new Argument{Name = "func", ParamType = TYPES.FUNCTION}, new Func<Action<object>, Void>(inst.ForEach)
+				),
+				new NativeFunctionUnary<int, object>(
+					"indexOf", new Argument{Name = "elem", ParamType = TYPES.VAR}, new Func<object, int>(inst.IndexOf)
+				),
+				new NativeFunctionBinary<Void, int, object>(
+					"insert", new Argument{Name = "index", ParamType = TYPES.INTEGER}, new Argument{Name = "elem", ParamType = TYPES.VAR},
+					new Func<int, object, Void>(inst.Insert)
+				),
+				new NativeFunctionUnary<bool, object>(
+					"remove", new Argument{Name = "elem", ParamType = TYPES.VAR}, new Func<object, bool>(inst.Remove)
+				),
+				new NativeFunctionUnary<Void, int>(
+					"removeAt", new Argument{Name = "index", ParamType = TYPES.INTEGER}, new Func<int, Void>(inst.RemoveAt)
+				),
+				new NativeFunctionUnary<int, Predicate<object>>(
+					"removeAll", new Argument{Name = "pred", ParamType = TYPES.FUNCTION}, new Func<Predicate<object>, int>(inst.RemoveAll)
+				),
+				new NativeFunctionNullary<Void>(
+					"reverse", new Func<Void>(inst.Reverse)
+				),
+				new NativeFunctionUnary<Void, Comparison<object>>(
+					"sort", new Argument{Name = "comp", ParamType = TYPES.FUNCTION}, new Func<Comparison<object>, Void>(inst.Sort)
+				)
+			};
+
+			return new ExpressoClass.ExpressoObj(definition, TYPES.LIST);
+		}
+	}
+
+	internal class ExpressoDictionary
+	{
+		public static ExpressoClass.ExpressoObj Construct(Dictionary<object, object> inst)
+		{
+			var privates = new Dictionary<string, int>();
+			privates.Add("content", 0);
+
+			var publics = new Dictionary<string, int>();
+			publics.Add("length", 1);
+			publics.Add("add", 2);
+			publics.Add("contains", 3);
+			publics.Add("get", 4);
+			publics.Add("remove", 5);
+
+			var definition = new ExpressoClass.ClassDefinition("Dictionary", privates, publics);
+			definition.Members = new object[]{
+				inst,
+				new NativeFunctionNullary<int>(
+					"length", () => inst.Count
+				),
+				new NativeFunctionBinary<Void, object, object>(
+					"add", new Argument{Name = "key", ParamType = TYPES.VAR}, new Argument{Name = "val", ParamType = TYPES.VAR},
+					new Func<object, object, Void>(inst.Add)
+				),
+				new NativeFunctionUnary<bool, object>(
+					"contains", new Argument{Name = "key", ParamType = TYPES.VAR}, new Func<object, bool>(inst.ContainsKey)
+				),
+				new NativeFunctionUnary<object, object>(
+					"get", new Argument{Name = "key", ParamType = TYPES.VAR}, (key) => {
+						object value;
+						if(inst.TryGetValue(key, out value))
+							return value;
+
+						return null;
+					}
+				),
+				new NativeFunctionUnary<bool, object>(
+					"remove", new Argument{Name = "elem", ParamType = TYPES.VAR}, new Func<object, bool>(inst.Remove)
+				)
+			};
+
+			return new ExpressoClass.ExpressoObj(definition, TYPES.DICT);
 		}
 	}
 }

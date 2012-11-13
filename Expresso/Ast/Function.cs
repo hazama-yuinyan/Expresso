@@ -23,12 +23,14 @@ namespace Expresso.Ast
         /// <summary>
         /// 仮引数リスト。
 		/// The parameter list.
+		/// It can be null if the function takes no parameters.
         /// </summary>
         public List<Argument> Parameters { get; internal set; }
 
         /// <summary>
         /// 関数本体。
 		/// The body of the function.
+		/// It can be null if the function is native.
         /// </summary>
         public Block Body { get; internal set; }
 		
@@ -131,10 +133,10 @@ namespace Expresso.Ast
 	{
 		private Func<ReturnType> func;
 
-		public NativeFunctionNullary(string Name, List<Argument> Params, Func<ReturnType> Func)
+		public NativeFunctionNullary(string Name, Func<ReturnType> Func)
 		{
 			this.Name = Name;
-			this.Parameters = Params;
+			this.Parameters = null;
 			this.Body = null;
 			Type t = typeof(ReturnType);
 			this.ReturnType = ImplementaionHelpers.GetTypeInExpresso(t);
@@ -143,8 +145,11 @@ namespace Expresso.Ast
 
 		internal override object Run(VariableStore varStore)
 		{
-			ReturnType result = func.Invoke();
-			return result;
+			if(ReturnType == TYPES.UNDEF){
+				func.Invoke();
+				return null;
+			}
+			return func.Invoke();
 		}
 	}
 
@@ -165,8 +170,11 @@ namespace Expresso.Ast
 		internal override object Run(VariableStore varStore)
 		{
 			dynamic arg = varStore.Get(this.Parameters[0].Name);
-			ReturnType result = func.Invoke(arg);
-			return result;
+			if(ReturnType == TYPES.UNDEF){
+				func.Invoke(arg);
+				return null;
+			}
+			return func.Invoke(arg);
 		}
 	}
 
@@ -188,8 +196,11 @@ namespace Expresso.Ast
 		{
 			dynamic arg1 = varStore.Get(this.Parameters[0].Name);
 			dynamic arg2 = varStore.Get(this.Parameters[1].Name);
-			ReturnType result = func.Invoke(arg1, arg2);
-			return result;
+			if(ReturnType == TYPES.UNDEF){
+				func.Invoke(arg1, arg2);
+				return null;
+			}
+			return func.Invoke(arg1, arg2);
 		}
 	}
 }

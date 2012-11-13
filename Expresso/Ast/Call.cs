@@ -14,6 +14,8 @@ namespace Expresso.Ast
         /// <summary>
         /// 呼び出す対象。
 		/// The target function to be called.
+		/// It can be null if it is a call to a method, since methods are implemetend in the way of
+		/// objects having function objects and they are resolved on runtime.
         /// </summary>
         public Function Function { get; internal set; }
 
@@ -21,7 +23,15 @@ namespace Expresso.Ast
         /// 呼び出す対象の関数名。
 		/// The target function name.
         /// </summary>
-        public string Name { get { return this.Function.Name; } }
+        public string Name
+		{ 
+			get{
+				if(Function == null)
+					return Reference.ToString();
+				else
+					return this.Function.Name;
+			}
+		}
 
         /// <summary>
         /// 与える実引数リスト。
@@ -29,6 +39,10 @@ namespace Expresso.Ast
         /// </summary>
         public List<Expression> Arguments { get; internal set; }
 
+		/// <summary>
+		/// メソッドだった場合のメソッドを指す参照。
+		/// Used to reference methods.
+		/// </summary>
 		public Expression Reference {get; internal set;}
 
         public override NodeType Type
@@ -51,12 +65,14 @@ namespace Expresso.Ast
                 if (!this.Arguments[i].Equals(x.Arguments[i])) return false;
             }
 
+			if(!this.Reference.Equals(x.Reference)) return false;
+
             return true;
         }
 
         public override int GetHashCode()
         {
-            return this.Name.GetHashCode() ^ this.Arguments.GetHashCode();
+            return this.Name.GetHashCode() ^ this.Arguments.GetHashCode() ^ this.Reference.GetHashCode();
         }
 
         internal override object Run(VariableStore varStore)
@@ -77,7 +93,7 @@ namespace Expresso.Ast
 			}
 			var local_vars = fn.LocalVariables;
 			if(local_vars.Any()){					//Checking for its emptiness
-				foreach(var local in local_vars){	//ローカル変数を予め変数テーブルに追加しておく
+				foreach(var local in local_vars){	//関数内で定義されているローカル変数を予め変数テーブルに追加しておく
 					child.Add(local.Name, ImplementaionHelpers.GetDefaultValueFor(local.ParamType));
 				}
 			}
