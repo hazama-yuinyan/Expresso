@@ -1217,16 +1217,12 @@ internal Scope cur_scope = new Scope();		//the current scope of variables
 
 	void SequenceMaker(out Expression expr, TYPES ObjType) {
 		Expression tmp = null; List<Expression> list = new List<Expression>();
-		expr = null; ComprehensionIter comprehen = null;
-		cur_scope = new Scope{Parent = cur_scope}; Identifier ident = null;
+		expr = null; ComprehensionIter comprehen = null; Identifier ident = null;
 		
 		CondExpr(out tmp);
 		if(tmp != null){
+		list.Add(tmp);
 		ident = tmp as Identifier;
-		if(ident != null)
-			cur_scope.AddLocal(ref ident);
-		else
-			list.Add(tmp);
 		}
 		
 		if (la.kind == 2 || la.kind == 8 || la.kind == 29) {
@@ -1236,12 +1232,16 @@ internal Scope cur_scope = new Scope();		//the current scope of variables
 				if(tmp != null) list.Add(tmp); 
 			}
 		} else if (la.kind == 49) {
+			cur_scope = new Scope{Parent = cur_scope};
+			if(ident != null)
+			cur_scope.AddLocal(ref ident);
+			
 			CompFor(out comprehen);
-			expr = MakeComp(ident, (ComprehensionFor)comprehen, ObjType); 
+			expr = MakeComp(ident, (ComprehensionFor)comprehen, ObjType);
+			cur_scope = cur_scope.Parent;
+			
 		} else SynErr(113);
-		if(expr == null) expr = MakeObjInitializer(ObjType, list);
-		cur_scope = cur_scope.Parent;
-		
+		if(expr == null) expr = MakeObjInitializer(ObjType, list); 
 	}
 
 	void DictMaker(out Expression expr) {

@@ -8,10 +8,12 @@ namespace Expresso.Interpreter
 	/// あるスコープ内に存在する変数の実体を保持する。
 	/// Holds instances of variables existing in a scope.
 	/// This is not a symbol table, which holds just the names of variables.
+	/// For a symbol table, see the Scope class definition.
 	/// </summary>
 	/// <exception cref='EvalException'>
 	/// Represents errors that occur during application execution.
 	/// </exception>
+	/// <see cref="Scope"/>
 	public sealed class VariableStore
 	{
 		/// <summary>

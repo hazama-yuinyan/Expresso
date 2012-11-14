@@ -131,13 +131,14 @@ namespace Expresso.Test
 			object s = results[8], t = results[9], u = results[10], v = results[11];
 
 			var expected_a = ExpressoFunctions.MakeList(new List<object>{1, 2, 3});
-			var expected_b = ExpressoFunctions.MakeDict(new List<object>{"a", "b", "c"}, new List<object>{1, 4, 10});
+			var expected_b = ExpressoFunctions.MakeDict(new List<object>{"a", "b", "y"}, new List<object>{1, 4, 10});
 			var expected_c = "akarichan";
 			var expected_d = "chinatsu";
 			var expected_x = 100;
 
 			var expected_p = (int)expected_a[0] + (int)expected_a[1] + (int)expected_a[2];
-			var expected_q = (int)expected_b["a"] + (int)expected_b["b"] + (int)expected_b["y"];
+			var expected_q = (int)expected_b.AccessMember("a") + (int)expected_b.AccessMember("b") +
+				(int)expected_b.AccessMember("y");
 			var expected_r = expected_x >> expected_p;
 			var expected_s = expected_x << 2;
 			var expected_t = expected_r & expected_s;
@@ -199,7 +200,7 @@ namespace Expresso.Test
 			var expected_w = 400;
 			var expected_flag = true;
 			var expected_sum = Helpers.CalcSum(0, expected_y);
-			var expected_strs = new List<object>{"akarichan", "chinatsu", "kyoko", "yui"};
+			var expected_strs = ExpressoFunctions.MakeList(new List<object>{"akarichan", "chinatsu", "kyoko", "yui"});
 
 			Assert.IsTrue(x is int);
 			Assert.AreEqual(expected_x, x);
@@ -219,7 +220,7 @@ namespace Expresso.Test
 			Assert.IsTrue(sum is int);
 			Assert.AreEqual(expected_sum, sum);
 
-			Assert.IsTrue(strs is List<object>);
+			Assert.IsTrue(strs is ExpressoClass.ExpressoObj && ((ExpressoClass.ExpressoObj)strs).Type == TYPES.LIST);
 			Assert.AreEqual(expected_strs, strs);
 		}
 

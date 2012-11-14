@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Expresso.Ast;
 
 namespace Expresso.Interpreter
 {
@@ -13,17 +14,18 @@ namespace Expresso.Interpreter
 		internal enum NodeType
 		{
 			Local,
-			Function,
+			Function
 		}
 
 		internal NodeType Type;
 
-		internal Ast.Node Node { set; get; }
+		internal Node Node { set; get; }
 	}
 
 	/// <summary>
 	/// スコープ内の識別子管理用のクラス。
 	/// Class for managing identifiers in a scope.
+	/// Generally it can be considered as a symbol table.
 	/// </summary>
 	internal class Scope
 	{
@@ -71,7 +73,7 @@ namespace Expresso.Interpreter
 		/// その名前の変数があれば変数の詳細を、なければnullを。
 		/// If exists, returns the information on that variable, otherwise returns null.
 		/// </returns>
-		public Ast.Identifier GetVariable(string name)
+		public Identifier GetVariable(string name)
 		{
 			return GetVariable(name, true);
 		}
@@ -82,7 +84,7 @@ namespace Expresso.Interpreter
 		/// <param name="name">識別子名。</param>
 		/// <param name="searchParent">親スコープを探索するかどうか。</param>
 		/// <returns>その名前の変数があれば変数の詳細を、なければnullを。</returns>
-		public Ast.Identifier GetVariable(string name, bool searchParent)
+		public Identifier GetVariable(string name, bool searchParent)
 		{
 			if(searchParent){
 				int level = 0;
@@ -91,7 +93,7 @@ namespace Expresso.Interpreter
 					if (v != null && level == 0){
 						return v;
 					}else if(v != null){
-						Ast.Identifier cloned = new Ast.Identifier(v.Name, v.ParamType, v.Offset, level);
+						Ast.Identifier cloned = new Identifier(v.Name, v.ParamType, v.Offset, level);
 						return cloned;
 					}
 				}
@@ -102,7 +104,7 @@ namespace Expresso.Interpreter
 			}
 		}
 		
-		static Ast.Identifier GetVariable(string name, Scope scope)
+		static Identifier GetVariable(string name, Scope scope)
 		{
 			if (!scope.Contains(name))
 				return null;
@@ -112,7 +114,7 @@ namespace Expresso.Interpreter
 			if (item.Type != ScopeItem.NodeType.Local)
 				return null;
 
-			return item.Node as Ast.Identifier;
+			return item.Node as Identifier;
 		}
 
 		/// <summary>
@@ -121,7 +123,7 @@ namespace Expresso.Interpreter
 		/// </summary>
 		/// <param name="name">識別子名。</param>
 		/// <returns>その名前の関数があれば関数の詳細を、なければnullを。</returns>
-		public Ast.Function GetFunction(string name)
+		public Function GetFunction(string name)
 		{
 			return this.GetFunction(name, true);
 		}
@@ -132,7 +134,7 @@ namespace Expresso.Interpreter
 		/// <param name="name">識別子名。</param>
 		/// <param name="searchParent">親スコープを探索するかどうか。</param>
 		/// <returns>その名前の関数があれば関数の詳細を、なければnullを。</returns>
-		public Ast.Function GetFunction(string name, bool searchParent)
+		public Function GetFunction(string name, bool searchParent)
 		{
 			if (searchParent) {
 				for (Scope s = this; s != null; s = s.Parent) {
@@ -147,7 +149,7 @@ namespace Expresso.Interpreter
 			}
 		}
 
-		static Ast.Function GetFunction(string name, Scope scope)
+		static Function GetFunction(string name, Scope scope)
 		{
 			if (!scope.Contains(name))
 				return null;
@@ -157,7 +159,7 @@ namespace Expresso.Interpreter
 			if (item.Type != ScopeItem.NodeType.Function)
 				return null;
 
-			return item.Node as Ast.Function;
+			return item.Node as Function;
 		}
 
 		/// <summary>
@@ -165,12 +167,12 @@ namespace Expresso.Interpreter
 		/// Add a local variable to the scope.
 		/// </summary>
 		/// <param name="p">変数。</param>
-		public void AddLocal(ref Ast.Identifier p)
+		public void AddLocal(ref Identifier p)
 		{
 			this.AddVariable(p.Name, ScopeItem.NodeType.Local, ref p);
 		}
 
-		void AddVariable(string name, ScopeItem.NodeType type, ref Ast.Identifier p)
+		void AddVariable(string name, ScopeItem.NodeType type, ref Identifier p)
 		{
 			if (this.table.ContainsKey(name))
 				throw new ArgumentException ("The variable already defined in that scope!");
@@ -186,7 +188,7 @@ namespace Expresso.Interpreter
 		/// Add a function to the scope.
 		/// </summary>
 		/// <param name="f">関数。</param>
-		public void AddFunction(Ast.Function f)
+		public void AddFunction(Function f)
 		{
 			if (this.table.ContainsKey(f.Name))
 				throw new ArgumentException ("The identifier is already in use!");

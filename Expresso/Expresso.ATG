@@ -823,29 +823,30 @@ Atom<out Expression expr>			(. string name; expr = null; .)
 /*------------------------------------------------------------------------*/
 SequenceMaker<out Expression expr, TYPES ObjType>	(.
 														Expression tmp = null; List<Expression> list = new List<Expression>();
-														expr = null; ComprehensionIter comprehen = null;
-														cur_scope = new Scope{Parent = cur_scope}; Identifier ident = null;
+														expr = null; ComprehensionIter comprehen = null; Identifier ident = null;
 													.)
 =
   (
     CondExpr<out tmp>					(. 
     										if(tmp != null){
+    											list.Add(tmp);
     											ident = tmp as Identifier;
-    											if(ident != null)
-    												cur_scope.AddLocal(ref ident);
-    											else
-    												list.Add(tmp);
     										}
     									.)
     ( { ','
         CondExpr<out tmp>				(. if(tmp != null) list.Add(tmp); .)
       }
-      | CompFor<out comprehen>			(. expr = MakeComp(ident, (ComprehensionFor)comprehen, ObjType); .)
+      | 								(.
+      										cur_scope = new Scope{Parent = cur_scope};
+      										if(ident != null)
+      											cur_scope.AddLocal(ref ident);
+      									.)
+        CompFor<out comprehen>			(.
+      										expr = MakeComp(ident, (ComprehensionFor)comprehen, ObjType);
+      										cur_scope = cur_scope.Parent;
+      									.)
     )
-  )										(.
-  											if(expr == null) expr = MakeObjInitializer(ObjType, list);
-  											cur_scope = cur_scope.Parent;
-  										.).
+  )										(. if(expr == null) expr = MakeObjInitializer(ObjType, list); .).
 /*------------------------------------------------------------------------*/
 DictMaker<out Expression expr>			(. Expression lhs, rhs; List<Expression> list = new List<Expression>(); expr = null; .)
 =

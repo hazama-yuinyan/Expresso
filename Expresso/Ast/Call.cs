@@ -88,14 +88,13 @@ namespace Expresso.Ast
     	        fn = Function;
 			}
 			var child = new VariableStore{Parent = varStore};
-			for (int i = 0; i < fn.Parameters.Count; ++i) {	//実引数をローカル変数として変数テーブルに追加する
+			for (int i = 0; i < fn.Parameters.Count; ++i)	//実引数をローカル変数として変数テーブルに追加する
 				child.Add(fn.Parameters[i].Offset, (i < Arguments.Count) ? Arguments[i].Run(varStore) : fn.Parameters[i].Option.Run(varStore));
-			}
+
 			var local_vars = fn.LocalVariables;
 			if(local_vars.Any()){					//Checking for its emptiness
-				foreach(var local in local_vars){	//関数内で定義されているローカル変数を予め初期化しておく
+				foreach(var local in local_vars)	//関数内で定義されているローカル変数を予め初期化しておく
 					child.Add(local.Offset, ImplementaionHelpers.GetDefaultValueFor(local.ParamType));
-				}
 			}
 
 			return fn.Run(child);
