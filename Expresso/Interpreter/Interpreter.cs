@@ -102,7 +102,7 @@ namespace Expresso.Interpreter
 				throw new Exception("Topmost block not found!");
 
 			foreach(var global_var in topmost.LocalVariables)	//グローバル変数を予め変数ストアに追加しておく
-				var_store.Add(global_var.Name, ImplementaionHelpers.GetDefaultValueFor(global_var.ParamType));
+				var_store.Add(global_var.Offset, ImplementaionHelpers.GetDefaultValueFor(global_var.ParamType));
 
 			foreach(var var_decl in topmost.Statements.OfType<VarDeclaration>().ToArray())
 				var_decl.Run(var_store);

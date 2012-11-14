@@ -42,9 +42,8 @@ namespace Expresso.Ast
 				return Expressions[0].Run(varStore);
 			}else{
 				var objs = new List<object>();
-				foreach (Expression expr in Expressions) {
+				foreach (Expression expr in Expressions)
 					objs.Add(expr.Run(varStore));
-				}
 				
 				return ExpressoFunctions.MakeTuple(objs);
 			}

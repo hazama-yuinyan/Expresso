@@ -17,11 +17,6 @@ def MakeList()
 	return [1,2,3,4,5,6];
 }
 
-def MakeRange()
-{
-	return [1..5];
-}
-
 def MakeDict()
 {
 	return {"あかり" : 13, "京子" : 14, "結衣" : 14, "ちなつ" : 13};
@@ -35,9 +30,8 @@ def MakeTuple()
 def PrintList(input, header = "")
 {
 	print header;
-	let tmp = null;
 	print "リストの中身は";
-	for(tmp in input)
+	for(let tmp in input)
 		print tmp;
 	
 	print "です。";
@@ -61,7 +55,7 @@ def TestSwitch(input)
 def main()
 {
 	let x = 0, y = 1;
-	x = x + 5;
+	x += 5;
 	let z = x * y - 1;
 	print "(x, y, z) = ", x, y, z;
 	let w (- int;
@@ -78,18 +72,16 @@ def main()
 	}
 	while(x > 0){
 		PrintInt(x);
-		x = x - 1;
+		x -= 1;
 	}
 	let list_obj = MakeList();
-	let range_obj = MakeRange();
 	let dict_obj = MakeDict();
 	let tuple_obj = MakeTuple(), tuple_obj2 = ("あかりちゃん", "ちなつちゃん", 2424);
-	let item = null;
 	print "Print range object:";
-	for(x in range_obj)
+	for(x in [1..5])
 		print x;
 	
-	/*for(item in dict_obj)
+	/*for(let item in dict_obj)
 		print item;*/
 	
 	PrintList(list_obj);
@@ -101,4 +93,7 @@ def main()
 	TestSwitch(5);
 	TestSwitch(tuple_obj2[0]);
 	TestSwitch("akarichan");
+	
+	let comp = [x for x in [0..100]];
+	PrintList(comp, "Created using comprehension:");
 }

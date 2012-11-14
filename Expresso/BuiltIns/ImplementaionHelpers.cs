@@ -284,54 +284,67 @@ namespace Expresso.Helpers
 					"length", () => inst.Count
 				),
 				new NativeFunctionUnary<Void, object>(
-					"add", new Argument{Name = "elem", ParamType = TYPES.VAR}, new Func<object, Void>(inst.Add)
+					"add", new Argument{Ident = new Identifier("elem", TYPES.VAR, 0)},
+					new Func<object, Void>(inst.Add)
 				),
 				new NativeFunctionUnary<Void, IEnumerable<object>>(
-					"addRange", new Argument{Name = "elems", ParamType = TYPES.VAR}, new Func<IEnumerable<object>, Void>(inst.AddRange)
+					"addRange", new Argument{Ident = new Identifier("elems", TYPES.VAR, 0)},
+					new Func<IEnumerable<object>, Void>(inst.AddRange)
 				),
 				new NativeFunctionNullary<Void>(
 					"clear", new Func<Void>(inst.Clear)
 				),
 				new NativeFunctionUnary<bool, object>(
-					"contains", new Argument{Name = "elem", ParamType = TYPES.VAR}, new Func<object, bool>(inst.Contains)
+					"contains", new Argument{Ident = new Identifier("elem", TYPES.VAR, 0)},
+					new Func<object, bool>(inst.Contains)
 				),
 				new NativeFunctionUnary<bool, Predicate<object>>(
-					"exists", new Argument{Name = "pred", ParamType = TYPES.FUNCTION}, new Func<Predicate<object>, bool>(inst.Exists)
+					"exists", new Argument{Ident = new Identifier("pred", TYPES.FUNCTION, 0)},
+					new Func<Predicate<object>, bool>(inst.Exists)
 				),
 				new NativeFunctionUnary<object, Predicate<object>>(
-					"find", new Argument{Name = "pred", ParamType = TYPES.FUNCTION}, new Func<Predicate<object>, object>(inst.Find)
+					"find", new Argument{Ident = new Identifier("pred", TYPES.FUNCTION, 0)},
+					new Func<Predicate<object>, object>(inst.Find)
 				),
 				new NativeFunctionUnary<List<object>, Predicate<object>>(
-					"findAll", new Argument{Name = "pred", ParamType = TYPES.FUNCTION},
+					"findAll", new Argument{Ident = new Identifier("pred", TYPES.FUNCTION, 0)},
 					new Func<Predicate<object>, List<object>>(inst.FindAll)
 				),
 				new NativeFunctionUnary<object, Predicate<object>>(
-					"findLast", new Argument{Name = "pred", ParamType = TYPES.FUNCTION}, new Func<Predicate<object>, object>(inst.FindLast)
+					"findLast", new Argument{Ident = new Identifier("pred", TYPES.FUNCTION, 0)},
+					new Func<Predicate<object>, object>(inst.FindLast)
 				),
 				new NativeFunctionUnary<Void, Action<object>>(
-					"each", new Argument{Name = "func", ParamType = TYPES.FUNCTION}, new Func<Action<object>, Void>(inst.ForEach)
+					"each", new Argument{Ident = new Identifier("func", TYPES.FUNCTION, 0)},
+					new Func<Action<object>, Void>(inst.ForEach)
 				),
 				new NativeFunctionUnary<int, object>(
-					"indexOf", new Argument{Name = "elem", ParamType = TYPES.VAR}, new Func<object, int>(inst.IndexOf)
+					"indexOf", new Argument{Ident = new Identifier("elem", TYPES.VAR, 0)},
+					new Func<object, int>(inst.IndexOf)
 				),
 				new NativeFunctionBinary<Void, int, object>(
-					"insert", new Argument{Name = "index", ParamType = TYPES.INTEGER}, new Argument{Name = "elem", ParamType = TYPES.VAR},
+					"insert", new Argument{Ident = new Identifier("index", TYPES.INTEGER, 0)},
+					new Argument{Ident = new Identifier("elem", TYPES.VAR, 1)},
 					new Func<int, object, Void>(inst.Insert)
 				),
 				new NativeFunctionUnary<bool, object>(
-					"remove", new Argument{Name = "elem", ParamType = TYPES.VAR}, new Func<object, bool>(inst.Remove)
+					"remove", new Argument{Ident = new Identifier("elem", TYPES.VAR, 0)},
+					new Func<object, bool>(inst.Remove)
 				),
 				new NativeFunctionUnary<Void, int>(
-					"removeAt", new Argument{Name = "index", ParamType = TYPES.INTEGER}, new Func<int, Void>(inst.RemoveAt)
+					"removeAt", new Argument{Ident = new Identifier("index", TYPES.INTEGER, 0)},
+					new Func<int, Void>(inst.RemoveAt)
 				),
 				new NativeFunctionUnary<int, Predicate<object>>(
-					"removeAll", new Argument{Name = "pred", ParamType = TYPES.FUNCTION}, new Func<Predicate<object>, int>(inst.RemoveAll)
+					"removeAll", new Argument{Ident = new Identifier("pred", TYPES.FUNCTION, 0)},
+					new Func<Predicate<object>, int>(inst.RemoveAll)
 				),
 				new NativeFunctionNullary<Void>(
 					"reverse", new Func<Void>(inst.Reverse)
 				),
 				new NativeFunctionUnary<Void, Comparison<object>>(
-					"sort", new Argument{Name = "comp", ParamType = TYPES.FUNCTION}, new Func<Comparison<object>, Void>(inst.Sort)
+					"sort", new Argument{Ident = new Identifier("comp", TYPES.FUNCTION, 0)},
+					new Func<Comparison<object>, Void>(inst.Sort)
 				)
 			};
 
@@ -360,14 +373,16 @@ namespace Expresso.Helpers
 					"length", () => inst.Count
 				),
 				new NativeFunctionBinary<Void, object, object>(
-					"add", new Argument{Name = "key", ParamType = TYPES.VAR}, new Argument{Name = "val", ParamType = TYPES.VAR},
+					"add", new Argument{Ident = new Identifier("key", TYPES.VAR, 0)},
+					new Argument{Ident = new Identifier("val", TYPES.VAR, 1)},
 					new Func<object, object, Void>(inst.Add)
 				),
 				new NativeFunctionUnary<bool, object>(
-					"contains", new Argument{Name = "key", ParamType = TYPES.VAR}, new Func<object, bool>(inst.ContainsKey)
+					"contains", new Argument{Ident = new Identifier("key", TYPES.VAR, 0)},
+					new Func<object, bool>(inst.ContainsKey)
 				),
 				new NativeFunctionUnary<object, object>(
-					"get", new Argument{Name = "key", ParamType = TYPES.VAR}, (key) => {
+					"get", new Argument{Ident = new Identifier("key", TYPES.VAR, 0)}, (key) => {
 						object value;
 						if(inst.TryGetValue(key, out value))
 							return value;
@@ -376,7 +391,8 @@ namespace Expresso.Helpers
 					}
 				),
 				new NativeFunctionUnary<bool, object>(
-					"remove", new Argument{Name = "elem", ParamType = TYPES.VAR}, new Func<object, bool>(inst.Remove)
+					"remove", new Argument{Ident = new Identifier("elem", TYPES.VAR, 0)},
+					new Func<object, bool>(inst.Remove)
 				)
 			};
 

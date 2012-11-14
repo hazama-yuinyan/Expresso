@@ -4,13 +4,45 @@ using Expresso.Interpreter;
 
 namespace Expresso.Ast
 {
+	/// <summary>
+	/// Represents an argument.
+	/// </summary>
 	public class Argument : Expression
 	{
+		private Identifier ident;
+
         /// <summary>
         /// この引数の名前。
 		/// The name of the argument.
         /// </summary>
-        public string Name {get; internal set;}
+        public string Name 
+		{
+			get{
+				return ident.Name;
+			}
+		}
+
+		/// <summary>
+		/// 引数の実体。
+		/// The identifier of the argument.
+		/// </summary>
+		public Identifier Ident
+		{
+			set{
+				ident = value;
+			}
+		}
+
+		/// <summary>
+		/// 引数の変数ストア内でのオフセット値。
+		/// The offset of the argument in the variable store.
+		/// </summary>
+		public int Offset
+		{
+			get{
+				return ident.Offset;
+			}
+		}
 
         /// <summary>
         /// この引数のデフォルト値。
@@ -22,7 +54,12 @@ namespace Expresso.Ast
 		/// この引数の型。
 		/// The type of the argument.
 		/// </summary>
-		public TYPES ParamType{get; internal set;}
+		public TYPES ParamType
+		{
+			get{
+				return ident.ParamType;
+			}
+		}
 
         public override NodeType Type
         {
@@ -35,12 +72,12 @@ namespace Expresso.Ast
 
             if (x == null) return false;
 
-            return this.Name.Equals(x.Name) && this.Option.Equals(x.Option);
+            return ident.Equals(x.ident);
         }
 
         public override int GetHashCode()
         {
-            return this.Name.GetHashCode() ^ this.Option.GetHashCode();
+            return ident.GetHashCode();
         }
 
         internal override object Run(VariableStore varStore)

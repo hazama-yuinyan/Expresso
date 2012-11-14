@@ -32,7 +32,7 @@ namespace Expresso.Ast
 
         internal override object Run(VariableStore varStore)
         {
-			foreach (Expression expr in Expressions) {
+			foreach (var expr in Expressions) {
 				expr.Run(varStore);
 			}
 			

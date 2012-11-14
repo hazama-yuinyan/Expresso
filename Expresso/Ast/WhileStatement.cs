@@ -47,17 +47,20 @@ namespace Expresso.Ast
 
         internal override object Run(VariableStore varStore)
         {
-			object cond;
+			object cond = null;
 
 			can_continue = true;
-			
-			while(can_continue && (cond = Condition.Run(varStore)) != null && (bool)cond){
-				Body.Run(varStore);
+
+			try{
+				while(can_continue && (cond = Condition.Run(varStore)) != null && (bool)cond){
+					Body.Run(varStore);
+				}
 			}
-			
-			if(!(cond is bool))
-				throw new EvalException("Invalid expression! The condition of a while statement must yields a boolean!");
-			
+			catch(Exception e){
+				if(!(cond is bool))
+					throw new EvalException("Invalid expression! The condition of a while statement must yield a boolean!");
+			}
+
 			return null;
         }
 	}

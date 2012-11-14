@@ -51,7 +51,7 @@ namespace Expresso.Ast
 
 			for (i = 0; i < Targets.Count; ++i) {	//その後左辺値に代入する
 				Identifier lvalue = (Identifier)Targets[i];
-				varStore.Assign(lvalue.Name, rvalues[i]);
+				varStore.Assign(lvalue.Level, lvalue.Offset, rvalues[i]);
 			}
 			return rvalues;
         }

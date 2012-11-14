@@ -71,7 +71,6 @@
     <Compile Include="Ast\IntegerSequence.cs" />
     <Compile Include="Ast\MemberReference.cs" />
     <Compile Include="Ast\Comprehension.cs" />
-    <Compile Include="Ast\Iteration.cs" />
     <Compile Include="Ast\Identifier.cs" />
   </ItemGroup>
   <ItemGroup>

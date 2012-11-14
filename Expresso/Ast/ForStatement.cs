@@ -74,6 +74,7 @@ namespace Expresso.Ast
 				if(lvalues[i] == null)
 					throw new EvalException("The left-hand-side of the \"in\" keyword must yield a lvalue(a referencible value such as variables)");
 			}
+
 			var enumerator = iterable.GetEnumerator();
 			while (can_continue) {
 				if(!enumerator.MoveNext())
@@ -81,7 +82,7 @@ namespace Expresso.Ast
 
 				foreach (var lvalue in lvalues) {
 					var val = enumerator.Current;
-					varStore.Assign(lvalue.Name, val);
+					varStore.Assign(lvalue.Level, lvalue.Offset, val);
 				}
 
 				Body.Run(varStore);

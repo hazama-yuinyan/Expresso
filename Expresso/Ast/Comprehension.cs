@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Expresso.BuiltIns;
+using Expresso.Helpers;
 using Expresso.Interpreter;
 
 
@@ -36,6 +38,9 @@ namespace Expresso.Ast
         internal override object Run(VariableStore varStore)
         {
 			var child_store = new VariableStore{Parent = varStore};
+			foreach(var local in Body.LocalVariables)
+				child_store.Add(local.Offset, ImplementaionHelpers.GetDefaultValueFor(local.ParamType));
+
 			ExpressoClass.ExpressoObj obj = null;
 
 			if(ObjType == TYPES.LIST || ObjType == TYPES.TUPLE){
@@ -45,6 +50,7 @@ namespace Expresso.Ast
 					if(result != null)
 						container.Add(result);
 				}
+
 				if(ObjType == TYPES.LIST)
 					obj = ExpressoFunctions.MakeList(container);
 				else
@@ -62,7 +68,8 @@ namespace Expresso.Ast
 							values.Add(result);
 					}
 				}
-				obj = ExpressoFunctions.MakeDict(keys, values, keys.Count);
+
+				obj = ExpressoFunctions.MakeDict(keys, values);
 			}
 
 			return obj;
@@ -72,13 +79,12 @@ namespace Expresso.Ast
 	public abstract class ComprehensionIter
 	{
 		public abstract NodeType Type{get;}
+		public abstract IEnumerable<Identifier> LocalVariables{get;}
 		internal abstract IEnumerable<object> Run(VariableStore varStore, Expression yieldExpr);
 	}
 
 	public class ComprehensionFor : ComprehensionIter
 	{
-		public bool HasLet{get; internal set;}
-
 		/// <summary>
         /// body内で操作対象となるオブジェクトを参照するのに使用する式群。
         /// 評価結果はlvalueにならなければならない。
@@ -110,6 +116,18 @@ namespace Expresso.Ast
             get { return NodeType.ComprehensionFor; }
         }
 
+		public override IEnumerable<Identifier> LocalVariables
+		{
+			get{
+				var inner = (Body == null) ? Enumerable.Empty<Identifier>() : Body.LocalVariables;
+				var on_this =
+					from p in LValues
+					select (Identifier)p;
+
+				return inner.Concat(on_this);
+			}
+		}
+
         public override bool Equals(object obj)
         {
             var x = obj as ComprehensionFor;
@@ -130,19 +148,18 @@ namespace Expresso.Ast
 			if(iterable == null)
 				throw new EvalException("Can not evaluate the expression to an iterable object!");
 
-			var can_continue = true;
-
 			Identifier[] lvalues = new Identifier[LValues.Count];
 			for (int i = 0; i < LValues.Count; ++i) {
 				lvalues[i] = LValues[i] as Identifier;
 				if(lvalues[i] == null)
 					throw new EvalException("The left-hand-side of the \"in\" keyword must yield a lvalue(a referencible value such as variables)");
 			}
+
 			var enumerator = iterable.GetEnumerator();
 			while(enumerator.MoveNext()) {
 				foreach (var lvalue in lvalues) {
 					var val = enumerator.Current;
-					varStore.Assign(lvalue.Name, val);
+					varStore.Assign(lvalue.Level, lvalue.Offset, val);
 				}
 
 				if(Body == null){
@@ -173,6 +190,12 @@ namespace Expresso.Ast
         {
             get { return NodeType.ComprehensionIf; }
         }
+
+		public override IEnumerable<Identifier> LocalVariables {
+			get {
+				return (Body == null) ? Enumerable.Empty<Identifier>() : Body.LocalVariables;
+			}
+		}
 
         public override bool Equals(object obj)
         {

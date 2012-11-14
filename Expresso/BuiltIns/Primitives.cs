@@ -206,13 +206,13 @@ namespace Expresso.BuiltIns
 				inst._end,
 				inst._step,
 				new NativeFunctionUnary<bool, int>(
-					"includes", new Argument{Name = "n", ParamType = TYPES.INTEGER}, inst.Includes
+					"includes", new Argument{Ident = new Identifier("n", TYPES.INTEGER, 0)}, inst.Includes
 				),
 				new NativeFunctionNullary<bool>(
 					"isSequential", inst.IsSequential
 				),
 				new NativeFunctionUnary<List<object>, int>(
-					"take", new Argument{Name = "count", ParamType = TYPES.INTEGER}, inst.Take
+					"take", new Argument{Ident = new Identifier("count", TYPES.INTEGER, 0)}, inst.Take
 				),
 				new NativeFunctionNullary<object>(
 					"generate", inst.Generate
@@ -398,7 +398,7 @@ namespace Expresso.BuiltIns
 					"empty", inst.Empty
 				),
 				new NativeFunctionUnary<bool, object>(
-					"contains", new Argument{Name = "elem", ParamType = TYPES.VAR}, inst.Contains
+					"contains", new Argument{Ident = new Identifier("elem", TYPES.VAR, 0)}, inst.Contains
 				)
 			};
 

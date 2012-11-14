@@ -13,7 +13,6 @@ namespace Expresso.Interpreter
 		internal enum NodeType
 		{
 			Local,
-			Argument, //不要っぽい気もする。
 			Function,
 		}
 
@@ -36,8 +35,11 @@ namespace Expresso.Interpreter
 
 		/// <summary>
 		/// 識別子名 → 識別子の詳細テーブル。
+		/// The symbol table.
 		/// </summary>
 		private Dictionary<string, ScopeItem> table = new Dictionary<string, ScopeItem> ();
+
+		private int next_offset = 0;
 
 		/// <summary>
 		/// 識別子がスコープ内に含まれるかどうか。
@@ -83,10 +85,15 @@ namespace Expresso.Interpreter
 		public Ast.Identifier GetVariable(string name, bool searchParent)
 		{
 			if(searchParent){
-				for (Scope s = this; s != null; s = s.Parent) {
+				int level = 0;
+				for (Scope s = this; s != null; s = s.Parent, ++level) {
 					var v = GetVariable(name, s);
-					if (v != null)
+					if (v != null && level == 0){
 						return v;
+					}else if(v != null){
+						Ast.Identifier cloned = new Ast.Identifier(v.Name, v.ParamType, v.Offset, level);
+						return cloned;
+					}
 				}
 
 				return null;
@@ -102,7 +109,7 @@ namespace Expresso.Interpreter
 
 			var item = scope.table[name];
 
-			if (item.Type != ScopeItem.NodeType.Local && item.Type != ScopeItem.NodeType.Argument)
+			if (item.Type != ScopeItem.NodeType.Local)
 				return null;
 
 			return item.Node as Ast.Identifier;
@@ -158,26 +165,18 @@ namespace Expresso.Interpreter
 		/// Add a local variable to the scope.
 		/// </summary>
 		/// <param name="p">変数。</param>
-		public void AddLocal(Ast.Identifier p)
+		public void AddLocal(ref Ast.Identifier p)
 		{
-			this.AddVariable(p.Name, ScopeItem.NodeType.Local, p);
+			this.AddVariable(p.Name, ScopeItem.NodeType.Local, ref p);
 		}
 
-		/// <summary>
-		/// スコープに引数を追加。
-		/// </summary>
-		/// <param name="p">変数。</param>
-		public void AddArgument (Ast.Identifier p)
-		{
-			// Local と分ける意味あんまりないかもなぁ。
-
-			this.AddVariable(p.Name, ScopeItem.NodeType.Argument, p);
-		}
-
-		void AddVariable(string name, ScopeItem.NodeType type, Ast.Identifier p)
+		void AddVariable(string name, ScopeItem.NodeType type, ref Ast.Identifier p)
 		{
 			if (this.table.ContainsKey(name))
 				throw new ArgumentException ("The variable already defined in that scope!");
+
+			if(p.Offset == -1)
+				p.Offset = this.next_offset++;
 
 			this.table[name] = new ScopeItem { Type = ScopeItem.NodeType.Local, Node = p };
 		}

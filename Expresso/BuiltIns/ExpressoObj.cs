@@ -81,6 +81,35 @@ namespace Expresso.BuiltIns
 				get{return definition.Name;}
 			}
 
+			public object this[int index]
+			{
+				get{
+					switch(Type){
+					case TYPES.ARRAY:
+						return ((object[])members[0])[index];
+
+					case TYPES.LIST:
+					case TYPES.TUPLE:
+						return ((List<object>)members[0])[index];
+
+					default:
+						return null;
+					}
+				}
+			}
+
+			public object this[object key]
+			{
+				get{
+					if(Type == TYPES.DICT){
+						object value = null;
+						((Dictionary<object, object>)members[0]).TryGetValue(key, out value);
+						return value;
+					}else
+						return null;
+				}
+			}
+
 			public ExpressoObj(ClassDefinition definition, TYPES objType = TYPES.CLASS)
 			{
 				this.definition = definition;

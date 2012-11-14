@@ -36,7 +36,7 @@ namespace Expresso.Ast
 		
 		/// <summary>
 		/// 戻り値の型
-		/// The type of return value.
+		/// The type of the return value.
 		/// </summary>
 		public TYPES ReturnType {get; internal set;}
 
@@ -55,7 +55,8 @@ namespace Expresso.Ast
 
         /// <summary>
         /// 関数＋引数名、
-        /// f(x, y) {x + y;} の f(x, y) の部分を文字列として返す。
+        /// f(x, y) => some_type {x + y;} の f(x, y) => some_type の部分を文字列として返す。
+		/// Returns the function signature.
         /// </summary>
         /// <returns>関数シグニチャ</returns>
         public string Signature()
@@ -169,7 +170,7 @@ namespace Expresso.Ast
 
 		internal override object Run(VariableStore varStore)
 		{
-			dynamic arg = varStore.Get(this.Parameters[0].Name);
+			dynamic arg = varStore.Get(this.Parameters[0].Offset);
 			if(ReturnType == TYPES.UNDEF){
 				func.Invoke(arg);
 				return null;
@@ -194,8 +195,8 @@ namespace Expresso.Ast
 
 		internal override object Run(VariableStore varStore)
 		{
-			dynamic arg1 = varStore.Get(this.Parameters[0].Name);
-			dynamic arg2 = varStore.Get(this.Parameters[1].Name);
+			dynamic arg1 = varStore.Get(this.Parameters[0].Offset);
+			dynamic arg2 = varStore.Get(this.Parameters[1].Offset);
 			if(ReturnType == TYPES.UNDEF){
 				func.Invoke(arg1, arg2);
 				return null;

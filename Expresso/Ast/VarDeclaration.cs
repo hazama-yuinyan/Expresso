@@ -46,7 +46,7 @@ namespace Expresso.Ast
 			object obj;
 			for (int i = 0; i < Variables.Count; ++i) {
 				obj = Expressions[i].Run(varStore);
-				varStore.Assign(Variables[i].Name, obj);
+				varStore.Assign(Variables[i].Offset, obj);
 			}
 			return null;
         }

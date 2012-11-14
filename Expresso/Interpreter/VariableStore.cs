@@ -21,10 +21,21 @@ namespace Expresso.Interpreter
 		public VariableStore Parent{get; internal set;}
 		
 		/// <summary>
-		/// 変数の実体を保持する辞書。
+		/// 変数の実体を保持するリスト。
 		/// The dictionary holding instances of variables.
 		/// </summary>
-		private Dictionary<string, object> store = new Dictionary<string, object>();
+		private List<object> store = new List<object>();
+
+		private VariableStore TrackUpScope(int level)
+		{
+			var vars = this;
+			for(; vars != null && level > 0; vars = vars.Parent, --level) ;
+
+			if(level != 0)
+				throw new EvalException("The requested scope doesn't seem to exist.");
+
+			return vars;
+		}
 		
 		/// <summary>
 		/// 変数の実体をスコープに追加する。
@@ -38,9 +49,9 @@ namespace Expresso.Interpreter
 		/// 変数の中身
 		/// The value.
 		/// </param>
-		public void Add(string name, object obj)
+		public void Add(int offset, object obj)
 		{
-			store.Add(name, obj);
+			store.Insert(offset, obj);
 		}
 
 		/// <summary>
@@ -53,9 +64,15 @@ namespace Expresso.Interpreter
 		/// <param name='obj'>
 		/// 変更先の値
 		/// </param>
-		public void Assign(string name, object obj)
+		public void Assign(int offset, object obj)
 		{
-			store[name] = obj;
+			store[offset] = obj;
+		}
+
+		public void Assign(int level, int offset, object obj)
+		{
+			var store = TrackUpScope(level);
+			store.Assign(offset, obj);
 		}
 		
 		/// <summary>
@@ -68,36 +85,18 @@ namespace Expresso.Interpreter
 		/// <exception cref='EvalException'>
 		/// スコープ内にその識別子の変数が存在しない場合に発生する。
 		/// </exception>
-		public object Get(string name)
+		public object Get(int offset, int level = 0)
 		{
-			return Get(name, true);
+			var store = (level > 0) ? TrackUpScope(level) : this;
+			return Get(offset, store);
 		}
 		
-		public object Get(string name, bool searchParent)
+		static object Get(int offset, VariableStore vars)
 		{
-			if(searchParent){
-				for(VariableStore vars = this; vars != null; vars = vars.Parent){
-					var v = Get(name, vars);
-					if(v != null)
-						return v;
-				}
-				
+			if(offset >= vars.store.Count)
 				throw new EvalException("Attempt to refer to an inexsistent variable");
-			}else{
-				var v = Get(name, this);
-				if(v == null)
-					throw new EvalException("Attempt to refer to an inexsistent variable");
-				
-				return v;
-			}
-		}
-		
-		static object Get(string name, VariableStore vars)
-		{
-			if(!vars.store.ContainsKey(name))
-				return null;
 			
-			return vars.store[name];
+			return vars.store[offset];
 		}
 		
 		/// <summary>
@@ -107,9 +106,15 @@ namespace Expresso.Interpreter
 		/// <param name='name'>
 		/// Name.
 		/// </param>
-		public void Remove(string name)
+		public void Remove(int offset)
 		{
-			store.Remove(name);
+			store.RemoveAt(offset);
+		}
+
+		public void Remove(int offset, int level = 0)
+		{
+			var store = (level > 0) ? TrackUpScope(level) : this;
+			store.Remove(offset);
 		}
 	}
 }

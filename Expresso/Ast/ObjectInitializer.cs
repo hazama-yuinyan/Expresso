@@ -36,7 +36,7 @@ namespace Expresso.Ast
 
         public override int GetHashCode()
         {
-            return this.InitializeList.GetHashCode();
+            return this.Initializer.GetHashCode();
         }
 
         internal override object Run(VariableStore varStore)
@@ -46,9 +46,9 @@ namespace Expresso.Ast
 			case TYPES.TUPLE:
 			{
 				var tmp_list = new List<object>(Initializer.Count());
-				foreach (var item in Initializer) {
+				foreach (var item in Initializer)
 					tmp_list.Add(item.Run(varStore));
-				}
+
 				result = ExpressoFunctions.MakeTuple(tmp_list);
 				break;
 			}
@@ -56,9 +56,9 @@ namespace Expresso.Ast
 			case TYPES.LIST:
 			{
 				var tmp_list = new List<object>(Initializer.Count());
-				foreach (var item in Initializer) {
+				foreach (var item in Initializer)
 					tmp_list.Add(item.Run(varStore));
-				}
+
 				result = ExpressoFunctions.MakeList(tmp_list);
 				break;
 			}
@@ -66,15 +66,19 @@ namespace Expresso.Ast
 			case TYPES.DICT:
 			{
 				var len = Initializer.Count();
-				var key_list = new List<object>(len / 2);
-				var value_list = new List<object>(len / 2);
-				for (int i = 0; i < InitializeList.Count; ++i) {
+				var dict_len = len / 2;
+				var key_list = new List<object>(dict_len);
+				var value_list = new List<object>(dict_len);
+				var i = 0;
+				foreach(var obj in Initializer){
 					if(i % 2 == 0)
-						key_list.Add(InitializeList[i].Run(varStore));
+						key_list.Add(obj.Run(varStore));
 					else
-						value_list.Add(InitializeList[i].Run(varStore));
+						value_list.Add(obj.Run(varStore));
+
+					++i;
 				}
-				result = ExpressoFunctions.MakeDict(key_list, value_list, len);
+				result = ExpressoFunctions.MakeDict(key_list, value_list);
 				break;
 			}
 				

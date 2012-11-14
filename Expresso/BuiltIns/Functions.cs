@@ -114,10 +114,10 @@ namespace Expresso.BuiltIns
 			return ExpressoTuple.Construct(new ExpressoTuple(objs));
 		}
 		
-		public static ExpressoClass.ExpressoObj MakeDict(List<object> keys, List<object> values, int count)
+		public static ExpressoClass.ExpressoObj MakeDict(List<object> keys, List<object> values)
 		{
-			var tmp = new Dictionary<object, object>(count);
-			for (int i = 0; i < count; ++i)
+			var tmp = new Dictionary<object, object>(keys.Count);
+			for (int i = 0; i < keys.Count; ++i)
 				tmp.Add(keys[i], values[i]);
 
 			return ExpressoDictionary.Construct(tmp);
