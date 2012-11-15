@@ -44,14 +44,14 @@ namespace Expresso.Ast
         internal override object Run(VariableStore varStore)
         {
 			object obj;
-			for (int i = 0; i < Variables.Count; ++i) {
-				obj = Expressions[i].Run(varStore);
+			for (int i = 0; i < Variables.Count; ++i) {		//let x = 0, y = 1;みたいな表記しかできない。let x = y = 0;も、
+				obj = Expressions[i].Run(varStore);			//let x, y = 0, 1;も（いまのところ）不可能
 				varStore.Assign(Variables[i].Offset, obj);
 			}
 			return null;
         }
 
-		public override string ToString ()
+		public override string ToString()
 		{
 			return string.Format("let {0} : {1}", Variables, Expressions);
 		}

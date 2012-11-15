@@ -45,8 +45,6 @@ namespace Expresso.Ast
         internal override object Run(VariableStore varStore)
         {
 			var target = Target.Run(varStore);
-			if(target == null)
-				throw new EvalException("Can not evaluate the expression to a primitive object.");
 
             foreach (var clause in Cases) {
 				clause.Target = target;

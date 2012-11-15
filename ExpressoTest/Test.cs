@@ -26,6 +26,13 @@ namespace Expresso.Test
 
 			return result;
 		}
+
+		public static void DoTest(ExpressoClass.ExpressoObj targets, object[] expects)
+		{
+			for(int i = 0; i < expects.Length; ++i){
+
+			}
+		}
 	}
 
 	[TestFixture]
@@ -239,8 +246,8 @@ namespace Expresso.Test
 			interp.Initialize();
 			var results = interp.Run() as ExpressoClass.ExpressoObj;
 			Assert.IsNotNull(results);
-			object x = results[0], y = results[1], z = results[2]/*, w = results[3];
-			object flag = results[4], sum = results[5], strs = results[6]*/;
+			object x = results[0], y = results[1], z = results[2], a = results[3];
+			object b = results[4], c = results[5], m = results[6];
 
 			var tmp_x = new List<object>(100);
 			for(int i = 0; i < 100; ++i)
@@ -266,6 +273,18 @@ namespace Expresso.Test
 
 			var expected_z = ExpressoFunctions.MakeList(tmp_z);
 
+			var expected_m = ExpressoFunctions.MakeTuple(new List<object>{1, 3});
+
+			var expected = new object[]{
+				expected_x,
+				expected_y,
+				expected_z,
+				0,		//a
+				0,		//b
+				0,		//c
+				expected_m
+			};
+
 			Assert.IsTrue(x is ExpressoClass.ExpressoObj);
 			Assert.AreEqual(expected_x, x);
 
@@ -274,6 +293,18 @@ namespace Expresso.Test
 
 			Assert.IsTrue(z is ExpressoClass.ExpressoObj);
 			Assert.AreEqual(expected_z, z);
+
+			Assert.IsTrue(a is int);
+			Assert.AreEqual(expected[3], a);
+
+			Assert.IsTrue(b is int);
+			Assert.AreEqual(expected[4], b);
+
+			Assert.IsTrue(c is int);
+			Assert.AreEqual(expected[5], c);
+
+			Assert.IsTrue(m is ExpressoClass.ExpressoObj);
+			Assert.AreEqual(expected[6], m);
 		}
 	}
 }

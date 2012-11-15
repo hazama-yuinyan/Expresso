@@ -12,6 +12,8 @@ namespace Expresso.Ast
 	public class PrintStatement : Statement
 	{
 		public List<Expression> Expressions{get; internal set;}
+
+		public bool HasTrailing{get; internal set;}
 		
 		public override NodeType Type
         {
@@ -42,23 +44,29 @@ namespace Expresso.Ast
 					values.Add(Expressions[i].Run(varStore));
 					sb.Append("%s");
 					if(i + 1 != Expressions.Count)
-						sb.Append(", ");
+						sb.Append(",");
 				}
 
 				var text = ExpressoFunctions.Format(sb.ToString(), values.ToArray());
-				Console.WriteLine(text);
+				if(!HasTrailing)
+					Console.WriteLine(text);
+				else
+					Console.Write(text);
 			}else{
 				Console.Write(first);
 				bool print_comma = true;
 				for(int i = 1; i < Expressions.Count; ++i){
 					if(print_comma)
-						Console.Write(", ");
+						Console.Write(",");
 
 					object obj = Expressions[i].Run(varStore);
 					Console.Write(obj);
 					print_comma = (obj is string) ? false : true;
 				}
-				Console.WriteLine();
+				if(!HasTrailing)
+					Console.WriteLine();
+				else
+					Console.Write(",");
 			}
 
 			return null;

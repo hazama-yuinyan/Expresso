@@ -69,6 +69,10 @@ namespace Expresso.BuiltIns
 
 		public class ExpressoObj : IEnumerable<object>, IEnumerable
 		{
+			/// <summary>
+			/// オブジェクトの型。
+			/// The type of this object.
+			/// </summary>
 			public TYPES Type{
 				get; internal set;
 			}
@@ -77,6 +81,10 @@ namespace Expresso.BuiltIns
 
 			private object[] members;
 
+			/// <summary>
+			/// このインスタンスのクラス名。
+			/// The class name of this object.
+			/// </summary>
 			public string ClassName{
 				get{return definition.Name;}
 			}
@@ -121,6 +129,24 @@ namespace Expresso.BuiltIns
 				this.Type = objType;
 			}
 
+			public override bool Equals (object obj)
+			{
+				var x = obj as ExpressoObj;
+				if(x == null) return false;
+
+				return ClassName == x.ClassName && members[0].Equals(x.members[0]);
+			}
+
+			public override int GetHashCode ()
+			{
+				return definition.GetHashCode() ^ members.GetHashCode();
+			}
+
+			public override string ToString ()
+			{
+				return string.Format("[ExpressoObj: Type={0}, ClassName={1}]", Type, ClassName);
+			}
+
 			IEnumerator IEnumerable.GetEnumerator()
 			{
 				return this.GetEnumerator();
@@ -131,7 +157,10 @@ namespace Expresso.BuiltIns
 				if(members[0] is IEnumerable<object>){
 					var enumerable = (IEnumerable<object>)members[0];
 					return enumerable.GetEnumerator();
-				}else
+				}/*else if(members[0] is Dictionary<object, object>){
+					var dictionary = (Dictionary<object, object>)members[0];
+					return dictionary.GetEnumerator();
+				}*/else
 					throw new EvalException("Can not evaluate the object to an iterable.");
 			}
 
@@ -148,11 +177,14 @@ namespace Expresso.BuiltIns
 				}else if(subscription is Identifier){
 					Identifier mem_name = (Identifier)subscription;
 					var public_mems = definition.PublicMembers;
-					int offset;
-					if(!public_mems.TryGetValue(mem_name.Name, out offset))
-						throw new EvalException(mem_name + " is not accessible.");
+					if(mem_name.Offset == -1){
+						int offset;
+						if(!public_mems.TryGetValue(mem_name.Name, out offset))
+							throw new EvalException(mem_name + " is not accessible.");
 
-					return members[offset];
+						mem_name.Offset = offset;
+					}
+					return members[mem_name.Offset];
 				}else if(subscription is int){
 					int index = (int)subscription;
 

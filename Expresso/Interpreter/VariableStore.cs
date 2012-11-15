@@ -53,7 +53,13 @@ namespace Expresso.Interpreter
 		/// </param>
 		public void Add(int offset, object obj)
 		{
-			store.Insert(offset, obj);
+			if(offset >= store.Capacity)
+				store.Capacity = offset + 1;
+
+			if(offset < store.Count)
+				store.Insert(offset, obj);
+			else
+				store.Add(obj);
 		}
 
 		/// <summary>

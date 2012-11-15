@@ -45,7 +45,7 @@ namespace Expresso.Ast
         internal override object Run(VariableStore varStore)
         {
 			int i;
-			var rvalues = new List<object>();
+			var rvalues = new List<object>(Expressions.Count);
 			for(i = 0; i < Expressions.Count; ++i)	//まず右辺をすべて評価する
 				rvalues.Add(Expressions[i].Run(varStore));
 
@@ -53,7 +53,7 @@ namespace Expresso.Ast
 				Identifier lvalue = (Identifier)Targets[i];
 				varStore.Assign(lvalue.Level, lvalue.Offset, rvalues[i]);
 			}
-			return rvalues;
+			return rvalues[0];	//x = y = 0;みたいな表記を許容するために右辺値の一番目を戻り値にする
         }
 		
 		public override string ToString()

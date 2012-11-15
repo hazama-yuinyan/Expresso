@@ -359,7 +359,7 @@ namespace Expresso.BuiltIns
 
 			internal Enumerator(ExpressoTuple tuple)
 			{
-				this.er = tuple.GetEnumerator();
+				this.er = tuple._content.GetEnumerator();
 			}
 
 			public void Dispose()

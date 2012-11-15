@@ -56,6 +56,11 @@ namespace Expresso.Ast
 
 			return null;
         }
+
+		public override string ToString ()
+		{
+			return string.Format ("break upto {0}", Count);
+		}
 	}
 
 	public class ContinueStatement : Statement
@@ -85,6 +90,11 @@ namespace Expresso.Ast
         {
 			return null;
         }
+
+		public override string ToString ()
+		{
+			return string.Format ("continue on {0} up", Count);
+		}
 	}
 }
 

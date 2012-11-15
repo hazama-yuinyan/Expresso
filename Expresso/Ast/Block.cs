@@ -15,16 +15,13 @@ namespace Expresso.Ast
 
         /// <summary>
         /// ブロックの中身の文。
+		/// The body statements
         /// </summary>
         public List<Statement> Statements { get { return this.statements; } }
 
-		/// <summary>
-		/// このブロックの親のブロック。
-		/// </summary>
-		public Statement Parent{get; internal set;}
-
         /// <summary>
         /// ブロック中で定義された変数一覧。
+		/// The local variables defined in the block.
         /// </summary>
         public IEnumerable<Identifier> LocalVariables
         {
@@ -72,14 +69,11 @@ namespace Expresso.Ast
 
         internal override object Run(VariableStore varStore)
         {
-            object result = null;
-
+			object result = null;
 			can_continue = true;
 			
-			foreach (var stmt in Statements) {
-				result = stmt.Run(varStore);
-				if(!can_continue) break;
-			}
+			for(int i = 0; can_continue && i < statements.Count; ++i)
+				result = statements[i].Run(varStore);
 			
 			return result;
         }

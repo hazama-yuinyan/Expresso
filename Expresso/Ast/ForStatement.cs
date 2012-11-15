@@ -76,10 +76,7 @@ namespace Expresso.Ast
 			}
 
 			var enumerator = iterable.GetEnumerator();
-			while (can_continue) {
-				if(!enumerator.MoveNext())
-					break;
-
+			while (can_continue && enumerator.MoveNext()) {
 				foreach (var lvalue in lvalues) {
 					var val = enumerator.Current;
 					varStore.Assign(lvalue.Level, lvalue.Offset, val);

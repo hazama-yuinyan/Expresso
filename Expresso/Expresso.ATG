@@ -14,6 +14,7 @@ COMPILER Expresso
 	public Block root = new Block();
 	static public Function main_func = null;	//the main function
 	static private List<BreakableStatement> breakables = new List<BreakableStatement>();	//the current parent breakbles
+	bool ignore_parent_scope = false;
 	
 	static Parser()
 	{			//Add built-in functions
@@ -72,15 +73,19 @@ COMPILER Expresso
 		return x.kind != _double_dots;
 	}
 	
-	bool NotLookAtCurly()
-	{
-		return t.kind != _lcurly;
-	}
-	
 	bool IdentIsNotCallable()
 	{
 		Token x = scanner.Peek();
 		return x.kind != _lparen;
+	}
+	
+	bool IsObjectInitializer()
+	{
+		Token x = la;
+		if(x.kind != _lcurly) return true;
+		scanner.ResetPeek();
+		while(x.kind != 0 && x.kind != _keyword_for && x.kind != _rcurly) x = scanner.Peek();
+		return x.kind != _keyword_for;
 	}
 	
 	Identifier DeclareVariable(ref Expression rhs, string name, TYPES type)
@@ -222,12 +227,15 @@ TOKENS
   lparen = '('.
   lbracket = '['.
   rparen = ')'.
+  rcurly = '}'.
+  comma = ','.
   ident  = (letter | '_') {'_' | letter | digit}.
   integer = digit {digit}
   			| digit {digit} CONTEXT("..").
   float = digit {digit} "." {digit} ["e" ["+" | "-"] digit {digit}].
   string_literal = '"' {quotedLetter} '"'.
   keyword_in = "in".
+  keyword_for = "for".
 
 COMMENTS FROM "/*" TO "*/" NESTED
 COMMENTS FROM "//" TO lf
@@ -318,7 +326,7 @@ Stmt<out Statement stmt>			(. stmt = null; .)
   | CompoundStmt<out stmt> .
 /*------------------------------------------------------------------------*/
 SimpleStmt<out Statement stmt>		(. stmt = null; .)
-=		/* For DictMaker and Block conflict. Since DictMaker should not be a lvalue, we always choose the first(Block).*/
+=	IF(la.kind == _lcurly)	/* For DictMaker and Block conflict. Since DictMaker should not be a statement, we always choose the first(Block).*/
     Block<out stmt>
   | ExprStmt<out stmt>
   | PrintStmt<out stmt>
@@ -331,9 +339,9 @@ PrintStmt<out Statement stmt>		(. List<Expression> exprs = null; bool trailing_c
   "print"
   [RValueList<out exprs>]
   [',']								(. trailing_comma = true; .)
-  SYNC ';'							(. stmt = new PrintStatement{Expressions = exprs}; .).
+  SYNC ';'							(. stmt = new PrintStatement{Expressions = exprs, HasTrailing = trailing_comma}; .).
 /*------------------------------------------------------------------------*/
-ReturnStmt<out Statement stmt>		(. List<Expression> target_list = new List<Expression>(); bool trailing_comma; .)
+ReturnStmt<out Statement stmt>		(. List<Expression> target_list = new List<Expression>(); /*bool trailing_comma;*/ .)
 =
   "return"
   [RValueList<out target_list>]
@@ -800,9 +808,15 @@ ArgList<. ref List<Expression> args .>		(. Expression expr; .)
 Atom<out Expression expr>			(. string name; expr = null; .)
 =
   Variable<out name>				(.
-  										expr = cur_scope.GetVariable(name);
-  										if(expr == null)
+  										expr = cur_scope.GetVariable(name, !ignore_parent_scope);
+  										if(expr == null){
   											expr = new Identifier(name);
+  											if(ignore_parent_scope){	//for the comprehension expression
+  												var ident = (Identifier)expr;
+  												cur_scope.AddLocal(ref ident);
+  												expr = ident;
+  											}
+  										}
   									.)
   | Literal<out expr>
   | '('
@@ -823,30 +837,25 @@ Atom<out Expression expr>			(. string name; expr = null; .)
 /*------------------------------------------------------------------------*/
 SequenceMaker<out Expression expr, TYPES ObjType>	(.
 														Expression tmp = null; List<Expression> list = new List<Expression>();
-														expr = null; ComprehensionIter comprehen = null; Identifier ident = null;
+														expr = null; ComprehensionIter comprehen = null;
 													.)
 =
-  (
-    CondExpr<out tmp>					(. 
-    										if(tmp != null){
-    											list.Add(tmp);
-    											ident = tmp as Identifier;
-    										}
-    									.)
-    ( { ','
-        CondExpr<out tmp>				(. if(tmp != null) list.Add(tmp); .)
-      }
-      | 								(.
+  IF(IsObjectInitializer())
+  CondExpr<out tmp>						(. if(tmp != null) list.Add(tmp); .)
+  { ','
+    CondExpr<out tmp>					(. if(tmp != null) list.Add(tmp); .)
+  }										(. expr = MakeObjInitializer(ObjType, list); .)
+  | '{' 								(.
       										cur_scope = new Scope{Parent = cur_scope};
-      										if(ident != null)
-      											cur_scope.AddLocal(ref ident);
+      										ignore_parent_scope = true;
       									.)
-        CompFor<out comprehen>			(.
-      										expr = MakeComp(ident, (ComprehensionFor)comprehen, ObjType);
+    CondExpr<out tmp>
+    CompFor<out comprehen>
+    '}'									(.
+      										expr = MakeComp(tmp, (ComprehensionFor)comprehen, ObjType);
       										cur_scope = cur_scope.Parent;
-      									.)
-    )
-  )										(. if(expr == null) expr = MakeObjInitializer(ObjType, list); .).
+      										ignore_parent_scope = false;
+      									.).
 /*------------------------------------------------------------------------*/
 DictMaker<out Expression expr>			(. Expression lhs, rhs; List<Expression> list = new List<Expression>(); expr = null; .)
 =
@@ -868,7 +877,7 @@ CompIter<out ComprehensionIter expr>			(. expr = null; .)
 /*------------------------------------------------------------------------*/
 CompFor<out ComprehensionIter expr>		(. Expression rvalue = null; ComprehensionIter body = null; List<Expression> target_list; .)
 =
-  "for"									
+  "for"									(. ignore_parent_scope = true; .)
   LValueList<out target_list>			(.
   											foreach(var target in target_list){
   												var ident = target as Identifier;
@@ -876,6 +885,7 @@ CompFor<out ComprehensionIter expr>		(. Expression rvalue = null; ComprehensionI
   												if(!cur_scope.Contains(ident.Name))
   													cur_scope.AddLocal(ref ident);
   											}
+  											ignore_parent_scope = false;
   										.)
   "in"
   ( IF(NotFollowedByDoubleDots())
