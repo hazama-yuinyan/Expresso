@@ -39,7 +39,7 @@ namespace Expresso.Ast
         {
 			var child_store = new VariableStore{Parent = varStore};
 			foreach(var local in Body.LocalVariables)
-				child_store.Add(local.Offset, ImplementaionHelpers.GetDefaultValueFor(local.ParamType));
+				child_store.Add(local.Offset, ImplementationHelpers.GetDefaultValueFor(local.ParamType));
 
 			ExpressoClass.ExpressoObj obj = null;
 

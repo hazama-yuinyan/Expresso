@@ -12,7 +12,7 @@ namespace Expresso.Helpers
 	/// Expressoの実装用のヘルパー関数郡。
 	/// Helper functions for implementing Expresso.
 	/// </summary>
-	public static class ImplementaionHelpers
+	public static class ImplementationHelpers
 	{
 		/// <summary>
 		/// Determines whether the <paramref name="target"/> is of the specified type.
@@ -115,19 +115,19 @@ namespace Expresso.Helpers
 				result = 
 					from p in expr_stmt.Expressions
 					where p.Type == NodeType.VarDecl
-					select ImplementaionHelpers.CollectLocalVars(p) into t
+					select ImplementationHelpers.CollectLocalVars(p) into t
 					from q in t
 					select q;
 				break;
 
 			case NodeType.SwitchStatement:
-				result = ((SwitchStatement)stmt).Cases.SelectMany(x => ImplementaionHelpers.CollectLocalVars(x.Body));
+				result = ((SwitchStatement)stmt).Cases.SelectMany(x => ImplementationHelpers.CollectLocalVars(x.Body));
 				break;
 
 			case NodeType.IfStatement:
 				var if_stmt = (IfStatement)stmt;
-				var in_true = ImplementaionHelpers.CollectLocalVars(if_stmt.TrueBlock);
-				var in_false = ImplementaionHelpers.CollectLocalVars(if_stmt.FalseBlock);
+				var in_true = ImplementationHelpers.CollectLocalVars(if_stmt.TrueBlock);
+				var in_false = ImplementationHelpers.CollectLocalVars(if_stmt.FalseBlock);
 				result = in_true.Concat(in_false);
 				break;
 
@@ -137,22 +137,22 @@ namespace Expresso.Helpers
 				if(for_stmt.HasLet){
 					in_cond =
 						from p in for_stmt.LValues
-						select ImplementaionHelpers.CollectLocalVars(p) into t
+						select ImplementationHelpers.CollectLocalVars(p) into t
 						from q in t
 						select q;
 				}
 
-				var in_body = ImplementaionHelpers.CollectLocalVars(for_stmt.Body);
+				var in_body = ImplementationHelpers.CollectLocalVars(for_stmt.Body);
 				result = in_cond.Concat(in_body);
 				break;
 
 			case NodeType.WhileStatement:
 				var while_stmt = (WhileStatement)stmt;
-				result = ImplementaionHelpers.CollectLocalVars(while_stmt.Body);
+				result = ImplementationHelpers.CollectLocalVars(while_stmt.Body);
 				break;
 
 			case NodeType.Block:
-				result = ImplementaionHelpers.CollectLocalVars((Block)stmt);
+				result = ImplementationHelpers.CollectLocalVars((Block)stmt);
 				break;
 			}
 
@@ -164,7 +164,7 @@ namespace Expresso.Helpers
 			var vars = 
 				from p in root.Statements
 				where p.Type == NodeType.ExprStatement || p.Type == NodeType.ForStatement || p.Type == NodeType.IfStatement || p.Type == NodeType.SwitchStatement || p.Type == NodeType.WhileStatement
-				select ImplementaionHelpers.CollectLocalVars(p) into t
+				select ImplementationHelpers.CollectLocalVars(p) into t
 				from q in t
 				select q;
 
@@ -195,11 +195,6 @@ namespace Expresso.Helpers
 		{
 			ulong gdc = CalcGDC(first, second);
 			return first * second / gdc;
-		}
-
-		public static void DefineBuiltinObjects()
-		{
-
 		}
 	}
 

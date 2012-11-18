@@ -140,7 +140,7 @@ namespace Expresso.Ast
 			this.Parameters = null;
 			this.Body = null;
 			Type t = typeof(ReturnType);
-			this.ReturnType = ImplementaionHelpers.GetTypeInExpresso(t);
+			this.ReturnType = ImplementationHelpers.GetTypeInExpresso(t);
 			this.func = Func;
 		}
 
@@ -164,7 +164,7 @@ namespace Expresso.Ast
 			this.Parameters = new List<Argument>{Param};
 			this.Body = null;
 			Type t = typeof(ReturnType);
-			this.ReturnType = ImplementaionHelpers.GetTypeInExpresso(t);
+			this.ReturnType = ImplementationHelpers.GetTypeInExpresso(t);
 			this.func = Func;
 		}
 
@@ -189,7 +189,7 @@ namespace Expresso.Ast
 			this.Parameters = new List<Argument>{Parameter1, Parameter2};
 			this.Body = null;
 			Type t = typeof(ReturnType);
-			this.ReturnType = ImplementaionHelpers.GetTypeInExpresso(t);
+			this.ReturnType = ImplementationHelpers.GetTypeInExpresso(t);
 			this.func = Func;
 		}
 

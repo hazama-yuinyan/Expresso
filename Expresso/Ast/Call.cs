@@ -94,7 +94,7 @@ namespace Expresso.Ast
 			var local_vars = fn.LocalVariables;
 			if(local_vars.Any()){					//Checking for its emptiness
 				foreach(var local in local_vars)	//関数内で定義されているローカル変数を予め初期化しておく
-					child.Add(local.Offset, ImplementaionHelpers.GetDefaultValueFor(local.ParamType));
+					child.Add(local.Offset, ImplementationHelpers.GetDefaultValueFor(local.ParamType));
 			}
 
 			return fn.Run(child);

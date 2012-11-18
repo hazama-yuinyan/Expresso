@@ -23,12 +23,15 @@ namespace Expresso.BuiltIns
 		DICT,
 		EXPRESSION,
 		FUNCTION,
+		CLOSURE,
 		SEQ,
 		ARRAY,
 		CLASS,
 		_SUBSCRIPT,
 		_METHOD,
-		_CASE_DEFAULT
+		_CASE_DEFAULT,
+		_LABEL_PRIVATE,
+		_LABEL_PUBLIC
 	};
 	
 	/// <summary>
@@ -61,7 +64,7 @@ namespace Expresso.BuiltIns
 				PublicMembers = publicMembers;
 			}
 
-			public int GetNumberMembers()
+			public int GetNumberOfMembers()
 			{
 				return PrivateMembers.Count + PublicMembers.Count;
 			}
@@ -121,7 +124,7 @@ namespace Expresso.BuiltIns
 			public ExpressoObj(ClassDefinition definition, TYPES objType = TYPES.CLASS)
 			{
 				this.definition = definition;
-				int num_mems = definition.GetNumberMembers();
+				int num_mems = definition.GetNumberOfMembers();
 				this.members = new object[num_mems];
 				for(int i = 0; i < definition.Members.Length; ++i)
 					this.members[i] = definition.Members[i];
@@ -214,18 +217,22 @@ namespace Expresso.BuiltIns
 
 		static private Dictionary<string, ClassDefinition> classes = new Dictionary<string, ClassDefinition>();
 
-		static public void AddClass(string className, ClassDefinition newClass)
+		static public void AddClass(ClassDefinition newClass)
 		{
-			classes.Add(className, newClass);
+			classes.Add(newClass.Name, newClass);
 		}
 
-		static public ExpressoObj CreateInstance(string className)
+		static public ExpressoObj CreateInstance(string className, List<Expression> args, VariableStore varStore)
 		{
 			ClassDefinition target_class;
 			if(!classes.TryGetValue(className, out target_class))
 				throw new EvalException("Can not find the class \"" + className + "\"!");
 
 			var new_instance = new ExpressoObj(target_class);
+			var constructor = new_instance.AccessMember("constructor") as Function;
+			if(constructor != null){
+
+			}
 			return new_instance;
 		}
 	}

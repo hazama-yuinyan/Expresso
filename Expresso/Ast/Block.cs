@@ -27,7 +27,7 @@ namespace Expresso.Ast
         {
             get
             {
-                return ImplementaionHelpers.CollectLocalVars(this);
+                return ImplementationHelpers.CollectLocalVars(this);
             }
         }
 

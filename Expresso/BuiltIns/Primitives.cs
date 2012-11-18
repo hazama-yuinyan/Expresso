@@ -494,7 +494,7 @@ namespace Expresso.BuiltIns
 		/// </summary>
 		public ExpressoFraction Reduce()
 		{
-			var gdc = ImplementaionHelpers.CalcGDC(Numerator, Denominator);
+			var gdc = ImplementationHelpers.CalcGDC(Numerator, Denominator);
 			Numerator /= gdc;
 			Denominator /= gdc;
 			return this;
@@ -508,7 +508,7 @@ namespace Expresso.BuiltIns
 		/// </param>
 		public ExpressoFraction Reduce(ExpressoFraction other)
 		{
-			var lcm = ImplementaionHelpers.CalcLCM(Denominator, other.Denominator);
+			var lcm = ImplementationHelpers.CalcLCM(Denominator, other.Denominator);
 			Numerator *= lcm / Denominator;
 			return new ExpressoFraction(other.Numerator * lcm / other.Denominator, lcm, other.IsPositive);
 		}
