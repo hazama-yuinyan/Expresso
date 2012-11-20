@@ -8,6 +8,11 @@ namespace Expresso.BuiltIns
 {
 	public enum TYPES // types
 	{
+		_SUBSCRIPT = -5,
+		_CASE_DEFAULT = -4,
+		_LABEL_PRIVATE = -3,
+		_LABEL_PUBLIC = -2,
+		_INFERENCE = -1,
 		UNDEF = 0,
 		NULL,
 		INTEGER,
@@ -26,12 +31,7 @@ namespace Expresso.BuiltIns
 		CLOSURE,
 		SEQ,
 		ARRAY,
-		CLASS,
-		_SUBSCRIPT,
-		_METHOD,
-		_CASE_DEFAULT,
-		_LABEL_PRIVATE,
-		_LABEL_PUBLIC
+		CLASS
 	};
 	
 	/// <summary>
@@ -171,7 +171,7 @@ namespace Expresso.BuiltIns
 			/// このインスタンスのメンバーにアクセスする。
 			/// Accesses one of the members of this instance.
 			/// </summary>
-			public object AccessMember(object subscription)
+			public object AccessMember(object subscription, bool isInsideClass)
 			{
 				if(Type == TYPES.DICT){
 					object value = null;
@@ -182,9 +182,14 @@ namespace Expresso.BuiltIns
 					var public_mems = definition.PublicMembers;
 					if(mem_name.Offset == -1){
 						int offset;
-						if(!public_mems.TryGetValue(mem_name.Name, out offset))
-							throw new EvalException(mem_name + " is not accessible.");
+						if(!public_mems.TryGetValue(mem_name.Name, out offset)){
+							if(!isInsideClass)
+								throw new EvalException(mem_name.Name + " is not accessible.");
 
+							var private_mems = definition.PrivateMembers;
+							if(!private_mems.TryGetValue(mem_name.Name, out offset))
+								throw new EvalException(mem_name.Name + " is not defined in the class \"" + ClassName + "\"");
+						}
 						mem_name.Offset = offset;
 					}
 					return members[mem_name.Offset];
@@ -213,15 +218,80 @@ namespace Expresso.BuiltIns
 			{
 				return members[index];
 			}
+
+			public void Assign(int index, object val)
+			{
+				if(Type == TYPES.TUPLE)
+					throw new EvalException("Cannot assign a value on a tuple element!");
+
+				if(Type == TYPES.ARRAY)
+					((object[])members[0])[index] = val;
+				else if(Type == TYPES.LIST)
+					((List<object>)members[0])[index] = val;
+				else
+					throw new EvalException("Unknown seqeuence type!");
+			}
+
+			public void Assign(Identifier target, object val, bool isInsideClass)
+			{
+				var public_mems = definition.PublicMembers;
+				var private_mems = definition.PrivateMembers;
+				if(target.Offset == -1){
+					int offset;
+					if(!public_mems.TryGetValue(target.Name, out offset)){
+						if(isInsideClass){
+							if(!private_mems.TryGetValue(target.Name, out offset))
+								throw new EvalException(ClassName + " doesn't have the member called " + target.Name);
+						}else{
+							throw new EvalException(target.Name + " is not accessible!");
+						}
+					}
+
+					target.Offset = offset;
+				}
+
+				members[target.Offset] = val;
+			}
+
+			public void Assign(object key, object val)
+			{
+				if(Type == TYPES.DICT)
+					((Dictionary<object, object>)members[0])[key] = val;
+				else
+					throw new EvalException("Invalid use of the [] operator!");
+			}
 		}
 
 		static private Dictionary<string, ClassDefinition> classes = new Dictionary<string, ClassDefinition>();
 
+		/// <summary>
+		/// Expressoで定義したクラスを登録する。
+		/// Adds a new class definition.
+		/// </summary>
+		/// <param name='newClass'>
+		/// New class.
+		/// </param>
 		static public void AddClass(ClassDefinition newClass)
 		{
 			classes.Add(newClass.Name, newClass);
 		}
 
+		/// <summary>
+		/// Expressoのオブジェクトを生成する。
+		/// Creates a new instance of an Expresso object.
+		/// </summary>
+		/// <returns>
+		/// The instance.
+		/// </returns>
+		/// <param name='className'>
+		/// The target class name to be constructed.
+		/// </param>
+		/// <param name='args'>
+		/// Arguments that passed to the constructor.
+		/// </param>
+		/// <param name='varStore'>
+		/// The environment.
+		/// </param>
 		static public ExpressoObj CreateInstance(string className, List<Expression> args, VariableStore varStore)
 		{
 			ClassDefinition target_class;
@@ -229,9 +299,16 @@ namespace Expresso.BuiltIns
 				throw new EvalException("Can not find the class \"" + className + "\"!");
 
 			var new_instance = new ExpressoObj(target_class);
-			var constructor = new_instance.AccessMember("constructor") as Function;
+			var constructor = new_instance.AccessMember(new Identifier("constructor"), true) as Function;
 			if(constructor != null){
-
+				var value_this = new Constant{ValType = TYPES.CLASS, Value = new_instance};	//thisの値としてインスタンスを追加する
+				args.Insert(0, value_this);
+				var call_ctor = new Call{
+					Function = constructor,
+					Arguments = args,
+					Reference = null
+				};
+				call_ctor.Run(varStore);
 			}
 			return new_instance;
 		}

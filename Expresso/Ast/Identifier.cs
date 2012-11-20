@@ -7,11 +7,16 @@ using Expresso.Interpreter;
 
 namespace Expresso.Ast
 {
+	public abstract class Assignable : Expression
+	{
+		internal abstract void Assign(VariableStore varStore, object val);
+	}
+
     /// <summary>
     /// 変数。
 	/// Reperesents a variable.
     /// </summary>
-    public class Identifier : Expression
+    public class Identifier : Assignable
     {
         /// <summary>
         /// 変数名。
@@ -71,6 +76,11 @@ namespace Expresso.Ast
 			else
 				return varStore.Get(Offset, Level);
         }
+
+		internal override void Assign(VariableStore varStore, object val)
+		{
+			varStore.Assign(Level, Offset, val);
+		}
 
 		public override string ToString()
 		{

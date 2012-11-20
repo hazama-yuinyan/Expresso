@@ -86,7 +86,17 @@ namespace Expresso.Helpers
 			case TYPES.STRING:
 				return default(string);
 
+			case TYPES.CLASS:
+			case TYPES.CLOSURE:
+			case TYPES.FUNCTION:
+			case TYPES.EXPRESSION:
+			case TYPES.ARRAY:
+			case TYPES.BYTEARRAY:
+			case TYPES.DICT:
+			case TYPES.LIST:
+			case TYPES.TUPLE:
 			case TYPES.VAR:
+			case TYPES._INFERENCE:
 				return null;
 				
 			default:
@@ -171,6 +181,15 @@ namespace Expresso.Helpers
 			return vars;
 		}
 
+		/// <summary>
+		/// Removes the last element of the list.
+		/// </summary>
+		/// <param name='list'>
+		/// The target List.
+		/// </param>
+		/// <typeparam name='T'>
+		/// The element type of the list.
+		/// </typeparam>
 		public static void RemoveLast<T>(this List<T> list)
 		{
 			var len = list.Count;
@@ -178,7 +197,19 @@ namespace Expresso.Helpers
 			list.RemoveAt(len - 1);
 		}
 
-		public static ulong CalcGDC(ulong first, ulong second)
+		/// <summary>
+		/// Calculates the GCD(Greatest common deivisor).
+		/// </summary>
+		/// <returns>
+		/// The GCD of the two unsigned long values.
+		/// </returns>
+		/// <param name='first'>
+		/// First.
+		/// </param>
+		/// <param name='second'>
+		/// Second.
+		/// </param>
+		public static ulong CalcGCD(ulong first, ulong second)
 		{
 			ulong r, a = (first > second) ? first : second, b = (first > second) ? second : first, last = b;
 			while(true){
@@ -190,11 +221,53 @@ namespace Expresso.Helpers
 			
 			return last;
 		}
-		
+
+		/// <summary>
+		/// Calculates the LCM(Least common multiple).
+		/// </summary>
+		/// <returns>
+		/// The LCM of the two unsigned long values.
+		/// </returns>
+		/// <param name='first'>
+		/// First.
+		/// </param>
+		/// <param name='second'>
+		/// Second.
+		/// </param>
 		public static ulong CalcLCM(ulong first, ulong second)
 		{
-			ulong gdc = CalcGDC(first, second);
-			return first * second / gdc;
+			ulong gcd = CalcGCD(first, second);
+			return first * second / gcd;
+		}
+
+		public static ExpressoClass.ClassDefinition GetClassInfoFromRef(Expression reference)
+		{
+			return null;
+		}
+	}
+
+	/// <summary>
+	/// Helper class for manipulating method's info in Expresso.
+	/// </summary>
+	public class MethodContainer
+	{
+		private Function method;
+		private ExpressoClass.ExpressoObj inst;
+
+		/// <summary>
+		/// A function instance that points to the method.
+		/// </summary>
+		public Function Method{get{return this.method;}}
+
+		/// <summary>
+		/// The object on which the method will be called.
+		/// </summary>
+		public ExpressoClass.ExpressoObj Inst{get{return this.inst;}}
+
+		public MethodContainer(Function method, ExpressoClass.ExpressoObj inst)
+		{
+			this.method = method;
+			this.inst = inst;
 		}
 	}
 

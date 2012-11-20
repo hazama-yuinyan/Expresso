@@ -50,8 +50,11 @@ namespace Expresso.Ast
 				rvalues.Add(Expressions[i].Run(varStore));
 
 			for (i = 0; i < Targets.Count; ++i) {	//その後左辺値に代入する
-				Identifier lvalue = (Identifier)Targets[i];
-				varStore.Assign(lvalue.Level, lvalue.Offset, rvalues[i]);
+				var assignable = Targets[i] as Assignable;
+				if(assignable == null)
+					throw new EvalException("Can not assign a value to the target!");
+
+				assignable.Assign(varStore, rvalues[i]);
 			}
 			return rvalues[0];	//x = y = 0;みたいな表記を許容するために右辺値の一番目を戻り値にする
         }

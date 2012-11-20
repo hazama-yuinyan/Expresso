@@ -494,9 +494,9 @@ namespace Expresso.BuiltIns
 		/// </summary>
 		public ExpressoFraction Reduce()
 		{
-			var gdc = ImplementationHelpers.CalcGDC(Numerator, Denominator);
-			Numerator /= gdc;
-			Denominator /= gdc;
+			var gcd = ImplementationHelpers.CalcGCD(Numerator, Denominator);
+			Numerator /= gcd;
+			Denominator /= gcd;
 			return this;
 		}
 

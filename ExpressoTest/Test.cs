@@ -144,8 +144,8 @@ namespace Expresso.Test
 			var expected_x = 100;
 
 			var expected_p = (int)expected_a[0] + (int)expected_a[1] + (int)expected_a[2];
-			var expected_q = (int)expected_b.AccessMember("a") + (int)expected_b.AccessMember("b") +
-				(int)expected_b.AccessMember("y");
+			var expected_q = (int)expected_b.AccessMember("a", true) + (int)expected_b.AccessMember("b", true) +
+				(int)expected_b.AccessMember("y", true);
 			var expected_r = expected_x >> expected_p;
 			var expected_s = expected_x << 2;
 			var expected_t = expected_r & expected_s;

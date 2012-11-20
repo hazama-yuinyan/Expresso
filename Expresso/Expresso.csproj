@@ -72,6 +72,8 @@
     <Compile Include="Ast\Comprehension.cs" />
     <Compile Include="Ast\Identifier.cs" />
     <Compile Include="BuiltIns\ImplementationHelpers.cs" />
+    <Compile Include="Ast\ClassDeclaration.cs" />
+    <Compile Include="Ast\New.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System" />

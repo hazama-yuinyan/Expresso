@@ -118,8 +118,9 @@ namespace Expresso.Interpreter
 			foreach(var global_var in topmost.LocalVariables)	//グローバル変数を予め変数ストアに追加しておく
 				var_store.Add(global_var.Offset, ImplementationHelpers.GetDefaultValueFor(global_var.ParamType));
 
-			foreach(var var_decl in topmost.Statements.OfType<VarDeclaration>().ToArray())
-				var_decl.Run(var_store);
+			foreach(var decl in topmost.Statements.OfType<VarDeclaration>()
+			        .Concat<Node>(topmost.Statements.OfType<ClassDeclaration>()))
+				decl.Run(var_store);
 		}
 
 		public VariableStore GetGlobalVarStore()

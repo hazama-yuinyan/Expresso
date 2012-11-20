@@ -40,7 +40,9 @@ namespace Expresso.Ast
 		Initializer,
 		StatementList,
 		SwitchStatement,
-		CaseClause
+		CaseClause,
+		ClassDecl,
+		New
     }
 
     /// <summary>
