@@ -215,7 +215,7 @@ namespace Expresso.Ast
         {
 			var cond = Condition.Run(varStore) as Nullable<bool>;
 			if(cond == null)
-				throw new EvalException("Cannot evaluate the expression to a boolean.");
+				throw new EvalException("Can not evaluate the expression to a boolean.");
 
 			if((bool)cond){
 				if(Body == null){

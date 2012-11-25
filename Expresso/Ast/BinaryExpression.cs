@@ -56,7 +56,7 @@ namespace Expresso.Ast
         {
             object first = Left.Run(varStore), second = Right.Run(varStore);
 			if(first == null || second == null)
-				throw new EvalException("Can not apply the operation to non-primitive types.");
+				throw new EvalException("Can not apply the operation on null objects.");
 
 			if((int)Operator <= (int)OperatorType.MOD){
 				if(first is int)

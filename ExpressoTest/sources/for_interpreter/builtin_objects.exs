@@ -11,10 +11,12 @@ def main(){
 
 	let d = a[[0..3]];
 	let x (- int;
+	let y = [];
 	for(x in b){
 		print x;
+		y.add(x);
 	}
 	let e = c[2];
 	
-	return [a, b, c, d, e, x];
+	return [a, b, c, d, e, x, y];
 }

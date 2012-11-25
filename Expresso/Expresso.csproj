@@ -74,11 +74,14 @@
     <Compile Include="BuiltIns\ImplementationHelpers.cs" />
     <Compile Include="Ast\ClassDeclaration.cs" />
     <Compile Include="Ast\New.cs" />
+    <Compile Include="Ast\RequireExpression.cs" />
+    <Compile Include="BuiltIns\Library.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Numerics" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Expresso.ATG" />

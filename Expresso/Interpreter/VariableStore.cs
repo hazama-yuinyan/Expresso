@@ -18,7 +18,7 @@ namespace Expresso.Interpreter
 	{
 		/// <summary>
 		/// 親のスコープの変数ストア。
-		/// The parent variable store.
+		/// The parent variable store. It can be null if the store is the root.
 		/// </summary>
 		public VariableStore Parent{get; internal set;}
 		

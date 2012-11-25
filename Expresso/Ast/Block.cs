@@ -57,16 +57,6 @@ namespace Expresso.Ast
             return this.Statements.GetHashCode();
         }
 
-        static int Max(IEnumerable<int> values)
-        {
-            int max = 0;
-            foreach (var v in values)
-            {
-                if (v > max) max = v;
-            }
-            return max;
-        }
-
         internal override object Run(VariableStore varStore)
         {
 			object result = null;

@@ -83,14 +83,14 @@ namespace Expresso.Ast
 							members.Add(obj);
 						}
 					}else{
-						throw new EvalException("A class declaration cannot have that type of statements!");
+						throw new EvalException("A class declaration cann't have that type of statements!");
 					}
 				}else if(decl is Function){
 					var method = (Function)decl;
 					decl_target.Add(method.Name, offset++);
 					members.Add(method);
 				}else{
-					throw new EvalException("A class declaration cannot have that type of statements!");
+					throw new EvalException("A class declaration cann't have that type of statements!");
 				}
 			}
 

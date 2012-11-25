@@ -111,6 +111,17 @@ namespace Expresso.BuiltIns
 		#region Expressoのシーケンス生成関数郡
 		public static ExpressoClass.ExpressoObj MakeTuple(List<object> objs)
 		{
+			if(objs == null)
+				throw new ArgumentNullException("objs");
+
+			return ExpressoTuple.Construct(new ExpressoTuple(objs));
+		}
+
+		public static ExpressoClass.ExpressoObj MakeTuple(object[] objs)
+		{
+			if(objs == null)
+				throw new ArgumentNullException("objs");
+
 			return ExpressoTuple.Construct(new ExpressoTuple(objs));
 		}
 		
@@ -123,53 +134,21 @@ namespace Expresso.BuiltIns
 			return ExpressoDictionary.Construct(tmp);
 		}
 
-		public static ExpressoClass.ExpressoObj MakeList(List<object> objs)
+		public static ExpressoClass.ExpressoObj MakeDict(Dictionary<object, object> dict)
 		{
-			return ExpressoList.Construct(objs);
+			if(dict == null)
+				throw new ArgumentNullException("dict");
+
+			return ExpressoDictionary.Construct(dict);
 		}
 
-		private static IEnumerable<object> SliceImpl(IEnumerable<object> src, ExpressoIntegerSequence seq)
+		public static ExpressoClass.ExpressoObj MakeList(List<object> list)
 		{
-			var enumerator = seq.GetEnumerator();
-			var er = src.GetEnumerator();
-			if(!enumerator.MoveNext() || !er.MoveNext())
-				throw new InvalidOperationException();
+			if(list == null)
+				throw new ArgumentNullException("list");
 
-			do{
-				yield return er.Current;
-			}while(enumerator.MoveNext() && er.MoveNext());
+			return ExpressoList.Construct(list);
 		}
-
-		public static object[] Slice(this object[] src, ExpressoIntegerSequence seq)
-		{
-			var tmp = new List<object>();
-			foreach(var obj in ExpressoFunctions.SliceImpl(src, seq)){
-				tmp.Add(obj);
-			}
-			return tmp.ToArray();
-		}
-
-		public static List<object> Slice(this List<object> src, ExpressoIntegerSequence seq)
-		{
-			var result = new List<object>();
-			foreach(var obj in ExpressoFunctions.SliceImpl(src, seq)){
-				result.Add(obj);
-			}
-			return result;
-		}
-
-		/*public static Dictionary<object, object> Slice(this Dictionary<object, object> src, ExpressoIntegerSequence seq)
-		{
-			var result = new Dictionary<object, object>();
-			foreach(var obj in ExpressoFunctions.SliceImpl(src, seq)){
-				var pair = obj as KeyValuePair<object, object>;
-				if(pair == null)
-					throw new EvalException("Can not evaluate an element to a valid dictionary element.");
-
-				result.Add(pair.Key, pair.Value);
-			}
-			return result;
-		}*/
 		#endregion
 	}
 }

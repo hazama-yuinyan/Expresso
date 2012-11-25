@@ -10,27 +10,32 @@ using Expresso.Helpers;
 COMPILER Expresso
 
 	internal Scope cur_scope = new Scope();		//the current scope of variables
-	static private Scope funcs = new Scope();	//the namespace for funcTable
+	private Scope funcs = new Scope();	//the namespace for funcTable
 	public Block root = new Block();
 	static public Function main_func = null;	//the main function
 	static private List<BreakableStatement> breakables = new List<BreakableStatement>();	//the current parent breakbles
 	bool ignore_parent_scope = false;
 	
-	static Parser()
+	Parser()
 	{			//Add built-in functions
 		Function[] native_funcs = {
-			new NativeFunctionUnary<double, double>(
-				"abs", new Argument{Ident = new Identifier("val", TYPES.FLOAT, 0)}, Math.Abs
+			new NativeFunctionUnaryVal<double, double>(
+				"abs", new Identifier("val", TYPES.FLOAT, 0), Math.Abs
 			),
-			new NativeFunctionUnary<double, double>(
-				"sqrt", new Argument{Ident = new Identifier("val", TYPES.FLOAT, 0)}, Math.Sqrt
+			new NativeFunctionUnaryVal<double, double>(
+				"sqrt", new Identifier("val", TYPES.FLOAT, 0), Math.Sqrt
 			),
-			new NativeFunctionUnary<int, double>(
-				"toInt", new Argument{Ident = new Identifier("val", TYPES.FLOAT, 0)}, (double x) => (int)x
+			new NativeFunctionUnaryVal<int, double>(
+				"toInt", new Identifier("val", TYPES.FLOAT, 0), (double x) => (int)x
 			)
 		};
 		foreach(var tmp in native_funcs)
 			funcs.AddFunction(tmp);
+	}
+	
+	static Parser()
+	{
+		ImplementationHelpers.AddBuiltinObjects();
 	}
 	
 	Constant CreateConstant(TYPES type)
@@ -175,7 +180,12 @@ COMPILER Expresso
 	
 	static Function MakeFunc(string name, List<Argument> parameters, Block body, TYPES returnType)
 	{
-		return new Function{Name = name, Parameters = parameters, Body = body, ReturnType = returnType};
+		return new Function(name, parameters, body, returnType);
+	}
+	
+	static Function MakeClosure(string name, List<Argument> parameters, Block body, TYPES returnType, VariableStore environ)
+	{
+		return new Function(name, parameters, body, returnType, environ);
 	}
 	
 	static UnaryExpression MakeUnaryExpr(OperatorType op, Expression operand)
@@ -243,10 +253,16 @@ COMPILER Expresso
 		return new NewExpression{TargetName = targetName, Arguments = args};
 	}
 	
+	static RequireExpression MakeRequireExpr(string moduleName, string aliasName)
+	{
+		return new RequireExpression{ModuleName = moduleName, AliasName = aliasName};
+	}
+	
 /*--------------------------------------------------------------------------*/
 CHARACTERS
   letter = 'A'..'Z' + 'a'..'z'.
   digit = '0'..'9'.
+  hex_letter = digit + 'a'..'f' + 'A'..'F'.
   cr  = '\r'.
   lf  = '\n'.
   tab = '\t'.
@@ -266,7 +282,8 @@ TOKENS
   ident  = (letter | '_') {'_' | letter | digit}.
   integer = digit {digit}
   			| digit {digit} CONTEXT("..").
-  float = digit {digit} "." {digit} ["e" ["+" | "-"] digit {digit}].
+  float = [digit {digit}] '.' {digit} [('e' | 'E') ['+' | '-'] digit {digit}].
+  hex_digit = '0' ('x' | 'X') hex_letter {hex_letter}.
   string_literal = '"' {quotedLetter} '"'.
   keyword_in = "in".
   keyword_for = "for".
@@ -298,21 +315,30 @@ Expresso                    (. Statement stmt = null; .)
 =
   {RequireStmt<out require>}.*/
 /*------------------------------------------------------------------------*/
-/*RequireStmt<out Statement stmt>
+/*RequireStmt<out Statement stmt>	(. string module_name, alias = ""; var requires = new List<Expression>(); .)
 =
   SYNC
   "require"
-  Module<out module>
-  [  "as"
-     Name<out name>
+  Module<out module_name>
+  [ "as"
+    ident							(. alias = t.val; .)
   ]
-  {  ','
-     Module<out module>
-     [  "as"
-        Name<out name>
-     ]
+  { ','
+    Module<out module>
+    [ "as"
+      ident
+    ]
   }
-  SYNC ';' .*/
+  SYNC ';' 							(. stmt = MakeExprStatement(requires); .).*/
+/*------------------------------------------------------------------------*/
+/*Module<out string name>			(. var sb = new StringBuilder(); .)
+=
+  ident								(. sb.Append(t.val); .)
+  { ( '.'							(. sb.Append('.'); .)
+    | '/'							(. sb.Append('/'); .)
+    )
+    ident							(. sb.Append(t.val); .)
+  }									(. name = sb.ToString(); .).*/
 /*------------------------------------------------------------------------*/
 ClassDecl<out Statement stmt>		(.
 										Expression expr = null; var stmts = new List<Statement>(); List<Expression> decls = null;
@@ -516,16 +542,16 @@ AugAssignOpe<ref OperatorType type>
 /*------------------------------------------------------------------------*/
 ExprStmt<out Statement stmt>					(.
 													List<Expression> targets = null; List<Expression> expr_list;
-													stmt = null; bool trailing_comma; OperatorType op_type = OperatorType.NONE;
+													stmt = null; OperatorType op_type = OperatorType.NONE;
 												.)
 =
-  (  VarDecl<out targets>
-  |  RValueList<out targets>
-    (  AugAssignOpe<ref op_type>
-       RValueList<out expr_list>				(. stmt = MakeAugumentedAssignment(targets, expr_list, op_type); .)
+  ( VarDecl<out targets>
+  | RValueList<out targets>
+    ( AugAssignOpe<ref op_type>
+      RValueList<out expr_list>					(. stmt = MakeAugumentedAssignment(targets, expr_list, op_type); .)
     |
-    {  '='
-	   RValueList<out expr_list>				(. stmt = MakeAssignment(targets, expr_list); .)
+    { '='
+	  RValueList<out expr_list>					(. stmt = MakeAssignment(targets, expr_list); .)
     }
     )
   )SYNC ';' 									(. if(stmt == null) stmt = MakeExprStatement(targets); .).
@@ -1052,6 +1078,7 @@ Variable<out string name>
 Literal<out Expression expr>	(. expr = null; .)
 = 
   integer						(. expr = MakeConstant(TYPES.INTEGER, Convert.ToInt32(t.val)); .)
+  | hex_digit					(. expr = MakeConstant(TYPES.INTEGER, Convert.ToInt32(t.val, 16)); .)
   | float						(. expr = MakeConstant(TYPES.FLOAT, Convert.ToDouble(t.val)); .)
   | string_literal				(. string tmp = t.val;
   								   tmp = tmp.Substring(1, tmp.Length - 2);

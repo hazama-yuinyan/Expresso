@@ -28,9 +28,7 @@ namespace Expresso.BuiltIns
 		DICT,
 		EXPRESSION,
 		FUNCTION,
-		CLOSURE,
 		SEQ,
-		ARRAY,
 		CLASS
 	};
 	
@@ -96,12 +94,11 @@ namespace Expresso.BuiltIns
 			{
 				get{
 					switch(Type){
-					case TYPES.ARRAY:
-						return ((object[])members[0])[index];
-
 					case TYPES.LIST:
-					case TYPES.TUPLE:
 						return ((List<object>)members[0])[index];
+
+					case TYPES.TUPLE:
+						return ((ExpressoTuple)members[0])[index];
 
 					default:
 						return null;
@@ -159,11 +156,13 @@ namespace Expresso.BuiltIns
 			{
 				if(members[0] is IEnumerable<object>){
 					var enumerable = (IEnumerable<object>)members[0];
-					return enumerable.GetEnumerator();
-				}/*else if(members[0] is Dictionary<object, object>){
+					foreach(var tmp in enumerable)
+						yield return tmp;
+				}else if(members[0] is Dictionary<object, object>){
 					var dictionary = (Dictionary<object, object>)members[0];
-					return dictionary.GetEnumerator();
-				}*/else
+					foreach(var tmp in dictionary)
+						yield return tmp;
+				}else
 					throw new EvalException("Can not evaluate the object to an iterable.");
 			}
 
@@ -200,9 +199,6 @@ namespace Expresso.BuiltIns
 					case TYPES.LIST:
 						return ((List<object>)members[0])[index];
 
-					case TYPES.ARRAY:
-						return ((object[])members[0])[index];
-
 					case TYPES.TUPLE:
 						return ((ExpressoTuple)members[0])[index];
 
@@ -219,19 +215,23 @@ namespace Expresso.BuiltIns
 				return members[index];
 			}
 
+			/// <summary>
+			/// Assigns an object on a list at a specified index. An error occurs if the instance is not a Expresso's list.
+			/// </summary>
 			public void Assign(int index, object val)
 			{
 				if(Type == TYPES.TUPLE)
-					throw new EvalException("Cannot assign a value on a tuple element!");
+					throw new EvalException("Can not assign a value on a tuple!");
 
-				if(Type == TYPES.ARRAY)
-					((object[])members[0])[index] = val;
-				else if(Type == TYPES.LIST)
+				if(Type == TYPES.LIST)
 					((List<object>)members[0])[index] = val;
 				else
 					throw new EvalException("Unknown seqeuence type!");
 			}
 
+			/// <summary>
+			/// Assigns an object to a specified field.
+			/// </summary>
 			public void Assign(Identifier target, object val, bool isInsideClass)
 			{
 				var public_mems = definition.PublicMembers;
@@ -253,6 +253,9 @@ namespace Expresso.BuiltIns
 				members[target.Offset] = val;
 			}
 
+			/// <summary>
+			/// Assigns an object to a specified key. An exception would be thrown if the instance is not a Expresso's dictionary.
+			/// </summary>
 			public void Assign(object key, object val)
 			{
 				if(Type == TYPES.DICT)
@@ -260,9 +263,55 @@ namespace Expresso.BuiltIns
 				else
 					throw new EvalException("Invalid use of the [] operator!");
 			}
+
+			/// <summary>
+			/// IntegerSequenceを使ってコンテナの一部の要素をコピーした新しいコンテナを生成する。
+			/// Do the "slice" operation on the container with an IntegerSequence.
+			/// </summary>
+			public ExpressoObj Slice(ExpressoIntegerSequence seq)
+			{
+				ExpressoClass.ExpressoObj result;
+				var er = this.GetEnumerator();
+				var enumerator = seq.GetEnumerator();
+
+				switch(Type){
+				case TYPES.LIST:
+				case TYPES.TUPLE:
+					var tmp = new List<object>();
+					while(er.MoveNext() && enumerator.MoveNext())
+						tmp.Add(er.Current);
+
+					result = (Type == TYPES.LIST) ? ExpressoFunctions.MakeList(tmp) : ExpressoFunctions.MakeTuple(tmp);
+					break;
+
+				case TYPES.DICT:
+					var keys = new List<object>();
+					var values = new List<object>();
+					while(er.MoveNext() && enumerator.MoveNext()){
+						var pair = er.Current as Nullable<KeyValuePair<object, object>>;
+						if(pair == null)
+							throw new EvalException("Can not evaluate an element to a valid dictionary element.");
+
+						keys.Add(pair.Value.Key);
+						values.Add(pair.Value.Value);
+					}
+					result = ExpressoFunctions.MakeDict(keys, values);
+					break;
+		
+				default:
+					throw new EvalException("This object doesn't support slice operation!");
+				}
+
+				return result;
+			}
 		}
 
 		static private Dictionary<string, ClassDefinition> classes = new Dictionary<string, ClassDefinition>();
+
+		/// <summary>
+		/// Dictionary that contains the class definitions.
+		/// </summary>
+		static public Dictionary<string, ClassDefinition> Classes{get{return ExpressoClass.classes;}}
 
 		/// <summary>
 		/// Expressoで定義したクラスを登録する。

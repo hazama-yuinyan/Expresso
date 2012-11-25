@@ -46,7 +46,7 @@ namespace Expresso.Ast
 			object obj;
 			for (int i = 0; i < Variables.Count; ++i) {		//let x = 0, y = 1;みたいな表記しかできない。let x = y = 0;も、
 				obj = Expressions[i].Run(varStore);			//let x, y = 0, 1;も（いまのところ）不可能
-				varStore.Assign(Variables[i].Offset, obj);
+				varStore.Assign(Variables[i].Offset, obj);	//せめて前者には対応したいところ
 			}
 			return null;
         }

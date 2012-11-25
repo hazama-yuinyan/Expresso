@@ -46,8 +46,8 @@ using Expresso.Helpers;
  * 現在はソースコードを解析してASTを生成し、それを直接実行するインタプリタ方式の実装になっているが、将来的にはせめてILぐらいのコードを生成するようにしたい。
  * インタプリタ方式ではあっても、初期の頃の実装とはだいぶ様変わりしており、calc_prime_nums.exsがほぼ同等のPythonコードの４倍程度の速度で動くようになった。
  * 最初の実装では、約１６倍かかっていたことを思えば、大変な進歩である。ここに至るまでに３回の大規模な仕様変更を行なっている。
- * 一度目は、組み込み型すらC#上でクラスを作成していたためにコピーが発生するたびに新たなインスタンスを生成していたのを、基本的な型に関してはC#の組み込み型を
- * 使用するようにしたことである。
+ * 一度目は、組み込み型すらC#上でクラスを作成していたためにコピーが発生するたびに新たなインスタンスを生成していたのを、基本的な型（具体的にはExpresso上の
+ * int, float, string, bool型である）に関してはC#の組み込み型を使用するようにしたことである。
  * 二度目の変更は、暫定的にwhile文によるCのfor文のようなカウントアップ式のイテレーションを行なっていたところをExpresso本来の姿である整数列型とfor文を
  * 使用した形に書き換えたことである。
  * そして、三度目の変更は、シンボルテーブルだけでなく、実行時の変数参照もC#のDictionary型を使用していたところを構文解析時に識別子をメモリーオフセットに
@@ -99,11 +99,34 @@ namespace Expresso.Interpreter
 			
 			return call.Run(var_store);
 		}
+
+		/// <summary>
+		/// あるブロックを対象にExpressoインタープリターを起動する。
+		/// Run the interpreter on a specified block.
+		/// </summary>
+		public object Run(Block root)
+		{
+			if(root == null)
+				throw new ArgumentNullException("root", "Can not evaluate a null block.");
+
+			foreach(var local in root.LocalVariables)	//対象となるブロック内に存在するローカル変数を予め初期化しておく
+				var_store.Add(local.Offset, ImplementationHelpers.GetDefaultValueFor(local.ParamType));
+
+			return root.Run(var_store);
+		}
+
+		public object Run(Node node)
+		{
+			if(node == null)
+				throw new ArgumentNullException("node", "Can not evaluate a null node.");
+
+			return node.Run(var_store);
+		}
 		
 		/// <summary>
-		/// グローバルに存在する変数宣言文を実行して
+		/// グローバルに存在する宣言文を実行して
 		/// グローバルの環境を初期化する。
-		/// Executes all the definitions of variables in global
+		/// Executes all the definition statements in global
 		/// in order to initialize the global environment.
 		/// </summary>
 		/// <exception cref='Exception'>
@@ -115,10 +138,10 @@ namespace Expresso.Interpreter
 			if(topmost == null)
 				throw new Exception("Topmost block not found!");
 
-			foreach(var global_var in topmost.LocalVariables)	//グローバル変数を予め変数ストアに追加しておく
+			foreach(var global_var in topmost.LocalVariables)	//グローバル変数を予め初期化しておく
 				var_store.Add(global_var.Offset, ImplementationHelpers.GetDefaultValueFor(global_var.ParamType));
 
-			foreach(var decl in topmost.Statements.OfType<VarDeclaration>()
+			foreach(var decl in topmost.Statements.OfType<ExprStatement>()
 			        .Concat<Node>(topmost.Statements.OfType<ClassDeclaration>()))
 				decl.Run(var_store);
 		}

@@ -78,20 +78,25 @@ namespace Expresso.Ast
         internal override object Run(VariableStore varStore)
         {
 			var child = new VariableStore{Parent = varStore};
-			bool this_registered = false;
 			Function fn;
+			bool this_registered = false;
 			if(Reference != null){
-				var method = Reference.Run(varStore) as MethodContainer;
-				if(method.Method == null)
-					throw new EvalException("Not callable: " + method.Method.ToString());
+				var obj = Reference.Run(varStore);
+				var method = obj as MethodContainer;
+				if(method == null)
+					throw new EvalException("Not callable: " + obj.ToString());
 
 				fn = method.Method;
 				child.Add(0, method.Inst);	//このメソッド呼び出しのthisオブジェクトを登録する
+				if(Arguments.Count == 0 || Arguments[0] != null)
+					Arguments.Insert(0, null);
+
 				this_registered = true;
 			}else{
     	        fn = Function;
 			}
-			for (int i = (this_registered) ? 1 : 0; i < fn.Parameters.Count; ++i)	//実引数をローカル変数として変数テーブルに追加する
+
+			for(int i = (this_registered) ? 1 : 0; i < fn.Parameters.Count; ++i)	//実引数をローカル変数として変数テーブルに追加する
 				child.Add(fn.Parameters[i].Offset, (i < Arguments.Count) ? Arguments[i].Run(varStore) : fn.Parameters[i].Option.Run(varStore));
 
 			var local_vars = fn.LocalVariables;
@@ -108,4 +113,14 @@ namespace Expresso.Ast
 			return string.Format("[Call for {0} with ({1})]", Name, Arguments);
 		}
     }
+
+	public class CtorCall : Call
+	{
+		internal override object Run(VariableStore varStore)
+		{
+			var ctor = Function;
+			for(int i = (this_registered) ? 1 : 0; i < fn.Parameters.Count; ++i)	//実引数をローカル変数として変数テーブルに追加する
+				child.Add(fn.Parameters[i].Offset, (i < Arguments.Count) ? Arguments[i].Run(varStore) : fn.Parameters[i].Option.Run(varStore));
+		}
+	}
 }

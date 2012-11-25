@@ -44,7 +44,7 @@ public class Parser {
 
 -->declarations
 
-	public Parser(Scanner scanner) {
+	public Parser(Scanner scanner) : this() {
 		this.scanner = scanner;
 		errors = new Errors();
 	}

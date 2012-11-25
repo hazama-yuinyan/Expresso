@@ -42,7 +42,8 @@ namespace Expresso.Ast
 		SwitchStatement,
 		CaseClause,
 		ClassDecl,
-		New
+		New,
+		Require
     }
 
     /// <summary>

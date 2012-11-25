@@ -39,21 +39,10 @@ namespace Expresso.Ast
 				throw new EvalException("Can not evaluate the expression to a valid object.");
 
 			var subscription = Subscription.Run(varStore);
-			if(subscription is ExpressoIntegerSequence){
-				var seq = (ExpressoIntegerSequence)subscription;
-				switch(obj.Type){
-				case TYPES.LIST:
-					return ((List<object>)obj.GetMember(0)).Slice(seq);
-
-				case TYPES.TUPLE:
-					return ((ExpressoTuple)obj.GetMember(0)).Slice(seq);
-
-				case TYPES.ARRAY:
-					return ((object[])obj.GetMember(0)).Slice(seq);
-
-				default:
-					throw new EvalException("Can not apply the slice operation on that type of object!");
-				}
+			var subscript_obj = subscription as ExpressoClass.ExpressoObj;
+			if(subscript_obj != null && subscript_obj.Type == TYPES.SEQ){
+				var seq = (ExpressoIntegerSequence)subscript_obj.GetMember(0);
+				return obj.Slice(seq);
 			}
 
 			var member = obj.AccessMember(subscription, obj == varStore.Get(0, 0));
