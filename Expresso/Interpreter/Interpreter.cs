@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Expresso.Ast;
-using Expresso.BuiltIns;
+using Expresso.Builtins;
 using Expresso.Helpers;
 
 /**
@@ -110,7 +110,7 @@ namespace Expresso.Interpreter
 				throw new ArgumentNullException("root", "Can not evaluate a null block.");
 
 			foreach(var local in root.LocalVariables)	//対象となるブロック内に存在するローカル変数を予め初期化しておく
-				var_store.Add(local.Offset, ImplementationHelpers.GetDefaultValueFor(local.ParamType));
+				var_store.Add(local.Offset, ImplementationHelpers.GetDefaultValueFor(local.ParamType.ObjType));
 
 			return root.Run(var_store);
 		}
@@ -139,7 +139,7 @@ namespace Expresso.Interpreter
 				throw new Exception("Topmost block not found!");
 
 			foreach(var global_var in topmost.LocalVariables)	//グローバル変数を予め初期化しておく
-				var_store.Add(global_var.Offset, ImplementationHelpers.GetDefaultValueFor(global_var.ParamType));
+				var_store.Add(global_var.Offset, ImplementationHelpers.GetDefaultValueFor(global_var.ParamType.ObjType));
 
 			foreach(var decl in topmost.Statements.OfType<ExprStatement>()
 			        .Concat<Node>(topmost.Statements.OfType<ClassDeclaration>()))

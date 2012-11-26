@@ -1,5 +1,5 @@
 using System.Collections.Generic;
-using Expresso.BuiltIns;
+using Expresso.Builtins;
 using Expresso.Interpreter;
 
 namespace Expresso.Ast
@@ -64,7 +64,7 @@ namespace Expresso.Ast
 			if(!(step is int))
 				throw new EvalException("The step expression of the IntSeq expression must yield an integer!");
 
-			return ExpressoIntegerSequence.Construct(new ExpressoIntegerSequence((int)start, (int)end, (int)step));
+			return new ExpressoIntegerSequence((int)start, (int)end, (int)step);
 		}
 	}
 }

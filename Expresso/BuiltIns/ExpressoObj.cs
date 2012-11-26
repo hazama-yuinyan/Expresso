@@ -4,9 +4,9 @@ using System.Collections.Generic;
 using Expresso.Ast;
 using Expresso.Interpreter;
 
-namespace Expresso.BuiltIns
+namespace Expresso.Builtins
 {
-	public enum TYPES // types
+	public enum TYPES
 	{
 		_SUBSCRIPT = -5,
 		_CASE_DEFAULT = -4,
@@ -31,6 +31,27 @@ namespace Expresso.BuiltIns
 		SEQ,
 		CLASS
 	};
+
+	/// <summary>
+	/// Contains type information of Expresso's object.
+	/// </summary>
+	public class TypeAnnotation
+	{
+		public TYPES ObjType{get; internal set;}
+
+		public string TypeName{get; internal set;}
+
+		public TypeAnnotation(TYPES type, string name = null)
+		{
+			ObjType = type;
+			TypeName = name;
+		}
+
+		public override string ToString()
+		{
+			return (TypeName != null) ? string.Format("{0}", TypeName) : string.Format("{0}", ObjType);
+		}
+	}
 	
 	/// <summary>
 	/// Represents a class.
@@ -90,7 +111,7 @@ namespace Expresso.BuiltIns
 				get{return definition.Name;}
 			}
 
-			public object this[int index]
+			/*public object this[int index]
 			{
 				get{
 					switch(Type){
@@ -116,7 +137,7 @@ namespace Expresso.BuiltIns
 					}else
 						return null;
 				}
-			}
+			}*/
 
 			public ExpressoObj(ClassDefinition definition, TYPES objType = TYPES.CLASS)
 			{
@@ -172,11 +193,7 @@ namespace Expresso.BuiltIns
 			/// </summary>
 			public object AccessMember(object subscription, bool isInsideClass)
 			{
-				if(Type == TYPES.DICT){
-					object value = null;
-					((Dictionary<object, object>)members[0]).TryGetValue(subscription, out value);
-					return value;
-				}else if(subscription is Identifier){
+				if(subscription is Identifier){
 					Identifier mem_name = (Identifier)subscription;
 					var public_mems = definition.PublicMembers;
 					if(mem_name.Offset == -1){
@@ -192,19 +209,6 @@ namespace Expresso.BuiltIns
 						mem_name.Offset = offset;
 					}
 					return members[mem_name.Offset];
-				}else if(subscription is int){
-					int index = (int)subscription;
-
-					switch(Type){
-					case TYPES.LIST:
-						return ((List<object>)members[0])[index];
-
-					case TYPES.TUPLE:
-						return ((ExpressoTuple)members[0])[index];
-
-					default:
-						throw new EvalException("Can not apply the [] operator on that type of object!");
-					}
 				}else{
 					throw new EvalException("Invalid use of accessor!");
 				}
@@ -213,20 +217,6 @@ namespace Expresso.BuiltIns
 			public object GetMember(int index)
 			{
 				return members[index];
-			}
-
-			/// <summary>
-			/// Assigns an object on a list at a specified index. An error occurs if the instance is not a Expresso's list.
-			/// </summary>
-			public void Assign(int index, object val)
-			{
-				if(Type == TYPES.TUPLE)
-					throw new EvalException("Can not assign a value on a tuple!");
-
-				if(Type == TYPES.LIST)
-					((List<object>)members[0])[index] = val;
-				else
-					throw new EvalException("Unknown seqeuence type!");
 			}
 
 			/// <summary>
@@ -251,58 +241,6 @@ namespace Expresso.BuiltIns
 				}
 
 				members[target.Offset] = val;
-			}
-
-			/// <summary>
-			/// Assigns an object to a specified key. An exception would be thrown if the instance is not a Expresso's dictionary.
-			/// </summary>
-			public void Assign(object key, object val)
-			{
-				if(Type == TYPES.DICT)
-					((Dictionary<object, object>)members[0])[key] = val;
-				else
-					throw new EvalException("Invalid use of the [] operator!");
-			}
-
-			/// <summary>
-			/// IntegerSequenceを使ってコンテナの一部の要素をコピーした新しいコンテナを生成する。
-			/// Do the "slice" operation on the container with an IntegerSequence.
-			/// </summary>
-			public ExpressoObj Slice(ExpressoIntegerSequence seq)
-			{
-				ExpressoClass.ExpressoObj result;
-				var er = this.GetEnumerator();
-				var enumerator = seq.GetEnumerator();
-
-				switch(Type){
-				case TYPES.LIST:
-				case TYPES.TUPLE:
-					var tmp = new List<object>();
-					while(er.MoveNext() && enumerator.MoveNext())
-						tmp.Add(er.Current);
-
-					result = (Type == TYPES.LIST) ? ExpressoFunctions.MakeList(tmp) : ExpressoFunctions.MakeTuple(tmp);
-					break;
-
-				case TYPES.DICT:
-					var keys = new List<object>();
-					var values = new List<object>();
-					while(er.MoveNext() && enumerator.MoveNext()){
-						var pair = er.Current as Nullable<KeyValuePair<object, object>>;
-						if(pair == null)
-							throw new EvalException("Can not evaluate an element to a valid dictionary element.");
-
-						keys.Add(pair.Value.Key);
-						values.Add(pair.Value.Value);
-					}
-					result = ExpressoFunctions.MakeDict(keys, values);
-					break;
-		
-				default:
-					throw new EvalException("This object doesn't support slice operation!");
-				}
-
-				return result;
 			}
 		}
 

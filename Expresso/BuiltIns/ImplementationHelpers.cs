@@ -3,10 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using System.Text.RegularExpressions;
-using ExprTree = System.Linq.Expressions.Expression;
+using ExprTree = System.Linq.Expressions;
 using Expresso.Ast;
-using Expresso.BuiltIns;
+using Expresso.Builtins;
 using Expresso.Interpreter;
+using Expresso.Builtins.Library;
 
 namespace Expresso.Helpers
 {
@@ -16,23 +17,6 @@ namespace Expresso.Helpers
 	/// </summary>
 	public static class ImplementationHelpers
 	{
-		/// <summary>
-		/// Determines whether the <paramref name="target"/> is of the specified type.
-		/// </summary>
-		/// <returns>
-		/// <c>true</c> if the <paramref name="target"/> is of the specified type; otherwise, <c>false</c>.
-		/// </returns>
-		/// <param name='target'>
-		/// An ExpressoObject to be tested.
-		/// </param>
-		/// <param name='type'>
-		/// The target type that the object will be tested against.
-		/// </param>
-		public static bool IsOfType(TYPES target, TYPES type)
-		{
-			return target == type;
-		}
-
 		public static string Replace(this string str, Regex reg, string replacedWith)
 		{
 			return reg.Replace(str, replacedWith);
@@ -79,6 +63,11 @@ namespace Expresso.Helpers
 				else
 					throw new EvalException(string.Format("{0} is not a primitive type in Expresso.", t.FullName));
 			}
+		}
+
+		public static TypeAnnotation GetTypeAnnoInExpresso(Type t)
+		{
+			return new TypeAnnotation(GetTypeInExpresso(t));
 		}
 
 		public static object GetDefaultValueFor(TYPES type)
@@ -128,7 +117,7 @@ namespace Expresso.Helpers
 				return typeof(BigInteger);
 
 			case TYPES.RATIONAL:
-				return typeof(ExpressoFraction);
+				return typeof(Fraction);
 
 			case TYPES.LIST:
 				return typeof(List<object>);
@@ -147,6 +136,9 @@ namespace Expresso.Helpers
 
 			case TYPES.UNDEF:
 				return typeof(void);
+
+			default:
+				return null;
 			}
 		}
 
@@ -154,7 +146,7 @@ namespace Expresso.Helpers
 		/// C#のオブジェクトを必要に応じてExpressoのオブジェクトに変換する。
 		/// Wraps C#'s object in an Expresso object when needed.
 		/// </summary>
-		public static object WrapObject(object original, TYPES objType)
+		/*public static object WrapObject(object original, TYPES objType)
 		{
 			switch(objType){
 			case TYPES.DICT:
@@ -172,7 +164,7 @@ namespace Expresso.Helpers
 			default:
 				return original;
 			}
-		}
+		}*/
 
 		public static IEnumerable<Identifier> CollectLocalVars(Expression expr)
 		{
@@ -324,21 +316,144 @@ namespace Expresso.Helpers
 			return result;
 		}
 
-		public static void AddBuiltinObjects()
+		/*public static void AddBuiltinObjects()
 		{
 			ExpressoList.AddDefinition();
 			ExpressoDictionary.AddDefinition();
 			ExpressoIntegerSequence.AddDefinition();
 			ExpressoTuple.AddDefinition();
+		}*/
+
+		public static ExprTree.LambdaExpression MakeNativeCtorCall(Type targetType, params Type[] types)
+		{
+			var ctor = targetType.GetConstructor(types);
+			var actual_parameters = ctor.GetParameters();
+			var parameters = new ExprTree.ParameterExpression[actual_parameters.Length];
+			var call_params = new ExprTree.Expression[actual_parameters.Length];
+			for(int i = 0; i < actual_parameters.Length; ++i){
+				parameters[i] = ExprTree.Expression.Parameter(typeof(object), "param" + i);
+				call_params[i] = ExprTree.Expression.Convert(parameters[i], actual_parameters[i].ParameterType);
+			}
+
+			var call = ExprTree.Expression.New(ctor, call_params);
+			return ExprTree.Expression.Lambda(call, parameters);
 		}
 
-		public static ExprTree MakeNativeCtorCall()
+		public static ExprTree.LambdaExpression MakeNativeMethodCall(Type targetType, string methodName, params Type[] types)
 		{
+			var inst_param = ExprTree.Expression.Parameter(typeof(object), "inst");
+			var method = targetType.GetMethod(methodName, types);
+			var actual_parameters = method.GetParameters();
+			var param_len = actual_parameters.Length + 1;	//暗黙のthisとなるインスタンスが存在するため、ラムダ式の引数は１つ多くなる
+			var call_params = new ExprTree.Expression[actual_parameters.Length];
+			var parameters = new ExprTree.ParameterExpression[param_len];
 
+			parameters[0] = inst_param;
+
+			for(int i = 1; i < param_len; ++i){
+				parameters[i] = ExprTree.Expression.Parameter(typeof(object), "param" + i);
+				call_params[i - 1] = ExprTree.Expression.Convert(parameters[i], actual_parameters[i - 1].ParameterType);
+			}
+
+			var call = ExprTree.Expression.Call(ExprTree.Expression.Convert(inst_param, targetType), method, call_params);
+			return ExprTree.Expression.Lambda(call, parameters);
 		}
 
-		public static ExprTree MakeNativeMethodCall(string className, string methodName, List<Argument> args)
+		/// <summary>
+		/// IntegerSequenceを使ってコンテナの一部の要素をコピーした新しいコンテナを生成する。
+		/// Do the "slice" operation on the container with an IntegerSequence.
+		/// </summary>
+		public static object Slice(object src, ExpressoIntegerSequence seq)
 		{
+			object result;
+			var enumerator = seq.GetEnumerator();
+
+			if(src is List<object> || src is ExpressoTuple){
+				var er = ((IEnumerable<object>)src).GetEnumerator();
+				var tmp = new List<object>();
+				while(er.MoveNext() && enumerator.MoveNext())
+					tmp.Add(er.Current);
+					
+				if(src is List<object>)
+					result = tmp;
+				else
+					result = ExpressoFunctions.MakeTuple(tmp);
+			}else if(src is Dictionary<object, object>){
+				var er = ((Dictionary<object, object>)src).GetEnumerator();
+				var keys = new List<object>();
+				var values = new List<object>();
+				while(er.MoveNext() && enumerator.MoveNext()){
+					var pair = er.Current as Nullable<KeyValuePair<object, object>>;
+					if(pair == null)
+						throw new EvalException("Can not evaluate an element to a valid dictionary element.");
+
+					keys.Add(pair.Value.Key);
+					values.Add(pair.Value.Value);
+				}
+				result = ExpressoFunctions.MakeDict(keys, values);
+			}else{
+				throw new EvalException("This object doesn't support slice operation!");
+			}
+
+			return result;
+		}
+
+		public static object AccessMember(object target, object subscription)
+		{
+			if(target is Dictionary<object, object>){
+				object value = null;
+				((Dictionary<object, object>)target).TryGetValue(subscription, out value);
+				return value;
+			}else if(subscription is Identifier){
+				Identifier ident = (Identifier)subscription;
+				Type obj_type = target.GetType();
+				string type_name;
+				if(target is List<object>)
+					type_name = "List";
+				else if(target is Dictionary<object, object>)
+					type_name = "Dictionary";
+				else if(target is ExpressoTuple)
+					type_name = "Tuple";
+				else if(target is ExpressoIntegerSequence)
+					type_name = "IntSeq";
+				else
+					type_name = obj_type.Name;
+
+				return BuiltinNativeMethods.Instance().LookupMethod(type_name, ident.Name);
+			}else if(subscription is int){
+				int index = (int)subscription;
+
+				if(target is List<object>)
+					return ((List<object>)target)[index];
+				else if(target is ExpressoTuple)
+					return ((ExpressoTuple)target)[index];
+				else
+					throw new EvalException("Can not apply the [] operator on that type of object!");
+			}else{
+				throw new EvalException("Invalid use of accessor!");
+			}
+		}
+
+		/// <summary>
+		/// Assigns an object on a list at a specified index(if "collection" is a list) or assigns an object to a specified key
+		/// (if "collection" is a dictionary). An exception would be thrown if the instance is not a valid Expresso's collection.
+		/// </summary>
+		public static void AssignToCollection(object collection, object target, object value)
+		{
+			if(target is int){
+				int index = (int)target;
+				if(collection is List<object>)
+					((List<object>)collection)[index] = value;
+				else if(collection is ExpressoTuple)
+					throw new EvalException("Can not assign a value on a tuple!");
+				else
+					throw new EvalException("Unknown seqeunce type!");
+			}else{
+				if(collection is Dictionary<object, object>)
+					((Dictionary<object, object>)collection)[target] = value;
+				else
+					throw new EvalException("Invalid use of the [] operator!");
+			}
 		}
 	}
 
@@ -348,7 +463,7 @@ namespace Expresso.Helpers
 	public class MethodContainer
 	{
 		private Function method;
-		private ExpressoClass.ExpressoObj inst;
+		private object inst;
 
 		/// <summary>
 		/// A function instance that points to the method.
@@ -358,64 +473,16 @@ namespace Expresso.Helpers
 		/// <summary>
 		/// The object on which the method will be called.
 		/// </summary>
-		public ExpressoClass.ExpressoObj Inst{get{return this.inst;}}
+		public object Inst{get{return this.inst;}}
 
-		public MethodContainer(Function method, ExpressoClass.ExpressoObj inst)
+		public MethodContainer(Function method, object inst)
 		{
 			this.method = method;
 			this.inst = inst;
 		}
 	}
 
-	/// <summary>
-	/// ExpressoのSequenceを生成するクラスの実装用のインターフェイス。
-	/// </summary>
-	public interface SequenceGenerator<Container, Value>
-	{
-		Value Generate();
-		Container Take(int count);
-		Container TakeAll();
-	}
-
-	/// <summary>
-	/// リストのジェネレーター。Comprehension構文から生成される。
-	/// </summary>
-	public class ListGenerator : SequenceGenerator<List<object>, object>
-	{
-		private IEnumerable<object> source;
-
-		public ListGenerator(IEnumerable<object> source)
-		{
-			this.source = source;
-		}
-
-		public object Generate()
-		{
-			return null;
-		}
-
-		public List<object> Take(int count)
-		{
-			var tmp = new List<object>(count);
-			int i = 0;
-			foreach(var elem in source){
-				if(i >= count) break;
-
-				tmp.Add(elem);
-				++i;
-			}
-
-			return tmp;
-		}
-
-		public List<object> TakeAll()
-		{
-			var tmp = new List<object>(source);
-			return tmp;
-		}
-	}
-
-	internal class ExpressoList
+	/*internal class ExpressoList
 	{
 		public static void AddDefinition()
 		{
@@ -564,6 +631,6 @@ namespace Expresso.Helpers
 			definition.Members[0] = inst;
 			return new ExpressoClass.ExpressoObj(definition, TYPES.DICT);
 		}
-	}
+	}*/
 }
 

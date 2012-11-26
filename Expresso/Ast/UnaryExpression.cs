@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-using Expresso.BuiltIns;
+using Expresso.Builtins;
 using Expresso.Interpreter;
 using Expresso.Helpers;
 
@@ -53,8 +53,8 @@ namespace Expresso.Ast
 					ope = -(int)ope;
 				else if(ope is double)
 					ope = -(double)ope;
-				else if(ope is ExpressoFraction)
-					ope = -(ExpressoFraction)ope;
+				else if(ope is Fraction)
+					ope = -(Fraction)ope;
 				else
 					throw new EvalException("The minus operator is not applicable to the operand!");
 			}

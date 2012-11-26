@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Expresso.Ast;
-using Expresso.BuiltIns;
+using Expresso.Builtins;
 using Expresso.Interpreter;
 using Expresso.Helpers;
 
@@ -51,23 +51,25 @@ internal Scope cur_scope = new Scope();		//the current scope of variables
 	static public Function main_func = null;	//the main function
 	static private List<BreakableStatement> breakables = new List<BreakableStatement>();	//the current parent breakbles
 	bool ignore_parent_scope = false;
+	static private readonly TypeAnnotation VoidType = new TypeAnnotation(TYPES.UNDEF);
+	static private readonly TypeAnnotation VariadicType = new TypeAnnotation(TYPES.VAR);
+	static private readonly TypeAnnotation InferenceType = new TypeAnnotation(TYPES._INFERENCE);
 	
 	Parser()
 	{			//Add built-in functions
 		Function[] native_funcs = {
-			new NativeFunctionUnary<double, double>(
-				"abs", new Argument{Ident = new Identifier("val", TYPES.FLOAT, 0)}, Math.Abs
-			),
-			new NativeFunctionUnary<double, double>(
-				"sqrt", new Argument{Ident = new Identifier("val", TYPES.FLOAT, 0)}, Math.Sqrt
-			),
-			new NativeFunctionUnary<int, double>(
-				"toInt", new Argument{Ident = new Identifier("val", TYPES.FLOAT, 0)}, (double x) => (int)x
-			)
+			ExpressoFunctions.Abs,
+			ExpressoFunctions.Sqrt,
+			ExpressoFunctions.ToInt
 		};
 		foreach(var tmp in native_funcs)
 			funcs.AddFunction(tmp);
 	}
+	
+	/*static Parser()
+	{
+		ImplementationHelpers.AddBuiltinObjects();
+	}*/
 	
 	Constant CreateConstant(TYPES type)
 	{
@@ -124,24 +126,25 @@ internal Scope cur_scope = new Scope();		//the current scope of variables
 		return x.kind != _keyword_for;
 	}
 	
-	Identifier DeclareVariable(ref Expression rhs, string name, TYPES type)
+	Identifier DeclareVariable(ref Expression rhs, string name, TypeAnnotation type)
 	{
 		if(rhs == null){
-  			if(type == TYPES._INFERENCE) SemErr("Can not infer the type of the variable \"" + name + "\" without initialization!");
-  			rhs = CreateConstant(type);
+  			if(type.ObjType == TYPES._INFERENCE) SemErr("Can not infer the type of the variable \"" + name + "\" without initialization!");
+  			rhs = CreateConstant(type.ObjType);
   		}else{
-  			if(type == TYPES._INFERENCE){
+  			if(type.ObjType == TYPES._INFERENCE){
   				if(rhs is Constant){
   					var constant = (Constant)rhs;
-  					type = constant.ValType;
+  					type.ObjType = constant.ValType;
   				}else if(rhs is ObjectInitializer){
   					var initializer = (ObjectInitializer)rhs;
-  					type = initializer.ObjType;
+  					type.ObjType = initializer.ObjType;
   				}else if(rhs is Comprehension){
   					var comprehen = (Comprehension)rhs;
-  					type = comprehen.ObjType;
+  					type.ObjType = comprehen.ObjType;
   				}else if(rhs is NewExpression){
-  					type = TYPES.CLASS;
+  					type.ObjType = TYPES.CLASS;
+  					type.TypeName = ((NewExpression)rhs).TargetName;
   				}else if(rhs is Call){
   					var call = (Call)rhs;
   					if(call.Function != null){
@@ -160,7 +163,7 @@ internal Scope cur_scope = new Scope();		//the current scope of variables
  		return variable;
 	}
 	
-	Identifier DeclareArgument(string name, TYPES type)
+	Identifier DeclareArgument(string name, TypeAnnotation type)
 	{
 		var argument = new Identifier(name, type);
 		
@@ -209,12 +212,12 @@ internal Scope cur_scope = new Scope();		//the current scope of variables
 		return new CaseClause{Labels = labels, Body = body};
 	}
 	
-	static Function MakeFunc(string name, List<Argument> parameters, Block body, TYPES returnType)
+	static Function MakeFunc(string name, List<Argument> parameters, Block body, TypeAnnotation returnType)
 	{
 		return new Function(name, parameters, body, returnType);
 	}
 	
-	static Function MakeClosure(string name, List<Argument> parameters, Block body, TYPES returnType, VariableStore environ)
+	static Function MakeClosure(string name, List<Argument> parameters, Block body, TypeAnnotation returnType, VariableStore environ)
 	{
 		return new Function(name, parameters, body, returnType, environ);
 	}
@@ -398,7 +401,7 @@ internal Scope cur_scope = new Scope();		//the current scope of variables
 	}
 
 	void FuncDecl(out Statement func) {
-		string name; TYPES type = TYPES._INFERENCE; Statement block; var @params = new List<Argument>(); 
+		string name; TypeAnnotation type = VariadicType; Statement block; var @params = new List<Argument>(); 
 		while (!(la.kind == 0 || la.kind == 22)) {SynErr(94); Get();}
 		Expect(22);
 		block = null; cur_scope = new Scope{Parent = cur_scope}; 
@@ -454,10 +457,10 @@ internal Scope cur_scope = new Scope();		//the current scope of variables
 				stmts.Add(tmp);
 				
 			} else if (la.kind == 21) {
-				ConstructorDecl(out tmp);
+				ConstructorDecl(out tmp, name);
 				stmts.Add(tmp); 
 			} else if (la.kind == 22) {
-				MethodDecl(out tmp);
+				MethodDecl(out tmp, name);
 				stmts.Add(tmp); 
 			} else {
 				FieldDecl(out decls);
@@ -474,14 +477,14 @@ internal Scope cur_scope = new Scope();		//the current scope of variables
 		
 	}
 
-	void ConstructorDecl(out Statement func) {
+	void ConstructorDecl(out Statement func, string className) {
 		Statement block = null; var @params = new List<Argument>();
 		Identifier ident_this; Argument exs_this = null;
 		
 		while (!(la.kind == 0 || la.kind == 21)) {SynErr(97); Get();}
 		Expect(21);
 		cur_scope = new Scope{Parent = cur_scope};
-		ident_this = DeclareArgument("this", TYPES.CLASS);
+		ident_this = DeclareArgument("this", new TypeAnnotation(TYPES.CLASS, className));
 		exs_this = new Argument{
 		Ident = ident_this,
 		Option = null
@@ -494,19 +497,19 @@ internal Scope cur_scope = new Scope();		//the current scope of variables
 		@params.Insert(0, exs_this); 
 		Expect(8);
 		Block(out block);
-		func = MakeFunc("constructor", @params, (Block)block, TYPES.UNDEF);
+		func = MakeFunc("constructor", @params, (Block)block, VoidType);
 		cur_scope = cur_scope.Parent;
 		
 	}
 
-	void MethodDecl(out Statement func) {
-		string name; TYPES type = TYPES._INFERENCE; Statement block = null; var @params = new List<Argument>();
-		Identifier ident_this; Argument exs_this = null;
+	void MethodDecl(out Statement func, string className) {
+		string name; TypeAnnotation type = VariadicType; Statement block = null;
+		var @params = new List<Argument>(); Identifier ident_this; Argument exs_this = null;
 		
 		while (!(la.kind == 0 || la.kind == 22)) {SynErr(98); Get();}
 		Expect(22);
 		cur_scope = new Scope{Parent = cur_scope};
-		ident_this = DeclareArgument("this", TYPES.CLASS);
+		ident_this = DeclareArgument("this", new TypeAnnotation(TYPES.CLASS, className));
 		exs_this = new Argument{
 		Ident = ident_this,
 		Option = null
@@ -531,7 +534,7 @@ internal Scope cur_scope = new Scope();		//the current scope of variables
 	}
 
 	void FieldDecl(out List<Expression> outs ) {
-		string name; TYPES type = TYPES._INFERENCE; Expression rhs = null; Identifier variable;
+		string name; TypeAnnotation type = InferenceType; Expression rhs = null; Identifier variable;
 		outs = new List<Expression>();
 		var vars = new List<Identifier>(); var exprs = new List<Expression>();
 		
@@ -608,82 +611,87 @@ internal Scope cur_scope = new Scope();		//the current scope of variables
 		
 	}
 
-	void Type(out TYPES type) {
-		type = TYPES.UNDEF; 
+	void Type(out TypeAnnotation type) {
+		type = new TypeAnnotation(TYPES._INFERENCE); 
 		switch (la.kind) {
 		case 26: {
 			Get();
-			type = TYPES.INTEGER; 
+			type.ObjType = TYPES.INTEGER; 
 			break;
 		}
 		case 27: {
 			Get();
-			type = TYPES.BOOL; 
+			type.ObjType = TYPES.BOOL; 
 			break;
 		}
 		case 28: {
 			Get();
-			type = TYPES.FLOAT; 
+			type.ObjType = TYPES.FLOAT; 
 			break;
 		}
 		case 29: {
 			Get();
-			type = TYPES.RATIONAL; 
+			type.ObjType = TYPES.RATIONAL; 
 			break;
 		}
 		case 30: {
 			Get();
-			type = TYPES.BIGINT; 
+			type.ObjType = TYPES.BIGINT; 
 			break;
 		}
 		case 31: {
 			Get();
-			type = TYPES.STRING; 
+			type.ObjType = TYPES.STRING; 
 			break;
 		}
 		case 32: {
 			Get();
-			type = TYPES.BYTEARRAY; 
+			type.ObjType = TYPES.BYTEARRAY; 
 			break;
 		}
 		case 33: {
 			Get();
-			type = TYPES.VAR; 
+			type.ObjType = TYPES.VAR; 
 			break;
 		}
 		case 34: {
 			Get();
-			type = TYPES.TUPLE; 
+			type.ObjType = TYPES.TUPLE; 
 			break;
 		}
 		case 35: {
 			Get();
-			type = TYPES.LIST; 
+			type.ObjType = TYPES.LIST; 
 			break;
 		}
 		case 36: {
 			Get();
-			type = TYPES.DICT; 
+			type.ObjType = TYPES.DICT; 
 			break;
 		}
 		case 37: {
 			Get();
-			type = TYPES.EXPRESSION; 
+			type.ObjType = TYPES.EXPRESSION; 
 			break;
 		}
 		case 38: {
 			Get();
-			type = TYPES.FUNCTION; 
+			type.ObjType = TYPES.FUNCTION; 
 			break;
 		}
 		case 39: {
 			Get();
-			type = TYPES.SEQ; 
+			type.ObjType = TYPES.SEQ; 
 			break;
 		}
 		case 40: {
 			Get();
-			type = TYPES.UNDEF; 
+			type.ObjType = TYPES.UNDEF; 
+			break;
+		}
+		case 11: {
+			Get();
+			type.ObjType = TYPES.CLASS; type.TypeName = t.val; 
 			break;
 		}
 		default: SynErr(101); break;
@@ -894,8 +902,8 @@ internal Scope cur_scope = new Scope();		//the current scope of variables
 	}
 
 	void VarDecl(out List<Expression> outs ) {
-		string name; TYPES type = TYPES._INFERENCE; Expression rhs = null; Identifier variable;
-		outs = new List<Expression>();
+		string name; TypeAnnotation type = InferenceType; Expression rhs = null;
+		Identifier variable; outs = new List<Expression>();
 				var vars = new List<Identifier>(); var exprs = new List<Expression>();
 		
 		Expect(62);
@@ -1148,7 +1156,7 @@ internal Scope cur_scope = new Scope();		//the current scope of variables
 	}
 
 	void Argument(out Argument arg) {
-		string name; Expression default_val = null; TYPES type = TYPES.VAR; 
+		string name; Expression default_val = null; TypeAnnotation type = null; 
 		Variable(out name);
 		if (la.kind == 24) {
 			Get();
@@ -1441,7 +1449,7 @@ internal Scope cur_scope = new Scope();		//the current scope of variables
 		} else if (la.kind == 85) {
 			Get();
 			Expect(11);
-			subscript = new Identifier(t.val, TYPES._SUBSCRIPT);
+			subscript = new Identifier(t.val, new TypeAnnotation(TYPES._SUBSCRIPT));
 			expr = new MemberReference{
 			Parent = expr,
 			Subscription = subscript

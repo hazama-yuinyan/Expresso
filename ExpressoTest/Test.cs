@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using NUnit.Framework;
 using Expresso.Ast;
-using Expresso.BuiltIns;
+using Expresso.Builtins;
 using Expresso.Interpreter;
 using Expresso.Helpers;
 
@@ -28,7 +28,7 @@ namespace Expresso.Test
 			return result;
 		}
 
-		public static void DoTest(ExpressoClass.ExpressoObj targets, object[] expects)
+		public static void DoTest(List<object> targets, object[] expects)
 		{
 			for(int i = 0; i < expects.Length; ++i){
 				var target = targets[i];
@@ -90,7 +90,7 @@ namespace Expresso.Test
 			parser.Parse();
 			var interp = new Expresso.Interpreter.Interpreter{Root = parser.root, MainFunc = Parser.main_func};
 			interp.Initialize();
-			var results = interp.Run() as ExpressoClass.ExpressoObj;
+			var results = interp.Run() as List<object>;
 			Assert.IsNotNull(results);
 
 			var expected = new object[]{
@@ -119,7 +119,7 @@ namespace Expresso.Test
 			parser.Parse();
 			var interp = new Expresso.Interpreter.Interpreter{Root = parser.root, MainFunc = Parser.main_func};
 			interp.Initialize();
-			var results = interp.Run() as ExpressoClass.ExpressoObj;
+			var results = interp.Run() as List<object>;
 			Assert.IsNotNull(results);
 
 			var expected_a = ExpressoFunctions.MakeList(new List<object>{1, 2, 3});
@@ -127,8 +127,7 @@ namespace Expresso.Test
 			var expected_x = 100;
 
 			var expected_p = (int)expected_a[0] + (int)expected_a[1] + (int)expected_a[2];
-			var expected_q = (int)expected_b.AccessMember("a", true) + (int)expected_b.AccessMember("b", true) +
-				(int)expected_b.AccessMember("y", true);
+			var expected_q = (int)expected_b["a"] + (int)expected_b["b"] + (int)expected_b["y"];
 			var expected_r = expected_x >> expected_p;
 			var expected_s = expected_x << 2;
 			var expected_t = expected_r & expected_s;
@@ -159,7 +158,7 @@ namespace Expresso.Test
 			parser.Parse();
 			var interp = new Expresso.Interpreter.Interpreter{Root = parser.root, MainFunc = Parser.main_func};
 			interp.Initialize();
-			var results = interp.Run() as ExpressoClass.ExpressoObj;
+			var results = interp.Run() as List<object>;
 			Assert.IsNotNull(results);
 
 			var expected_y = 200;
@@ -186,7 +185,7 @@ namespace Expresso.Test
 			parser.Parse();
 			var interp = new Expresso.Interpreter.Interpreter{Root = parser.root, MainFunc = Parser.main_func};
 			interp.Initialize();
-			var results = interp.Run() as ExpressoClass.ExpressoObj;
+			var results = interp.Run() as List<object>;
 			Assert.IsNotNull(results);
 
 			var expected_a = ExpressoFunctions.MakeList(new List<object>{1, 2, 3, 4, 5, 6, 7, 8});
@@ -195,7 +194,7 @@ namespace Expresso.Test
 			var expected_c = ExpressoFunctions.MakeTuple(new List<object>{"akarichan", "kawakawa", "chinatsuchan", 2424});
 
 			var tmp_seq = new ExpressoIntegerSequence(0, 3, 1);
-			var expected_d = expected_a.Slice(tmp_seq);
+			var expected_d = ImplementationHelpers.Slice(expected_a, tmp_seq);
 
 			var expected = new object[]{
 				expected_a,
@@ -213,7 +212,7 @@ namespace Expresso.Test
 			parser.Parse();
 			var interp = new Expresso.Interpreter.Interpreter{Root = parser.root, MainFunc = Parser.main_func};
 			interp.Initialize();
-			var results = interp.Run() as ExpressoClass.ExpressoObj;
+			var results = interp.Run() as List<object>;
 			Assert.IsNotNull(results);
 
 			var tmp_x = new List<object>(100);
@@ -262,7 +261,7 @@ namespace Expresso.Test
 			parser.Parse();
 			var interp = new Expresso.Interpreter.Interpreter{Root = parser.root, MainFunc = Parser.main_func};
 			interp.Initialize();
-			var results = interp.Run() as ExpressoClass.ExpressoObj;
+			var results = interp.Run() as List<object>;
 			Assert.IsNotNull(results);
 
 			//var test_definition = new ExpressoClass.ClassDefinition("Test", privates, publics);

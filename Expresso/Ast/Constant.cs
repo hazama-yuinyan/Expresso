@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using Expresso.BuiltIns;
+using Expresso.Builtins;
 using Expresso.Interpreter;
 
 namespace Expresso.Ast

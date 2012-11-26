@@ -3,12 +3,16 @@ using System.Collections.Generic;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Linq;
-using Expresso.BuiltIns;
+using Expresso.Ast;
+using Expresso.Builtins;
 using Expresso.Interpreter;
 using Expresso.Helpers;
 
-namespace Expresso.BuiltIns
+
+namespace Expresso.Builtins
 {
+	using Helpers = Expresso.Helpers.ImplementationHelpers;
+
 	/// <summary>
 	/// Expressoの組み込み関数郡。
 	/// The built-in functions for Expresso.
@@ -20,6 +24,36 @@ namespace Expresso.BuiltIns
 		private static Regex format_refs = new Regex(@"%([0-9.]*)([boxXsdfcueEgG])");
 
 		#region Expressoの組み込み関数郡
+		public static object Abs(object val)
+		{
+			if(val is int)
+				return Math.Abs((int)val);
+			else if(val is double)
+				return Math.Abs((double)val);
+			else
+				return null;
+		}
+
+		public static object Sqrt(object val)
+		{
+			double tmp = 1.0;
+			if(val is int)
+				tmp = (double)((int)val);
+			else if(val is double)
+				tmp = (double)val;
+
+			return Math.Sqrt(tmp);
+		}
+
+		public static object ToInt(object val)
+		{
+			if(val is double)
+				return (int)((double)val);
+			else if(val is int)
+				return val;
+			else
+				return null;
+		}
 		/// <summary>
 		/// Similar to the same named function in Haskell, it takes a certain number of elements
 		/// from a sequence.
@@ -30,10 +64,10 @@ namespace Expresso.BuiltIns
 		/// <param name='count'>
 		/// Count.
 		/// </param>
-		public static List<object> Take(ExpressoIntegerSequence range, int count)
+		/*public static List<object> Take(ExpressoIntegerSequence range, int count)
 		{
 			return range.Take(count);
-		}
+		}*/
 
 		public static ExpressoTuple Zip(params object[] objs)
 		{
@@ -109,47 +143,101 @@ namespace Expresso.BuiltIns
 		}
 		#endregion
 		#region Expressoのシーケンス生成関数郡
-		public static ExpressoClass.ExpressoObj MakeTuple(List<object> objs)
+		public static ExpressoTuple MakeTuple(List<object> objs)
 		{
 			if(objs == null)
 				throw new ArgumentNullException("objs");
 
-			return ExpressoTuple.Construct(new ExpressoTuple(objs));
+			return new ExpressoTuple(objs);
 		}
 
-		public static ExpressoClass.ExpressoObj MakeTuple(object[] objs)
+		public static ExpressoTuple MakeTuple(object[] objs)
 		{
 			if(objs == null)
 				throw new ArgumentNullException("objs");
 
-			return ExpressoTuple.Construct(new ExpressoTuple(objs));
+			return new ExpressoTuple(objs);
 		}
 		
-		public static ExpressoClass.ExpressoObj MakeDict(List<object> keys, List<object> values)
+		public static Dictionary<object, object> MakeDict(List<object> keys, List<object> values)
 		{
 			var tmp = new Dictionary<object, object>(keys.Count);
 			for (int i = 0; i < keys.Count; ++i)
 				tmp.Add(keys[i], values[i]);
 
-			return ExpressoDictionary.Construct(tmp);
+			return tmp;
 		}
 
-		public static ExpressoClass.ExpressoObj MakeDict(Dictionary<object, object> dict)
+		public static Dictionary<object, object> MakeDict(Dictionary<object, object> dict)
 		{
 			if(dict == null)
 				throw new ArgumentNullException("dict");
 
-			return ExpressoDictionary.Construct(dict);
+			return dict;
 		}
 
-		public static ExpressoClass.ExpressoObj MakeList(List<object> list)
+		public static List<object> MakeList(List<object> list)
 		{
 			if(list == null)
 				throw new ArgumentNullException("list");
 
-			return ExpressoList.Construct(list);
+			return list;
 		}
 		#endregion
+	}
+
+	public sealed class BuiltinNativeMethods
+	{
+		private static BuiltinNativeMethods inst = null;
+
+		private Dictionary<string, Dictionary<string, NativeFunctionNAry>> native_methods;
+
+		private BuiltinNativeMethods()
+		{
+			var list = new Dictionary<string, NativeFunctionNAry>{
+				{"add", new NativeFunctionNAry("add", Helpers.MakeNativeMethodCall(typeof(List<object>), "Add", typeof(object)))},
+				{"clear", new NativeFunctionNAry("clear", Helpers.MakeNativeMethodCall(typeof(List<object>), "Clear"))},
+				{"contains", new NativeFunctionNAry("contains", Helpers.MakeNativeMethodCall(typeof(List<object>), "Contains", typeof(object)))}
+			};
+
+			var tuple = new Dictionary<string, NativeFunctionNAry>{
+				{"empty", new NativeFunctionNAry("empty", Helpers.MakeNativeMethodCall(typeof(ExpressoTuple), "Empty"))},
+				{"contains", new NativeFunctionNAry("contains", Helpers.MakeNativeMethodCall(typeof(ExpressoTuple), "Contains", typeof(object)))}
+			};
+
+			var dict = new Dictionary<string, NativeFunctionNAry>{
+				{"add", new NativeFunctionNAry("add", Helpers.MakeNativeMethodCall(typeof(Dictionary<object, object>), "Add", typeof(object), typeof(object)))},
+				{"contains", new NativeFunctionNAry("contains", Helpers.MakeNativeMethodCall(typeof(Dictionary<object, object>), "ContainsKey", typeof(object)))},
+				{"remove", new NativeFunctionNAry("remove", Helpers.MakeNativeMethodCall(typeof(Dictionary<object, object>), "Remove", typeof(object)))},
+			};
+
+			native_methods = new Dictionary<string, Dictionary<string, NativeFunctionNAry>>{
+				{"List", list},
+				{"Tuple", tuple},
+				{"Dictionary", dict}
+			};
+		}
+
+		public static BuiltinNativeMethods Instance()
+		{
+			if(inst == null)
+				inst = new BuiltinNativeMethods();
+
+			return inst;
+		}
+
+		public NativeFunctionNAry LookupMethod(string typeName, string methodName)
+		{
+			Dictionary<string, NativeFunctionNAry> type_dict;
+			if(!native_methods.TryGetValue(typeName, out type_dict))
+				throw new EvalException(typeName + " is not a native class name!");
+
+			NativeFunctionNAry method;
+			if(!type_dict.TryGetValue(methodName, out method))
+				throw new EvalException(typeName + " doesn't have the method \"" + methodName + "\".");
+
+			return method;
+		}
 	}
 }
 

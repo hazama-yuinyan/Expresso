@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Expresso.Ast;
-using Expresso.BuiltIns;
+using Expresso.Builtins;
 using Expresso.Interpreter;
 using Expresso.Helpers;
 
@@ -15,28 +15,25 @@ COMPILER Expresso
 	static public Function main_func = null;	//the main function
 	static private List<BreakableStatement> breakables = new List<BreakableStatement>();	//the current parent breakbles
 	bool ignore_parent_scope = false;
+	static private readonly TypeAnnotation VoidType = new TypeAnnotation(TYPES.UNDEF);
+	static private readonly TypeAnnotation VariadicType = new TypeAnnotation(TYPES.VAR);
+	static private readonly TypeAnnotation InferenceType = new TypeAnnotation(TYPES._INFERENCE);
 	
 	Parser()
 	{			//Add built-in functions
 		Function[] native_funcs = {
-			new NativeFunctionUnaryVal<double, double>(
-				"abs", new Identifier("val", TYPES.FLOAT, 0), Math.Abs
-			),
-			new NativeFunctionUnaryVal<double, double>(
-				"sqrt", new Identifier("val", TYPES.FLOAT, 0), Math.Sqrt
-			),
-			new NativeFunctionUnaryVal<int, double>(
-				"toInt", new Identifier("val", TYPES.FLOAT, 0), (double x) => (int)x
-			)
+			new NativeLambdaUnary("abs", new Identifier("val", new TypeAnnotation(TYPES.VAR), 0), ExpressoFunctions.Abs),
+			new NativeLambdaUnary("sqrt", new Identifier("val", new TypeAnnotation(TYPES.VAR), 0), ExpressoFunctions.Sqrt),
+			new NativeLambdaUnary("toInt", new Identifier("val", new TypeAnnotation(TYPES.VAR), 0), ExpressoFunctions.ToInt)
 		};
 		foreach(var tmp in native_funcs)
 			funcs.AddFunction(tmp);
 	}
 	
-	static Parser()
+	/*static Parser()
 	{
 		ImplementationHelpers.AddBuiltinObjects();
-	}
+	}*/
 	
 	Constant CreateConstant(TYPES type)
 	{
@@ -93,24 +90,25 @@ COMPILER Expresso
 		return x.kind != _keyword_for;
 	}
 	
-	Identifier DeclareVariable(ref Expression rhs, string name, TYPES type)
+	Identifier DeclareVariable(ref Expression rhs, string name, TypeAnnotation type)
 	{
 		if(rhs == null){
-  			if(type == TYPES._INFERENCE) SemErr("Can not infer the type of the variable \"" + name + "\" without initialization!");
-  			rhs = CreateConstant(type);
+  			if(type.ObjType == TYPES._INFERENCE) SemErr("Can not infer the type of the variable \"" + name + "\" without initialization!");
+  			rhs = CreateConstant(type.ObjType);
   		}else{
-  			if(type == TYPES._INFERENCE){
+  			if(type.ObjType == TYPES._INFERENCE){
   				if(rhs is Constant){
   					var constant = (Constant)rhs;
-  					type = constant.ValType;
+  					type.ObjType = constant.ValType;
   				}else if(rhs is ObjectInitializer){
   					var initializer = (ObjectInitializer)rhs;
-  					type = initializer.ObjType;
+  					type.ObjType = initializer.ObjType;
   				}else if(rhs is Comprehension){
   					var comprehen = (Comprehension)rhs;
-  					type = comprehen.ObjType;
+  					type.ObjType = comprehen.ObjType;
   				}else if(rhs is NewExpression){
-  					type = TYPES.CLASS;
+  					type.ObjType = TYPES.CLASS;
+  					type.TypeName = ((NewExpression)rhs).TargetName;
   				}else if(rhs is Call){
   					var call = (Call)rhs;
   					if(call.Function != null){
@@ -129,7 +127,7 @@ COMPILER Expresso
  		return variable;
 	}
 	
-	Identifier DeclareArgument(string name, TYPES type)
+	Identifier DeclareArgument(string name, TypeAnnotation type)
 	{
 		var argument = new Identifier(name, type);
 		
@@ -178,12 +176,12 @@ COMPILER Expresso
 		return new CaseClause{Labels = labels, Body = body};
 	}
 	
-	static Function MakeFunc(string name, List<Argument> parameters, Block body, TYPES returnType)
+	static Function MakeFunc(string name, List<Argument> parameters, Block body, TypeAnnotation returnType)
 	{
 		return new Function(name, parameters, body, returnType);
 	}
 	
-	static Function MakeClosure(string name, List<Argument> parameters, Block body, TYPES returnType, VariableStore environ)
+	static Function MakeClosure(string name, List<Argument> parameters, Block body, TypeAnnotation returnType, VariableStore environ)
 	{
 		return new Function(name, parameters, body, returnType, environ);
 	}
@@ -305,7 +303,8 @@ Expresso                    (. Statement stmt = null; .)
   | FuncDecl<out stmt>
   | ClassDecl<out stmt>
   )							(. root.Statements.Add(stmt); .)
-  { ( ExprStmt<out stmt>
+  { 
+    ( ExprStmt<out stmt>
     | FuncDecl<out stmt>
     | ClassDecl<out stmt>
     )						(. root.Statements.Add(stmt); .)
@@ -334,7 +333,8 @@ Expresso                    (. Statement stmt = null; .)
 /*Module<out string name>			(. var sb = new StringBuilder(); .)
 =
   ident								(. sb.Append(t.val); .)
-  { ( '.'							(. sb.Append('.'); .)
+  { 
+    ( '.'							(. sb.Append('.'); .)
     | '/'							(. sb.Append('/'); .)
     )
     ident							(. sb.Append(t.val); .)
@@ -355,15 +355,16 @@ ClassDecl<out Statement stmt>		(.
     }
   ]
   '{'
-  { ( "public"						(. expr = MakeConstant(TYPES._LABEL_PUBLIC, null); .)
+  { 
+    ( "public"						(. expr = MakeConstant(TYPES._LABEL_PUBLIC, null); .)
     | "private"						(. expr = MakeConstant(TYPES._LABEL_PRIVATE, null); .)
     )
     ':'								(.
     									tmp = MakeExprStatement(new List<Expression>{expr});
     									stmts.Add(tmp);
     								.)
-  | ConstructorDecl<out tmp>		(. stmts.Add(tmp); .)
-  | MethodDecl<out tmp>				(. stmts.Add(tmp); .)
+  | ConstructorDecl<out tmp, name>	(. stmts.Add(tmp); .)
+  | MethodDecl<out tmp, name>		(. stmts.Add(tmp); .)
   | FieldDecl<out decls>			
     ';'								(.
   										tmp = MakeExprStatement(decls);
@@ -375,15 +376,15 @@ ClassDecl<out Statement stmt>		(.
   										cur_scope = cur_scope.Parent;
   									.) .
 /*------------------------------------------------------------------------*/
-ConstructorDecl<out Statement func>	(. 
-										Statement block = null; var @params = new List<Argument>();
-										Identifier ident_this; Argument exs_this = null;
-									.)
+ConstructorDecl<out Statement func, string className>	(. 
+															Statement block = null; var @params = new List<Argument>();
+															Identifier ident_this; Argument exs_this = null;
+														.)
 =
   SYNC
   "constructor"					(. 
   									cur_scope = new Scope{Parent = cur_scope};
-  									ident_this = DeclareArgument("this", TYPES.CLASS);
+  									ident_this = DeclareArgument("this", new TypeAnnotation(TYPES.CLASS, className));
   									exs_this = new Argument{
   										Ident = ident_this,
   										Option = null
@@ -393,19 +394,19 @@ ConstructorDecl<out Statement func>	(.
   [ParamList<ref @params>]		(. @params.Insert(0, exs_this); .)
   ')'
   Block<out block> 				(.
-  									func = MakeFunc("constructor", @params, (Block)block, TYPES.UNDEF);
+  									func = MakeFunc("constructor", @params, (Block)block, VoidType);
   									cur_scope = cur_scope.Parent;
   								.).
 /*------------------------------------------------------------------------*/
-MethodDecl<out Statement func>  (.
-									string name; TYPES type = TYPES._INFERENCE; Statement block = null; var @params = new List<Argument>();
-									Identifier ident_this; Argument exs_this = null;
-								.)
+MethodDecl<out Statement func, string className>  (.
+													string name; TypeAnnotation type = VariadicType; Statement block = null;
+													var @params = new List<Argument>(); Identifier ident_this; Argument exs_this = null;
+												  .)
 =
   SYNC
   "def"							(.
   									cur_scope = new Scope{Parent = cur_scope};
-  									ident_this = DeclareArgument("this", TYPES.CLASS);
+  									ident_this = DeclareArgument("this", new TypeAnnotation(TYPES.CLASS, className));
   									exs_this = new Argument{
   										Ident = ident_this,
   										Option = null
@@ -415,15 +416,15 @@ MethodDecl<out Statement func>  (.
   '('
   [ParamList<ref @params>]		(. @params.Insert(0, exs_this); .)
   ')'
-  [  "->"
-     Type<out type>
+  [ "->"
+    Type<out type>
   ]
   Block<out block> 				(.
   									func = MakeFunc(name, @params, (Block)block, type);
   									cur_scope = cur_scope.Parent;
   								.).
 /*------------------------------------------------------------------------*/
-FieldDecl<. out List<Expression> outs .> (. string name; TYPES type = TYPES._INFERENCE; Expression rhs = null; Identifier variable;
+FieldDecl<. out List<Expression> outs .> (. string name; TypeAnnotation type = InferenceType; Expression rhs = null; Identifier variable;
 											outs = new List<Expression>();
 								   			var vars = new List<Identifier>(); var exprs = new List<Expression>();
 										 .)
@@ -448,9 +449,9 @@ FieldDecl<. out List<Expression> outs .> (. string name; TYPES type = TYPES._INF
    	  Type<out type>
   	]
   	[ '='
-  	  (  IF(NotFollowedByDoubleDots())
-	     CondExpr<out rhs>
-	  |  IntSeqExpr<out rhs>
+  	  ( IF(NotFollowedByDoubleDots())
+	    CondExpr<out rhs>
+	  | IntSeqExpr<out rhs>
 	  )
   	]
   }								(.
@@ -464,23 +465,24 @@ FieldDecl<. out List<Expression> outs .> (. string name; TYPES type = TYPES._INF
   					   	   			});
   								.).
 /*------------------------------------------------------------------------*/
-Type<out TYPES type>
-=                        (. type = TYPES.UNDEF; .)
- ( "int"                 (. type = TYPES.INTEGER; .)
- | "bool"                (. type = TYPES.BOOL; .)
- | "float"				 (. type = TYPES.FLOAT; .)
- | "rational"			 (. type = TYPES.RATIONAL; .)
- | "bigint"				 (. type = TYPES.BIGINT; .)
- | "string"				 (. type = TYPES.STRING; .)
- | "bytearray"			 (. type = TYPES.BYTEARRAY; .)
- | "var"				 (. type = TYPES.VAR; .)
- | "tuple"				 (. type = TYPES.TUPLE; .)
- | "list"				 (. type = TYPES.LIST; .)
- | "dictionary"			 (. type = TYPES.DICT; .)
- | "expression"			 (. type = TYPES.EXPRESSION; .)
- | "function"			 (. type = TYPES.FUNCTION; .)
- | "intseq"				 (. type = TYPES.SEQ; .)
- | "void"				 (. type = TYPES.UNDEF; .)
+Type<out TypeAnnotation type>		(. type = new TypeAnnotation(TYPES._INFERENCE); .)
+=
+ ( "int"                			(. type.ObjType = TYPES.INTEGER; .)
+ | "bool"               			(. type.ObjType = TYPES.BOOL; .)
+ | "float"							(. type.ObjType = TYPES.FLOAT; .)
+ | "rational"						(. type.ObjType = TYPES.RATIONAL; .)
+ | "bigint"							(. type.ObjType = TYPES.BIGINT; .)
+ | "string"							(. type.ObjType = TYPES.STRING; .)
+ | "bytearray"						(. type.ObjType = TYPES.BYTEARRAY; .)
+ | "var"							(. type.ObjType = TYPES.VAR; .)
+ | "tuple"							(. type.ObjType = TYPES.TUPLE; .)
+ | "list"							(. type.ObjType = TYPES.LIST; .)
+ | "dictionary"						(. type.ObjType = TYPES.DICT; .)
+ | "expression"						(. type.ObjType = TYPES.EXPRESSION; .)
+ | "function"						(. type.ObjType = TYPES.FUNCTION; .)
+ | "intseq"							(. type.ObjType = TYPES.SEQ; .)
+ | "void"							(. type.ObjType = TYPES.UNDEF; .)
+ | ident							(. type.ObjType = TYPES.CLASS; type.TypeName = t.val; .)
  ).
 /*------------------------------------------------------------------------*/
 Stmt<out Statement stmt>			(. stmt = null; .)
@@ -513,48 +515,49 @@ ReturnStmt<out Statement stmt>		(. List<Expression> target_list = new List<Expre
 BreakStmt<out Statement stmt>		(. int count = 1; .)
 =
   "break"
-  [  "upto"
-     integer						(. count = Convert.ToInt32(t.val); .)
+  [ "upto"
+    integer							(. count = Convert.ToInt32(t.val); .)
   ]
   SYNC ';' 							(. stmt = MakeBreakStatement(count); .).
 /*------------------------------------------------------------------------*/
 ContinueStmt<out Statement stmt>	(. int count = 1; .)
 = 
   "continue"
-  [  "upto"
-     integer						(. count = Convert.ToInt32(t.val); .)
+  [ "upto"
+    integer							(. count = Convert.ToInt32(t.val); .)
   ]
   SYNC ';' 							(. stmt = new ContinueStatement{Count = count}; .).
 /*------------------------------------------------------------------------*/
 AugAssignOpe<ref OperatorType type>
 =
-  (  "+="							(. type = OperatorType.PLUS; .)
-  |  "-="							(. type = OperatorType.MINUS; .)
-  |  "*="							(. type = OperatorType.TIMES; .)
-  |  "/="							(. type = OperatorType.DIV; .)
-  |  "**="							(. type = OperatorType.POWER; .)
-  |  "%="							(. type = OperatorType.MOD; .)
-  |  "&="							(. type = OperatorType.BIT_AND; .)
-  |  "|="							(. type = OperatorType.BIT_OR; .)
-  |  "<<="							(. type = OperatorType.BIT_LSHIFT; .)
-  |  ">>="							(. type = OperatorType.BIT_RSHIFT; .)
+  ( "+="							(. type = OperatorType.PLUS; .)
+  | "-="							(. type = OperatorType.MINUS; .)
+  | "*="							(. type = OperatorType.TIMES; .)
+  | "/="							(. type = OperatorType.DIV; .)
+  | "**="							(. type = OperatorType.POWER; .)
+  | "%="							(. type = OperatorType.MOD; .)
+  | "&="							(. type = OperatorType.BIT_AND; .)
+  | "|="							(. type = OperatorType.BIT_OR; .)
+  | "<<="							(. type = OperatorType.BIT_LSHIFT; .)
+  | ">>="							(. type = OperatorType.BIT_RSHIFT; .)
   ).
 /*------------------------------------------------------------------------*/
-ExprStmt<out Statement stmt>					(.
-													List<Expression> targets = null; List<Expression> expr_list;
-													stmt = null; OperatorType op_type = OperatorType.NONE;
-												.)
+ExprStmt<out Statement stmt>				(.
+												List<Expression> targets = null; List<Expression> expr_list;
+												stmt = null; OperatorType op_type = OperatorType.NONE;
+											.)
 =
   ( VarDecl<out targets>
   | RValueList<out targets>
     ( AugAssignOpe<ref op_type>
-      RValueList<out expr_list>					(. stmt = MakeAugumentedAssignment(targets, expr_list, op_type); .)
+      RValueList<out expr_list>				(. stmt = MakeAugumentedAssignment(targets, expr_list, op_type); .)
     |
     { '='
-	  RValueList<out expr_list>					(. stmt = MakeAssignment(targets, expr_list); .)
+	  RValueList<out expr_list>				(. stmt = MakeAssignment(targets, expr_list); .)
     }
     )
-  )SYNC ';' 									(. if(stmt == null) stmt = MakeExprStatement(targets); .).
+  )
+  SYNC ';' 									(. if(stmt == null) stmt = MakeExprStatement(targets); .).
 /*------------------------------------------------------------------------*/
 Block<out Statement block>			(. Block tmp; Statement stmt; .)
 =
@@ -585,7 +588,7 @@ IfStmt<out Statement stmt>			(. Expression tmp; Statement true_block, false_bloc
   '(' CondExpr<out tmp> ')'
   Stmt<out true_block>
   [ "else"
-     Stmt<out false_block>
+    Stmt<out false_block>
   ]                      			(. stmt = MakeIfStatement(tmp, true_block, false_block); .).
 /*------------------------------------------------------------------------*/
 WhileStmt<out Statement stmt>		(. Expression cond; Statement body = null; WhileStatement tmp; .)
@@ -616,9 +619,9 @@ ForStmt<out Statement stmt>				(.
   | LValueList<out target_list>
   )
   "in"
-  (  IF(NotFollowedByDoubleDots())
-     CondExpr<out rvalue>
-  |  IntSeqExpr<out rvalue>
+  ( IF(NotFollowedByDoubleDots())
+    CondExpr<out rvalue>
+  | IntSeqExpr<out rvalue>
   )
   ')'
   Stmt<out body>					(. 
@@ -644,14 +647,14 @@ CaseClauseList<. out List<CaseClause> clauses .>	(. clauses = new List<CaseClaus
 =
   CaseLabelList<out label_list>
   Stmt<out inner>									(. clauses.Add(MakeCaseClause(label_list, inner)); .)
-  {  CaseLabelList<out label_list>
-     Stmt<out inner>								(. clauses.Add(MakeCaseClause(label_list, inner)); .)
+  { CaseLabelList<out label_list>
+    Stmt<out inner>									(. clauses.Add(MakeCaseClause(label_list, inner)); .)
   }.
 /*------------------------------------------------------------------------*/
 CaseLabelList<. out List<Expression> label_list .>	(. label_list = new List<Expression>(); Expression tmp; .)
 =
   CaseLabel<out tmp>								(. label_list.Add(tmp); .)
-  {  CaseLabel<out tmp>								(. label_list.Add(tmp); .)
+  { CaseLabel<out tmp>								(. label_list.Add(tmp); .)
   }.
 /*------------------------------------------------------------------------*/
 CaseLabel<out Expression expr>						(. expr = null; .)
@@ -690,8 +693,8 @@ LValueListWithLet<. out List<Expression> targets .>	(. Expression tmp; Identifie
   }.
 /*------------------------------------------------------------------------*/
 VarDecl<. out List<Expression> outs .> 	(.
-											string name; TYPES type = TYPES._INFERENCE; Expression rhs = null; Identifier variable;
-											outs = new List<Expression>();
+											string name; TypeAnnotation type = InferenceType; Expression rhs = null;
+											Identifier variable; outs = new List<Expression>();
 								   			var vars = new List<Identifier>(); var exprs = new List<Expression>();
 										.)
 = 
@@ -716,9 +719,9 @@ VarDecl<. out List<Expression> outs .> 	(.
    	  Type<out type>
   	]
   	[ '='
-  	  (  IF(NotFollowedByDoubleDots())
-	     CondExpr<out rhs>
-	  |  IntSeqExpr<out rhs>
+  	  ( IF(NotFollowedByDoubleDots())
+	    CondExpr<out rhs>
+	  | IntSeqExpr<out rhs>
 	  )
   	]
   }								(.
@@ -732,7 +735,7 @@ VarDecl<. out List<Expression> outs .> 	(.
   					   	   			});
   								.).
 /*------------------------------------------------------------------------*/
-FuncDecl<out Statement func>    (. string name; TYPES type = TYPES._INFERENCE; Statement block; var @params = new List<Argument>(); .)
+FuncDecl<out Statement func>    (. string name; TypeAnnotation type = VariadicType; Statement block; var @params = new List<Argument>(); .)
 =
   SYNC
   "def"							(. block = null; cur_scope = new Scope{Parent = cur_scope}; .)
@@ -755,7 +758,7 @@ ParamList<. ref List<Argument> @params .>		(. Argument expr; .)
     Argument<out expr>							(. @params.Add(expr); .)
   }.
 /*------------------------------------------------------------------------*/
-Argument<out Argument arg>		(. string name; Expression default_val = null; TYPES type = TYPES.VAR; .)
+Argument<out Argument arg>		(. string name; Expression default_val = null; TypeAnnotation type = null; .)
 =
   Variable<out name>
   [ "(-"
@@ -810,16 +813,14 @@ IntSeqExpr<out Expression expr>		(. Expression start = null, end = null, step = 
 OrTest<out Expression expr>			(. Expression rhs; .)
 =
   AndTest<out expr>
-  {
-    "or"
+  { "or"
     AndTest<out rhs>				(. expr = MakeBinaryExpr(OperatorType.OR, expr, rhs); .)
   }.
 /*------------------------------------------------------------------------*/
 AndTest<out Expression expr>		(. Expression rhs; .)
 =
   NotTest<out expr>
-  {
-    "and"
+  { "and"
     NotTest<out rhs>				(. expr = MakeBinaryExpr(OperatorType.AND, expr, rhs); .)
   }.
 /*------------------------------------------------------------------------*/
@@ -847,28 +848,29 @@ Comparison<out Expression expr>		(. Expression rhs; OperatorType type; .)
 BitOr<out Expression expr>			(. Expression rhs; .)
 =
   BitXor<out expr>
-  {  '|'
-     BitXor<out rhs>				(. expr = MakeBinaryExpr(OperatorType.BIT_OR, expr, rhs); .)
+  { '|'
+    BitXor<out rhs>					(. expr = MakeBinaryExpr(OperatorType.BIT_OR, expr, rhs); .)
   }.
 /*------------------------------------------------------------------------*/
 BitXor<out Expression expr>			(. Expression rhs; .)
 =
   BitAnd<out expr>
-  {  '^'
-     BitAnd<out rhs>				(. expr = MakeBinaryExpr(OperatorType.BIT_XOR, expr, rhs); .)
+  { '^'
+    BitAnd<out rhs>					(. expr = MakeBinaryExpr(OperatorType.BIT_XOR, expr, rhs); .)
   }.
 /*------------------------------------------------------------------------*/
 BitAnd<out Expression expr>			(. Expression rhs; .)
 =
   ShiftOpe<out expr>
-  {  '&'
-     ShiftOpe<out rhs>				(. expr = MakeBinaryExpr(OperatorType.BIT_AND, expr, rhs); .)
+  { '&'
+    ShiftOpe<out rhs>				(. expr = MakeBinaryExpr(OperatorType.BIT_AND, expr, rhs); .)
   }.
 /*------------------------------------------------------------------------*/
 ShiftOpe<out Expression expr>		(. Expression rhs; OperatorType type; .)
 =
   AddOpe<out expr>
-  { ( "<<" 							(. type = OperatorType.BIT_LSHIFT; .)
+  {
+  	( "<<" 							(. type = OperatorType.BIT_LSHIFT; .)
     | ">>"							(. type = OperatorType.BIT_RSHIFT; .)
     )
     AddOpe<out rhs>					(. expr = MakeBinaryExpr(type, expr, rhs); .)
@@ -910,20 +912,21 @@ PowerOpe<out Expression expr>    (. Expression rhs; .)
     Factor<out rhs>              (. expr = MakeBinaryExpr(OperatorType.POWER, expr, rhs); .)
   ].
 /*------------------------------------------------------------------------*/
-Primary<out Expression expr>	(. string name = ""; expr = null; var args = new List<Expression>(); .)
+Primary<out Expression expr>		(. string name = ""; expr = null; var args = new List<Expression>(); .)
 =
-  ( (  IF(IdentIsNotCallable())
-       Atom<out expr>
-    |  ident						(. name = t.val; .)
+  ( 
+    ( IF(IdentIsNotCallable())
+      Atom<out expr>
+    | ident							(. name = t.val; .)
     )
-    {  Trailer<ref expr, name>
+    { Trailer<ref expr, name>
     }
   )
   | "new"
-    ident						(. name = t.val; .)
+    ident							(. name = t.val; .)
     '('
     [ArgList<ref args>]
-    ')'							(. expr = MakeNewExpr(name, args); .).
+    ')'								(. expr = MakeNewExpr(name, args); .).
 /*------------------------------------------------------------------------*/
 Trailer<ref Expression expr, string name>	(. Function func; var args = new List<Expression>(); Expression subscript; .)
 =
@@ -956,7 +959,7 @@ Trailer<ref Expression expr, string name>	(. Function func; var args = new List<
      							   };
      							.)
   | '.'
-    ident						(. subscript = new Identifier(t.val, TYPES._SUBSCRIPT);
+    ident						(. subscript = new Identifier(t.val, new TypeAnnotation(TYPES._SUBSCRIPT));
      							   expr = new MemberReference{
      							   		Parent = expr,
      							   		Subscription = subscript
@@ -1084,8 +1087,9 @@ Literal<out Expression expr>	(. expr = null; .)
   								   tmp = tmp.Substring(1, tmp.Length - 2);
   								   expr = MakeConstant(TYPES.STRING, tmp);
   								.)
-  | (  "true"				
-  	|  "false"
+  | 
+    ( "true"				
+  	| "false"
   	)							(. expr = MakeConstant(TYPES.BOOL, Convert.ToBoolean(t.val)); .)
   | "null"						(. expr = MakeConstant(TYPES.NULL, null); .).
 /*------------------------------------------------------------------------*/

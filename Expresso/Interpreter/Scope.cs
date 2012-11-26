@@ -93,7 +93,7 @@ namespace Expresso.Interpreter
 					if (v != null && level == 0){
 						return v;
 					}else if(v != null){
-						Ast.Identifier cloned = new Identifier(v.Name, v.ParamType, v.Offset, level);
+						Identifier cloned = new Identifier(v.Name, v.ParamType, v.Offset, level);
 						return cloned;
 					}
 				}

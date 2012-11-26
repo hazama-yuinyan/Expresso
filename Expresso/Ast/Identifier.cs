@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Expresso.BuiltIns;
+using Expresso.Builtins;
 using Expresso.Interpreter;
 
 namespace Expresso.Ast
@@ -13,14 +13,16 @@ namespace Expresso.Ast
 	}
 
     /// <summary>
-    /// 変数。
-	/// Reperesents a variable.
+    /// 識別子。
+	/// Reperesents a symbol.
     /// </summary>
     public class Identifier : Assignable
     {
+		public static readonly TypeAnnotation Default = new TypeAnnotation(TYPES.VAR);
+
         /// <summary>
-        /// 変数名。
-		/// The name of the variable.
+        /// 識別子名。
+		/// The name of the identifier.
         /// </summary>
         public string Name { get; internal set; }
 
@@ -40,14 +42,14 @@ namespace Expresso.Ast
 		/// 変数の型。
 		/// The type of the variable.
 		/// </summary>
-		public TYPES ParamType{get; internal set;}
+		public TypeAnnotation ParamType{get; internal set;}
 
         public override NodeType Type
         {
             get { return NodeType.Identifier; }
         }
 
-		public Identifier(string name, TYPES type = TYPES.VAR, int offset = -1, int level = 0)
+		public Identifier(string name, TypeAnnotation type = null, int offset = -1, int level = 0)
 		{
 			Name = name;
 			ParamType = type;
@@ -71,7 +73,7 @@ namespace Expresso.Ast
 
         internal override object Run(VariableStore varStore)
         {
-			if(ParamType == TYPES._SUBSCRIPT)
+			if(ParamType.ObjType == TYPES._SUBSCRIPT)
 				return this;
 			else
 				return varStore.Get(Offset, Level);

@@ -1,5 +1,5 @@
 using System;
-using Expresso.BuiltIns;
+using Expresso.Builtins;
 using Expresso.Interpreter;
 
 namespace Expresso.Ast
@@ -54,7 +54,7 @@ namespace Expresso.Ast
 		/// この引数の型。
 		/// The type of the argument.
 		/// </summary>
-		public TYPES ParamType
+		public TypeAnnotation ParamType
 		{
 			get{
 				return ident.ParamType;

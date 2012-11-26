@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Expresso.BuiltIns;
+using Expresso.Builtins;
 using Expresso.Helpers;
 using Expresso.Interpreter;
 
@@ -39,9 +39,9 @@ namespace Expresso.Ast
         {
 			var child_store = new VariableStore{Parent = varStore};
 			foreach(var local in Body.LocalVariables)
-				child_store.Add(local.Offset, ImplementationHelpers.GetDefaultValueFor(local.ParamType));
+				child_store.Add(local.Offset, ImplementationHelpers.GetDefaultValueFor(local.ParamType.ObjType));
 
-			ExpressoClass.ExpressoObj obj = null;
+			object obj = null;
 
 			if(ObjType == TYPES.LIST || ObjType == TYPES.TUPLE){
 				var container = new List<object>();

@@ -2,7 +2,8 @@
 using System.Linq;
 using System.Text;
 using System;
-using Expresso.BuiltIns;
+using ExprTree = System.Linq.Expressions;
+using Expresso.Builtins;
 using Expresso.Helpers;
 using Expresso.Interpreter;
 
@@ -35,10 +36,10 @@ namespace Expresso.Ast
         public Block Body { get; internal set; }
 		
 		/// <summary>
-		/// 戻り値の型
+		/// 戻り値の型。
 		/// The type of the return value.
 		/// </summary>
-		public TYPES ReturnType {get; internal set;}
+		public TypeAnnotation ReturnType {get; internal set;}
 
 		/// <summary>
 		/// このクロージャが定義された時の環境。
@@ -59,7 +60,7 @@ namespace Expresso.Ast
             }
         }
 
-		public Function(string name, List<Argument> parameters, Block body, TYPES returnType, VariableStore environ = null)
+		public Function(string name, List<Argument> parameters, Block body, TypeAnnotation returnType, VariableStore environ = null)
 		{
 			Name = name;
 			Parameters = parameters;
@@ -138,8 +139,8 @@ namespace Expresso.Ast
 
 	public class NativeFunction : Function
 	{
-		public NativeFunction(string name, List<Argument> parameters, Block body, TYPES returnType, VariableStore environ) :
-			base(name, parameters, body, returnType, environ){}
+		public NativeFunction(string name, List<Argument> parameters, Block body, TypeAnnotation returnType) :
+			base(name, parameters, body, returnType, null){}
 
 		public override string ToString()
 		{
@@ -148,327 +149,73 @@ namespace Expresso.Ast
 		}
 	}
 
-	public class NativeFunctionNullary<ReturnType> : NativeFunction
+	/// <summary>
+	/// Represents an N-ary native function. It can also represent a native method if the first parameter is the instance.
+	/// </summary>
+	public class NativeFunctionNAry : NativeFunction
 	{
-		private Func<ReturnType> func;
+		private ExprTree.LambdaExpression func;
+		private Delegate compiled = null;
 
-		public NativeFunctionNullary(string name, Func<ReturnType> func) : base(name, null, null, TYPES.UNDEF, null)
+		public NativeFunctionNAry(string name, ExprTree.LambdaExpression func) :
+			base(name, null, null, new TypeAnnotation(TYPES.VAR))
 		{
-			Type t = typeof(ReturnType);
-			this.ReturnType = ImplementationHelpers.GetTypeInExpresso(t);
+			this.func = func;
+			var parameters = func.Parameters;
+			if(parameters.Count > 0)
+				this.Parameters = new List<Argument>();
+
+			int i = 0;
+			foreach(var param in parameters){
+				var formal = new Argument{Ident = new Identifier(param.Name, ImplementationHelpers.GetTypeAnnoInExpresso(param.Type), i)};
+				this.Parameters.Add(formal);
+				++i;
+			}
+		}
+
+		internal override object Run(VariableStore varStore)
+		{
+			if(compiled == null)
+				compiled = func.Compile();
+
+			var args = new object[Parameters.Count];
+			for(int i = 0; i < Parameters.Count; ++i)
+				args[i] = varStore.Get(i);
+
+			return compiled.DynamicInvoke(args);
+		}
+	}
+
+	public class NativeLambdaNullary : NativeFunction
+	{
+		private Func<object> func;
+
+		public NativeLambdaNullary(string name, Func<object> func) :
+			base(name, null, null, new TypeAnnotation(TYPES.VAR))
+		{
 			this.func = func;
 		}
 
 		internal override object Run(VariableStore varStore)
 		{
-			if(ReturnType == TYPES.UNDEF){
-				func.Invoke();
-				return null;
-			}
-			return ImplementationHelpers.WrapObject(func.Invoke(), ReturnType);
+			return func();
 		}
 	}
 
-	public class NativeFunctionUnaryRef<ReturnType, Param1> : NativeFunction
-		where Param1 : class
+	public class NativeLambdaUnary : NativeFunction
 	{
-		private Func<Param1, ReturnType> func;
+		private Func<object, object> func;
 
-		public NativeFunctionUnaryRef(string name, Identifier param, Func<Param1, ReturnType> func) :
-			base(name, ImplementationHelpers.CreateArgList(param), null, TYPES.UNDEF, null)
+		public NativeLambdaUnary(string name, Identifier param, Func<object, object> func) :
+			base(name, ImplementationHelpers.CreateArgList(param), null, new TypeAnnotation(TYPES.VAR))
 		{
-			Type t = typeof(ReturnType);
-			this.ReturnType = ImplementationHelpers.GetTypeInExpresso(t);
 			this.func = func;
 		}
 
 		internal override object Run(VariableStore varStore)
 		{
-			Param1 arg = varStore.Get(0) as Param1;
-			if(arg == null)
-				throw new EvalException("Can not cast the 1st argument.");
-
-			if(ReturnType == TYPES.UNDEF){
-				func.Invoke(arg);
-				return null;
-			}
-			return ImplementationHelpers.WrapObject(func.Invoke(arg), ReturnType);
-		}
-	}
-
-	public class NativeFunctionBinaryRef<ReturnType, Param1, Param2> : NativeFunction
-		where Param1 : class where Param2 : class
-	{
-		private Func<Param1, Param2, ReturnType> func;
-
-		public NativeFunctionBinaryRef(string name, Identifier param1, Identifier param2, Func<Param1, Param2, ReturnType> func) :
-			base(name, ImplementationHelpers.CreateArgList(param1, param2), null, TYPES.UNDEF, null)
-		{
-			Type t = typeof(ReturnType);
-			this.ReturnType = ImplementationHelpers.GetTypeInExpresso(t);
-			this.func = func;
-		}
-
-		internal override object Run(VariableStore varStore)
-		{
-			Param1 arg1 = varStore.Get(0) as Param1;
-			if(arg1 == null)
-				throw new EvalException("Can not cast the 1st argument.");
-
-			Param2 arg2 = varStore.Get(1) as Param2;
-			if(arg2 == null)
-				throw new EvalException("Can not cast the 2nd argument.");
-
-			if(ReturnType == TYPES.UNDEF){
-				func.Invoke(arg1, arg2);
-				return null;
-			}
-			return ImplementationHelpers.WrapObject(func.Invoke(arg1, arg2), ReturnType);
-		}
-	}
-
-	public class NativeFunctionTernaryRef<ReturnType, Param1, Param2, Param3> : NativeFunction
-		where Param1 : class where Param2 : class where Param3 : class
-	{
-		private Func<Param1, Param2, Param3, ReturnType> func;
-
-		public NativeFunctionTernaryRef(string name, Identifier param1, Identifier param2, Identifier param3, Func<Param1, Param2, Param3, ReturnType> func) :
-			base(name, ImplementationHelpers.CreateArgList(param1, param2, param3), null, TYPES.UNDEF, null)
-		{
-			Type t = typeof(ReturnType);
-			this.ReturnType = ImplementationHelpers.GetTypeInExpresso(t);
-			this.func = func;
-		}
-
-		internal override object Run(VariableStore varStore)
-		{
-			Param1 arg1 = varStore.Get(0) as Param1;
-			if(arg1 == null)
-				throw new EvalException("Can not cast the 1st argument.");
-
-			Param2 arg2 = varStore.Get(1) as Param2;
-			if(arg2 == null)
-				throw new EvalException("Can not cast the 2nd argument.");
-
-			Param3 arg3 = varStore.Get(2) as Param3;
-			if(arg3 == null)
-				throw new EvalException("Can not cast the 3rd argument.");
-
-			if(ReturnType == TYPES.UNDEF){
-				func.Invoke(arg1, arg2, arg3);
-				return null;
-			}
-			return ImplementationHelpers.WrapObject(func.Invoke(arg1, arg2, arg3), ReturnType);
-		}
-	}
-
-	public class NativeFunctionUnaryVal<ReturnType, Param1> : NativeFunction
-		where Param1 : struct
-	{
-		private Func<Param1, ReturnType> func;
-
-		public NativeFunctionUnaryVal(string name, Identifier param, Func<Param1, ReturnType> func) :
-			base(name, ImplementationHelpers.CreateArgList(param), null, TYPES.UNDEF, null)
-		{
-			Type t = typeof(ReturnType);
-			this.ReturnType = ImplementationHelpers.GetTypeInExpresso(t);
-			this.func = func;
-		}
-
-		internal override object Run(VariableStore varStore)
-		{
-			dynamic arg = varStore.Get(0);
-
-			if(ReturnType == TYPES.UNDEF){
-				func.Invoke(arg);
-				return null;
-			}
-			return func.Invoke(arg);
-		}
-	}
-
-	public class NativeFunctionBinaryVal<ReturnType, Param1, Param2> : NativeFunction
-		where Param1 : struct where Param2 : struct
-	{
-		private Func<Param1, Param2, ReturnType> func;
-
-		public NativeFunctionBinaryVal(string name, Identifier parameter1, Identifier parameter2, Func<Param1, Param2, ReturnType> func) :
-			base(name, ImplementationHelpers.CreateArgList(parameter1, parameter2), null, TYPES.UNDEF, null)
-		{
-			Type t = typeof(ReturnType);
-			this.ReturnType = ImplementationHelpers.GetTypeInExpresso(t);
-			this.func = func;
-		}
-
-		internal override object Run(VariableStore varStore)
-		{
-			dynamic arg1 = varStore.Get(0);
-			dynamic arg2 = varStore.Get(1);
-
-			if(ReturnType == TYPES.UNDEF){
-				func.Invoke(arg1, arg2);
-				return null;
-			}
-			return func.Invoke(arg1, arg2);
-		}
-	}
-
-	public class NativeFunctionTernaryVal<ReturnType, Param1, Param2, Param3> : NativeFunction
-		where Param1 : struct where Param2 : struct where Param3 : struct
-	{
-		private Func<Param1, Param2, Param3, ReturnType> func;
-
-		public NativeFunctionTernaryVal(string name, Identifier param1, Identifier param2, Identifier param3, Func<Param1, Param2, Param3, ReturnType> func) :
-			base(name, ImplementationHelpers.CreateArgList(param1, param2, param3), null, TYPES.UNDEF, null)
-		{
-			Type t = typeof(ReturnType);
-			this.ReturnType = ImplementationHelpers.GetTypeInExpresso(t);
-			this.func = func;
-		}
-
-		internal override object Run(VariableStore varStore)
-		{
-			dynamic arg1 = varStore.Get(0);
-			dynamic arg2 = varStore.Get(1);
-			dynamic arg3 = varStore.Get(2);
-
-			if(ReturnType == TYPES.UNDEF){
-				func.Invoke(arg1, arg2, arg3);
-				return null;
-			}
-			return func.Invoke(arg1, arg2, arg3);
-		}
-	}
-
-	public class NativeMethodNullary<ReturnType, ThisType> : NativeFunction
-		where ThisType : class
-	{
-		private Func<ThisType, ReturnType> method;
-
-		public NativeMethodNullary(string name, Func<ThisType, ReturnType> method) :
-			base(name, null, null, TYPES.UNDEF, null)
-		{
-			Type t = typeof(ReturnType);
-			this.ReturnType = ImplementationHelpers.GetTypeInExpresso(t);
-			this.method = method;
-			this.Parameters =
-				ImplementationHelpers.CreateArgList(new Identifier("this", ImplementationHelpers.GetTypeInExpresso(typeof(ThisType)), 0));
-		}
-
-		internal override object Run(VariableStore varStore)
-		{
-			var exs_obj = varStore.Get(0) as ExpressoClass.ExpressoObj;
-			var _this = exs_obj.GetMember(0) as ThisType;
-			if(_this == null)
-				throw new EvalException("Can not call the method " + method + " on that type of object.");
-
-			if(ReturnType == TYPES.UNDEF){
-				method.Invoke(_this);
-				return null;
-			}
-			return ImplementationHelpers.WrapObject(method.Invoke(_this), ReturnType);
-		}
-	}
-
-	public class NativeMethodUnary<ReturnType, ThisType, Param1> : NativeFunction
-		where ThisType : class
-	{
-		private Func<ThisType, Param1, ReturnType> method;
-
-		public NativeMethodUnary(string name, Identifier param, Func<ThisType, Param1, ReturnType> method) :
-			base(name, null, null, TYPES.UNDEF, null)
-		{
-			Type t = typeof(ReturnType);
-			this.ReturnType = ImplementationHelpers.GetTypeInExpresso(t);
-			this.method = method;
-			this.Parameters =
-				ImplementationHelpers.CreateArgList(new Identifier("this", ImplementationHelpers.GetTypeInExpresso(typeof(ThisType)), 0),
-				                                    param);
-		}
-
-		internal override object Run(VariableStore varStore)
-		{
-			var exs_obj = varStore.Get(0) as ExpressoClass.ExpressoObj;
-			var _this = exs_obj.GetMember(0) as ThisType;
-			if(_this == null)
-				throw new EvalException("Can not call the method " + method + " on that type of object.");
-
-			dynamic param1 = varStore.Get(1);
-
-			if(ReturnType == TYPES.UNDEF){
-				method.Invoke(_this, param1);
-				return null;
-			}
-			return ImplementationHelpers.WrapObject(method.Invoke(_this, param1), ReturnType);
-		}
-	}
-
-	public class NativeMethodBinary<ReturnType, ThisType, Param1, Param2> : NativeFunction
-		where ThisType : class
-	{
-		private Func<ThisType, Param1, Param2, ReturnType> method;
-
-		public NativeMethodBinary(string name, Identifier param1, Identifier param2, Func<ThisType, Param1, Param2, ReturnType> method) :
-			base(name, null, null, TYPES.UNDEF, null)
-		{
-			Type t = typeof(ReturnType);
-			this.ReturnType = ImplementationHelpers.GetTypeInExpresso(t);
-			this.method = method;
-			this.Parameters =
-				ImplementationHelpers.CreateArgList(new Identifier("this", ImplementationHelpers.GetTypeInExpresso(typeof(ThisType)), 0),
-				                                    param1, param2);
-		}
-
-		internal override object Run(VariableStore varStore)
-		{
-			var exs_obj = varStore.Get(0) as ExpressoClass.ExpressoObj;
-			var _this = exs_obj.GetMember(0) as ThisType;
-			if(_this == null)
-				throw new EvalException("Can not call the method " + method + " on that type of object.");
-
-			dynamic param1 = varStore.Get(1);
-			dynamic param2 = varStore.Get(2);
-
-			if(ReturnType == TYPES.UNDEF){
-				method.Invoke(_this, param1, param2);
-				return null;
-			}
-			return ImplementationHelpers.WrapObject(method.Invoke(_this, param1, param2), ReturnType);
-		}
-	}
-
-	public class NativeMethodTernary<ReturnType, ThisType, Param1, Param2, Param3> : NativeFunction
-		where ThisType : class
-	{
-		private Func<ThisType, Param1, Param2, Param3, ReturnType> method;
-
-		public NativeMethodTernary(string name, Identifier param1, Identifier param2, Identifier param3, Func<ThisType, Param1, Param2, Param3, ReturnType> method) :
-			base(name, null, null, TYPES.UNDEF, null)
-		{
-			Type t = typeof(ReturnType);
-			this.ReturnType = ImplementationHelpers.GetTypeInExpresso(t);
-			this.method = method;
-			this.Parameters =
-				ImplementationHelpers.CreateArgList(new Identifier("this", ImplementationHelpers.GetTypeInExpresso(typeof(ThisType)), 0),
-				                                    param1, param2, param3);
-		}
-
-		internal override object Run(VariableStore varStore)
-		{
-			var exs_obj = varStore.Get(0) as ExpressoClass.ExpressoObj;
-			var _this = exs_obj.GetMember(0) as ThisType;
-			if(_this == null)
-				throw new EvalException("Can not call the method " + method + " on that type of object.");
-
-			dynamic param1 = varStore.Get(1);
-			dynamic param2 = varStore.Get(2);
-			dynamic param3 = varStore.Get(3);
-
-			if(ReturnType == TYPES.UNDEF){
-				method.Invoke(_this, param1, param2, param3);
-				return null;
-			}
-			return ImplementationHelpers.WrapObject(method.Invoke(_this, param1, param2, param3), ReturnType);
+			object arg = varStore.Get(0);
+			return func(arg);
 		}
 	}
 }

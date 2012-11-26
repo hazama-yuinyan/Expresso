@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Linq;
-using Expresso.BuiltIns;
+using Expresso.Builtins;
 using Expresso.Interpreter;
 
 namespace Expresso.Ast
@@ -63,8 +63,8 @@ namespace Expresso.Ast
 					return BinaryExprAsInt((int)first, (int)second, Operator);
 				else if(first is double)
 					return BinaryExprAsDouble((double)first, (double)second, Operator);
-				else if(first is ExpressoFraction)
-					return BinaryExprAsFraction((ExpressoFraction)first, second, Operator);
+				else if(first is Fraction)
+					return BinaryExprAsFraction((Fraction)first, second, Operator);
 				else
 					return BinaryExprAsString((string)first, second, Operator);
 			}else if((int)Operator < (int)OperatorType.AND){
@@ -148,12 +148,12 @@ namespace Expresso.Ast
 			return result;
 		}
 
-		private ExpressoFraction BinaryExprAsFraction(ExpressoFraction lhs, object rhs, OperatorType opType)
+		private Fraction BinaryExprAsFraction(Fraction lhs, object rhs, OperatorType opType)
 		{
-			if(!(rhs is ExpressoFraction) && !(rhs is long) && !(rhs is int) && !(rhs is double))
+			if(!(rhs is Fraction) && !(rhs is long) && !(rhs is int) && !(rhs is double))
 				throw new EvalException("The right operand have to be either a long, int, double or fraction!");
 
-			ExpressoFraction result;
+			Fraction result;
 
 			switch(opType){
 			case OperatorType.PLUS:

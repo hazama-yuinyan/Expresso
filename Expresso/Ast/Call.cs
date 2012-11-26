@@ -45,6 +45,8 @@ namespace Expresso.Ast
 		/// </summary>
 		public Expression Reference {get; internal set;}
 
+		private MethodContainer method_info = null;
+
         public override NodeType Type
         {
             get { return NodeType.Call; }
@@ -81,17 +83,24 @@ namespace Expresso.Ast
 			Function fn;
 			bool this_registered = false;
 			if(Reference != null){
-				var obj = Reference.Run(varStore);
-				var method = obj as MethodContainer;
-				if(method == null)
-					throw new EvalException("Not callable: " + obj.ToString());
+				if(method_info == null){
+					var obj = Reference.Run(varStore);
+					var method = obj as MethodContainer;
+					if(method == null)
+						throw new EvalException("Not callable: " + obj.ToString());
 
-				fn = method.Method;
-				child.Add(0, method.Inst);	//このメソッド呼び出しのthisオブジェクトを登録する
-				if(Arguments.Count == 0 || Arguments[0] != null)
-					Arguments.Insert(0, null);
+					fn = method.Method;
+					child.Add(0, method.Inst);	//このメソッド呼び出しのthisオブジェクトを登録する
+					if(Arguments.Count == 0 || Arguments[0] != null)
+						Arguments.Insert(0, null);
 
-				this_registered = true;
+					this_registered = true;
+					method_info = method;	//毎回リファレンスを辿るのは遅いと思われるので、キャッシュしておく
+				}else{
+					fn = method_info.Method;
+					child.Add(0, method_info.Inst);	//このメソッド呼び出しのthisオブジェクトを登録する
+					this_registered = true;
+				}
 			}else{
     	        fn = Function;
 			}
@@ -102,7 +111,7 @@ namespace Expresso.Ast
 			var local_vars = fn.LocalVariables;
 			if(local_vars.Any()){					//Checking for its emptiness
 				foreach(var local in local_vars)	//関数内で定義されているローカル変数を予め初期化しておく
-					child.Add(local.Offset, ImplementationHelpers.GetDefaultValueFor(local.ParamType));
+					child.Add(local.Offset, ImplementationHelpers.GetDefaultValueFor(local.ParamType.ObjType));
 			}
 
 			return fn.Run(child);
@@ -113,14 +122,4 @@ namespace Expresso.Ast
 			return string.Format("[Call for {0} with ({1})]", Name, Arguments);
 		}
     }
-
-	public class CtorCall : Call
-	{
-		internal override object Run(VariableStore varStore)
-		{
-			var ctor = Function;
-			for(int i = (this_registered) ? 1 : 0; i < fn.Parameters.Count; ++i)	//実引数をローカル変数として変数テーブルに追加する
-				child.Add(fn.Parameters[i].Offset, (i < Arguments.Count) ? Arguments[i].Run(varStore) : fn.Parameters[i].Option.Run(varStore));
-		}
-	}
 }

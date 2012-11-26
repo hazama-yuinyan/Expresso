@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using Expresso.BuiltIns;
+using Expresso.Builtins;
 using Expresso.Helpers;
 using Expresso.Interpreter;
 
@@ -56,7 +56,7 @@ namespace Expresso.Ast
 					Body.Run(varStore);
 				}
 			}
-			catch(Exception e){
+			catch(Exception){
 				if(!(cond is bool))
 					throw new EvalException("Invalid expression! The condition of a while statement must yield a boolean!");
 			}

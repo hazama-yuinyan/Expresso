@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using Expresso.BuiltIns;
+using Expresso.Builtins;
 using Expresso.Interpreter;
 using Expresso.Helpers;
 
@@ -119,7 +119,7 @@ namespace Expresso.Ast
 						result = true;
 						break;
 					}
-				}else if(label_obj is Constant && ImplementationHelpers.IsOfType(((Constant)label_obj).ValType, TYPES._CASE_DEFAULT)){
+				}else if(label_obj is Constant && ((Constant)label_obj).ValType == TYPES._CASE_DEFAULT){
 					Body.Run(varStore);
 					result = true;
 					break;

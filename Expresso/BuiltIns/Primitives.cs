@@ -8,7 +8,7 @@ using Expresso.Ast;
 using Expresso.Interpreter;
 using Expresso.Helpers;
 
-namespace Expresso.BuiltIns
+namespace Expresso.Builtins
 {
 	#region Expressoの組み込みオブジェクト型郡
 	/// <summary>
@@ -19,7 +19,7 @@ namespace Expresso.BuiltIns
 	/// returns a new sequence which holds the elements from #1 to #5 of the original sequence
 	/// (<c>seq</c> this time).
 	/// </summary>
-	public class ExpressoIntegerSequence : IEnumerable<object>, SequenceGenerator<List<object>, object>
+	public class ExpressoIntegerSequence : IEnumerable<object>
 	{
 		/// <summary>
 		/// 数列の開始点。
@@ -71,36 +71,6 @@ namespace Expresso.BuiltIns
 		public IEnumerator<object> GetEnumerator()
 		{
 			return new Enumerator(this);
-		}
-		#endregion
-
-		#region SequenceGenerator implementation
-		public object Generate()
-		{
-			return -1;
-		}
-
-		public List<object> Take(int count)
-		{
-			var objs = new List<object>(count);
-			var enumerator = Val;
-			for(int i = 0; enumerator.MoveNext() && i < count; ++i)
-				objs.Add(enumerator.Current);
-
-			return objs;
-		}
-
-		public List<object> TakeAll()
-		{
-			if(_end == int.MinValue)
-				throw new EvalException("Can not take all elements from an infinite series of list!");
-
-			var er = new Enumerator(this);
-			var tmp = new List<object>();
-			while(er.MoveNext())
-				tmp.Add(er.Current);
-
-			return tmp;
 		}
 		#endregion
 
@@ -187,7 +157,7 @@ namespace Expresso.BuiltIns
 			return this._step == 1;
 		}
 
-		static public void AddDefinition()
+		/*static public void AddDefinition()
 		{
 			var privates = new Dictionary<string, int>();
 			privates.Add("content", 0);
@@ -230,7 +200,7 @@ namespace Expresso.BuiltIns
 			ExpressoClass.Classes.TryGetValue("IntSeq", out definition);
 			definition.Members[0] = inst;
 			return new ExpressoClass.ExpressoObj(definition, TYPES.SEQ);
-		}
+		}*/
 	}
 
 	/// <summary>
@@ -364,7 +334,7 @@ namespace Expresso.BuiltIns
 		}
 		#endregion
 
-		static public void AddDefinition()
+		/*static public void AddDefinition()
 		{
 			var privates = new Dictionary<string, int>();
 			privates.Add("content", 0);
@@ -397,13 +367,13 @@ namespace Expresso.BuiltIns
 			ExpressoClass.Classes.TryGetValue("Tuple", out definition);
 			definition.Members[0] = inst;
 			return new ExpressoClass.ExpressoObj(definition, TYPES.TUPLE);
-		}
+		}*/
 	}
 
 	/// <summary>
 	/// The built-in fraction class, which represents a fraction as it is.
 	/// </summary>
-	public class ExpressoFraction : IComparable
+	public class Fraction : IComparable
 	{
 		/// <summary>
 		/// Represents the dominator of the fraction.
@@ -435,7 +405,7 @@ namespace Expresso.BuiltIns
 		}
 
 		/// <summary>
-		/// Initializes a new instance of the <see cref="Expresso.BuiltIns.ExpressoFraction"/> class.
+		/// Initializes a new instance of the <see cref="Expresso.Builtins.Fraction"/> class.
 		/// </summary>
 		/// <param name='numerator'>
 		/// Numerator.
@@ -446,31 +416,31 @@ namespace Expresso.BuiltIns
 		/// <param name='isPositive'>
 		/// Is positive.
 		/// </param>
-		public ExpressoFraction(BigInteger numerator, BigInteger denominator)
+		public Fraction(BigInteger numerator, BigInteger denominator)
 		{
 			Denominator = denominator;
 			Numerator = numerator;
 		}
 
 		/// <summary>
-		/// Initializes a new instance of the <see cref="Expresso.BuiltIns.ExpressoFraction"/> class with an integer.
+		/// Initializes a new instance of the <see cref="Expresso.Builtins.Fraction"/> class with an integer.
 		/// </summary>
 		/// <param name='integer'>
 		/// Integer.
 		/// </param>
-		public ExpressoFraction(BigInteger integer)
+		public Fraction(BigInteger integer)
 		{
 			Denominator = 1;
 			Numerator = integer;
 		}
 
 		/// <summary>
-		/// Initializes a new instance of the <see cref="Expresso.BuiltIns.ExpressoFraction"/> class with a floating-point value.
+		/// Initializes a new instance of the <see cref="Expresso.Builtins.Fraction"/> class with a floating-point value.
 		/// </summary>
 		/// <param name='val'>
 		/// The value in double.
 		/// </param>
-		public ExpressoFraction(double val)
+		public Fraction(double val)
 		{
 			BigInteger floored = new BigInteger(val), denominator = new BigInteger(1);
 			double tmp = val - (double)floored;
@@ -488,7 +458,7 @@ namespace Expresso.BuiltIns
 		/// <summary>
 		/// 約分を行う。
 		/// </summary>
-		public ExpressoFraction Reduce()
+		public Fraction Reduce()
 		{
 			var gcd = ImplementationHelpers.CalcGCD(Numerator, Denominator);
 			Numerator /= gcd;
@@ -502,32 +472,32 @@ namespace Expresso.BuiltIns
 		/// <param name='other'>
 		/// 通分をする対象。
 		/// </param>
-		public ExpressoFraction Reduce(ExpressoFraction other)
+		public Fraction Reduce(Fraction other)
 		{
 			var lcm = ImplementationHelpers.CalcLCM(Denominator, other.Denominator);
 			Numerator *= lcm / Denominator;
-			return new ExpressoFraction(other.Numerator * lcm / other.Denominator, lcm);
+			return new Fraction(other.Numerator * lcm / other.Denominator, lcm);
 		}
 
 		/// <summary>
 		/// Returns the inverse of the fraction.
 		/// </summary>
-		public ExpressoFraction GetInverse()
+		public Fraction GetInverse()
 		{
-			return new ExpressoFraction(Denominator, Numerator);
+			return new Fraction(Denominator, Numerator);
 		}
 
 		/// <summary>
 		/// Clones this instance.
 		/// </summary>
-		public ExpressoFraction Copy()
+		public Fraction Copy()
 		{
-			return new ExpressoFraction(Numerator, Denominator);
+			return new Fraction(Numerator, Denominator);
 		}
 
 		public int CompareTo(object obj)
 		{
-			var other = obj as ExpressoFraction;
+			var other = obj as Fraction;
 
 			if(other == null)
 				return 0xffff;
@@ -537,7 +507,7 @@ namespace Expresso.BuiltIns
 
 		public override bool Equals(object obj)
 		{
-			var other = obj as ExpressoFraction;
+			var other = obj as Fraction;
 
 			if(other == null)
 				return false;
@@ -555,33 +525,33 @@ namespace Expresso.BuiltIns
 			return string.Format("({0} / {1})", Numerator, Denominator);
 		}
 
-		public ExpressoFraction Power(ExpressoFraction y)
+		public Fraction Power(Fraction y)
 		{
-			return new ExpressoFraction(0, 0);
+			return new Fraction(0, 0);
 		}
 
-		public ExpressoFraction Power(long y)
+		public Fraction Power(long y)
 		{
-			var tmp_y = new ExpressoFraction((BigInteger)y);
+			var tmp_y = new Fraction((BigInteger)y);
 			return Power(tmp_y);
 		}
 
-		public ExpressoFraction Power(BigInteger y)
+		public Fraction Power(BigInteger y)
 		{
-			var tmp_y = new ExpressoFraction(y);
+			var tmp_y = new Fraction(y);
 			return Power(tmp_y);
 		}
 
-		public ExpressoFraction Power(double y)
+		public Fraction Power(double y)
 		{
-			var tmp_y = new ExpressoFraction(y);
+			var tmp_y = new Fraction(y);
 			return Power(tmp_y);
 		}
 
-		public ExpressoFraction Power(object y)
+		public Fraction Power(object y)
 		{
-			if(y is ExpressoFraction)
-				return Power((ExpressoFraction)y);
+			if(y is Fraction)
+				return Power((Fraction)y);
 			else if(y is BigInteger)
 				return Power((BigInteger)y);
 			else if(y is long)
@@ -593,41 +563,41 @@ namespace Expresso.BuiltIns
 		}
 
 		#region Arithmetic operators
-		public static ExpressoFraction operator+(ExpressoFraction lhs, ExpressoFraction rhs)
+		public static Fraction operator+(Fraction lhs, Fraction rhs)
 		{
 			if(object.Equals(lhs.Denominator, rhs.Denominator)){
-				return new ExpressoFraction(lhs.Numerator + rhs.Numerator, lhs.Denominator);
+				return new Fraction(lhs.Numerator + rhs.Numerator, lhs.Denominator);
 			}else{
-				ExpressoFraction tmp = lhs.Copy();
-				ExpressoFraction other_reduced = tmp.Reduce(tmp);
+				Fraction tmp = lhs.Copy();
+				Fraction other_reduced = tmp.Reduce(tmp);
 				tmp.Numerator = tmp.Numerator + other_reduced.Numerator;
 				return tmp;
 			}
 		}
 		
-		public static ExpressoFraction operator+(ExpressoFraction lhs, BigInteger rhs)
+		public static Fraction operator+(Fraction lhs, BigInteger rhs)
 		{
-			return new ExpressoFraction(lhs.Numerator + rhs * lhs.Denominator, lhs.Denominator);
+			return new Fraction(lhs.Numerator + rhs * lhs.Denominator, lhs.Denominator);
 		}
 
-		public static ExpressoFraction operator+(ExpressoFraction lhs, long rhs)
+		public static Fraction operator+(Fraction lhs, long rhs)
 		{
 			var rhs_numerator = rhs * lhs.Denominator;
-			return new ExpressoFraction(lhs.Numerator + rhs_numerator, lhs.Denominator);
+			return new Fraction(lhs.Numerator + rhs_numerator, lhs.Denominator);
 		}
 		
-		public static ExpressoFraction operator+(ExpressoFraction lhs, double rhs)
+		public static Fraction operator+(Fraction lhs, double rhs)
 		{
-			ExpressoFraction tmp = lhs.Copy(), other = new ExpressoFraction(rhs);
-			ExpressoFraction new_self = other.Reduce(tmp);
+			Fraction tmp = lhs.Copy(), other = new Fraction(rhs);
+			Fraction new_self = other.Reduce(tmp);
 			new_self.Numerator = new_self.Numerator + other.Numerator;
 			return new_self;
 		}
 
-		public static ExpressoFraction operator+(ExpressoFraction lhs, object rhs)
+		public static Fraction operator+(Fraction lhs, object rhs)
 		{
-			if(rhs is ExpressoFraction)
-				return lhs + (ExpressoFraction)rhs;
+			if(rhs is Fraction)
+				return lhs + (Fraction)rhs;
 			else if(rhs is BigInteger)
 				return lhs + (BigInteger)rhs;
 			else if(rhs is long)
@@ -639,35 +609,35 @@ namespace Expresso.BuiltIns
 		}
 
 		/// <remarks>The unary operator minus.</remarks>
-		public static ExpressoFraction operator-(ExpressoFraction src)
+		public static Fraction operator-(Fraction src)
 		{
-			return new ExpressoFraction(-src.Numerator, src.Denominator);
+			return new Fraction(-src.Numerator, src.Denominator);
 		}
 
-		public static ExpressoFraction operator-(ExpressoFraction lhs, ExpressoFraction rhs)
+		public static Fraction operator-(Fraction lhs, Fraction rhs)
 		{
 			return lhs + (-rhs);
 		}
 
-		public static ExpressoFraction operator-(ExpressoFraction lhs, BigInteger rhs)
+		public static Fraction operator-(Fraction lhs, BigInteger rhs)
 		{
 			return lhs + (-rhs);
 		}
 
-		public static ExpressoFraction operator-(ExpressoFraction lhs, long rhs)
+		public static Fraction operator-(Fraction lhs, long rhs)
 		{
 			return lhs + (-rhs);
 		}
 
-		public static ExpressoFraction operator-(ExpressoFraction lhs, double rhs)
+		public static Fraction operator-(Fraction lhs, double rhs)
 		{
 			return lhs + (-rhs);
 		}
 
-		public static ExpressoFraction operator-(ExpressoFraction lhs, object rhs)
+		public static Fraction operator-(Fraction lhs, object rhs)
 		{
-			if(rhs is ExpressoFraction)
-				return lhs - (ExpressoFraction)rhs;
+			if(rhs is Fraction)
+				return lhs - (Fraction)rhs;
 			else if(rhs is BigInteger)
 				return lhs - (BigInteger)rhs;
 			else if(rhs is long)
@@ -678,31 +648,31 @@ namespace Expresso.BuiltIns
 				throw new EvalException("Can not apply the - operator on that type of object.");
 		}
 		
-		public static ExpressoFraction operator*(ExpressoFraction lhs, ExpressoFraction rhs)
+		public static Fraction operator*(Fraction lhs, Fraction rhs)
 		{
-			return new ExpressoFraction(lhs.Numerator * rhs.Numerator, lhs.Denominator * rhs.Denominator);
+			return new Fraction(lhs.Numerator * rhs.Numerator, lhs.Denominator * rhs.Denominator);
 		}
 		
-		public static ExpressoFraction operator*(ExpressoFraction lhs, BigInteger rhs)
+		public static Fraction operator*(Fraction lhs, BigInteger rhs)
 		{
-			return new ExpressoFraction(lhs.Numerator * rhs, lhs.Denominator);
+			return new Fraction(lhs.Numerator * rhs, lhs.Denominator);
 		}
 
-		public static ExpressoFraction operator*(ExpressoFraction lhs, long rhs)
+		public static Fraction operator*(Fraction lhs, long rhs)
 		{
-			return new ExpressoFraction(lhs.Numerator * rhs, lhs.Denominator);
+			return new Fraction(lhs.Numerator * rhs, lhs.Denominator);
 		}
 		
-		public static ExpressoFraction operator*(ExpressoFraction lhs, double rhs)
+		public static Fraction operator*(Fraction lhs, double rhs)
 		{
-			var other = new ExpressoFraction(rhs);
+			var other = new Fraction(rhs);
 			return lhs * other;
 		}
 
-		public static ExpressoFraction operator*(ExpressoFraction lhs, object rhs)
+		public static Fraction operator*(Fraction lhs, object rhs)
 		{
-			if(rhs is ExpressoFraction)
-				return lhs * (ExpressoFraction)rhs;
+			if(rhs is Fraction)
+				return lhs * (Fraction)rhs;
 			else if(rhs is BigInteger)
 				return lhs * (BigInteger)rhs;
 			else if(rhs is long)
@@ -713,34 +683,34 @@ namespace Expresso.BuiltIns
 				throw new EvalException("Can not apply the * operator on that type of object.");
 		}
 
-		public static ExpressoFraction operator/(ExpressoFraction lhs, ExpressoFraction rhs)
+		public static Fraction operator/(Fraction lhs, Fraction rhs)
 		{
 			var rhs_inversed = rhs.GetInverse();
 			return lhs * rhs_inversed;
 		}
 
-		public static ExpressoFraction operator/(ExpressoFraction lhs, BigInteger rhs)
+		public static Fraction operator/(Fraction lhs, BigInteger rhs)
 		{
-			var rhs_inversed = new ExpressoFraction(1, rhs);
+			var rhs_inversed = new Fraction(1, rhs);
 			return lhs * rhs_inversed;
 		}
 
-		public static ExpressoFraction operator/(ExpressoFraction lhs, long rhs)
+		public static Fraction operator/(Fraction lhs, long rhs)
 		{
-			var rhs_inversed = new ExpressoFraction(1, rhs);
+			var rhs_inversed = new Fraction(1, rhs);
 			return lhs * rhs_inversed;
 		}
 
-		public static ExpressoFraction operator/(ExpressoFraction lhs, double rhs)
+		public static Fraction operator/(Fraction lhs, double rhs)
 		{
-			var rhs_inversed = new ExpressoFraction(rhs).GetInverse();
+			var rhs_inversed = new Fraction(rhs).GetInverse();
 			return lhs * rhs_inversed;
 		}
 
-		public static ExpressoFraction operator/(ExpressoFraction lhs, object rhs)
+		public static Fraction operator/(Fraction lhs, object rhs)
 		{
-			if(rhs is ExpressoFraction)
-				return lhs / (ExpressoFraction)rhs;
+			if(rhs is Fraction)
+				return lhs / (Fraction)rhs;
 			else if(rhs is BigInteger)
 				return lhs / (BigInteger)rhs;
 			else if(rhs is long)
@@ -751,7 +721,7 @@ namespace Expresso.BuiltIns
 				throw new EvalException("Can not apply the / operator on that type of object.");
 		}
 
-		public static ExpressoFraction operator%(ExpressoFraction lhs, ExpressoFraction rhs)
+		public static Fraction operator%(Fraction lhs, Fraction rhs)
 		{
 			var tmp_rhs = rhs.Copy();
 			var tmp_lhs = lhs.Copy();
@@ -760,31 +730,31 @@ namespace Expresso.BuiltIns
 
 			BigInteger lhs_numerator = tmp_lhs.Numerator, rhs_numerator = tmp_rhs.Numerator;
 			var remaining = lhs_numerator % rhs_numerator;
-			return new ExpressoFraction(remaining, tmp_lhs.Denominator);
+			return new Fraction(remaining, tmp_lhs.Denominator);
 		}
 
-		public static ExpressoFraction operator%(ExpressoFraction lhs, BigInteger rhs)
+		public static Fraction operator%(Fraction lhs, BigInteger rhs)
 		{
-			var rhs_fraction = new ExpressoFraction(rhs);
+			var rhs_fraction = new Fraction(rhs);
 			return lhs % rhs_fraction;
 		}
 
-		public static ExpressoFraction operator%(ExpressoFraction lhs, long rhs)
+		public static Fraction operator%(Fraction lhs, long rhs)
 		{
-			var rhs_fraction = new ExpressoFraction((BigInteger)rhs);
+			var rhs_fraction = new Fraction((BigInteger)rhs);
 			return lhs % rhs_fraction;
 		}
 
-		public static ExpressoFraction operator%(ExpressoFraction lhs, double rhs)
+		public static Fraction operator%(Fraction lhs, double rhs)
 		{
-			var rhs_fraction = new ExpressoFraction(rhs);
+			var rhs_fraction = new Fraction(rhs);
 			return lhs % rhs_fraction;
 		}
 
-		public static ExpressoFraction operator%(ExpressoFraction lhs, object rhs)
+		public static Fraction operator%(Fraction lhs, object rhs)
 		{
-			if(rhs is ExpressoFraction)
-				return lhs % (ExpressoFraction)rhs;
+			if(rhs is Fraction)
+				return lhs % (Fraction)rhs;
 			else if(rhs is BigInteger)
 				return lhs % (BigInteger)rhs;
 			else if(rhs is long)
@@ -797,7 +767,7 @@ namespace Expresso.BuiltIns
 		#endregion
 
 		#region Comparison operators
-		public static bool operator>(ExpressoFraction lhs, ExpressoFraction rhs)
+		public static bool operator>(Fraction lhs, Fraction rhs)
 		{
 			bool lhs_positive = lhs.Numerator > 0, rhs_positive = rhs.Numerator > 0;
 			if(lhs_positive && !rhs_positive)
@@ -811,7 +781,7 @@ namespace Expresso.BuiltIns
 			return lhs.Numerator > rhs_reduced.Numerator;
 		}
 
-		public static bool operator<(ExpressoFraction lhs, ExpressoFraction rhs)
+		public static bool operator<(Fraction lhs, Fraction rhs)
 		{
 			bool lhs_positive = lhs.Numerator > 0, rhs_positive = rhs.Numerator > 0;
 			if(lhs_positive && !rhs_positive)
@@ -825,18 +795,18 @@ namespace Expresso.BuiltIns
 			return lhs.Numerator < rhs_reduced.Numerator;
 		}
 
-		public static bool operator==(ExpressoFraction lhs, ExpressoFraction rhs)
+		public static bool operator==(Fraction lhs, Fraction rhs)
 		{
 			return (lhs.Numerator == rhs.Numerator && lhs.Denominator == rhs.Denominator);
 		}
 
-		public static bool operator!=(ExpressoFraction lhs, ExpressoFraction rhs)
+		public static bool operator!=(Fraction lhs, Fraction rhs)
 		{
 			return !(lhs == rhs);
 		}
 		#endregion
 
-		public static explicit operator double(ExpressoFraction src)
+		public static explicit operator double(Fraction src)
 		{
 			double result = (double)src.Numerator / (double)src.Denominator;
 			return result;
