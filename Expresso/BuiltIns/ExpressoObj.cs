@@ -35,7 +35,7 @@ namespace Expresso.Builtins
 	/// <summary>
 	/// Contains type information of Expresso's object.
 	/// </summary>
-	public class TypeAnnotation
+	public class TypeAnnotation : ICloneable
 	{
 		public TYPES ObjType{get; internal set;}
 
@@ -47,10 +47,24 @@ namespace Expresso.Builtins
 			TypeName = name;
 		}
 
+		public TypeAnnotation Clone()
+		{
+			return new TypeAnnotation(ObjType, TypeName);
+		}
+
+		object ICloneable.Clone()
+		{
+			return this.Clone();
+		}
+
 		public override string ToString()
 		{
 			return (TypeName != null) ? string.Format("{0}", TypeName) : string.Format("{0}", ObjType);
 		}
+
+		public static readonly TypeAnnotation InferenceType = new TypeAnnotation(TYPES._INFERENCE);
+		public static readonly TypeAnnotation VariadicType = new TypeAnnotation(TYPES.VAR);
+		public static readonly TypeAnnotation VoidType = new TypeAnnotation(TYPES.UNDEF);
 	}
 	
 	/// <summary>
@@ -91,14 +105,6 @@ namespace Expresso.Builtins
 
 		public class ExpressoObj : IEnumerable<object>, IEnumerable
 		{
-			/// <summary>
-			/// オブジェクトの型。
-			/// The type of this object.
-			/// </summary>
-			public TYPES Type{
-				get; internal set;
-			}
-
 			private ClassDefinition definition;
 
 			private object[] members;
@@ -111,43 +117,13 @@ namespace Expresso.Builtins
 				get{return definition.Name;}
 			}
 
-			/*public object this[int index]
-			{
-				get{
-					switch(Type){
-					case TYPES.LIST:
-						return ((List<object>)members[0])[index];
-
-					case TYPES.TUPLE:
-						return ((ExpressoTuple)members[0])[index];
-
-					default:
-						return null;
-					}
-				}
-			}
-
-			public object this[object key]
-			{
-				get{
-					if(Type == TYPES.DICT){
-						object value = null;
-						((Dictionary<object, object>)members[0]).TryGetValue(key, out value);
-						return value;
-					}else
-						return null;
-				}
-			}*/
-
-			public ExpressoObj(ClassDefinition definition, TYPES objType = TYPES.CLASS)
+			public ExpressoObj(ClassDefinition definition)
 			{
 				this.definition = definition;
 				int num_mems = definition.GetNumberOfMembers();
 				this.members = new object[num_mems];
 				for(int i = 0; i < definition.Members.Length; ++i)
 					this.members[i] = definition.Members[i];
-
-				this.Type = objType;
 			}
 
 			public override bool Equals (object obj)
@@ -165,7 +141,7 @@ namespace Expresso.Builtins
 
 			public override string ToString ()
 			{
-				return string.Format("[ExpressoObj: Type={0}, ClassName={1}]", Type, ClassName);
+				return string.Format("[ExpressoObj: ClassName={0}]", ClassName);
 			}
 
 			IEnumerator IEnumerable.GetEnumerator()

@@ -13,6 +13,12 @@ namespace Expresso.Ast
 	/// </summary>
 	public class ForStatement : BreakableStatement
 	{
+		/// <summary>
+		/// inキーワードの左辺値がlet式を含むかどうかをあらわす。
+		/// Indicates whether the left-hand-side of the in keyword has a let keyword.
+		/// Used to determine whether it first initializes local variables defined in the target expression
+		/// of the for statement or not.
+		/// </summary>
 		public bool HasLet{get; internal set;}
 
 		/// <summary>
@@ -62,7 +68,7 @@ namespace Expresso.Ast
 
         internal override object Run(VariableStore varStore)
         {
-            IEnumerable<object> iterable = Target.Run(varStore) as IEnumerable<object>;
+            IEnumerable iterable = Target.Run(varStore) as IEnumerable;
 			if(iterable == null)
 				throw new EvalException("Can not evaluate the expression to an iterable object!");
 

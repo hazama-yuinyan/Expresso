@@ -83,18 +83,25 @@ namespace Expresso.Interpreter
 		/// main関数をエントリーポイントとしてプログラムを実行する。
 		/// Run the program with the "main" function as the entry point.
 		/// </summary>
+		/// <param name="args">
+		/// Arguments passed into the C#'s main function.
+		/// </param>
 		/// <exception cref='EvalException'>
 		/// Is thrown when the eval exception.
 		/// </exception>
 		/// <returns>The return value of the main function</returns>
-		public object Run()
+		public object Run(List<object> args = null)
 		{
 			if(MainFunc == null)
 				throw new EvalException("No entry point");
-			
+
+			if(args == null)
+				args = new List<object>();
+
+			var main_args = ImplementationHelpers.Slice(args, new ExpressoIntegerSequence(1, args.Count, 1));
 			var call = new Call{
 				Function = MainFunc,
-				Arguments = new List<Expression>()
+				Arguments = new List<Expression>{new Constant{ValType = TYPES.LIST, Value = main_args}}
 			};
 			
 			return call.Run(var_store);
@@ -115,6 +122,10 @@ namespace Expresso.Interpreter
 			return root.Run(var_store);
 		}
 
+		/// <summary>
+		/// あるASTノードを対象にインタープリターを起動する。
+		/// Run the interpreter on a specified AST node.
+		/// </summary>
 		public object Run(Node node)
 		{
 			if(node == null)

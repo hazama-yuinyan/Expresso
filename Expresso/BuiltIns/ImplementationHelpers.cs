@@ -85,6 +85,12 @@ namespace Expresso.Helpers
 			case TYPES.STRING:
 				return default(string);
 
+			case TYPES.BIGINT:
+				return new BigInteger();
+
+			case TYPES.RATIONAL:
+				return new Fraction();
+
 			case TYPES.CLASS:
 			case TYPES.FUNCTION:
 			case TYPES.EXPRESSION:
@@ -141,30 +147,6 @@ namespace Expresso.Helpers
 				return null;
 			}
 		}
-
-		/// <summary>
-		/// C#のオブジェクトを必要に応じてExpressoのオブジェクトに変換する。
-		/// Wraps C#'s object in an Expresso object when needed.
-		/// </summary>
-		/*public static object WrapObject(object original, TYPES objType)
-		{
-			switch(objType){
-			case TYPES.DICT:
-				return ExpressoFunctions.MakeDict(original as Dictionary<object, object>);
-
-			case TYPES.LIST:
-				return ExpressoFunctions.MakeList(original as List<object>);
-
-			case TYPES.SEQ:
-				return ExpressoIntegerSequence.Construct((ExpressoIntegerSequence)original);
-
-			case TYPES.TUPLE:
-				return ExpressoFunctions.MakeTuple(original as List<object>);
-
-			default:
-				return original;
-			}
-		}*/
 
 		public static IEnumerable<Identifier> CollectLocalVars(Expression expr)
 		{
@@ -263,7 +245,7 @@ namespace Expresso.Helpers
 		/// Calculates the GCD(Greatest common deivisor).
 		/// </summary>
 		/// <returns>
-		/// The GCD of the two unsigned long values.
+		/// The GCD of the two BigIntegers.
 		/// </returns>
 		/// <param name='first'>
 		/// First.
@@ -288,7 +270,7 @@ namespace Expresso.Helpers
 		/// Calculates the LCM(Least common multiple).
 		/// </summary>
 		/// <returns>
-		/// The LCM of the two unsigned long values.
+		/// The LCM of the two BigIntegers.
 		/// </returns>
 		/// <param name='first'>
 		/// First.
@@ -307,22 +289,10 @@ namespace Expresso.Helpers
 			return null;
 		}
 
-		public static List<Argument> CreateArgList(params Identifier[] args)
+		public static Argument MakeArg(Identifier ident, Expression option = null)
 		{
-			var result = new List<Argument>();
-			foreach(var arg in args)
-				result.Add(new Argument{Ident = arg});
-
-			return result;
+			return new Argument{Ident = ident, Option = option};
 		}
-
-		/*public static void AddBuiltinObjects()
-		{
-			ExpressoList.AddDefinition();
-			ExpressoDictionary.AddDefinition();
-			ExpressoIntegerSequence.AddDefinition();
-			ExpressoTuple.AddDefinition();
-		}*/
 
 		public static ExprTree.LambdaExpression MakeNativeCtorCall(Type targetType, params Type[] types)
 		{
@@ -368,29 +338,22 @@ namespace Expresso.Helpers
 			object result;
 			var enumerator = seq.GetEnumerator();
 
-			if(src is List<object> || src is ExpressoTuple){
-				var er = ((IEnumerable<object>)src).GetEnumerator();
+			if(src is List<object>){
+				int index;
 				var tmp = new List<object>();
-				while(er.MoveNext() && enumerator.MoveNext())
-					tmp.Add(er.Current);
-					
-				if(src is List<object>)
-					result = tmp;
-				else
-					result = ExpressoFunctions.MakeTuple(tmp);
-			}else if(src is Dictionary<object, object>){
-				var er = ((Dictionary<object, object>)src).GetEnumerator();
-				var keys = new List<object>();
-				var values = new List<object>();
-				while(er.MoveNext() && enumerator.MoveNext()){
-					var pair = er.Current as Nullable<KeyValuePair<object, object>>;
-					if(pair == null)
-						throw new EvalException("Can not evaluate an element to a valid dictionary element.");
+				var orig_list = (List<object>)src;
+				while(enumerator.MoveNext() && (index = (int)enumerator.Current) < orig_list.Count)
+					tmp.Add(orig_list[index]);
 
-					keys.Add(pair.Value.Key);
-					values.Add(pair.Value.Value);
-				}
-				result = ExpressoFunctions.MakeDict(keys, values);
+				result = tmp;
+			}else if(src is ExpressoTuple){
+				int index;
+				var orig_tuple = (ExpressoTuple)src;
+				var tmp = new List<object>();
+				while(enumerator.MoveNext() && (index = (int)enumerator.Current) < orig_tuple.Size)
+					tmp.Add(orig_tuple[index]);
+					
+				result = ExpressoFunctions.MakeTuple(tmp);
 			}else{
 				throw new EvalException("This object doesn't support slice operation!");
 			}
@@ -481,156 +444,5 @@ namespace Expresso.Helpers
 			this.inst = inst;
 		}
 	}
-
-	/*internal class ExpressoList
-	{
-		public static void AddDefinition()
-		{
-			var privates = new Dictionary<string, int>();
-			privates.Add("content", 0);
-
-			var publics = new Dictionary<string, int>();
-			publics.Add("length", 1);
-			publics.Add("add", 2);
-			publics.Add("addRange", 3);
-			publics.Add("clear", 4);
-			publics.Add("contains", 5);
-			publics.Add("exists", 6);
-			publics.Add("find", 7);
-			publics.Add("findAll", 8);
-			publics.Add("findLast", 9);
-			publics.Add("each", 10);
-			publics.Add("indexOf", 11);
-			publics.Add("insert", 12);
-			publics.Add("remove", 13);
-			publics.Add("removeAt", 14);
-			publics.Add("removeAll", 15);
-			publics.Add("reverse", 16);
-			publics.Add("sort", 17);
-
-			var definition = new ExpressoClass.ClassDefinition("List", privates, publics);
-			definition.Members = new object[]{
-				null,
-				new NativeMethodNullary<int, List<object>>(
-					"length", (List<object> inst) => inst.Count
-				),
-				new NativeMethodUnary<Void, List<object>, object>(
-					"add", new Identifier("elem", TYPES.VAR, 1), (List<object> inst, object elem) => {inst.Add(elem);}
-				),
-				new NativeMethodUnary<Void, List<object>, IEnumerable<object>>(
-					"addRange", new Identifier("elems", TYPES.VAR, 1), (List<object> inst, IEnumerable<object> elems) => {inst.AddRange(elems);}
-				),
-				new NativeMethodNullary<Void, List<object>>(
-					"clear", (List<object> inst) => {inst.Clear();}
-				),
-				new NativeMethodUnary<bool, List<object>, object>(
-					"contains", new Identifier("elem", TYPES.VAR, 1), (List<object> inst, object elem) => inst.Contains(elem)
-				),
-				new NativeMethodUnary<bool, List<object>, Predicate<object>>(
-					"exists", new Identifier("pred", TYPES.FUNCTION, 1), (List<object> inst, Predicate<object> pred) => inst.Exists(pred)
-				),
-				new NativeMethodUnary<object, List<object>, Predicate<object>>(
-					"find", new Identifier("pred", TYPES.FUNCTION, 1), (List<object> inst, Predicate<object> pred) => inst.Find(pred)
-				),
-				new NativeMethodUnary<List<object>, List<object>, Predicate<object>>(
-					"findAll", new Identifier("pred", TYPES.FUNCTION, 1),
-					(List<object> inst, Predicate<object> pred) => inst.FindAll(pred)
-				),
-				new NativeMethodUnary<object, List<object>, Predicate<object>>(
-					"findLast", new Identifier("pred", TYPES.FUNCTION, 1), (List<object> inst, Predicate<object> pred) => inst.FindLast(pred)
-				),
-				new NativeMethodUnary<Void, List<object>, Action<object>>(
-					"each", new Identifier("func", TYPES.FUNCTION, 1), (List<object> inst, Action<object> func) => {inst.ForEach(func);}
-				),
-				new NativeMethodUnary<int, List<object>, object>(
-					"indexOf", new Identifier("elem", TYPES.VAR, 1), (List<object> inst, object elem) => inst.IndexOf(elem)
-				),
-				new NativeMethodBinary<Void, List<object>, object, object>(
-					"insert", new Identifier("index", TYPES.INTEGER, 1), new Identifier("elem", TYPES.VAR, 2),
-					(List<object> inst, object index, object elem) => {inst.Insert((int)index, elem);}
-				),
-				new NativeMethodUnary<bool, List<object>, object>(
-					"remove", new Identifier("elem", TYPES.VAR, 1), (List<object> inst, object elem) => inst.Remove(elem)
-				),
-				new NativeMethodUnary<Void, List<object>, int>(
-					"removeAt", new Identifier("index", TYPES.INTEGER, 1), (List<object> inst, int index) => {inst.RemoveAt(index);}
-				),
-				new NativeMethodUnary<int, List<object>, Predicate<object>>(
-					"removeAll", new Identifier("pred", TYPES.FUNCTION, 1), (List<object> inst, Predicate<object> pred) => inst.RemoveAll(pred)
-				),
-				new NativeMethodNullary<Void, List<object>>(
-					"reverse", (List<object> inst) => {inst.Reverse();}
-				),
-				new NativeMethodUnary<Void, List<object>, Comparison<object>>(
-					"sort", new Identifier("comp", TYPES.FUNCTION, 1), (List<object> inst, Comparison<object> comp) => {inst.Sort(comp);}
-				)
-			};
-
-			ExpressoClass.AddClass(definition);
-		}
-
-		public static ExpressoClass.ExpressoObj Construct(List<object> inst)
-		{
-			ExpressoClass.ClassDefinition definition;
-			ExpressoClass.Classes.TryGetValue("List", out definition);
-			definition.Members[0] = inst;
-			return new ExpressoClass.ExpressoObj(definition, TYPES.LIST);
-		}
-	}
-
-	internal class ExpressoDictionary
-	{
-		public static void AddDefinition()
-		{
-			var privates = new Dictionary<string, int>();
-			privates.Add("content", 0);
-
-			var publics = new Dictionary<string, int>();
-			publics.Add("length", 1);
-			publics.Add("add", 2);
-			publics.Add("contains", 3);
-			publics.Add("get", 4);
-			publics.Add("remove", 5);
-
-			var definition = new ExpressoClass.ClassDefinition("Dictionary", privates, publics);
-			definition.Members = new object[]{
-				null,
-				new NativeMethodNullary<int, Dictionary<object, object>>(
-					"length", (Dictionary<object, object> inst) => inst.Count
-				),
-				new NativeMethodBinary<Void, Dictionary<object, object>, object, object>(
-					"add", new Identifier("key", TYPES.VAR, 1), new Identifier("val", TYPES.VAR, 2),
-					(Dictionary<object, object> inst, object key, object val) => {inst.Add(key, val);}
-				),
-				new NativeMethodUnary<bool, Dictionary<object, object>, object>(
-					"contains", new Identifier("key", TYPES.VAR, 1),
-					(Dictionary<object, object> inst, object key) => inst.ContainsKey(key)
-				),
-				new NativeMethodUnary<object, Dictionary<object, object>, object>(
-					"get", new Identifier("key", TYPES.VAR, 1), (Dictionary<object, object> inst, object key) => {
-						object value;
-						if(inst.TryGetValue(key, out value))
-							return value;
-
-						return null;
-					}
-				),
-				new NativeMethodUnary<bool, Dictionary<object, object>, object>(
-					"remove", new Identifier("elem", TYPES.VAR, 1),
-					(Dictionary<object, object> inst, object key) => inst.Remove(key)
-				)
-			};
-
-			ExpressoClass.AddClass(definition);
-		}
-
-		static public ExpressoClass.ExpressoObj Construct(Dictionary<object, object> inst)
-		{
-			ExpressoClass.ClassDefinition definition;
-			ExpressoClass.Classes.TryGetValue("Dictionary", out definition);
-			definition.Members[0] = inst;
-			return new ExpressoClass.ExpressoObj(definition, TYPES.DICT);
-		}
-	}*/
 }
 

@@ -1,10 +1,12 @@
 using System;
 using System.Collections.Generic;
+using System.Numerics;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Linq;
 using Expresso.Ast;
 using Expresso.Builtins;
+using Expresso.Builtins.Library;
 using Expresso.Interpreter;
 using Expresso.Helpers;
 
@@ -24,12 +26,15 @@ namespace Expresso.Builtins
 		private static Regex format_refs = new Regex(@"%([0-9.]*)([boxXsdfcueEgG])");
 
 		#region Expressoの組み込み関数郡
+		#region 数学関数郡
 		public static object Abs(object val)
 		{
 			if(val is int)
 				return Math.Abs((int)val);
 			else if(val is double)
 				return Math.Abs((double)val);
+			else if(val is BigInteger)
+				return BigInteger.Abs((BigInteger)val);
 			else
 				return null;
 		}
@@ -44,6 +49,7 @@ namespace Expresso.Builtins
 
 			return Math.Sqrt(tmp);
 		}
+		#endregion
 
 		public static object ToInt(object val)
 		{
@@ -141,6 +147,19 @@ namespace Expresso.Builtins
 
 			return string.Format(tmp, vars);
 		}
+
+		/// <summary>
+		/// Iterates some sequence and returns a tuple containing an index and the corresponding element.
+		/// </summary>
+		public static IEnumerable<ExpressoTuple> Each(IEnumerable<object> src)
+		{
+			var er = src.GetEnumerator();
+			if(!er.MoveNext())
+				throw new InvalidOperationException();
+
+			for(int i = 0; er.MoveNext(); ++i)
+				yield return new ExpressoTuple(new []{i, er.Current});
+		}
 		#endregion
 		#region Expressoのシーケンス生成関数郡
 		public static ExpressoTuple MakeTuple(List<object> objs)
@@ -190,31 +209,47 @@ namespace Expresso.Builtins
 	{
 		private static BuiltinNativeMethods inst = null;
 
-		private Dictionary<string, Dictionary<string, NativeFunctionNAry>> native_methods;
+		private Dictionary<string, Dictionary<string, NativeFunction>> native_methods;
 
 		private BuiltinNativeMethods()
 		{
-			var list = new Dictionary<string, NativeFunctionNAry>{
+			var list = new Dictionary<string, NativeFunction>{
 				{"add", new NativeFunctionNAry("add", Helpers.MakeNativeMethodCall(typeof(List<object>), "Add", typeof(object)))},
 				{"clear", new NativeFunctionNAry("clear", Helpers.MakeNativeMethodCall(typeof(List<object>), "Clear"))},
 				{"contains", new NativeFunctionNAry("contains", Helpers.MakeNativeMethodCall(typeof(List<object>), "Contains", typeof(object)))}
 			};
 
-			var tuple = new Dictionary<string, NativeFunctionNAry>{
+			var tuple = new Dictionary<string, NativeFunction>{
 				{"empty", new NativeFunctionNAry("empty", Helpers.MakeNativeMethodCall(typeof(ExpressoTuple), "Empty"))},
 				{"contains", new NativeFunctionNAry("contains", Helpers.MakeNativeMethodCall(typeof(ExpressoTuple), "Contains", typeof(object)))}
 			};
 
-			var dict = new Dictionary<string, NativeFunctionNAry>{
+			var dict = new Dictionary<string, NativeFunction>{
 				{"add", new NativeFunctionNAry("add", Helpers.MakeNativeMethodCall(typeof(Dictionary<object, object>), "Add", typeof(object), typeof(object)))},
 				{"contains", new NativeFunctionNAry("contains", Helpers.MakeNativeMethodCall(typeof(Dictionary<object, object>), "ContainsKey", typeof(object)))},
 				{"remove", new NativeFunctionNAry("remove", Helpers.MakeNativeMethodCall(typeof(Dictionary<object, object>), "Remove", typeof(object)))},
 			};
 
-			native_methods = new Dictionary<string, Dictionary<string, NativeFunctionNAry>>{
+			var file_obj = new Dictionary<string, NativeFunction>{
+				{"constructor", new NativeLambdaTernary("constructor", Helpers.MakeArg(new Identifier("path", new TypeAnnotation(TYPES.STRING))),
+					                                        Helpers.MakeArg(new Identifier("option", new TypeAnnotation(TYPES.STRING))),
+					                                        Helpers.MakeArg(new Identifier("encoding", new TypeAnnotation(TYPES.STRING)), new Constant{ValType = TYPES.STRING, Value = "UTF-8"}),
+					                                        (object path, object option, object encoding) => FileObject.OpenFile((string)path, (string)option, (string)encoding))},
+				{"read", new NativeFunctionNAry("read", Helpers.MakeNativeMethodCall(typeof(FileObject), "Read"))},
+				{"readLine", new NativeFunctionNAry("readLine", Helpers.MakeNativeMethodCall(typeof(FileObject), "ReadLine"))},
+				{"readAll", new NativeFunctionNAry("readAll", Helpers.MakeNativeMethodCall(typeof(FileObject), "ReadAll"))},
+				{"write", new NativeFunctionNAry("write", Helpers.MakeNativeMethodCall(typeof(FileObject), "Write", typeof(object)))},
+				{"openFile", new NativeLambdaTernary("openFile", Helpers.MakeArg(new Identifier("path", new TypeAnnotation(TYPES.STRING))),
+					                                     Helpers.MakeArg(new Identifier("option", new TypeAnnotation(TYPES.STRING))),
+					                                     Helpers.MakeArg(new Identifier("encoding", new TypeAnnotation(TYPES.STRING)), new Constant{ValType = TYPES.STRING, Value = "UTF-8"}),
+					                                     (object path, object option, object encoding) => FileObject.OpenFile((string)path, (string)option, (string)encoding))}
+			};
+
+			native_methods = new Dictionary<string, Dictionary<string, NativeFunction>>{
 				{"List", list},
 				{"Tuple", tuple},
-				{"Dictionary", dict}
+				{"Dictionary", dict},
+				{"File", file_obj}
 			};
 		}
 
@@ -226,13 +261,13 @@ namespace Expresso.Builtins
 			return inst;
 		}
 
-		public NativeFunctionNAry LookupMethod(string typeName, string methodName)
+		public NativeFunction LookupMethod(string typeName, string methodName)
 		{
-			Dictionary<string, NativeFunctionNAry> type_dict;
+			Dictionary<string, NativeFunction> type_dict;
 			if(!native_methods.TryGetValue(typeName, out type_dict))
 				throw new EvalException(typeName + " is not a native class name!");
 
-			NativeFunctionNAry method;
+			NativeFunction method;
 			if(!type_dict.TryGetValue(methodName, out method))
 				throw new EvalException(typeName + " doesn't have the method \"" + methodName + "\".");
 

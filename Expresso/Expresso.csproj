@@ -76,6 +76,9 @@
     <Compile Include="Ast\New.cs" />
     <Compile Include="Ast\RequireExpression.cs" />
     <Compile Include="BuiltIns\Library.cs" />
+    <Compile Include="Ast\WithStatement .cs" />
+    <Compile Include="Ast\TryStatement.cs" />
+    <Compile Include="Interpreter\ExpressoThrowException.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -85,8 +88,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Expresso.ATG" />
-    <None Include="tests\test.exs" />
-    <None Include="tests\calc_prime_nums.exs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Interpreter\" />

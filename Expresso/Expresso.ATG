@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using Expresso.Ast;
 using Expresso.Builtins;
 using Expresso.Interpreter;
@@ -13,27 +14,19 @@ COMPILER Expresso
 	private Scope funcs = new Scope();	//the namespace for funcTable
 	public Block root = new Block();
 	static public Function main_func = null;	//the main function
-	static private List<BreakableStatement> breakables = new List<BreakableStatement>();	//the current parent breakbles
+	static private List<BreakableStatement> breakables = new List<BreakableStatement>();	//the current parent breakbles hierarchy
 	bool ignore_parent_scope = false;
-	static private readonly TypeAnnotation VoidType = new TypeAnnotation(TYPES.UNDEF);
-	static private readonly TypeAnnotation VariadicType = new TypeAnnotation(TYPES.VAR);
-	static private readonly TypeAnnotation InferenceType = new TypeAnnotation(TYPES._INFERENCE);
 	
 	Parser()
 	{			//Add built-in functions
 		Function[] native_funcs = {
-			new NativeLambdaUnary("abs", new Identifier("val", new TypeAnnotation(TYPES.VAR), 0), ExpressoFunctions.Abs),
-			new NativeLambdaUnary("sqrt", new Identifier("val", new TypeAnnotation(TYPES.VAR), 0), ExpressoFunctions.Sqrt),
-			new NativeLambdaUnary("toInt", new Identifier("val", new TypeAnnotation(TYPES.VAR), 0), ExpressoFunctions.ToInt)
+			new NativeLambdaUnary("abs", ImplementationHelpers.MakeArg(new Identifier("val", new TypeAnnotation(TYPES.VAR), 0)), ExpressoFunctions.Abs),
+			new NativeLambdaUnary("sqrt", ImplementationHelpers.MakeArg(new Identifier("val", new TypeAnnotation(TYPES.VAR), 0)), ExpressoFunctions.Sqrt),
+			new NativeLambdaUnary("toInt", ImplementationHelpers.MakeArg(new Identifier("val", new TypeAnnotation(TYPES.VAR), 0)), ExpressoFunctions.ToInt)
 		};
 		foreach(var tmp in native_funcs)
 			funcs.AddFunction(tmp);
 	}
-	
-	/*static Parser()
-	{
-		ImplementationHelpers.AddBuiltinObjects();
-	}*/
 	
 	Constant CreateConstant(TYPES type)
 	{
@@ -256,6 +249,14 @@ COMPILER Expresso
 		return new RequireExpression{ModuleName = moduleName, AliasName = aliasName};
 	}
 	
+	static TryStatement MakeTryStmt(Block body, List<CatchClause> catches, Block finallyClause)
+	{
+		if(finallyClause != null)
+			return new TryStatement{Body = body, Catches = catches, FinallyClause = new FinallyClause{Body = finallyClause}};
+		else
+			return new TryStatement{Body = body, Catches = catches, FinallyClause = null};
+	}
+	
 /*--------------------------------------------------------------------------*/
 CHARACTERS
   letter = 'A'..'Z' + 'a'..'z'.
@@ -394,12 +395,12 @@ ConstructorDecl<out Statement func, string className>	(.
   [ParamList<ref @params>]		(. @params.Insert(0, exs_this); .)
   ')'
   Block<out block> 				(.
-  									func = MakeFunc("constructor", @params, (Block)block, VoidType);
+  									func = MakeFunc("constructor", @params, (Block)block, TypeAnnotation.VoidType.Clone());
   									cur_scope = cur_scope.Parent;
   								.).
 /*------------------------------------------------------------------------*/
 MethodDecl<out Statement func, string className>  (.
-													string name; TypeAnnotation type = VariadicType; Statement block = null;
+													string name; TypeAnnotation type = TypeAnnotation.VariadicType.Clone(); Statement block = null;
 													var @params = new List<Argument>(); Identifier ident_this; Argument exs_this = null;
 												  .)
 =
@@ -424,8 +425,8 @@ MethodDecl<out Statement func, string className>  (.
   									cur_scope = cur_scope.Parent;
   								.).
 /*------------------------------------------------------------------------*/
-FieldDecl<. out List<Expression> outs .> (. string name; TypeAnnotation type = InferenceType; Expression rhs = null; Identifier variable;
-											outs = new List<Expression>();
+FieldDecl<. out List<Expression> outs .> (. string name; TypeAnnotation type = TypeAnnotation.InferenceType.Clone(); Expression rhs = null;
+											Identifier variable; outs = new List<Expression>();
 								   			var vars = new List<Identifier>(); var exprs = new List<Expression>();
 										 .)
 = 
@@ -465,7 +466,7 @@ FieldDecl<. out List<Expression> outs .> (. string name; TypeAnnotation type = I
   					   	   			});
   								.).
 /*------------------------------------------------------------------------*/
-Type<out TypeAnnotation type>		(. type = new TypeAnnotation(TYPES._INFERENCE); .)
+Type<out TypeAnnotation type>		(. type = TypeAnnotation.InferenceType.Clone(); .)
 =
  ( "int"                			(. type.ObjType = TYPES.INTEGER; .)
  | "bool"               			(. type.ObjType = TYPES.BOOL; .)
@@ -506,7 +507,7 @@ PrintStmt<out Statement stmt>		(. List<Expression> exprs = null; bool trailing_c
   [',']								(. trailing_comma = true; .)
   SYNC ';'							(. stmt = new PrintStatement{Expressions = exprs, HasTrailing = trailing_comma}; .).
 /*------------------------------------------------------------------------*/
-ReturnStmt<out Statement stmt>		(. List<Expression> target_list = new List<Expression>(); /*bool trailing_comma;*/ .)
+ReturnStmt<out Statement stmt>		(. List<Expression> target_list = new List<Expression>(); .)
 =
   "return"
   [RValueList<out target_list>]
@@ -580,7 +581,9 @@ CompoundStmt<out Statement stmt>	(. stmt = null; .)
   | WhileStmt<out stmt>
   | ForStmt<out stmt>
   | SwitchStmt<out stmt>
-  | FuncDecl<out stmt>.
+  | FuncDecl<out stmt>
+  | WithStmt<out stmt>
+  | TryStmt<out stmt>.
 /*------------------------------------------------------------------------*/
 IfStmt<out Statement stmt>			(. Expression tmp; Statement true_block, false_block = null; .)
 =
@@ -671,29 +674,36 @@ LValueList<. out List<Expression> targets .>		(. Expression tmp; .)
   AddOpe<out tmp>									(. targets.Add(tmp); .)
   { WEAK ','
     AddOpe<out tmp>									(. targets.Add(tmp); .)
-  }
-  /*[',']*/ .
+  } .
 /*------------------------------------------------------------------------*/
-LValueListWithLet<. out List<Expression> targets .>	(. Expression tmp; Identifier ident = null; .)
+LValueListWithLet<. out List<Expression> targets .>	(. Expression tmp; Identifier ident = null; TypeAnnotation type = TypeAnnotation.InferenceType; .)
 =													(. targets = null; .)
   "let"												(. targets = new List<Expression>(); .)
-  AddOpe<out tmp>									(. 
+  AddOpe<out tmp>									
+  [ "(-"
+    Type<out type>
+  ]													(. 
   														ident = tmp as Identifier;
   														if(ident == null) SemErr("Expected a lvalue!");
+  														ident.ParamType = type;
   														cur_scope.AddLocal(ref ident);
   														targets.Add(ident);
   													.)
   { WEAK ','
-    AddOpe<out tmp>									(.
+    AddOpe<out tmp>
+    [ "(-"
+      Type<out type>
+    ]												(.
     													ident = tmp as Identifier;
     													if(ident == null) SemErr("Expected a lvalue!");
+    													ident.ParamType = type;
     													cur_scope.AddLocal(ref ident);
     													targets.Add(ident);
     												.)
   }.
 /*------------------------------------------------------------------------*/
 VarDecl<. out List<Expression> outs .> 	(.
-											string name; TypeAnnotation type = InferenceType; Expression rhs = null;
+											string name; TypeAnnotation type = TypeAnnotation.InferenceType.Clone(); Expression rhs = null;
 											Identifier variable; outs = new List<Expression>();
 								   			var vars = new List<Identifier>(); var exprs = new List<Expression>();
 										.)
@@ -735,7 +745,7 @@ VarDecl<. out List<Expression> outs .> 	(.
   					   	   			});
   								.).
 /*------------------------------------------------------------------------*/
-FuncDecl<out Statement func>    (. string name; TypeAnnotation type = VariadicType; Statement block; var @params = new List<Argument>(); .)
+FuncDecl<out Statement func>    (. string name; TypeAnnotation type = TypeAnnotation.VariadicType.Clone(); Statement block; var @params = new List<Argument>(); .)
 =
   SYNC
   "def"							(. block = null; cur_scope = new Scope{Parent = cur_scope}; .)
@@ -751,6 +761,32 @@ FuncDecl<out Statement func>    (. string name; TypeAnnotation type = VariadicTy
   								   cur_scope = cur_scope.Parent;
   								.).
 /*------------------------------------------------------------------------*/
+WithStmt<out Statement stmt>		(. Statement block = null; .)
+=
+  "with"
+  '('
+  ')'
+  Block<out block>					(. stmt = null; .).
+/*------------------------------------------------------------------------*/
+TryStmt<out Statement stmt>			(. 
+										Statement body, catch_body = null, finally_body = null; var catches = new List<CatchClause>();
+										TypeAnnotation excp_type = null; Identifier catch_ident = null; string name = null;
+									.)
+=
+  "try"
+  Block<out body>
+  { "catch"
+    '('
+    ident							(. name = t.val; .)
+    "(-"
+    Type<out excp_type>
+    ')'								(. catch_ident = new Identifier(name, excp_type); .)
+    Block<out catch_body>
+  }									(. catches.Add(new CatchClause{Body = (Block)catch_body, Catcher = catch_ident}); .)
+  [ "finally"
+    Block<out finally_body>
+  ]									(. stmt = MakeTryStmt((Block)body, catches, (Block)finally_body); .).
+/*------------------------------------------------------------------------*/
 ParamList<. ref List<Argument> @params .>		(. Argument expr; .)
 =
   Argument<out expr>							(. @params.Add(expr); .)
@@ -758,7 +794,7 @@ ParamList<. ref List<Argument> @params .>		(. Argument expr; .)
     Argument<out expr>							(. @params.Add(expr); .)
   }.
 /*------------------------------------------------------------------------*/
-Argument<out Argument arg>		(. string name; Expression default_val = null; TypeAnnotation type = null; .)
+Argument<out Argument arg>		(. string name; Expression default_val = null; TypeAnnotation type = TypeAnnotation.VariadicType.Clone(); .)
 =
   Variable<out name>
   [ "(-"
@@ -987,6 +1023,7 @@ Atom<out Expression expr>			(. string name; expr = null; .)
   											expr = new Identifier(name);
   											if(ignore_parent_scope){	//for the comprehension expression
   												var ident = (Identifier)expr;
+  												ident.ParamType = TypeAnnotation.InferenceType.Clone();
   												cur_scope.AddLocal(ref ident);
   												expr = ident;
   											}
@@ -1049,13 +1086,16 @@ CompIter<out ComprehensionIter expr>			(. expr = null; .)
   CompFor<out expr>
   | CompIf<out expr> .
 /*------------------------------------------------------------------------*/
-CompFor<out ComprehensionIter expr>		(. Expression rvalue = null; ComprehensionIter body = null; List<Expression> target_list; .)
+CompFor<out ComprehensionIter expr>		(. 
+											Expression rvalue = null; ComprehensionIter body = null; List<Expression> target_list;
+										.)
 =
   "for"									(. ignore_parent_scope = true; .)
-  LValueList<out target_list>			(.
+  LValueList<out target_list>			(.		//CompFor構文内で出現した未知の識別子は、自動的にこのfor式をスコープとするローカル変数になる
   											foreach(var target in target_list){
   												var ident = target as Identifier;
   												if(ident == null) SemErr("Expected a lvalue!");
+  												ident.ParamType = TypeAnnotation.InferenceType.Clone();
   												if(!cur_scope.Contains(ident.Name))
   													cur_scope.AddLocal(ref ident);
   											}
@@ -1078,12 +1118,20 @@ Variable<out string name>
 = 
   ident							(. name = t.val; .).
 /*------------------------------------------------------------------------*/
-Literal<out Expression expr>	(. expr = null; .)
+Literal<out Expression expr>	(. expr = null; string tmp; bool has_suffix = false; .)
 = 
-  integer						(. expr = MakeConstant(TYPES.INTEGER, Convert.ToInt32(t.val)); .)
+  integer						(. tmp = t.val; .)
+  [ 'l'							(. has_suffix = true; .)
+  | 'L'							(. has_suffix = true; .)
+  ]								(.
+  									if(has_suffix)
+  										expr = MakeConstant(TYPES.BIGINT, BigInteger.Parse(tmp));
+  									else
+  										expr = MakeConstant(TYPES.INTEGER, Convert.ToInt32(tmp));
+  								.)
   | hex_digit					(. expr = MakeConstant(TYPES.INTEGER, Convert.ToInt32(t.val, 16)); .)
   | float						(. expr = MakeConstant(TYPES.FLOAT, Convert.ToDouble(t.val)); .)
-  | string_literal				(. string tmp = t.val;
+  | string_literal				(. tmp = t.val;
   								   tmp = tmp.Substring(1, tmp.Length - 2);
   								   expr = MakeConstant(TYPES.STRING, tmp);
   								.)

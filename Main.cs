@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Expresso.Interpreter;
 
 namespace Expresso.Terminal
@@ -19,7 +20,7 @@ namespace Expresso.Terminal
 			var interp = new Expresso.Interpreter.Interpreter{Root = parser.root, MainFunc = Parser.main_func};
 			try{
 				interp.Initialize();
-				interp.Run();
+				interp.Run(new List<object>(args));
 			}
 			catch(EvalException eval_ex){
 				Console.WriteLine(eval_ex.Message);

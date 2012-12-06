@@ -18,8 +18,6 @@ namespace Expresso.Ast
     /// </summary>
     public class Identifier : Assignable
     {
-		public static readonly TypeAnnotation Default = new TypeAnnotation(TYPES.VAR);
-
         /// <summary>
         /// 識別子名。
 		/// The name of the identifier.

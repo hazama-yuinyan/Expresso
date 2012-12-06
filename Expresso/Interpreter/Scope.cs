@@ -14,7 +14,8 @@ namespace Expresso.Interpreter
 		internal enum NodeType
 		{
 			Local,
-			Function
+			Function,
+			Class
 		}
 
 		internal NodeType Type;

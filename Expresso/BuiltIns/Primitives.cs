@@ -30,7 +30,7 @@ namespace Expresso.Builtins
 		/// <summary>
 		/// 数列の終点。int.MinValueのときは無限リストを生成する。
 		/// The upper bound. When set to "int.MinValue", it generates an infinite series of list.
-		/// Note that the upper bound will be included in the resulting sequence.
+		/// Note that the upper bound will not be included in the resulting sequence.
 		/// </summary>
 		private int _end;
 		
@@ -123,7 +123,7 @@ namespace Expresso.Builtins
 				if(this.next == int.MinValue)
 					return false;
 
-				if(this.seq._end == int.MinValue || this.next < this.seq._end){
+				if(this.seq._end == int.MinValue || this.next + this.seq._step < this.seq._end){
 					this.next += this.seq._step;
 					return true;
 				}
@@ -156,51 +156,6 @@ namespace Expresso.Builtins
 		{
 			return this._step == 1;
 		}
-
-		/*static public void AddDefinition()
-		{
-			var privates = new Dictionary<string, int>();
-			privates.Add("content", 0);
-
-			var publics = new Dictionary<string, int>();
-			publics.Add("includes", 1);
-			publics.Add("isSequential", 2);
-			publics.Add("take", 3);
-			publics.Add("generate", 4);
-			publics.Add("takeAll", 5);
-
-			var definition = new ExpressoClass.ClassDefinition("IntSeq", privates, publics);
-			definition.Members = new object[]{
-				null,
-				new NativeMethodUnary<bool, ExpressoIntegerSequence, int>(
-					"includes", new Identifier("n", TYPES.INTEGER, 0),
-					(ExpressoIntegerSequence inst, int n) => inst.Includes(n)
-				),
-				new NativeMethodNullary<bool, ExpressoIntegerSequence>(
-					"isSequential", (ExpressoIntegerSequence inst) => inst.IsSequential()
-				),
-				new NativeMethodUnary<List<object>, ExpressoIntegerSequence, int>(
-					"take", new Identifier("count", TYPES.INTEGER, 0),
-					(ExpressoIntegerSequence inst, int n) => inst.Take(n)
-				),
-				new NativeMethodNullary<object, ExpressoIntegerSequence>(
-					"generate", (ExpressoIntegerSequence inst) => inst.Generate()
-				),
-				new NativeMethodNullary<List<object>, ExpressoIntegerSequence>(
-					"takeAll", (ExpressoIntegerSequence inst) => inst.TakeAll()
-				)
-			};
-
-			ExpressoClass.AddClass(definition);
-		}
-
-		static public ExpressoClass.ExpressoObj Construct(ExpressoIntegerSequence inst)
-		{
-			ExpressoClass.ClassDefinition definition;
-			ExpressoClass.Classes.TryGetValue("IntSeq", out definition);
-			definition.Members[0] = inst;
-			return new ExpressoClass.ExpressoObj(definition, TYPES.SEQ);
-		}*/
 	}
 
 	/// <summary>
@@ -333,47 +288,12 @@ namespace Expresso.Builtins
 			}
 		}
 		#endregion
-
-		/*static public void AddDefinition()
-		{
-			var privates = new Dictionary<string, int>();
-			privates.Add("content", 0);
-
-			var publics = new Dictionary<string, int>();
-			publics.Add("length", 1);
-			publics.Add("empty", 2);
-			publics.Add("contains", 3);
-
-			var definition = new ExpressoClass.ClassDefinition("Tuple", privates, publics);
-			definition.Members = new object[]{
-				null,
-				new NativeMethodNullary<int, ExpressoTuple>(
-					"length", (ExpressoTuple inst) => inst.Size
-				),
-				new NativeMethodNullary<bool, ExpressoTuple>(
-					"empty", (ExpressoTuple inst) => inst.Empty()
-				),
-				new NativeMethodUnary<bool, ExpressoTuple, object>(
-					"contains", new Identifier("elem", TYPES.VAR, 1), (ExpressoTuple inst, object elem) => inst.Contains(elem)
-				)
-			};
-
-			ExpressoClass.AddClass(definition);
-		}
-
-		static public ExpressoClass.ExpressoObj Construct(ExpressoTuple inst)
-		{
-			ExpressoClass.ClassDefinition definition;
-			ExpressoClass.Classes.TryGetValue("Tuple", out definition);
-			definition.Members[0] = inst;
-			return new ExpressoClass.ExpressoObj(definition, TYPES.TUPLE);
-		}*/
 	}
 
 	/// <summary>
 	/// The built-in fraction class, which represents a fraction as it is.
 	/// </summary>
-	public class Fraction : IComparable
+	public struct Fraction : IComparable
 	{
 		/// <summary>
 		/// Represents the dominator of the fraction.
@@ -416,7 +336,7 @@ namespace Expresso.Builtins
 		/// <param name='isPositive'>
 		/// Is positive.
 		/// </param>
-		public Fraction(BigInteger numerator, BigInteger denominator)
+		public Fraction(BigInteger numerator, BigInteger denominator) : this()
 		{
 			Denominator = denominator;
 			Numerator = numerator;
@@ -428,7 +348,7 @@ namespace Expresso.Builtins
 		/// <param name='integer'>
 		/// Integer.
 		/// </param>
-		public Fraction(BigInteger integer)
+		public Fraction(BigInteger integer) : this()
 		{
 			Denominator = 1;
 			Numerator = integer;
@@ -440,7 +360,7 @@ namespace Expresso.Builtins
 		/// <param name='val'>
 		/// The value in double.
 		/// </param>
-		public Fraction(double val)
+		public Fraction(double val) : this()
 		{
 			BigInteger floored = new BigInteger(val), denominator = new BigInteger(1);
 			double tmp = val - (double)floored;
@@ -497,22 +417,18 @@ namespace Expresso.Builtins
 
 		public int CompareTo(object obj)
 		{
-			var other = obj as Fraction;
-
-			if(other == null)
-				return 0xffff;
+			if(!(obj is Fraction))
+				return -1;
 
 			return -1;
 		}
 
 		public override bool Equals(object obj)
 		{
-			var other = obj as Fraction;
-
-			if(other == null)
+			if(!(obj is Fraction))
 				return false;
 
-			return this == other;
+			return this == (Fraction)obj;
 		}
 
 		public override int GetHashCode()

@@ -21,12 +21,12 @@ public:
 		return this.x;
 	}
 
-	def getY()
+	def getY() -> int
 	{
 		return this.y;
 	}
 
-	def getXPlus(n)
+	def getXPlus(n) -> int
 	{
 		return this.x + n;
 	}

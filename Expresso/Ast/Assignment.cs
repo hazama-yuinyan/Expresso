@@ -49,7 +49,7 @@ namespace Expresso.Ast
 			for(i = 0; i < Expressions.Count; ++i)	//まず右辺をすべて評価する
 				rvalues.Add(Expressions[i].Run(varStore));
 
-			for (i = 0; i < Targets.Count; ++i) {	//その後左辺値に代入する
+			for(i = 0; i < Targets.Count; ++i){		//その後左辺値に代入する
 				var assignable = Targets[i] as Assignable;
 				if(assignable == null)
 					throw new EvalException("Can not assign a value to the target!");

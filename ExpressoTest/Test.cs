@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Collections.Generic;
+using System.Numerics;
 using System.Reflection;
 using NUnit.Framework;
 using Expresso.Ast;
@@ -12,20 +13,21 @@ namespace Expresso.Test
 {
 	internal class Helpers
 	{
-		public static Primitive AutoCast<Primitive>(object target)
-		{
-			if(target == null) throw new Exception("Something wrong has occurred. The target is null!");
-
-			return (Primitive)target;
-		}
-
 		public static int CalcSum(int start, int max)
 		{
 			var result = 0;
-			for(int i = start; i <= max; ++i)
+			for(int i = start; i < max; ++i)
 				result += i;
 
 			return result;
+		}
+
+		public static int Fib(int n)
+		{
+			if(n < 2)
+				return 1;
+			else
+				return Fib(n - 1) + Fib(n - 2);
 		}
 
 		public static void DoTest(List<object> targets, object[] expects)
@@ -71,9 +73,10 @@ namespace Expresso.Test
 				1.0e4,	//f_b
 				0.001,	//c
 				.1e-2,	//f_c
-				"This is a test",	//d
-				ExpressoFunctions.MakeList(new List<object>()),	//e
-				ExpressoFunctions.MakeDict(new List<object>(), new List<object>())	//f
+				new BigInteger(10000000),	//d
+				"This is a test",	//e
+				ExpressoFunctions.MakeList(new List<object>()),	//f
+				ExpressoFunctions.MakeDict(new List<object>(), new List<object>())	//g
 			};
 
 			Helpers.DoTest(store, expected);
@@ -164,6 +167,12 @@ namespace Expresso.Test
 			var expected_y = 200;
 			var expected_sum = Helpers.CalcSum(0, expected_y);
 			var expected_strs = ExpressoFunctions.MakeList(new List<object>{"akarichan", "chinatsu", "kyoko", "yui"});
+			var expected_fibs = new List<object>();
+			for(int i = 0; ; ++i){
+				int fib = Helpers.Fib(i);
+				if(fib >= 1000) break;
+				expected_fibs.Add(fib);
+			}
 
 			var expected = new object[]{
 				100,	//x
@@ -172,7 +181,8 @@ namespace Expresso.Test
 				400,	//w
 				true,	//flag
 				expected_sum,
-				expected_strs
+				expected_strs,
+				expected_fibs
 			};
 
 			Helpers.DoTest(results, expected);
@@ -222,7 +232,7 @@ namespace Expresso.Test
 			var expected_x = ExpressoFunctions.MakeList(tmp_x);
 
 			var tmp_y = new List<object>(50);
-			for(int j = 0; j <= 100; ++j){
+			for(int j = 0; j < 100; ++j){
 				if(j % 2 == 0)
 					tmp_y.Add(j);
 			}
@@ -230,7 +240,7 @@ namespace Expresso.Test
 			var expected_y = ExpressoFunctions.MakeList(tmp_y);
 
 			var tmp_z = new List<object>(50 * 100);
-			for(int k = 0; k <= 100; ++k){
+			for(int k = 0; k < 100; ++k){
 				if(k % 2 == 0){
 					for(int l = 0; l < 100; ++l)
 						tmp_z.Add(ExpressoFunctions.MakeTuple(new List<object>{k, l}));
@@ -264,17 +274,45 @@ namespace Expresso.Test
 			var results = interp.Run() as List<object>;
 			Assert.IsNotNull(results);
 
-			//var test_definition = new ExpressoClass.ClassDefinition("Test", privates, publics);
-			//var expected_a = null;
-
 			var expected = new object[]{
-				//expected_a,
 				1,		//b
 				3,		//c
 				101		//d
 			};
 
-			Helpers.DoTest(results, expected);
+			var a = results[0] as ExpressoClass.ExpressoObj;
+			Assert.IsNotNull(a);
+			Assert.Throws(typeof(EvalException), () => a.AccessMember(new Identifier("x"), false));
+			Assert.Throws(typeof(EvalException), () => a.AccessMember(new Identifier("y"), false));
+			var ctor = a.AccessMember(new Identifier("constructor"), false) as Function;
+			var func_getx = a.AccessMember(new Identifier("getX"), false) as Function;
+			var func_gety = a.AccessMember(new Identifier("getY"), false) as Function;
+			var func_getxplus = a.AccessMember(new Identifier("getXPlus"), false) as Function;
+
+			Assert.IsNotNull(ctor);
+			Assert.AreEqual("constructor", ctor.Name);
+			Assert.AreEqual(TYPES.UNDEF, ctor.ReturnType.ObjType);
+
+			Assert.IsNotNull(func_getx);
+			Assert.AreEqual("getX", func_getx.Name);
+			Assert.AreEqual(TYPES.VAR, func_getx.ReturnType.ObjType);
+
+			Assert.IsNotNull(func_gety);
+			Assert.AreEqual("getY", func_gety.Name);
+			Assert.AreEqual(TYPES.INTEGER, func_gety.ReturnType.ObjType);
+
+			Assert.IsNotNull(func_getxplus);
+			Assert.AreEqual("getXPlus", func_getxplus.Name);
+			Assert.AreEqual(TYPES.INTEGER, func_getxplus.ReturnType.ObjType);
+
+			var numeric_results = ImplementationHelpers.Slice(results, new ExpressoIntegerSequence(1, results.Count, 1)) as List<object>;
+			Helpers.DoTest(numeric_results, expected);
+		}
+
+		[TestCase]
+		public void Library()
+		{
+
 		}
 	}
 }

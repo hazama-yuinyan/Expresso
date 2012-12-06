@@ -206,8 +206,8 @@ namespace Expresso.Ast
 	{
 		private Func<object, object> func;
 
-		public NativeLambdaUnary(string name, Identifier param, Func<object, object> func) :
-			base(name, ImplementationHelpers.CreateArgList(param), null, new TypeAnnotation(TYPES.VAR))
+		public NativeLambdaUnary(string name, Argument param, Func<object, object> func) :
+			base(name, new List<Argument>{param}, null, new TypeAnnotation(TYPES.VAR))
 		{
 			this.func = func;
 		}
@@ -216,6 +216,43 @@ namespace Expresso.Ast
 		{
 			object arg = varStore.Get(0);
 			return func(arg);
+		}
+	}
+
+	public class NativeLambdaBinary : NativeFunction
+	{
+		private Func<object, object, object> func;
+
+		public NativeLambdaBinary(string name, Argument param1, Argument param2, Func<object, object, object> func) :
+			base(name, new List<Argument>{param1, param2}, null, new TypeAnnotation(TYPES.VAR))
+		{
+			this.func = func;
+		}
+
+		internal override object Run(VariableStore varStore)
+		{
+			object arg1 = varStore.Get(0);
+			object arg2 = varStore.Get(1);
+			return func(arg1, arg2);
+		}
+	}
+
+	public class NativeLambdaTernary : NativeFunction
+	{
+		private Func<object, object, object, object> func;
+
+		public NativeLambdaTernary(string name, Argument param1, Argument param2, Argument param3, Func<object, object, object, object> func) :
+			base(name, new List<Argument>{param1, param2, param3}, null, new TypeAnnotation(TYPES.VAR))
+		{
+			this.func = func;
+		}
+
+		internal override object Run(VariableStore varStore)
+		{
+			object arg1 = varStore.Get(0);
+			object arg2 = varStore.Get(1);
+			object arg3 = varStore.Get(2);
+			return func(arg1, arg2, arg3);
 		}
 	}
 }

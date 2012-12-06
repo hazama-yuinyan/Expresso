@@ -37,5 +37,11 @@ def main(){
 		}
 	}
 
-	return [x, y, z, w, flag, sum, strs];
+	let fibs = [], a = 0, b = 1;
+	while(b < 1000){
+		fibs.add(b);
+		a, b = b, a + b;
+	}
+
+	return [x, y, z, w, flag, sum, strs, fibs];
 }

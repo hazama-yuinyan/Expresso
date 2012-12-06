@@ -43,7 +43,11 @@ namespace Expresso.Ast
 		CaseClause,
 		ClassDecl,
 		New,
-		Require
+		Require,
+		WithStatement,
+		CatchClause,
+		FinallyClause,
+		ThrowStatement
     }
 
     /// <summary>

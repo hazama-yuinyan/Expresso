@@ -39,9 +39,8 @@ namespace Expresso.Ast
 				throw new EvalException("Can not evaluate the expression to a valid object.");
 
 			var subscription = Subscription.Run(varStore);
-			var subscript_obj = subscription as ExpressoClass.ExpressoObj;
-			if(subscript_obj != null && subscript_obj.Type == TYPES.SEQ){
-				var seq = (ExpressoIntegerSequence)subscript_obj.GetMember(0);
+			if(subscription is ExpressoIntegerSequence){
+				var seq = (ExpressoIntegerSequence)subscription;
 				return ImplementationHelpers.Slice(obj, seq);
 			}
 
