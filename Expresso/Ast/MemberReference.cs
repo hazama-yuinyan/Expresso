@@ -35,8 +35,6 @@ namespace Expresso.Ast
         internal override object Run(VariableStore varStore)
         {
             var obj = Parent.Run(varStore);
-			if(obj == null)
-				throw new EvalException("Can not evaluate the expression to a valid object.");
 
 			var subscription = Subscription.Run(varStore);
 			if(subscription is ExpressoIntegerSequence){
@@ -49,7 +47,7 @@ namespace Expresso.Ast
 				var member = exs_obj.AccessMember(subscription, obj == varStore.Get(0, 0));
 				return (member is Function) ? new MethodContainer(member as Function, obj) : member;
 			}else{
-				var member = ImplementationHelpers.AccessMember(obj, subscription);
+				var member = ImplementationHelpers.AccessMember((Identifier)Parent, obj, subscription);
 				return (member is Function) ? new MethodContainer(member as Function, obj) : member;
 			}
         }

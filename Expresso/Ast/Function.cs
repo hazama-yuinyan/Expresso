@@ -190,8 +190,8 @@ namespace Expresso.Ast
 	{
 		private Func<object> func;
 
-		public NativeLambdaNullary(string name, Func<object> func) :
-			base(name, null, null, new TypeAnnotation(TYPES.VAR))
+		public NativeLambdaNullary(string name, Func<object> func, TypeAnnotation returnType = null) :
+			base(name, null, null, (returnType != null) ? returnType : new TypeAnnotation(TYPES.VAR))
 		{
 			this.func = func;
 		}
@@ -206,8 +206,8 @@ namespace Expresso.Ast
 	{
 		private Func<object, object> func;
 
-		public NativeLambdaUnary(string name, Argument param, Func<object, object> func) :
-			base(name, new List<Argument>{param}, null, new TypeAnnotation(TYPES.VAR))
+		public NativeLambdaUnary(string name, Argument param, Func<object, object> func, TypeAnnotation returnType = null) :
+			base(name, new List<Argument>{param}, null, (returnType != null) ? returnType : new TypeAnnotation(TYPES.VAR))
 		{
 			this.func = func;
 		}
@@ -223,8 +223,8 @@ namespace Expresso.Ast
 	{
 		private Func<object, object, object> func;
 
-		public NativeLambdaBinary(string name, Argument param1, Argument param2, Func<object, object, object> func) :
-			base(name, new List<Argument>{param1, param2}, null, new TypeAnnotation(TYPES.VAR))
+		public NativeLambdaBinary(string name, Argument param1, Argument param2, Func<object, object, object> func, TypeAnnotation returnType = null) :
+			base(name, new List<Argument>{param1, param2}, null, (returnType != null) ? returnType : new TypeAnnotation(TYPES.VAR))
 		{
 			this.func = func;
 		}
@@ -241,8 +241,9 @@ namespace Expresso.Ast
 	{
 		private Func<object, object, object, object> func;
 
-		public NativeLambdaTernary(string name, Argument param1, Argument param2, Argument param3, Func<object, object, object, object> func) :
-			base(name, new List<Argument>{param1, param2, param3}, null, new TypeAnnotation(TYPES.VAR))
+		public NativeLambdaTernary(string name, Argument param1, Argument param2, Argument param3,
+		                           Func<object, object, object, object> func, TypeAnnotation returnType = null) :
+			base(name, new List<Argument>{param1, param2, param3}, null, (returnType != null) ? returnType : new TypeAnnotation(TYPES.VAR))
 		{
 			this.func = func;
 		}

@@ -26,6 +26,13 @@ COMPILER Expresso
 		};
 		foreach(var tmp in native_funcs)
 			funcs.AddFunction(tmp);
+			
+		Identifier[] builtin_classes = {
+			new Identifier("File", new TypeAnnotation(TYPES.TYPE_CLASS, "File"))
+		};
+		
+		foreach(var builtin_class in builtin_classes)
+			cur_scope.AddClass(builtin_class);
 	}
 	
 	Constant CreateConstant(TYPES type)
@@ -74,6 +81,12 @@ COMPILER Expresso
 		return x.kind != _lparen;
 	}
 	
+	bool ExpectIdentIsClassName()
+	{
+		Token x = la;
+		return x.kind == _dot;
+	}
+	
 	bool IsObjectInitializer()
 	{
 		Token x = la;
@@ -104,13 +117,10 @@ COMPILER Expresso
   					type.TypeName = ((NewExpression)rhs).TargetName;
   				}else if(rhs is Call){
   					var call = (Call)rhs;
-  					if(call.Function != null){
+  					if(call.Function != null)
   						type = call.Function.ReturnType;
-  					}else{
-  						
-  					}
   				}else{
-  					SemErr("Cannot infer the type of the variable \"" + name + "\" from that type of expression.");
+  					SemErr("Can not infer the type of the variable \"" + name + "\" from that type of expression.");
   				}
   			}
   		}
@@ -266,6 +276,7 @@ CHARACTERS
   lf  = '\n'.
   tab = '\t'.
   quotedLetter = ANY - '"' - '\''.
+  dot = '.'.
 
 TOKENS
   double_dots = "..".
@@ -278,10 +289,12 @@ TOKENS
   rparen = ')'.
   rcurly = '}'.
   comma = ','.
+  dot = '.'.
   ident  = (letter | '_') {'_' | letter | digit}.
   integer = digit {digit}
   			| digit {digit} CONTEXT("..").
-  float = [digit {digit}] '.' {digit} [('e' | 'E') ['+' | '-'] digit {digit}].
+  float = digit {digit} dot {digit} [('e' | 'E') ['+' | '-'] digit {digit}]
+  		  | [digit {digit}] dot digit {digit} [('e' | 'E') ['+' | '-'] digit {digit}].
   hex_digit = '0' ('x' | 'X') hex_letter {hex_letter}.
   string_literal = '"' {quotedLetter} '"'.
   keyword_in = "in".
@@ -315,7 +328,7 @@ Expresso                    (. Statement stmt = null; .)
 =
   {RequireStmt<out require>}.*/
 /*------------------------------------------------------------------------*/
-/*RequireStmt<out Statement stmt>	(. string module_name, alias = ""; var requires = new List<Expression>(); .)
+/*RequireStmt<out Statement stmt>	(. string module_name, alias = null; var requires = new List<Expression>(); .)
 =
   SYNC
   "require"
@@ -375,6 +388,7 @@ ClassDecl<out Statement stmt>		(.
   SYNC '}'							(. 
   										stmt = MakeClassDef(name, base_names, stmts);
   										cur_scope = cur_scope.Parent;
+  										cur_scope.AddClass(new Identifier(name, new TypeAnnotation(TYPES.CLASS, name)));
   									.) .
 /*------------------------------------------------------------------------*/
 ConstructorDecl<out Statement func, string className>	(. 
@@ -430,7 +444,7 @@ FieldDecl<. out List<Expression> outs .> (. string name; TypeAnnotation type = T
 								   			var vars = new List<Identifier>(); var exprs = new List<Expression>();
 										 .)
 = 
-  Variable<out name>
+  ident							(. name = t.val; .)
   [ "(-"
     Type<out type>
   ]
@@ -445,7 +459,7 @@ FieldDecl<. out List<Expression> outs .> (. string name; TypeAnnotation type = T
  						 			vars.Add(variable);
   						 			exprs.Add(rhs);
   						 		.)
-    Variable<out name>
+    ident						(. name = t.val; .)
   	[ "(-"
    	  Type<out type>
   	]
@@ -709,7 +723,7 @@ VarDecl<. out List<Expression> outs .> 	(.
 										.)
 = 
   "let"
-  Variable<out name>
+  ident							(. name = t.val; .)
   [ "(-"
     Type<out type>
   ]
@@ -724,7 +738,7 @@ VarDecl<. out List<Expression> outs .> 	(.
  						 			vars.Add(variable);
   						 			exprs.Add(rhs);
   						 		.)
-    Variable<out name>
+    ident						(. name = t.val; .)
   	[ "(-"
    	  Type<out type>
   	]
@@ -769,20 +783,20 @@ WithStmt<out Statement stmt>		(. Statement block = null; .)
   Block<out block>					(. stmt = null; .).
 /*------------------------------------------------------------------------*/
 TryStmt<out Statement stmt>			(. 
-										Statement body, catch_body = null, finally_body = null; var catches = new List<CatchClause>();
+										Statement body, catch_body = null, finally_body = null; List<CatchClause> catches = null;
 										TypeAnnotation excp_type = null; Identifier catch_ident = null; string name = null;
 									.)
 =
   "try"
   Block<out body>
-  { "catch"
+  { "catch"							(. if(catches == null) catches = new List<CatchClause>(); .)
     '('
     ident							(. name = t.val; .)
     "(-"
     Type<out excp_type>
     ')'								(. catch_ident = new Identifier(name, excp_type); .)
-    Block<out catch_body>
-  }									(. catches.Add(new CatchClause{Body = (Block)catch_body, Catcher = catch_ident}); .)
+    Block<out catch_body>			(. catches.Add(new CatchClause{Body = (Block)catch_body, Catcher = catch_ident}); .)
+  }									
   [ "finally"
     Block<out finally_body>
   ]									(. stmt = MakeTryStmt((Block)body, catches, (Block)finally_body); .).
@@ -796,7 +810,7 @@ ParamList<. ref List<Argument> @params .>		(. Argument expr; .)
 /*------------------------------------------------------------------------*/
 Argument<out Argument arg>		(. string name; Expression default_val = null; TypeAnnotation type = TypeAnnotation.VariadicType.Clone(); .)
 =
-  Variable<out name>
+  ident							(. name = t.val; .)
   [ "(-"
     Type<out type>
   ]
@@ -948,7 +962,7 @@ PowerOpe<out Expression expr>    (. Expression rhs; .)
     Factor<out rhs>              (. expr = MakeBinaryExpr(OperatorType.POWER, expr, rhs); .)
   ].
 /*------------------------------------------------------------------------*/
-Primary<out Expression expr>		(. string name = ""; expr = null; var args = new List<Expression>(); .)
+Primary<out Expression expr>		(. string name = null; expr = null; var args = new List<Expression>(); .)
 =
   ( 
     ( IF(IdentIsNotCallable())
@@ -1017,7 +1031,12 @@ ArgList<. ref List<Expression> args .>		(. Expression expr; .)
 /*------------------------------------------------------------------------*/
 Atom<out Expression expr>			(. string name; expr = null; .)
 =
-  Variable<out name>				(.
+  ident								(.
+  										name = t.val;
+  										if(ExpectIdentIsClassName()){
+  											expr = cur_scope.GetClass(name);
+  											if(expr != null) return;
+  										}
   										expr = cur_scope.GetVariable(name, !ignore_parent_scope);
   										if(expr == null){
   											expr = new Identifier(name);
@@ -1096,7 +1115,7 @@ CompFor<out ComprehensionIter expr>		(.
   												var ident = target as Identifier;
   												if(ident == null) SemErr("Expected a lvalue!");
   												ident.ParamType = TypeAnnotation.InferenceType.Clone();
-  												if(!cur_scope.Contains(ident.Name))
+  												if(!cur_scope.ContainsIn(ident.Name))
   													cur_scope.AddLocal(ref ident);
   											}
   											ignore_parent_scope = false;
@@ -1113,10 +1132,6 @@ CompIf<out ComprehensionIter expr>		(. Expression tmp; ComprehensionIter body = 
   "if"
   OrTest<out tmp>
   [CompIter<out body>]					(. expr = MakeCompIf(tmp, body); .).
-/*------------------------------------------------------------------------*/
-Variable<out string name>
-= 
-  ident							(. name = t.val; .).
 /*------------------------------------------------------------------------*/
 Literal<out Expression expr>	(. expr = null; string tmp; bool has_suffix = false; .)
 = 

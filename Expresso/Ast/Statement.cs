@@ -12,4 +12,9 @@ namespace Expresso.Ast
     public abstract class Statement : Node
     {
     }
+
+	public interface CompoundStatement
+	{
+		IEnumerable<Identifier> CollectLocalVars();
+	}
 }

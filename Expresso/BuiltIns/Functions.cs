@@ -239,9 +239,10 @@ namespace Expresso.Builtins
 				{"readLine", new NativeFunctionNAry("readLine", Helpers.MakeNativeMethodCall(typeof(FileObject), "ReadLine"))},
 				{"readAll", new NativeFunctionNAry("readAll", Helpers.MakeNativeMethodCall(typeof(FileObject), "ReadAll"))},
 				{"write", new NativeFunctionNAry("write", Helpers.MakeNativeMethodCall(typeof(FileObject), "Write", typeof(object)))},
-				{"openFile", new NativeLambdaTernary("openFile", Helpers.MakeArg(new Identifier("path", new TypeAnnotation(TYPES.STRING))),
-					                                     Helpers.MakeArg(new Identifier("option", new TypeAnnotation(TYPES.STRING))),
-					                                     Helpers.MakeArg(new Identifier("encoding", new TypeAnnotation(TYPES.STRING)), new Constant{ValType = TYPES.STRING, Value = "UTF-8"}),
+				{"close", new NativeFunctionNAry("close", Helpers.MakeNativeMethodCall(typeof(FileObject), "Dispose"))},
+				{"openFile", new NativeLambdaTernary("openFile", Helpers.MakeArg(new Identifier("path", new TypeAnnotation(TYPES.STRING), 1)),
+					                                     Helpers.MakeArg(new Identifier("option", new TypeAnnotation(TYPES.STRING), 2)),
+					                                     Helpers.MakeArg(new Identifier("encoding", new TypeAnnotation(TYPES.STRING), 3), new Constant{ValType = TYPES.STRING, Value = "UTF-8"}),
 					                                     (object path, object option, object encoding) => FileObject.OpenFile((string)path, (string)option, (string)encoding))}
 			};
 

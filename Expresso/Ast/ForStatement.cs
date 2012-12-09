@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using Expresso.Interpreter;
 using Expresso.Builtins;
 using Expresso.Helpers;
@@ -11,7 +12,7 @@ namespace Expresso.Ast
 	/// For文。
 	/// The For statement.
 	/// </summary>
-	public class ForStatement : BreakableStatement
+	public class ForStatement : BreakableStatement, CompoundStatement
 	{
 		/// <summary>
 		/// inキーワードの左辺値がlet式を含むかどうかをあらわす。
@@ -92,6 +93,21 @@ namespace Expresso.Ast
 			}
 			return null;
         }
+
+		public IEnumerable<Identifier> CollectLocalVars()
+		{
+			IEnumerable<Identifier> in_cond = Enumerable.Empty<Identifier>();
+			if(HasLet){
+				in_cond =
+					from p in LValues
+					select ImplementationHelpers.CollectLocalVars(p) into t
+					from q in t
+					select q;
+			}
+			
+			var in_body = ImplementationHelpers.CollectLocalVars(Body);
+			return in_cond.Concat(in_body);
+		}
 	}
 }
 

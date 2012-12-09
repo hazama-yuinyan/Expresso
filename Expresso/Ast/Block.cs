@@ -9,7 +9,7 @@ namespace Expresso.Ast
     /// 複文ブロック。
 	/// Represents a block of statements.
     /// </summary>
-    public class Block : BreakableStatement
+    public class Block : BreakableStatement, CompoundStatement
     {
         private List<Statement> statements = new List<Statement>();
 
@@ -27,7 +27,7 @@ namespace Expresso.Ast
         {
             get
             {
-                return ImplementationHelpers.CollectLocalVars(this);
+                return CollectLocalVars();
             }
         }
 
@@ -67,6 +67,19 @@ namespace Expresso.Ast
 			
 			return result;
         }
+
+		public IEnumerable<Identifier> CollectLocalVars()
+		{
+			var vars = 
+				from p in Statements
+					where p.Type == NodeType.ExprStatement || p.Type == NodeType.ForStatement || p.Type == NodeType.IfStatement ||
+						p.Type == NodeType.SwitchStatement || p.Type == NodeType.WhileStatement || p.Type == NodeType.TryStatement
+					select ImplementationHelpers.CollectLocalVars(p) into t
+					from q in t
+					select q;
+			
+			return vars;
+		}
 		
 		public override string ToString()
 		{

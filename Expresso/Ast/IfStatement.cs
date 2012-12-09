@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Expresso.Builtins;
 using Expresso.Helpers;
 using Expresso.Interpreter;
@@ -10,7 +11,7 @@ namespace Expresso.Ast
 	/// If文。
 	/// The If statement.
 	/// </summary>
-	public class IfStatement : Statement
+	public class IfStatement : Statement, CompoundStatement
 	{
 		/// <summary>
         /// 条件式。
@@ -59,6 +60,13 @@ namespace Expresso.Ast
 			else
 				return (FalseBlock != null) ? FalseBlock.Run(varStore) : null;
         }
+
+		public IEnumerable<Identifier> CollectLocalVars()
+		{
+			var in_true = ImplementationHelpers.CollectLocalVars(TrueBlock);
+			var in_false = ImplementationHelpers.CollectLocalVars(FalseBlock);
+			return in_true.Concat(in_false);
+		}
 	}
 }
 

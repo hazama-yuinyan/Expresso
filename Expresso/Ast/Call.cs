@@ -90,11 +90,13 @@ namespace Expresso.Ast
 						throw new EvalException("Not callable: " + obj.ToString());
 
 					fn = method.Method;
-					child.Add(0, method.Inst);	//このメソッド呼び出しのthisオブジェクトを登録する
-					if(Arguments.Count == 0 || Arguments[0] != null)
-						Arguments.Insert(0, null);
+					if(method.Inst != null){
+						child.Add(0, method.Inst);	//このメソッド呼び出しのthisオブジェクトを登録する
+						if(Arguments.Count == 0 || Arguments[0] != null)
+							Arguments.Insert(0, null);
 
-					this_registered = true;
+						this_registered = true;
+					}
 					method_info = method;	//毎回リファレンスを辿るのは遅いと思われるので、キャッシュしておく
 				}else{
 					fn = method_info.Method;
@@ -105,8 +107,10 @@ namespace Expresso.Ast
     	        fn = Function;
 			}
 
-			for(int i = (this_registered) ? 1 : 0; i < fn.Parameters.Count; ++i)	//実引数をローカル変数として変数テーブルに追加する
-				child.Add(fn.Parameters[i].Offset, (i < Arguments.Count) ? Arguments[i].Run(varStore) : fn.Parameters[i].Option.Run(varStore));
+			for(int i = (this_registered) ? 1 : 0; i < fn.Parameters.Count; ++i){	//実引数をローカル変数として変数テーブルに追加する
+				var param = fn.Parameters[i];
+				child.Add(param.Offset, (i < Arguments.Count) ? Arguments[i].Run(varStore) : param.Option.Run(varStore));
+			}
 
 			var local_vars = fn.LocalVariables;
 			if(local_vars.Any()){					//Checking for its emptiness

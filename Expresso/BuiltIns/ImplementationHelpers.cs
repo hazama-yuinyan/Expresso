@@ -160,69 +160,10 @@ namespace Expresso.Helpers
 
 		public static IEnumerable<Identifier> CollectLocalVars(Statement stmt)
 		{
-			if(stmt == null) return Enumerable.Empty<Identifier>();
+			var compound = stmt as CompoundStatement;
+			if(stmt == null || compound == null) return Enumerable.Empty<Identifier>();
 
-			IEnumerable<Identifier> result = Enumerable.Empty<Identifier>();
-			switch(stmt.Type){
-			case NodeType.ExprStatement:
-				var expr_stmt = (ExprStatement)stmt;
-				result = 
-					from p in expr_stmt.Expressions
-					where p.Type == NodeType.VarDecl
-					select ImplementationHelpers.CollectLocalVars(p) into t
-					from q in t
-					select q;
-				break;
-
-			case NodeType.SwitchStatement:
-				result = ((SwitchStatement)stmt).Cases.SelectMany(x => ImplementationHelpers.CollectLocalVars(x.Body));
-				break;
-
-			case NodeType.IfStatement:
-				var if_stmt = (IfStatement)stmt;
-				var in_true = ImplementationHelpers.CollectLocalVars(if_stmt.TrueBlock);
-				var in_false = ImplementationHelpers.CollectLocalVars(if_stmt.FalseBlock);
-				result = in_true.Concat(in_false);
-				break;
-
-			case NodeType.ForStatement:
-				var for_stmt = (ForStatement)stmt;
-				IEnumerable<Identifier> in_cond = Enumerable.Empty<Identifier>();
-				if(for_stmt.HasLet){
-					in_cond =
-						from p in for_stmt.LValues
-						select ImplementationHelpers.CollectLocalVars(p) into t
-						from q in t
-						select q;
-				}
-
-				var in_body = ImplementationHelpers.CollectLocalVars(for_stmt.Body);
-				result = in_cond.Concat(in_body);
-				break;
-
-			case NodeType.WhileStatement:
-				var while_stmt = (WhileStatement)stmt;
-				result = ImplementationHelpers.CollectLocalVars(while_stmt.Body);
-				break;
-
-			case NodeType.Block:
-				result = ImplementationHelpers.CollectLocalVars((Block)stmt);
-				break;
-			}
-
-			return result;
-		}
-
-		public static IEnumerable<Identifier> CollectLocalVars(Block root)
-		{
-			var vars = 
-				from p in root.Statements
-				where p.Type == NodeType.ExprStatement || p.Type == NodeType.ForStatement || p.Type == NodeType.IfStatement || p.Type == NodeType.SwitchStatement || p.Type == NodeType.WhileStatement
-				select ImplementationHelpers.CollectLocalVars(p) into t
-				from q in t
-				select q;
-
-			return vars;
+			return compound.CollectLocalVars();
 		}
 
 		/// <summary>
@@ -361,28 +302,29 @@ namespace Expresso.Helpers
 			return result;
 		}
 
-		public static object AccessMember(object target, object subscription)
+		public static object AccessMember(Identifier ident, object target, object subscription)
 		{
 			if(target is Dictionary<object, object>){
 				object value = null;
 				((Dictionary<object, object>)target).TryGetValue(subscription, out value);
 				return value;
 			}else if(subscription is Identifier){
-				Identifier ident = (Identifier)subscription;
-				Type obj_type = target.GetType();
+				Identifier subscript = (Identifier)subscription;
 				string type_name;
-				if(target is List<object>)
+				if(ident.ParamType.TypeName != null)
+					type_name = ident.ParamType.TypeName;
+				else if(target is List<object>)
 					type_name = "List";
-				else if(target is Dictionary<object, object>)
-					type_name = "Dictionary";
 				else if(target is ExpressoTuple)
 					type_name = "Tuple";
-				else if(target is ExpressoIntegerSequence)
-					type_name = "IntSeq";
+				else if(target is Dictionary<object, object>)
+					type_name = "Dictionary";
+				else if(target is FileObject)
+					type_name = "File";
 				else
-					type_name = obj_type.Name;
+					type_name = target.GetType().FullName;
 
-				return BuiltinNativeMethods.Instance().LookupMethod(type_name, ident.Name);
+				return BuiltinNativeMethods.Instance().LookupMethod(type_name, subscript.Name);
 			}else if(subscription is int){
 				int index = (int)subscription;
 

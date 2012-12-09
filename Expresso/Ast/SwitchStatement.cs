@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Expresso.Builtins;
 using Expresso.Interpreter;
 using Expresso.Helpers;
@@ -10,7 +11,7 @@ namespace Expresso.Ast
 	/// Switch文。
 	/// The Switch statement.
 	/// </summary>
-	public class SwitchStatement : Statement
+	public class SwitchStatement : Statement, CompoundStatement
 	{
 		/// <summary>
         /// 評価対象となる式。
@@ -52,6 +53,11 @@ namespace Expresso.Ast
             }
 			return null;
         }
+
+		public IEnumerable<Identifier> CollectLocalVars()
+		{
+			return Cases.SelectMany(x => ImplementationHelpers.CollectLocalVars(x.Body));
+		}
 	}
 
 	/// <summary>

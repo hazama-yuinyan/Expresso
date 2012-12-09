@@ -11,7 +11,7 @@ namespace Expresso.Ast
 	/// The While statement.
 	/// </summary>
 	/// <seealso cref="Node"/>
-	public class WhileStatement : BreakableStatement
+	public class WhileStatement : BreakableStatement, CompoundStatement
 	{
 		/// <summary>
         /// 条件式。
@@ -63,6 +63,11 @@ namespace Expresso.Ast
 
 			return null;
         }
+
+		public IEnumerable<Identifier> CollectLocalVars()
+		{
+			return ImplementationHelpers.CollectLocalVars(Body);
+		}
 	}
 }
 

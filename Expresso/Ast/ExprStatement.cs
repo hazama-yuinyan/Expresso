@@ -1,10 +1,12 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using Expresso.Helpers;
 using Expresso.Interpreter;
 
 namespace Expresso.Ast
 {
-	public class ExprStatement : Statement
+	public class ExprStatement : Statement, CompoundStatement
 	{
         /// <summary>
         /// 実行する式のリスト。
@@ -38,6 +40,18 @@ namespace Expresso.Ast
 			
 			return null;
         }
+
+		public IEnumerable<Identifier> CollectLocalVars()
+		{
+			var result = 
+				from p in Expressions
+				where p.Type == NodeType.VarDecl
+				select ImplementationHelpers.CollectLocalVars(p) into t
+				from q in t
+				select q;
+
+			return result;
+		}
 	}
 }
 

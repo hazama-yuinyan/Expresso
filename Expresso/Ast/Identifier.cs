@@ -73,6 +73,8 @@ namespace Expresso.Ast
         {
 			if(ParamType.ObjType == TYPES._SUBSCRIPT)
 				return this;
+			else if(ParamType.ObjType == TYPES.TYPE_CLASS)
+				return null;
 			else
 				return varStore.Get(Offset, Level);
         }

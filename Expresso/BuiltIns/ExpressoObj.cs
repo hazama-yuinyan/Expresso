@@ -29,7 +29,8 @@ namespace Expresso.Builtins
 		EXPRESSION,
 		FUNCTION,
 		SEQ,
-		CLASS
+		CLASS,
+		TYPE_CLASS
 	};
 
 	/// <summary>

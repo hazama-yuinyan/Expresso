@@ -40,7 +40,7 @@ namespace Expresso.Interpreter
 		/// 識別子名 → 識別子の詳細テーブル。
 		/// The symbol table.
 		/// </summary>
-		private Dictionary<string, ScopeItem> table = new Dictionary<string, ScopeItem> ();
+		private Dictionary<string, List<ScopeItem>> table = new Dictionary<string, List<ScopeItem>>();
 
 		private int next_offset = 0;
 
@@ -56,41 +56,68 @@ namespace Expresso.Interpreter
 		/// 含まれていればtrue。
 		/// Returns true if the scope has the identifier; otherwise returns false.
 		/// </returns>
-		public bool Contains(string name)
+		public bool ContainsIn(string name)
 		{
 			return this.table.ContainsKey(name);
 		}
 
 		/// <summary>
-		/// 変数を取得。
-		/// 親スコープもたどって探索（GetVariable(name, true) と同じ）。
-		/// Gets a variable.
+		/// 識別子が親も含めたスコープ内に存在するかどうか調べる。
+		/// Determines whether the scope, including the parents, has the specified identifier.
+		/// </summary>
+		/// <returns>
+		/// <c>true</c>, if the identifier is found, <c>false</c> otherwise.
+		/// </returns>
+		public bool ContainsOf(string name)
+		{
+			for(Scope s = this; s != null; s = s.Parent){
+				if(s.table.ContainsKey(name))
+					return true;
+			}
+
+			return false;
+		}
+
+		/// <summary>
+		/// クラスを取得。
+		/// Gets a class name.
 		/// </summary>
 		/// <param name="name">
 		/// 識別子名。
 		/// The name of the identifier.
 		/// </param>
 		/// <returns>
-		/// その名前の変数があれば変数の詳細を、なければnullを。
-		/// If exists, returns the information on that variable, otherwise returns null.
+		/// その名前のクラスが定義されていればクラスの詳細を、なければnullを。
+		/// If exists, returns the information on that class, otherwise returns null.
 		/// </returns>
-		public Identifier GetVariable(string name)
+		public Identifier GetClass(string name)
 		{
-			return GetVariable(name, true);
+			int level = 0;
+			for(Scope s = this; s != null; s = s.Parent, ++level){
+				var v = GetSymbol(name, ScopeItem.NodeType.Class, s);
+				if (v != null && level == 0){
+					return v;
+				}else if(v != null){
+					Identifier cloned = new Identifier(v.Name, v.ParamType, v.Offset, level);
+					return cloned;
+				}
+			}
+
+			return null;
 		}
-		
+
 		/// <summary>
 		/// 変数を取得。
 		/// </summary>
 		/// <param name="name">識別子名。</param>
 		/// <param name="searchParent">親スコープを探索するかどうか。</param>
 		/// <returns>その名前の変数があれば変数の詳細を、なければnullを。</returns>
-		public Identifier GetVariable(string name, bool searchParent)
+		public Identifier GetVariable(string name, bool searchParent = true)
 		{
 			if(searchParent){
 				int level = 0;
-				for (Scope s = this; s != null; s = s.Parent, ++level) {
-					var v = GetVariable(name, s);
+				for(Scope s = this; s != null; s = s.Parent, ++level){
+					var v = GetSymbol(name, ScopeItem.NodeType.Local, s);
 					if (v != null && level == 0){
 						return v;
 					}else if(v != null){
@@ -101,32 +128,23 @@ namespace Expresso.Interpreter
 
 				return null;
 			}else{
-				return GetVariable(name, this);
+				return GetSymbol(name, ScopeItem.NodeType.Local, this);
 			}
 		}
 		
-		static Identifier GetVariable(string name, Scope scope)
+		static Identifier GetSymbol(string name, ScopeItem.NodeType type, Scope scope)
 		{
-			if (!scope.Contains(name))
+			if(!scope.ContainsIn(name))
 				return null;
 
-			var item = scope.table[name];
+			var list = scope.table[name];
+			var item = 
+				list
+				.Where(x => x.Type == type)
+				.ElementAtOrDefault(0);
 
-			if (item.Type != ScopeItem.NodeType.Local)
-				return null;
-
+			if(item == null) return null;
 			return item.Node as Identifier;
-		}
-
-		/// <summary>
-		/// 関数を取得。
-		/// 親スコープもたどって探索（GetFunction(name, true) と同じ）。
-		/// </summary>
-		/// <param name="name">識別子名。</param>
-		/// <returns>その名前の関数があれば関数の詳細を、なければnullを。</returns>
-		public Function GetFunction(string name)
-		{
-			return this.GetFunction(name, true);
 		}
 
 		/// <summary>
@@ -135,7 +153,7 @@ namespace Expresso.Interpreter
 		/// <param name="name">識別子名。</param>
 		/// <param name="searchParent">親スコープを探索するかどうか。</param>
 		/// <returns>その名前の関数があれば関数の詳細を、なければnullを。</returns>
-		public Function GetFunction(string name, bool searchParent)
+		public Function GetFunction(string name, bool searchParent = true)
 		{
 			if (searchParent) {
 				for (Scope s = this; s != null; s = s.Parent) {
@@ -152,14 +170,16 @@ namespace Expresso.Interpreter
 
 		static Function GetFunction(string name, Scope scope)
 		{
-			if (!scope.Contains(name))
+			if (!scope.ContainsIn(name))
 				return null;
 
-			var item = scope.table[name];
+			var list = scope.table[name];
+			var item = 
+				list
+				.Where(x => x.Type == ScopeItem.NodeType.Function)
+				.ElementAtOrDefault(0);
 
-			if (item.Type != ScopeItem.NodeType.Function)
-				return null;
-
+			if(item == null) return null;
 			return item.Node as Function;
 		}
 
@@ -170,18 +190,24 @@ namespace Expresso.Interpreter
 		/// <param name="p">変数。</param>
 		public void AddLocal(ref Identifier p)
 		{
-			this.AddVariable(p.Name, ScopeItem.NodeType.Local, ref p);
-		}
-
-		void AddVariable(string name, ScopeItem.NodeType type, ref Identifier p)
-		{
-			if (this.table.ContainsKey(name))
-				throw new ArgumentException ("The variable already defined in that scope!");
-
+			this.AddSymbol(p.Name, ScopeItem.NodeType.Local, p);
 			if(p.Offset == -1)
 				p.Offset = this.next_offset++;
+		}
 
-			this.table[name] = new ScopeItem { Type = ScopeItem.NodeType.Local, Node = p };
+		public void AddClass(Identifier p)
+		{
+			AddSymbol(p.Name, ScopeItem.NodeType.Class, p);
+		}
+
+		void AddSymbol(string name, ScopeItem.NodeType type, Node p)
+		{
+			var new_item = new ScopeItem{Type = type, Node = p};
+
+			if(this.table.ContainsKey(name))
+				table[name].Add(new_item);
+			else
+				table[name] = new List<ScopeItem>{new_item};
 		}
 
 		/// <summary>
@@ -191,10 +217,7 @@ namespace Expresso.Interpreter
 		/// <param name="f">関数。</param>
 		public void AddFunction(Function f)
 		{
-			if (this.table.ContainsKey(f.Name))
-				throw new ArgumentException ("The identifier is already in use!");
-
-			this.table[f.Name] = new ScopeItem { Type = ScopeItem.NodeType.Function, Node = f };
+			AddSymbol(f.Name, ScopeItem.NodeType.Function, f);
 		}
 	}
 }
