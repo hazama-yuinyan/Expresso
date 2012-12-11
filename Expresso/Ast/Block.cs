@@ -2,6 +2,7 @@
 using System.Linq;
 using Expresso.Interpreter;
 using Expresso.Helpers;
+using Expresso.Compiler;
 
 namespace Expresso.Ast
 {
@@ -67,6 +68,11 @@ namespace Expresso.Ast
 			
 			return result;
         }
+
+		internal override System.Linq.Expressions.Expression Compile(Emitter emitter)
+		{
+			return emitter.Emit(this);
+		}
 
 		public IEnumerable<Identifier> CollectLocalVars()
 		{

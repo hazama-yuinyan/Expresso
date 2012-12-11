@@ -2,6 +2,7 @@
 using System.Linq;
 using Expresso.Interpreter;
 using Expresso.Helpers;
+using Expresso.Compiler;
 
 namespace Expresso.Ast
 {
@@ -120,6 +121,11 @@ namespace Expresso.Ast
 
 			return fn.Run(child);
         }
+
+		internal override System.Linq.Expressions.Expression Compile(Emitter emitter)
+		{
+			return emitter.Emit(this);
+		}
 
 		public override string ToString()
 		{

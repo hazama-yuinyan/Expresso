@@ -1,9 +1,13 @@
 ﻿using System.Collections.Generic;
+
 using Expresso.Builtins;
 using Expresso.Interpreter;
+using Expresso.Compiler;
 
 namespace Expresso.Ast
 {
+	using ExprTree = System.Linq.Expressions;
+
     /// <summary>
     /// 抽象構文木のノードタイプ。
 	/// The node type of AST.
@@ -41,7 +45,7 @@ namespace Expresso.Ast
 		StatementList,
 		SwitchStatement,
 		CaseClause,
-		ClassDecl,
+		TypeDecl,
 		New,
 		Require,
 		WithStatement,
@@ -90,5 +94,14 @@ namespace Expresso.Ast
         /// <returns>そのコードを評価した結果の戻り値など。</returns>
         internal abstract object Run(VariableStore varStore);
         #endregion
+
+		/// <summary>
+		/// このノードがあらわすコードをC#の式木にコンパイルする。
+		/// Compile the content of the node to the corresponding C#'s expression tree.
+		/// </summary>
+		/// <param name='emitter'>
+		/// Emitter.
+		/// </param>
+		internal abstract ExprTree.Expression Compile(Emitter emitter);
     }
 }

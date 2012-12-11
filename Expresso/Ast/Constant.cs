@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+
 using Expresso.Builtins;
 using Expresso.Interpreter;
+using Expresso.Compiler;
 
 namespace Expresso.Ast
 {
@@ -46,6 +48,11 @@ namespace Expresso.Ast
         {
 			return Value;
         }
+
+		internal override System.Linq.Expressions.Expression Compile(Emitter emitter)
+		{
+			return emitter.Emit(this);
+		}
 
 		public override string ToString ()
 		{

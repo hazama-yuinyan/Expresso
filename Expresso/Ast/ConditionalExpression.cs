@@ -1,6 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+
 using Expresso.Interpreter;
+using Expresso.Compiler;
 
 namespace Expresso.Ast
 {
@@ -52,6 +54,11 @@ namespace Expresso.Ast
 			else
 				return FalseExpression.Run(varStore);
         }
+
+		internal override System.Linq.Expressions.Expression Compile(Emitter emitter)
+		{
+			return emitter.Emit(this);
+		}
 
 		public override string ToString ()
 		{

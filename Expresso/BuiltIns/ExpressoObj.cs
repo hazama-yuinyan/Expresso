@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+
 using Expresso.Ast;
 using Expresso.Interpreter;
 
@@ -64,7 +65,7 @@ namespace Expresso.Builtins
 		}
 
 		public static readonly TypeAnnotation InferenceType = new TypeAnnotation(TYPES._INFERENCE);
-		public static readonly TypeAnnotation VariadicType = new TypeAnnotation(TYPES.VAR);
+		public static readonly TypeAnnotation VariantType = new TypeAnnotation(TYPES.VAR);
 		public static readonly TypeAnnotation VoidType = new TypeAnnotation(TYPES.UNDEF);
 	}
 	
@@ -73,37 +74,6 @@ namespace Expresso.Builtins
 	/// </summary>
 	public class ExpressoClass
 	{
-		public class ClassDefinition
-		{
-			public string Name{
-				get; private set;
-			}
-
-			public Dictionary<string, int> PrivateMembers{
-				get; private set;
-			}
-
-			public Dictionary<string, int> PublicMembers{
-				get; private set;
-			}
-
-			public object[] Members{
-				get; internal set;
-			}
-
-			public ClassDefinition(string name, Dictionary<string, int> privateMembers, Dictionary<string, int> publicMembers)
-			{
-				Name = name;
-				PrivateMembers = privateMembers;
-				PublicMembers = publicMembers;
-			}
-
-			public int GetNumberOfMembers()
-			{
-				return PrivateMembers.Count + PublicMembers.Count;
-			}
-		}
-
 		public class ExpressoObj : IEnumerable<object>, IEnumerable
 		{
 			private ClassDefinition definition;
@@ -127,7 +97,7 @@ namespace Expresso.Builtins
 					this.members[i] = definition.Members[i];
 			}
 
-			public override bool Equals (object obj)
+			public override bool Equals(object obj)
 			{
 				var x = obj as ExpressoObj;
 				if(x == null) return false;
@@ -135,12 +105,12 @@ namespace Expresso.Builtins
 				return ClassName == x.ClassName && members[0].Equals(x.members[0]);
 			}
 
-			public override int GetHashCode ()
+			public override int GetHashCode()
 			{
 				return definition.GetHashCode() ^ members.GetHashCode();
 			}
 
-			public override string ToString ()
+			public override string ToString()
 			{
 				return string.Format("[ExpressoObj: ClassName={0}]", ClassName);
 			}
@@ -155,10 +125,6 @@ namespace Expresso.Builtins
 				if(members[0] is IEnumerable<object>){
 					var enumerable = (IEnumerable<object>)members[0];
 					foreach(var tmp in enumerable)
-						yield return tmp;
-				}else if(members[0] is Dictionary<object, object>){
-					var dictionary = (Dictionary<object, object>)members[0];
-					foreach(var tmp in dictionary)
 						yield return tmp;
 				}else
 					throw new EvalException("Can not evaluate the object to an iterable.");

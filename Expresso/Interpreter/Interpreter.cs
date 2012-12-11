@@ -78,7 +78,7 @@ namespace Expresso.Interpreter
 		/// The global variable store.
 		/// </summary>
 		private VariableStore var_store = new VariableStore();
-		
+
 		/// <summary>
 		/// main関数をエントリーポイントとしてプログラムを実行する。
 		/// Run the program with the "main" function as the entry point.
@@ -153,7 +153,7 @@ namespace Expresso.Interpreter
 				var_store.Add(global_var.Offset, ImplementationHelpers.GetDefaultValueFor(global_var.ParamType.ObjType));
 
 			foreach(var decl in topmost.Statements.OfType<ExprStatement>()
-			        .Concat<Node>(topmost.Statements.OfType<ClassDeclaration>()))
+			        .Concat<Node>(topmost.Statements.OfType<TypeDeclaration>()))
 				decl.Run(var_store);
 		}
 

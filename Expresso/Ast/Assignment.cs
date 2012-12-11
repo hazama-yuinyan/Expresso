@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using Expresso.Builtins;
 using Expresso.Interpreter;
+using Expresso.Compiler;
 
 namespace Expresso.Ast
 {
@@ -59,6 +60,11 @@ namespace Expresso.Ast
 			return rvalues[0];	//x = y = 0;みたいな表記を許容するために右辺値の一番目を戻り値にする
         }
 		
+		internal override System.Linq.Expressions.Expression Compile(Emitter emitter)
+		{
+			return emitter.Emit(this);
+		}
+
 		public override string ToString()
 		{
 			return string.Format("{0} = {1}", Targets, Expressions);

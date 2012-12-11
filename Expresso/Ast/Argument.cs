@@ -1,6 +1,7 @@
 using System;
 using Expresso.Builtins;
 using Expresso.Interpreter;
+using Expresso.Compiler;
 
 namespace Expresso.Ast
 {
@@ -85,7 +86,12 @@ namespace Expresso.Ast
             return Option;
         }
 
-		public override string ToString ()
+		internal override System.Linq.Expressions.Expression Compile(Emitter emitter)
+		{
+			return emitter.Emit(this);
+		}
+
+		public override string ToString()
 		{
 			return (Option != null) ? string.Format("{0} (- {1} [= {2}]", Name, ParamType, Option)
 				: string.Format("{0} (- {1}", Name, ParamType);

@@ -143,6 +143,10 @@ namespace Expresso.Helpers
 			case TYPES.UNDEF:
 				return typeof(void);
 
+			case TYPES.CLASS:
+			case TYPES.TYPE_CLASS:
+				return typeof(ExpressoClass.ExpressoObj);
+
 			default:
 				return null;
 			}
@@ -223,11 +227,6 @@ namespace Expresso.Helpers
 		{
 			BigInteger gcd = CalcGCD(first, second);
 			return first * second / gcd;
-		}
-
-		public static ExpressoClass.ClassDefinition GetClassInfoFromRef(Expression reference)
-		{
-			return null;
 		}
 
 		public static Argument MakeArg(Identifier ident, Expression option = null)

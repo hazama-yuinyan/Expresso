@@ -736,11 +736,11 @@ namespace Expresso.Builtins
 	/// with one line of code, but may contain symbolic expression. Therefore,
 	/// it has the capability of symbolic computation.
 	/// </summary>
-	public class ExpressoExpression
+	/*public class ExpressoExpression
 	{
 		public TYPES Type{get{return TYPES.EXPRESSION;}}
 
 		private Function body;
-	}
+	}*/
 	#endregion
 }

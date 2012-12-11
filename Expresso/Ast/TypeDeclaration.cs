@@ -1,16 +1,27 @@
 using System;
 using System.Collections.Generic;
+
 using Expresso.Builtins;
 using Expresso.Interpreter;
+using Expresso.Compiler;
 
 namespace Expresso.Ast
 {
+	public enum DeclType{
+		Class,
+		Interface,
+		Struct
+	};
+
 	/// <summary>
-	/// クラス宣言式。
-	/// The class declaration.
+	/// 型宣言式。
+	/// The type declaration. That is, it can represents either a class declaration, an interface declaration 
+	/// or a struct declaration. 
 	/// </summary>
-	public class ClassDeclaration : Statement
+	public class TypeDeclaration : Statement
 	{
+		public DeclType TargetType{get; internal set;}
+
 		/// <summary>
 		/// クラス名。
 		/// The name of the class.
@@ -31,21 +42,21 @@ namespace Expresso.Ast
 
         public override NodeType Type
         {
-            get { return NodeType.ClassDecl; }
+            get { return NodeType.TypeDecl; }
         }
 
         public override bool Equals(object obj)
         {
-            var x = obj as ClassDeclaration;
+            var x = obj as TypeDeclaration;
 
             if (x == null) return false;
 
-            return this.Name == x.Name && this.Declarations.Equals(x.Declarations);
+            return this.TargetType == x.TargetType && this.Name == x.Name && this.Declarations.Equals(x.Declarations);
         }
 
         public override int GetHashCode()
         {
-            return this.Name.GetHashCode() ^ this.Declarations.GetHashCode();
+            return this.TargetType.GetHashCode() ^ this.Name.GetHashCode() ^ this.Declarations.GetHashCode();
         }
 
         internal override object Run(VariableStore varStore)
@@ -94,15 +105,20 @@ namespace Expresso.Ast
 				}
 			}
 
-			var class_def = new ExpressoClass.ClassDefinition(Name, privates, publics);
+			var class_def = new ClassDefinition(Name, privates, publics);
 			class_def.Members = members.ToArray();
 			ExpressoClass.AddClass(class_def);
 			return null;
         }
 
+		internal override System.Linq.Expressions.Expression Compile(Emitter emitter)
+		{
+			return emitter.Emit(this);
+		}
+
 		public override string ToString()
 		{
-			return string.Format("class {0}", Name);
+			return string.Format("{0} {1}", TargetType, Name);
 		}
 	}
 }

@@ -42,6 +42,9 @@ namespace Expresso.Interpreter
 		/// </summary>
 		private Dictionary<string, List<ScopeItem>> table = new Dictionary<string, List<ScopeItem>>();
 
+		static private Scope symbol_table = new Scope();
+		static public Scope SymbolTable{get{return Scope.symbol_table;}}
+
 		private int next_offset = 0;
 
 		/// <summary>

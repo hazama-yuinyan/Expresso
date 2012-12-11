@@ -10,25 +10,28 @@ using Expresso.Helpers;
 
 COMPILER Expresso
 
-	internal Scope cur_scope = new Scope();		//the current scope of variables
-	private Scope funcs = new Scope();	//the namespace for funcTable
+	internal Scope cur_scope = null;		//the current scope of variables
 	public Block root = new Block();
 	static public Function main_func = null;	//the main function
 	static private List<BreakableStatement> breakables = new List<BreakableStatement>();	//the current parent breakbles hierarchy
 	bool ignore_parent_scope = false;
 	
 	Parser()
-	{			//Add built-in functions
+	{
+		cur_scope = Scope.SymbolTable;
+		
+		//Add built-in functions
 		Function[] native_funcs = {
 			new NativeLambdaUnary("abs", ImplementationHelpers.MakeArg(new Identifier("val", new TypeAnnotation(TYPES.VAR), 0)), ExpressoFunctions.Abs),
 			new NativeLambdaUnary("sqrt", ImplementationHelpers.MakeArg(new Identifier("val", new TypeAnnotation(TYPES.VAR), 0)), ExpressoFunctions.Sqrt),
 			new NativeLambdaUnary("toInt", ImplementationHelpers.MakeArg(new Identifier("val", new TypeAnnotation(TYPES.VAR), 0)), ExpressoFunctions.ToInt)
 		};
 		foreach(var tmp in native_funcs)
-			funcs.AddFunction(tmp);
+			cur_scope.AddFunction(tmp);
 			
 		Identifier[] builtin_classes = {
-			new Identifier("File", new TypeAnnotation(TYPES.TYPE_CLASS, "File"))
+			new Identifier("File", new TypeAnnotation(TYPES.TYPE_CLASS, "File")),
+			new Identifier("Exception", new TypeAnnotation(TYPES.TYPE_CLASS, "Exception"))
 		};
 		
 		foreach(var builtin_class in builtin_classes)
@@ -244,9 +247,9 @@ COMPILER Expresso
 		return new IntSeqExpression{Start = start, End = end, Step = step};
 	}
 	
-	static ClassDeclaration MakeClassDef(string className, List<string> bases, List<Statement> decls)
+	static TypeDeclaration MakeClassDef(string className, List<string> bases, List<Statement> decls)
 	{
-		return new ClassDeclaration{Name = className, Bases = bases, Declarations = decls};
+		return new TypeDeclaration{TargetType = DeclType.Class, Name = className, Bases = bases, Declarations = decls};
 	}
 	
 	static NewExpression MakeNewExpr(string targetName, List<Expression> args)
@@ -265,6 +268,11 @@ COMPILER Expresso
 			return new TryStatement{Body = body, Catches = catches, FinallyClause = new FinallyClause{Body = finallyClause}};
 		else
 			return new TryStatement{Body = body, Catches = catches, FinallyClause = null};
+	}
+	
+	static ThrowStatement MakeThrowStmt(Expression expr)
+	{
+		return new ThrowStatement{Expression = expr};
 	}
 	
 /*--------------------------------------------------------------------------*/
@@ -322,7 +330,7 @@ Expresso                    (. Statement stmt = null; .)
     | FuncDecl<out stmt>
     | ClassDecl<out stmt>
     )						(. root.Statements.Add(stmt); .)
-  }							(. Parser.main_func = funcs.GetFunction("main"); .).
+  }							(. Parser.main_func = cur_scope.GetFunction("main"); .).
 /*------------------------------------------------------------------------*/
 /*ProgramDefinition<out Statement require>
 =
@@ -414,7 +422,7 @@ ConstructorDecl<out Statement func, string className>	(.
   								.).
 /*------------------------------------------------------------------------*/
 MethodDecl<out Statement func, string className>  (.
-													string name; TypeAnnotation type = TypeAnnotation.VariadicType.Clone(); Statement block = null;
+													string name; TypeAnnotation type = TypeAnnotation.VariantType.Clone(); Statement block = null;
 													var @params = new List<Argument>(); Identifier ident_this; Argument exs_this = null;
 												  .)
 =
@@ -512,7 +520,8 @@ SimpleStmt<out Statement stmt>		(. stmt = null; .)
   | PrintStmt<out stmt>
   | ReturnStmt<out stmt>
   | BreakStmt<out stmt>
-  | ContinueStmt<out stmt>.
+  | ContinueStmt<out stmt>
+  | ThrowStmt<out stmt>.
 /*------------------------------------------------------------------------*/
 PrintStmt<out Statement stmt>		(. List<Expression> exprs = null; bool trailing_comma = false; .)
 =
@@ -525,7 +534,7 @@ ReturnStmt<out Statement stmt>		(. List<Expression> target_list = new List<Expre
 =
   "return"
   [RValueList<out target_list>]
-  SYNC ';'							(. stmt = new Return{Expressions = target_list}; .).
+  SYNC ';'							(. stmt = new ReturnStatement{Expressions = target_list}; .).
 /*------------------------------------------------------------------------*/
 BreakStmt<out Statement stmt>		(. int count = 1; .)
 =
@@ -542,6 +551,12 @@ ContinueStmt<out Statement stmt>	(. int count = 1; .)
     integer							(. count = Convert.ToInt32(t.val); .)
   ]
   SYNC ';' 							(. stmt = new ContinueStatement{Count = count}; .).
+/*------------------------------------------------------------------------*/
+ThrowStmt<out Statement stmt>		(. Expression expr; .)
+=
+  "throw"
+  CondExpr<out expr>
+  SYNC ';'							(. stmt = MakeThrowStmt(expr); .).
 /*------------------------------------------------------------------------*/
 AugAssignOpe<ref OperatorType type>
 =
@@ -759,7 +774,7 @@ VarDecl<. out List<Expression> outs .> 	(.
   					   	   			});
   								.).
 /*------------------------------------------------------------------------*/
-FuncDecl<out Statement func>    (. string name; TypeAnnotation type = TypeAnnotation.VariadicType.Clone(); Statement block; var @params = new List<Argument>(); .)
+FuncDecl<out Statement func>    (. string name; TypeAnnotation type = TypeAnnotation.VariantType.Clone(); Statement block; var @params = new List<Argument>(); .)
 =
   SYNC
   "def"							(. block = null; cur_scope = new Scope{Parent = cur_scope}; .)
@@ -771,8 +786,8 @@ FuncDecl<out Statement func>    (. string name; TypeAnnotation type = TypeAnnota
     Type<out type>
   ]
   Block<out block> 				(. func = MakeFunc(name, @params, (Block)block, type);
-  								   funcs.AddFunction(func as Function);
   								   cur_scope = cur_scope.Parent;
+  								   cur_scope.AddFunction(func as Function);
   								.).
 /*------------------------------------------------------------------------*/
 WithStmt<out Statement stmt>		(. Statement block = null; .)
@@ -808,7 +823,7 @@ ParamList<. ref List<Argument> @params .>		(. Argument expr; .)
     Argument<out expr>							(. @params.Add(expr); .)
   }.
 /*------------------------------------------------------------------------*/
-Argument<out Argument arg>		(. string name; Expression default_val = null; TypeAnnotation type = TypeAnnotation.VariadicType.Clone(); .)
+Argument<out Argument arg>		(. string name; Expression default_val = null; TypeAnnotation type = TypeAnnotation.VariantType.Clone(); .)
 =
   ident							(. name = t.val; .)
   [ "(-"
@@ -991,7 +1006,7 @@ Trailer<ref Expression expr, string name>	(. Function func; var args = new List<
   								   		};
   								   		return;
   								   }
-  								   func = funcs.GetFunction(name);
+  								   func = cur_scope.GetFunction(name);
   								   if(func == null){
   								   		SemErr("The function is not defined : " + name);
   								   }

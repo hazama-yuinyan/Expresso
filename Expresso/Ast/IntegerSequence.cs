@@ -1,6 +1,8 @@
 using System.Collections.Generic;
+
 using Expresso.Builtins;
 using Expresso.Interpreter;
+using Expresso.Compiler;
 
 namespace Expresso.Ast
 {
@@ -65,6 +67,11 @@ namespace Expresso.Ast
 				throw new EvalException("The step expression of the IntSeq expression must yield an integer!");
 
 			return new ExpressoIntegerSequence((int)start, (int)end, (int)step);
+		}
+
+		internal override System.Linq.Expressions.Expression Compile(Emitter emitter)
+		{
+			return emitter.Emit(this);
 		}
 	}
 }

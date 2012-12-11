@@ -3,9 +3,11 @@ using System.Linq;
 using System.Text;
 using System;
 using ExprTree = System.Linq.Expressions;
+
 using Expresso.Builtins;
 using Expresso.Helpers;
 using Expresso.Interpreter;
+using Expresso.Compiler;
 
 namespace Expresso.Ast
 {
@@ -130,6 +132,11 @@ namespace Expresso.Ast
         {
 			return this.Body.Run(varStore);
         }
+
+		internal override System.Linq.Expressions.Expression Compile(Emitter emitter)
+		{
+			return emitter.Emit(this);
+		}
 		
 		public override string ToString()
 		{
@@ -186,6 +193,10 @@ namespace Expresso.Ast
 		}
 	}
 
+	/// <summary>
+	/// Represents a nullary native lambda function. When you refer to a static method, use this class instead of the
+	/// <see cref="NativeFunctionNAry"/>
+	/// </summary>
 	public class NativeLambdaNullary : NativeFunction
 	{
 		private Func<object> func;
@@ -202,6 +213,10 @@ namespace Expresso.Ast
 		}
 	}
 
+	/// <summary>
+	/// Represents a native unary lambda function. When you refer to a static method, use this class instead of the
+	/// <see cref="NativeFunctionNAry"/>
+	/// </summary>
 	public class NativeLambdaUnary : NativeFunction
 	{
 		private Func<object, object> func;
@@ -219,6 +234,10 @@ namespace Expresso.Ast
 		}
 	}
 
+	/// <summary>
+	/// Represents a native binary lambda function. When you refer to a static method, use this class instead of the
+	/// <see cref="NativeFunctionNAry"/>
+	/// </summary>
 	public class NativeLambdaBinary : NativeFunction
 	{
 		private Func<object, object, object> func;
@@ -237,6 +256,10 @@ namespace Expresso.Ast
 		}
 	}
 
+	/// <summary>
+	/// Represents a native ternary lambda function. When you refer to a static method, use this class instead of the
+	/// <see cref="NativeFunctionNAry"/>
+	/// </summary>
 	public class NativeLambdaTernary : NativeFunction
 	{
 		private Func<object, object, object, object> func;

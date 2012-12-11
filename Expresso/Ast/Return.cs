@@ -1,6 +1,8 @@
 ﻿using System.Collections.Generic;
+
 using Expresso.Builtins;
 using Expresso.Interpreter;
+using Expresso.Compiler;
 
 namespace Expresso.Ast
 {
@@ -8,7 +10,7 @@ namespace Expresso.Ast
     /// リターン文。
 	/// The Return statement.
     /// </summary>
-    public class Return : Statement
+    public class ReturnStatement : Statement
     {
         /// <summary>
         /// 戻り値の式。
@@ -22,7 +24,7 @@ namespace Expresso.Ast
 
         public override bool Equals(object obj)
         {
-            var x = obj as Return;
+            var x = obj as ReturnStatement;
 
             if (x == null) return false;
 
@@ -48,5 +50,10 @@ namespace Expresso.Ast
 				return ExpressoFunctions.MakeTuple(objs);
 			}
         }
+
+		internal override System.Linq.Expressions.Expression Compile(Emitter emitter)
+		{
+			return emitter.Emit(this);
+		}
     }
 }

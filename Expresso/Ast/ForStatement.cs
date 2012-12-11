@@ -2,9 +2,11 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+
 using Expresso.Interpreter;
 using Expresso.Builtins;
 using Expresso.Helpers;
+using Expresso.Compiler;
 
 namespace Expresso.Ast
 {
@@ -93,6 +95,11 @@ namespace Expresso.Ast
 			}
 			return null;
         }
+
+		internal override System.Linq.Expressions.Expression Compile(Emitter emitter)
+		{
+			return emitter.Emit(this);
+		}
 
 		public IEnumerable<Identifier> CollectLocalVars()
 		{

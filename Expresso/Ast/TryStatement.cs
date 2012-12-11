@@ -1,9 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+
 using Expresso.Builtins;
 using Expresso.Interpreter;
 using Expresso.Helpers;
+using Expresso.Compiler;
 
 namespace Expresso.Ast
 {
@@ -74,6 +76,11 @@ namespace Expresso.Ast
 			return null;
         }
 
+		internal override System.Linq.Expressions.Expression Compile(Emitter emitter)
+		{
+			return emitter.Emit(this);
+		}
+
 		public IEnumerable<Identifier> CollectLocalVars()
 		{
 			var in_body = ImplementationHelpers.CollectLocalVars(Body);
@@ -130,6 +137,11 @@ namespace Expresso.Ast
         {
 			return Body.Run(varStore);
         }
+
+		internal override System.Linq.Expressions.Expression Compile(Emitter emitter)
+		{
+			return emitter.Emit(this);
+		}
 	}
 
 	/// <summary>
@@ -166,6 +178,11 @@ namespace Expresso.Ast
         {
 			return Body.Run(varStore);
         }
+
+		internal override System.Linq.Expressions.Expression Compile(Emitter emitter)
+		{
+			return emitter.Emit(this);
+		}
 	}
 }
 

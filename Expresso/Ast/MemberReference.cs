@@ -1,8 +1,10 @@
 using System;
 using System.Collections.Generic;
+
 using Expresso.Builtins;
 using Expresso.Interpreter;
 using Expresso.Helpers;
+using Expresso.Compiler;
 
 
 namespace Expresso.Ast
@@ -51,6 +53,11 @@ namespace Expresso.Ast
 				return (member is Function) ? new MethodContainer(member as Function, obj) : member;
 			}
         }
+
+		internal override System.Linq.Expressions.Expression Compile(Emitter emitter)
+		{
+			return emitter.Emit(this);
+		}
 
 		internal override void Assign(VariableStore varStore, object val)
 		{

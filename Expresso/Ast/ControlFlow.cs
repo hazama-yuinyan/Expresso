@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
+
 using Expresso.Interpreter;
+using Expresso.Compiler;
 
 namespace Expresso.Ast
 {
@@ -57,6 +59,11 @@ namespace Expresso.Ast
 			return null;
         }
 
+		internal override System.Linq.Expressions.Expression Compile(Emitter emitter)
+		{
+			return emitter.Emit(this);
+		}
+
 		public override string ToString ()
 		{
 			return string.Format ("break upto {0}", Count);
@@ -90,6 +97,11 @@ namespace Expresso.Ast
         {
 			return null;
         }
+
+		internal override System.Linq.Expressions.Expression Compile(Emitter emitter)
+		{
+			return emitter.Emit(this);
+		}
 
 		public override string ToString ()
 		{

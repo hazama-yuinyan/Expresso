@@ -1,7 +1,9 @@
 ﻿using System.Collections.Generic;
+
 using Expresso.Builtins;
 using Expresso.Interpreter;
 using Expresso.Helpers;
+using Expresso.Compiler;
 
 namespace Expresso.Ast
 {
@@ -60,6 +62,11 @@ namespace Expresso.Ast
 			}
 			
 			return ope;
+		}
+
+		internal override System.Linq.Expressions.Expression Compile(Emitter emitter)
+		{
+			return emitter.Emit(this);
 		}
 	}
 }
