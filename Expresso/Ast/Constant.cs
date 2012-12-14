@@ -7,6 +7,8 @@ using Expresso.Compiler;
 
 namespace Expresso.Ast
 {
+	using CSharpExpr = System.Linq.Expressions.Expression;
+
     /// <summary>
     /// 定数。
 	/// Represents a constant.
@@ -49,7 +51,7 @@ namespace Expresso.Ast
 			return Value;
         }
 
-		internal override System.Linq.Expressions.Expression Compile(Emitter emitter)
+		internal override CSharpExpr Compile(Emitter<CSharpExpr> emitter)
 		{
 			return emitter.Emit(this);
 		}

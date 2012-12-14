@@ -3,7 +3,10 @@ using System.IO;
 using System.Collections.Generic;
 using System.Numerics;
 using System.Reflection;
+using System.Linq;
+
 using NUnit.Framework;
+
 using Expresso.Ast;
 using Expresso.Builtins;
 using Expresso.Interpreter;
@@ -125,7 +128,7 @@ namespace Expresso.Test
 			var results = interp.Run() as List<object>;
 			Assert.IsNotNull(results);
 
-			var expected_a = ExpressoFunctions.MakeList(new List<object>{1, 2, 3});
+			var expected_a = new List<object>{1, 2, 3};
 			var expected_b = ExpressoFunctions.MakeDict(new List<object>{"a", "b", "y"}, new List<object>{1, 4, 10});
 			var expected_x = 100;
 
@@ -169,10 +172,17 @@ namespace Expresso.Test
 			var expected_strs = ExpressoFunctions.MakeList(new List<object>{"akarichan", "chinatsu", "kyoko", "yui"});
 			var expected_fibs = new List<object>();
 			for(int i = 0; ; ++i){
-				int fib = Helpers.Fib(i);
+				var fib = Helpers.Fib(i);
 				if(fib >= 1000) break;
 				expected_fibs.Add(fib);
 			}
+
+			var expected_ary = 
+				from i in Enumerable.Range(0, 10)
+				where i != 3 && i != 6
+				from j in Enumerable.Range(0, 10)
+				where j < 8
+				select ExpressoFunctions.MakeTuple(new object[]{i, j});
 
 			var expected = new object[]{
 				100,	//x
@@ -182,7 +192,8 @@ namespace Expresso.Test
 				true,	//flag
 				expected_sum,
 				expected_strs,
-				expected_fibs
+				expected_fibs,
+				new List<object>(expected_ary)
 			};
 
 			Helpers.DoTest(results, expected);
@@ -225,29 +236,26 @@ namespace Expresso.Test
 			var results = interp.Run() as List<object>;
 			Assert.IsNotNull(results);
 
-			var tmp_x = new List<object>(100);
-			for(int i = 0; i < 100; ++i)
-				tmp_x.Add(i);
+			var tmp_x =
+				from i in Enumerable.Range(0, 100)
+				select i;
 
-			var expected_x = ExpressoFunctions.MakeList(tmp_x);
+			var expected_x = new List<object>(tmp_x.Cast<object>());
 
-			var tmp_y = new List<object>(50);
-			for(int j = 0; j < 100; ++j){
-				if(j % 2 == 0)
-					tmp_y.Add(j);
-			}
+			var tmp_y =
+				from j in Enumerable.Range(0, 100)
+				where j % 2 == 0
+				select j;
 
-			var expected_y = ExpressoFunctions.MakeList(tmp_y);
+			var expected_y = new List<object>(tmp_y.Cast<object>());
 
-			var tmp_z = new List<object>(50 * 100);
-			for(int k = 0; k < 100; ++k){
-				if(k % 2 == 0){
-					for(int l = 0; l < 100; ++l)
-						tmp_z.Add(ExpressoFunctions.MakeTuple(new List<object>{k, l}));
-				}
-			}
+			var tmp_z =
+				from k in Enumerable.Range(0, 100)
+				where k % 2 == 0
+				from l in Enumerable.Range(0, 100)
+				select ExpressoFunctions.MakeTuple(new object[]{k, l});
 
-			var expected_z = ExpressoFunctions.MakeList(tmp_z);
+			var expected_z = new List<object>(tmp_z);
 
 			var expected_m = ExpressoFunctions.MakeTuple(new List<object>{1, 3});
 

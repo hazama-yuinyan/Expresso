@@ -5,6 +5,8 @@ using Expresso.Compiler;
 
 namespace Expresso.Ast
 {
+	using CSharpExpr = System.Linq.Expressions.Expression;
+
     /// <summary>
     /// 代入文。
 	/// The assignment statement.
@@ -60,7 +62,7 @@ namespace Expresso.Ast
 			return rvalues[0];	//x = y = 0;みたいな表記を許容するために右辺値の一番目を戻り値にする
         }
 		
-		internal override System.Linq.Expressions.Expression Compile(Emitter emitter)
+		internal override CSharpExpr Compile(Emitter<CSharpExpr> emitter)
 		{
 			return emitter.Emit(this);
 		}

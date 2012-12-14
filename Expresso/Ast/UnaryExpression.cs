@@ -7,6 +7,8 @@ using Expresso.Compiler;
 
 namespace Expresso.Ast
 {
+	using CSharpExpr = System.Linq.Expressions.Expression;
+
 	/// <summary>
 	/// 単項演算。
 	/// Reperesents an unary expression.
@@ -59,14 +61,42 @@ namespace Expresso.Ast
 					ope = -(Fraction)ope;
 				else
 					throw new EvalException("The minus operator is not applicable to the operand!");
+			}else if(Operator == OperatorType.NOT){
+				if(ope is bool)
+					ope = !(bool)ope;
+				else
+					throw new EvalException("The not operator is not applicable to the operand!");
 			}
 			
 			return ope;
 		}
 
-		internal override System.Linq.Expressions.Expression Compile(Emitter emitter)
+		internal override CSharpExpr Compile(Emitter<CSharpExpr> emitter)
 		{
 			return emitter.Emit(this);
+		}
+
+		public override string ToString()
+		{
+			string op;
+			switch(Operator){
+			case OperatorType.PLUS:
+				op = "+";
+				break;
+
+			case OperatorType.MINUS:
+				op = "-";
+				break;
+
+			case OperatorType.NOT:
+				op = "!";
+				break;
+
+			default:
+				op = "";
+				break;
+			}
+			return string.Format("{0}{1}", op, Operand);
 		}
 	}
 }

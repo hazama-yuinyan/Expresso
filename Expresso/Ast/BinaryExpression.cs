@@ -8,6 +8,8 @@ using Expresso.Compiler;
 
 namespace Expresso.Ast
 {
+	using CSharpExpr = System.Linq.Expressions.Expression;
+
     /// <summary>
     /// 二項演算。
 	/// Represents a binary expression.
@@ -77,7 +79,7 @@ namespace Expresso.Ast
 			}
         }
 
-		internal override System.Linq.Expressions.Expression Compile(Emitter emitter)
+		internal override CSharpExpr Compile(Emitter<CSharpExpr> emitter)
 		{
 			return emitter.Emit(this);
 		}
@@ -325,7 +327,7 @@ namespace Expresso.Ast
 			case OperatorType.MOD:
 				op = "%";
 				break;
-				
+
 			case OperatorType.NOTEQ:
 				op = "!=";
 				break;

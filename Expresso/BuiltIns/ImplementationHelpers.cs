@@ -359,6 +359,20 @@ namespace Expresso.Helpers
 					throw new EvalException("Invalid use of the [] operator!");
 			}
 		}
+
+		public static IEnumerator<object> Enumerate(object enumerable)
+		{
+			if(enumerable is IEnumerable<object>){
+				var enumerator = ((IEnumerable<object>)enumerable).GetEnumerator();
+				while(enumerator.MoveNext())
+					yield return enumerator.Current;
+			}else if(enumerable is Dictionary<object, object>){
+				var dict = (Dictionary<object, object>)enumerable;
+				foreach(var elem in dict)
+					yield return ExpressoFunctions.MakeTuple(new object[]{elem.Key, elem.Value});
+			}else
+				throw new EvalException("Unknown object type!");
+		}
 	}
 
 	/// <summary>

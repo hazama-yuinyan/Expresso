@@ -6,7 +6,7 @@ using Expresso.Compiler;
 
 namespace Expresso.Ast
 {
-	using ExprTree = System.Linq.Expressions;
+	using CSharpExpr = System.Linq.Expressions.Expression;
 
     /// <summary>
     /// 抽象構文木のノードタイプ。
@@ -51,7 +51,8 @@ namespace Expresso.Ast
 		WithStatement,
 		CatchClause,
 		FinallyClause,
-		ThrowStatement
+		ThrowStatement,
+		YieldStatement
     }
 
     /// <summary>
@@ -102,6 +103,6 @@ namespace Expresso.Ast
 		/// <param name='emitter'>
 		/// Emitter.
 		/// </param>
-		internal abstract ExprTree.Expression Compile(Emitter emitter);
+		internal abstract CSharpExpr Compile(Emitter<CSharpExpr> emitter);
     }
 }

@@ -9,6 +9,8 @@ using Expresso.Compiler;
 
 namespace Expresso.Ast
 {
+	using CSharpExpr = System.Linq.Expressions.Expression;
+
     /// <summary>
     /// モジュールインポート式。
 	/// Reperesents a require expression.
@@ -18,7 +20,7 @@ namespace Expresso.Ast
         /// <summary>
         /// 対象となるモジュール名。
 		/// The target module name to be required. It can contain a '.'(which can be used to point to a nested module)
-		/// or a '/'(which can be used to a external source file).
+		/// or a '/'(which can be used to an external source file).
         /// </summary>
         public string ModuleName { get; internal set; }
 
@@ -50,10 +52,18 @@ namespace Expresso.Ast
 
         internal override object Run(VariableStore varStore)
         {
+			var module_path = ModuleName.Replace('.', '/');
+			var module_parser = new Parser(new Scanner(module_path));
+			module_parser.Parse();
+
+			var module_interp = new Expresso.Interpreter.Interpreter{Root = module_parser.root};
+			module_interp.Initialize();
+			module_interp.Run(module_interp.Root);
+
 			return null;
         }
 
-		internal override System.Linq.Expressions.Expression Compile(Emitter emitter)
+		internal override CSharpExpr Compile(Emitter<CSharpExpr> emitter)
 		{
 			return emitter.Emit(this);
 		}

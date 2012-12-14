@@ -6,6 +6,8 @@ using Expresso.Compiler;
 
 namespace Expresso.Ast
 {
+	using CSharpExpr = System.Linq.Expressions.Expression;
+
     /// <summary>
     /// 関数呼び出し。
 	/// Reperesents a function call.
@@ -122,7 +124,7 @@ namespace Expresso.Ast
 			return fn.Run(child);
         }
 
-		internal override System.Linq.Expressions.Expression Compile(Emitter emitter)
+		internal override CSharpExpr Compile(Emitter<CSharpExpr> emitter)
 		{
 			return emitter.Emit(this);
 		}

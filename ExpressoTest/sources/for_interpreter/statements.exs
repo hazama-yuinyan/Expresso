@@ -43,5 +43,14 @@ def main(){
 		a, b = b, a + b;
 	}
 
-	return [x, y, z, w, flag, sum, strs, fibs];
+	let ary = [];
+	for(let i in [0..10]){
+		for(let j in [0..10]){
+			if(i == 3 || i == 6) break;
+			if(j == 8) continue upto 2;
+			ary.add((i, j));
+		}
+	}
+
+	return [x, y, z, w, flag, sum, strs, fibs, ary];
 }

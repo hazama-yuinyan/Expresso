@@ -15,7 +15,8 @@ namespace Expresso.Interpreter
 		{
 			Local,
 			Function,
-			Class
+			Class,
+			Module
 		}
 
 		internal NodeType Type;
@@ -110,6 +111,34 @@ namespace Expresso.Interpreter
 		}
 
 		/// <summary>
+		/// モジュールを取得。
+		/// Gets a module name.
+		/// </summary>
+		/// <param name="name">
+		/// 識別子名。
+		/// The name of the identifier.
+		/// </param>
+		/// <returns>
+		/// その名前のモジュールが定義されていればモジュールの詳細を、なければnullを。
+		/// If exists, returns the information on that module, otherwise returns null.
+		/// </returns>
+		public Identifier GetModule(string name)
+		{
+			int level = 0;
+			for(Scope s = this; s != null; s = s.Parent, ++level){
+				var v = GetSymbol(name, ScopeItem.NodeType.Module, s);
+				if (v != null && level == 0){
+					return v;
+				}else if(v != null){
+					Identifier cloned = new Identifier(v.Name, v.ParamType, v.Offset, level);
+					return cloned;
+				}
+			}
+			
+			return null;
+		}
+
+		/// <summary>
 		/// 変数を取得。
 		/// </summary>
 		/// <param name="name">識別子名。</param>
@@ -198,19 +227,28 @@ namespace Expresso.Interpreter
 				p.Offset = this.next_offset++;
 		}
 
+		/// <summary>
+		/// スコープにクラスを追加。
+		/// Adds a class to the current scope.
+		/// </summary>
+		/// <param name='p'>
+		/// The class info to be added.
+		/// </param>
 		public void AddClass(Identifier p)
 		{
 			AddSymbol(p.Name, ScopeItem.NodeType.Class, p);
 		}
 
-		void AddSymbol(string name, ScopeItem.NodeType type, Node p)
+		/// <summary>
+		/// スコープにモジュールを追加。
+		/// Adds a module to the current scope.
+		/// </summary>
+		/// <param name='p'>
+		/// The module info to be added.
+		/// </param>
+		public void AddModule(Identifier p)
 		{
-			var new_item = new ScopeItem{Type = type, Node = p};
-
-			if(this.table.ContainsKey(name))
-				table[name].Add(new_item);
-			else
-				table[name] = new List<ScopeItem>{new_item};
+			AddSymbol(p.Name, ScopeItem.NodeType.Module, p);
 		}
 
 		/// <summary>
@@ -221,6 +259,16 @@ namespace Expresso.Interpreter
 		public void AddFunction(Function f)
 		{
 			AddSymbol(f.Name, ScopeItem.NodeType.Function, f);
+		}
+
+		void AddSymbol(string name, ScopeItem.NodeType type, Node p)
+		{
+			var new_item = new ScopeItem{Type = type, Node = p};
+			
+			if(this.table.ContainsKey(name))
+				table[name].Add(new_item);
+			else
+			table[name] = new List<ScopeItem>{new_item};
 		}
 	}
 }

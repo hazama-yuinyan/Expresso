@@ -8,11 +8,14 @@ using Expresso.Compiler;
 
 namespace Expresso.Ast
 {
+	using CSharpExpr = System.Linq.Expressions.Expression;
+
 	/// <summary>
 	/// While文.
 	/// The While statement.
 	/// </summary>
 	/// <seealso cref="Node"/>
+	/// <seealso cref="BreakableStatement"/>
 	public class WhileStatement : BreakableStatement, CompoundStatement
 	{
 		/// <summary>
@@ -66,7 +69,7 @@ namespace Expresso.Ast
 			return null;
         }
 
-		internal override System.Linq.Expressions.Expression Compile(Emitter emitter)
+		internal override CSharpExpr Compile(Emitter<CSharpExpr> emitter)
 		{
 			return emitter.Emit(this);
 		}

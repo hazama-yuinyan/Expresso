@@ -1,6 +1,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
+using System.Text;
+
 using Expresso.Ast;
 using Expresso.Builtins;
 using Expresso.Interpreter;
@@ -84,7 +86,7 @@ COMPILER Expresso
 		return x.kind != _lparen;
 	}
 	
-	bool ExpectIdentIsClassName()
+	bool ExpectIdentIsModuleOrClassName()
 	{
 		Token x = la;
 		return x.kind == _dot;
@@ -155,6 +157,21 @@ COMPILER Expresso
 			if(enclosing.Type == NodeType.WhileStatement || enclosing.Type == NodeType.ForStatement) --j;
 		}
 		return new BreakStatement{Count = count, Enclosings = tmp};
+	}
+	
+	static ContinueStatement MakeContinueStatement(int count)
+	{
+		var tmp = new List<BreakableStatement>();
+		for(int len = Parser.breakables.Count, i = 0, j = count; j > 0; ++i){
+			var enclosing = Parser.breakables[len - 1 - i];
+			if(enclosing.Type != NodeType.WhileStatement && enclosing.Type != NodeType.ForStatement
+				|| j != 1)			//don't include the loop on which we'll continue
+				tmp.Add(enclosing);
+			
+			if(enclosing.Type == NodeType.WhileStatement || enclosing.Type == NodeType.ForStatement)
+				--j;
+		}
+		return new ContinueStatement{Count = count, Enclosings = tmp};
 	}
 	
 	static IfStatement MakeIfStatement(Expression condition, Statement trueBlock, Statement falseBlock)
@@ -275,6 +292,11 @@ COMPILER Expresso
 		return new ThrowStatement{Expression = expr};
 	}
 	
+	static YieldStatement MakeYieldStmt(Expression expr)
+	{
+		return new YieldStatement{Expression = expr};
+	}
+	
 /*--------------------------------------------------------------------------*/
 CHARACTERS
   letter = 'A'..'Z' + 'a'..'z'.
@@ -317,50 +339,58 @@ IGNORE cr + lf + tab
 
 PRODUCTIONS
 /*------------------------------------------------------------------------*/
-Expresso                    (. Statement stmt = null; .)
+Expresso                    	(. Statement stmt = null; List<Statement> prog_defs = null; .)
 = 
-  //ProgramDefinition
-  
+  [ ProgramDefinition<out prog_defs>
+  ]								(.
+  									if(prog_defs != null)
+  										root.Statements.AddRange(prog_defs);
+  								.)
   ( ExprStmt<out stmt>
   | FuncDecl<out stmt>
   | ClassDecl<out stmt>
-  )							(. root.Statements.Add(stmt); .)
+  )								(. root.Statements.Add(stmt); .)
   { 
     ( ExprStmt<out stmt>
     | FuncDecl<out stmt>
     | ClassDecl<out stmt>
-    )						(. root.Statements.Add(stmt); .)
-  }							(. Parser.main_func = cur_scope.GetFunction("main"); .).
+    )							(. root.Statements.Add(stmt); .)
+  }								(. Parser.main_func = cur_scope.GetFunction("main"); .).
 /*------------------------------------------------------------------------*/
-/*ProgramDefinition<out Statement require>
+ProgramDefinition<. out List<Statement> requires .>		(. requires = new List<Statement>(); Statement tmp; .)
 =
-  {RequireStmt<out require>}.*/
+  RequireStmt<out tmp>
+  { RequireStmt<out tmp>
+  }.
 /*------------------------------------------------------------------------*/
-/*RequireStmt<out Statement stmt>	(. string module_name, alias = null; var requires = new List<Expression>(); .)
+RequireStmt<out Statement stmt>	(. string module_name, alias = null; var requires = new List<Expression>(); Expression tmp; .)
 =
   SYNC
   "require"
   Module<out module_name>
   [ "as"
-    ident							(. alias = t.val; .)
-  ]
+    ident						(. alias = t.val; .)
+  ]								(.
+  									tmp = MakeRequireExpr(module_name, alias);
+  									requires.Add(tmp);
+  								.)
   { ','
-    Module<out module>
+    Module<out module_name>
     [ "as"
-      ident
+      ident						(. alias = t.val; .)
     ]
-  }
-  SYNC ';' 							(. stmt = MakeExprStatement(requires); .).*/
+  }								(.
+  									tmp = MakeRequireExpr(module_name, alias);
+  									requires.Add(tmp);
+  								.)
+  SYNC ';' 						(. stmt = MakeExprStatement(requires); .).
 /*------------------------------------------------------------------------*/
-/*Module<out string name>			(. var sb = new StringBuilder(); .)
+Module<out string name>			(. var sb = new StringBuilder(); .)
 =
-  ident								(. sb.Append(t.val); .)
-  { 
-    ( '.'							(. sb.Append('.'); .)
-    | '/'							(. sb.Append('/'); .)
-    )
-    ident							(. sb.Append(t.val); .)
-  }									(. name = sb.ToString(); .).*/
+  ident							(. sb.Append(t.val); .)
+  { '.'							(. sb.Append('.'); .)
+    ident						(. sb.Append(t.val); .)
+  }								(. name = sb.ToString(); .).
 /*------------------------------------------------------------------------*/
 ClassDecl<out Statement stmt>		(.
 										Expression expr = null; var stmts = new List<Statement>(); List<Expression> decls = null;
@@ -521,7 +551,8 @@ SimpleStmt<out Statement stmt>		(. stmt = null; .)
   | ReturnStmt<out stmt>
   | BreakStmt<out stmt>
   | ContinueStmt<out stmt>
-  | ThrowStmt<out stmt>.
+  | ThrowStmt<out stmt>
+  | YieldStmt<out stmt>.
 /*------------------------------------------------------------------------*/
 PrintStmt<out Statement stmt>		(. List<Expression> exprs = null; bool trailing_comma = false; .)
 =
@@ -550,13 +581,19 @@ ContinueStmt<out Statement stmt>	(. int count = 1; .)
   [ "upto"
     integer							(. count = Convert.ToInt32(t.val); .)
   ]
-  SYNC ';' 							(. stmt = new ContinueStatement{Count = count}; .).
+  SYNC ';' 							(. stmt = MakeContinueStatement(count); .).
 /*------------------------------------------------------------------------*/
 ThrowStmt<out Statement stmt>		(. Expression expr; .)
 =
   "throw"
   CondExpr<out expr>
   SYNC ';'							(. stmt = MakeThrowStmt(expr); .).
+/*------------------------------------------------------------------------*/
+YieldStmt<out Statement stmt>		(. Expression expr; .)
+=
+  "yield"
+  CondExpr<out expr>
+  SYNC ';'							(. stmt = MakeYieldStmt(expr); .).
 /*------------------------------------------------------------------------*/
 AugAssignOpe<ref OperatorType type>
 =
@@ -656,14 +693,14 @@ ForStmt<out Statement stmt>				(.
   | IntSeqExpr<out rvalue>
   )
   ')'
-  Stmt<out body>					(. 
-  										tmp.LValues = target_list;
-  										tmp.Target = rvalue;
-  										tmp.Body = body;
-  										tmp.HasLet = has_let;
-  										Parser.breakables.RemoveLast();
-  										stmt = tmp;
-  									.).
+  Stmt<out body>						(. 
+	  										tmp.LValues = target_list;
+	  										tmp.Target = rvalue;
+	  										tmp.Body = body;
+	  										tmp.HasLet = has_let;
+	  										Parser.breakables.RemoveLast();
+	  										stmt = tmp;
+	  									.).
 /*------------------------------------------------------------------------*/
 SwitchStmt<out Statement stmt>		(. Expression target; List<CaseClause> cases; .)
 =
@@ -878,21 +915,21 @@ IntSeqExpr<out Expression expr>		(. Expression start = null, end = null, step = 
 OrTest<out Expression expr>			(. Expression rhs; .)
 =
   AndTest<out expr>
-  { "or"
+  { "||"
     AndTest<out rhs>				(. expr = MakeBinaryExpr(OperatorType.OR, expr, rhs); .)
   }.
 /*------------------------------------------------------------------------*/
 AndTest<out Expression expr>		(. Expression rhs; .)
 =
   NotTest<out expr>
-  { "and"
+  { "&&"
     NotTest<out rhs>				(. expr = MakeBinaryExpr(OperatorType.AND, expr, rhs); .)
   }.
 /*------------------------------------------------------------------------*/
 NotTest<out Expression expr>		(. Expression term; expr = null; .)
 =
-  ( "not"
-    NotTest<out term>				(. expr = MakeUnaryExpr(OperatorType.MINUS, term); .)
+  ( '!'
+    NotTest<out term>				(. expr = MakeUnaryExpr(OperatorType.NOT, term); .)
   )
   | Comparison<out expr>.
 /*------------------------------------------------------------------------*/
@@ -1048,7 +1085,9 @@ Atom<out Expression expr>			(. string name; expr = null; .)
 =
   ident								(.
   										name = t.val;
-  										if(ExpectIdentIsClassName()){
+  										if(ExpectIdentIsModuleOrClassName()){
+  											expr = cur_scope.GetModule(name);
+  											if(expr != null) return;
   											expr = cur_scope.GetClass(name);
   											if(expr != null) return;
   										}

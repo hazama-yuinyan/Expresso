@@ -9,6 +9,8 @@ using Expresso.Compiler;
 
 namespace Expresso.Ast
 {
+	using CSharpExpr = System.Linq.Expressions.Expression;
+
 	/// <summary>
 	/// If文。
 	/// The If statement.
@@ -17,16 +19,20 @@ namespace Expresso.Ast
 	{
 		/// <summary>
         /// 条件式。
+		/// The condition.
         /// </summary>
         public Expression Condition { get; internal set; }
 
         /// <summary>
         /// 条件が真の時に評価する文(郡)。
+		/// The statements to be operated when the condition is evaluated to true.
         /// </summary>
         public Statement TrueBlock { get; internal set; }
 
         /// <summary>
         /// 条件が偽の時に評価する文(郡)。
+		/// The statements to be operated when the condition is evaluated to false.
+		/// It can be null if the if statement has no else clause.
         /// </summary>
         public Statement FalseBlock { get; internal set; }
 
@@ -63,7 +69,7 @@ namespace Expresso.Ast
 				return (FalseBlock != null) ? FalseBlock.Run(varStore) : null;
         }
 
-		internal override System.Linq.Expressions.Expression Compile(Emitter emitter)
+		internal override CSharpExpr Compile(Emitter<CSharpExpr> emitter)
 		{
 			return emitter.Emit(this);
 		}

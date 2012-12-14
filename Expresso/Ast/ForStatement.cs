@@ -10,10 +10,13 @@ using Expresso.Compiler;
 
 namespace Expresso.Ast
 {
+	using CSharpExpr = System.Linq.Expressions.Expression;
+
 	/// <summary>
 	/// For文。
 	/// The For statement.
 	/// </summary>
+	/// <seealso cref="BreakableStatement"/>
 	public class ForStatement : BreakableStatement, CompoundStatement
 	{
 		/// <summary>
@@ -71,24 +74,28 @@ namespace Expresso.Ast
 
         internal override object Run(VariableStore varStore)
         {
-            IEnumerable iterable = Target.Run(varStore) as IEnumerable;
-			if(iterable == null)
+            object iterable = Target.Run(varStore);
+			if(!(iterable is IEnumerable))
 				throw new EvalException("Can not evaluate the expression to an iterable object!");
 
 			can_continue = true;
 
 			Identifier[] lvalues = new Identifier[LValues.Count];
-			for (int i = 0; i < LValues.Count; ++i) {
+			for(int i = 0; i < LValues.Count; ++i){
 				lvalues[i] = LValues[i] as Identifier;
 				if(lvalues[i] == null)
-					throw new EvalException("The left-hand-side of the \"in\" keyword must yield a lvalue(a referencible value such as variables)");
+					throw new EvalException("The left-hand-side of the \"in\" keyword must be a lvalue(a referencible value such as variables)");
 			}
 
-			var enumerator = iterable.GetEnumerator();
-			while (can_continue && enumerator.MoveNext()) {
-				foreach (var lvalue in lvalues) {
-					var val = enumerator.Current;
-					varStore.Assign(lvalue.Level, lvalue.Offset, val);
+			var rvalue = ImplementationHelpers.Enumerate(iterable);
+			while(can_continue && rvalue.MoveNext()){
+				for(int j = 0; j < lvalues.Length; ++j){
+					var lvalue = lvalues[j];
+					varStore.Assign(lvalue.Level, lvalue.Offset, rvalue.Current);
+					if(j + 1 != lvalues.Length){
+						if(!rvalue.MoveNext())
+							throw new EvalException("The number of rvalues must be some multiply of that of lvalues.");
+					}
 				}
 
 				Body.Run(varStore);
@@ -96,7 +103,7 @@ namespace Expresso.Ast
 			return null;
         }
 
-		internal override System.Linq.Expressions.Expression Compile(Emitter emitter)
+		internal override CSharpExpr Compile(Emitter<CSharpExpr> emitter)
 		{
 			return emitter.Emit(this);
 		}

@@ -9,24 +9,24 @@ namespace Expresso.Ast
 	using CSharpExpr = System.Linq.Expressions.Expression;
 
     /// <summary>
-    /// throw文。
-	/// The Throw statement.
+    /// yield文。
+	/// The yield statement.
     /// </summary>
-    public class ThrowStatement : Statement
+    public class YieldStatement : Statement
     {
         /// <summary>
-        /// throwする式。
+        /// yieldする式。
         /// </summary>
         public Expression Expression { get; internal set; }
 
         public override NodeType Type
         {
-            get { return NodeType.ThrowStatement; }
+            get { return NodeType.YieldStatement; }
         }
 
         public override bool Equals(object obj)
         {
-            var x = obj as ThrowStatement;
+            var x = obj as YieldStatement;
 
             if (x == null) return false;
 
@@ -40,11 +40,7 @@ namespace Expresso.Ast
 
         internal override object Run(VariableStore varStore)
         {
-			var throwable = Expression.Run(varStore) as ExpressoClass.ExpressoObj;
-			if(throwable == null)
-				throw new EvalException("The throw statement must throw a throwable object.");
-
-			throw new ExpressoThrowException(throwable);
+			return null;
         }
 
 		internal override CSharpExpr Compile(Emitter<CSharpExpr> emitter)

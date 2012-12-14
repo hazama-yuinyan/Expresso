@@ -89,7 +89,7 @@ namespace Expresso.Interpreter
 		/// <exception cref='EvalException'>
 		/// Is thrown when the eval exception.
 		/// </exception>
-		/// <returns>The return value of the main function</returns>
+		/// <returns>The return value of the Expresso's main function</returns>
 		public object Run(List<object> args = null)
 		{
 			if(MainFunc == null)
@@ -110,6 +110,7 @@ namespace Expresso.Interpreter
 		/// <summary>
 		/// あるブロックを対象にExpressoインタープリターを起動する。
 		/// Run the interpreter on a specified block.
+		/// Can be useful for loading modules.
 		/// </summary>
 		public object Run(Block root)
 		{
@@ -125,6 +126,7 @@ namespace Expresso.Interpreter
 		/// <summary>
 		/// あるASTノードを対象にインタープリターを起動する。
 		/// Run the interpreter on a specified AST node.
+		/// Can be useful for interactive mode.
 		/// </summary>
 		public object Run(Node node)
 		{

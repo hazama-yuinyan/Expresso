@@ -9,6 +9,8 @@ using Expresso.Compiler;
 
 namespace Expresso.Ast
 {
+	using CSharpExpr = System.Linq.Expressions.Expression;
+
 	public class MemberReference : Assignable
 	{
 		public Expression Parent{get; internal set;}
@@ -54,7 +56,7 @@ namespace Expresso.Ast
 			}
         }
 
-		internal override System.Linq.Expressions.Expression Compile(Emitter emitter)
+		internal override CSharpExpr Compile(Emitter<CSharpExpr> emitter)
 		{
 			return emitter.Emit(this);
 		}

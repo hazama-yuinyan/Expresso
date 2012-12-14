@@ -1,4 +1,6 @@
 ﻿
+using Expresso.Interpreter;
+
 namespace Expresso.Ast
 {
     /// <summary>
@@ -7,6 +9,15 @@ namespace Expresso.Ast
     public abstract class Expression : Node
     {
     }
+
+	/// <summary>
+	/// 左辺式になれるノード。
+	/// Represents an assignable node.
+	/// </summary>
+	public abstract class Assignable : Expression
+	{
+		internal abstract void Assign(VariableStore varStore, object val);
+	}
 
     /// <summary>
     /// 演算子のタイプ。
@@ -26,6 +37,7 @@ namespace Expresso.Ast
         GRTE,
         EQUAL,
         NOTEQ,
+		NOT,
         AND,
         OR,
 		BIT_OR,

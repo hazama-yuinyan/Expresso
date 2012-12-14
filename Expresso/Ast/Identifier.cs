@@ -9,10 +9,7 @@ using Expresso.Compiler;
 
 namespace Expresso.Ast
 {
-	public abstract class Assignable : Expression
-	{
-		internal abstract void Assign(VariableStore varStore, object val);
-	}
+	using CSharpExpr = System.Linq.Expressions.Expression;
 
     /// <summary>
     /// 識別子。
@@ -81,7 +78,7 @@ namespace Expresso.Ast
 				return varStore.Get(Offset, Level);
         }
 
-		internal override System.Linq.Expressions.Expression Compile(Emitter emitter)
+		internal override CSharpExpr Compile(Emitter<CSharpExpr> emitter)
 		{
 			return emitter.Emit(this);
 		}

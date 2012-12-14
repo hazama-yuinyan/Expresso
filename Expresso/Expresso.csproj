@@ -41,7 +41,6 @@
     <Compile Include="Ast\Expression.cs" />
     <Compile Include="Ast\Function.cs" />
     <Compile Include="Ast\Node.cs" />
-    <Compile Include="Ast\Return.cs" />
     <Compile Include="Ast\Statement.cs" />
     <Compile Include="Ast\UnaryExpression.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -49,7 +48,6 @@
     <Compile Include="VM\Machine.cs" />
     <Compile Include="VM\StackItem.cs" />
     <Compile Include="Interpreter\Interpreter.cs" />
-    <Compile Include="Ast\Print.cs" />
     <Compile Include="BuiltIns\ExpressoObj.cs" />
     <Compile Include="BuiltIns\Primitives.cs" />
     <Compile Include="Parser.cs" />
@@ -72,7 +70,6 @@
     <Compile Include="Ast\Comprehension.cs" />
     <Compile Include="Ast\Identifier.cs" />
     <Compile Include="BuiltIns\ImplementationHelpers.cs" />
-    <Compile Include="Ast\New.cs" />
     <Compile Include="Ast\RequireExpression.cs" />
     <Compile Include="BuiltIns\Library.cs" />
     <Compile Include="Ast\TryStatement.cs" />
@@ -81,7 +78,13 @@
     <Compile Include="Ast\ThrowStatement.cs" />
     <Compile Include="Ast\TypeDeclaration.cs" />
     <Compile Include="BuiltIns\TypeDefinition.cs" />
-    <Compile Include="Emitter\Emitter.cs" />
+    <Compile Include="Compiler\CSharpEmitter.cs" />
+    <Compile Include="Compiler\Emitter.cs" />
+    <Compile Include="Ast\ReturnStatement.cs" />
+    <Compile Include="Ast\PrintStatement.cs" />
+    <Compile Include="Ast\NewExpression.cs" />
+    <Compile Include="Compiler\EmitterException.cs" />
+    <Compile Include="Ast\YieldStatement.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -95,6 +98,6 @@
   <ItemGroup>
     <Folder Include="Interpreter\" />
     <Folder Include="BuiltIns\" />
-    <Folder Include="Emitter\" />
+    <Folder Include="Compiler\" />
   </ItemGroup>
 </Project>

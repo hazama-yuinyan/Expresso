@@ -6,10 +6,13 @@ using Expresso.Compiler;
 
 namespace Expresso.Ast
 {
+	using CSharpExpr = System.Linq.Expressions.Expression;
+
     /// <summary>
     /// 複文ブロック。
 	/// Represents a block of statements.
     /// </summary>
+	/// <seealso cref="BreakableStatement"/>
     public class Block : BreakableStatement, CompoundStatement
     {
         private List<Statement> statements = new List<Statement>();
@@ -69,7 +72,7 @@ namespace Expresso.Ast
 			return result;
         }
 
-		internal override System.Linq.Expressions.Expression Compile(Emitter emitter)
+		internal override CSharpExpr Compile(Emitter<CSharpExpr> emitter)
 		{
 			return emitter.Emit(this);
 		}

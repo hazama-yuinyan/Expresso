@@ -6,6 +6,8 @@ using Expresso.Compiler;
 
 namespace Expresso.Ast
 {
+	using CSharpExpr = System.Linq.Expressions.Expression;
+
 	/// <summary>
 	/// 整数の数列をあらわす式.
 	/// Represents an integer sequence.
@@ -69,7 +71,7 @@ namespace Expresso.Ast
 			return new ExpressoIntegerSequence((int)start, (int)end, (int)step);
 		}
 
-		internal override System.Linq.Expressions.Expression Compile(Emitter emitter)
+		internal override CSharpExpr Compile(Emitter<CSharpExpr> emitter)
 		{
 			return emitter.Emit(this);
 		}
