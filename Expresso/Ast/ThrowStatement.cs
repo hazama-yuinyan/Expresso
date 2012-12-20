@@ -40,7 +40,7 @@ namespace Expresso.Ast
 
         internal override object Run(VariableStore varStore)
         {
-			var throwable = Expression.Run(varStore) as ExpressoClass.ExpressoObj;
+			var throwable = Expression.Run(varStore) as ExpressoObj;
 			if(throwable == null)
 				throw new EvalException("The throw statement must throw a throwable object.");
 

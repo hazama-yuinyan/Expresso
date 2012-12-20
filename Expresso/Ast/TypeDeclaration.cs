@@ -107,9 +107,13 @@ namespace Expresso.Ast
 				}
 			}
 
-			var class_def = new ClassDefinition(Name, privates, publics);
-			class_def.Members = members.ToArray();
-			ExpressoClass.AddClass(class_def);
+			switch(TargetType){
+			case DeclType.Class:
+				var class_def = new ClassDefinition(Name, privates, publics);
+				class_def.Members = members.ToArray();
+				ExpressoClass.AddClass(class_def);
+				break;
+			}
 			return null;
         }
 
@@ -120,7 +124,7 @@ namespace Expresso.Ast
 
 		public override string ToString()
 		{
-			return string.Format("{0} {1}", TargetType, Name);
+			return string.Format("Declaration of {0} {1}", TargetType, Name);
 		}
 	}
 }

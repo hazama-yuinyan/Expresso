@@ -63,7 +63,7 @@ namespace Expresso.Ast
 			}
 			catch(ExpressoThrowException e){
 				foreach(var clause in Catches){
-					if(clause.Catcher.ParamType.TypeName == e.Thrown.ClassName){
+					if(clause.Catcher.ParamType.TypeName == e.Thrown.Name){
 						clause.Run(varStore);
 						return null;
 					}

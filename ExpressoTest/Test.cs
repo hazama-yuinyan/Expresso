@@ -288,7 +288,7 @@ namespace Expresso.Test
 				101		//d
 			};
 
-			var a = results[0] as ExpressoClass.ExpressoObj;
+			var a = results[0] as ExpressoObj;
 			Assert.IsNotNull(a);
 			Assert.Throws(typeof(EvalException), () => a.AccessMember(new Identifier("x"), false));
 			Assert.Throws(typeof(EvalException), () => a.AccessMember(new Identifier("y"), false));

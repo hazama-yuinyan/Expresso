@@ -22,6 +22,10 @@ namespace Expresso.Compiler
 
 		internal abstract ReturnType Emit(Comprehension node);
 
+		internal abstract ReturnType Emit(ComprehensionFor node);
+		
+		internal abstract ReturnType Emit(ComprehensionIf node);
+
 		internal abstract ReturnType Emit(ConditionalExpression node);
 
 		internal abstract ReturnType Emit(Constant node);
@@ -43,6 +47,8 @@ namespace Expresso.Compiler
 		internal abstract ReturnType Emit(IntSeqExpression node);
 
 		internal abstract ReturnType Emit(MemberReference node);
+
+		internal abstract ReturnType Emit(ModuleDeclaration node);
 
 		internal abstract ReturnType Emit(NewExpression node);
 

@@ -145,7 +145,8 @@ namespace Expresso.Helpers
 
 			case TYPES.CLASS:
 			case TYPES.TYPE_CLASS:
-				return typeof(ExpressoClass.ExpressoObj);
+			case TYPES.TYPE_MODULE:
+				return typeof(ExpressoObj);
 
 			default:
 				return null;

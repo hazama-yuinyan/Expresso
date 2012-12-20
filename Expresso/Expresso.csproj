@@ -85,6 +85,7 @@
     <Compile Include="Ast\NewExpression.cs" />
     <Compile Include="Compiler\EmitterException.cs" />
     <Compile Include="Ast\YieldStatement.cs" />
+    <Compile Include="Ast\ModuleDeclaration.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System" />

@@ -3,11 +3,15 @@ using Expresso.Builtins;
 
 namespace Expresso.Interpreter
 {
+	/// <summary>
+	/// Expressoのソース内で投げられた例外をあらわす。
+	/// Represents exceptions thrown in Expresso.
+	/// </summary>
 	public class ExpressoThrowException : Exception
 	{
-		public ExpressoClass.ExpressoObj Thrown{get; internal set;}
+		public ExpressoObj Thrown{get; internal set;}
 
-		public ExpressoThrowException(ExpressoClass.ExpressoObj thrown) : base("")
+		public ExpressoThrowException(ExpressoObj thrown) : base("")
 		{
 		}
 	}

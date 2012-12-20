@@ -46,6 +46,7 @@ namespace Expresso.Ast
 		SwitchStatement,
 		CaseClause,
 		TypeDecl,
+		ModuleDecl,
 		New,
 		Require,
 		WithStatement,

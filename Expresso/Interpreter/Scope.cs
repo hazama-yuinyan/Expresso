@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+
 using Expresso.Ast;
+using Expresso.Builtins;
 
 namespace Expresso.Interpreter
 {
@@ -47,6 +49,24 @@ namespace Expresso.Interpreter
 		static public Scope SymbolTable{get{return Scope.symbol_table;}}
 
 		private int next_offset = 0;
+
+		static Scope()
+		{
+			Identifier[] builtin_classes = {
+				new Identifier("File", new TypeAnnotation(TYPES.TYPE_CLASS, "File")),
+				new Identifier("Exception", new TypeAnnotation(TYPES.TYPE_CLASS, "Exception"))
+			};
+			
+			foreach(var builtin_class in builtin_classes)
+				symbol_table.AddClass(builtin_class);
+
+			Identifier[] builin_modules = {
+				new Identifier("math", new TypeAnnotation(TYPES.TYPE_MODULE, "math"))
+			};
+
+			foreach(var builtin_module in builin_modules)
+				symbol_table.AddModule(builtin_module);
+		}
 
 		/// <summary>
 		/// 識別子がスコープ内に含まれるかどうか。

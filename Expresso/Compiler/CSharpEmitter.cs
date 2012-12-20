@@ -21,7 +21,7 @@ namespace Expresso.Compiler
 		ExprTree.LabelTarget return_target = null;
 		bool has_default_clause;
 		bool has_continue;
-		CSharpExpr default_body = null;
+		CSharpExpr default_body = null, comprehension_generator = null;
 		List<ExprTree.LabelTarget> break_targets = new List<ExprTree.LabelTarget>();
 		List<ExprTree.LabelTarget> continue_targets = new List<ExprTree.LabelTarget>();
 
@@ -43,11 +43,13 @@ namespace Expresso.Compiler
 				results.Add(CSharpExpr.Assign(rvalue.Item1, rvalue.Item2));
 			}
 
-			return CSharpExpr.Block(results);
+			return CSharpExpr.Block(results);	//x, y, z... = a, b, c...; => x = a, y = b, z = c...;
 		}
 
 		internal override CSharpExpr Emit(BinaryExpression node)
 		{
+			//var lhs = node.Left.Compile(this);
+			//var rhs = node.Right.Compile(this);
 			throw new System.NotImplementedException();
 		}
 
@@ -66,12 +68,32 @@ namespace Expresso.Compiler
 
 		internal override CSharpExpr Emit(Call node)
 		{
-			throw new System.NotImplementedException();
+			var args =
+				from expr in node.Arguments
+				select expr.Compile(this);
+
+			if(node.Function != null){
+				var func = node.Function.Compile(this);
+				return CSharpExpr.Invoke(func, args);		//func(args);
+			}else{
+				var method = node.Reference.Compile(this);
+				return CSharpExpr.Invoke(method, args);		//Parent.Subscript(args)
+			}
 		}
 
 		internal override CSharpExpr Emit(Comprehension node)
 		{
 			throw new System.NotImplementedException();
+		}
+
+		internal override CSharpExpr Emit(ComprehensionFor node)
+		{
+			throw new System.NotImplementedException("Can not call this method directly. Use the Emit(Comprehension) method instead.");
+		}
+
+		internal override CSharpExpr Emit(ComprehensionIf node)
+		{
+			throw new System.NotImplementedException("Can not call this method directly. Use the Emit(Comprehension) method instead.");
 		}
 
 		internal override CSharpExpr Emit(ConditionalExpression node)
@@ -90,6 +112,7 @@ namespace Expresso.Compiler
 			if(node.Count > break_targets.Count)
 				throw new EmitterException("Can not break out of loops that many times!");
 
+			//break upto Count; => goto label;
 			return CSharpExpr.Break(break_targets[break_targets.Count - node.Count]);
 		}
 
@@ -98,6 +121,7 @@ namespace Expresso.Compiler
 			if(node.Count > continue_targets.Count)
 				throw new EmitterException("Can not track up loops that many times!");
 
+			//continue upto Count; => goto label;
 			return CSharpExpr.Continue(continue_targets[continue_targets.Count - node.Count]);
 		}
 
@@ -147,6 +171,11 @@ namespace Expresso.Compiler
 		internal override CSharpExpr Emit(MemberReference node)
 		{
 			throw new System.NotImplementedException();
+		}
+
+		internal override CSharpExpr Emit (ModuleDeclaration node)
+		{
+			throw new System.NotImplementedException ();
 		}
 
 		internal override CSharpExpr Emit(NewExpression node)
@@ -254,7 +283,8 @@ namespace Expresso.Compiler
 
 		internal override CSharpExpr Emit(UnaryExpression node)
 		{
-			throw new System.NotImplementedException();
+			var operand = node.Operand.Compile(this);
+			return ConstructUnaryOpe(operand, node.Operator);
 		}
 
 		internal override CSharpExpr Emit(VarDeclaration node)
@@ -291,10 +321,30 @@ namespace Expresso.Compiler
 
 		internal override CSharpExpr Emit(YieldStatement node)
 		{
-			throw new System.NotImplementedException ();
+			throw new System.NotImplementedException();
 		}
 
 		#region private methods
+		private CSharpExpr CreateForeachLoop(ExprTree.ParameterExpression[] variables, CSharpExpr target, CSharpExpr body)
+		{
+			if(variables == null)
+				throw new ArgumentNullException("variables", "For statement takes at least one variable!");
+			if(target == null)
+				throw new ArgumentNullException("target", "Can not iterate over a null object.");
+			if(body == null)
+				throw new ArgumentNullException("body", "I can't understand what job do you ask me for in that loop!");
+
+			has_continue = false;
+
+			var false_body = CSharpExpr.Block();
+			var end_loop = break_targets[break_targets.Count - 1];
+			if(has_continue){
+				var continue_loop = continue_targets[continue_targets.Count - 1];
+				return CSharpExpr.Loop(false_body, end_loop, continue_loop);
+			}else
+				return CSharpExpr.Loop(false_body, end_loop);
+		}
+
 		private ExprTree.SwitchCase CompileCase(CaseClause node)
 		{
 			var labels = new List<CSharpExpr>();
@@ -311,6 +361,19 @@ namespace Expresso.Compiler
 		}
 
 		private CSharpExpr CompileCatch(List<CatchClause> clauses, ExprTree.ParameterExpression caughtException)
+		{
+			return null;
+		}
+
+		private CSharpExpr CompileCompIf(ComprehensionIf node)
+		{
+			if(node.Body == null)
+				return CSharpExpr.IfThen(node.Condition.Compile(this), comprehension_generator);
+			else
+				return CSharpExpr.IfThen(node.Condition.Compile(this), node.Body.Compile(this));
+		}
+
+		private CSharpExpr CompileCompFor(ComprehensionFor node)
 		{
 			return null;
 		}
@@ -377,6 +440,23 @@ namespace Expresso.Compiler
 
 			default:
 				throw new EmitterException("Unknown binary operator!");
+			}
+		}
+
+		private CSharpExpr ConstructUnaryOpe(CSharpExpr operand, OperatorType opeType)
+		{
+			switch(opeType){
+			case OperatorType.PLUS:
+				return CSharpExpr.UnaryPlus(operand);
+
+			case OperatorType.MINUS:
+				return CSharpExpr.Negate(operand);
+
+			case OperatorType.NOT:
+				return CSharpExpr.Not(operand);
+
+			default:
+				throw new EmitterException("Unknown unary operator!");
 			}
 		}
 		#endregion

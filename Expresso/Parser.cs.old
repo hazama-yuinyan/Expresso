@@ -201,8 +201,8 @@ internal Scope cur_scope = null;		//the current scope of variables
 		var tmp = new List<BreakableStatement>();
 		for(int len = Parser.breakables.Count, i = 0, j = count; j > 0; ++i){
 			var enclosing = Parser.breakables[len - 1 - i];
-			if(j != 1 &&			//don't include the loop on which we'll continue
-				enclosing.Type == NodeType.WhileStatement || enclosing.Type == NodeType.ForStatement)
+			if(enclosing.Type != NodeType.WhileStatement && enclosing.Type != NodeType.ForStatement
+				|| j != 1)			//don't include the loop on which we'll continue
 				tmp.Add(enclosing);
 			
 			if(enclosing.Type == NodeType.WhileStatement || enclosing.Type == NodeType.ForStatement)

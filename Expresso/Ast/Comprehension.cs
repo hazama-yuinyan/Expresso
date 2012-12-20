@@ -84,10 +84,10 @@ namespace Expresso.Ast
 		}
 	}
 
-	public abstract class ComprehensionIter
+	public abstract class ComprehensionIter : Expression
 	{
-		public abstract NodeType Type{get;}
 		public abstract IEnumerable<Identifier> LocalVariables{get;}
+		internal override object Run(VariableStore varStore){return null;}
 		internal abstract IEnumerable<object> Run(VariableStore varStore, Expression yieldExpr);
 	}
 
@@ -178,6 +178,11 @@ namespace Expresso.Ast
 				}
 			}
         }
+
+		internal override CSharpExpr Compile(Emitter<CSharpExpr> emitter)
+		{
+			return emitter.Emit(this);
+		}
 	}
 
 	public class ComprehensionIf : ComprehensionIter
@@ -236,6 +241,11 @@ namespace Expresso.Ast
 				yield return null;
 			}
         }
+
+		internal override CSharpExpr Compile(Emitter<CSharpExpr> emitter)
+		{
+			return emitter.Emit(this);
+		}
 	}
 }
 

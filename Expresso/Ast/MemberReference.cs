@@ -46,8 +46,8 @@ namespace Expresso.Ast
 				return ImplementationHelpers.Slice(obj, seq);
 			}
 
-			if(obj is ExpressoClass.ExpressoObj){
-				var exs_obj = (ExpressoClass.ExpressoObj)obj;
+			if(obj is ExpressoObj){
+				var exs_obj = (ExpressoObj)obj;
 				var member = exs_obj.AccessMember(subscription, obj == varStore.Get(0, 0));
 				return (member is Function) ? new MethodContainer(member as Function, obj) : member;
 			}else{
@@ -68,10 +68,10 @@ namespace Expresso.Ast
 				throw new EvalException("Can not evaluate the name to a valid Expresso object");
 
 			var subscript = Subscription.Run(varStore);
-			if(obj is ExpressoClass.ExpressoObj){
+			if(obj is ExpressoObj){
 				if(subscript is Identifier){
 					var ident = (Identifier)subscript;
-					((ExpressoClass.ExpressoObj)obj).Assign(ident, val, obj == varStore.Get(0, 0));
+					((ExpressoObj)obj).Assign(ident, val, obj == varStore.Get(0, 0));
 				}else{
 					throw new EvalException("Invalid assignment!");
 				}

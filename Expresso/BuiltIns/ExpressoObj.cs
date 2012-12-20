@@ -31,7 +31,8 @@ namespace Expresso.Builtins
 		FUNCTION,
 		SEQ,
 		CLASS,
-		TYPE_CLASS
+		TYPE_CLASS,
+		TYPE_MODULE
 	};
 
 	/// <summary>
@@ -68,125 +69,99 @@ namespace Expresso.Builtins
 		public static readonly TypeAnnotation VariantType = new TypeAnnotation(TYPES.VAR);
 		public static readonly TypeAnnotation VoidType = new TypeAnnotation(TYPES.UNDEF);
 	}
+
+	public class ExpressoObj : IEnumerable<object>, IEnumerable
+	{
+		private BaseDefinition definition;
+		
+		private object[] members;
+		
+		/// <summary>
+		/// このインスタンスの型名。
+		/// The type name of this object.
+		/// </summary>
+		public string Name{
+			get{return definition.Name;}
+		}
+
+		public ExpressoObj(ModuleDefinition definition)
+		{
+			this.definition = definition;
+			this.members = definition.Members;
+		}
+		
+		public ExpressoObj(ClassDefinition definition)
+		{
+			this.definition = definition;
+			int num_mems = definition.GetNumberOfMembers();
+			this.members = new object[num_mems];
+			for(int i = 0; i < definition.Members.Length; ++i)
+				this.members[i] = definition.Members[i];
+		}
+		
+		public override bool Equals(object obj)
+		{
+			var x = obj as ExpressoObj;
+			if(x == null) return false;
+			
+			return Name == x.Name && members.Equals(x.members);
+		}
+		
+		public override int GetHashCode()
+		{
+			return definition.GetHashCode() ^ members.GetHashCode();
+		}
+		
+		public override string ToString()
+		{
+			return string.Format("[ExpressoObj: TypeName={0}]", Name);
+		}
+		
+		IEnumerator IEnumerable.GetEnumerator()
+		{
+			return this.GetEnumerator();
+		}
+		
+		public IEnumerator<object> GetEnumerator()
+		{
+			if(members[0] is IEnumerable<object>){
+				var enumerable = (IEnumerable<object>)members[0];
+				foreach(var tmp in enumerable)
+					yield return tmp;
+			}else
+				throw new EvalException("Can not evaluate the object to an iterable.");
+		}
+		
+		/// <summary>
+		/// このインスタンスのメンバーにアクセスする。
+		/// Accesses one of the members of this instance.
+		/// </summary>
+		public object AccessMember(object subscription, bool isInsideClass)
+		{
+			int offset = definition.GetMemberOffset(subscription, isInsideClass);
+			return members[offset];
+		}
+		
+		public object GetMember(int index)
+		{
+			return members[index];
+		}
+		
+		/// <summary>
+		/// Assigns an object to a specified field.
+		/// </summary>
+		public void Assign(Identifier target, object val, bool isInsideClass)
+		{
+			int offset = definition.GetMemberOffset(target, isInsideClass);
+			members[offset] = val;
+		}
+	}
 	
 	/// <summary>
 	/// Represents a class.
 	/// </summary>
 	public class ExpressoClass
 	{
-		public class ExpressoObj : IEnumerable<object>, IEnumerable
-		{
-			private ClassDefinition definition;
-
-			private object[] members;
-
-			/// <summary>
-			/// このインスタンスのクラス名。
-			/// The class name of this object.
-			/// </summary>
-			public string ClassName{
-				get{return definition.Name;}
-			}
-
-			public ExpressoObj(ClassDefinition definition)
-			{
-				this.definition = definition;
-				int num_mems = definition.GetNumberOfMembers();
-				this.members = new object[num_mems];
-				for(int i = 0; i < definition.Members.Length; ++i)
-					this.members[i] = definition.Members[i];
-			}
-
-			public override bool Equals(object obj)
-			{
-				var x = obj as ExpressoObj;
-				if(x == null) return false;
-
-				return ClassName == x.ClassName && members[0].Equals(x.members[0]);
-			}
-
-			public override int GetHashCode()
-			{
-				return definition.GetHashCode() ^ members.GetHashCode();
-			}
-
-			public override string ToString()
-			{
-				return string.Format("[ExpressoObj: ClassName={0}]", ClassName);
-			}
-
-			IEnumerator IEnumerable.GetEnumerator()
-			{
-				return this.GetEnumerator();
-			}
-
-			public IEnumerator<object> GetEnumerator()
-			{
-				if(members[0] is IEnumerable<object>){
-					var enumerable = (IEnumerable<object>)members[0];
-					foreach(var tmp in enumerable)
-						yield return tmp;
-				}else
-					throw new EvalException("Can not evaluate the object to an iterable.");
-			}
-
-			/// <summary>
-			/// このインスタンスのメンバーにアクセスする。
-			/// Accesses one of the members of this instance.
-			/// </summary>
-			public object AccessMember(object subscription, bool isInsideClass)
-			{
-				if(subscription is Identifier){
-					Identifier mem_name = (Identifier)subscription;
-					var public_mems = definition.PublicMembers;
-					if(mem_name.Offset == -1){
-						int offset;
-						if(!public_mems.TryGetValue(mem_name.Name, out offset)){
-							if(!isInsideClass)
-								throw new EvalException(mem_name.Name + " is not accessible.");
-
-							var private_mems = definition.PrivateMembers;
-							if(!private_mems.TryGetValue(mem_name.Name, out offset))
-								throw new EvalException(mem_name.Name + " is not defined in the class \"" + ClassName + "\"");
-						}
-						mem_name.Offset = offset;
-					}
-					return members[mem_name.Offset];
-				}else{
-					throw new EvalException("Invalid use of accessor!");
-				}
-			}
-
-			public object GetMember(int index)
-			{
-				return members[index];
-			}
-
-			/// <summary>
-			/// Assigns an object to a specified field.
-			/// </summary>
-			public void Assign(Identifier target, object val, bool isInsideClass)
-			{
-				var public_mems = definition.PublicMembers;
-				var private_mems = definition.PrivateMembers;
-				if(target.Offset == -1){
-					int offset;
-					if(!public_mems.TryGetValue(target.Name, out offset)){
-						if(isInsideClass){
-							if(!private_mems.TryGetValue(target.Name, out offset))
-								throw new EvalException(ClassName + " doesn't have the member called " + target.Name);
-						}else{
-							throw new EvalException(target.Name + " is not accessible!");
-						}
-					}
-
-					target.Offset = offset;
-				}
-
-				members[target.Offset] = val;
-			}
-		}
-
 		static private Dictionary<string, ClassDefinition> classes = new Dictionary<string, ClassDefinition>();
 
 		/// <summary>
@@ -241,6 +216,21 @@ namespace Expresso.Builtins
 				call_ctor.Run(varStore);
 			}
 			return new_instance;
+		}
+	}
+
+	public class ExpressoModule
+	{
+		static private Dictionary<string, ExpressoObj> modules = new Dictionary<string, ExpressoObj>();
+		
+		/// <summary>
+		/// Dictionary that contains module instances.
+		/// </summary>
+		static public Dictionary<string, ExpressoObj> Classes{get{return ExpressoModule.modules;}}
+
+		static public void AddModule(string name, ExpressoObj moduleInstance)
+		{
+			modules.Add(name, moduleInstance);
 		}
 	}
 }
