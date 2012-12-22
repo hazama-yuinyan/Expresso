@@ -107,14 +107,13 @@ namespace Expresso.Ast
 				}
 			}
 
+			object type_def = null;
 			switch(TargetType){
 			case DeclType.Class:
-				var class_def = new ClassDefinition(Name, privates, publics);
-				class_def.Members = members.ToArray();
-				ExpressoClass.AddClass(class_def);
+				type_def = new ClassDefinition(Name, privates, publics, members.ToArray(), null);
 				break;
 			}
-			return null;
+			return type_def;
         }
 
 		internal override CSharpExpr Compile(Emitter<CSharpExpr> emitter)

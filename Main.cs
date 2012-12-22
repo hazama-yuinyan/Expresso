@@ -6,7 +6,7 @@ namespace Expresso.Terminal
 {
 	class ExpressoMain
 	{
-		public static void Main (string[] args)
+		public static void Main(string[] args)
 		{
 			if(args.Length == 0){
 				Console.WriteLine("Welcome to the Expresso Console!");
@@ -16,8 +16,9 @@ namespace Expresso.Terminal
 			
 			var file_name = args[0];
 			var parser = new Parser(new Scanner(file_name));
+			parser.ParsingFileName = file_name;
 			parser.Parse();
-			var interp = new Expresso.Interpreter.Interpreter{Root = parser.root, MainFunc = Parser.main_func};
+			var interp = new Expresso.Interpreter.Interpreter{MainModule = parser.ParsingModule};
 			try{
 				interp.Initialize();
 				interp.Run(new List<object>(args));

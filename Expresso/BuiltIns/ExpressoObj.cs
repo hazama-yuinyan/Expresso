@@ -98,6 +98,15 @@ namespace Expresso.Builtins
 			for(int i = 0; i < definition.Members.Length; ++i)
 				this.members[i] = definition.Members[i];
 		}
+
+		public ExpressoObj(StructDefinition definition)
+		{
+			this.definition = definition;
+			int num_mems = definition.GetNumberOfMembers();
+			this.members = new object[num_mems];
+			for(int i = 0; i < definition.Members.Length; ++i)
+				this.members[i] = definition.Members[i];
+		}
 		
 		public override bool Equals(object obj)
 		{
@@ -155,31 +164,6 @@ namespace Expresso.Builtins
 			int offset = definition.GetMemberOffset(target, isInsideClass);
 			members[offset] = val;
 		}
-	}
-	
-	/// <summary>
-	/// Represents a class.
-	/// </summary>
-	public class ExpressoClass
-	{
-		static private Dictionary<string, ClassDefinition> classes = new Dictionary<string, ClassDefinition>();
-
-		/// <summary>
-		/// Dictionary that contains the class definitions.
-		/// </summary>
-		static public Dictionary<string, ClassDefinition> Classes{get{return ExpressoClass.classes;}}
-
-		/// <summary>
-		/// Expressoで定義したクラスを登録する。
-		/// Adds a new class definition.
-		/// </summary>
-		/// <param name='newClass'>
-		/// New class.
-		/// </param>
-		static public void AddClass(ClassDefinition newClass)
-		{
-			classes.Add(newClass.Name, newClass);
-		}
 
 		/// <summary>
 		/// Expressoのオブジェクトを生成する。
@@ -197,40 +181,28 @@ namespace Expresso.Builtins
 		/// <param name='varStore'>
 		/// The environment.
 		/// </param>
-		static public ExpressoObj CreateInstance(string className, List<Expression> args, VariableStore varStore)
+		public ExpressoObj CreateInstance(string typeName, List<Expression> args, VariableStore varStore)
 		{
-			ClassDefinition target_class;
-			if(!classes.TryGetValue(className, out target_class))
-				throw new EvalException("Can not find the class \"" + className + "\"!");
-
-			var new_instance = new ExpressoObj(target_class);
-			var constructor = new_instance.AccessMember(new Identifier("constructor"), true) as Function;
-			if(constructor != null){
-				var value_this = new Constant{ValType = TYPES.CLASS, Value = new_instance};	//thisの値としてインスタンスを追加する
-				args.Insert(0, value_this);
-				var call_ctor = new Call{
-					Function = constructor,
-					Arguments = args,
-					Reference = null
-				};
-				call_ctor.Run(varStore);
-			}
-			return new_instance;
+			return definition.CreateInstance(typeName, args, varStore);
 		}
 	}
-
+	
 	public class ExpressoModule
 	{
 		static private Dictionary<string, ExpressoObj> modules = new Dictionary<string, ExpressoObj>();
 		
-		/// <summary>
-		/// Dictionary that contains module instances.
-		/// </summary>
-		static public Dictionary<string, ExpressoObj> Classes{get{return ExpressoModule.modules;}}
-
 		static public void AddModule(string name, ExpressoObj moduleInstance)
 		{
 			modules.Add(name, moduleInstance);
+		}
+
+		static public ExpressoObj GetModule(string name)
+		{
+			ExpressoObj module;
+			if(modules.TryGetValue(name, out module))
+				return module;
+			else
+				return null;
 		}
 	}
 }

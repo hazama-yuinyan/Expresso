@@ -31,7 +31,7 @@ using Expresso.Helpers;
  * bool          : C#のboolean型を使用。
  * float         : いわゆる浮動小数点型。６４ビット精度版のみ実装。C#ではdoubleを使用。
  * bigint        : いわゆる多倍長整数型。C#では、BigIntegerクラスを使用。
- * rational      : 分数型。分子と分母を整数型でもつため、実用上有理数を完璧な精度で保持できる。
+ * rational      : 分数型。分子と分母をBigInteger型でもつため、メモリーの許す限り有理数を完璧な精度で保持できる。
  * string        : いわゆる文字列型。C#のstring型を使用。C#以外で実装する場合、文字列の比較をオブジェクトの参照の比較で行うように実装すること。
  * bytearray     : Cで言うところのchar[]型。要するにバイトの配列。C#では、char型の配列で実装。
  * var(variant)  : 総称型。実装上は、どんな型の変数でも指し示すことのできるポインターや参照。
@@ -66,16 +66,17 @@ namespace Expresso.Interpreter
 	public class Interpreter
 	{
 		/// <summary>
-		/// 抽象構文木のルート要素を保持する。
-		/// The root element for the AST.
+		/// プログラムのエントリーポイントを含むメインモジュール。そのプログラム内でのトップレベルモジュールでもある。
+		/// The main module, which has the main function(the entry point for a Expresso program).
 		/// </summary>
-		public Block Root{get; set;}
+		/// <value>
+		/// The main module.
+		/// </value>
+		public static ModuleDeclaration MainModule{get; set;}
 
-		public Function MainFunc{get; set;}
-		
 		/// <summary>
-		/// グローバルな変数ストア。main関数を含む子スコープは、この変数ストアを親として持つ。
-		/// The global variable store.
+		/// トップレベルの変数ストア。main関数を含むモジュール内の子スコープは、この変数ストアを親として持つ。
+		/// The toplevel variable store of a module.
 		/// </summary>
 		private VariableStore var_store = new VariableStore();
 
@@ -92,7 +93,12 @@ namespace Expresso.Interpreter
 		/// <returns>The return value of the Expresso's main function</returns>
 		public object Run(List<object> args = null)
 		{
-			if(MainFunc == null)
+			var main_module = ExpressoModule.GetModule("main");
+			if(main_module == null)
+				throw new EvalException("Missing main module!");
+
+			var main_func = main_module.AccessMember(new Identifier("main"), true) as Function;
+			if(main_func == null)
 				throw new EvalException("No entry point");
 
 			if(args == null)
@@ -100,7 +106,7 @@ namespace Expresso.Interpreter
 
 			var main_args = ImplementationHelpers.Slice(args, new ExpressoIntegerSequence(1, args.Count, 1));
 			var call = new Call{
-				Function = MainFunc,
+				Function = main_func,
 				Arguments = new List<Expression>{new Constant{ValType = TYPES.LIST, Value = main_args}}
 			};
 			
@@ -137,9 +143,8 @@ namespace Expresso.Interpreter
 		}
 		
 		/// <summary>
-		/// グローバルに存在する宣言文を実行して
-		/// グローバルの環境を初期化する。
-		/// Executes all the definition statements in global
+		/// メインモジュールの定義文を実行してグローバルの環境を初期化する。
+		/// Executes all the definition statements in the main module
 		/// in order to initialize the global environment.
 		/// </summary>
 		/// <exception cref='Exception'>
@@ -147,16 +152,10 @@ namespace Expresso.Interpreter
 		/// </exception>
 		public void Initialize()
 		{
-			Block topmost = Root as Block;
-			if(topmost == null)
-				throw new Exception("Topmost block not found!");
+			if(MainModule == null)
+				throw new EvalException("The \"main\" module not found!");
 
-			foreach(var global_var in topmost.LocalVariables)	//グローバル変数を予め初期化しておく
-				var_store.Add(global_var.Offset, ImplementationHelpers.GetDefaultValueFor(global_var.ParamType.ObjType));
-
-			foreach(var decl in topmost.Statements.OfType<ExprStatement>()
-			        .Concat<Node>(topmost.Statements.OfType<TypeDeclaration>()))
-				decl.Run(var_store);
+			MainModule.Run(var_store);
 		}
 
 		public VariableStore GetGlobalVarStore()

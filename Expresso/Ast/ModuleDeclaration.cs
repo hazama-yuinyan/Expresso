@@ -76,6 +76,7 @@ namespace Expresso.Ast
 							obj = var_decls.Expressions[i].Run(varStore);
 							decl_target.Add(var_decls.Variables[i].Name, offset++);
 							members.Add(obj);
+							varStore.Add(var_decls.Variables[i].Offset, obj);	//モジュールスコープの変数ストアにも実体を追加しておく
 						}
 					}else{
 						throw new EvalException("A module declaration can not have that type of statements!");
@@ -85,16 +86,16 @@ namespace Expresso.Ast
 					decl_target.Add(method.Name, offset++);
 					members.Add(method);
 				}else if(decl.Item1 is TypeDeclaration){
-					var class_def = (TypeDeclaration)decl.Item1.Run(varStore);
-					decl_target.Add(class_def.Name, offset++);
-					members.Add(class_def);
+					var type_decl = (TypeDeclaration)decl.Item1;
+					var type_def = type_decl.Run(varStore);
+					decl_target.Add(type_decl.Name, offset++);
+					members.Add(type_def);
 				}else{
 					throw new EvalException("A module declaration can not have that type of statements!");
 				}
 			}
 
-			var module_def = new ModuleDefinition(Name, internals, exported);
-			module_def.Members = members.ToArray();
+			var module_def = new ModuleDefinition(Name, internals, exported, members.ToArray());
 			var module_inst = new ExpressoObj(module_def);
 			ExpressoModule.AddModule(module_def.Name, module_inst);
 			return null;

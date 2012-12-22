@@ -64,8 +64,9 @@ namespace Expresso.Test
 		public void SimpleLiterals()
 		{
 			var parser = new Parser(new Scanner("../../sources/for_parser/simple_literals.exs"));
+			parser.ParsingFileName = "simple_literals";
 			parser.Parse();
-			var interp = new Expresso.Interpreter.Interpreter{Root = parser.root};
+			var interp = new Expresso.Interpreter.Interpreter{MainModule = parser.ParsingModule};
 			interp.Initialize();
 			var store = interp.GetGlobalVarStore();
 
@@ -94,7 +95,7 @@ namespace Expresso.Test
 		{
 			var parser = new Parser(new Scanner("../../sources/for_interpreter/simple_arithmetic.exs"));
 			parser.Parse();
-			var interp = new Expresso.Interpreter.Interpreter{Root = parser.root, MainFunc = Parser.main_func};
+			var interp = new Expresso.Interpreter.Interpreter{MainModule = parser.ParsingModule};
 			interp.Initialize();
 			var results = interp.Run() as List<object>;
 			Assert.IsNotNull(results);
@@ -123,7 +124,7 @@ namespace Expresso.Test
 		{
 			var parser = new Parser(new Scanner("../../sources/for_interpreter/basic_operations.exs"));
 			parser.Parse();
-			var interp = new Expresso.Interpreter.Interpreter{Root = parser.root, MainFunc = Parser.main_func};
+			var interp = new Expresso.Interpreter.Interpreter{MainModule = parser.ParsingModule};
 			interp.Initialize();
 			var results = interp.Run() as List<object>;
 			Assert.IsNotNull(results);
@@ -162,7 +163,7 @@ namespace Expresso.Test
 		{
 			var parser = new Parser(new Scanner("../../sources/for_interpreter/statements.exs"));
 			parser.Parse();
-			var interp = new Expresso.Interpreter.Interpreter{Root = parser.root, MainFunc = Parser.main_func};
+			var interp = new Expresso.Interpreter.Interpreter{MainModule = parser.ParsingModule};
 			interp.Initialize();
 			var results = interp.Run() as List<object>;
 			Assert.IsNotNull(results);
@@ -204,7 +205,7 @@ namespace Expresso.Test
 		{
 			var parser = new Parser(new Scanner("../../sources/for_interpreter/builtin_objects.exs"));
 			parser.Parse();
-			var interp = new Expresso.Interpreter.Interpreter{Root = parser.root, MainFunc = Parser.main_func};
+			var interp = new Expresso.Interpreter.Interpreter{MainModule = parser.ParsingModule};
 			interp.Initialize();
 			var results = interp.Run() as List<object>;
 			Assert.IsNotNull(results);
@@ -231,7 +232,7 @@ namespace Expresso.Test
 		{
 			var parser = new Parser(new Scanner("../../sources/for_interpreter/complex_expressions.exs"));
 			parser.Parse();
-			var interp = new Expresso.Interpreter.Interpreter{Root = parser.root, MainFunc = Parser.main_func};
+			var interp = new Expresso.Interpreter.Interpreter{MainModule = parser.ParsingModule};
 			interp.Initialize();
 			var results = interp.Run() as List<object>;
 			Assert.IsNotNull(results);
@@ -277,7 +278,7 @@ namespace Expresso.Test
 		{
 			var parser = new Parser(new Scanner("../../sources/for_interpreter/class.exs"));
 			parser.Parse();
-			var interp = new Expresso.Interpreter.Interpreter{Root = parser.root, MainFunc = Parser.main_func};
+			var interp = new Expresso.Interpreter.Interpreter{MainModule = parser.ParsingModule};
 			interp.Initialize();
 			var results = interp.Run() as List<object>;
 			Assert.IsNotNull(results);

@@ -31,13 +31,13 @@ namespace Expresso.Interpreter
 	/// Class for managing identifiers in a scope.
 	/// Generally it can be considered as a symbol table.
 	/// </summary>
-	internal class Scope
+	internal class AnalysisScope
 	{
 		/// <summary>
 		/// 親スコープ。
 		/// The parent scope.
 		/// </summary>
-		public Scope Parent { get; set; }
+		public AnalysisScope Parent { get; set; }
 
 		/// <summary>
 		/// 識別子名 → 識別子の詳細テーブル。
@@ -45,12 +45,12 @@ namespace Expresso.Interpreter
 		/// </summary>
 		private Dictionary<string, List<ScopeItem>> table = new Dictionary<string, List<ScopeItem>>();
 
-		static private Scope symbol_table = new Scope();
-		static public Scope SymbolTable{get{return Scope.symbol_table;}}
+		static private AnalysisScope symbol_table = new AnalysisScope();
+		static public AnalysisScope SymbolTable{get{return AnalysisScope.symbol_table;}}
 
 		private int next_offset = 0;
 
-		static Scope()
+		static AnalysisScope()
 		{
 			Identifier[] builtin_classes = {
 				new Identifier("File", new TypeAnnotation(TYPES.TYPE_CLASS, "File")),
@@ -94,7 +94,7 @@ namespace Expresso.Interpreter
 		/// </returns>
 		public bool ContainsOf(string name)
 		{
-			for(Scope s = this; s != null; s = s.Parent){
+			for(var s = this; s != null; s = s.Parent){
 				if(s.table.ContainsKey(name))
 					return true;
 			}
@@ -117,7 +117,7 @@ namespace Expresso.Interpreter
 		public Identifier GetClass(string name)
 		{
 			int level = 0;
-			for(Scope s = this; s != null; s = s.Parent, ++level){
+			for(var s = this; s != null; s = s.Parent, ++level){
 				var v = GetSymbol(name, ScopeItem.NodeType.Class, s);
 				if (v != null && level == 0){
 					return v;
@@ -145,7 +145,7 @@ namespace Expresso.Interpreter
 		public Identifier GetModule(string name)
 		{
 			int level = 0;
-			for(Scope s = this; s != null; s = s.Parent, ++level){
+			for(var s = this; s != null; s = s.Parent, ++level){
 				var v = GetSymbol(name, ScopeItem.NodeType.Module, s);
 				if (v != null && level == 0){
 					return v;
@@ -168,7 +168,7 @@ namespace Expresso.Interpreter
 		{
 			if(searchParent){
 				int level = 0;
-				for(Scope s = this; s != null; s = s.Parent, ++level){
+				for(var s = this; s != null; s = s.Parent, ++level){
 					var v = GetSymbol(name, ScopeItem.NodeType.Local, s);
 					if (v != null && level == 0){
 						return v;
@@ -184,7 +184,7 @@ namespace Expresso.Interpreter
 			}
 		}
 		
-		static Identifier GetSymbol(string name, ScopeItem.NodeType type, Scope scope)
+		static Identifier GetSymbol(string name, ScopeItem.NodeType type, AnalysisScope scope)
 		{
 			if(!scope.ContainsIn(name))
 				return null;
@@ -208,7 +208,7 @@ namespace Expresso.Interpreter
 		public Function GetFunction(string name, bool searchParent = true)
 		{
 			if (searchParent) {
-				for (Scope s = this; s != null; s = s.Parent) {
+				for (var s = this; s != null; s = s.Parent) {
 					var f = GetFunction(name, s);
 					if (f != null)
 						return f;
@@ -220,7 +220,7 @@ namespace Expresso.Interpreter
 			}
 		}
 
-		static Function GetFunction(string name, Scope scope)
+		static Function GetFunction(string name, AnalysisScope scope)
 		{
 			if (!scope.ContainsIn(name))
 				return null;

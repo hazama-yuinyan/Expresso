@@ -31,8 +31,6 @@ namespace Expresso.Ast
 		/// </summary>
 		public string AliasName{get; internal set;}
 
-		public Parser ChildParser{get; internal set;}
-
         public override NodeType Type
         {
             get { return NodeType.Require; }
@@ -57,9 +55,7 @@ namespace Expresso.Ast
 			var path = ModuleName.Replace('.', '/');
 			var module_parser = new Parser(new Scanner(path));
 
-			var module_interp = new Expresso.Interpreter.Interpreter{Root = module_parser.root};
-			module_interp.Initialize();
-			module_interp.Run(module_interp.Root);
+			module_parser.ParsingModule.Run(varStore);
 
 			return null;
         }

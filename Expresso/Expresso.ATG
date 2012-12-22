@@ -12,15 +12,15 @@ using Expresso.Helpers;
 
 COMPILER Expresso
 
-	internal Scope cur_scope = null;		//the current scope of variables
-	public Block root = new Block();
-	static public Function main_func = null;	//the main function
+	internal AnalysisScope cur_scope = null;		//the current scope of variables
 	static private List<BreakableStatement> breakables = new List<BreakableStatement>();	//the current parent breakbles hierarchy
 	bool ignore_parent_scope = false;
+	public string ParsingFileName{get; set;}
+	public ModuleDeclaration ParsingModule{get; private set;}	//the module the parser is parsing
 	
 	Parser()
 	{
-		cur_scope = Scope.SymbolTable;
+		cur_scope = AnalysisScope.SymbolTable;
 		
 		//Add built-in functions
 		Function[] native_funcs = {
@@ -261,14 +261,19 @@ COMPILER Expresso
 		return new TypeDeclaration{TargetType = DeclType.Class, Name = className, Bases = bases, Declarations = decls};
 	}
 	
+	static ModuleDeclaration MakeModuleDef(string moduleName, List<Statement> decls, List<bool> exportMap)
+	{
+		return new ModuleDeclaration{Name = moduleName, Declarations = decls, ExportMap = exportMap};
+	}
+	
 	static NewExpression MakeNewExpr(string targetName, List<Expression> args)
 	{
 		return new NewExpression{TargetName = targetName, Arguments = args};
 	}
 	
-	static RequireExpression MakeRequireExpr(string moduleName, string aliasName, Parser childParser)
+	static RequireExpression MakeRequireExpr(string moduleName, string aliasName)
 	{
-		return new RequireExpression{ModuleName = moduleName, AliasName = aliasName, ChildParser = childParser};
+		return new RequireExpression{ModuleName = moduleName, AliasName = aliasName};
 	}
 	
 	static TryStatement MakeTryStmt(Block body, List<CatchClause> catches, Block finallyClause)
@@ -331,24 +336,57 @@ IGNORE cr + lf + tab
 
 PRODUCTIONS
 /*------------------------------------------------------------------------*/
-Expresso                    	(. Statement stmt = null; List<Statement> prog_defs = null; Statement module_decl = null; .)
+Expresso                    		(. ModuleDeclaration module_decl = null; .)
 = 
+  ModuleBody<out module_decl>		(. this.ParsingModule = module_decl; .).
+/*------------------------------------------------------------------------*/
+ModuleBody<out ModuleDeclaration decl>		(.
+												var decls = new List<Statement>(); var export_map = new List<bool>();
+												bool has_export = false; List<Statement> prog_defs = null; Statement stmt = null;
+											.)
+=
   [ ProgramDefinition<out prog_defs>
-  ]								(.
-  									if(prog_defs != null)
-  										root.Statements.AddRange(prog_defs);
-  								.)
-  ModuleBody<out module_decl>								(. Parser.main_func = cur_scope.GetFunction("main"); .).
+  ]									(.
+  										if(prog_defs != null)
+  											decls.AddRange(prog_defs);
+  									.)
+  								
+  [ "export"						(. has_export = true; .)
+  ]
+  ( ExprStmt<out stmt>
+  | FuncDecl<out stmt>
+  | ClassDecl<out stmt>
+  )									(. 
+										decls.Add(stmt);
+										export_map.Add(has_export);
+										has_export = false;
+									.)
+  {
+    [ "export"						(. has_export = true; .)
+    ]
+    ( ExprStmt<out stmt>
+    | FuncDecl<out stmt>
+    | ClassDecl<out stmt>
+    )								(.
+    									decls.Add(stmt);
+    									export_map.Add(has_export);
+    									has_export = false;
+    								.)
+  }									(.
+  										var main_func = cur_scope.GetFunction("main");
+  										var module_name = (main_func != null) ? "main" : ParsingFileName;
+  										decl = MakeModuleDef(module_name, decls, export_map);
+  									.) .
 /*------------------------------------------------------------------------*/
 ProgramDefinition<. out List<Statement> requires .>		(. requires = new List<Statement>(); Statement tmp; .)
 =
-  RequireStmt<out tmp>
-  { RequireStmt<out tmp>
+  RequireStmt<out tmp>			(. requires.Add(tmp); .)
+  { RequireStmt<out tmp>		(. requires.Add(tmp); .)
   }.
 /*------------------------------------------------------------------------*/
 RequireStmt<out Statement stmt>	(.
 									string module_name, path, alias = null; var requires = new List<Expression>();
-									Expression tmp; Parser module_parser; Identifier module_symbol = null;
+									Expression tmp; Identifier module_symbol = null; string[] split_name;
 								.)
 =
   SYNC
@@ -357,28 +395,40 @@ RequireStmt<out Statement stmt>	(.
   [ "as"
     ident						(. alias = t.val; .)
   ]								(.
-  									tmp = MakeRequireExpr(module_name, alias, module_parser);
+  									tmp = MakeRequireExpr(module_name, alias);
   									requires.Add(tmp);
-  									var split_name = module_name.Split('.');
-  									foreach(var name in split_name){
-  										module_symbol = new Identifier(name, TYPES.TYPE_MODULE);
+  									if(alias == null){
+  										split_name = module_name.Split('.');
+  										foreach(var name in split_name){
+  											module_symbol = new Identifier(name, new TypeAnnotation(TYPES.TYPE_MODULE, name));
+  											cur_scope.AddModule(module_symbol);
+  										}
+  									}else{
+  										module_symbol = new Identifier(alias, new TypeAnnotation(TYPES.TYPE_MODULE, module_name));
   										cur_scope.AddModule(module_symbol);
+  										alias = null;
   									}
   								.)
   { ','
     Module<out module_name>
     [ "as"
       ident						(. alias = t.val; .)
-    ]
-  }								(.
-  									tmp = MakeRequireExpr(module_name, alias, module_parser);
+    ]							(.
+  									tmp = MakeRequireExpr(module_name, alias);
   									requires.Add(tmp);
-  									var split_name = module_name.Split('.');
-  									foreach(var name in split_name){
-  										module_symbol = new Identifier(name, TYPES.TYPE_MODULE);
+  									if(alias == null){
+  										split_name = module_name.Split('.');
+  										foreach(var name in split_name){
+  											module_symbol = new Identifier(name, new TypeAnnotation(TYPES.TYPE_MODULE));
+  											cur_scope.AddModule(module_symbol);
+  										}
+  									}else{
+  										module_symbol = new Identifier(alias, new TypeAnnotation(TYPES.TYPE_MODULE, module_name));
   										cur_scope.AddModule(module_symbol);
+  										alias = null;
   									}
   								.)
+  }
   SYNC ';' 						(. stmt = MakeExprStatement(requires); .).
 /*------------------------------------------------------------------------*/
 Module<out string name>			(. var sb = new StringBuilder(); .)
@@ -388,35 +438,13 @@ Module<out string name>			(. var sb = new StringBuilder(); .)
     ident						(. sb.Append(t.val); .)
   }								(. name = sb.ToString(); .).
 /*------------------------------------------------------------------------*/
-ModuleBody<out Statement decl>		(. var decls = new List<Statement>(); var export_map = new List<bool>(); bool has_export = false; .)
-=
-  ["export"]						(. has_export = true; .)
-  ( ExprStmt<out stmt>
-  | FuncDecl<out stmt>
-  | ClassDecl<out stmt>
-  )									(. 
-										decls.Add(stmt);
-										export_map.Add(has_export);
-										has_export = false;
-									.)
-  { ["export"]						(. has_export = true; .)
-    ( ExprStmt<out stmt>
-    | FuncDecl<out stmt>
-    | ClassDecl<out stmt>
-    )								(.
-    									decls.Add(stmt);
-    									export_map.Add(has_export);
-    									has_export = false;
-    								.)
-  }									(. MakeModuleDecl()) .
-/*------------------------------------------------------------------------*/
 ClassDecl<out Statement stmt>		(.
 										Expression expr = null; var stmts = new List<Statement>(); List<Expression> decls = null;
 										string name; var base_names = new List<string>(); Statement tmp = null;
 									.)
 =
   SYNC
-  "class"							(. cur_scope = new Scope{Parent = cur_scope}; .)
+  "class"							(. cur_scope = new AnalysisScope{Parent = cur_scope}; .)
   ident								(. name = t.val; .)
   [ ':'
     ident							(. base_names.Add(t.val); .)
@@ -455,7 +483,7 @@ ConstructorDecl<out Statement func, string className>	(.
 =
   SYNC
   "constructor"					(. 
-  									cur_scope = new Scope{Parent = cur_scope};
+  									cur_scope = new AnalysisScope{Parent = cur_scope};
   									ident_this = DeclareArgument("this", new TypeAnnotation(TYPES.CLASS, className));
   									exs_this = new Argument{
   										Ident = ident_this,
@@ -477,7 +505,7 @@ MethodDecl<out Statement func, string className>  (.
 =
   SYNC
   "def"							(.
-  									cur_scope = new Scope{Parent = cur_scope};
+  									cur_scope = new AnalysisScope{Parent = cur_scope};
   									ident_this = DeclareArgument("this", new TypeAnnotation(TYPES.CLASS, className));
   									exs_this = new Argument{
   										Ident = ident_this,
@@ -833,7 +861,7 @@ VarDecl<. out List<Expression> outs .> 	(.
 FuncDecl<out Statement func>    (. string name; TypeAnnotation type = TypeAnnotation.VariantType.Clone(); Statement block; var @params = new List<Argument>(); .)
 =
   SYNC
-  "def"							(. block = null; cur_scope = new Scope{Parent = cur_scope}; .)
+  "def"							(. block = null; cur_scope = new AnalysisScope{Parent = cur_scope}; .)
   ident							(. name = t.val; .)
   '('
   [ParamList<ref @params>]
@@ -1149,7 +1177,7 @@ SequenceMaker<out Expression expr, TYPES ObjType>	(.
     CondExpr<out tmp>					(. if(tmp != null) list.Add(tmp); .)
   }										(. expr = MakeObjInitializer(ObjType, list); .)
   | '{' 								(.
-      										cur_scope = new Scope{Parent = cur_scope};
+      										cur_scope = new AnalysisScope{Parent = cur_scope};
       										ignore_parent_scope = true;
       									.)
     CondExpr<out tmp>

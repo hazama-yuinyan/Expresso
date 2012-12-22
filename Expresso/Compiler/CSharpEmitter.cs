@@ -213,7 +213,7 @@ namespace Expresso.Compiler
 					tuple_content.Add(expr.Compile(this));
 
 				var tuple_ctor = typeof(ExpressoTuple).GetConstructor(new Type[]{typeof(List<object>)});
-				return CSharpExpr.Return(return_target,		//return new ExpressoTuple(exprs);
+				return CSharpExpr.Return(return_target,		//return expr1, expr2... -> return new ExpressoTuple(exprs);
 				                         CSharpExpr.New(tuple_ctor, tuple_content));
 			}
 		}
@@ -262,7 +262,7 @@ namespace Expresso.Compiler
 				var catch_clause = CSharpExpr.Catch(param_e, catch_body);
 				return CSharpExpr.TryCatchFinally(body,									//try{
 				                                  node.FinallyClause.Compile(this),		//}catch(...){...}
-				                                  catch_clause);				//finally{...}
+				                                  catch_clause);						//finally{...}
 			}
 		}
 
@@ -367,9 +367,9 @@ namespace Expresso.Compiler
 
 		private CSharpExpr CompileCompIf(ComprehensionIf node)
 		{
-			if(node.Body == null)
+			if(node.Body == null)		//[generator...if Condition] -> ...if(Condition) seq.Add(generator);
 				return CSharpExpr.IfThen(node.Condition.Compile(this), comprehension_generator);
-			else
+			else						//[...if Condition...] -> ...if(Condition){...}
 				return CSharpExpr.IfThen(node.Condition.Compile(this), node.Body.Compile(this));
 		}
 

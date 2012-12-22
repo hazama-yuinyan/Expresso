@@ -60,20 +60,6 @@ namespace Expresso.Builtins
 			else
 				return null;
 		}
-		/// <summary>
-		/// Similar to the same named function in Haskell, it takes a certain number of elements
-		/// from a sequence.
-		/// </summary>
-		/// <param name='range'>
-		/// Range.
-		/// </param>
-		/// <param name='count'>
-		/// Count.
-		/// </param>
-		/*public static List<object> Take(ExpressoIntegerSequence range, int count)
-		{
-			return range.Take(count);
-		}*/
 
 		public static ExpressoTuple Zip(params object[] objs)
 		{
