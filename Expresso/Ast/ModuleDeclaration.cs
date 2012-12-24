@@ -24,6 +24,8 @@ namespace Expresso.Ast
 		/// </summary>
 		public string Name{get; internal set;}
 
+		public List<Statement> Requires{get; internal set;}
+
 		/// <summary>
 		/// モジュールメンバの定義式郡。
 		/// The declarations for members.
@@ -57,6 +59,11 @@ namespace Expresso.Ast
 
         internal override object Run(VariableStore varStore)
         {
+			if(Requires != null){
+				foreach(var require in Requires)
+					require.Run(varStore);
+			}
+
 			var internals = new Dictionary<string, int>();
 			var exported = new Dictionary<string, int>();
 			Dictionary<string, int> decl_target = null;
@@ -76,7 +83,7 @@ namespace Expresso.Ast
 							obj = var_decls.Expressions[i].Run(varStore);
 							decl_target.Add(var_decls.Variables[i].Name, offset++);
 							members.Add(obj);
-							varStore.Add(var_decls.Variables[i].Offset, obj);	//モジュールスコープの変数ストアにも実体を追加しておく
+							//varStore.Add(var_decls.Variables[i].Offset, obj);	//モジュールスコープの変数ストアにも実体を追加しておく
 						}
 					}else{
 						throw new EvalException("A module declaration can not have that type of statements!");

@@ -340,6 +340,7 @@ namespace Expresso.Builtins
 		{
 			Denominator = denominator;
 			Numerator = numerator;
+			this.Reduce();
 		}
 
 		/// <summary>

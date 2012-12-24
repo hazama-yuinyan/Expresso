@@ -19,7 +19,7 @@ namespace Expresso.Ast
 		/// この定数値の型。
 		/// The type of this constant.
 		/// </summary>
-		public TYPES ValType{get; internal set;}
+		public ObjectTypes ValType{get; internal set;}
 		
         /// <summary>
         /// 定数の値。

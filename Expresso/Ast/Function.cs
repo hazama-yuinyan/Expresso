@@ -27,7 +27,7 @@ namespace Expresso.Ast
 
         /// <summary>
         /// 仮引数リスト。
-		/// The parameter list.
+		/// The formal parameter list.
 		/// It can be null if the function takes no parameters.
         /// </summary>
         public List<Argument> Parameters { get; internal set; }
@@ -51,6 +51,14 @@ namespace Expresso.Ast
 		/// </summary>
 		public VariableStore Environment{get; internal set;}
 
+		/// <summary>
+		/// Indicates whether the function is static.
+		/// </summary>
+		/// <value>
+		/// <c>true</c> if this instance is static; otherwise, <c>false</c>.
+		/// </value>
+		public bool IsStatic{get; internal set;}
+
         /// <summary>
         /// 関数内で定義されたローカル変数一覧。
 		/// The list of local variables defined in this function.
@@ -64,12 +72,14 @@ namespace Expresso.Ast
             }
         }
 
-		public Function(string name, List<Argument> parameters, Block body, TypeAnnotation returnType, VariableStore environ = null)
+		public Function(string name, List<Argument> parameters, Block body, TypeAnnotation returnType, bool isStatic = false,
+		                VariableStore environ = null)
 		{
 			Name = name;
 			Parameters = parameters;
 			Body = body;
 			ReturnType = returnType;
+			IsStatic = isStatic;
 			Environment = environ;
 		}
 
@@ -142,14 +152,14 @@ namespace Expresso.Ast
 		
 		public override string ToString()
 		{
-			return this.Signature();
+			return IsStatic ? "<static> " + this.Signature() : this.Signature();
 		}
     }
 
 	public class NativeFunction : Function
 	{
-		public NativeFunction(string name, List<Argument> parameters, Block body, TypeAnnotation returnType) :
-			base(name, parameters, body, returnType, null){}
+		public NativeFunction(string name, List<Argument> parameters, Block body, TypeAnnotation returnType, bool isStatic) :
+			base(name, parameters, body, returnType, isStatic, null){}
 
 		public override string ToString()
 		{
@@ -167,7 +177,7 @@ namespace Expresso.Ast
 		private Delegate compiled = null;
 
 		public NativeFunctionNAry(string name, ExprTree.LambdaExpression func) :
-			base(name, null, null, new TypeAnnotation(TYPES.VAR))
+			base(name, null, null, new TypeAnnotation(ObjectTypes.VAR), false)
 		{
 			this.func = func;
 			var parameters = func.Parameters;
@@ -176,7 +186,7 @@ namespace Expresso.Ast
 
 			int i = 0;
 			foreach(var param in parameters){
-				var formal = new Argument{Ident = new Identifier(param.Name, ImplementationHelpers.GetTypeAnnoInExpresso(param.Type), i)};
+				var formal = new Argument{Ident = new Identifier(param.Name, ImplementationHelpers.GetTypeAnnoInExpresso(param.Type), null, i)};
 				this.Parameters.Add(formal);
 				++i;
 			}
@@ -204,7 +214,7 @@ namespace Expresso.Ast
 		private Func<object> func;
 
 		public NativeLambdaNullary(string name, Func<object> func, TypeAnnotation returnType = null) :
-			base(name, null, null, (returnType != null) ? returnType : new TypeAnnotation(TYPES.VAR))
+			base(name, null, null, (returnType != null) ? returnType : new TypeAnnotation(ObjectTypes.VAR), true)
 		{
 			this.func = func;
 		}
@@ -224,7 +234,7 @@ namespace Expresso.Ast
 		private Func<object, object> func;
 
 		public NativeLambdaUnary(string name, Argument param, Func<object, object> func, TypeAnnotation returnType = null) :
-			base(name, new List<Argument>{param}, null, (returnType != null) ? returnType : new TypeAnnotation(TYPES.VAR))
+			base(name, new List<Argument>{param}, null, (returnType != null) ? returnType : new TypeAnnotation(ObjectTypes.VAR), true)
 		{
 			this.func = func;
 		}
@@ -245,7 +255,7 @@ namespace Expresso.Ast
 		private Func<object, object, object> func;
 
 		public NativeLambdaBinary(string name, Argument param1, Argument param2, Func<object, object, object> func, TypeAnnotation returnType = null) :
-			base(name, new List<Argument>{param1, param2}, null, (returnType != null) ? returnType : new TypeAnnotation(TYPES.VAR))
+			base(name, new List<Argument>{param1, param2}, null, (returnType != null) ? returnType : new TypeAnnotation(ObjectTypes.VAR), true)
 		{
 			this.func = func;
 		}
@@ -268,7 +278,8 @@ namespace Expresso.Ast
 
 		public NativeLambdaTernary(string name, Argument param1, Argument param2, Argument param3,
 		                           Func<object, object, object, object> func, TypeAnnotation returnType = null) :
-			base(name, new List<Argument>{param1, param2, param3}, null, (returnType != null) ? returnType : new TypeAnnotation(TYPES.VAR))
+			base(name, new List<Argument>{param1, param2, param3}, null,
+			(returnType != null) ? returnType : new TypeAnnotation(ObjectTypes.VAR), true)
 		{
 			this.func = func;
 		}

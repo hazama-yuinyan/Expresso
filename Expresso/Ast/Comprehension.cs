@@ -17,7 +17,7 @@ namespace Expresso.Ast
 
 		public ComprehensionFor Body{get; internal set;}
 
-		public TYPES ObjType{get; internal set;}
+		public ObjectTypes ObjType{get; internal set;}
 
 		public override NodeType Type
         {
@@ -46,7 +46,7 @@ namespace Expresso.Ast
 
 			object obj = null;
 
-			if(ObjType == TYPES.LIST || ObjType == TYPES.TUPLE){
+			if(ObjType == ObjectTypes.LIST || ObjType == ObjectTypes.TUPLE){
 				var container = new List<object>();
 
 				foreach(var result in Body.Run(child_store, YieldExpr)){
@@ -54,11 +54,11 @@ namespace Expresso.Ast
 						container.Add(result);
 				}
 
-				if(ObjType == TYPES.LIST)
+				if(ObjType == ObjectTypes.LIST)
 					obj = ExpressoFunctions.MakeList(container);
 				else
 					obj = ExpressoFunctions.MakeTuple(container);
-			}else if(ObjType == TYPES.DICT){
+			}else if(ObjType == ObjectTypes.DICT){
 				var keys = new List<object>();
 				var values = new List<object>();
 

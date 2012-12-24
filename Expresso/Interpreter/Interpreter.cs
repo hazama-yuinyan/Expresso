@@ -25,6 +25,11 @@ using Expresso.Helpers;
  * C言語におけるfor(int i = 0; i < max; ++i){...}のような処理を実現する他、配列やリストなどPythonにおいてSequenceと呼ばれる
  * オブジェクトに作用してそのシーケンスオブジェクトの一部または全体をコピーする際に用いられる。(PythonにおけるSliceに相当)
  * 7.変数のスコープは、JavaScriptなど同様、関数のみが持つ。
+ * 8.Pythonライクなモジュール機構を持つ。つまり、ソースファイル一つが１モジュールを定義し、モジュール内に別のモジュールが含まれることはない。
+ * 9.Expressoにおいて、関数はモジュールに属し、メソッドはクラスに属する。これらのサブルーチンはそれぞれ、thisの値として自分が所属するモジュールかクラス
+ * のインスタンスを暗黙の第一引数として取る。つまり、関数内でthisは所属するモジュールインスタンスを、メソッド内ではクラスインスタンスを参照する。
+ * 10.プログラムのエントリーポイントとしてmain関数を定義する必要がある。main関数を定義したモジュールはメインモジュールと呼ばれ、そのプログラム内での
+ * トップレベルモジュールとなる。
  * 
  * Expresso組み込みの型に関して
  * int           : いわゆる整数型。C#のint型を使用。
@@ -67,12 +72,16 @@ namespace Expresso.Interpreter
 	{
 		/// <summary>
 		/// プログラムのエントリーポイントを含むメインモジュール。そのプログラム内でのトップレベルモジュールでもある。
-		/// The main module, which has the main function(the entry point for a Expresso program).
+		/// The main module, which has the main function(the entry point for an Expresso program).
 		/// </summary>
 		/// <value>
 		/// The main module.
 		/// </value>
 		public static ModuleDeclaration MainModule{get; set;}
+
+		public static Interpreter CurRuntime{get; internal set;}
+
+		public string CurOpenedSourceFileName{get; set;}
 
 		/// <summary>
 		/// トップレベルの変数ストア。main関数を含むモジュール内の子スコープは、この変数ストアを親として持つ。
@@ -107,26 +116,11 @@ namespace Expresso.Interpreter
 			var main_args = ImplementationHelpers.Slice(args, new ExpressoIntegerSequence(1, args.Count, 1));
 			var call = new Call{
 				Function = main_func,
-				Arguments = new List<Expression>{new Constant{ValType = TYPES.LIST, Value = main_args}}
+				Arguments = new List<Expression>{new Constant{ValType = ObjectTypes.LIST, Value = main_args}}
 			};
-			
+
+			var_store.Add(0, main_module);
 			return call.Run(var_store);
-		}
-
-		/// <summary>
-		/// あるブロックを対象にExpressoインタープリターを起動する。
-		/// Run the interpreter on a specified block.
-		/// Can be useful for loading modules.
-		/// </summary>
-		public object Run(Block root)
-		{
-			if(root == null)
-				throw new ArgumentNullException("root", "Can not evaluate a null block.");
-
-			foreach(var local in root.LocalVariables)	//対象となるブロック内に存在するローカル変数を予め初期化しておく
-				var_store.Add(local.Offset, ImplementationHelpers.GetDefaultValueFor(local.ParamType.ObjType));
-
-			return root.Run(var_store);
 		}
 
 		/// <summary>
@@ -152,6 +146,7 @@ namespace Expresso.Interpreter
 		/// </exception>
 		public void Initialize()
 		{
+			Interpreter.CurRuntime = this;
 			if(MainModule == null)
 				throw new EvalException("The \"main\" module not found!");
 
@@ -162,6 +157,179 @@ namespace Expresso.Interpreter
 		{
 			return var_store;
 		}
+
+		public string GetRelativePathToCurrentSource(string path)
+		{
+			var last_slash_pos = this.CurOpenedSourceFileName.LastIndexOf('/');
+			var parent_dir = this.CurOpenedSourceFileName.Substring(0, last_slash_pos + 1);
+			return parent_dir + path;
+		}
+
+		/*private object Interpret(Node node, VariableStore varStore)
+		{
+			try{
+				while(true){
+					switch(node.Type){
+					case NodeType.Argument:
+						return ((Argument)node).Option;
+
+					case NodeType.AssertStatement:
+						break;
+
+					case NodeType.Assignment:
+					{
+						var assignment = (Assignment)node;
+						var rvalues = new List<object>(assignment.Expressions.Count);
+						foreach(var expr in assignment.Expressions)	//まず右辺をすべて評価する
+							rvalues.Add(Interpret(expr, varStore));
+						
+						foreach(var target in assignment.Targets){		//その後左辺値に代入する
+							var assignable = target as Assignable;
+							if(assignable == null)
+								throw new EvalException("Can not assign a value to the target!");
+							
+							assignable.Assign(varStore, rvalues[i]);
+						}
+						return rvalues[0];	//x = y = 0;みたいな表記を許容するために右辺値の一番目を戻り値にする
+					}
+
+					case NodeType.BinaryExpression:
+					{
+						var binary_op = (BinaryExpression)node;
+						object first = Interpret(binary_op.Left, varStore), second = Interpret(binary_op.Right, varStore);
+						if(first == null || second == null)
+							throw new EvalException("Can not apply the operation on null objects.");
+						
+						if((int)Operator <= (int)OperatorType.MOD){
+							if(first is int)
+								return BinaryExprAsInt((int)first, (int)second, Operator);
+							else if(first is double)
+								return BinaryExprAsDouble((double)first, (double)second, Operator);
+							else if(first is Fraction)
+								return BinaryExprAsFraction((Fraction)first, second, Operator);
+							else
+								return BinaryExprAsString((string)first, second, Operator);
+						}else if((int)Operator < (int)OperatorType.AND){
+							return EvalComparison(first as IComparable, second as IComparable, Operator);
+						}else if((int)Operator < (int)OperatorType.BIT_OR){
+							return EvalLogicalOperation((bool)first, (bool)second, Operator);
+						}else{
+							return EvalBitOperation((int)first, (int)second, Operator);
+						}
+					}
+						break;
+
+					case NodeType.Block:
+						break;
+
+					case NodeType.BreakStatement:
+						break;
+
+					case NodeType.Call:
+						break;
+
+					case NodeType.CaseClause:
+						break;
+
+					case NodeType.CatchClause:
+						break;
+
+					case NodeType.Comprehension:
+						break;
+
+					case NodeType.ComprehensionFor:
+						break;
+
+					case NodeType.ComprehensionIf:
+						break;
+
+					case NodeType.ConditionalExpression:
+						break;
+
+					case NodeType.Constant:
+						break;
+
+					case NodeType.ContinueStatement:
+						break;
+
+					case NodeType.ExprStatement:
+						break;
+
+					case NodeType.FinallyClause:
+						break;
+
+					case NodeType.ForStatement:
+						break;
+
+					case NodeType.Function:
+						break;
+
+					case NodeType.Identifier:
+						break;
+
+					case NodeType.IfStatement:
+						break;
+
+					case NodeType.Initializer:
+						break;
+
+					case NodeType.MemRef:
+						break;
+
+					case NodeType.ModuleDecl:
+						break;
+
+					case NodeType.New:
+						break;
+
+					case NodeType.Print:
+						break;
+
+					case NodeType.Require:
+						break;
+
+					case NodeType.Return:
+						break;
+
+					case NodeType.Sequence:
+						break;
+
+					case NodeType.SwitchStatement:
+						break;
+
+					case NodeType.ThrowStatement:
+						break;
+
+					case NodeType.TryStatement:
+						break;
+
+					case NodeType.TypeDecl:
+						break;
+
+					case NodeType.UnaryExpression:
+						break;
+
+					case NodeType.VarDecl:
+						break;
+
+					case NodeType.WhileStatement:
+						break;
+
+					case NodeType.WithStatement:
+						break;
+
+					case NodeType.YieldStatement:
+						break;
+
+					default:
+						throw new EvalException("Unknown AST type!");
+					}
+				}
+			}
+			catch(EvalException ex){
+
+			}
+		}*/
 	}
 }
 

@@ -17,8 +17,8 @@ namespace Expresso.Interpreter
 		{
 			Local,
 			Function,
-			Class,
-			Module
+			Type,			//Type means the class, interface, struct and module type
+			Any
 		}
 
 		internal NodeType Type;
@@ -42,6 +42,7 @@ namespace Expresso.Interpreter
 		/// <summary>
 		/// 識別子名 → 識別子の詳細テーブル。
 		/// The symbol table.
+		/// Namespaces are created for variables, functions and types.
 		/// </summary>
 		private Dictionary<string, List<ScopeItem>> table = new Dictionary<string, List<ScopeItem>>();
 
@@ -52,20 +53,14 @@ namespace Expresso.Interpreter
 
 		static AnalysisScope()
 		{
-			Identifier[] builtin_classes = {
-				new Identifier("File", new TypeAnnotation(TYPES.TYPE_CLASS, "File")),
-				new Identifier("Exception", new TypeAnnotation(TYPES.TYPE_CLASS, "Exception"))
+			Identifier[] builtin_types = {
+				new Identifier("File", new TypeAnnotation(ObjectTypes.TYPE_CLASS, "File")),
+				new Identifier("Exception", new TypeAnnotation(ObjectTypes.TYPE_CLASS, "Exception")),
+				new Identifier("math", new TypeAnnotation(ObjectTypes.TYPE_MODULE, "math"))
 			};
 			
-			foreach(var builtin_class in builtin_classes)
-				symbol_table.AddClass(builtin_class);
-
-			Identifier[] builin_modules = {
-				new Identifier("math", new TypeAnnotation(TYPES.TYPE_MODULE, "math"))
-			};
-
-			foreach(var builtin_module in builin_modules)
-				symbol_table.AddModule(builtin_module);
+			foreach(var builtin_type in builtin_types)
+				symbol_table.AddType(builtin_type);
 		}
 
 		/// <summary>
@@ -80,9 +75,17 @@ namespace Expresso.Interpreter
 		/// 含まれていればtrue。
 		/// Returns true if the scope has the identifier; otherwise returns false.
 		/// </returns>
-		public bool ContainsIn(string name)
+		public bool ContainsIn(string name, ScopeItem.NodeType searchType = ScopeItem.NodeType.Any)
 		{
-			return this.table.ContainsKey(name);
+			if(searchType == ScopeItem.NodeType.Any)
+				return this.table.ContainsKey(name);
+			else{
+				List<ScopeItem> items;
+				if(table.TryGetValue(name, out items)){
+					return items.Any((item) => item.Type == searchType);
+				}
+				return false;
+			}
 		}
 
 		/// <summary>
@@ -92,10 +95,10 @@ namespace Expresso.Interpreter
 		/// <returns>
 		/// <c>true</c>, if the identifier is found, <c>false</c> otherwise.
 		/// </returns>
-		public bool ContainsOf(string name)
+		public bool ContainsOf(string name, ScopeItem.NodeType searchType = ScopeItem.NodeType.Any)
 		{
 			for(var s = this; s != null; s = s.Parent){
-				if(s.table.ContainsKey(name))
+				if(s.ContainsIn(name, searchType))
 					return true;
 			}
 
@@ -103,58 +106,30 @@ namespace Expresso.Interpreter
 		}
 
 		/// <summary>
-		/// クラスを取得。
-		/// Gets a class name.
+		/// 型を取得。
+		/// Gets a type name.
 		/// </summary>
 		/// <param name="name">
 		/// 識別子名。
 		/// The name of the identifier.
 		/// </param>
 		/// <returns>
-		/// その名前のクラスが定義されていればクラスの詳細を、なければnullを。
-		/// If exists, returns the information on that class, otherwise returns null.
+		/// その名前の型が定義されていれば型の詳細を、なければnullを。
+		/// If exists, returns the information on that type, otherwise returns null.
 		/// </returns>
-		public Identifier GetClass(string name)
+		public Identifier GetType(string name)
 		{
 			int level = 0;
 			for(var s = this; s != null; s = s.Parent, ++level){
-				var v = GetSymbol(name, ScopeItem.NodeType.Class, s);
+				var v = GetSymbol(name, ScopeItem.NodeType.Type, s);
 				if (v != null && level == 0){
 					return v;
 				}else if(v != null){
-					Identifier cloned = new Identifier(v.Name, v.ParamType, v.Offset, level);
+					Identifier cloned = new Identifier(v.Name, v.ParamType, v.AliasName, v.Offset, level);
 					return cloned;
 				}
 			}
 
-			return null;
-		}
-
-		/// <summary>
-		/// モジュールを取得。
-		/// Gets a module name.
-		/// </summary>
-		/// <param name="name">
-		/// 識別子名。
-		/// The name of the identifier.
-		/// </param>
-		/// <returns>
-		/// その名前のモジュールが定義されていればモジュールの詳細を、なければnullを。
-		/// If exists, returns the information on that module, otherwise returns null.
-		/// </returns>
-		public Identifier GetModule(string name)
-		{
-			int level = 0;
-			for(var s = this; s != null; s = s.Parent, ++level){
-				var v = GetSymbol(name, ScopeItem.NodeType.Module, s);
-				if (v != null && level == 0){
-					return v;
-				}else if(v != null){
-					Identifier cloned = new Identifier(v.Name, v.ParamType, v.Offset, level);
-					return cloned;
-				}
-			}
-			
 			return null;
 		}
 
@@ -173,7 +148,7 @@ namespace Expresso.Interpreter
 					if (v != null && level == 0){
 						return v;
 					}else if(v != null){
-						Identifier cloned = new Identifier(v.Name, v.ParamType, v.Offset, level);
+						Identifier cloned = new Identifier(v.Name, v.ParamType, v.AliasName, v.Offset, level);
 						return cloned;
 					}
 				}
@@ -248,27 +223,15 @@ namespace Expresso.Interpreter
 		}
 
 		/// <summary>
-		/// スコープにクラスを追加。
-		/// Adds a class to the current scope.
+		/// スコープに型を追加。
+		/// Adds a type to the current scope.
 		/// </summary>
 		/// <param name='p'>
-		/// The class info to be added.
+		/// The type info to be added.
 		/// </param>
-		public void AddClass(Identifier p)
+		public void AddType(Identifier p)
 		{
-			AddSymbol(p.Name, ScopeItem.NodeType.Class, p);
-		}
-
-		/// <summary>
-		/// スコープにモジュールを追加。
-		/// Adds a module to the current scope.
-		/// </summary>
-		/// <param name='p'>
-		/// The module info to be added.
-		/// </param>
-		public void AddModule(Identifier p)
-		{
-			AddSymbol(p.Name, ScopeItem.NodeType.Module, p);
+			AddSymbol(p.Name, ScopeItem.NodeType.Type, p);
 		}
 
 		/// <summary>
@@ -281,6 +244,15 @@ namespace Expresso.Interpreter
 			AddSymbol(f.Name, ScopeItem.NodeType.Function, f);
 		}
 
+		/// <summary>
+		/// スコープにエイリアスを追加する。
+		/// Adds an alias identifier.
+		/// </summary>
+		public void AddAlias(Identifier p)
+		{
+			AddSymbol(p.AliasName, ScopeItem.NodeType.Type, p);
+		}
+
 		void AddSymbol(string name, ScopeItem.NodeType type, Node p)
 		{
 			var new_item = new ScopeItem{Type = type, Node = p};
@@ -288,7 +260,7 @@ namespace Expresso.Interpreter
 			if(this.table.ContainsKey(name))
 				table[name].Add(new_item);
 			else
-			table[name] = new List<ScopeItem>{new_item};
+				table[name] = new List<ScopeItem>{new_item};
 		}
 	}
 }

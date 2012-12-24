@@ -7,7 +7,7 @@ using Expresso.Interpreter;
 
 namespace Expresso.Builtins
 {
-	public enum TYPES
+	public enum ObjectTypes
 	{
 		_SUBSCRIPT = -5,
 		_CASE_DEFAULT = -4,
@@ -30,9 +30,10 @@ namespace Expresso.Builtins
 		EXPRESSION,
 		FUNCTION,
 		SEQ,
-		CLASS,
+		INSTANCE,
 		TYPE_CLASS,
-		TYPE_MODULE
+		TYPE_MODULE,
+		TYPE_STRUCT
 	};
 
 	/// <summary>
@@ -40,11 +41,11 @@ namespace Expresso.Builtins
 	/// </summary>
 	public class TypeAnnotation : ICloneable
 	{
-		public TYPES ObjType{get; internal set;}
+		public ObjectTypes ObjType{get; internal set;}
 
 		public string TypeName{get; internal set;}
 
-		public TypeAnnotation(TYPES type, string name = null)
+		public TypeAnnotation(ObjectTypes type, string name = null)
 		{
 			ObjType = type;
 			TypeName = name;
@@ -60,16 +61,36 @@ namespace Expresso.Builtins
 			return this.Clone();
 		}
 
-		public override string ToString()
+		public override bool Equals(object obj)
 		{
-			return (TypeName != null) ? string.Format("{0}", TypeName) : string.Format("{0}", ObjType);
+			var x = obj as TypeAnnotation;
+			if(x == null)
+				return false;
+
+			return this.ObjType == x.ObjType && this.TypeName == x.TypeName;
 		}
 
-		public static readonly TypeAnnotation InferenceType = new TypeAnnotation(TYPES._INFERENCE);
-		public static readonly TypeAnnotation VariantType = new TypeAnnotation(TYPES.VAR);
-		public static readonly TypeAnnotation VoidType = new TypeAnnotation(TYPES.UNDEF);
+		public override int GetHashCode()
+		{
+			return ObjType.GetHashCode() ^ TypeName.GetHashCode();
+		}
+
+		public override string ToString()
+		{
+			return (ObjType == ObjectTypes.TYPE_CLASS) ? string.Format("class {0}", TypeName) :
+				(ObjType == ObjectTypes.TYPE_MODULE) ? string.Format("module {0}", TypeName) :
+					(ObjType == ObjectTypes.TYPE_STRUCT) ? string.Format("struct {0}", TypeName) :
+					(TypeName != null) ? string.Format("{0}", TypeName) : string.Format("{0}", ObjType);
+		}
+
+		public static readonly TypeAnnotation InferenceType = new TypeAnnotation(ObjectTypes._INFERENCE);
+		public static readonly TypeAnnotation VariantType = new TypeAnnotation(ObjectTypes.VAR);
+		public static readonly TypeAnnotation VoidType = new TypeAnnotation(ObjectTypes.UNDEF);
 	}
 
+	/// <summary>
+	/// Represents an instance of Expresso objects.
+	/// </summary>
 	public class ExpressoObj : IEnumerable<object>, IEnumerable
 	{
 		private BaseDefinition definition;
@@ -172,8 +193,8 @@ namespace Expresso.Builtins
 		/// <returns>
 		/// The instance.
 		/// </returns>
-		/// <param name='className'>
-		/// The target class name to be constructed.
+		/// <param name='definition'>
+		/// The target type definition to be constructed.
 		/// </param>
 		/// <param name='args'>
 		/// Arguments that passed to the constructor.
@@ -181,9 +202,30 @@ namespace Expresso.Builtins
 		/// <param name='varStore'>
 		/// The environment.
 		/// </param>
-		public ExpressoObj CreateInstance(string typeName, List<Expression> args, VariableStore varStore)
+		public static ExpressoObj CreateInstance(BaseDefinition definition, List<Expression> args, VariableStore varStore)
 		{
-			return definition.CreateInstance(typeName, args, varStore);
+			ExpressoObj new_inst = null;
+			if(definition is ClassDefinition)
+				new_inst = new ExpressoObj((ClassDefinition)definition);
+			else if(definition is StructDefinition)
+				new_inst = new ExpressoObj((StructDefinition)definition);
+			else if(definition is InterfaceDefinition)
+				throw new EvalException("Can not instantiate an interface!");
+			else
+				throw new EvalException("Unknown definition.");
+			
+			var constructor = new_inst.AccessMember(new Identifier("constructor"), true) as Function;
+			if(constructor != null){
+				var value_this = new Constant{ValType = ObjectTypes.INSTANCE, Value = new_inst};	//thisの値としてインスタンスを追加する
+				args.Insert(0, value_this);
+				var call_ctor = new Call{
+					Function = constructor,
+					Arguments = args,
+					Reference = null
+				};
+				call_ctor.Run(varStore);
+			}
+			return new_inst;
 		}
 	}
 	

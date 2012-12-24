@@ -75,11 +75,11 @@ namespace Expresso.Ast
 					if(expr_stmt.Expressions[0] is Constant){
 						var label = (Constant)expr_stmt.Expressions[0];
 						switch(label.ValType){
-						case TYPES._LABEL_PUBLIC:
+						case ObjectTypes._LABEL_PUBLIC:
 							decl_target = publics;
 							break;
 
-						case TYPES._LABEL_PRIVATE:
+						case ObjectTypes._LABEL_PRIVATE:
 							decl_target = privates;
 							break;
 

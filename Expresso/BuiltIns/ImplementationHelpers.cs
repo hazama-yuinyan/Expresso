@@ -27,39 +27,39 @@ namespace Expresso.Helpers
 			return reg.Replace(str, replacer);
 		}
 
-		public static TYPES GetTypeInExpresso(Type t)
+		public static ObjectTypes GetTypeInExpresso(Type t)
 		{
 			switch(t.Name){
 			case "Int32":
 			case "Int64":
-				return TYPES.INTEGER;
+				return ObjectTypes.INTEGER;
 
 			case "Double":
-				return TYPES.FLOAT;
+				return ObjectTypes.FLOAT;
 
 			case "String":
-				return TYPES.STRING;
+				return ObjectTypes.STRING;
 
 			case "Boolean":
-				return TYPES.BOOL;
+				return ObjectTypes.BOOL;
 
 			case "Object":
-				return TYPES.VAR;
+				return ObjectTypes.VAR;
 
 			case "Void":
-				return TYPES.UNDEF;
+				return ObjectTypes.UNDEF;
 
 			case "ExpressoTuple":
-				return TYPES.TUPLE;
+				return ObjectTypes.TUPLE;
 
 			case "ExpressoIntegerSequence":
-				return TYPES.SEQ;
+				return ObjectTypes.SEQ;
 
 			default:
 				if(t.Name.StartsWith("List"))
-					return TYPES.LIST;
+					return ObjectTypes.LIST;
 				else if(t.Name.StartsWith("Dictionary"))
-					return TYPES.DICT;
+					return ObjectTypes.DICT;
 				else
 					throw new EvalException(string.Format("{0} is not a primitive type in Expresso.", t.FullName));
 			}
@@ -70,36 +70,36 @@ namespace Expresso.Helpers
 			return new TypeAnnotation(GetTypeInExpresso(t));
 		}
 
-		public static object GetDefaultValueFor(TYPES type)
+		public static object GetDefaultValueFor(ObjectTypes type)
 		{
 			switch(type){
-			case TYPES.INTEGER:
+			case ObjectTypes.INTEGER:
 				return default(int);
 				
-			case TYPES.BOOL:
+			case ObjectTypes.BOOL:
 				return default(bool);
 				
-			case TYPES.FLOAT:
+			case ObjectTypes.FLOAT:
 				return default(double);
 				
-			case TYPES.STRING:
+			case ObjectTypes.STRING:
 				return default(string);
 
-			case TYPES.BIGINT:
+			case ObjectTypes.BIGINT:
 				return new BigInteger();
 
-			case TYPES.RATIONAL:
+			case ObjectTypes.RATIONAL:
 				return new Fraction();
 
-			case TYPES.CLASS:
-			case TYPES.FUNCTION:
-			case TYPES.EXPRESSION:
-			case TYPES.BYTEARRAY:
-			case TYPES.DICT:
-			case TYPES.LIST:
-			case TYPES.TUPLE:
-			case TYPES.VAR:
-			case TYPES._INFERENCE:
+			case ObjectTypes.INSTANCE:
+			case ObjectTypes.FUNCTION:
+			case ObjectTypes.EXPRESSION:
+			case ObjectTypes.BYTEARRAY:
+			case ObjectTypes.DICT:
+			case ObjectTypes.LIST:
+			case ObjectTypes.TUPLE:
+			case ObjectTypes.VAR:
+			case ObjectTypes._INFERENCE:
 				return null;
 				
 			default:
@@ -107,45 +107,45 @@ namespace Expresso.Helpers
 			}
 		}
 
-		public static Type GetNativeType(TYPES objType)
+		public static Type GetNativeType(ObjectTypes objType)
 		{
 			switch(objType){
-			case TYPES.INTEGER:
+			case ObjectTypes.INTEGER:
 				return typeof(int);
 
-			case TYPES.BOOL:
+			case ObjectTypes.BOOL:
 				return typeof(bool);
 
-			case TYPES.FLOAT:
+			case ObjectTypes.FLOAT:
 				return typeof(double);
 
-			case TYPES.BIGINT:
+			case ObjectTypes.BIGINT:
 				return typeof(BigInteger);
 
-			case TYPES.RATIONAL:
+			case ObjectTypes.RATIONAL:
 				return typeof(Fraction);
 
-			case TYPES.LIST:
+			case ObjectTypes.LIST:
 				return typeof(List<object>);
 
-			case TYPES.TUPLE:
+			case ObjectTypes.TUPLE:
 				return typeof(ExpressoTuple);
 
-			case TYPES.DICT:
+			case ObjectTypes.DICT:
 				return typeof(Dictionary<object, object>);
 
-			case TYPES.SEQ:
+			case ObjectTypes.SEQ:
 				return typeof(ExpressoIntegerSequence);
 
-			case TYPES.STRING:
+			case ObjectTypes.STRING:
 				return typeof(string);
 
-			case TYPES.UNDEF:
+			case ObjectTypes.UNDEF:
 				return typeof(void);
 
-			case TYPES.CLASS:
-			case TYPES.TYPE_CLASS:
-			case TYPES.TYPE_MODULE:
+			case ObjectTypes.INSTANCE:
+			case ObjectTypes.TYPE_CLASS:
+			case ObjectTypes.TYPE_MODULE:
 				return typeof(ExpressoObj);
 
 			default:

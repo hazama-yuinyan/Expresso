@@ -18,7 +18,7 @@ namespace Expresso.Ast
         /// 呼び出す対象。
 		/// The target function to be called.
 		/// It can be null if it is a call to a method, since methods are implemetend in the way of
-		/// objects having function objects and they are resolved on runtime.
+		/// objects having function objects and they are resolved at runtime.
         /// </summary>
         public Function Function { get; internal set; }
 
@@ -49,6 +49,8 @@ namespace Expresso.Ast
 		public Expression Reference {get; internal set;}
 
 		private MethodContainer method_info = null;
+
+		static private Identifier this_value = new Identifier("this");
 
         public override NodeType Type
         {
@@ -92,25 +94,30 @@ namespace Expresso.Ast
 					if(method == null)
 						throw new EvalException("Not callable: " + obj.ToString());
 
-					fn = method.Method;
 					if(method.Inst != null){
-						child.Add(0, method.Inst);	//このメソッド呼び出しのthisオブジェクトを登録する
-						if(Arguments.Count == 0 || Arguments[0] != null)
-							Arguments.Insert(0, null);
-
-						this_registered = true;
+						if(Arguments.Count == 0 || Arguments[0] != this_value)	//実引数リストにthisを追加しておく
+							Arguments.Insert(0, this_value);
 					}
+
 					method_info = method;	//毎回リファレンスを辿るのは遅いと思われるので、キャッシュしておく
-				}else{
-					fn = method_info.Method;
-					child.Add(0, method_info.Inst);	//このメソッド呼び出しのthisオブジェクトを登録する
+				}
+
+				fn = method_info.Method;
+				if(!fn.IsStatic && method_info.Inst != null){	//このメソッド呼び出しのthisオブジェクトを登録する
+					child.Add(0, method_info.Inst);
 					this_registered = true;
 				}
 			}else{
-    	        fn = Function;
+    	        fn = Function;		//Functionがセットされている場合は、現在のモジュールを暗黙のthis参照として追加する
+				if(!fn.IsStatic){
+					child.Add(0, varStore.Get(0));
+					this_registered = true;
+					if(Arguments.Count == 0 || Arguments[0] != this_value)
+						Arguments.Insert(0, this_value);
+				}
 			}
 
-			for(int i = (this_registered) ? 1 : 0; i < fn.Parameters.Count; ++i){	//実引数をローカル変数として変数テーブルに追加する
+			for(int i = this_registered ? 1 : 0; i < fn.Parameters.Count; ++i){	//実引数をローカル変数として変数テーブルに追加する
 				var param = fn.Parameters[i];
 				child.Add(param.Offset, (i < Arguments.Count) ? Arguments[i].Run(varStore) : param.Option.Run(varStore));
 			}

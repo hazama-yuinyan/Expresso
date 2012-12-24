@@ -24,6 +24,12 @@ namespace Expresso.Ast
         public string Name { get; internal set; }
 
 		/// <summary>
+		/// エイリアス名。
+		/// The alias name. It can be null if the identifier is not an alias for another.
+		/// </summary>
+		public string AliasName{get; internal set;}
+
+		/// <summary>
 		/// 変数の変数ストア内でのオフセット値。
 		/// The offset of the variable in the variable store.
 		/// </summary>
@@ -46,10 +52,11 @@ namespace Expresso.Ast
             get { return NodeType.Identifier; }
         }
 
-		public Identifier(string name, TypeAnnotation type = null, int offset = -1, int level = 0)
+		public Identifier(string name, TypeAnnotation type = null, string aliasName = null, int offset = -1, int level = 0)
 		{
 			Name = name;
 			ParamType = type;
+			AliasName = aliasName;
 			Offset = offset;
 			Level = level;
 		}
@@ -70,11 +77,21 @@ namespace Expresso.Ast
 
         internal override object Run(VariableStore varStore)
         {
-			if(ParamType.ObjType == TYPES._SUBSCRIPT)
+			if(ParamType.ObjType == ObjectTypes._SUBSCRIPT)
 				return this;
-			else if(ParamType.ObjType == TYPES.TYPE_CLASS)
-				return null;
-			else
+			else if(ParamType.ObjType == ObjectTypes.TYPE_CLASS){
+				var cur_module = varStore.Get(0) as ExpressoObj;
+				if(cur_module == null)
+					throw new EvalException("\"this\" doesn't refer to the enclosing module instance.");
+
+				return cur_module.AccessMember(this, true);
+			}else if(ParamType.ObjType == ObjectTypes.TYPE_MODULE){
+				var module = ExpressoModule.GetModule(Name);
+				if(module == null)
+					throw new EvalException(string.Format("The requested module \"{0}\" doesn't exist.", Name));
+
+				return module;
+			}else
 				return varStore.Get(Offset, Level);
         }
 
@@ -90,7 +107,8 @@ namespace Expresso.Ast
 
 		public override string ToString()
 		{
-			return string.Format("{0}({2}:{3}) (- {1}", Name, ParamType, Level, Offset);
+			return (AliasName != null) ? string.Format("[alias] {0} for {1} (- {2}", AliasName, Name, ParamType) :
+				string.Format("{0}({2}:{3}) (- {1}", Name, ParamType, Level, Offset);
 		}
     }
 }

@@ -49,7 +49,7 @@ public class Parser {
 	public Token la;   // lookahead token
 	int errDist = minErrDist;
 
-internal AnalysisScope cur_scope = null;		//the current scope of variables
+internal AnalysisScope cur_scope = new AnalysisScope{Parent = AnalysisScope.SymbolTable};		//the current scope of variables
 	static private List<BreakableStatement> breakables = new List<BreakableStatement>();	//the current parent breakbles hierarchy
 	bool ignore_parent_scope = false;
 	public string ParsingFileName{get; set;}
@@ -57,36 +57,34 @@ internal AnalysisScope cur_scope = null;		//the current scope of variables
 	
 	Parser()
 	{
-		cur_scope = AnalysisScope.SymbolTable;
-		
 		//Add built-in functions
 		Function[] native_funcs = {
-			new NativeLambdaUnary("abs", ImplementationHelpers.MakeArg(new Identifier("val", new TypeAnnotation(TYPES.VAR), 0)), ExpressoFunctions.Abs),
-			new NativeLambdaUnary("sqrt", ImplementationHelpers.MakeArg(new Identifier("val", new TypeAnnotation(TYPES.VAR), 0)), ExpressoFunctions.Sqrt),
-			new NativeLambdaUnary("toInt", ImplementationHelpers.MakeArg(new Identifier("val", new TypeAnnotation(TYPES.VAR), 0)), ExpressoFunctions.ToInt)
+			new NativeLambdaUnary("abs", ImplementationHelpers.MakeArg(new Identifier("val", new TypeAnnotation(ObjectTypes.VAR), null, 0)), ExpressoFunctions.Abs),
+			new NativeLambdaUnary("sqrt", ImplementationHelpers.MakeArg(new Identifier("val", new TypeAnnotation(ObjectTypes.VAR), null, 0)), ExpressoFunctions.Sqrt),
+			new NativeLambdaUnary("toInt", ImplementationHelpers.MakeArg(new Identifier("val", new TypeAnnotation(ObjectTypes.VAR), null, 0)), ExpressoFunctions.ToInt)
 		};
 		foreach(var tmp in native_funcs)
 			cur_scope.AddFunction(tmp);
 	}
 	
-	Constant CreateConstant(TYPES type)
+	Constant CreateConstant(ObjectTypes type)
 	{
 		Constant result = null;
 		
 		switch(type){
-		case TYPES.INTEGER:
+		case ObjectTypes.INTEGER:
 			result = new Constant{ValType = type, Value = 0};
 			break;
 			
-		case TYPES.BOOL:
+		case ObjectTypes.BOOL:
 			result = new Constant{ValType = type, Value = false};
 			break;
 			
-		case TYPES.FLOAT:
+		case ObjectTypes.FLOAT:
 			result = new Constant{ValType = type, Value = 0.0};
 			break;
 			
-		case TYPES.STRING:
+		case ObjectTypes.STRING:
 			result = new Constant{ValType = type, Value = ""};
 			break;
 			
@@ -115,10 +113,9 @@ internal AnalysisScope cur_scope = null;		//the current scope of variables
 		return x.kind != _lparen;
 	}
 	
-	bool ExpectIdentIsModuleOrClassName()
+	bool ExpectIdentIsTypeName()
 	{
-		Token x = la;
-		return x.kind == _dot;
+		return la.kind == _dot;
 	}
 	
 	bool IsObjectInitializer()
@@ -133,10 +130,12 @@ internal AnalysisScope cur_scope = null;		//the current scope of variables
 	Identifier DeclareVariable(ref Expression rhs, string name, TypeAnnotation type)
 	{
 		if(rhs == null){
-  			if(type.ObjType == TYPES._INFERENCE) SemErr("Can not infer the type of the variable \"" + name + "\" without initialization!");
+  			if(type.ObjType == ObjectTypes._INFERENCE)
+  				SemErr("Can not infer the type of the variable \"" + name + "\" without initialization!");
+  			
   			rhs = CreateConstant(type.ObjType);
   		}else{
-  			if(type.ObjType == TYPES._INFERENCE){
+  			if(type.ObjType == ObjectTypes._INFERENCE){
   				if(rhs is Constant){
   					var constant = (Constant)rhs;
   					type.ObjType = constant.ValType;
@@ -147,12 +146,14 @@ internal AnalysisScope cur_scope = null;		//the current scope of variables
   					var comprehen = (Comprehension)rhs;
   					type.ObjType = comprehen.ObjType;
   				}else if(rhs is NewExpression){
-  					type.ObjType = TYPES.CLASS;
-  					type.TypeName = ((NewExpression)rhs).TargetName;
+  					type.ObjType = ObjectTypes.INSTANCE;
+  					//type.TypeName = ((NewExpression)rhs).TargetName;
   				}else if(rhs is Call){
   					var call = (Call)rhs;
   					if(call.Function != null)
   						type = call.Function.ReturnType;
+  				}else if(rhs is MemberReference){
+  					type.ObjType = ObjectTypes.VAR;
   				}else{
   					SemErr("Can not infer the type of the variable \"" + name + "\" from that type of expression.");
   				}
@@ -170,11 +171,6 @@ internal AnalysisScope cur_scope = null;		//the current scope of variables
 		
 		cur_scope.AddLocal(ref argument);
 		return argument;
-	}
-	
-	static ExprStatement MakeExprStatement(List<Expression> exprs)
-	{
-		return new ExprStatement{Expressions = exprs};
 	}
 	
 	static BreakStatement MakeBreakStatement(int count)
@@ -203,132 +199,14 @@ internal AnalysisScope cur_scope = null;		//the current scope of variables
 		return new ContinueStatement{Count = count, Enclosings = tmp};
 	}
 	
-	static IfStatement MakeIfStatement(Expression condition, Statement trueBlock, Statement falseBlock)
+	Statement MakeDefaultCtor(string className)
 	{
-		return new IfStatement{Condition = condition, TrueBlock = trueBlock, FalseBlock = falseBlock};
-	}
-	
-	static WhileStatement MakeWhileStatement()
-	{
-		return new WhileStatement();
-	}
-	
-	static ForStatement MakeForStatement()
-	{
-		return new ForStatement();
-	}
-	
-	static SwitchStatement MakeSwitchStatement(Expression target, List<CaseClause> cases)
-	{
-		return new SwitchStatement{Target = target, Cases = cases};
-	}
-	
-	static CaseClause MakeCaseClause(List<Expression> labels, Statement body)
-	{
-		return new CaseClause{Labels = labels, Body = body};
-	}
-	
-	static Function MakeFunc(string name, List<Argument> parameters, Block body, TypeAnnotation returnType)
-	{
-		return new Function(name, parameters, body, returnType);
-	}
-	
-	static Function MakeClosure(string name, List<Argument> parameters, Block body, TypeAnnotation returnType, VariableStore environ)
-	{
-		return new Function(name, parameters, body, returnType, environ);
-	}
-	
-	static UnaryExpression MakeUnaryExpr(OperatorType op, Expression operand)
-	{
-		return new UnaryExpression{Operator = op, Operand = operand};
-	}
-	
-	static BinaryExpression MakeBinaryExpr(OperatorType op, Expression lhs, Expression rhs)
-	{
-		return new BinaryExpression{Operator = op, Left = lhs, Right = rhs};
-	}
-	
-	static ObjectInitializer MakeObjInitializer(TYPES type, List<Expression> initializeList)
-	{
-		return new ObjectInitializer{Initializer = initializeList, ObjType = type};
-	}
-	
-	static Assignment MakeAssignment(List<Expression> targets, List<Expression> expressions)
-	{
-		return new Assignment{Targets = targets, Expressions = expressions};
-	}
-	
-	static Assignment MakeAugumentedAssignment(List<Expression> targets, List<Expression> expressions, OperatorType opType)
-	{
-		var rvalues = new List<Expression>();
-		for(int i = 0; i < expressions.Count; ++i){
-			var rvalue = new BinaryExpression{Left = targets[i], Right = expressions[i], Operator = opType};
-			rvalues.Add(rvalue);
-		}
-		return new Assignment{Targets = targets, Expressions = rvalues};
-	}
-	
-	static Comprehension MakeComp(Expression yieldExpr, ComprehensionFor body, TYPES objType)
-	{
-		return new Comprehension{YieldExpr = yieldExpr, Body = body, ObjType = objType};
-	}
-	
-	static ComprehensionFor MakeCompFor(List<Expression> lValues, Expression target, ComprehensionIter body)
-	{
-		return new ComprehensionFor{LValues = lValues, Target = target, Body = body};
-	}
-	
-	static ComprehensionIf MakeCompIf(Expression condition, ComprehensionIter body)
-	{
-		return new ComprehensionIf{Condition = condition, Body = body};
-	}
-	
-	static Constant MakeConstant(TYPES type, object val)
-	{
-		return new Constant{ValType = type, Value = val};
-	}
-	
-	static IntSeqExpression MakeIntSeq(Expression start, Expression end, Expression step)
-	{
-		return new IntSeqExpression{Start = start, End = end, Step = step};
-	}
-	
-	static TypeDeclaration MakeClassDef(string className, List<string> bases, List<Statement> decls)
-	{
-		return new TypeDeclaration{TargetType = DeclType.Class, Name = className, Bases = bases, Declarations = decls};
-	}
-	
-	static ModuleDeclaration MakeModuleDef(string moduleName, List<Statement> decls, List<bool> exportMap)
-	{
-		return new ModuleDeclaration{Name = moduleName, Declarations = decls, ExportMap = exportMap};
-	}
-	
-	static NewExpression MakeNewExpr(string targetName, List<Expression> args)
-	{
-		return new NewExpression{TargetName = targetName, Arguments = args};
-	}
-	
-	static RequireExpression MakeRequireExpr(string moduleName, string aliasName)
-	{
-		return new RequireExpression{ModuleName = moduleName, AliasName = aliasName};
-	}
-	
-	static TryStatement MakeTryStmt(Block body, List<CatchClause> catches, Block finallyClause)
-	{
-		if(finallyClause != null)
-			return new TryStatement{Body = body, Catches = catches, FinallyClause = new FinallyClause{Body = finallyClause}};
-		else
-			return new TryStatement{Body = body, Catches = catches, FinallyClause = null};
-	}
-	
-	static ThrowStatement MakeThrowStmt(Expression expr)
-	{
-		return new ThrowStatement{Expression = expr};
-	}
-	
-	static YieldStatement MakeYieldStmt(Expression expr)
-	{
-		return new YieldStatement{Expression = expr};
+		cur_scope = new AnalysisScope{Parent = cur_scope};
+		var ident_this = DeclareArgument("this", new TypeAnnotation(ObjectTypes.INSTANCE, className));
+		var @params = new List<Argument>{new Argument{Ident = ident_this}};
+		var ctor = Node.MakeFunc("constructor", @params, new Block(), TypeAnnotation.VoidType.Clone(), true);
+		cur_scope = cur_scope.Parent;
+		return ctor;
 	}
 	
 /*--------------------------------------------------------------------------*/
@@ -404,9 +282,6 @@ internal AnalysisScope cur_scope = null;		//the current scope of variables
 		if (la.kind == 20) {
 			ProgramDefinition(out prog_defs);
 		}
-		if(prog_defs != null)
-		decls.AddRange(prog_defs);
-		
 		if (la.kind == 19) {
 			Get();
 			has_export = true; 
@@ -441,7 +316,7 @@ internal AnalysisScope cur_scope = null;		//the current scope of variables
 		}
 		var main_func = cur_scope.GetFunction("main");
 		var module_name = (main_func != null) ? "main" : ParsingFileName;
-		decl = MakeModuleDef(module_name, decls, export_map);
+		decl = Node.MakeModuleDef(module_name, prog_defs, decls, export_map);
 		
 	}
 
@@ -466,25 +341,30 @@ internal AnalysisScope cur_scope = null;		//the current scope of variables
 			if (StartOf(4)) {
 				AugAssignOpe(ref op_type);
 				RValueList(out expr_list);
-				stmt = MakeAugumentedAssignment(targets, expr_list, op_type); 
+				stmt = Node.MakeAugumentedAssignment(targets, expr_list, op_type); 
 			} else if (la.kind == 4 || la.kind == 29) {
 				while (la.kind == 29) {
 					Get();
 					RValueList(out expr_list);
-					stmt = MakeAssignment(targets, expr_list); 
+					stmt = Node.MakeAssignment(targets, expr_list); 
 				}
 			} else SynErr(103);
 		} else SynErr(104);
 		while (!(la.kind == 0 || la.kind == 4)) {SynErr(105); Get();}
 		Expect(4);
-		if(stmt == null) stmt = MakeExprStatement(targets); 
+		if(stmt == null) stmt = Node.MakeExprStmt(targets); 
 	}
 
 	void FuncDecl(out Statement func) {
-		string name; TypeAnnotation type = TypeAnnotation.VariantType.Clone(); Statement block; var @params = new List<Argument>(); 
+		string name; var type = TypeAnnotation.VariantType.Clone(); Statement block; var @params = new List<Argument>();
+		Identifier ident_this = null;
+		
 		while (!(la.kind == 0 || la.kind == 26)) {SynErr(106); Get();}
 		Expect(26);
-		block = null; cur_scope = new AnalysisScope{Parent = cur_scope}; 
+		block = null; cur_scope = new AnalysisScope{Parent = cur_scope};
+		ident_this = DeclareArgument("this", new TypeAnnotation(ObjectTypes.TYPE_MODULE));
+		@params.Add(new Argument{Ident = ident_this, Option = null});
+		
 		Expect(12);
 		name = t.val; 
 		Expect(6);
@@ -497,7 +377,7 @@ internal AnalysisScope cur_scope = null;		//the current scope of variables
 			Type(out type);
 		}
 		Block(out block);
-		func = MakeFunc(name, @params, (Block)block, type);
+		func = Node.MakeFunc(name, @params, (Block)block, type);
 		cur_scope = cur_scope.Parent;
 		cur_scope.AddFunction(func as Function);
 		
@@ -505,7 +385,7 @@ internal AnalysisScope cur_scope = null;		//the current scope of variables
 
 	void ClassDecl(out Statement stmt) {
 		Expression expr = null; var stmts = new List<Statement>(); List<Expression> decls = null;
-		string name; var base_names = new List<string>(); Statement tmp = null;
+		string name; var base_names = new List<string>(); Statement tmp = null; bool has_ctor = false;
 		
 		while (!(la.kind == 0 || la.kind == 22)) {SynErr(107); Get();}
 		Expect(22);
@@ -527,25 +407,27 @@ internal AnalysisScope cur_scope = null;		//the current scope of variables
 			if (la.kind == 23 || la.kind == 24) {
 				if (la.kind == 23) {
 					Get();
-					expr = MakeConstant(TYPES._LABEL_PUBLIC, null); 
+					expr = Node.MakeConstant(ObjectTypes._LABEL_PUBLIC, null); 
 				} else {
 					Get();
-					expr = MakeConstant(TYPES._LABEL_PRIVATE, null); 
+					expr = Node.MakeConstant(ObjectTypes._LABEL_PRIVATE, null); 
 				}
 				Expect(3);
-				tmp = MakeExprStatement(new List<Expression>{expr});
+				tmp = Node.MakeExprStmt(new List<Expression>{expr});
 				stmts.Add(tmp);
 				
 			} else if (la.kind == 25) {
 				ConstructorDecl(out tmp, name);
-				stmts.Add(tmp); 
+				stmts.Add(tmp);
+				has_ctor = true;
+				
 			} else if (la.kind == 26) {
 				MethodDecl(out tmp, name);
 				stmts.Add(tmp); 
 			} else if (la.kind == 12) {
 				FieldDecl(out decls);
 				Expect(4);
-				tmp = MakeExprStatement(decls);
+				tmp = Node.MakeExprStmt(decls);
 				stmts.Add(tmp);
 				
 			} else {
@@ -555,14 +437,17 @@ internal AnalysisScope cur_scope = null;		//the current scope of variables
 		}
 		while (!(la.kind == 0 || la.kind == 9)) {SynErr(108); Get();}
 		Expect(9);
-		stmt = MakeClassDef(name, base_names, stmts);
+		if(!has_ctor){		//ã³ã³ãã¤ã©ã¼å®ç¾©ã®ããã©ã«ãã³ã³ã¹ãã©ã¯ã¿ãå®ç¾©ãã
+		stmts.Add(MakeDefaultCtor(name));
+		}
+		stmt = Node.MakeClassDef(name, base_names, stmts);
 		cur_scope = cur_scope.Parent;
-		cur_scope.AddClass(new Identifier(name, new TypeAnnotation(TYPES.CLASS, name)));
+		cur_scope.AddType(new Identifier(name, new TypeAnnotation(ObjectTypes.TYPE_CLASS, name)));
 		
 	}
 
 	void RequireStmt(out Statement stmt) {
-		string module_name, path, alias = null; var requires = new List<Expression>();
+		string module_name, alias = null; var requires = new List<Expression>();
 		Expression tmp; Identifier module_symbol = null; string[] split_name;
 		
 		while (!(la.kind == 0 || la.kind == 20)) {SynErr(109); Get();}
@@ -573,12 +458,18 @@ internal AnalysisScope cur_scope = null;		//the current scope of variables
 			Expect(12);
 			alias = t.val; 
 		}
-		tmp = MakeRequireExpr(module_name, alias);
+		tmp = Node.MakeRequireExpr(module_name, alias);
 		requires.Add(tmp);
+		if(alias == null){
 		split_name = module_name.Split('.');
 		foreach(var name in split_name){
-		module_symbol = new Identifier(name, new TypeAnnotation(TYPES.TYPE_MODULE));
-		cur_scope.AddModule(module_symbol);
+		module_symbol = new Identifier(name, new TypeAnnotation(ObjectTypes.TYPE_MODULE, name));
+		cur_scope.AddType(module_symbol);
+		}
+		}else{
+		module_symbol = new Identifier(module_name, new TypeAnnotation(ObjectTypes.TYPE_MODULE, module_name), alias);
+		cur_scope.AddType(module_symbol);
+		alias = null;
 		}
 		
 		while (la.kind == 10) {
@@ -589,18 +480,24 @@ internal AnalysisScope cur_scope = null;		//the current scope of variables
 				Expect(12);
 				alias = t.val; 
 			}
-			tmp = MakeRequireExpr(module_name, alias);
+			tmp = Node.MakeRequireExpr(module_name, alias);
 			requires.Add(tmp);
+			if(alias == null){
 			split_name = module_name.Split('.');
 			foreach(var name in split_name){
-			module_symbol = new Identifier(name, new TypeAnnotation(TYPES.TYPE_MODULE));
-			cur_scope.AddModule(module_symbol);
+			module_symbol = new Identifier(name, new TypeAnnotation(ObjectTypes.TYPE_MODULE));
+			cur_scope.AddType(module_symbol);
+			}
+			}else{
+			module_symbol = new Identifier(module_name, new TypeAnnotation(ObjectTypes.TYPE_MODULE, module_name), alias);
+			cur_scope.AddType(module_symbol);
+			alias = null;
 			}
 			
 		}
 		while (!(la.kind == 0 || la.kind == 4)) {SynErr(110); Get();}
 		Expect(4);
-		stmt = MakeExprStatement(requires); 
+		stmt = Node.MakeExprStmt(requires); 
 	}
 
 	void Module(out string name) {
@@ -623,7 +520,7 @@ internal AnalysisScope cur_scope = null;		//the current scope of variables
 		while (!(la.kind == 0 || la.kind == 25)) {SynErr(111); Get();}
 		Expect(25);
 		cur_scope = new AnalysisScope{Parent = cur_scope};
-		ident_this = DeclareArgument("this", new TypeAnnotation(TYPES.CLASS, className));
+		ident_this = DeclareArgument("this", new TypeAnnotation(ObjectTypes.INSTANCE, className));
 		exs_this = new Argument{
 		Ident = ident_this,
 		Option = null
@@ -636,19 +533,19 @@ internal AnalysisScope cur_scope = null;		//the current scope of variables
 		@params.Insert(0, exs_this); 
 		Expect(8);
 		Block(out block);
-		func = MakeFunc("constructor", @params, (Block)block, TypeAnnotation.VoidType.Clone());
+		func = Node.MakeFunc("constructor", @params, (Block)block, TypeAnnotation.VoidType.Clone(), true);
 		cur_scope = cur_scope.Parent;
 		
 	}
 
 	void MethodDecl(out Statement func, string className) {
-		string name; TypeAnnotation type = TypeAnnotation.VariantType.Clone(); Statement block = null;
+		string name; var type = TypeAnnotation.VariantType.Clone(); Statement block = null;
 		var @params = new List<Argument>(); Identifier ident_this; Argument exs_this = null;
 		
 		while (!(la.kind == 0 || la.kind == 26)) {SynErr(112); Get();}
 		Expect(26);
 		cur_scope = new AnalysisScope{Parent = cur_scope};
-		ident_this = DeclareArgument("this", new TypeAnnotation(TYPES.CLASS, className));
+		ident_this = DeclareArgument("this", new TypeAnnotation(ObjectTypes.INSTANCE, className));
 		exs_this = new Argument{
 		Ident = ident_this,
 		Option = null
@@ -667,7 +564,7 @@ internal AnalysisScope cur_scope = null;		//the current scope of variables
 			Type(out type);
 		}
 		Block(out block);
-		func = MakeFunc(name, @params, (Block)block, type);
+		func = Node.MakeFunc(name, @params, (Block)block, type);
 		cur_scope = cur_scope.Parent;
 		
 	}
@@ -713,13 +610,13 @@ internal AnalysisScope cur_scope = null;		//the current scope of variables
 			}
 		}
 		variable = DeclareVariable(ref rhs, name, type);
-		  			vars.Add(variable);
-		  			exprs.Add(rhs);
+			vars.Add(variable);
+			exprs.Add(rhs);
 		
-		  			outs.Add(new VarDeclaration{
-					Variables = vars,
-					Expressions = exprs
-		  			});
+			outs.Add(new VarDeclaration{
+		Variables = vars,
+		Expressions = exprs
+			});
 		
 	}
 
@@ -757,82 +654,82 @@ internal AnalysisScope cur_scope = null;		//the current scope of variables
 		switch (la.kind) {
 		case 30: {
 			Get();
-			type.ObjType = TYPES.INTEGER; 
+			type.ObjType = ObjectTypes.INTEGER; 
 			break;
 		}
 		case 31: {
 			Get();
-			type.ObjType = TYPES.BOOL; 
+			type.ObjType = ObjectTypes.BOOL; 
 			break;
 		}
 		case 32: {
 			Get();
-			type.ObjType = TYPES.FLOAT; 
+			type.ObjType = ObjectTypes.FLOAT; 
 			break;
 		}
 		case 33: {
 			Get();
-			type.ObjType = TYPES.RATIONAL; 
+			type.ObjType = ObjectTypes.RATIONAL; 
 			break;
 		}
 		case 34: {
 			Get();
-			type.ObjType = TYPES.BIGINT; 
+			type.ObjType = ObjectTypes.BIGINT; 
 			break;
 		}
 		case 35: {
 			Get();
-			type.ObjType = TYPES.STRING; 
+			type.ObjType = ObjectTypes.STRING; 
 			break;
 		}
 		case 36: {
 			Get();
-			type.ObjType = TYPES.BYTEARRAY; 
+			type.ObjType = ObjectTypes.BYTEARRAY; 
 			break;
 		}
 		case 37: {
 			Get();
-			type.ObjType = TYPES.VAR; 
+			type.ObjType = ObjectTypes.VAR; 
 			break;
 		}
 		case 38: {
 			Get();
-			type.ObjType = TYPES.TUPLE; 
+			type.ObjType = ObjectTypes.TUPLE; 
 			break;
 		}
 		case 39: {
 			Get();
-			type.ObjType = TYPES.LIST; 
+			type.ObjType = ObjectTypes.LIST; 
 			break;
 		}
 		case 40: {
 			Get();
-			type.ObjType = TYPES.DICT; 
+			type.ObjType = ObjectTypes.DICT; 
 			break;
 		}
 		case 41: {
 			Get();
-			type.ObjType = TYPES.EXPRESSION; 
+			type.ObjType = ObjectTypes.EXPRESSION; 
 			break;
 		}
 		case 42: {
 			Get();
-			type.ObjType = TYPES.FUNCTION; 
+			type.ObjType = ObjectTypes.FUNCTION; 
 			break;
 		}
 		case 43: {
 			Get();
-			type.ObjType = TYPES.SEQ; 
+			type.ObjType = ObjectTypes.SEQ; 
 			break;
 		}
 		case 44: {
 			Get();
-			type.ObjType = TYPES.UNDEF; 
+			type.ObjType = ObjectTypes.UNDEF; 
 			break;
 		}
 		case 12: {
 			Get();
-			type.ObjType = TYPES.CLASS; type.TypeName = t.val; 
+			type.ObjType = ObjectTypes.INSTANCE; type.TypeName = t.val; 
 			break;
 		}
 		default: SynErr(115); break;
@@ -869,9 +766,9 @@ internal AnalysisScope cur_scope = null;		//the current scope of variables
 			OrTest(out step);
 		}
 		Expect(2);
-		if(start == null) start = CreateConstant(TYPES.INTEGER);
-		if(step == null) step = MakeConstant(TYPES.INTEGER, 1);
-		expr = MakeIntSeq(start, end, step);
+		if(start == null) start = CreateConstant(ObjectTypes.INTEGER);
+		if(step == null) step = Node.MakeConstant(ObjectTypes.INTEGER, 1);
+		expr = Node.MakeIntSeq(start, end, step);
 		
 	}
 
@@ -953,7 +850,7 @@ internal AnalysisScope cur_scope = null;		//the current scope of variables
 		trailing_comma = true; 
 		while (!(la.kind == 0 || la.kind == 4)) {SynErr(120); Get();}
 		Expect(4);
-		stmt = new PrintStatement{Expressions = exprs, HasTrailing = trailing_comma}; 
+		stmt = Node.MakePrintStmt(exprs, trailing_comma); 
 	}
 
 	void ReturnStmt(out Statement stmt) {
@@ -964,7 +861,7 @@ internal AnalysisScope cur_scope = null;		//the current scope of variables
 		}
 		while (!(la.kind == 0 || la.kind == 4)) {SynErr(121); Get();}
 		Expect(4);
-		stmt = new ReturnStatement{Expressions = target_list}; 
+		stmt = Node.MakeReturnStmt(target_list); 
 	}
 
 	void BreakStmt(out Statement stmt) {
@@ -999,7 +896,7 @@ internal AnalysisScope cur_scope = null;		//the current scope of variables
 		CondExpr(out expr);
 		while (!(la.kind == 0 || la.kind == 4)) {SynErr(124); Get();}
 		Expect(4);
-		stmt = MakeThrowStmt(expr); 
+		stmt = Node.MakeThrowStmt(expr); 
 	}
 
 	void YieldStmt(out Statement stmt) {
@@ -1008,7 +905,7 @@ internal AnalysisScope cur_scope = null;		//the current scope of variables
 		CondExpr(out expr);
 		while (!(la.kind == 0 || la.kind == 4)) {SynErr(125); Get();}
 		Expect(4);
-		stmt = MakeYieldStmt(expr); 
+		stmt = Node.MakeYieldStmt(expr); 
 	}
 
 	void RValueList(out List<Expression> exprs ) {
@@ -1080,9 +977,9 @@ internal AnalysisScope cur_scope = null;		//the current scope of variables
 	}
 
 	void VarDecl(out List<Expression> outs ) {
-		string name; TypeAnnotation type = TypeAnnotation.InferenceType.Clone(); Expression rhs = null;
+		string name; var type = TypeAnnotation.InferenceType.Clone(); Expression rhs = null;
 		Identifier variable; outs = new List<Expression>();
-				var vars = new List<Identifier>(); var exprs = new List<Expression>();
+		var vars = new List<Identifier>(); var exprs = new List<Expression>();
 		
 		Expect(68);
 		Expect(12);
@@ -1121,13 +1018,13 @@ internal AnalysisScope cur_scope = null;		//the current scope of variables
 			}
 		}
 		variable = DeclareVariable(ref rhs, name, type);
-		  			vars.Add(variable);
-		  			exprs.Add(rhs);
+			vars.Add(variable);
+			exprs.Add(rhs);
 		
-		  			outs.Add(new VarDeclaration{
-					Variables = vars,
-					Expressions = exprs
-		  			});
+			outs.Add(new VarDeclaration{
+		Variables = vars,
+		Expressions = exprs
+			});
 		
 	}
 
@@ -1142,13 +1039,13 @@ internal AnalysisScope cur_scope = null;		//the current scope of variables
 			Get();
 			Stmt(out false_block);
 		}
-		stmt = MakeIfStatement(tmp, true_block, false_block); 
+		stmt = Node.MakeIfStmt(tmp, true_block, false_block); 
 	}
 
 	void WhileStmt(out Statement stmt) {
 		Expression cond; Statement body = null; WhileStatement tmp; 
 		Expect(64);
-		tmp = MakeWhileStatement();
+		tmp = Node.MakeWhileStmt();
 		Parser.breakables.Add(tmp);
 		
 		Expect(6);
@@ -1167,7 +1064,7 @@ internal AnalysisScope cur_scope = null;		//the current scope of variables
 		ForStatement tmp; bool has_let = false;
 		
 		Expect(18);
-		tmp = MakeForStatement();
+		tmp = Node.MakeForStmt();
 		Parser.breakables.Add(tmp);
 		
 		Expect(6);
@@ -1203,7 +1100,7 @@ internal AnalysisScope cur_scope = null;		//the current scope of variables
 		Expect(5);
 		CaseClauseList(out cases);
 		Expect(9);
-		stmt = MakeSwitchStatement(target, cases); 
+		stmt = Node.MakeSwitchStmt(target, cases); 
 	}
 
 	void WithStmt(out Statement stmt) {
@@ -1238,11 +1135,11 @@ internal AnalysisScope cur_scope = null;		//the current scope of variables
 			Get();
 			Block(out finally_body);
 		}
-		stmt = MakeTryStmt((Block)body, catches, (Block)finally_body); 
+		stmt = Node.MakeTryStmt((Block)body, catches, (Block)finally_body); 
 	}
 
 	void LValueListWithLet(out List<Expression> targets ) {
-		Expression tmp; Identifier ident = null; TypeAnnotation type = TypeAnnotation.InferenceType; 
+		Expression tmp; Identifier ident = null; var type = TypeAnnotation.InferenceType; 
 		targets = null; 
 		Expect(68);
 		targets = new List<Expression>(); 
@@ -1287,11 +1184,11 @@ internal AnalysisScope cur_scope = null;		//the current scope of variables
 		clauses = new List<CaseClause>(); List<Expression> label_list; Statement inner; 
 		CaseLabelList(out label_list);
 		Stmt(out inner);
-		clauses.Add(MakeCaseClause(label_list, inner)); 
+		clauses.Add(Node.MakeCaseClause(label_list, inner)); 
 		while (la.kind == 66) {
 			CaseLabelList(out label_list);
 			Stmt(out inner);
-			clauses.Add(MakeCaseClause(label_list, inner)); 
+			clauses.Add(Node.MakeCaseClause(label_list, inner)); 
 		}
 	}
 
@@ -1314,7 +1211,7 @@ internal AnalysisScope cur_scope = null;		//the current scope of variables
 			IntSeqExpr(out expr);
 		} else if (la.kind == 67) {
 			Get();
-			expr = MakeConstant(TYPES._CASE_DEFAULT, "default"); 
+			expr = Node.MakeConstant(ObjectTypes._CASE_DEFAULT, "default"); 
 		} else SynErr(131);
 		while (!(la.kind == 0 || la.kind == 3)) {SynErr(132); Get();}
 		Expect(3);
@@ -1336,27 +1233,27 @@ internal AnalysisScope cur_scope = null;		//the current scope of variables
 				}
 			}
 			if(has_suffix)
-			expr = MakeConstant(TYPES.BIGINT, BigInteger.Parse(tmp));
+			expr = Node.MakeConstant(ObjectTypes.BIGINT, BigInteger.Parse(tmp));
 			else
-			expr = MakeConstant(TYPES.INTEGER, Convert.ToInt32(tmp));
+			expr = Node.MakeConstant(ObjectTypes.INTEGER, Convert.ToInt32(tmp));
 			
 			break;
 		}
 		case 15: {
 			Get();
-			expr = MakeConstant(TYPES.INTEGER, Convert.ToInt32(t.val, 16)); 
+			expr = Node.MakeConstant(ObjectTypes.INTEGER, Convert.ToInt32(t.val, 16)); 
 			break;
 		}
 		case 14: {
 			Get();
-			expr = MakeConstant(TYPES.FLOAT, Convert.ToDouble(t.val)); 
+			expr = Node.MakeConstant(ObjectTypes.FLOAT, Convert.ToDouble(t.val)); 
 			break;
 		}
 		case 16: {
 			Get();
 			tmp = t.val;
 			tmp = tmp.Substring(1, tmp.Length - 2);
-			expr = MakeConstant(TYPES.STRING, tmp);
+			expr = Node.MakeConstant(ObjectTypes.STRING, tmp);
 			
 			break;
 		}
@@ -1366,12 +1263,12 @@ internal AnalysisScope cur_scope = null;		//the current scope of variables
 			} else {
 				Get();
 			}
-			expr = MakeConstant(TYPES.BOOL, Convert.ToBoolean(t.val)); 
+			expr = Node.MakeConstant(ObjectTypes.BOOL, Convert.ToBoolean(t.val)); 
 			break;
 		}
 		case 99: {
 			Get();
-			expr = MakeConstant(TYPES.NULL, null); 
+			expr = Node.MakeConstant(ObjectTypes.NULL, null); 
 			break;
 		}
 		default: SynErr(133); break;
@@ -1390,12 +1287,12 @@ internal AnalysisScope cur_scope = null;		//the current scope of variables
 				type = OperatorType.MINUS; 
 			}
 			Term(out rhs);
-			expr = MakeBinaryExpr(type, expr, rhs); 
+			expr = Node.MakeBinaryExpr(type, expr, rhs); 
 		}
 	}
 
 	void Argument(out Argument arg) {
-		string name; Expression default_val = null; TypeAnnotation type = TypeAnnotation.VariantType.Clone(); 
+		string name; Expression default_val = null; var type = TypeAnnotation.VariantType.Clone(); 
 		Expect(12);
 		name = t.val; 
 		if (la.kind == 28) {
@@ -1407,10 +1304,10 @@ internal AnalysisScope cur_scope = null;		//the current scope of variables
 			Literal(out default_val);
 		}
 		Identifier param = DeclareArgument(name, type);
-		 	arg = new Argument{
+		arg = new Argument{
 		Ident = param,
 		Option = default_val
-		 	};
+		};
 		
 	}
 
@@ -1420,7 +1317,7 @@ internal AnalysisScope cur_scope = null;		//the current scope of variables
 		while (la.kind == 74) {
 			Get();
 			AndTest(out rhs);
-			expr = MakeBinaryExpr(OperatorType.OR, expr, rhs); 
+			expr = Node.MakeBinaryExpr(OperatorType.OR, expr, rhs); 
 		}
 	}
 
@@ -1430,7 +1327,7 @@ internal AnalysisScope cur_scope = null;		//the current scope of variables
 		while (la.kind == 75) {
 			Get();
 			NotTest(out rhs);
-			expr = MakeBinaryExpr(OperatorType.AND, expr, rhs); 
+			expr = Node.MakeBinaryExpr(OperatorType.AND, expr, rhs); 
 		}
 	}
 
@@ -1439,7 +1336,7 @@ internal AnalysisScope cur_scope = null;		//the current scope of variables
 		if (la.kind == 76) {
 			Get();
 			NotTest(out term);
-			expr = MakeUnaryExpr(OperatorType.NOT, term); 
+			expr = Node.MakeUnaryExpr(OperatorType.NOT, term); 
 		} else if (StartOf(9)) {
 			Comparison(out expr);
 		} else SynErr(134);
@@ -1483,7 +1380,7 @@ internal AnalysisScope cur_scope = null;		//the current scope of variables
 			}
 			}
 			BitOr(out rhs);
-			expr = MakeBinaryExpr(type, expr, rhs); 
+			expr = Node.MakeBinaryExpr(type, expr, rhs); 
 		}
 	}
 
@@ -1493,7 +1390,7 @@ internal AnalysisScope cur_scope = null;		//the current scope of variables
 		while (la.kind == 83) {
 			Get();
 			BitXor(out rhs);
-			expr = MakeBinaryExpr(OperatorType.BIT_OR, expr, rhs); 
+			expr = Node.MakeBinaryExpr(OperatorType.BIT_OR, expr, rhs); 
 		}
 	}
 
@@ -1503,7 +1400,7 @@ internal AnalysisScope cur_scope = null;		//the current scope of variables
 		while (la.kind == 84) {
 			Get();
 			BitAnd(out rhs);
-			expr = MakeBinaryExpr(OperatorType.BIT_XOR, expr, rhs); 
+			expr = Node.MakeBinaryExpr(OperatorType.BIT_XOR, expr, rhs); 
 		}
 	}
 
@@ -1513,7 +1410,7 @@ internal AnalysisScope cur_scope = null;		//the current scope of variables
 		while (la.kind == 85) {
 			Get();
 			ShiftOpe(out rhs);
-			expr = MakeBinaryExpr(OperatorType.BIT_AND, expr, rhs); 
+			expr = Node.MakeBinaryExpr(OperatorType.BIT_AND, expr, rhs); 
 		}
 	}
 
@@ -1529,7 +1426,7 @@ internal AnalysisScope cur_scope = null;		//the current scope of variables
 				type = OperatorType.BIT_RSHIFT; 
 			}
 			AddOpe(out rhs);
-			expr = MakeBinaryExpr(type, expr, rhs); 
+			expr = Node.MakeBinaryExpr(type, expr, rhs); 
 		}
 	}
 
@@ -1548,7 +1445,7 @@ internal AnalysisScope cur_scope = null;		//the current scope of variables
 				type = OperatorType.MOD; 
 			}
 			Factor(out rhs);
-			expr = MakeBinaryExpr(type, expr, rhs); 
+			expr = Node.MakeBinaryExpr(type, expr, rhs); 
 		}
 	}
 
@@ -1565,7 +1462,7 @@ internal AnalysisScope cur_scope = null;		//the current scope of variables
 				type = OperatorType.PLUS; 
 			}
 			Factor(out factor);
-			expr = MakeUnaryExpr(type, factor); 
+			expr = Node.MakeUnaryExpr(type, factor); 
 		} else SynErr(135);
 	}
 
@@ -1575,12 +1472,12 @@ internal AnalysisScope cur_scope = null;		//the current scope of variables
 		if (la.kind == 93) {
 			Get();
 			Factor(out rhs);
-			expr = MakeBinaryExpr(OperatorType.POWER, expr, rhs); 
+			expr = Node.MakeBinaryExpr(OperatorType.POWER, expr, rhs); 
 		}
 	}
 
 	void Primary(out Expression expr) {
-		string name = null; expr = null; var args = new List<Expression>(); 
+		string name = null; expr = null; 
 		if (StartOf(14)) {
 			if (IdentIsNotCallable()) {
 				Atom(out expr);
@@ -1592,15 +1489,7 @@ internal AnalysisScope cur_scope = null;		//the current scope of variables
 				Trailer(ref expr, name);
 			}
 		} else if (la.kind == 94) {
-			Get();
-			Expect(12);
-			name = t.val; 
-			Expect(6);
-			if (StartOf(3)) {
-				ArgList(ref args);
-			}
-			Expect(8);
-			expr = MakeNewExpr(name, args); 
+			NewExpression(out expr);
 		} else SynErr(136);
 	}
 
@@ -1609,20 +1498,18 @@ internal AnalysisScope cur_scope = null;		//the current scope of variables
 		if (la.kind == 12) {
 			Get();
 			name = t.val;
-			if(ExpectIdentIsModuleOrClassName()){
-			expr = cur_scope.GetModule(name);
-			if(expr != null) return;
-			expr = cur_scope.GetClass(name);
+			if(ExpectIdentIsTypeName()){
+			expr = cur_scope.GetType(name);
 			if(expr != null) return;
 			}
 			expr = cur_scope.GetVariable(name, !ignore_parent_scope);
 			if(expr == null){
 			expr = new Identifier(name);
 			if(ignore_parent_scope){	//for the comprehension expression
-				var ident = (Identifier)expr;
-				ident.ParamType = TypeAnnotation.InferenceType.Clone();
-				cur_scope.AddLocal(ref ident);
-				expr = ident;
+			var ident = (Identifier)expr;
+			ident.ParamType = TypeAnnotation.InferenceType.Clone();
+			cur_scope.AddLocal(ref ident);
+			expr = ident;
 			}
 			}
 			
@@ -1631,22 +1518,22 @@ internal AnalysisScope cur_scope = null;		//the current scope of variables
 		} else if (la.kind == 6) {
 			Get();
 			if (StartOf(3)) {
-				SequenceMaker(out expr, TYPES.TUPLE);
+				SequenceMaker(out expr, ObjectTypes.TUPLE);
 			}
 			while (!(la.kind == 0 || la.kind == 8)) {SynErr(137); Get();}
 			Expect(8);
 			if(expr == null)
-			expr = MakeObjInitializer(TYPES.TUPLE, new List<Expression>());
+			expr = Node.MakeObjInitializer(ObjectTypes.TUPLE, new List<Expression>());
 			
 		} else if (la.kind == 7) {
 			Get();
 			if (StartOf(3)) {
-				SequenceMaker(out expr, TYPES.LIST);
+				SequenceMaker(out expr, ObjectTypes.LIST);
 			}
 			while (!(la.kind == 0 || la.kind == 2)) {SynErr(138); Get();}
 			Expect(2);
 			if(expr == null)
-			expr = MakeObjInitializer(TYPES.LIST, new List<Expression>());
+			expr = Node.MakeObjInitializer(ObjectTypes.LIST, new List<Expression>());
 			
 		} else if (la.kind == 5) {
 			Get();
@@ -1655,7 +1542,7 @@ internal AnalysisScope cur_scope = null;		//the current scope of variables
 			}
 			while (!(la.kind == 0 || la.kind == 9)) {SynErr(139); Get();}
 			Expect(9);
-			if(expr == null) expr = MakeObjInitializer(TYPES.DICT, new List<Expression>()); 
+			if(expr == null) expr = Node.MakeObjInitializer(ObjectTypes.DICT, new List<Expression>()); 
 		} else SynErr(140);
 	}
 
@@ -1668,19 +1555,19 @@ internal AnalysisScope cur_scope = null;		//the current scope of variables
 			}
 			Expect(8);
 			if(expr != null){
-				expr = new Call{
-					Function = null,
-					Arguments = args,
-					Reference = expr
-				};
-				return;
+			expr = new Call{
+			Function = null,
+			Arguments = args,
+			Reference = expr
+			};
+			return;
 			}
 			func = cur_scope.GetFunction(name);
 			if(func == null){
-				SemErr("The function is not defined : " + name);
+			SemErr("The function is not defined : " + name);
 			}
 			expr = new Call{
-				Function = func,
+			Function = func,
 			Arguments = args,
 			Reference = null
 			};
@@ -1697,13 +1584,44 @@ internal AnalysisScope cur_scope = null;		//the current scope of variables
 		} else if (la.kind == 11) {
 			Get();
 			Expect(12);
-			subscript = new Identifier(t.val, new TypeAnnotation(TYPES._SUBSCRIPT));
+			subscript = new Identifier(t.val, new TypeAnnotation(ObjectTypes._SUBSCRIPT));
 			expr = new MemberReference{
 			Parent = expr,
 			Subscription = subscript
 			};
 			
 		} else SynErr(141);
+	}
+
+	void NewExpression(out Expression expr) {
+		Identifier ident = null; var args = new List<Expression>(); 
+		Expect(94);
+		TypeName(out expr);
+		while (la.kind == 11) {
+			Get();
+			Expect(12);
+			ident = new Identifier(t.val, new TypeAnnotation(ObjectTypes._SUBSCRIPT));
+			expr = new MemberReference{
+			Parent = expr,
+			Subscription = ident
+			};  
+			
+		}
+		Expect(6);
+		if (StartOf(3)) {
+			ArgList(ref args);
+		}
+		Expect(8);
+		expr = Node.MakeNewExpr(expr, args); 
+	}
+
+	void TypeName(out Expression expr) {
+		string name; 
+		Expect(12);
+		name = t.val;
+		expr = cur_scope.GetType(name);
+		if(expr == null) SemErr(String.Format("Expected a type name but instead saw \"{0}\".", name));
+		
 	}
 
 	void ArgList(ref List<Expression> args ) {
@@ -1726,7 +1644,7 @@ internal AnalysisScope cur_scope = null;		//the current scope of variables
 		} else SynErr(142);
 	}
 
-	void SequenceMaker(out Expression expr, TYPES ObjType) {
+	void SequenceMaker(out Expression expr, ObjectTypes ObjType) {
 		Expression tmp = null; List<Expression> list = new List<Expression>();
 		expr = null; ComprehensionIter comprehen = null;
 		
@@ -1738,7 +1656,7 @@ internal AnalysisScope cur_scope = null;		//the current scope of variables
 				CondExpr(out tmp);
 				if(tmp != null) list.Add(tmp); 
 			}
-			expr = MakeObjInitializer(ObjType, list); 
+			expr = Node.MakeObjInitializer(ObjType, list); 
 		} else if (la.kind == 5) {
 			Get();
 			cur_scope = new AnalysisScope{Parent = cur_scope};
@@ -1747,7 +1665,7 @@ internal AnalysisScope cur_scope = null;		//the current scope of variables
 			CondExpr(out tmp);
 			CompFor(out comprehen);
 			Expect(9);
-			expr = MakeComp(tmp, (ComprehensionFor)comprehen, ObjType);
+			expr = Node.MakeComp(tmp, (ComprehensionFor)comprehen, ObjType);
 			cur_scope = cur_scope.Parent;
 			ignore_parent_scope = false;
 			
@@ -1769,12 +1687,11 @@ internal AnalysisScope cur_scope = null;		//the current scope of variables
 			CondExpr(out rhs);
 			if(rhs != null) list.Add(rhs); 
 		}
-		if(list.Count > 0) expr = MakeObjInitializer(TYPES.DICT, list); 
+		if(list.Count > 0) expr = Node.MakeObjInitializer(ObjectTypes.DICT, list); 
 	}
 
 	void CompFor(out ComprehensionIter expr) {
-		Expression rvalue = null; ComprehensionIter body = null; List<Expression> target_list;
-		
+		Expression rvalue = null; ComprehensionIter body = null; List<Expression> target_list; 
 		Expect(18);
 		ignore_parent_scope = true; 
 		LValueList(out target_list);
@@ -1796,7 +1713,7 @@ internal AnalysisScope cur_scope = null;		//the current scope of variables
 		if (la.kind == 18 || la.kind == 62) {
 			CompIter(out body);
 		}
-		expr = MakeCompFor(target_list, rvalue, body); 
+		expr = Node.MakeCompFor(target_list, rvalue, body); 
 	}
 
 	void CompIter(out ComprehensionIter expr) {
@@ -1815,7 +1732,7 @@ internal AnalysisScope cur_scope = null;		//the current scope of variables
 		if (la.kind == 18 || la.kind == 62) {
 			CompIter(out body);
 		}
-		expr = MakeCompIf(tmp, body); 
+		expr = Node.MakeCompIf(tmp, body); 
 	}
 
 

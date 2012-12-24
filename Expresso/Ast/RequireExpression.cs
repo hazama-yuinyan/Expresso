@@ -53,7 +53,11 @@ namespace Expresso.Ast
         internal override object Run(VariableStore varStore)
         {
 			var path = ModuleName.Replace('.', '/');
+			path += ".exs";
+			path = Interpreter.Interpreter.CurRuntime.GetRelativePathToCurrentSource(path);
 			var module_parser = new Parser(new Scanner(path));
+			module_parser.ParsingFileName = ModuleName;
+			module_parser.Parse();
 
 			module_parser.ParsingModule.Run(varStore);
 

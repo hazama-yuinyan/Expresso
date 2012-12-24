@@ -63,11 +63,6 @@ namespace Expresso.Builtins
 				throw new EvalException("Invalid use of accessor!");
 			}
 		}
-
-		public virtual ExpressoObj CreateInstance(string typeName, List<Expression> args, VariableStore varStore)
-		{
-			return null;
-		}
 	}
 
 	public class ModuleDefinition : BaseDefinition
@@ -99,32 +94,6 @@ namespace Expresso.Builtins
 		public int GetNumberOfMembers()
 		{
 			return InternalMembers.Count + ExportedMembers.Count;
-		}
-
-		public override ExpressoObj CreateInstance(string typeName, List<Expression> args, VariableStore varStore)
-		{
-			int offset = GetMemberOffset(new Identifier(typeName), false);
-			object type_def = Members[offset];
-			ExpressoObj new_inst = null;
-			if(type_def is ClassDefinition)
-				new_inst = new ExpressoObj((ClassDefinition)type_def);
-			else if(type_def is StructDefinition)
-				new_inst = new ExpressoObj((StructDefinition)type_def);
-			else if(type_def is InterfaceDefinition)
-				throw new EvalException("Can not instantiate an interface!");
-			
-			var constructor = new_inst.AccessMember(new Identifier("constructor"), true) as Function;
-			if(constructor != null){
-				var value_this = new Constant{ValType = TYPES.CLASS, Value = new_inst};		//thisの値としてインスタンスを追加する
-				args.Insert(0, value_this);
-				var call_ctor = new Call{
-					Function = constructor,
-					Arguments = args,
-					Reference = null
-				};
-				call_ctor.Run(varStore);
-			}
-			return new_inst;
 		}
 	}
 	

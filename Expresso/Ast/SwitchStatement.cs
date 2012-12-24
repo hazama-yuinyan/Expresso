@@ -134,7 +134,7 @@ namespace Expresso.Ast
 						result = true;
 						break;
 					}
-				}else if(label_obj is Constant && ((Constant)label_obj).ValType == TYPES._CASE_DEFAULT){
+				}else if(label_obj is Constant && ((Constant)label_obj).ValType == ObjectTypes._CASE_DEFAULT){
 					Body.Run(varStore);
 					result = true;
 					break;

@@ -349,7 +349,7 @@ namespace Expresso.Compiler
 		{
 			var labels = new List<CSharpExpr>();
 			foreach(var label in node.Labels){
-				if(label is Constant && ((Constant)label).ValType == TYPES._CASE_DEFAULT){
+				if(label is Constant && ((Constant)label).ValType == ObjectTypes._CASE_DEFAULT){
 					has_default_clause = true;
 					default_body = node.Body.Compile(this);
 				}else

@@ -5,15 +5,15 @@ using Expresso.Builtins;
 namespace Expresso.Interpreter
 {
 	/// <summary>
-	/// あるスコープ内に存在する変数の実体を保持する。
+	/// あるスコープ内に存在する変数の実体をスタック形式で保持する。
 	/// Holds instances of variables existing in a scope.
 	/// This is not a symbol table, which holds just the names of variables.
-	/// For a symbol table, see the Scope class definition.
+	/// For a symbol table, see the AnalysisScope class definition.
 	/// </summary>
 	/// <exception cref='EvalException'>
 	/// Represents errors that occur during application execution.
 	/// </exception>
-	/// <see cref="Scope"/>
+	/// <see cref="AnalysisScope"/>
 	public sealed class VariableStore
 	{
 		/// <summary>

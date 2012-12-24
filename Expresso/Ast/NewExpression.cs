@@ -18,10 +18,10 @@ namespace Expresso.Ast
     public class NewExpression : Expression
     {
         /// <summary>
-        /// オブジェクトを生成する対象のクラス名。
-		/// The target class name of the new expression.
+        /// オブジェクトを生成するクラスの定義を参照する式。
+		/// The target class definition of the new expression.
         /// </summary>
-        public string TargetName { get; internal set; }
+        public Expression TargetDecl { get; internal set; }
 
 		/// <summary>
 		/// コンストラクタに渡す引数。
@@ -40,17 +40,21 @@ namespace Expresso.Ast
 
             if (x == null) return false;
 
-            return this.TargetName == x.TargetName;
+            return this.TargetDecl == x.TargetDecl;
         }
 
         public override int GetHashCode()
         {
-            return this.TargetName.GetHashCode();
+            return this.TargetDecl.GetHashCode();
         }
 
         internal override object Run(VariableStore varStore)
         {
-			return ExpressoClass.CreateInstance(TargetName, Arguments, varStore);
+			var type_def = TargetDecl.Run(varStore) as BaseDefinition;
+			if(type_def == null)
+				throw new EvalException("{0} doesn't refer to a type name.", TargetDecl);
+
+			return ExpressoObj.CreateInstance(type_def, Arguments, varStore);
         }
 
 		internal override CSharpExpr Compile(Emitter<CSharpExpr> emitter)
@@ -60,7 +64,7 @@ namespace Expresso.Ast
 
 		public override string ToString()
 		{
-			return string.Format("new {0} with {1}", TargetName, Arguments);
+			return string.Format("new {0} with {1}", TargetDecl, Arguments);
 		}
     }
 }
