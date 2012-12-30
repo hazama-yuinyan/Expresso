@@ -44,16 +44,12 @@
     <Compile Include="Ast\Statement.cs" />
     <Compile Include="Ast\UnaryExpression.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="VM\Instruction.cs" />
-    <Compile Include="VM\Machine.cs" />
-    <Compile Include="VM\StackItem.cs" />
     <Compile Include="Interpreter\Interpreter.cs" />
     <Compile Include="BuiltIns\ExpressoObj.cs" />
     <Compile Include="BuiltIns\Primitives.cs" />
     <Compile Include="Parser.cs" />
     <Compile Include="Scanner.cs" />
     <Compile Include="Interpreter\VariableStore.cs" />
-    <Compile Include="Interpreter\EvalException.cs" />
     <Compile Include="Ast\VarDeclaration.cs" />
     <Compile Include="Ast\ExprStatement.cs" />
     <Compile Include="Ast\IfStatement.cs" />
@@ -69,7 +65,6 @@
     <Compile Include="Ast\MemberReference.cs" />
     <Compile Include="Ast\Comprehension.cs" />
     <Compile Include="Ast\Identifier.cs" />
-    <Compile Include="BuiltIns\ImplementationHelpers.cs" />
     <Compile Include="Ast\RequireExpression.cs" />
     <Compile Include="BuiltIns\Library.cs" />
     <Compile Include="Ast\TryStatement.cs" />
@@ -86,6 +81,21 @@
     <Compile Include="Compiler\EmitterException.cs" />
     <Compile Include="Ast\YieldStatement.cs" />
     <Compile Include="Ast\ModuleDeclaration.cs" />
+    <Compile Include="Interpreter\ValueStack.cs" />
+    <Compile Include="Runtime\ImplementationHelpers.cs" />
+    <Compile Include="BuiltIns\ExpressoIntegerSequence.cs" />
+    <Compile Include="BuiltIns\ExpressoTuple.cs" />
+    <Compile Include="BuiltIns\Fraction.cs" />
+    <Compile Include="Other\CollectionDebugView.cs" />
+    <Compile Include="Attributes\ExpressoHiddenAttribute.cs" />
+    <Compile Include="Runtime\ExpressoOps.cs" />
+    <Compile Include="Runtime\Exceptions\RuntimeException.cs" />
+    <Compile Include="Runtime\Exceptions\InvalidTypeException.cs" />
+    <Compile Include="Runtime\Exceptions\ImportException.cs" />
+    <Compile Include="Runtime\Exceptions\ReferenceException.cs" />
+    <Compile Include="Attributes\ExpressoTypeAttribute.cs" />
+    <Compile Include="Runtime\Exceptions\TypeNotFoundException.cs" />
+    <Compile Include="Runtime\Exceptions\SystemException.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -100,5 +110,8 @@
     <Folder Include="Interpreter\" />
     <Folder Include="BuiltIns\" />
     <Folder Include="Compiler\" />
+    <Folder Include="Runtime\" />
+    <Folder Include="Other\" />
+    <Folder Include="Attributes\" />
   </ItemGroup>
 </Project>

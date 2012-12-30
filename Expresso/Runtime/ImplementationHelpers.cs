@@ -4,12 +4,14 @@ using System.Linq;
 using System.Numerics;
 using System.Text.RegularExpressions;
 using ExprTree = System.Linq.Expressions;
+
 using Expresso.Ast;
 using Expresso.Builtins;
 using Expresso.Interpreter;
 using Expresso.Builtins.Library;
+using Expresso.Runtime.Operations;
 
-namespace Expresso.Helpers
+namespace Expresso.Runtime
 {
 	/// <summary>
 	/// Expressoの実装用のヘルパー関数郡。
@@ -61,7 +63,7 @@ namespace Expresso.Helpers
 				else if(t.Name.StartsWith("Dictionary"))
 					return ObjectTypes.DICT;
 				else
-					throw new EvalException(string.Format("{0} is not a primitive type in Expresso.", t.FullName));
+					throw ExpressoOps.InvalidTypeError(string.Format("{0} is not a primitive type in Expresso.", t.FullName));
 			}
 		}
 
@@ -103,7 +105,7 @@ namespace Expresso.Helpers
 				return null;
 				
 			default:
-				throw new EvalException("Unknown object type");
+				throw ExpressoOps.InvalidTypeError("Unknown object type");
 			}
 		}
 
@@ -160,7 +162,7 @@ namespace Expresso.Helpers
 			else if(expr.Type == NodeType.Identifier)
 				return new Identifier[]{(Identifier)expr};
 			else
-				throw new EvalException("Unreachable code reached!");
+				throw ExpressoOps.RuntimeError("Unreachable code reached!");
 		}
 
 		public static IEnumerable<Identifier> CollectLocalVars(Statement stmt)
@@ -291,12 +293,12 @@ namespace Expresso.Helpers
 				int index;
 				var orig_tuple = (ExpressoTuple)src;
 				var tmp = new List<object>();
-				while(enumerator.MoveNext() && (index = (int)enumerator.Current) < orig_tuple.Size)
+				while(enumerator.MoveNext() && (index = (int)enumerator.Current) < orig_tuple.Count)
 					tmp.Add(orig_tuple[index]);
 					
-				result = ExpressoFunctions.MakeTuple(tmp);
+				result = ExpressoOps.MakeTuple(tmp);
 			}else{
-				throw new EvalException("This object doesn't support slice operation!");
+				throw ExpressoOps.InvalidTypeError("This object doesn't support slice operation!");
 			}
 
 			return result;
@@ -333,9 +335,9 @@ namespace Expresso.Helpers
 				else if(target is ExpressoTuple)
 					return ((ExpressoTuple)target)[index];
 				else
-					throw new EvalException("Can not apply the [] operator on that type of object!");
+					throw ExpressoOps.InvalidTypeError("Can not apply the [] operator on that type of object!");
 			}else{
-				throw new EvalException("Invalid use of accessor!");
+				throw ExpressoOps.RuntimeError("Invalid use of accessor!");
 			}
 		}
 
@@ -350,14 +352,14 @@ namespace Expresso.Helpers
 				if(collection is List<object>)
 					((List<object>)collection)[index] = value;
 				else if(collection is ExpressoTuple)
-					throw new EvalException("Can not assign a value on a tuple!");
+					throw new InvalidOperationException("Can not assign a value on a tuple!");
 				else
-					throw new EvalException("Unknown seqeunce type!");
+					throw ExpressoOps.InvalidTypeError("Unknown seqeunce type!");
 			}else{
 				if(collection is Dictionary<object, object>)
 					((Dictionary<object, object>)collection)[target] = value;
 				else
-					throw new EvalException("Invalid use of the [] operator!");
+					throw ExpressoOps.RuntimeError("Invalid use of the [] operator!");
 			}
 		}
 
@@ -370,9 +372,9 @@ namespace Expresso.Helpers
 			}else if(enumerable is Dictionary<object, object>){
 				var dict = (Dictionary<object, object>)enumerable;
 				foreach(var elem in dict)
-					yield return ExpressoFunctions.MakeTuple(new object[]{elem.Key, elem.Value});
+					yield return ExpressoOps.MakeTuple(new object[]{elem.Key, elem.Value});
 			}else
-				throw new EvalException("Unknown object type!");
+				throw ExpressoOps.RuntimeError("Unknown object type!");
 		}
 	}
 

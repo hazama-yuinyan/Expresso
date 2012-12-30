@@ -10,7 +10,9 @@ using NUnit.Framework;
 using Expresso.Ast;
 using Expresso.Builtins;
 using Expresso.Interpreter;
-using Expresso.Helpers;
+using Expresso.Runtime;
+using Expresso.Runtime.Operations;
+using Expresso.Runtime.Exceptions;
 
 namespace Expresso.Test
 {
@@ -59,7 +61,7 @@ namespace Expresso.Test
 		public static void TestOnType(ExpressoObj instance, List<string> privateMembers, List<FunctionAnnotation> methodAnnots)
 		{
 			foreach(var private_name in privateMembers)
-				Assert.Throws(typeof(EvalException), () => instance.AccessMember(private_name, false));
+				Assert.Throws(typeof(ReferenceException), () => instance.AccessMember(new Identifier(private_name), false));
 
 			foreach(var method_annot in methodAnnots){
 				var method = instance.AccessMember(new Identifier(method_annot.Name), false) as Function;
@@ -105,8 +107,8 @@ namespace Expresso.Test
 				.1e-2,	//f_c
 				new BigInteger(10000000),	//d
 				"This is a test",	//e
-				ExpressoFunctions.MakeList(new List<object>()),	//f
-				ExpressoFunctions.MakeDict(new List<object>(), new List<object>())	//g
+				ExpressoOps.MakeList(new List<object>()),	//f
+				ExpressoOps.MakeDict(new List<object>(), new List<object>())	//g
 			};
 
 			var idents = new List<Identifier>{
@@ -172,7 +174,7 @@ namespace Expresso.Test
 			Assert.IsNotNull(results);
 
 			var expected_a = new List<object>{1, 2, 3};
-			var expected_b = ExpressoFunctions.MakeDict(new List<object>{"a", "b", "y"}, new List<object>{1, 4, 10});
+			var expected_b = ExpressoOps.MakeDict(new List<object>{"a", "b", "y"}, new List<object>{1, 4, 10});
 			var expected_x = 100;
 
 			var expected_p = (int)expected_a[0] + (int)expected_a[1] + (int)expected_a[2];
@@ -213,7 +215,7 @@ namespace Expresso.Test
 
 			var expected_y = 200;
 			var expected_sum = Helpers.CalcSum(0, expected_y);
-			var expected_strs = ExpressoFunctions.MakeList(new List<object>{"akarichan", "chinatsu", "kyoko", "yui"});
+			var expected_strs = ExpressoOps.MakeList(new List<object>{"akarichan", "chinatsu", "kyoko", "yui"});
 			var expected_fibs = new List<object>();
 			for(int i = 0; ; ++i){
 				var fib = Helpers.Fib(i);
@@ -226,7 +228,7 @@ namespace Expresso.Test
 				where i != 3 && i != 6
 				from j in Enumerable.Range(0, 10)
 				where j < 8
-				select ExpressoFunctions.MakeTuple(new object[]{i, j});
+				select ExpressoOps.MakeTuple(new object[]{i, j});
 
 			var expected = new object[]{
 				100,	//x
@@ -254,10 +256,10 @@ namespace Expresso.Test
 			var results = interp.Run() as List<object>;
 			Assert.IsNotNull(results);
 
-			var expected_a = ExpressoFunctions.MakeList(new List<object>{1, 2, 3, 4, 5, 6, 7, 8});
-			var expected_b = ExpressoFunctions.MakeDict(new List<object>{"akari", "chinatsu", "kyoko", "yui"},
+			var expected_a = ExpressoOps.MakeList(new List<object>{1, 2, 3, 4, 5, 6, 7, 8});
+			var expected_b = ExpressoOps.MakeDict(new List<object>{"akari", "chinatsu", "kyoko", "yui"},
 				new List<object>{13, 13, 14, 14});
-			var expected_c = ExpressoFunctions.MakeTuple(new List<object>{"akarichan", "kawakawa", "chinatsuchan", 2424});
+			var expected_c = ExpressoOps.MakeTuple(new List<object>{"akarichan", "kawakawa", "chinatsuchan", 2424});
 
 			var tmp_seq = new ExpressoIntegerSequence(0, 3, 1);
 			var expected_d = ImplementationHelpers.Slice(expected_a, tmp_seq);
@@ -299,11 +301,11 @@ namespace Expresso.Test
 				from k in Enumerable.Range(0, 100)
 				where k % 2 == 0
 				from l in Enumerable.Range(0, 100)
-				select ExpressoFunctions.MakeTuple(new object[]{k, l});
+				select ExpressoOps.MakeTuple(new object[]{k, l});
 
 			var expected_z = new List<object>(tmp_z);
 
-			var expected_m = ExpressoFunctions.MakeTuple(new List<object>{1, 3});
+			var expected_m = ExpressoOps.MakeTuple(new List<object>{1, 3});
 
 			var expected = new object[]{
 				expected_x,
@@ -394,7 +396,7 @@ namespace Expresso.Test
 
 			var c = results[2] as ExpressoTuple;
 			Assert.IsNotNull(c);
-			Assert.AreEqual(c, ExpressoFunctions.MakeTuple(new object[]{200, 300}));
+			Assert.AreEqual(c, ExpressoOps.MakeTuple(new object[]{200, 300}));
 		}
 	}
 

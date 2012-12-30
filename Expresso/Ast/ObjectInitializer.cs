@@ -5,6 +5,7 @@ using System.Linq;
 using Expresso.Builtins;
 using Expresso.Interpreter;
 using Expresso.Compiler;
+using Expresso.Runtime.Operations;
 
 namespace Expresso.Ast
 {
@@ -20,7 +21,7 @@ namespace Expresso.Ast
         /// オブジェクト生成に使用する式群。
 		/// Expressions generating a sequence object.
         /// </summary>
-        public IEnumerable<Expression> Initializer { get; internal set; }
+        public List<Expression> Initializer { get; internal set; }
 		
 		/// <summary>
 		/// この式群を評価した結果生成されるオブジェクトのタイプ。
@@ -53,27 +54,27 @@ namespace Expresso.Ast
 			switch (ObjType) {
 			case ObjectTypes.TUPLE:
 			{
-				var tmp_list = new List<object>(Initializer.Count());
+				var tmp_list = new List<object>(Initializer.Count);
 				foreach (var item in Initializer)
 					tmp_list.Add(item.Run(varStore));
 
-				result = ExpressoFunctions.MakeTuple(tmp_list);
+				result = ExpressoOps.MakeTuple(tmp_list);
 				break;
 			}
 				
 			case ObjectTypes.LIST:
 			{
-				var tmp_list = new List<object>(Initializer.Count());
+				var tmp_list = new List<object>(Initializer.Count);
 				foreach (var item in Initializer)
 					tmp_list.Add(item.Run(varStore));
 
-				result = ExpressoFunctions.MakeList(tmp_list);
+				result = ExpressoOps.MakeList(tmp_list);
 				break;
 			}
 				
 			case ObjectTypes.DICT:
 			{
-				var len = Initializer.Count();
+				var len = Initializer.Count;
 				var dict_len = len / 2;
 				var key_list = new List<object>(dict_len);
 				var value_list = new List<object>(dict_len);
@@ -86,12 +87,12 @@ namespace Expresso.Ast
 
 					++i;
 				}
-				result = ExpressoFunctions.MakeDict(key_list, value_list);
+				result = ExpressoOps.MakeDict(key_list, value_list);
 				break;
 			}
 				
 			default:
-				throw new EvalException("Unknown type of initializer");
+				throw ExpressoOps.RuntimeError("Unknown type of initializer");
 			}
 			
 			return result;

@@ -51,6 +51,19 @@
     <Folder Include="sources\" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="sources\simple_arithmetic.exs" />
+    <None Include="sources\calc_prime_nums.exs" />
+    <None Include="sources\fibs.exs" />
+    <None Include="sources\json_parser.exs" />
+    <None Include="sources\test.exs" />
+    <None Include="sources\for_interpreter\basic_operations.exs" />
+    <None Include="sources\for_interpreter\builtin_objects.exs" />
+    <None Include="sources\for_interpreter\class.exs" />
+    <None Include="sources\for_interpreter\complex_expressions.exs" />
+    <None Include="sources\for_interpreter\library.exs" />
+    <None Include="sources\for_interpreter\module.exs" />
+    <None Include="sources\for_interpreter\simple_arithmetic.exs" />
+    <None Include="sources\for_interpreter\statements.exs" />
+    <None Include="sources\for_interpreter\test_module.exs" />
+    <None Include="sources\for_parser\simple_literals.exs" />
   </ItemGroup>
 </Project>

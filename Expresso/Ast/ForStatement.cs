@@ -5,8 +5,9 @@ using System.Linq;
 
 using Expresso.Interpreter;
 using Expresso.Builtins;
-using Expresso.Helpers;
+using Expresso.Runtime;
 using Expresso.Compiler;
+using Expresso.Runtime.Operations;
 
 namespace Expresso.Ast
 {
@@ -76,7 +77,7 @@ namespace Expresso.Ast
         {
             object iterable = Target.Run(varStore);
 			if(!(iterable is IEnumerable))
-				throw new EvalException("Can not evaluate the expression to an iterable object!");
+				throw ExpressoOps.InvalidTypeError("Can not evaluate the expression to an iterable object!");
 
 			can_continue = true;
 
@@ -84,7 +85,7 @@ namespace Expresso.Ast
 			for(int i = 0; i < LValues.Count; ++i){
 				lvalues[i] = LValues[i] as Identifier;
 				if(lvalues[i] == null)
-					throw new EvalException("The left-hand-side of the \"in\" keyword must be a lvalue(a referencible value such as variables)");
+					throw ExpressoOps.ReferenceError("The left-hand-side of the \"in\" keyword must be a lvalue(a referencible value such as variables)");
 			}
 
 			var rvalue = ImplementationHelpers.Enumerate(iterable);
@@ -94,7 +95,7 @@ namespace Expresso.Ast
 					varStore.Assign(lvalue.Level, lvalue.Offset, rvalue.Current);
 					if(j + 1 != lvalues.Length){
 						if(!rvalue.MoveNext())
-							throw new EvalException("The number of rvalues must be some multiply of that of lvalues.");
+							throw ExpressoOps.RuntimeError("The number of rvalues must be some multiply of that of lvalues.");
 					}
 				}
 

@@ -6,7 +6,7 @@ namespace Expresso.Compiler
 {
 	/// <summary>
 	/// Expressoの構文木を解釈してC#の式木などにコンパイルするための基底クラス。
-	/// It is the base class for emitting native codes from the AST of Expresso.
+	/// It is the base class for walking around AST nodes and emitting native codes from the AST of Expresso.
 	/// </summary>
 	public abstract class Emitter<ReturnType>
 	{

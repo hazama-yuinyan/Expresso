@@ -468,7 +468,7 @@ internal AnalysisScope cur_scope = new AnalysisScope{Parent = AnalysisScope.Symb
 		}
 		}else{
 		module_symbol = new Identifier(module_name, new TypeAnnotation(ObjectTypes.TYPE_MODULE, module_name), alias);
-		cur_scope.AddType(module_symbol);
+		cur_scope.AddAlias(module_symbol);
 		alias = null;
 		}
 		
@@ -490,7 +490,7 @@ internal AnalysisScope cur_scope = new AnalysisScope{Parent = AnalysisScope.Symb
 			}
 			}else{
 			module_symbol = new Identifier(module_name, new TypeAnnotation(ObjectTypes.TYPE_MODULE, module_name), alias);
-			cur_scope.AddType(module_symbol);
+			cur_scope.AddAlias(module_symbol);
 			alias = null;
 			}
 			
@@ -1620,7 +1620,7 @@ internal AnalysisScope cur_scope = new AnalysisScope{Parent = AnalysisScope.Symb
 		Expect(12);
 		name = t.val;
 		expr = cur_scope.GetType(name);
-		if(expr == null) SemErr(String.Format("Expected a type name but instead saw \"{0}\".", name));
+		if(expr == null) SemErr(string.Format("Expected a type name but instead saw \"{0}\".", name));
 		
 	}
 

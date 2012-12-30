@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Expresso.Builtins;
 using Expresso.Interpreter;
 using Expresso.Compiler;
+using Expresso.Runtime.Operations;
 
 namespace Expresso.Ast
 {
@@ -58,15 +59,15 @@ namespace Expresso.Ast
 		{
 			var start = Start.Run(varStore);
 			if(!(start is int))
-				throw new EvalException("The start expression of the IntSeq expression must yield an integer!");
+				throw ExpressoOps.InvalidTypeError("The start expression of the IntSeq expression must yield an integer!");
 
 			var end = End.Run(varStore);
 			if(!(end is int))
-				throw new EvalException("The end expression of the IntSeq expression must yield an integer!");
+				throw ExpressoOps.InvalidTypeError("The end expression of the IntSeq expression must yield an integer!");
 
 			var step = Step.Run(varStore);
 			if(!(step is int))
-				throw new EvalException("The step expression of the IntSeq expression must yield an integer!");
+				throw ExpressoOps.InvalidTypeError("The step expression of the IntSeq expression must yield an integer!");
 
 			return new ExpressoIntegerSequence((int)start, (int)end, (int)step);
 		}

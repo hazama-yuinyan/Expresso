@@ -37,7 +37,7 @@ namespace Expresso.Ast
 
 		/// <summary>
 		/// このbreak文が含まれるループ構文。
-		/// Loops that have this statement as a child.
+		/// Loops that have this statement as their child.
 		/// </summary>
 		public List<BreakableStatement> Enclosings{get; internal set;}
 
@@ -73,9 +73,9 @@ namespace Expresso.Ast
 			return emitter.Emit(this);
 		}
 
-		public override string ToString ()
+		public override string ToString()
 		{
-			return string.Format ("break upto {0}", Count);
+			return string.Format("break upto {0}", Count);
 		}
 	}
 
@@ -93,7 +93,7 @@ namespace Expresso.Ast
 
 		/// <summary>
 		/// continue文が含まれるループ構文。
-		/// Loops that have this statement as a child.
+		/// Loops that have this statement as their child.
 		/// </summary>
 		public List<BreakableStatement> Enclosings{get; internal set;}
 
@@ -129,7 +129,7 @@ namespace Expresso.Ast
 			return emitter.Emit(this);
 		}
 
-		public override string ToString ()
+		public override string ToString()
 		{
 			return string.Format("continue on {0} up", Count);
 		}

@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
+
 using Expresso.Interpreter;
+using Expresso.Runtime.Exceptions;
 
 namespace Expresso.Terminal
 {
@@ -25,7 +27,7 @@ namespace Expresso.Terminal
 				interp.Initialize();
 				interp.Run(new List<object>(args));
 			}
-			catch(EvalException eval_ex){
+			catch(RuntimeException eval_ex){
 				Console.WriteLine(eval_ex.Message);
 			}
 			catch(Exception e){

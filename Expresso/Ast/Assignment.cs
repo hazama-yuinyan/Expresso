@@ -1,7 +1,9 @@
 ﻿using System.Collections.Generic;
+
 using Expresso.Builtins;
 using Expresso.Interpreter;
 using Expresso.Compiler;
+using Expresso.Runtime.Operations;
 
 namespace Expresso.Ast
 {
@@ -55,7 +57,7 @@ namespace Expresso.Ast
 			for(i = 0; i < Targets.Count; ++i){		//その後左辺値に代入する
 				var assignable = Targets[i] as Assignable;
 				if(assignable == null)
-					throw new EvalException("Can not assign a value to the target!");
+					throw ExpressoOps.ReferenceError("Can not assign a value to the target!");
 
 				assignable.Assign(varStore, rvalues[i]);
 			}

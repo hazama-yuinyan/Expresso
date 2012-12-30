@@ -3,6 +3,7 @@ using System.Collections.Generic;
 
 using Expresso.Ast;
 using Expresso.Interpreter;
+using Expresso.Runtime.Operations;
 
 
 namespace Expresso.Builtins
@@ -51,16 +52,16 @@ namespace Expresso.Builtins
 					int offset;
 					if(!PublicMembers.TryGetValue(mem_name.Name, out offset)){
 						if(!isInsideClass)
-							throw new EvalException(mem_name.Name + " is not accessible.");
+							throw ExpressoOps.ReferenceError("{0} is not accessible.", mem_name.Name);
 						
 						if(!PrivateMembers.TryGetValue(mem_name.Name, out offset))
-							throw new EvalException(Name + " doesn't have the member called " + mem_name.Name);
+							throw ExpressoOps.InvalidTypeError("{0} doesn't have the member called {1}", Name, mem_name.Name);
 					}
 					mem_name.Offset = offset;
 				}
 				return mem_name.Offset;
 			}else{
-				throw new EvalException("Invalid use of accessor!");
+				throw ExpressoOps.RuntimeError("Invalid use of accessor!");
 			}
 		}
 	}

@@ -6,10 +6,10 @@
 //require math;
  
 def main(){
-	let n = 100000, i = 2, results = [];
+	let n = 100000, i = 2, j, results = [];
 	for(i in [2..n + 1]){
 		let SQRT_I = toInt(sqrt(i) + 1.0);
-		for(j in [2..SQRT_I]){
+		for(j in [2..SQRT_I + 1]){
 			if(j == SQRT_I)
 				results.add(i);
 			else if(i % j == 0)
@@ -18,7 +18,7 @@ def main(){
 	}
 	
 	print "Results: ";
-	for(let j in results){
+	for(j in results){
 		print j;
 	}
 }

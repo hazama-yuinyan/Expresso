@@ -1,8 +1,11 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+
 using Expresso.Interpreter;
-using Expresso.Helpers;
+using Expresso.Runtime;
 using Expresso.Compiler;
+using Expresso.Runtime.Operations;
 
 namespace Expresso.Ast
 {
@@ -92,7 +95,7 @@ namespace Expresso.Ast
 					var obj = Reference.Run(varStore);
 					var method = obj as MethodContainer;
 					if(method == null)
-						throw new EvalException("Not callable: " + obj.ToString());
+						throw ExpressoOps.InvalidTypeError("Not callable: {0}", obj.ToString());
 
 					if(method.Inst != null){
 						if(Arguments.Count == 0 || Arguments[0] != this_value)	//実引数リストにthisを追加しておく
@@ -130,6 +133,44 @@ namespace Expresso.Ast
 
 			return fn.Run(child);
         }
+
+		internal Tuple<Function, bool> ResolveCallTarget(out VariableStore store, VariableStore parent)
+		{
+			store = new VariableStore{Parent = parent};
+			Function fn;
+			bool this_registered = false;
+			if(Reference != null){
+				if(method_info == null){
+					var obj = Reference.Run(store);
+					var method = obj as MethodContainer;
+					if(method == null)
+						throw ExpressoOps.InvalidTypeError("Not callable: {0}", obj.ToString());
+					
+					if(method.Inst != null){
+						if(Arguments.Count == 0 || Arguments[0] != this_value)	//実引数リストにthisを追加しておく
+							Arguments.Insert(0, this_value);
+					}
+					
+					method_info = method;	//毎回リファレンスを辿るのは遅いと思われるので、キャッシュしておく
+				}
+				
+				fn = method_info.Method;
+				if(!fn.IsStatic && method_info.Inst != null){	//このメソッド呼び出しのthisオブジェクトを登録する
+					store.Add(0, method_info.Inst);
+					this_registered = true;
+				}
+			}else{
+				fn = Function;		//Functionがセットされている場合は、現在のモジュールを暗黙のthis参照として追加する
+				if(!fn.IsStatic){
+					store.Add(0, parent.Get(0));
+					this_registered = true;
+					if(Arguments.Count == 0 || Arguments[0] != this_value)
+						Arguments.Insert(0, this_value);
+				}
+			}
+
+			return new Tuple<Function, bool>(fn, this_registered);
+		}
 
 		internal override CSharpExpr Compile(Emitter<CSharpExpr> emitter)
 		{

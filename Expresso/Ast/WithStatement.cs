@@ -3,9 +3,10 @@ using System.Collections.Generic;
 
 using Expresso.Builtins;
 using Expresso.Builtins.Library;
-using Expresso.Helpers;
+using Expresso.Runtime;
 using Expresso.Interpreter;
 using Expresso.Compiler;
+using Expresso.Runtime.Operations;
 
 namespace Expresso.Ast
 {
@@ -54,7 +55,7 @@ namespace Expresso.Ast
         {
 			var resource = Main.Run(varStore) as IClosable;
 			if(resource == null)
-				throw new EvalException("Can not evaluate the expression to a valid closable object.");
+				throw ExpressoOps.InvalidTypeError("Can not evaluate the expression to a valid closable object.");
 
 			try{
 				Body.Run(varStore);

@@ -41,36 +41,39 @@ namespace Expresso.Ast
         internal override object Run(VariableStore varStore)
         {
 			var first = Expressions[0].Run(varStore);
+			var sb = new StringBuilder();
 			if(first is string){
-				var values = new List<object>();
-				var sb = new StringBuilder((string)first);
+				var values = new List<object>(Expressions.Count);
+				sb.Append(first);
 				for(int i = 1; i < Expressions.Count; ++i){
 					values.Add(Expressions[i].Run(varStore));
-					sb.Append("%s");
+					sb.Append("{" + (i - 1) + "}");
 					if(i + 1 != Expressions.Count)
 						sb.Append(",");
 				}
 
-				var text = ExpressoFunctions.Format(sb.ToString(), values.ToArray());
+				var text = string.Format(sb.ToString(), values.ToArray());
 				if(!HasTrailing)
 					Console.WriteLine(text);
 				else
 					Console.Write(text);
 			}else{
-				Console.Write(first);
+				sb.Append(first);
 				bool print_comma = true;
 				for(int i = 1; i < Expressions.Count; ++i){
 					if(print_comma)
-						Console.Write(",");
+						sb.Append(",");
 
 					object obj = Expressions[i].Run(varStore);
-					Console.Write(obj);
+					sb.Append(obj);
 					print_comma = (obj is string) ? false : true;
 				}
+
+				var text = sb.ToString();
 				if(!HasTrailing)
-					Console.WriteLine();
+					Console.WriteLine(text);
 				else
-					Console.Write(",");
+					Console.Write(text + ",");
 			}
 
 			return null;

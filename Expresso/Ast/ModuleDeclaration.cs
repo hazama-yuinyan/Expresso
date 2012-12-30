@@ -5,6 +5,7 @@ using System.Linq;
 using Expresso.Builtins;
 using Expresso.Interpreter;
 using Expresso.Compiler;
+using Expresso.Runtime.Operations;
 
 namespace Expresso.Ast
 {
@@ -86,7 +87,7 @@ namespace Expresso.Ast
 							//varStore.Add(var_decls.Variables[i].Offset, obj);	//モジュールスコープの変数ストアにも実体を追加しておく
 						}
 					}else{
-						throw new EvalException("A module declaration can not have that type of statements!");
+						throw ExpressoOps.InvalidTypeError("A module declaration can not have that type of statements!");
 					}
 				}else if(decl.Item1 is Function){
 					var method = (Function)decl.Item1;
@@ -98,7 +99,7 @@ namespace Expresso.Ast
 					decl_target.Add(type_decl.Name, offset++);
 					members.Add(type_def);
 				}else{
-					throw new EvalException("A module declaration can not have that type of statements!");
+					throw ExpressoOps.InvalidTypeError("A module declaration can not have that type of statements!");
 				}
 			}
 

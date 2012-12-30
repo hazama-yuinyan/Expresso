@@ -3,6 +3,7 @@
 using Expresso.Builtins;
 using Expresso.Interpreter;
 using Expresso.Compiler;
+using Expresso.Runtime.Operations;
 
 namespace Expresso.Ast
 {
@@ -42,7 +43,7 @@ namespace Expresso.Ast
         {
 			var throwable = Expression.Run(varStore) as ExpressoObj;
 			if(throwable == null)
-				throw new EvalException("The throw statement must throw a throwable object.");
+				throw ExpressoOps.InvalidTypeError("The throw statement must throw a throwable object.");
 
 			throw new ExpressoThrowException(throwable);
         }

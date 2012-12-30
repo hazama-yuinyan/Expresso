@@ -3,9 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 
 using Expresso.Builtins;
-using Expresso.Helpers;
+using Expresso.Runtime;
 using Expresso.Interpreter;
 using Expresso.Compiler;
+using Expresso.Runtime.Operations;
 
 namespace Expresso.Ast
 {
@@ -61,7 +62,7 @@ namespace Expresso.Ast
         {
             var cond = Condition.Run(varStore);
 			if(!(cond is bool))
-				throw new EvalException("Invalid expression! The condition of an if statement must yields a boolean!");
+				throw ExpressoOps.InvalidTypeError("Invalid expression! The condition of an if statement must yields a boolean!");
 			
 			if((bool)cond)
 				return TrueBlock.Run(varStore);

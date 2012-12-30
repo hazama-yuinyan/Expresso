@@ -2,9 +2,10 @@ using System;
 using System.Collections.Generic;
 
 using Expresso.Builtins;
-using Expresso.Helpers;
+using Expresso.Runtime;
 using Expresso.Interpreter;
 using Expresso.Compiler;
+using Expresso.Runtime.Operations;
 
 namespace Expresso.Ast
 {
@@ -63,7 +64,7 @@ namespace Expresso.Ast
 			}
 			catch(Exception){
 				if(!(cond is bool))
-					throw new EvalException("Invalid expression! The condition of a while statement must yield a boolean!");
+					throw ExpressoOps.InvalidTypeError("Invalid expression! The condition of a while statement must yield a boolean!");
 			}
 
 			return null;

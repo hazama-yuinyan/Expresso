@@ -6,6 +6,7 @@ using System.Text;
 using Expresso.Builtins;
 using Expresso.Interpreter;
 using Expresso.Compiler;
+using Expresso.Runtime.Operations;
 
 namespace Expresso.Ast
 {
@@ -52,7 +53,7 @@ namespace Expresso.Ast
         {
 			var type_def = TargetDecl.Run(varStore) as BaseDefinition;
 			if(type_def == null)
-				throw new EvalException("{0} doesn't refer to a type name.", TargetDecl);
+				throw ExpressoOps.ReferenceError("{0} doesn't refer to a type name.", TargetDecl);
 
 			return ExpressoObj.CreateInstance(type_def, Arguments, varStore);
         }

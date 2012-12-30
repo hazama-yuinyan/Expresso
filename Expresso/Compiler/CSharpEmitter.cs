@@ -10,7 +10,7 @@ namespace Expresso.Compiler
 {
 	using ExprTree = System.Linq.Expressions;
 	using CSharpExpr = System.Linq.Expressions.Expression;
-	using Helper = Expresso.Helpers.ImplementationHelpers;
+	using Helper = Expresso.Runtime.ImplementationHelpers;
 
 	/// <summary>
 	/// Expressoの構文木を解釈してC#の式木にコンパイルするクラス。
@@ -352,6 +352,7 @@ namespace Expresso.Compiler
 				if(label is Constant && ((Constant)label).ValType == ObjectTypes._CASE_DEFAULT){
 					has_default_clause = true;
 					default_body = node.Body.Compile(this);
+					return null;
 				}else
 					labels.Add(label.Compile(this));
 			}

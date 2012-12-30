@@ -6,6 +6,7 @@ using System.Text;
 using Expresso.Builtins;
 using Expresso.Interpreter;
 using Expresso.Compiler;
+using Expresso.Runtime.Operations;
 
 namespace Expresso.Ast
 {
@@ -82,13 +83,13 @@ namespace Expresso.Ast
 			else if(ParamType.ObjType == ObjectTypes.TYPE_CLASS){
 				var cur_module = varStore.Get(0) as ExpressoObj;
 				if(cur_module == null)
-					throw new EvalException("\"this\" doesn't refer to the enclosing module instance.");
+					throw ExpressoOps.ReferenceError("\"this\" doesn't refer to the enclosing module instance.");
 
 				return cur_module.AccessMember(this, true);
 			}else if(ParamType.ObjType == ObjectTypes.TYPE_MODULE){
 				var module = ExpressoModule.GetModule(Name);
 				if(module == null)
-					throw new EvalException(string.Format("The requested module \"{0}\" doesn't exist.", Name));
+					throw ExpressoOps.MissingTypeError(string.Format("The requested module \"{0}\" doesn't exist.", Name));
 
 				return module;
 			}else

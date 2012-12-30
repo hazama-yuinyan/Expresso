@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using Expresso.Builtins;
 using Expresso.Interpreter;
 using Expresso.Compiler;
+using Expresso.Runtime.Operations;
 
 namespace Expresso.Ast
 {
@@ -84,7 +85,7 @@ namespace Expresso.Ast
 							break;
 
 						default:
-							throw new EvalException("Unknown label!");
+							throw ExpressoOps.InvalidTypeError("Unknown label!");
 						}
 					}else if(expr_stmt.Expressions[0] is VarDeclaration){
 						var var_decls = (VarDeclaration)expr_stmt.Expressions[0];
@@ -96,14 +97,14 @@ namespace Expresso.Ast
 							members.Add(obj);
 						}
 					}else{
-						throw new EvalException("A class declaration can not have that type of statements!");
+						throw ExpressoOps.InvalidTypeError("A class declaration can not have that type of statements!");
 					}
 				}else if(decl is Function){
 					var method = (Function)decl;
 					decl_target.Add(method.Name, offset++);
 					members.Add(method);
 				}else{
-					throw new EvalException("A class declaration can not have that type of statements!");
+					throw ExpressoOps.InvalidTypeError("A class declaration can not have that type of statements!");
 				}
 			}
 

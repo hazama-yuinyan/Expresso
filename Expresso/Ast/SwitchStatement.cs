@@ -4,8 +4,8 @@ using System.Linq;
 
 using Expresso.Builtins;
 using Expresso.Interpreter;
-using Expresso.Helpers;
 using Expresso.Compiler;
+using Expresso.Runtime;
 
 namespace Expresso.Ast
 {
@@ -127,7 +127,7 @@ namespace Expresso.Ast
 				if(pt is int && label_obj is ExpressoIntegerSequence){
 					var int_seq = label_obj as ExpressoIntegerSequence;
 					if(int_seq == null)
-						throw new EvalException("Something wrong has occurred!");
+						throw Expresso.Runtime.Operations.ExpressoOps.InvalidTypeError("Something wrong has occurred!");
 
 					if(int_seq.Includes((int)pt)){
 						Body.Run(varStore);

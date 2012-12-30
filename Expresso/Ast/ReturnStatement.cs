@@ -3,6 +3,7 @@
 using Expresso.Builtins;
 using Expresso.Interpreter;
 using Expresso.Compiler;
+using Expresso.Runtime.Operations;
 
 namespace Expresso.Ast
 {
@@ -49,7 +50,7 @@ namespace Expresso.Ast
 				foreach (Expression expr in Expressions)
 					objs.Add(expr.Run(varStore));
 				
-				return ExpressoFunctions.MakeTuple(objs);
+				return ExpressoOps.MakeTuple(objs);
 			}
         }
 

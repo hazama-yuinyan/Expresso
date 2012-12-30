@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
+
 using Expresso.Builtins;
+using Expresso.Runtime.Operations;
 
 namespace Expresso.Interpreter
 {
@@ -34,7 +36,7 @@ namespace Expresso.Interpreter
 			for(; vars != null && level > 0; vars = vars.Parent, --level) ;
 
 			if(level != 0)
-				throw new EvalException("The requested scope doesn't seem to exist.");
+				throw ExpressoOps.RuntimeError("The requested scope doesn't seem to exist.");
 
 			return vars;
 		}
@@ -102,7 +104,7 @@ namespace Expresso.Interpreter
 		static object Get(int offset, VariableStore vars)
 		{
 			if(offset >= vars.store.Count)
-				throw new EvalException("Attempt to refer to an inexsistent variable");
+				throw ExpressoOps.RuntimeError("Attempt to refer to an inexsistent variable");
 			
 			return vars.store[offset];
 		}

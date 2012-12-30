@@ -4,16 +4,18 @@ using System.Numerics;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Linq;
+
 using Expresso.Ast;
 using Expresso.Builtins;
 using Expresso.Builtins.Library;
 using Expresso.Interpreter;
-using Expresso.Helpers;
+using Expresso.Runtime;
+using Expresso.Runtime.Operations;
 
 
 namespace Expresso.Builtins
 {
-	using Helpers = Expresso.Helpers.ImplementationHelpers;
+	using Helpers = Expresso.Runtime.ImplementationHelpers;
 
 	/// <summary>
 	/// Expressoの組み込み関数郡。
@@ -79,7 +81,7 @@ namespace Expresso.Builtins
 		public static string Substitute(string str, Dictionary<string, int> orderTable, params object[] vars)
 		{
 			if(str == null)
-				throw new EvalException("This function takes a string as the first parameter.");
+				throw new ArgumentNullException("This function takes a string as the first parameter.");
 
 			string tmp = str;
 			tmp = tmp.Replace(substitution_refs, m => {
@@ -114,7 +116,7 @@ namespace Expresso.Builtins
 			tmp = tmp.Replace(format_refs, m => {
 				if(m.Groups[2].Value == "b"){
 					if(!(vars[i] is int))
-						throw new EvalException("Can not format objects in binary except an integer!");
+						throw ExpressoOps.InvalidTypeError("Can not format objects in binary except an integer!");
 
 					var sb = new StringBuilder();
 				
@@ -135,7 +137,7 @@ namespace Expresso.Builtins
 		}
 
 		/// <summary>
-		/// Iterates some sequence and returns a tuple containing an index and the corresponding element.
+		/// Iterates over some sequence and returns a tuple containing an index and the corresponding element.
 		/// </summary>
 		public static IEnumerable<ExpressoTuple> Each(IEnumerable<object> src)
 		{
@@ -145,48 +147,6 @@ namespace Expresso.Builtins
 
 			for(int i = 0; er.MoveNext(); ++i)
 				yield return new ExpressoTuple(new []{i, er.Current});
-		}
-		#endregion
-		#region Expressoのシーケンス生成関数郡
-		public static ExpressoTuple MakeTuple(List<object> objs)
-		{
-			if(objs == null)
-				throw new ArgumentNullException("objs");
-
-			return new ExpressoTuple(objs);
-		}
-
-		public static ExpressoTuple MakeTuple(object[] objs)
-		{
-			if(objs == null)
-				throw new ArgumentNullException("objs");
-
-			return new ExpressoTuple(objs);
-		}
-		
-		public static Dictionary<object, object> MakeDict(List<object> keys, List<object> values)
-		{
-			var tmp = new Dictionary<object, object>(keys.Count);
-			for (int i = 0; i < keys.Count; ++i)
-				tmp.Add(keys[i], values[i]);
-
-			return tmp;
-		}
-
-		public static Dictionary<object, object> MakeDict(Dictionary<object, object> dict)
-		{
-			if(dict == null)
-				throw new ArgumentNullException("dict");
-
-			return dict;
-		}
-
-		public static List<object> MakeList(List<object> list)
-		{
-			if(list == null)
-				throw new ArgumentNullException("list");
-
-			return list;
 		}
 		#endregion
 	}
@@ -252,11 +212,11 @@ namespace Expresso.Builtins
 		{
 			Dictionary<string, NativeFunction> type_dict;
 			if(!native_methods.TryGetValue(typeName, out type_dict))
-				throw new EvalException(typeName + " is not a native class name!");
+				throw ExpressoOps.InvalidTypeError("{0} is not a native class name!", typeName);
 
 			NativeFunction method;
 			if(!type_dict.TryGetValue(methodName, out method))
-				throw new EvalException(typeName + " doesn't have the method \"" + methodName + "\".");
+				throw ExpressoOps.ReferenceError("{0} doesn't have the method \"{1}\".", typeName, methodName);
 
 			return method;
 		}

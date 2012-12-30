@@ -2,9 +2,11 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Linq;
+
 using Expresso.Builtins;
 using Expresso.Interpreter;
 using Expresso.Compiler;
+using Expresso.Runtime.Operations;
 
 namespace Expresso.Ast
 {
@@ -59,7 +61,7 @@ namespace Expresso.Ast
         {
             object first = Left.Run(varStore), second = Right.Run(varStore);
 			if(first == null || second == null)
-				throw new EvalException("Can not apply the operation on null objects.");
+				throw ExpressoOps.InvalidTypeError("Can not apply the operation on null objects.");
 
 			if((int)Operator <= (int)OperatorType.MOD){
 				if(first is int)
@@ -114,7 +116,7 @@ namespace Expresso.Ast
 				break;
 				
 			default:
-				throw new EvalException("Unreachable code");
+				throw ExpressoOps.RuntimeError("Internal Error: Unreachable code");
 			}
 			
 			return result;
@@ -150,7 +152,7 @@ namespace Expresso.Ast
 				break;
 				
 			default:
-				throw new EvalException("Unreachable code");
+				throw ExpressoOps.RuntimeError("Internal Error: Unreachable code");
 			}
 			
 			return result;
@@ -159,7 +161,7 @@ namespace Expresso.Ast
 		private Fraction BinaryExprAsFraction(Fraction lhs, object rhs, OperatorType opType)
 		{
 			if(!(rhs is Fraction) && !(rhs is long) && !(rhs is int) && !(rhs is double))
-				throw new EvalException("The right operand have to be either a long, int, double or fraction!");
+				throw ExpressoOps.InvalidTypeError("The right operand have to be either a long, int, double or fraction!");
 
 			Fraction result;
 
@@ -189,7 +191,7 @@ namespace Expresso.Ast
 				break;
 
 			default:
-				throw new EvalException("Unreachable code");
+				throw ExpressoOps.RuntimeError("Internal Error: Unreachable code");
 			}
 
 			return result;
@@ -206,7 +208,7 @@ namespace Expresso.Ast
 
 			case OperatorType.TIMES:
 				if(!(rhs is int))
-					throw new EvalException("Can not muliply string by objects other than an integer.");
+					throw ExpressoOps.InvalidTypeError("Can not muliply string by objects other than an integer.");
 
 				int times = (int)rhs;
 				var sb = new StringBuilder(lhs.Length * times);
@@ -216,7 +218,7 @@ namespace Expresso.Ast
 				break;
 
 			default:
-				throw new EvalException("Strings don't support that operation!");
+				throw ExpressoOps.RuntimeError("Strings don't support that operation!");
 			}
 
 			return result;
@@ -225,7 +227,7 @@ namespace Expresso.Ast
 		private bool EvalComparison(IComparable lhs, IComparable rhs, OperatorType opType)
 		{
 			if(lhs == null || rhs == null)
-				throw new EvalException("The operands can not be compared");
+				throw ExpressoOps.InvalidTypeError("The operands can not be compared");
 			
 			switch (opType) {
 			case OperatorType.EQUAL:
@@ -284,7 +286,7 @@ namespace Expresso.Ast
 				return lhs >> rhs;
 
 			default:
-				throw new EvalException("Invalid Operation!");
+				throw ExpressoOps.RuntimeError("Invalid Operation!");
 			}
 		}
 		

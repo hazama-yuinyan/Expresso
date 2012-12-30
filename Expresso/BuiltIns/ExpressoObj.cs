@@ -4,6 +4,7 @@ using System.Collections.Generic;
 
 using Expresso.Ast;
 using Expresso.Interpreter;
+using Expresso.Runtime.Operations;
 
 namespace Expresso.Builtins
 {
@@ -159,7 +160,7 @@ namespace Expresso.Builtins
 				foreach(var tmp in enumerable)
 					yield return tmp;
 			}else
-				throw new EvalException("Can not evaluate the object to an iterable.");
+				throw ExpressoOps.InvalidTypeError("Can not evaluate the object to an iterable.");
 		}
 		
 		/// <summary>
@@ -210,9 +211,9 @@ namespace Expresso.Builtins
 			else if(definition is StructDefinition)
 				new_inst = new ExpressoObj((StructDefinition)definition);
 			else if(definition is InterfaceDefinition)
-				throw new EvalException("Can not instantiate an interface!");
+				throw ExpressoOps.InvalidTypeError("Can not instantiate an interface!");
 			else
-				throw new EvalException("Unknown definition.");
+				throw ExpressoOps.InvalidTypeError("Unknown definition.");
 			
 			var constructor = new_inst.AccessMember(new Identifier("constructor"), true) as Function;
 			if(constructor != null){

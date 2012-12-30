@@ -3,8 +3,9 @@ using System.Collections.Generic;
 
 using Expresso.Builtins;
 using Expresso.Interpreter;
-using Expresso.Helpers;
+using Expresso.Runtime;
 using Expresso.Compiler;
+using Expresso.Runtime.Operations;
 
 
 namespace Expresso.Ast
@@ -65,7 +66,7 @@ namespace Expresso.Ast
 		{
 			var obj = Parent.Run(varStore);
 			if(obj == null)
-				throw new EvalException("Can not evaluate the name to a valid Expresso object");
+				throw ExpressoOps.InvalidTypeError("Can not evaluate the name to a valid Expresso object");
 
 			var subscript = Subscription.Run(varStore);
 			if(obj is ExpressoObj){
@@ -73,7 +74,7 @@ namespace Expresso.Ast
 					var ident = (Identifier)subscript;
 					((ExpressoObj)obj).Assign(ident, val, obj == varStore.Get(0, 0));
 				}else{
-					throw new EvalException("Invalid assignment!");
+					throw ExpressoOps.RuntimeError("Invalid assignment!");
 				}
 			}else{
 				ImplementationHelpers.AssignToCollection(obj, subscript, val);

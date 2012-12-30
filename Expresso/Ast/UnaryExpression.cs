@@ -2,8 +2,9 @@
 
 using Expresso.Builtins;
 using Expresso.Interpreter;
-using Expresso.Helpers;
+using Expresso.Runtime;
 using Expresso.Compiler;
+using Expresso.Runtime.Operations;
 
 namespace Expresso.Ast
 {
@@ -50,7 +51,7 @@ namespace Expresso.Ast
 		{
 			var ope = Operand.Run(varStore);
 			if(ope == null)
-				throw new EvalException("Invalid object type!");
+				throw ExpressoOps.InvalidTypeError("Invalid object type!");
 			
 			if(Operator == OperatorType.MINUS){
 				if(ope is int)
@@ -60,12 +61,12 @@ namespace Expresso.Ast
 				else if(ope is Fraction)
 					ope = -(Fraction)ope;
 				else
-					throw new EvalException("The minus operator is not applicable to the operand!");
+					throw ExpressoOps.InvalidTypeError("The minus operator is not applicable to the operand!");
 			}else if(Operator == OperatorType.NOT){
 				if(ope is bool)
 					ope = !(bool)ope;
 				else
-					throw new EvalException("The not operator is not applicable to the operand!");
+					throw ExpressoOps.InvalidTypeError("The not operator is not applicable to the operand!");
 			}
 			
 			return ope;

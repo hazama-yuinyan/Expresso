@@ -1,10 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+
 using Expresso.Builtins;
-using Expresso.Helpers;
+using Expresso.Runtime;
 using Expresso.Interpreter;
 using Expresso.Compiler;
+using Expresso.Runtime.Operations;
 
 
 namespace Expresso.Ast
@@ -55,9 +57,9 @@ namespace Expresso.Ast
 				}
 
 				if(ObjType == ObjectTypes.LIST)
-					obj = ExpressoFunctions.MakeList(container);
+					obj = ExpressoOps.MakeList(container);
 				else
-					obj = ExpressoFunctions.MakeTuple(container);
+					obj = ExpressoOps.MakeTuple(container);
 			}else if(ObjType == ObjectTypes.DICT){
 				var keys = new List<object>();
 				var values = new List<object>();
@@ -72,7 +74,7 @@ namespace Expresso.Ast
 					}
 				}
 
-				obj = ExpressoFunctions.MakeDict(keys, values);
+				obj = ExpressoOps.MakeDict(keys, values);
 			}
 
 			return obj;
@@ -154,13 +156,13 @@ namespace Expresso.Ast
         {
 			IEnumerable<object> iterable = Target.Run(varStore) as IEnumerable<object>;
 			if(iterable == null)
-				throw new EvalException("Can not evaluate the expression to an iterable object!");
+				throw ExpressoOps.InvalidTypeError("Can not evaluate the expression to an iterable object!");
 
 			Identifier[] lvalues = new Identifier[LValues.Count];
 			for (int i = 0; i < LValues.Count; ++i) {
 				lvalues[i] = LValues[i] as Identifier;
 				if(lvalues[i] == null)
-					throw new EvalException("The left-hand-side of the \"in\" keyword must yield a lvalue(a referencible value such as variables)");
+					throw ExpressoOps.ReferenceError("The left-hand-side of the \"in\" keyword must yield a lvalue(a referencible value such as variables)");
 			}
 
 			var enumerator = iterable.GetEnumerator();
@@ -228,7 +230,7 @@ namespace Expresso.Ast
         {
 			var cond = Condition.Run(varStore) as Nullable<bool>;
 			if(cond == null)
-				throw new EvalException("Can not evaluate the expression to a boolean.");
+				throw ExpressoOps.InvalidTypeError("Can not evaluate the expression to a boolean.");
 
 			if((bool)cond){
 				if(Body == null){
