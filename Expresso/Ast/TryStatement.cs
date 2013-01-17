@@ -17,29 +17,47 @@ namespace Expresso.Ast
 	/// </summary>
 	public class TryStatement : Statement, CompoundStatement
 	{
+		private readonly Block body;
+		private readonly CatchClause[] handlers;
+		private readonly FinallyClause finally_clause;
+
 		/// <summary>
         /// 例外の捕捉を行うブロック。
+		/// The block in which we'll catch exceptions.
         /// </summary>
-        public Block Body { get; internal set; }
+        public Block Body {
+			get{return body;}
+		}
 
         /// <summary>
         /// Catch節。
 		/// Represents the catch clause of this try statement.
 		/// It can be null if none is specified.
         /// </summary>
-        public List<CatchClause> Catches { get; internal set; }
+        public CatchClause[] Catches{
+			get{return handlers;}
+		}
 
 		/// <summary>
 		/// Finally節。
 		/// Represents the finally clause of this try statement.
 		/// It can be null if none is specified.
 		/// </summary>
-		public FinallyClause FinallyClause {get; internal set;}
+		public FinallyClause FinallyClause{
+			get{return finally_clause;}
+		}
 
         public override NodeType Type
         {
             get { return NodeType.TryStatement; }
         }
+
+		public TryStatement(Block bodyBlock, CatchClause[] catches, FinallyClause finallyClause)
+		{
+			body = bodyBlock;
+			handlers = catches;
+			finally_clause = finallyClause;
+		}
 
         public override bool Equals(object obj)
         {
@@ -47,16 +65,16 @@ namespace Expresso.Ast
 
             if (x == null) return false;
 
-            return this.Body == x.Body
-                && this.Catches.Equals(x.Catches) && this.FinallyClause == x.FinallyClause;
+            return body == x.body
+                && handlers.Equals(x.handlers) && finally_clause == x.finally_clause;
         }
 
         public override int GetHashCode()
         {
-            return this.Body.GetHashCode() ^ this.Catches.GetHashCode() ^ this.FinallyClause.GetHashCode();
+            return body.GetHashCode() ^ handlers.GetHashCode() ^ finally_clause.GetHashCode();
         }
 
-        internal override object Run(VariableStore varStore)
+        /*internal override object Run(VariableStore varStore)
         {
 			try{
 				Body.Run(varStore);
@@ -76,11 +94,25 @@ namespace Expresso.Ast
 			}
 
 			return null;
-        }
+        }*/
 
 		internal override CSharpExpr Compile(Emitter<CSharpExpr> emitter)
 		{
 			return emitter.Emit(this);
+		}
+
+		internal override void Walk(ExpressoWalker walker)
+		{
+			if(walker.Walk(this)){
+				body.Walk(walker);
+				if(handlers != null){
+					foreach(var handler in handlers)
+						handler.Walk(walker);
+				}
+				if(finally_clause != null)
+					finally_clause.Walk(walker);
+			}
+			walker.PostWalk(this);
 		}
 
 		public IEnumerable<Identifier> CollectLocalVars()
@@ -104,21 +136,35 @@ namespace Expresso.Ast
 	/// </summary>
 	public class CatchClause : Statement
 	{
+		private readonly Identifier handler;
+		private readonly Block body;
+
 		/// <summary>
         /// catchの対象となる例外の型とその識別子名。
+		/// The target type and the name which this node will catch.
         /// </summary>
-		public Identifier Catcher { get; internal set; }
+		public Identifier Catcher{
+			get{return handler;}
+		}
 
         /// <summary>
         /// 実行対象のブロック。
 		/// The body block.
         /// </summary>
-        public Block Body { get; internal set; }
+        public Block Body{
+			get{return body;}
+		}
 
         public override NodeType Type
         {
             get { return NodeType.CatchClause; }
         }
+
+		public CatchClause(Identifier catcher, Block bodyBlock)
+		{
+			handler = catcher;
+			body = bodyBlock;
+		}
 
         public override bool Equals(object obj)
         {
@@ -126,23 +172,31 @@ namespace Expresso.Ast
 
             if (x == null) return false;
 
-            return this.Catcher.Equals(x.Catcher)
-                && this.Body.Equals(x.Body);
+            return handler.Equals(x.handler) && body.Equals(x.body);
         }
 
         public override int GetHashCode()
         {
-            return this.Catcher.GetHashCode() ^ this.Body.GetHashCode();
+            return handler.GetHashCode() ^ body.GetHashCode();
         }
 
-        internal override object Run(VariableStore varStore)
+        /*internal override object Run(VariableStore varStore)
         {
 			return Body.Run(varStore);
-        }
+        }*/
 
 		internal override CSharpExpr Compile(Emitter<CSharpExpr> emitter)
 		{
 			return emitter.Emit(this);
+		}
+
+		internal override void Walk(ExpressoWalker walker)
+		{
+			if(walker.Walk(this)){
+				handler.Walk(walker);
+				body.Walk(walker);
+			}
+			walker.PostWalk(this);
 		}
 	}
 
@@ -151,16 +205,25 @@ namespace Expresso.Ast
 	/// </summary>
 	public class FinallyClause : Statement
 	{
+		private readonly Block body;
+
         /// <summary>
         /// 実行対象のブロック。
 		/// The body block.
         /// </summary>
-        public Block Body { get; internal set; }
+        public Block Body{
+			get{return body;}
+		}
 
         public override NodeType Type
         {
             get { return NodeType.FinallyClause; }
         }
+
+		public FinallyClause(Block bodyBlock)
+		{
+			body = bodyBlock;
+		}
 
         public override bool Equals(object obj)
         {
@@ -168,22 +231,30 @@ namespace Expresso.Ast
 
             if (x == null) return false;
 
-            return this.Body.Equals(x.Body);
+            return body.Equals(x.body);
         }
 
         public override int GetHashCode()
         {
-            return this.Body.GetHashCode();
+            return this.body.GetHashCode();
         }
 
-        internal override object Run(VariableStore varStore)
+        /*internal override object Run(VariableStore varStore)
         {
 			return Body.Run(varStore);
-        }
+        }*/
 
 		internal override CSharpExpr Compile(Emitter<CSharpExpr> emitter)
 		{
 			return emitter.Emit(this);
+		}
+
+		internal override void Walk(ExpressoWalker walker)
+		{
+			if(walker.Walk(this))
+				body.Walk(walker);
+
+			walker.PostWalk(this);
 		}
 	}
 }

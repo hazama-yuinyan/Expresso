@@ -6,6 +6,7 @@ using System.Text;
 using Expresso.Builtins;
 using Expresso.Interpreter;
 using Expresso.Compiler;
+using Expresso.Compiler.Meta;
 using Expresso.Runtime.Operations;
 
 namespace Expresso.Ast
@@ -18,48 +19,59 @@ namespace Expresso.Ast
     /// </summary>
     public class Identifier : Assignable
     {
+		private readonly string name;
+
         /// <summary>
         /// 識別子名。
 		/// The name of the identifier.
         /// </summary>
-        public string Name { get; internal set; }
+        public string Name{
+			get{return name;}
+		}
 
 		/// <summary>
-		/// エイリアス名。
-		/// The alias name. It can be null if the identifier is not an alias for another.
+		/// 変数の評価スタック内でのオフセット値。
+		/// The offset of the variable in the evaluation stack.
 		/// </summary>
-		public string AliasName{get; internal set;}
+		public int Offset{
+			get{
+				return (Reference != null && Reference.Variable != null) ? Reference.Variable.Offset : -1;
+			}
+		}
+
+		internal ExpressoReference Reference{get; set;}
 
 		/// <summary>
-		/// 変数の変数ストア内でのオフセット値。
-		/// The offset of the variable in the variable store.
+		/// Indicates whether the identifier is resolved(whether the name is bound to a value).
 		/// </summary>
-		public int Offset{get; internal set;}
-
-		/// <summary>
-		/// 何階層分親のスコープを辿るか。
-		/// The level by which it should track up the scope chain when finding the variable.
-		/// </summary>
-		public int Level{get; internal set;}
+		internal bool IsResolved{
+			get{return Reference != null && Reference.IsBound;}
+		}
 
 		/// <summary>
 		/// 変数の型。
 		/// The type of the variable.
 		/// </summary>
-		public TypeAnnotation ParamType{get; internal set;}
+		public TypeAnnotation ParamType{
+			get{
+				return (Reference != null) ? Reference.VariableType : TypeAnnotation.VoidType;
+			}
+		}
+
+		/// <summary>
+		/// Indicates whether the identifier is definitely assigned to a value.
+		/// </summary>
+		internal bool Assigned{get; set;}
 
         public override NodeType Type
         {
             get { return NodeType.Identifier; }
         }
 
-		public Identifier(string name, TypeAnnotation type = null, string aliasName = null, int offset = -1, int level = 0)
+		internal Identifier(string identName, ExpressoReference reference)
 		{
-			Name = name;
-			ParamType = type;
-			AliasName = aliasName;
-			Offset = offset;
-			Level = level;
+			name = identName;
+			Reference = reference;
 		}
 
         public override bool Equals(object obj)
@@ -68,15 +80,15 @@ namespace Expresso.Ast
 
             if (x == null) return false;
 
-            return this.Name == x.Name;
+            return this.name == x.name;
         }
 
         public override int GetHashCode()
         {
-            return this.Name.GetHashCode();
+            return this.name.GetHashCode();
         }
 
-        internal override object Run(VariableStore varStore)
+        /*internal override object Run(VariableStore varStore)
         {
 			if(ParamType.ObjType == ObjectTypes._SUBSCRIPT)
 				return this;
@@ -94,22 +106,30 @@ namespace Expresso.Ast
 				return module;
 			}else
 				return varStore.Get(Offset, Level);
-        }
+        }*/
 
 		internal override CSharpExpr Compile(Emitter<CSharpExpr> emitter)
 		{
 			return emitter.Emit(this);
 		}
 
-		internal override void Assign(VariableStore varStore, object val)
+		internal override void Walk(ExpressoWalker walker)
 		{
-			varStore.Assign(Level, Offset, val);
+			if(walker.Walk(this)){}
+			walker.PostWalk(this);
+		}
+
+		internal override void Assign(EvaluationFrame frame, object val)
+		{
+			if(Reference != null)
+				frame.Assign(this.Offset, val);
+			else
+				throw ExpressoOps.RuntimeError("Unbound name: {0}", name);
 		}
 
 		public override string ToString()
 		{
-			return (AliasName != null) ? string.Format("[alias] {0} for {1} (- {2}", AliasName, Name, ParamType) :
-				string.Format("{0}({2}:{3}) (- {1}", Name, ParamType, Level, Offset);
+			return (Reference != null) ? Reference.ToString() : string.Format("[Unbound name: {0}]", name);
 		}
     }
 }

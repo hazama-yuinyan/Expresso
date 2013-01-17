@@ -5,19 +5,11 @@ namespace Expresso.Ast
 {
     /// <summary>
     /// 式の共通基底。
+	/// Base class for all expressions.
     /// </summary>
     public abstract class Expression : Node
     {
     }
-
-	/// <summary>
-	/// 左辺式になれるノード。
-	/// Represents an assignable node.
-	/// </summary>
-	public abstract class Assignable : Expression
-	{
-		internal abstract void Assign(VariableStore varStore, object val);
-	}
 
     /// <summary>
     /// 演算子のタイプ。
@@ -44,6 +36,7 @@ namespace Expresso.Ast
 		BIT_AND,
 		BIT_XOR,
 		BIT_LSHIFT,
-		BIT_RSHIFT
+		BIT_RSHIFT,
+		IS
     }
 }

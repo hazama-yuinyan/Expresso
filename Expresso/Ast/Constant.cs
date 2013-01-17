@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using Expresso.Builtins;
 using Expresso.Interpreter;
 using Expresso.Compiler;
+using Expresso.Compiler.Meta;
 
 namespace Expresso.Ast
 {
@@ -15,22 +16,35 @@ namespace Expresso.Ast
     /// </summary>
     public class Constant : Expression
     {
+		private readonly ObjectTypes val_type;
+		private readonly object val;
+
 		/// <summary>
 		/// この定数値の型。
 		/// The type of this constant.
 		/// </summary>
-		public ObjectTypes ValType{get; internal set;}
+		public ObjectTypes ValType{
+			get{return val_type;}
+		}
 		
         /// <summary>
         /// 定数の値。
 		/// The value.
         /// </summary>
-        public object Value{get; internal set;}
+        public object Value{
+			get{return val;}
+		}
 
         public override NodeType Type
         {
             get { return NodeType.Constant; }
         }
+
+		public Constant(object value, ObjectTypes valType)
+		{
+			this.val_type = valType;
+			this.val = value;
+		}
 
         public override bool Equals(object obj)
         {
@@ -38,27 +52,33 @@ namespace Expresso.Ast
 
             if (x == null) return false;
 
-            return object.Equals(this.Value, x.Value);
+            return val.Equals(x.val) && val_type.Equals(x.val_type);
         }
 
         public override int GetHashCode()
         {
-            return this.Value.GetHashCode();
+            return this.val.GetHashCode() ^ val_type.GetHashCode();
         }
 
-        internal override object Run(VariableStore varStore)
+        /*internal override object Run(VariableStore varStore)
         {
 			return Value;
-        }
+        }*/
 
 		internal override CSharpExpr Compile(Emitter<CSharpExpr> emitter)
 		{
 			return emitter.Emit(this);
 		}
 
-		public override string ToString ()
+		internal override void Walk(ExpressoWalker walker)
 		{
-			return string.Format("{0}", Value);
+			if(walker.Walk(this)){}
+			walker.PostWalk(this);
+		}
+
+		public override string ToString()
+		{
+			return string.Format("{0}", val);
 		}
     }
 }

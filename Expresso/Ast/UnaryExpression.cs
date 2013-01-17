@@ -16,19 +16,33 @@ namespace Expresso.Ast
 	/// </summary>
 	public class UnaryExpression : Expression
 	{
+		private readonly OperatorType ope;
+		private readonly Expression operand;
+
 		/// <summary>
 		/// 演算子のタイプ。
+		/// The type of the operation.
 		/// </summary>
-		public OperatorType Operator { get; internal set; }
+		public OperatorType Operator{
+			get{return ope;}
+		}
 
 		/// <summary>
 		/// オペランド。
 		/// The operand.
 		/// </summary>
-		public Expression Operand { get; internal set; }
+		public Expression Operand{
+			get{return operand;}
+		}
 
 		public override NodeType Type {
 			get { return NodeType.UnaryExpression; }
+		}
+
+		public UnaryExpression(OperatorType opType, Expression target)
+		{
+			ope = opType;
+			operand = target;
 		}
 
 		public override bool Equals(object obj)
@@ -38,16 +52,15 @@ namespace Expresso.Ast
 			if (x == null)
 				return false;
 
-			return this.Operator == x.Operator
-                && this.Operand.Equals(x.Operand);
+			return ope == x.ope && operand.Equals(x.operand);
 		}
 
 		public override int GetHashCode()
 		{
-			return this.Operator.GetHashCode() ^ this.Operand.GetHashCode();
+			return ope.GetHashCode() ^ operand.GetHashCode();
 		}
 
-		internal override object Run(VariableStore varStore)
+		/*internal override object Run(VariableStore varStore)
 		{
 			var ope = Operand.Run(varStore);
 			if(ope == null)
@@ -70,11 +83,19 @@ namespace Expresso.Ast
 			}
 			
 			return ope;
-		}
+		}*/
 
 		internal override CSharpExpr Compile(Emitter<CSharpExpr> emitter)
 		{
 			return emitter.Emit(this);
+		}
+
+		internal override void Walk(ExpressoWalker walker)
+		{
+			if(walker.Walk(this))
+				operand.Walk(walker);
+
+			walker.PostWalk(this);
 		}
 
 		public override string ToString()
@@ -97,7 +118,7 @@ namespace Expresso.Ast
 				op = "";
 				break;
 			}
-			return string.Format("{0}{1}", op, Operand);
+			return string.Format("{0}{1}", op, operand);
 		}
 	}
 }

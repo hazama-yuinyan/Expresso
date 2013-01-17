@@ -1,8 +1,12 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
+using System.Diagnostics;
 
 using Expresso.Builtins;
 using Expresso.Interpreter;
 using Expresso.Compiler;
+using Expresso.Compiler.Meta;
+using Expresso.Utils;
 
 namespace Expresso.Ast
 {
@@ -23,10 +27,11 @@ namespace Expresso.Ast
 		Argument,
         Call,
         Assignment,
-        Function,
+        FunctionDef,
+		EmptyStatement,
         Return,
 		Print,
-		Sequence,
+		IntSequence,
 		MemRef,
 		Comprehension,
 		ComprehensionFor,
@@ -43,15 +48,19 @@ namespace Expresso.Ast
 		Initializer,
 		SwitchStatement,
 		CaseClause,
-		TypeDecl,
-		ModuleDecl,
+		TypeDef,
+		Toplevel,
 		New,
 		Require,
 		WithStatement,
 		CatchClause,
 		FinallyClause,
 		ThrowStatement,
-		YieldStatement
+		YieldStatement,
+		CastExpression,
+		IsExpression,
+		Sequence,
+		DefaultExpression
     }
 
     /// <summary>
@@ -60,6 +69,9 @@ namespace Expresso.Ast
     /// </summary>
     public abstract class Node
     {
+		private SourceLocation _start = SourceLocation.Invalid;
+		private SourceLocation _end = SourceLocation.Invalid;
+
         /// <summary>
         /// ノードタイプ。
 		/// The node's type.
@@ -68,23 +80,48 @@ namespace Expresso.Ast
 
         internal protected Node() { }
 
-        #region 抽象構文木を実行する。
+		public ScopeStatement Parent{
+			get; internal set;
+		}
 
-        /// <summary>
-        /// operator== とかをオーバーロードしてるクラスでも、参照に基づいてDictionaryとかを使うために。
-        /// </summary>
-        class ReferenceEqual<T> : IEqualityComparer<T>
-        {
-            bool IEqualityComparer<T>.Equals(T x, T y)
-            {
-                return object.ReferenceEquals(x, y);
-            }
+		public void SetLoc(SourceLocation start, SourceLocation end)
+		{
+			_start = start;
+			_end = end;
+		}
+		
+		public void SetLoc(SourceSpan span)
+		{
+			_start = span.Start;
+			_end = span.End;
+		}
 
-            int IEqualityComparer<T>.GetHashCode(T obj)
-            {
-                return obj.GetHashCode();
-            }
-        }
+		internal ExpressoAst GlobalParent{
+			get {
+				Node cur = this;
+				while(!(cur is ExpressoAst)){
+					Debug.Assert(cur != null);
+					cur = cur.Parent;
+				}
+				return (ExpressoAst)cur;
+			}
+		}
+		
+		public SourceLocation Start{
+			get { return _start; }
+			set { _start = value; }
+		}
+		
+		public SourceLocation End{
+			get { return _end; }
+			set { _end = value; }
+		}
+		
+		public SourceSpan Span{
+			get {
+				return new SourceSpan(_start, _end);
+			}
+		}
 
         /// <summary>
         /// インタプリターの実行。このノードがあらわす処理を実行する。
@@ -92,8 +129,7 @@ namespace Expresso.Ast
         /// </summary>
         /// <param name="varStore">ローカル変数テーブル。</param>
         /// <returns>そのコードを評価した結果の戻り値など。</returns>
-        internal abstract object Run(VariableStore varStore);
-        #endregion
+        //internal abstract object Run(VariableStore varStore);
 
 		/// <summary>
 		/// このノードがあらわすコードをC#の式木にコンパイルする。
@@ -104,24 +140,40 @@ namespace Expresso.Ast
 		/// </param>
 		internal abstract CSharpExpr Compile(Emitter<CSharpExpr> emitter);
 
-		static internal ExprStatement MakeExprStmt(List<Expression> exprs)
+		/// <summary>
+		/// Accepts an ExpressoWalker class instance.
+		/// </summary>
+		internal abstract void Walk(ExpressoWalker walker);
+
+		#region AST node factory methods
+		static internal BreakStatement MakeBreakStmt(int count, IEnumerable<BreakableStatement> loops)
 		{
-			return new ExprStatement{Expressions = exprs};
+			return new BreakStatement(count, loops.ToArray());
 		}
 
-		static internal PrintStatement MakePrintStmt(List<Expression> exprs, bool hasTrailingComma)
+		static internal ContinueStatement MakeContinueStmt(int count, IEnumerable<BreakableStatement> loops)
 		{
-			return new PrintStatement{Expressions = exprs, HasTrailing = hasTrailingComma};
+			return new ContinueStatement(count, loops.ToArray());
 		}
 
-		static internal ReturnStatement MakeReturnStmt(List<Expression> exprs)
+		static internal ExprStatement MakeExprStmt(IEnumerable<Expression> exprs)
 		{
-			return new ReturnStatement{Expressions = exprs};
+			return new ExprStatement(exprs.ToArray());
+		}
+
+		static internal PrintStatement MakePrintStmt(SequenceExpression exprs, bool hasTrailingComma)
+		{
+			return new PrintStatement(exprs != null ? exprs.Items.ToArray() : null, hasTrailingComma);
+		}
+
+		static internal ReturnStatement MakeReturnStmt(Expression expr)
+		{
+			return new ReturnStatement(expr);
 		}
 		
 		static internal IfStatement MakeIfStmt(Expression condition, Statement trueBlock, Statement falseBlock)
 		{
-			return new IfStatement{Condition = condition, TrueBlock = trueBlock, FalseBlock = falseBlock};
+			return new IfStatement(condition, trueBlock, falseBlock);
 		}
 		
 		static internal WhileStatement MakeWhileStmt()
@@ -134,118 +186,184 @@ namespace Expresso.Ast
 			return new ForStatement();
 		}
 		
-		static internal SwitchStatement MakeSwitchStmt(Expression target, List<CaseClause> cases)
+		static internal SwitchStatement MakeSwitchStmt(Expression target, IEnumerable<CaseClause> cases)
 		{
-			return new SwitchStatement{Target = target, Cases = cases};
+			return new SwitchStatement(target, cases.ToArray());
+		}
+
+		static internal EmptyStatement MakeEmptyStmt()
+		{
+			return new EmptyStatement();
 		}
 		
-		static internal CaseClause MakeCaseClause(List<Expression> labels, Statement body)
+		static internal CaseClause MakeCaseClause(IEnumerable<Expression> labels, Statement body)
 		{
-			return new CaseClause{Labels = labels, Body = body};
+			return new CaseClause(labels.ToArray(), body);
 		}
 		
-		static internal Function MakeFunc(string name, List<Argument> parameters, Block body, TypeAnnotation returnType, bool isStatic = false)
+		static internal FunctionDefinition MakeFunc(string name, IEnumerable<Argument> parameters, Block body, TypeAnnotation returnType, bool isStatic = false)
 		{
-			return new Function(name, parameters, body, returnType, isStatic);
+			return new FunctionDefinition(name, parameters.ToArray(), body, returnType, isStatic);
 		}
 		
-		static internal Function MakeClosure(string name, List<Argument> parameters, Block body, TypeAnnotation returnType, VariableStore environ)
+		static internal FunctionDefinition MakeClosure(string name, IEnumerable<Argument> parameters, Block body, TypeAnnotation returnType, VariableStore environ)
 		{
-			return new Function(name, parameters, body, returnType, false, environ);
+			return new FunctionDefinition(name, parameters.ToArray(), body, returnType, false, environ);
+		}
+
+		static internal Call MakeCallExpr(Expression target, IEnumerable<Expression> args)
+		{
+			return new Call(target, args.ToArray());
+		}
+
+		static internal Identifier MakeIdentifier(string name)
+		{
+			return new Identifier(name, null);
+		}
+
+		static internal Identifier MakeLocalVar(string name, TypeAnnotation type)
+		{
+			return new Identifier(name, new ExpressoReference(name, new ExpressoVariable(name, type, VariableKind.Local)));
+		}
+
+		static internal Identifier MakeField(string name, TypeAnnotation type)
+		{
+			return new Identifier(name, new ExpressoReference(name, new ExpressoVariable(name, type, VariableKind.Field)));
+		}
+
+		static internal SequenceExpression MakeSequence(IEnumerable<Expression> items)
+		{
+			return new SequenceExpression(items.ToArray());
 		}
 		
 		static internal UnaryExpression MakeUnaryExpr(OperatorType op, Expression operand)
 		{
-			return new UnaryExpression{Operator = op, Operand = operand};
+			return new UnaryExpression(op, operand);
 		}
 		
 		static internal BinaryExpression MakeBinaryExpr(OperatorType op, Expression lhs, Expression rhs)
 		{
-			return new BinaryExpression{Operator = op, Left = lhs, Right = rhs};
+			return new BinaryExpression(lhs, rhs, op);
 		}
 		
-		static internal ObjectInitializer MakeObjInitializer(ObjectTypes type, List<Expression> initializeList)
+		static internal SequenceInitializer MakeSeqInitializer(ObjectTypes type, IEnumerable<Expression> initializeList)
 		{
-			return new ObjectInitializer{Initializer = initializeList, ObjType = type};
+			return new SequenceInitializer(initializeList.ToArray(), type);
 		}
 		
-		static internal Assignment MakeAssignment(List<Expression> targets, List<Expression> expressions)
+		static internal Assignment MakeAssignment(IEnumerable<Expression> targets, SequenceExpression rhs)
 		{
-			return new Assignment{Targets = targets, Expressions = expressions};
+			return new Assignment(targets.ToArray(), rhs);
 		}
 		
-		static internal Assignment MakeAugumentedAssignment(List<Expression> targets, List<Expression> expressions, OperatorType opType)
+		static internal Assignment MakeAugumentedAssignment(SequenceExpression targets, SequenceExpression rhs, OperatorType opType)
 		{
 			var rvalues = new List<Expression>();
-			for(int i = 0; i < expressions.Count; ++i){
-				var rvalue = new BinaryExpression{Left = targets[i], Right = expressions[i], Operator = opType};
+			for(int i = 0; i < rhs.Count; ++i){
+				var rvalue = new BinaryExpression(targets.Items[i], rhs.Items[i], opType);
 				rvalues.Add(rvalue);
 			}
-			return new Assignment{Targets = targets, Expressions = rvalues};
+			return new Assignment(new Expression[]{targets}, MakeSequence(rvalues));
+		}
+
+		static internal CastExpression MakeCastExpr(Expression target, Expression toExpr)
+		{
+			return new CastExpression(toExpr, target);
+		}
+
+		static internal ConditionalExpression MakeCondExpr(Expression test, Expression trueExpr, Expression falseExpr)
+		{
+			return new ConditionalExpression(test, trueExpr, falseExpr);
 		}
 		
 		static internal Comprehension MakeComp(Expression yieldExpr, ComprehensionFor body, ObjectTypes objType)
 		{
-			return new Comprehension{YieldExpr = yieldExpr, Body = body, ObjType = objType};
+			return new Comprehension(yieldExpr, body, objType);
 		}
 		
-		static internal ComprehensionFor MakeCompFor(List<Expression> lValues, Expression target, ComprehensionIter body)
+		static internal ComprehensionFor MakeCompFor(SequenceExpression left, Expression target, ComprehensionIter body)
 		{
-			return new ComprehensionFor{LValues = lValues, Target = target, Body = body};
+			return new ComprehensionFor(left, target, body);
 		}
 		
 		static internal ComprehensionIf MakeCompIf(Expression condition, ComprehensionIter body)
 		{
-			return new ComprehensionIf{Condition = condition, Body = body};
+			return new ComprehensionIf(condition, body);
 		}
 		
 		static internal Constant MakeConstant(ObjectTypes type, object val)
 		{
-			return new Constant{ValType = type, Value = val};
+			return new Constant(val, type);
+		}
+
+		static internal Argument MakeArg(string name, TypeAnnotation type, Expression option = null)
+		{
+			return new Argument(option, new ExpressoVariable(name, type, VariableKind.Parameter));
+		}
+
+		static internal MemberReference MakeMemRef(Expression parent, Expression child)
+		{
+			return new MemberReference(parent, child);
 		}
 		
 		static internal IntSeqExpression MakeIntSeq(Expression start, Expression end, Expression step)
 		{
-			return new IntSeqExpression{Start = start, End = end, Step = step};
-		}
-		
-		static internal TypeDeclaration MakeClassDef(string className, List<string> bases, List<Statement> decls)
-		{
-			return new TypeDeclaration{TargetType = DeclType.Class, Name = className, Bases = bases, Declarations = decls};
+			return new IntSeqExpression(start, end, step);
 		}
 
-		static internal ModuleDeclaration MakeModuleDef(string moduleName, List<Statement> requires, List<Statement> decls,
-		                                                List<bool> exportMap)
+		static internal VarDeclaration MakeVarDecl(IEnumerable<Identifier> lhs, IEnumerable<Expression> rhs)
 		{
-			return new ModuleDeclaration{Name = moduleName, Requires = requires, Declarations = decls, ExportMap = exportMap};
+			return new VarDeclaration(lhs.ToArray(), rhs.ToArray());
 		}
 		
-		static internal NewExpression MakeNewExpr(Expression target, List<Expression> args)
+		static internal TypeDefinition MakeClassDef(string className, IEnumerable<string> bases, IEnumerable<Statement> decls)
 		{
-			return new NewExpression{TargetDecl = target, Arguments = args};
+			return new TypeDefinition(className, decls.ToArray(), Expresso.Ast.DeclType.Class, bases.ToArray());
+		}
+
+		static internal ExpressoAst MakeModuleDef(string moduleName, IEnumerable<Statement> decls, IEnumerable<bool> exportMap)
+		{
+			return new ExpressoAst(decls.ToArray(), moduleName, exportMap.ToArray());
 		}
 		
-		static internal RequireExpression MakeRequireExpr(string moduleName, string aliasName)
+		static internal NewExpression MakeNewExpr(Expression target, IEnumerable<Expression> args)
 		{
-			return new RequireExpression{ModuleName = moduleName, AliasName = aliasName};
+			return new NewExpression(target, args.ToArray());
 		}
 		
-		static internal TryStatement MakeTryStmt(Block body, List<CatchClause> catches, Block finallyClause)
+		static internal RequireStatement MakeRequireStmt(IEnumerable<string> moduleNames, IEnumerable<string> aliasNames)
+		{
+			return (aliasNames.Any((name) => name != null)) ? new RequireStatement(moduleNames.ToArray(), aliasNames.ToArray()) :
+				new RequireStatement(moduleNames.ToArray());
+		}
+		
+		static internal TryStatement MakeTryStmt(Block body, IEnumerable<CatchClause> catches, Block finallyClause)
 		{
 			if(finallyClause != null)
-			return new TryStatement{Body = body, Catches = catches, FinallyClause = new FinallyClause{Body = finallyClause}};
+				return new TryStatement(body, catches.ToArray(), new FinallyClause(finallyClause));
 			else
-			return new TryStatement{Body = body, Catches = catches, FinallyClause = null};
+				return new TryStatement(body, catches.ToArray(), null);
+		}
+
+		static internal CatchClause MakeCatchClause(Block body, Identifier ident)
+		{
+			return new CatchClause(ident, body);
+		}
+
+		static internal WithStatement MakeWithStmt(Expression context, Statement body)
+		{
+			return new WithStatement(context, body);
 		}
 		
 		static internal ThrowStatement MakeThrowStmt(Expression expr)
 		{
-			return new ThrowStatement{Expression = expr};
+			return new ThrowStatement(expr);
 		}
 		
 		static internal YieldStatement MakeYieldStmt(Expression expr)
 		{
-			return new YieldStatement{Expression = expr};
+			return new YieldStatement(expr);
 		}
+		#endregion
     }
 }

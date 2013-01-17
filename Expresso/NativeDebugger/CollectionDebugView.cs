@@ -5,10 +5,12 @@ using System.Diagnostics;
 
 namespace Expresso.Runtime
 {
-	internal class CollectionDebugProxy {
+	internal class CollectionDebugProxy
+	{
 		private readonly ICollection _collection;
 		
-		public CollectionDebugProxy(ICollection collection) {
+		public CollectionDebugProxy(ICollection collection)
+		{
 			_collection = collection;
 		}
 		
@@ -16,7 +18,7 @@ namespace Expresso.Runtime
 		internal IList Members {
 			get {
 				List<object> res = new List<object>(_collection.Count);
-				foreach (object o in _collection) {
+				foreach(object o in _collection){
 					res.Add(o);
 				}
 				return res;
@@ -24,10 +26,12 @@ namespace Expresso.Runtime
 		}
 	}
 	
-	internal class ObjectCollectionDebugProxy {
+	internal class ObjectCollectionDebugProxy
+	{
 		private readonly ICollection<object> _collection;
 		
-		public ObjectCollectionDebugProxy(ICollection<object> collection) {
+		public ObjectCollectionDebugProxy(ICollection<object> collection)
+		{
 			_collection = collection;
 		}
 		

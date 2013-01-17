@@ -18,28 +18,45 @@ namespace Expresso.Ast
     /// </summary>
     public class BinaryExpression : Expression
     {
+		private readonly OperatorType ope;
+		private readonly Expression lhs;
+		private readonly Expression rhs;
+
         /// <summary>
         /// 演算子のタイプ。
 		/// The type of the operator.
         /// </summary>
-        public OperatorType Operator { get; internal set; }
+        public OperatorType Operator{
+			get{return ope;}
+		}
 
         /// <summary>
         /// 左辺のオペランド。
 		/// The left operand.
         /// </summary>
-        public Expression Left { get; internal set; }
+        public Expression Left{
+			get{return lhs;}
+		}
 
         /// <summary>
         /// 右辺のオペランド。
 		/// The right operand.
         /// </summary>
-        public Expression Right { get; internal set; }
+        public Expression Right{
+			get{return rhs;}
+		}
 
         public override NodeType Type
         {
             get { return NodeType.BinaryExpression; }
         }
+
+		public BinaryExpression(Expression left, Expression right, OperatorType opType)
+		{
+			ope = opType;
+			lhs = left;
+			rhs = right;
+		}
 
         public override bool Equals(object obj)
         {
@@ -47,17 +64,17 @@ namespace Expresso.Ast
 
             if (x == null) return false;
 
-            return this.Operator == x.Operator
-                && this.Left.Equals(x.Left)
-                && this.Right.Equals(x.Right);
+            return this.ope == x.ope
+                && this.rhs.Equals(x.lhs)
+                && this.rhs.Equals(x.rhs);
         }
 
         public override int GetHashCode()
         {
-            return this.Operator.GetHashCode() ^ this.Left.GetHashCode() ^ this.Right.GetHashCode();
+            return this.ope.GetHashCode() ^ this.lhs.GetHashCode() ^ this.rhs.GetHashCode();
         }
 
-        internal override object Run(VariableStore varStore)
+        /*internal override object Run(VariableStore varStore)
         {
             object first = Left.Run(varStore), second = Right.Run(varStore);
 			if(first == null || second == null)
@@ -79,11 +96,20 @@ namespace Expresso.Ast
 			}else{
 				return EvalBitOperation((int)first, (int)second, Operator);
 			}
-        }
+        }*/
 
 		internal override CSharpExpr Compile(Emitter<CSharpExpr> emitter)
 		{
 			return emitter.Emit(this);
+		}
+
+		internal override void Walk(ExpressoWalker walker)
+		{
+			if(walker.Walk(this)){
+				Left.Walk(walker);
+				Right.Walk(walker);
+			}
+			walker.PostWalk(this);
 		}
 		
 		private int BinaryExprAsInt(int lhs, int rhs, OperatorType opType)

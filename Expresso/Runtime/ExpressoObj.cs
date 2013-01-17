@@ -4,93 +4,13 @@ using System.Collections.Generic;
 
 using Expresso.Ast;
 using Expresso.Interpreter;
+using Expresso.Compiler.Meta;
 using Expresso.Runtime.Operations;
 
-namespace Expresso.Builtins
+namespace Expresso.Runtime
 {
-	public enum ObjectTypes
-	{
-		_SUBSCRIPT = -5,
-		_CASE_DEFAULT = -4,
-		_LABEL_PRIVATE = -3,
-		_LABEL_PUBLIC = -2,
-		_INFERENCE = -1,
-		UNDEF = 0,
-		NULL,
-		INTEGER,
-		BOOL,
-		FLOAT,
-		RATIONAL,
-		BIGINT,
-		STRING,
-		BYTEARRAY,
-		VAR,
-		TUPLE,
-		LIST,
-		DICT,
-		EXPRESSION,
-		FUNCTION,
-		SEQ,
-		INSTANCE,
-		TYPE_CLASS,
-		TYPE_MODULE,
-		TYPE_STRUCT
-	};
-
 	/// <summary>
-	/// Contains type information of Expresso's object.
-	/// </summary>
-	public class TypeAnnotation : ICloneable
-	{
-		public ObjectTypes ObjType{get; internal set;}
-
-		public string TypeName{get; internal set;}
-
-		public TypeAnnotation(ObjectTypes type, string name = null)
-		{
-			ObjType = type;
-			TypeName = name;
-		}
-
-		public TypeAnnotation Clone()
-		{
-			return new TypeAnnotation(ObjType, TypeName);
-		}
-
-		object ICloneable.Clone()
-		{
-			return this.Clone();
-		}
-
-		public override bool Equals(object obj)
-		{
-			var x = obj as TypeAnnotation;
-			if(x == null)
-				return false;
-
-			return this.ObjType == x.ObjType && this.TypeName == x.TypeName;
-		}
-
-		public override int GetHashCode()
-		{
-			return ObjType.GetHashCode() ^ TypeName.GetHashCode();
-		}
-
-		public override string ToString()
-		{
-			return (ObjType == ObjectTypes.TYPE_CLASS) ? string.Format("class {0}", TypeName) :
-				(ObjType == ObjectTypes.TYPE_MODULE) ? string.Format("module {0}", TypeName) :
-					(ObjType == ObjectTypes.TYPE_STRUCT) ? string.Format("struct {0}", TypeName) :
-					(TypeName != null) ? string.Format("{0}", TypeName) : string.Format("{0}", ObjType);
-		}
-
-		public static readonly TypeAnnotation InferenceType = new TypeAnnotation(ObjectTypes._INFERENCE);
-		public static readonly TypeAnnotation VariantType = new TypeAnnotation(ObjectTypes.VAR);
-		public static readonly TypeAnnotation VoidType = new TypeAnnotation(ObjectTypes.UNDEF);
-	}
-
-	/// <summary>
-	/// Represents an instance of Expresso objects.
+	/// Represents an instance of user-defined Expresso types.
 	/// </summary>
 	public class ExpressoObj : IEnumerable<object>, IEnumerable
 	{
@@ -172,7 +92,12 @@ namespace Expresso.Builtins
 			int offset = definition.GetMemberOffset(subscription, isInsideClass);
 			return members[offset];
 		}
-		
+
+		public object AccessMemberWithName(string name, bool isInsideClass)
+		{
+			return definition.GetMember(name, isInsideClass);
+		}
+
 		public object GetMember(int index)
 		{
 			return members[index];
@@ -203,7 +128,7 @@ namespace Expresso.Builtins
 		/// <param name='varStore'>
 		/// The environment.
 		/// </param>
-		public static ExpressoObj CreateInstance(BaseDefinition definition, List<Expression> args, VariableStore varStore)
+		public static ExpressoObj CreateInstance(CodeContext context, BaseDefinition definition, Expression[] args)
 		{
 			ExpressoObj new_inst = null;
 			if(definition is ClassDefinition)
@@ -215,8 +140,8 @@ namespace Expresso.Builtins
 			else
 				throw ExpressoOps.InvalidTypeError("Unknown definition.");
 			
-			var constructor = new_inst.AccessMember(new Identifier("constructor"), true) as Function;
-			if(constructor != null){
+			var constructor = new_inst.AccessMember(new Identifier("constructor", null), true) as FunctionDefinition;
+			/*if(constructor != null){
 				var value_this = new Constant{ValType = ObjectTypes.INSTANCE, Value = new_inst};	//thisの値としてインスタンスを追加する
 				args.Insert(0, value_this);
 				var call_ctor = new Call{
@@ -225,27 +150,8 @@ namespace Expresso.Builtins
 					Reference = null
 				};
 				call_ctor.Run(varStore);
-			}
+			}*/
 			return new_inst;
-		}
-	}
-	
-	public class ExpressoModule
-	{
-		static private Dictionary<string, ExpressoObj> modules = new Dictionary<string, ExpressoObj>();
-		
-		static public void AddModule(string name, ExpressoObj moduleInstance)
-		{
-			modules.Add(name, moduleInstance);
-		}
-
-		static public ExpressoObj GetModule(string name)
-		{
-			ExpressoObj module;
-			if(modules.TryGetValue(name, out module))
-				return module;
-			else
-				return null;
 		}
 	}
 }

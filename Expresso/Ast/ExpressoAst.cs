@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -12,53 +13,103 @@ namespace Expresso.Ast
 	using CSharpExpr = System.Linq.Expressions.Expression;
 
 	/// <summary>
-	/// モジュール宣言式。
-	/// The module declaration.
+	/// ExpressoのASTのトップレベルノード。ファイルから生成された場合はモジュールを表すが、evalによって作られた場合もある。
+	/// Top-level ast for all Expresso code. Typically represents a module but could also
+	/// be exec or eval code.
 	/// </summary>
-	public class ModuleDeclaration : Statement
+	public class ExpressoAst : ScopeStatement
 	{
+		private Statement[] body;
+		private readonly string name;
+		private readonly bool is_module;
+
 		/// <summary>
 		/// モジュール名。Expressoには明示的なモジュール宣言がないので、たいていはファイル名になる。
 		/// The name of the module. Since Expresso doesn't have an explicit module declaration, it would be very likely to be
 		/// the file name.
 		/// If the module contains the main function, it would be called the "main" module.
 		/// </summary>
-		public string Name{get; internal set;}
-
-		public List<Statement> Requires{get; internal set;}
-
-		/// <summary>
-		/// モジュールメンバの定義式郡。
-		/// The declarations for members.
-		/// </summary>
-		public List<Statement> Declarations { get; internal set; }
+		public string Name{
+			get{return "<module>";}
+		}
 
 		/// <summary>
-		/// Declarationsのn番目の定義をエクスポートするかどうかをあらわす。
-		/// A map indicating what declaration would be exported.
+		/// Indicates whether the node represents a module.
 		/// </summary>
-		public List<bool> ExportMap{get; internal set;}
+		public bool IsModule{
+			get{return is_module;}
+		}
+
+		/// <summary>
+		/// 本体。このノードがモジュールだった場合にはrequire文とモジュールの定義文が含まれる。
+		/// The body of this node. If this node represents a module, then the body includes the require statement, if any,
+		/// and the definitions of the module.
+		/// </summary>
+		public Statement[] Body{
+			get{return body;}
+		}
+
+		/// <summary>
+		/// Bodyのn番目の定義をエクスポートするかどうかをあらわす。
+		/// A map indicating which declarations would be exported.
+		/// </summary>
+		public BitArray ExportMap{get; internal set;}
+
+		public string ModuleName{
+			get{
+				return is_module ? name : "<not a module>";
+			}
+		}
 
         public override NodeType Type
         {
-            get { return NodeType.ModuleDecl; }
+            get { return NodeType.Toplevel; }
         }
+
+		public ExpressoAst(Statement[] bodyStmts, string maybeModuleName = null, bool[] exportMap = null)
+		{
+			body = bodyStmts;
+			name = maybeModuleName;
+			is_module = maybeModuleName != null;
+			ExportMap = new BitArray(exportMap);
+		}
+
+		/// <summary>
+		/// Binds an AST and makes it capable of being reduced and compiled.  Before calling Bind an AST cannot successfully
+		/// be reduced.
+		/// </summary>
+		public void Bind()
+		{
+			ExpressoNameBinder.BindAst(this, null);
+		}
+
+		#region Name binding support
+		internal override bool ExposesLocalVariable(ExpressoVariable variable)
+		{
+			return true;
+		}
+
+		internal override ExpressoVariable BindReference(ExpressoNameBinder binder, ExpressoReference reference)
+		{
+			return EnsureVariable(reference.Name, reference.VariableType);
+		}
+		#endregion
 
         public override bool Equals(object obj)
         {
-            var x = obj as ModuleDeclaration;
+            var x = obj as ExpressoAst;
 
             if (x == null) return false;
 
-            return this.Name == x.Name && this.Declarations.Equals(x.Declarations);
+            return this.name == x.name && this.body.Equals(x.body);
         }
 
         public override int GetHashCode()
         {
-            return this.Name.GetHashCode() ^ this.Declarations.GetHashCode();
+            return this.name.GetHashCode() ^ this.body.GetHashCode();
         }
 
-        internal override object Run(VariableStore varStore)
+        /*internal override object Run(VariableStore varStore)
         {
 			if(Requires != null){
 				foreach(var require in Requires)
@@ -89,8 +140,8 @@ namespace Expresso.Ast
 					}else{
 						throw ExpressoOps.InvalidTypeError("A module declaration can not have that type of statements!");
 					}
-				}else if(decl.Item1 is Function){
-					var method = (Function)decl.Item1;
+				}else if(decl.Item1 is FunctionDeclaration){
+					var method = (FunctionDeclaration)decl.Item1;
 					decl_target.Add(method.Name, offset++);
 					members.Add(method);
 				}else if(decl.Item1 is TypeDeclaration){
@@ -107,16 +158,27 @@ namespace Expresso.Ast
 			var module_inst = new ExpressoObj(module_def);
 			ExpressoModule.AddModule(module_def.Name, module_inst);
 			return null;
-        }
+        }*/
 
 		internal override CSharpExpr Compile(Emitter<CSharpExpr> emitter)
 		{
 			return emitter.Emit(this);
 		}
 
+		internal override void Walk(ExpressoWalker walker)
+		{
+			if(walker.Walk(this)){
+				if(body != null){
+					foreach(var stmt in body)
+						stmt.Walk(walker);
+				}
+			}
+			walker.PostWalk(this);
+		}
+
 		public override string ToString()
 		{
-			return string.Format("Declaration of module {0}", Name);
+			return string.Format("Declaration of module {0}", name == null ? "<anonymous>" : name);
 		}
 	}
 }

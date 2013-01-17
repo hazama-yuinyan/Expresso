@@ -12,6 +12,8 @@ namespace Expresso.Compiler
 	{
 		internal abstract ReturnType Emit(Argument node);
 
+		internal abstract ReturnType Emit(AssertStatement node);
+
 		internal abstract ReturnType Emit(Assignment node);
 
 		internal abstract ReturnType Emit(BinaryExpression node);
@@ -19,6 +21,8 @@ namespace Expresso.Compiler
 		internal abstract ReturnType Emit(Block node);
 
 		internal abstract ReturnType Emit(Call node);
+
+		internal abstract ReturnType Emit(CastExpression node);
 
 		internal abstract ReturnType Emit(Comprehension node);
 
@@ -34,11 +38,15 @@ namespace Expresso.Compiler
 
 		internal abstract ReturnType Emit(ContinueStatement node);
 
+		internal abstract ReturnType Emit(DefaultExpression node);
+
+		internal abstract ReturnType Emit(EmptyStatement node);
+
 		internal abstract ReturnType Emit(ExprStatement node);
 
 		internal abstract ReturnType Emit(ForStatement node);
 
-		internal abstract ReturnType Emit(Function node);
+		internal abstract ReturnType Emit(FunctionDefinition node);
 
 		internal abstract ReturnType Emit(Identifier node);
 
@@ -48,21 +56,23 @@ namespace Expresso.Compiler
 
 		internal abstract ReturnType Emit(MemberReference node);
 
-		internal abstract ReturnType Emit(ModuleDeclaration node);
+		internal abstract ReturnType Emit(ExpressoAst node);
 
 		internal abstract ReturnType Emit(NewExpression node);
 
-		internal abstract ReturnType Emit(ObjectInitializer node);
+		internal abstract ReturnType Emit(SequenceInitializer node);
 
 		internal abstract ReturnType Emit(PrintStatement node);
 
-		internal abstract ReturnType Emit(RequireExpression node);
+		internal abstract ReturnType Emit(RequireStatement node);
 
 		internal abstract ReturnType Emit(ReturnStatement node);
 
 		internal abstract ReturnType Emit(SwitchStatement node);
 
 		internal abstract ReturnType Emit(CaseClause node);
+
+		internal abstract ReturnType Emit(SequenceExpression node);
 
 		internal abstract ReturnType Emit(ThrowStatement node);
 
@@ -72,7 +82,7 @@ namespace Expresso.Compiler
 
 		internal abstract ReturnType Emit(FinallyClause node);
 
-		internal abstract ReturnType Emit(TypeDeclaration node);
+		internal abstract ReturnType Emit(TypeDefinition node);
 
 		internal abstract ReturnType Emit(UnaryExpression node);
 

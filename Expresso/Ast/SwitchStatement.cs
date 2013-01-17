@@ -17,20 +17,34 @@ namespace Expresso.Ast
 	/// </summary>
 	public class SwitchStatement : Statement, CompoundStatement
 	{
+		private readonly Expression target;
+		private readonly CaseClause[] cases;
+
 		/// <summary>
         /// 評価対象となる式。
+		/// The target expression on which we'll choose which path to go.
         /// </summary>
-        public Expression Target { get; internal set; }
+        public Expression Target{
+			get{return target;}
+		}
 
         /// <summary>
         /// 分岐先となるラベル(郡)。
         /// </summary>
-        public List<CaseClause> Cases { get; internal set; }
+        public CaseClause[] Cases{
+			get{return cases;}
+		}
 
         public override NodeType Type
         {
             get { return NodeType.SwitchStatement; }
         }
+
+		public SwitchStatement(Expression targetExpr, CaseClause[] caseClauses)
+		{
+			target = targetExpr;
+			cases = caseClauses;
+		}
 
         public override bool Equals(object obj)
         {
@@ -38,16 +52,15 @@ namespace Expresso.Ast
 
             if (x == null) return false;
 
-            return this.Target == x.Target
-                && this.Cases.Equals(x.Cases);
+            return target == x.target && cases.Equals(x.cases);
         }
 
         public override int GetHashCode()
         {
-            return this.Target.GetHashCode() ^ this.Cases.GetHashCode();
+            return this.target.GetHashCode() ^ this.cases.GetHashCode();
         }
 
-        internal override object Run(VariableStore varStore)
+        /*internal override object Run(VariableStore varStore)
         {
 			var target = Target.Run(varStore);
 
@@ -56,11 +69,21 @@ namespace Expresso.Ast
 				if((bool)clause.Run(varStore)) break;
             }
 			return null;
-        }
+        }*/
 
 		internal override CSharpExpr Compile(Emitter<CSharpExpr> emitter)
 		{
 			return emitter.Emit(this);
+		}
+
+		internal override void Walk(ExpressoWalker walker)
+		{
+			if(walker.Walk(this)){
+				target.Walk(walker);
+				foreach(var @case in cases)
+					@case.Walk(walker);
+			}
+			walker.PostWalk(this);
 		}
 
 		public IEnumerable<Identifier> CollectLocalVars()
@@ -74,27 +97,34 @@ namespace Expresso.Ast
 	/// </summary>
 	public class CaseClause : Expression
 	{
+		private readonly Expression[] labels;
+		private readonly Statement body;
+
 		/// <summary>
         /// 分岐先となるラベル(郡)。
         /// </summary>
-		public List<Expression> Labels { get; internal set; }
+		public Expression[] Labels{
+			get{return labels;}
+		}
 
         /// <summary>
         /// 実行対象の文(ブロック)。
 		/// The body statement or block.
         /// </summary>
-        public Statement Body { get; internal set; }
-
-		/// <summary>
-		/// 評価対象となるオブジェクト。
-		/// The target object to be evaluated.
-		/// </summary>
-		public object Target{private get; set;}
+        public Statement Body{
+			get{return body;}
+		}
 
         public override NodeType Type
         {
             get { return NodeType.CaseClause; }
         }
+
+		public CaseClause(Expression[] labelExprs, Statement bodyStmt)
+		{
+			labels = labelExprs;
+			body = bodyStmt;
+		}
 
         public override bool Equals(object obj)
         {
@@ -111,7 +141,7 @@ namespace Expresso.Ast
             return this.Labels.GetHashCode() ^ this.Body.GetHashCode();
         }
 
-        internal override object Run(VariableStore varStore)
+        /*internal override object Run(VariableStore varStore)
         {
 			return Run(varStore, Target);
         }
@@ -146,11 +176,22 @@ namespace Expresso.Ast
 			}
 
 			return result;
-		}
+		}*/
 
 		internal override CSharpExpr Compile(Emitter<CSharpExpr> emitter)
 		{
 			return emitter.Emit(this);
+		}
+
+		internal override void Walk(ExpressoWalker walker)
+		{
+			if(walker.Walk(this)){
+				foreach(var label in labels)
+					label.Walk(walker);
+
+				body.Walk(walker);
+			}
+			walker.PostWalk(this);
 		}
 	}
 }

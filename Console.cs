@@ -21,10 +21,9 @@ namespace Expresso.Terminal
 			parser.ParsingFileName = file_name;
 			parser.Parse();
 			var interp = new Expresso.Interpreter.Interpreter();
-			Expresso.Interpreter.Interpreter.MainModule = parser.ParsingModule;
+			Expresso.Interpreter.Interpreter.MainModule = parser.TopmostAst;
 			interp.CurOpenedSourceFileName = file_name;
 			try{
-				interp.Initialize();
 				interp.Run(new List<object>(args));
 			}
 			catch(RuntimeException eval_ex){

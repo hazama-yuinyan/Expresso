@@ -14,15 +14,24 @@ namespace Expresso.Ast
     /// </summary>
     public class YieldStatement : Statement
     {
+		private readonly Expression expr;
+
         /// <summary>
         /// yieldする式。
         /// </summary>
-        public Expression Expression { get; internal set; }
+        public Expression Expression{
+			get{return expr;}
+		}
 
         public override NodeType Type
         {
             get { return NodeType.YieldStatement; }
         }
+
+		public YieldStatement(Expression expression)
+		{
+			expr = expression;
+		}
 
         public override bool Equals(object obj)
         {
@@ -30,18 +39,27 @@ namespace Expresso.Ast
 
             if (x == null) return false;
 
-            return this.Expression.Equals(x.Expression);
+            return expr.Equals(x.expr);
         }
 
         public override int GetHashCode()
         {
-            return this.Expression.GetHashCode();
+            return expr.GetHashCode();
         }
 
-        internal override object Run(VariableStore varStore)
+        /*internal override object Run(VariableStore varStore)
         {
+			//TODO: implement it
 			return null;
-        }
+        }*/
+
+		internal override void Walk(ExpressoWalker walker)
+		{
+			if(walker.Walk(this))
+				expr.Walk(walker);
+
+			walker.PostWalk(this);
+		}
 
 		internal override CSharpExpr Compile(Emitter<CSharpExpr> emitter)
 		{

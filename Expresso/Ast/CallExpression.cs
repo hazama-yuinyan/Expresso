@@ -17,43 +17,36 @@ namespace Expresso.Ast
     /// </summary>
     public class Call : Expression
     {
+		private readonly Expression target;
+		private readonly Expression[] args;
+
         /// <summary>
         /// 呼び出す対象。
 		/// The target function to be called.
 		/// It can be null if it is a call to a method, since methods are implemetend in the way of
 		/// objects having function objects and they are resolved at runtime.
         /// </summary>
-        public Function Function { get; internal set; }
-
-        /// <summary>
-        /// 呼び出す対象の関数名。
-		/// The target function name.
-        /// </summary>
-        public string Name
-		{ 
-			get{
-				if(Function == null)
-					return Reference.ToString();
-				else
-					return this.Function.Name;
-			}
+        public Expression Target{
+			get{return target;}
 		}
 
         /// <summary>
         /// 与える実引数リスト。
 		/// The argument list to be supplied to the call.
         /// </summary>
-        public List<Expression> Arguments { get; internal set; }
+        public Expression[] Arguments{
+			get{return args;}
+		}
 
-		/// <summary>
-		/// メソッドだった場合のメソッドを指す参照。
-		/// Used to reference methods.
-		/// </summary>
-		public Expression Reference {get; internal set;}
+		//public MethodContainer MethodInfo{get{return method_info;}}
 
-		private MethodContainer method_info = null;
+		//private MethodContainer method_info = null;
 
-		static private Identifier this_value = new Identifier("this");
+		public Call(Expression targetExpr, Expression[] arguments)
+		{
+			target = targetExpr;
+			args = arguments;
+		}
 
         public override NodeType Type
         {
@@ -66,29 +59,25 @@ namespace Expresso.Ast
 
             if (x == null) return false;
 
-            if (this.Name != x.Name) return false;
+            if (this.args.Length != x.args.Length) return false;
 
-            if (this.Arguments.Count != x.Arguments.Count) return false;
-
-            for (int i = 0; i < this.Arguments.Count; ++i)
+            for (int i = 0; i < this.args.Length; ++i)
             {
-                if (!this.Arguments[i].Equals(x.Arguments[i])) return false;
+                if (!this.args[i].Equals(x.args[i])) return false;
             }
-
-			if(!this.Reference.Equals(x.Reference)) return false;
 
             return true;
         }
 
         public override int GetHashCode()
         {
-            return this.Name.GetHashCode() ^ this.Arguments.GetHashCode() ^ this.Reference.GetHashCode();
+            return this.target.GetHashCode() ^ this.args.GetHashCode();
         }
 
-        internal override object Run(VariableStore varStore)
+        /*internal override object Run(VariableStore varStore)
         {
 			var child = new VariableStore{Parent = varStore};
-			Function fn;
+			FunctionDeclaration fn;
 			bool this_registered = false;
 			if(Reference != null){
 				if(method_info == null){
@@ -134,14 +123,14 @@ namespace Expresso.Ast
 			return fn.Run(child);
         }
 
-		internal Tuple<Function, bool> ResolveCallTarget(out VariableStore store, VariableStore parent)
+		internal Tuple<FunctionDefinition, bool> ResolveCallTarget()
 		{
-			store = new VariableStore{Parent = parent};
-			Function fn;
+			FunctionDefinition fn;
 			bool this_registered = false;
-			if(Reference != null){
-				if(method_info == null){
-					var obj = Reference.Run(store);
+			if(target is Identifier){
+				var ident_target = (Identifier)target;
+				if(ident_target.IsResolved){
+					fn = ident_target;
 					var method = obj as MethodContainer;
 					if(method == null)
 						throw ExpressoOps.InvalidTypeError("Not callable: {0}", obj.ToString());
@@ -169,17 +158,27 @@ namespace Expresso.Ast
 				}
 			}
 
-			return new Tuple<Function, bool>(fn, this_registered);
-		}
+			return new Tuple<FunctionDefinition, bool>(fn, this_registered);
+		}*/
 
 		internal override CSharpExpr Compile(Emitter<CSharpExpr> emitter)
 		{
 			return emitter.Emit(this);
 		}
 
+		internal override void Walk(ExpressoWalker walker)
+		{
+			if(walker.Walk(this)){
+				target.Walk(walker);
+				foreach(var arg in args)
+					arg.Walk(walker);
+			}
+			walker.PostWalk(this);
+		}
+
 		public override string ToString()
 		{
-			return string.Format("[Call for {0} with ({1})]", Name, Arguments);
+			return string.Format("[Call for {0} with ({1})]", target, args);
 		}
     }
 }

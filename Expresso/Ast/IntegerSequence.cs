@@ -15,30 +15,45 @@ namespace Expresso.Ast
 	/// </summary>
 	public class IntSeqExpression : Expression
 	{
+		private Expression lower, upper, step;
+
 		/// <summary>
 		/// 整数列の下限.
 		/// The lower bound of the integer sequence.
 		/// The expression has to yield an integer.
 		/// </summary>
-		public Expression Start{get; internal set;}
+		public Expression Lower{
+			get{return lower;}
+		}
 
 		/// <summary>
 		/// 整数列の上限.
 		/// The upper bound of the integer sequence.
 		/// The expression has to yield an integer.
 		/// </summary>
-		public Expression End{get; internal set;}
+		public Expression Upper{
+			get{return upper;}
+		}
 		
 		/// <summary>
 		/// ステップ.
 		/// The step by which an iteration proceeds at a time.
 		/// The expression has to yield an integer.
 		/// </summary>
-		public Expression Step{get; internal set;}
+		public Expression Step{
+			get{return step;}
+		}
+
+		public IntSeqExpression(Expression start, Expression end, Expression stepExpr)
+		{
+			lower = start;
+			upper = end;
+			step = stepExpr;
+		}
 		
 		public override NodeType Type
         {
-            get { return NodeType.Sequence; }
+            get { return NodeType.IntSequence; }
         }
 
         public override bool Equals(object obj)
@@ -47,15 +62,15 @@ namespace Expresso.Ast
 
             if (x == null) return false;
 
-            return this.Start == x.Start && this.End == x.End && this.Step == x.Step;
+            return this.Lower == x.Lower && this.Upper == x.Upper && this.Step == x.Step;
         }
 
         public override int GetHashCode()
         {
-            return this.Start.GetHashCode() ^ this.End.GetHashCode() ^ this.Step.GetHashCode();
+            return this.Lower.GetHashCode() ^ this.Upper.GetHashCode() ^ this.Step.GetHashCode();
         }
 		
-		internal override object Run(VariableStore varStore)
+		/*internal override object Run(VariableStore varStore)
 		{
 			var start = Start.Run(varStore);
 			if(!(start is int))
@@ -70,11 +85,21 @@ namespace Expresso.Ast
 				throw ExpressoOps.InvalidTypeError("The step expression of the IntSeq expression must yield an integer!");
 
 			return new ExpressoIntegerSequence((int)start, (int)end, (int)step);
-		}
+		}*/
 
 		internal override CSharpExpr Compile(Emitter<CSharpExpr> emitter)
 		{
 			return emitter.Emit(this);
+		}
+
+		internal override void Walk(ExpressoWalker walker)
+		{
+			if(walker.Walk(this)){
+				lower.Walk(walker);
+				upper.Walk(walker);
+				step.Walk(walker);
+			}
+			walker.PostWalk(this);
 		}
 	}
 }

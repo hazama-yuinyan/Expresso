@@ -19,22 +19,35 @@ namespace Expresso.Ast
 	/// <seealso cref="Node"/>
 	public class WithStatement : Statement, CompoundStatement
 	{
+		private readonly Expression context;
+		private readonly Statement body;
+
 		/// <summary>
         /// 自動破棄の対象となるリソースを返す式。
 		/// The expression that returns a resource.
         /// </summary>
-        public Expression Main { get; internal set; }
+        public Expression ContextExpr{
+			get{return context;}
+		}
 
         /// <summary>
         /// Main式で評価したリソースを使用する式。
 		/// A statement or a block that uses the resource acquired in the "Main" expression.
         /// </summary>
-        public Statement Body { get; internal set; }
+        public Statement Body{
+			get{return body;}
+		}
 
         public override NodeType Type
         {
             get { return NodeType.WithStatement; }
         }
+
+		public WithStatement(Expression contextExpr, Statement bodyStmt)
+		{
+			context = contextExpr;
+			body = bodyStmt;
+		}
 
         public override bool Equals(object obj)
         {
@@ -42,16 +55,15 @@ namespace Expresso.Ast
 
             if (x == null) return false;
 
-            return this.Main == x.Main
-                && this.Body.Equals(x.Body);
+            return context == x.context && body.Equals(x.body);
         }
 
         public override int GetHashCode()
         {
-            return this.Main.GetHashCode() ^ this.Body.GetHashCode();
+            return context.GetHashCode() ^ body.GetHashCode();
         }
 
-        internal override object Run(VariableStore varStore)
+        /*internal override object Run(VariableStore varStore)
         {
 			var resource = Main.Run(varStore) as IClosable;
 			if(resource == null)
@@ -65,11 +77,20 @@ namespace Expresso.Ast
 			}
 
 			return null;
-        }
+        }*/
 
 		internal override CSharpExpr Compile(Emitter<CSharpExpr> emitter)
 		{
 			return emitter.Emit(this);
+		}
+
+		internal override void Walk(ExpressoWalker walker)
+		{
+			if(walker.Walk(this)){
+				context.Walk(walker);
+				body.Walk(walker);
+			}
+			walker.PostWalk(this);
 		}
 
 		public IEnumerable<Identifier> CollectLocalVars()

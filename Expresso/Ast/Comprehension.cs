@@ -6,6 +6,7 @@ using Expresso.Builtins;
 using Expresso.Runtime;
 using Expresso.Interpreter;
 using Expresso.Compiler;
+using Expresso.Compiler.Meta;
 using Expresso.Runtime.Operations;
 
 
@@ -13,18 +14,40 @@ namespace Expresso.Ast
 {
 	using CSharpExpr = System.Linq.Expressions.Expression;
 
+	/// <summary>
+	/// Represents a list comprehension, which is syntactic sugar for sequence initialization.
+	/// Consider an expression, [x for x in [0..100]].
+	/// Which is equivalent in functionality to the statement for(let x in [0..100]) x;
+	/// </summary>
 	public class Comprehension : Expression
 	{
-		public Expression YieldExpr{get; internal set;}
+		private readonly Expression item;
+		private readonly ComprehensionFor body;
+		private ObjectTypes type;
 
-		public ComprehensionFor Body{get; internal set;}
+		public Expression Item{
+			get{return item;}
+		}
 
-		public ObjectTypes ObjType{get; internal set;}
+		public ComprehensionFor Body{
+			get{return body;}
+		}
+
+		public ObjectTypes ObjType{
+			get{return type;}
+		}
 
 		public override NodeType Type
         {
             get { return NodeType.Comprehension; }
         }
+
+		public Comprehension(Expression itemExpr, ComprehensionFor bodyExpr, ObjectTypes objType)
+		{
+			item = itemExpr;
+			body = bodyExpr;
+			type = objType;
+		}
 
         public override bool Equals(object obj)
         {
@@ -32,15 +55,15 @@ namespace Expresso.Ast
 
             if (x == null) return false;
 
-            return this.Body.Equals(x.Body) && this.YieldExpr.Equals(x.YieldExpr);
+            return body.Equals(x.body) && item.Equals(x.item);
         }
 
         public override int GetHashCode()
         {
-            return this.Body.GetHashCode() ^ this.YieldExpr.GetHashCode();
+            return body.GetHashCode() ^ item.GetHashCode();
         }
 
-        internal override object Run(VariableStore varStore)
+        /*internal override object Run(VariableStore varStore)
         {
 			var child_store = new VariableStore{Parent = varStore};
 			foreach(var local in Body.LocalVariables)
@@ -78,25 +101,38 @@ namespace Expresso.Ast
 			}
 
 			return obj;
-        }
+        }*/
 
 		internal override CSharpExpr Compile(Emitter<CSharpExpr> emitter)
 		{
 			return emitter.Emit(this);
+		}
+
+		internal override void Walk(ExpressoWalker walker)
+		{
+			if(walker.Walk(this)){
+				item.Walk(walker);
+				body.Walk(walker);
+			}
+			walker.PostWalk(this);
 		}
 	}
 
 	public abstract class ComprehensionIter : Expression
 	{
 		public abstract IEnumerable<Identifier> LocalVariables{get;}
-		internal override object Run(VariableStore varStore){return null;}
-		internal abstract IEnumerable<object> Run(VariableStore varStore, Expression yieldExpr);
+		//internal override object Run(VariableStore varStore){return null;}
+		//internal abstract IEnumerable<object> Run(VariableStore varStore, Expression yieldExpr);
 	}
 
 	public class ComprehensionFor : ComprehensionIter
 	{
+		private readonly SequenceExpression left;
+		private readonly Expression target;
+		private readonly ComprehensionIter body;
+
 		/// <summary>
-        /// body内で操作対象となるオブジェクトを参照するのに使用する式群。
+        /// body内で操作対象となるオブジェクトを参照するのに使用する式。
         /// 評価結果はlvalueにならなければならない。
         /// なお、走査の対象を捕捉する際には普通の代入と同じルールが適用される。
         /// つまり、複数の変数にいっせいにオブジェクトを捕捉させることもできる。
@@ -107,34 +143,48 @@ namespace Expresso.Ast
         /// the x and y captures the first and second element of the list at the first time,
         /// the third and forth the next time, and the fifth and sixth at last.
         /// </summary>
-        public List<Expression> LValues { get; internal set; }
+        public SequenceExpression Left{
+			get{return left;}
+		}
 
         /// <summary>
         /// 操作する対象の式。
         /// The target expression.
         /// </summary>
-        public Expression Target { get; internal set; }
+        public Expression Target{
+			get{return target;}
+		}
 
 		/// <summary>
         /// 実行対象の文。
         /// The body that will be executed.
         /// </summary>
-		public ComprehensionIter Body{get; internal set;}
+		public ComprehensionIter Body{
+			get{return body;}
+		}
 
         public override NodeType Type
         {
             get { return NodeType.ComprehensionFor; }
         }
 
+		public ComprehensionFor(SequenceExpression lhs, Expression targetExpr, ComprehensionIter bodyExpr)
+		{
+			left = lhs;
+			target = targetExpr;
+			body = bodyExpr;
+		}
+
 		public override IEnumerable<Identifier> LocalVariables
 		{
 			get{
-				var inner = (Body == null) ? Enumerable.Empty<Identifier>() : Body.LocalVariables;
+				/*var inner = (Body == null) ? Enumerable.Empty<Identifier>() : Body.LocalVariables;
 				var on_this =
 					from p in LValues
 					select (Identifier)p;
 
-				return inner.Concat(on_this);
+				return inner.Concat(on_this);*/
+				return Enumerable.Empty<Identifier>();
 			}
 		}
 
@@ -144,15 +194,15 @@ namespace Expresso.Ast
 
             if (x == null) return false;
 
-            return this.LValues.Equals(x.LValues) && this.Target.Equals(x.Target) && this.Body.Equals(x.Body);
+            return this.Left.Equals(x.Left) && this.Target.Equals(x.Target) && this.Body.Equals(x.Body);
         }
 
         public override int GetHashCode()
         {
-            return this.LValues.GetHashCode() ^ this.Target.GetHashCode() ^ this.Body.GetHashCode();
+            return this.Left.GetHashCode() ^ this.Target.GetHashCode() ^ this.Body.GetHashCode();
         }
 
-        internal override IEnumerable<object> Run(VariableStore varStore, Expression yieldExpr)
+        /*internal override IEnumerable<object> Run(VariableStore varStore, Expression yieldExpr)
         {
 			IEnumerable<object> iterable = Target.Run(varStore) as IEnumerable<object>;
 			if(iterable == null)
@@ -179,32 +229,56 @@ namespace Expresso.Ast
 						yield return result;
 				}
 			}
-        }
+        }*/
 
 		internal override CSharpExpr Compile(Emitter<CSharpExpr> emitter)
 		{
 			return emitter.Emit(this);
 		}
+
+		internal override void Walk(ExpressoWalker walker)
+		{
+			if(walker.Walk(this)){
+				left.Walk(walker);
+				target.Walk(walker);
+				if(body != null)
+					body.Walk(walker);
+			}
+			walker.PostWalk(this);
+		}
 	}
 
 	public class ComprehensionIf : ComprehensionIter
 	{
-		/// <summary>
-        /// 実行対象の文。
-        /// The body that will be executed.
-        /// </summary>
-        public Expression Condition { get; internal set; }
+		private readonly Expression condition;
+		private readonly ComprehensionIter body;
 
 		/// <summary>
         /// 実行対象の文。
         /// The body that will be executed.
         /// </summary>
-		public ComprehensionIter Body{get; internal set;}
+        public Expression Condition{
+			get{return condition;}
+		}
+
+		/// <summary>
+        /// 実行対象の文。
+        /// The body that will be executed.
+        /// </summary>
+		public ComprehensionIter Body{
+			get{return body;}
+		}
 
         public override NodeType Type
         {
             get { return NodeType.ComprehensionIf; }
         }
+
+		public ComprehensionIf(Expression test, ComprehensionIter bodyExpr)
+		{
+			condition = test;
+			body = bodyExpr;
+		}
 
 		public override IEnumerable<Identifier> LocalVariables {
 			get {
@@ -226,7 +300,7 @@ namespace Expresso.Ast
             return this.Body.GetHashCode() ^ this.Condition.GetHashCode();
         }
 
-        internal override IEnumerable<object> Run(VariableStore varStore, Expression yieldExpr)
+        /*internal override IEnumerable<object> Run(VariableStore varStore, Expression yieldExpr)
         {
 			var cond = Condition.Run(varStore) as Nullable<bool>;
 			if(cond == null)
@@ -242,11 +316,21 @@ namespace Expresso.Ast
 			}else{
 				yield return null;
 			}
-        }
+        }*/
 
 		internal override CSharpExpr Compile(Emitter<CSharpExpr> emitter)
 		{
 			return emitter.Emit(this);
+		}
+
+		internal override void Walk(ExpressoWalker walker)
+		{
+			if(walker.Walk(this)){
+				condition.Walk(walker);
+				if(body != null)
+					body.Walk(walker);
+			}
+			walker.PostWalk(this);
 		}
 	}
 }

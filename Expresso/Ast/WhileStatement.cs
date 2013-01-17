@@ -11,6 +11,10 @@ namespace Expresso.Ast
 {
 	using CSharpExpr = System.Linq.Expressions.Expression;
 
+	/**
+	 * While文はインスタンス生成時に全てのメンバーが決定しないので、メンバーは全部変更可能にしておく。
+	 */
+
 	/// <summary>
 	/// While文.
 	/// The While statement.
@@ -23,18 +27,22 @@ namespace Expresso.Ast
         /// 条件式。
 		/// The condition.
         /// </summary>
-        public Expression Condition { get; internal set; }
+        public Expression Condition{get; internal set;}
 
         /// <summary>
         /// 条件が真の間評価し続ける文(郡)。
 		/// A statement or a block to be processed while the condition is true.
         /// </summary>
-        public Statement Body { get; internal set; }
+        public Statement Body{get; internal set;}
 
         public override NodeType Type
         {
             get { return NodeType.WhileStatement; }
         }
+
+		public WhileStatement()
+		{
+		}
 
         public override bool Equals(object obj)
         {
@@ -42,16 +50,15 @@ namespace Expresso.Ast
 
             if (x == null) return false;
 
-            return this.Condition == x.Condition
-                && this.Body.Equals(x.Body);
+            return Condition == x.Condition && Body.Equals(x.Body);
         }
 
         public override int GetHashCode()
         {
-            return this.Condition.GetHashCode() ^ this.Body.GetHashCode();
+            return Condition.GetHashCode() ^ Body.GetHashCode();
         }
 
-        internal override object Run(VariableStore varStore)
+        /*internal override object Run(VariableStore varStore)
         {
 			object cond = null;
 
@@ -68,11 +75,20 @@ namespace Expresso.Ast
 			}
 
 			return null;
-        }
+        }*/
 
 		internal override CSharpExpr Compile(Emitter<CSharpExpr> emitter)
 		{
 			return emitter.Emit(this);
+		}
+
+		internal override void Walk(ExpressoWalker walker)
+		{
+			if(walker.Walk(this)){
+				Condition.Walk(walker);
+				Body.Walk(walker);
+			}
+			walker.PostWalk(this);
 		}
 
 		public IEnumerable<Identifier> CollectLocalVars()

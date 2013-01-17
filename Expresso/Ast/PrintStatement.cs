@@ -15,14 +15,34 @@ namespace Expresso.Ast
 	/// </summary>
 	public class PrintStatement : Statement
 	{
-		public List<Expression> Expressions{get; internal set;}
+		private readonly Expression[] exprs;
+		private bool trailing_comma;
 
-		public bool HasTrailing{get; internal set;}
+		/// <summary>
+		/// Expressions generating output.
+		/// </summary>
+		public Expression[] Expressions{
+			get{return exprs;}
+		}
+
+		/// <summary>
+		/// Indicates whether the print statement is appended a trainling, extra comma.
+		/// If it has then the it will not append a new line.
+		/// </summary>
+		public bool HasTrailing{
+			get{return trailing_comma;}
+		}
 		
 		public override NodeType Type
         {
             get { return NodeType.Print; }
         }
+
+		public PrintStatement(Expression[] expressions, bool hasTrailingComma)
+		{
+			exprs = expressions;
+			trailing_comma = hasTrailingComma;
+		}
 
         public override bool Equals(object obj)
         {
@@ -38,7 +58,7 @@ namespace Expresso.Ast
             return this.Expressions.GetHashCode();
         }
 
-        internal override object Run(VariableStore varStore)
+        /*internal override object Run(VariableStore varStore)
         {
 			var first = Expressions[0].Run(varStore);
 			var sb = new StringBuilder();
@@ -77,11 +97,20 @@ namespace Expresso.Ast
 			}
 
 			return null;
-        }
+        }*/
 
 		internal override CSharpExpr Compile(Emitter<CSharpExpr> emitter)
 		{
 			return emitter.Emit(this);
+		}
+
+		internal override void Walk(ExpressoWalker walker)
+		{
+			if(walker.Walk(this)){
+				foreach(var e in exprs)
+					e.Walk(walker);
+			}
+			walker.PostWalk(this);
 		}
 	}
 }

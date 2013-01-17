@@ -15,15 +15,25 @@ namespace Expresso.Ast
     /// </summary>
     public class ReturnStatement : Statement
     {
+		private readonly Expression expr;
+
         /// <summary>
         /// 戻り値の式。
+		/// The expression generating the return value. It can be null if there is no return value.
         /// </summary>
-        public List<Expression> Expressions { get; internal set; }
+        public Expression Expression{
+			get{return expr;}
+		}
 
         public override NodeType Type
         {
             get { return NodeType.Return; }
         }
+
+		public ReturnStatement(Expression expression)
+		{
+			expr = expression;
+		}
 
         public override bool Equals(object obj)
         {
@@ -31,15 +41,15 @@ namespace Expresso.Ast
 
             if (x == null) return false;
 
-            return this.Expressions.Equals(x.Expressions);
+            return expr.Equals(x.expr);
         }
 
         public override int GetHashCode()
         {
-            return this.Expressions.GetHashCode();
+            return this.expr.GetHashCode();
         }
 
-        internal override object Run(VariableStore varStore)
+        /*internal override object Run(VariableStore varStore)
         {
             if(Expressions.Count == 0){
 				return new ExpressoTuple(new List<object>());
@@ -52,11 +62,20 @@ namespace Expresso.Ast
 				
 				return ExpressoOps.MakeTuple(objs);
 			}
-        }
+        }*/
 
 		internal override CSharpExpr Compile(Emitter<CSharpExpr> emitter)
 		{
 			return emitter.Emit(this);
+		}
+
+		internal override void Walk(ExpressoWalker walker)
+		{
+			if(walker.Walk(this)){
+				if(expr != null)
+					expr.Walk(walker);
+			}
+			walker.PostWalk(this);
 		}
     }
 }

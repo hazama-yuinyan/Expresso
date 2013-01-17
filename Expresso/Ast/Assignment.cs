@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Text;
 
 using Expresso.Builtins;
 using Expresso.Interpreter;
@@ -12,25 +13,40 @@ namespace Expresso.Ast
     /// <summary>
     /// 代入文。
 	/// The assignment statement.
+	/// targets.length == 1 for simple assignments like "x = 1"
+	/// and targets.length == 3 for assignments like "x = y = z = 3"
     /// </summary>
     public class Assignment : Statement
     {
+		private readonly Expression[] targets;
+		private readonly Expression rhs;
+
         /// <summary>
         /// 代入先の変数郡。
         /// The target expressions that will be bounded.
         /// </summary>
-        public List<Expression> Targets { get; internal set; }
+        public Expression[] Left{
+			get{return targets;}
+		}
 
         /// <summary>
         /// 右辺値の式。
-		/// The expressions that will be assigned.
+		/// The expression that will be assigned.
         /// </summary>
-        public List<Expression> Expressions { get; internal set; }
+        public Expression Right{
+			get{return rhs;}
+		}
 
         public override NodeType Type
         {
             get { return NodeType.Assignment; }
         }
+
+		public Assignment(Expression[] lhs, Expression rhsExpr)
+		{
+			targets = lhs;
+			rhs = rhsExpr;
+		}
 
         public override bool Equals(object obj)
         {
@@ -38,16 +54,16 @@ namespace Expresso.Ast
 
             if (x == null) return false;
 
-            return this.Expressions.Equals(x.Expressions)
-                && this.Targets.Equals(x.Targets);
+            return this.rhs.Equals(x.rhs)
+                && this.targets.Equals(x.targets);
         }
 
         public override int GetHashCode()
         {
-            return this.Targets.GetHashCode() ^ this.Expressions.GetHashCode();
+            return this.targets.GetHashCode() ^ this.rhs.GetHashCode();
         }
 
-        internal override object Run(VariableStore varStore)
+        /*internal override object Run(VariableStore varStore)
         {
 			int i;
 			var rvalues = new List<object>(Expressions.Count);
@@ -62,16 +78,32 @@ namespace Expresso.Ast
 				assignable.Assign(varStore, rvalues[i]);
 			}
 			return rvalues[0];	//x = y = 0;みたいな表記を許容するために右辺値の一番目を戻り値にする
-        }
+        }*/
 		
 		internal override CSharpExpr Compile(Emitter<CSharpExpr> emitter)
 		{
 			return emitter.Emit(this);
 		}
 
+		internal override void Walk(ExpressoWalker walker)
+		{
+			if(walker.Walk(this)){
+				foreach(var e in targets)
+					e.Walk(walker);
+
+				rhs.Walk(walker);
+			}
+			walker.PostWalk(this);
+		}
+
 		public override string ToString()
 		{
-			return string.Format("{0} = {1}", Targets, Expressions);
+			var sb = new StringBuilder();
+			foreach(var target in targets)
+				sb.Append(target + " = ");
+
+			sb.Append(rhs);
+			return sb.ToString();
 		}
     }
 }

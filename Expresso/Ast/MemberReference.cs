@@ -12,16 +12,38 @@ namespace Expresso.Ast
 {
 	using CSharpExpr = System.Linq.Expressions.Expression;
 
+	/// <summary>
+	/// Represents a member reference.
+	/// </summary>
 	public class MemberReference : Assignable
 	{
-		public Expression Parent{get; internal set;}
+		private Expression target;
+		private Expression subscription;
 
-		public Expression Subscription{get; internal set;}
+		/// <summary>
+		/// The target expression of which a member will be referenced.
+		/// </summary>
+		public Expression Target{
+			get{return target;}
+		}
+
+		/// <summary>
+		/// The subscript expression. It can be an identifier or index.
+		/// </summary>
+		public Expression Subscription{
+			get{return subscription;}
+		}
 
         public override NodeType Type
         {
             get { return NodeType.MemRef; }
         }
+
+		public MemberReference(Expression targetExpr, Expression subscriptExpr)
+		{
+			target = targetExpr;
+			subscription = subscriptExpr;
+		}
 
         public override bool Equals(object obj)
         {
@@ -29,42 +51,51 @@ namespace Expresso.Ast
 
             if (x == null) return false;
 
-            return this.Parent.Equals(x.Parent) && this.Subscription.Equals(x.Subscription);
+            return this.target.Equals(x.target) && this.subscription.Equals(x.subscription);
         }
 
         public override int GetHashCode()
         {
-            return this.Parent.GetHashCode() ^ this.Subscription.GetHashCode();
+            return this.target.GetHashCode() ^ this.subscription.GetHashCode();
         }
 
-        internal override object Run(VariableStore varStore)
+        /*internal override object Run(VariableStore varStore)
         {
             var obj = Parent.Run(varStore);
 
 			var subscription = Subscription.Run(varStore);
 			if(subscription is ExpressoIntegerSequence){
 				var seq = (ExpressoIntegerSequence)subscription;
-				return ImplementationHelpers.Slice(obj, seq);
+				return ExpressoOps.Slice(obj, seq);
 			}
 
 			if(obj is ExpressoObj){
 				var exs_obj = (ExpressoObj)obj;
 				var member = exs_obj.AccessMember(subscription, obj == varStore.Get(0, 0));
-				return (member is Function) ? new MethodContainer(member as Function, obj) : member;
+				return (member is FunctionDeclaration) ? new MethodContainer(member as FunctionDeclaration, obj) : member;
 			}else{
-				var member = ImplementationHelpers.AccessMember((Identifier)Parent, obj, subscription);
-				return (member is Function) ? new MethodContainer(member as Function, obj) : member;
+				var member = ExpressoOps.AccessMember((Identifier)Parent, obj, subscription);
+				return (member is FunctionDeclaration) ? new MethodContainer(member as FunctionDeclaration, obj) : member;
 			}
-        }
+        }*/
 
 		internal override CSharpExpr Compile(Emitter<CSharpExpr> emitter)
 		{
 			return emitter.Emit(this);
 		}
 
-		internal override void Assign(VariableStore varStore, object val)
+		internal override void Walk(ExpressoWalker walker)
 		{
-			var obj = Parent.Run(varStore);
+			if(walker.Walk(this)){
+				target.Walk(walker);
+				subscription.Walk(walker);
+			}
+			walker.PostWalk(this);
+		}
+
+		internal override void Assign(EvaluationFrame frame, object val)
+		{
+			/*var obj = Parent.Run(varStore);
 			if(obj == null)
 				throw ExpressoOps.InvalidTypeError("Can not evaluate the name to a valid Expresso object");
 
@@ -77,13 +108,13 @@ namespace Expresso.Ast
 					throw ExpressoOps.RuntimeError("Invalid assignment!");
 				}
 			}else{
-				ImplementationHelpers.AssignToCollection(obj, subscript, val);
-			}
+				ExpressoOps.AssignToCollection(obj, subscript, val);
+			}*/
 		}
 
 		public override string ToString()
 		{
-			return string.Format("{0}.{1}", Parent, Subscription);
+			return string.Format("{0}.{1}", target, subscription);
 		}
 	}
 }

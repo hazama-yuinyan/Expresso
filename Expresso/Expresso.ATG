@@ -5,29 +5,35 @@ using System.Text;
 
 using Expresso.Ast;
 using Expresso.Builtins;
+using Expresso.Compiler.Meta;
 using Expresso.Interpreter;
 using Expresso.Runtime;
 
 
 
 COMPILER Expresso
-
-	internal AnalysisScope cur_scope = new AnalysisScope{Parent = AnalysisScope.SymbolTable};		//the current scope of variables
-	static private List<BreakableStatement> breakables = new List<BreakableStatement>();	//the current parent breakbles hierarchy
-	bool ignore_parent_scope = false;
+	internal ScopeStatement cur_scope = null;		//the current scope of variables
+	static private List<BreakableStatement> breakables = new List<BreakableStatement>();	//the current parent breakables hierarchy
 	public string ParsingFileName{get; set;}
-	public ModuleDeclaration ParsingModule{get; private set;}	//the module the parser is parsing
+	public ExpressoAst TopmostAst{get; private set;}	//the top-level AST the parser is parsing
 	
+	///<summary>
+	/// Parser Implementation details:
+	/// 	During parsing we'll resolve break and continue statements.(Find which a break or continue statement would have its effect
+	/// 	on which a loop statement) And in post-parse process, do flow analysis and type validity check, including local name bindings.
+	///		Note that the identifiers are just placeholders until after doing name binding. 
+	/// 	(Thus referecing them cause runtime exceptions)
+	///</summary>
 	Parser()
 	{
 		//Add built-in functions
-		Function[] native_funcs = {
+		/*FunctionDefinition[] native_funcs = {
 			new NativeLambdaUnary("abs", ImplementationHelpers.MakeArg(new Identifier("val", new TypeAnnotation(ObjectTypes.VAR), null, 0)), ExpressoFunctions.Abs),
 			new NativeLambdaUnary("sqrt", ImplementationHelpers.MakeArg(new Identifier("val", new TypeAnnotation(ObjectTypes.VAR), null, 0)), ExpressoFunctions.Sqrt),
 			new NativeLambdaUnary("toInt", ImplementationHelpers.MakeArg(new Identifier("val", new TypeAnnotation(ObjectTypes.VAR), null, 0)), ExpressoFunctions.ToInt)
 		};
 		foreach(var tmp in native_funcs)
-			cur_scope.AddFunction(tmp);
+			cur_scope.AddFunction(tmp);*/
 	}
 	
 	Constant CreateConstant(ObjectTypes type)
@@ -36,19 +42,19 @@ COMPILER Expresso
 		
 		switch(type){
 		case ObjectTypes.INTEGER:
-			result = new Constant{ValType = type, Value = 0};
+			result = Node.MakeConstant(type, 0);
 			break;
 			
 		case ObjectTypes.BOOL:
-			result = new Constant{ValType = type, Value = false};
+			result = Node.MakeConstant(type, false);
 			break;
 			
 		case ObjectTypes.FLOAT:
-			result = new Constant{ValType = type, Value = 0.0};
+			result = Node.MakeConstant(type, 0.0);
 			break;
 			
 		case ObjectTypes.STRING:
-			result = new Constant{ValType = type, Value = ""};
+			result = Node.MakeConstant(type, "");
 			break;
 			
 		default:
@@ -70,70 +76,13 @@ COMPILER Expresso
 		return x.kind != _double_dots;
 	}
 	
-	bool IdentIsNotCallable()
-	{
-		Token x = scanner.Peek();
-		return x.kind != _lparen;
-	}
-	
-	bool ExpectIdentIsTypeName()
-	{
-		return la.kind == _dot;
-	}
-	
-	bool IsObjectInitializer()
+	bool IsSequenceInitializer()
 	{
 		Token x = la;
 		if(x.kind != _lcurly) return true;
 		scanner.ResetPeek();
 		while(x.kind != 0 && x.kind != _keyword_for && x.kind != _rcurly) x = scanner.Peek();
 		return x.kind != _keyword_for;
-	}
-	
-	Identifier DeclareVariable(ref Expression rhs, string name, TypeAnnotation type)
-	{
-		if(rhs == null){
-  			if(type.ObjType == ObjectTypes._INFERENCE)
-  				SemErr("Can not infer the type of the variable \"" + name + "\" without initialization!");
-  			
-  			rhs = CreateConstant(type.ObjType);
-  		}else{
-  			if(type.ObjType == ObjectTypes._INFERENCE){
-  				if(rhs is Constant){
-  					var constant = (Constant)rhs;
-  					type.ObjType = constant.ValType;
-  				}else if(rhs is ObjectInitializer){
-  					var initializer = (ObjectInitializer)rhs;
-  					type.ObjType = initializer.ObjType;
-  				}else if(rhs is Comprehension){
-  					var comprehen = (Comprehension)rhs;
-  					type.ObjType = comprehen.ObjType;
-  				}else if(rhs is NewExpression){
-  					type.ObjType = ObjectTypes.INSTANCE;
-  					//type.TypeName = ((NewExpression)rhs).TargetName;
-  				}else if(rhs is Call){
-  					var call = (Call)rhs;
-  					if(call.Function != null)
-  						type = call.Function.ReturnType;
-  				}else if(rhs is MemberReference){
-  					type.ObjType = ObjectTypes.VAR;
-  				}else{
-  					SemErr("Can not infer the type of the variable \"" + name + "\" from that type of expression.");
-  				}
-  			}
-  		}
-  		
-		var variable = new Identifier(name, type);
- 		cur_scope.AddLocal(ref variable);
- 		return variable;
-	}
-	
-	Identifier DeclareArgument(string name, TypeAnnotation type)
-	{
-		var argument = new Identifier(name, type);
-		
-		cur_scope.AddLocal(ref argument);
-		return argument;
 	}
 	
 	static BreakStatement MakeBreakStatement(int count)
@@ -144,7 +93,7 @@ COMPILER Expresso
 			tmp.Add(enclosing);
 			if(enclosing.Type == NodeType.WhileStatement || enclosing.Type == NodeType.ForStatement) --j;
 		}
-		return new BreakStatement{Count = count, Enclosings = tmp};
+		return Node.MakeBreakStmt(count, tmp);
 	}
 	
 	static ContinueStatement MakeContinueStatement(int count)
@@ -159,17 +108,21 @@ COMPILER Expresso
 			if(enclosing.Type == NodeType.WhileStatement || enclosing.Type == NodeType.ForStatement)
 				--j;
 		}
-		return new ContinueStatement{Count = count, Enclosings = tmp};
+		return Node.MakeContinueStmt(count, tmp);
 	}
 	
 	Statement MakeDefaultCtor(string className)
 	{
-		cur_scope = new AnalysisScope{Parent = cur_scope};
-		var ident_this = DeclareArgument("this", new TypeAnnotation(ObjectTypes.INSTANCE, className));
-		var @params = new List<Argument>{new Argument{Ident = ident_this}};
+		var arg_this = Node.MakeArg("this", new TypeAnnotation(ObjectTypes.INSTANCE, className));
+		var @params = new List<Argument>{arg_this};
 		var ctor = Node.MakeFunc("constructor", @params, new Block(), TypeAnnotation.VoidType.Clone(), true);
-		cur_scope = cur_scope.Parent;
 		return ctor;
+	}
+	
+	public void SemanticError(string format, params object[] args)
+	{
+		//Convenient method for printing a semantic error with a format string
+		SemErr(string.Format(format, args));
 	}
 	
 /*--------------------------------------------------------------------------*/
@@ -214,15 +167,17 @@ IGNORE cr + lf + tab
 
 PRODUCTIONS
 /*------------------------------------------------------------------------*/
-Expresso                    		(. ModuleDeclaration module_decl = null; .)
+Expresso                    		(. ExpressoAst module_decl = null; .)
 = 
-  ModuleBody<out module_decl>		(. this.ParsingModule = module_decl; .).
+  ModuleBody<out module_decl>		(.  ExpressoNameBinder.BindAst(module_decl, this); //Here's the start of post-parse processing
+  										this.TopmostAst = module_decl;	//Currently there is not so much code out there, though...
+  									.).
 /*------------------------------------------------------------------------*/
-ModuleBody<out ModuleDeclaration decl>		(.  var decls = new List<Statement>(); var export_map = new List<bool>();
-												bool has_export = false; List<Statement> prog_defs = null; Statement stmt = null;
-											.)
+ModuleBody<out ExpressoAst decl>	(.  var decls = new List<Statement>(); var export_map = new List<bool>(); bool has_main = false;
+										bool has_export = false; List<Statement> prog_defs = null; Statement stmt = null;
+									.)
 =
-  [ ProgramDefinition<out prog_defs>
+  [ ProgramDefinition<out prog_defs> (. if(prog_defs !=null) decls.AddRange(prog_defs); .)
   ]
   								
   [ "export"						(. has_export = true; .)
@@ -230,7 +185,10 @@ ModuleBody<out ModuleDeclaration decl>		(.  var decls = new List<Statement>(); v
   ( ExprStmt<out stmt>
   | FuncDecl<out stmt>
   | ClassDecl<out stmt>
-  )									(.  decls.Add(stmt);
+  )									(.  if(stmt is FunctionDefinition && ((FunctionDefinition)stmt).Name == "main")
+  											has_main = true;
+  										
+  										decls.Add(stmt);
 										export_map.Add(has_export);
 										has_export = false;
 									.)
@@ -240,13 +198,15 @@ ModuleBody<out ModuleDeclaration decl>		(.  var decls = new List<Statement>(); v
     ( ExprStmt<out stmt>
     | FuncDecl<out stmt>
     | ClassDecl<out stmt>
-    )								(.  decls.Add(stmt);
+    )								(.  if(stmt is FunctionDefinition && ((FunctionDefinition)stmt).Name == "main")
+    										has_main = true;
+    									
+    									decls.Add(stmt);
     									export_map.Add(has_export);
     									has_export = false;
     								.)
-  }									(.  var main_func = cur_scope.GetFunction("main");
-  										var module_name = (main_func != null) ? "main" : ParsingFileName;
-  										decl = Node.MakeModuleDef(module_name, prog_defs, decls, export_map);
+  }									(.  var module_name = has_main ? "main" : ParsingFileName;
+  										decl = Node.MakeModuleDef(module_name, decls, export_map);
   									.) .
 /*------------------------------------------------------------------------*/
 ProgramDefinition<. out List<Statement> requires .>		(. requires = new List<Statement>(); Statement tmp; .)
@@ -255,51 +215,29 @@ ProgramDefinition<. out List<Statement> requires .>		(. requires = new List<Stat
   { RequireStmt<out tmp>		(. requires.Add(tmp); .)
   }.
 /*------------------------------------------------------------------------*/
-RequireStmt<out Statement stmt>	(.  string module_name, alias = null; var requires = new List<Expression>();
-									Expression tmp; Identifier module_symbol = null; string[] split_name;
+RequireStmt<out Statement stmt>	(.  string module_name, alias = null; var module_names = new List<string>();
+									var aliases = new List<string>();
 								.)
 =
   SYNC
   "require"
-  Module<out module_name>
+  ModuleName<out module_name>
   [ "as"
     ident						(. alias = t.val; .)
-  ]								(.  tmp = Node.MakeRequireExpr(module_name, alias);
-  									requires.Add(tmp);
-  									if(alias == null){
-  										split_name = module_name.Split('.');
-  										foreach(var name in split_name){
-  											module_symbol = new Identifier(name, new TypeAnnotation(ObjectTypes.TYPE_MODULE, name));
-  											cur_scope.AddType(module_symbol);
-  										}
-  									}else{
-  										module_symbol = new Identifier(module_name, new TypeAnnotation(ObjectTypes.TYPE_MODULE, module_name), alias);
-  										cur_scope.AddAlias(module_symbol);
-  										alias = null;
-  									}
+  ]								(.  module_names.Add(module_name);
+  									aliases.Add(alias);
   								.)
   { ','
-    Module<out module_name>
+    ModuleName<out module_name>
     [ "as"
       ident						(. alias = t.val; .)
-    ]							(.  tmp = Node.MakeRequireExpr(module_name, alias);
-  									requires.Add(tmp);
-  									if(alias == null){
-  										split_name = module_name.Split('.');
-  										foreach(var name in split_name){
-  											module_symbol = new Identifier(name, new TypeAnnotation(ObjectTypes.TYPE_MODULE));
-  											cur_scope.AddType(module_symbol);
-  										}
-  									}else{
-  										module_symbol = new Identifier(module_name, new TypeAnnotation(ObjectTypes.TYPE_MODULE, module_name), alias);
-  										cur_scope.AddAlias(module_symbol);
-  										alias = null;
-  									}
+    ]							(.  module_names.Add(module_name);
+  									aliases.Add(alias);
   								.)
   }
-  SYNC ';' 						(. stmt = Node.MakeExprStmt(requires); .).
+  SYNC ';' 						(. stmt = Node.MakeRequireStmt(module_names, aliases); .).
 /*------------------------------------------------------------------------*/
-Module<out string name>			(. var sb = new StringBuilder(); .)
+ModuleName<out string name>		(. var sb = new StringBuilder(); .)
 =
   ident							(. sb.Append(t.val); .)
   { '.'							(. sb.Append('.'); .)
@@ -311,7 +249,7 @@ ClassDecl<out Statement stmt>		(.  Expression expr = null; var stmts = new List<
 									.)
 =
   SYNC
-  "class"							(. cur_scope = new AnalysisScope{Parent = cur_scope}; .)
+  "class"
   ident								(. name = t.val; .)
   [ ':'
     ident							(. base_names.Add(t.val); .)
@@ -322,6 +260,7 @@ ClassDecl<out Statement stmt>		(.  Expression expr = null; var stmts = new List<
   '{'
   { 
     ( "public"						(. expr = Node.MakeConstant(ObjectTypes._LABEL_PUBLIC, null); .)
+    | "protected"					(. expr = Node.MakeConstant(ObjectTypes._LABEL_PROTECTED, null); .)
     | "private"						(. expr = Node.MakeConstant(ObjectTypes._LABEL_PRIVATE, null); .)
     )
     ':'								(.  tmp = Node.MakeExprStmt(new List<Expression>{expr});
@@ -337,56 +276,43 @@ ClassDecl<out Statement stmt>		(.  Expression expr = null; var stmts = new List<
   									.)
   | ClassDecl<out tmp>				(. stmts.Add(tmp); .)
   }
-  SYNC '}'							(.  if(!has_ctor){		//コンパイラー定義のデフォルトコンストラクタを定義する
+  SYNC '}'							(.  if(!has_ctor){		//Define the default constructor
   											stmts.Add(MakeDefaultCtor(name));
   										}
   										stmt = Node.MakeClassDef(name, base_names, stmts);
-  										cur_scope = cur_scope.Parent;
-  										cur_scope.AddType(new Identifier(name, new TypeAnnotation(ObjectTypes.TYPE_CLASS, name)));
   									.) .
 /*------------------------------------------------------------------------*/
 ConstructorDecl<out Statement func, string className>	(.  Statement block = null; var @params = new List<Argument>();
-															Identifier ident_this; Argument exs_this = null;
+															Argument arg_this = null;
 														.)
 =
   SYNC
-  "constructor"					(.  cur_scope = new AnalysisScope{Parent = cur_scope};
-  									ident_this = DeclareArgument("this", new TypeAnnotation(ObjectTypes.INSTANCE, className));
-  									exs_this = new Argument{
-  										Ident = ident_this,
-  										Option = null
-  									};
+  "constructor"					(.  arg_this = Node.MakeArg("this", new TypeAnnotation(ObjectTypes.INSTANCE, className));
+  									@params.Add(arg_this);
   								.)
   '('
-  [ParamList<ref @params>]		(. @params.Insert(0, exs_this); .)
+  [ParamList<ref @params>]
   ')'
-  Block<out block> 				(.  func = Node.MakeFunc("constructor", @params, (Block)block, TypeAnnotation.VoidType.Clone(), true);
-  									cur_scope = cur_scope.Parent;
+  Block<out block> 				(. func = Node.MakeFunc("constructor", @params, (Block)block, TypeAnnotation.VoidType.Clone(), true);
   								.).
 /*------------------------------------------------------------------------*/
 MethodDecl<out Statement func, string className>  (.
-													string name; var type = TypeAnnotation.VariantType.Clone(); Statement block = null;
-													var @params = new List<Argument>(); Identifier ident_this; Argument exs_this = null;
+													string name; var type = TypeAnnotation.InferenceType.Clone(); Statement block = null;
+													var @params = new List<Argument>(); Argument arg_this = null;
 												  .)
 =
   SYNC
-  "def"							(.  cur_scope = new AnalysisScope{Parent = cur_scope};
-  									ident_this = DeclareArgument("this", new TypeAnnotation(ObjectTypes.INSTANCE, className));
-  									exs_this = new Argument{
-  										Ident = ident_this,
-  										Option = null
-  									};
+  "def"							(.  arg_this = Node.MakeArg("this", new TypeAnnotation(ObjectTypes.INSTANCE, className));
+  									@params.Add(arg_this);
   								.)
   ident							(. name = t.val; .)
   '('
-  [ParamList<ref @params>]		(. @params.Insert(0, exs_this); .)
+  [ParamList<ref @params>]
   ')'
   [ "->"
     Type<out type>
   ]
-  Block<out block> 				(.  func = Node.MakeFunc(name, @params, (Block)block, type);
-  									cur_scope = cur_scope.Parent;
-  								.).
+  Block<out block> 				(.  func = Node.MakeFunc(name, @params, (Block)block, type); .).
 /*------------------------------------------------------------------------*/
 FieldDecl<. out List<Expression> outs .> (. string name; TypeAnnotation type = TypeAnnotation.InferenceType.Clone(); Expression rhs = null;
 											Identifier variable; outs = new List<Expression>();
@@ -403,7 +329,7 @@ FieldDecl<. out List<Expression> outs .> (. string name; TypeAnnotation type = T
     | IntSeqExpr<out rhs>
     )
   ]
-  { ','					 		(.  variable = DeclareVariable(ref rhs, name, type);
+  { ','					 		(.  variable = Node.MakeField(name, type);
  						 			vars.Add(variable);
   						 			exprs.Add(rhs);
   						 		.)
@@ -417,14 +343,11 @@ FieldDecl<. out List<Expression> outs .> (. string name; TypeAnnotation type = T
 	  | IntSeqExpr<out rhs>
 	  )
   	]
-  }								(.  variable = DeclareVariable(ref rhs, name, type);
+  }								(.  variable = Node.MakeField(name, type);
   					   	   			vars.Add(variable);
   					   	   			exprs.Add(rhs);
   					   
-  					   	   			outs.Add(new VarDeclaration{
-  					   					Variables = vars,
-  					   					Expressions = exprs
-  					   	   			});
+  					   	   			outs.Add(Node.MakeVarDecl(vars, exprs));
   								.).
 /*------------------------------------------------------------------------*/
 Type<out TypeAnnotation type>		(. type = TypeAnnotation.InferenceType.Clone(); .)
@@ -461,20 +384,21 @@ SimpleStmt<out Statement stmt>		(. stmt = null; .)
   | BreakStmt<out stmt>
   | ContinueStmt<out stmt>
   | ThrowStmt<out stmt>
-  | YieldStmt<out stmt>.
+  | YieldStmt<out stmt>
+  | EmptyStmt<out stmt>.
 /*------------------------------------------------------------------------*/
-PrintStmt<out Statement stmt>		(. List<Expression> exprs = null; bool trailing_comma = false; .)
+PrintStmt<out Statement stmt>		(. SequenceExpression exprs = null; bool trailing_comma = false; .)
 =
   "print"
   [RValueList<out exprs>]
   [',']								(. trailing_comma = true; .)
   SYNC ';'							(. stmt = Node.MakePrintStmt(exprs, trailing_comma); .).
 /*------------------------------------------------------------------------*/
-ReturnStmt<out Statement stmt>		(. List<Expression> target_list = new List<Expression>(); .)
+ReturnStmt<out Statement stmt>		(. SequenceExpression items = null; .)
 =
   "return"
-  [RValueList<out target_list>]
-  SYNC ';'							(. stmt = Node.MakeReturnStmt(target_list); .).
+  [RValueList<out items>]
+  SYNC ';'							(. stmt = Node.MakeReturnStmt(items); .).
 /*------------------------------------------------------------------------*/
 BreakStmt<out Statement stmt>		(. int count = 1; .)
 =
@@ -504,6 +428,10 @@ YieldStmt<out Statement stmt>		(. Expression expr; .)
   CondExpr<out expr>
   SYNC ';'							(. stmt = Node.MakeYieldStmt(expr); .).
 /*------------------------------------------------------------------------*/
+EmptyStmt<out Statement stmt>
+=
+  ';'								(. stmt = Node.MakeEmptyStmt(); .).
+/*------------------------------------------------------------------------*/
 AugAssignOpe<ref OperatorType type>
 =
   ( "+="							(. type = OperatorType.PLUS; .)
@@ -518,21 +446,36 @@ AugAssignOpe<ref OperatorType type>
   | ">>="							(. type = OperatorType.BIT_RSHIFT; .)
   ).
 /*------------------------------------------------------------------------*/
-ExprStmt<out Statement stmt>				(.  List<Expression> targets = null; List<Expression> expr_list;
+ExprStmt<out Statement stmt>				(.  List<Expression> lvalues = null; var targets = new List<SequenceExpression>();
+												SequenceExpression seq = null;
 												stmt = null; OperatorType op_type = OperatorType.NONE;
 											.)
 =
-  ( VarDecl<out targets>
-  | RValueList<out targets>
-    ( AugAssignOpe<ref op_type>
-      RValueList<out expr_list>				(. stmt = Node.MakeAugumentedAssignment(targets, expr_list, op_type); .)
-    |
-    { '='
-	  RValueList<out expr_list>				(. stmt = Node.MakeAssignment(targets, expr_list); .)
-    }
+  ( VarDecl<out lvalues>
+  |
+  LValueList<out seq>						(. targets.Add(seq); .)
+  { ( AugAssignOpe<ref op_type>
+    | '='
     )
+    RValueList<out seq>						(. targets.Add(seq); .)
+  }											(.
+  												seq = targets[targets.Count - 1];
+  												targets.RemoveAt(targets.Count - 1);
+  												if(op_type != OperatorType.NONE && targets.Count != 1)
+  													SemErr("An augumented assignment can't have multiple left-hand-side.");
+  												if(op_type != OperatorType.NONE &&		//See if it is an augumented assignment and
+  													targets[0].Count != seq.Count)		//both sides have the same number of items
+  													SemErr("An augumented assignment must have both sides balanced.");
+  													
+  												if(op_type != OperatorType.NONE)
+  													stmt = Node.MakeAugumentedAssignment(targets[0], seq, op_type);
+  												else
+  													stmt = Node.MakeAssignment(targets.Cast<Expression>(), seq);
+  											.)
   )
-  SYNC ';' 									(. if(stmt == null) stmt = Node.MakeExprStmt(targets); .).
+  SYNC ';' 									(.  if(stmt == null)
+  													stmt = Node.MakeExprStmt(lvalues);
+  											.).
 /*------------------------------------------------------------------------*/
 Block<out Statement block>			(. Block tmp; Statement stmt; .)
 =
@@ -578,7 +521,7 @@ WhileStmt<out Statement stmt>		(. Expression cond; Statement body = null; WhileS
   										stmt = tmp;
   									.).
 /*------------------------------------------------------------------------*/
-ForStmt<out Statement stmt>				(.  List<Expression> target_list = null; Expression rvalue = null; Statement body;
+ForStmt<out Statement stmt>				(.  SequenceExpression left = null; Expression rvalue = null; Statement body;
 											ForStatement tmp; bool has_let = false;
 										.)
 =
@@ -586,8 +529,8 @@ ForStmt<out Statement stmt>				(.  List<Expression> target_list = null; Expressi
 	  										Parser.breakables.Add(tmp);
 	  									.)
   '('
-  ( LValueListWithLet<out target_list>	(. if(target_list != null) has_let = true; .)
-  | LValueList<out target_list>
+  ( LValueListWithLet<out left>			(. if(left != null) has_let = true; .)
+  | LValueList<out left>
   )
   "in"
   ( IF(NotFollowedByDoubleDots())
@@ -595,7 +538,7 @@ ForStmt<out Statement stmt>				(.  List<Expression> target_list = null; Expressi
   | IntSeqExpr<out rvalue>
   )
   ')'
-  Stmt<out body>						(.  tmp.LValues = target_list;
+  Stmt<out body>						(.  tmp.Left = left;
 	  										tmp.Target = rvalue;
 	  										tmp.Body = body;
 	  										tmp.HasLet = has_let;
@@ -627,45 +570,43 @@ CaseLabelList<. out List<Expression> label_list .>	(. label_list = new List<Expr
   { CaseLabel<out tmp>								(. label_list.Add(tmp); .)
   }.
 /*------------------------------------------------------------------------*/
-CaseLabel<out Expression expr>						(. expr = null; .)
+CaseLabel<out Expression expr>				(. expr = null; .)
 =
   "case"
   ( Literal<out expr>
   | IntSeqExpr<out expr>
-  | "default"										(. expr = Node.MakeConstant(ObjectTypes._CASE_DEFAULT, "default"); .)
+  | "default"								(. expr = Node.MakeConstant(ObjectTypes._CASE_DEFAULT, "default"); .)
   )
   SYNC ':' .
 /*------------------------------------------------------------------------*/
-LValueList<. out List<Expression> targets .>		(. Expression tmp; .)
-=													(. targets = new List<Expression>(); .)
-  AddOpe<out tmp>									(. targets.Add(tmp); .)
-  { WEAK ','
-    AddOpe<out tmp>									(. targets.Add(tmp); .)
-  } .
+LValueList<out SequenceExpression target>	(. Expression tmp; var exprs = new List<Expression>(); .)
+=
+  Primary<out tmp>							(. exprs.Add(tmp); .)
+  { SYNC ','
+    Primary<out tmp>						(. exprs.Add(tmp); .)
+  }											(. target = Node.MakeSequence(exprs); .).
 /*------------------------------------------------------------------------*/
-LValueListWithLet<. out List<Expression> targets .>	(. Expression tmp; Identifier ident = null; var type = TypeAnnotation.InferenceType; .)
-=													(. targets = null; .)
-  "let"												(. targets = new List<Expression>(); .)
-  AddOpe<out tmp>									
+LValueListWithLet<out SequenceExpression target>	(.  Identifier ident = null; string name;
+														var type = TypeAnnotation.InferenceType; var items = new List<Expression>();
+													.)
+=
+  "let"
+  ident										(. name = t.val; .)									
   [ "(-"
     Type<out type>
-  ]													(.  ident = tmp as Identifier;
-  														if(ident == null) SemErr("Expected a lvalue!");
-  														ident.ParamType = type;
-  														cur_scope.AddLocal(ref ident);
-  														targets.Add(ident);
-  													.)
-  { WEAK ','
-    AddOpe<out tmp>
+  ]											(.  ident = Node.MakeLocalVar(name, type);
+  												type = TypeAnnotation.InferenceType;
+  												items.Add(ident);
+  											.)
+  { SYNC ','
+    ident									(. name = t.val; .)
     [ "(-"
       Type<out type>
-    ]												(.  ident = tmp as Identifier;
-    													if(ident == null) SemErr("Expected a lvalue!");
-    													ident.ParamType = type;
-    													cur_scope.AddLocal(ref ident);
-    													targets.Add(ident);
-    												.)
-  }.
+    ]										(.  ident = Node.MakeLocalVar(name, type);
+    											type = TypeAnnotation.InferenceType;
+    											items.Add(ident);
+    										.)
+  }											(. target = Node.MakeSequence(items); .).
 /*------------------------------------------------------------------------*/
 VarDecl<. out List<Expression> outs .> 	(.  string name; var type = TypeAnnotation.InferenceType.Clone(); Expression rhs = null;
 											Identifier variable; outs = new List<Expression>();
@@ -682,11 +623,12 @@ VarDecl<. out List<Expression> outs .> 	(.  string name; var type = TypeAnnotati
       CondExpr<out rhs>
     | IntSeqExpr<out rhs>
     )
-  ]
-  { ','					 		(.  variable = DeclareVariable(ref rhs, name, type);
+  ]								(.  variable = Node.MakeLocalVar(name, type);
  						 			vars.Add(variable);
   						 			exprs.Add(rhs);
+  						 			rhs = null;
   						 		.)
+  { ','
     ident						(. name = t.val; .)
   	[ "(-"
    	  Type<out type>
@@ -696,25 +638,21 @@ VarDecl<. out List<Expression> outs .> 	(.  string name; var type = TypeAnnotati
 	    CondExpr<out rhs>
 	  | IntSeqExpr<out rhs>
 	  )
-  	]
-  }								(.  variable = DeclareVariable(ref rhs, name, type);
-  					   	   			vars.Add(variable);
-  					   	   			exprs.Add(rhs);
-  					   
-  					   	   			outs.Add(new VarDeclaration{
-  					   					Variables = vars,
-  					   					Expressions = exprs
-  					   	   			});
-  								.).
+  	]							(.  variable = Node.MakeLocalVar(name, type);
+  									vars.Add(variable);
+  									exprs.Add(rhs);
+  									rhs = null;
+  								.)
+  }								(. outs.Add(Node.MakeVarDecl(vars, exprs)); .).
 /*------------------------------------------------------------------------*/
-FuncDecl<out Statement func>    (.  string name; var type = TypeAnnotation.VariantType.Clone(); Statement block; var @params = new List<Argument>();
-									Identifier ident_this = null;
+FuncDecl<out Statement func>    (.  string name; var type = TypeAnnotation.VariantType.Clone(); Statement block;
+									var @params = new List<Argument>(); Argument arg_this = null;
 								.)
 =
   SYNC
-  "def"							(.  block = null; cur_scope = new AnalysisScope{Parent = cur_scope};
-  									ident_this = DeclareArgument("this", new TypeAnnotation(ObjectTypes.TYPE_MODULE));
-  									@params.Add(new Argument{Ident = ident_this, Option = null});
+  "def"							(.  block = null;
+  									arg_this = Node.MakeArg("this", new TypeAnnotation(ObjectTypes.TYPE_MODULE));
+  									@params.Add(arg_this);
   								.)
   ident							(. name = t.val; .)
   '('
@@ -723,10 +661,7 @@ FuncDecl<out Statement func>    (.  string name; var type = TypeAnnotation.Varia
   [ "->"
     Type<out type>
   ]
-  Block<out block> 				(. func = Node.MakeFunc(name, @params, (Block)block, type);
-  								   cur_scope = cur_scope.Parent;
-  								   cur_scope.AddFunction(func as Function);
-  								.).
+  Block<out block> 				(. func = Node.MakeFunc(name, @params, (Block)block, type); .).
 /*------------------------------------------------------------------------*/
 WithStmt<out Statement stmt>		(. Statement block = null; .)
 =
@@ -746,8 +681,8 @@ TryStmt<out Statement stmt>			(.  Statement body, catch_body = null, finally_bod
     ident							(. name = t.val; .)
     "(-"
     Type<out excp_type>
-    ')'								(. catch_ident = new Identifier(name, excp_type); .)
-    Block<out catch_body>			(. catches.Add(new CatchClause{Body = (Block)catch_body, Catcher = catch_ident}); .)
+    ')'								(. catch_ident = Node.MakeLocalVar(name, excp_type); .)
+    Block<out catch_body>			(. catches.Add(Node.MakeCatchClause((Block)catch_body, catch_ident)); .)
   }									
   [ "finally"
     Block<out finally_body>
@@ -768,19 +703,14 @@ Argument<out Argument arg>		(. string name; Expression default_val = null; var t
   ]
   [ '='
     Literal<out default_val>
-  ]									(.  Identifier param = DeclareArgument(name, type);
-  									   	arg = new Argument{
-  											Ident = param,
-  											Option = default_val
-  									   	};
-  									.).
+  ]								(. arg = Node.MakeArg(name, type, default_val); .).
 /*------------------------------------------------------------------------*/
-RValueList<. out List<Expression> exprs .>		(. Expression tmp; .)
-=												(. exprs = new List<Expression>(); .)
-  CondExpr<out tmp>								(. exprs.Add(tmp); .)
-  { ','
-    CondExpr<out tmp>							(. exprs.Add(tmp);	.)
-  }.
+RValueList<out SequenceExpression seq>		(. Expression tmp; var exprs = new List<Expression>(); .)
+=
+  CondExpr<out tmp>							(. exprs.Add(tmp); .)
+  { SYNC ','
+    CondExpr<out tmp>						(. exprs.Add(tmp);	.)
+  }											(. seq = Node.MakeSequence(exprs); .).
 /*------------------------------------------------------------------------*/
 CondExpr<out Expression expr>		(. Expression true_expr, false_expr; .)
 =
@@ -788,12 +718,7 @@ CondExpr<out Expression expr>		(. Expression true_expr, false_expr; .)
   [ '?'
     OrTest<out true_expr>
     ':'
-    CondExpr<out false_expr>		(. expr = new ConditionalExpression{
-    										Condition = expr,
-    										TrueExpression = true_expr,
-    										FalseExpression = false_expr
-    								   };
-    								.)
+    CondExpr<out false_expr>		(. expr = Node.MakeCondExpr(expr, true_expr, false_expr); .)
   ].
 /*------------------------------------------------------------------------*/
 IntSeqExpr<out Expression expr>		(. Expression start = null, end = null, step = null; .)
@@ -831,18 +756,18 @@ NotTest<out Expression expr>		(. Expression term; expr = null; .)
   )
   | Comparison<out expr>.
 /*------------------------------------------------------------------------*/
-Comparison<out Expression expr>		(. Expression rhs; OperatorType type; .)
+Comparison<out Expression expr>	(. Expression rhs; OperatorType type; .)
 =
-  BitOr<out expr>			(. type = OperatorType.EQUAL; .)
+  BitOr<out expr>				(. type = OperatorType.EQUAL; .)
   [
-    ( "=="               	(. type = OperatorType.EQUAL; .)
-    | "!="					(. type = OperatorType.NOTEQ; .)
-    | '<'                	(. type = OperatorType.LESS; .)
-    | '>'                	(. type = OperatorType.GREAT; .)
-    | "<="				 	(. type = OperatorType.LESE; .)
-    | ">="				 	(. type = OperatorType.GRTE; .)
+    ( "=="               		(. type = OperatorType.EQUAL; .)
+    | "!="						(. type = OperatorType.NOTEQ; .)
+    | '<'                		(. type = OperatorType.LESS; .)
+    | '>'                		(. type = OperatorType.GREAT; .)
+    | "<="				 		(. type = OperatorType.LESE; .)
+    | ">="				 		(. type = OperatorType.GRTE; .)
     )
-    BitOr<out rhs>			(. expr = Node.MakeBinaryExpr(type, expr, rhs); .)
+    BitOr<out rhs>				(. expr = Node.MakeBinaryExpr(type, expr, rhs); .)
   ].
 /*------------------------------------------------------------------------*/
 BitOr<out Expression expr>			(. Expression rhs; .)
@@ -876,7 +801,7 @@ ShiftOpe<out Expression expr>		(. Expression rhs; OperatorType type; .)
     AddOpe<out rhs>					(. expr = Node.MakeBinaryExpr(type, expr, rhs); .)
   }.
 /*------------------------------------------------------------------------*/
-AddOpe<out Expression expr>    (. Expression rhs; OperatorType type; .)
+AddOpe<out Expression expr>    		(. Expression rhs; OperatorType type; .)
 = 
   Term<out expr>
   { 
@@ -912,77 +837,35 @@ PowerOpe<out Expression expr>    (. Expression rhs; .)
     Factor<out rhs>              (. expr = Node.MakeBinaryExpr(OperatorType.POWER, expr, rhs); .)
   ].
 /*------------------------------------------------------------------------*/
-Primary<out Expression expr>		(. string name = null; expr = null; .)
+Primary<out Expression expr>		(. expr = null; .)
 =
-  ( 
-    ( IF(IdentIsNotCallable())
-      Atom<out expr>
-    | ident							(. name = t.val; .)
-    )
-    { Trailer<ref expr, name>
+  ( Atom<out expr>
+    { Trailer<ref expr>
     }
   )
   | NewExpression<out expr>.
 /*------------------------------------------------------------------------*/
-NewExpression<out Expression expr>		(. Identifier ident = null; var args = new List<Expression>(); .)
+NewExpression<out Expression expr>		(. var args = new List<Expression>(); .)
 =
   "new"
-  TypeName<out expr>
+  ident									(. expr = Node.MakeIdentifier(t.val); .)
   { '.'
-    ident								(.  ident = new Identifier(t.val, new TypeAnnotation(ObjectTypes._SUBSCRIPT));
-     							   			expr = new MemberReference{
-     							   				Parent = expr,
-     							   				Subscription = ident
-     							  			};  
-     							   		.)
+    ident								(. expr = Node.MakeMemRef(expr, Node.MakeField(t.val, TypeAnnotation.Subscription)); .)
   }
   '('
   [ArgList<ref args>]
   ')'									(. expr = Node.MakeNewExpr(expr, args); .).
 /*------------------------------------------------------------------------*/
-TypeName<out Expression expr>		(. string name; .)
+Trailer<ref Expression expr>	(. var args = new List<Expression>(); Expression subscript; .)
 =
-  ident								(.  name = t.val;
-  										expr = cur_scope.GetType(name);
-  										if(expr == null) SemErr(string.Format("Expected a type name but instead saw \"{0}\".", name));
-  									.).
-/*------------------------------------------------------------------------*/
-Trailer<ref Expression expr, string name>	(. Function func; var args = new List<Expression>(); Expression subscript; .)
-=
-  '('
+  '('							(. args.Add(null); .)
   [ArgList<ref args>]
-  ')'							(. if(expr != null){
-  								   		expr = new Call{
-  								   			Function = null,
-  								   			Arguments = args,
-  								   			Reference = expr
-  								   		};
-  								   		return;
-  								   }
-  								   func = cur_scope.GetFunction(name);
-  								   if(func == null){
-  								   		SemErr("The function is not defined : " + name);
-  								   }
-  								   expr = new Call{
-  								   		Function = func,
-  										Arguments = args,
-  										Reference = null
-  								   };
-  						 		.)
+  ')'							(. expr = Node.MakeCallExpr(expr, args); .)
   | '['
     Subscript<out subscript>
-    ']'							(. expr = new MemberReference{
-     									Parent = expr,
-     									Subscription = subscript
-     							   };
-     							.)
+    ']'							(. expr = Node.MakeMemRef(expr, subscript); .)
   | '.'
-    ident						(. subscript = new Identifier(t.val, new TypeAnnotation(ObjectTypes._SUBSCRIPT));
-     							   expr = new MemberReference{
-     							   		Parent = expr,
-     							   		Subscription = subscript
-     							   };
-     							.).
+    ident						(. expr = Node.MakeMemRef(expr, Node.MakeField(t.val, TypeAnnotation.Subscription)); .).
 /*------------------------------------------------------------------------*/
 Subscript<out Expression subscript>	(. subscript = null; .)
 =
@@ -1000,54 +883,36 @@ ArgList<. ref List<Expression> args .>		(. Expression expr; .)
 Atom<out Expression expr>			(. string name; expr = null; .)
 =
   ident								(.  name = t.val;
-  										if(ExpectIdentIsTypeName()){
-  											expr = cur_scope.GetType(name);
-  											if(expr != null) return;
-  										}
-  										expr = cur_scope.GetVariable(name, !ignore_parent_scope);
-  										if(expr == null){
-  											expr = new Identifier(name);
-  											if(ignore_parent_scope){	//for the comprehension expression
-  												var ident = (Identifier)expr;
-  												ident.ParamType = TypeAnnotation.InferenceType.Clone();
-  												cur_scope.AddLocal(ref ident);
-  												expr = ident;
-  											}
-  										}
+  										expr = Node.MakeIdentifier(name);
   									.)
   | Literal<out expr>
   | '('
     [SequenceMaker<out expr, ObjectTypes.TUPLE>]
     SYNC ')'						(.  if(expr == null)
-    										expr = Node.MakeObjInitializer(ObjectTypes.TUPLE, new List<Expression>());
+    										expr = Node.MakeSeqInitializer(ObjectTypes.TUPLE, new List<Expression>());
     								.)
   | '['
     [SequenceMaker<out expr, ObjectTypes.LIST>]
     SYNC ']'						(.  if(expr == null)
-    										expr = Node.MakeObjInitializer(ObjectTypes.LIST, new List<Expression>());
+    										expr = Node.MakeSeqInitializer(ObjectTypes.LIST, new List<Expression>());
     								.)
   | '{'
     [DictMaker<out expr>]
-    SYNC '}' 						(. if(expr == null) expr = Node.MakeObjInitializer(ObjectTypes.DICT, new List<Expression>()); .).
+    SYNC '}' 						(. if(expr == null) expr = Node.MakeSeqInitializer(ObjectTypes.DICT, new List<Expression>()); .).
 /*------------------------------------------------------------------------*/
 SequenceMaker<out Expression expr, ObjectTypes ObjType>	(.  Expression tmp = null; List<Expression> list = new List<Expression>();
-														expr = null; ComprehensionIter comprehen = null;
-													.)
+															expr = null; ComprehensionIter comprehen = null;
+														.)
 =
-  IF(IsObjectInitializer())
+  IF(IsSequenceInitializer())
   CondExpr<out tmp>						(. if(tmp != null) list.Add(tmp); .)
   { ','
     CondExpr<out tmp>					(. if(tmp != null) list.Add(tmp); .)
-  }										(. expr = Node.MakeObjInitializer(ObjType, list); .)
-  | '{' 								(.  cur_scope = new AnalysisScope{Parent = cur_scope};
-      										ignore_parent_scope = true;
-      									.)
+  }										(. expr = Node.MakeSeqInitializer(ObjType, list); .)
+  | '{'
     CondExpr<out tmp>
     CompFor<out comprehen>
-    '}'									(.  expr = Node.MakeComp(tmp, (ComprehensionFor)comprehen, ObjType);
-      										cur_scope = cur_scope.Parent;
-      										ignore_parent_scope = false;
-      									.).
+    '}'									(.  expr = Node.MakeComp(tmp, (ComprehensionFor)comprehen, ObjType); .).
 /*------------------------------------------------------------------------*/
 DictMaker<out Expression expr>			(. Expression lhs, rhs; List<Expression> list = new List<Expression>(); expr = null; .)
 =
@@ -1060,32 +925,23 @@ DictMaker<out Expression expr>			(. Expression lhs, rhs; List<Expression> list =
     ':'
     CondExpr<out rhs>					(. if(rhs != null) list.Add(rhs); .)
   }
-  										(. if(list.Count > 0) expr = Node.MakeObjInitializer(ObjectTypes.DICT, list); .).
+  										(. if(list.Count > 0) expr = Node.MakeSeqInitializer(ObjectTypes.DICT, list); .).
 /*------------------------------------------------------------------------*/
 CompIter<out ComprehensionIter expr>			(. expr = null; .)
 =
   CompFor<out expr>
   | CompIf<out expr> .
 /*------------------------------------------------------------------------*/
-CompFor<out ComprehensionIter expr>		(. Expression rvalue = null; ComprehensionIter body = null; List<Expression> target_list; .)
+CompFor<out ComprehensionIter expr>		(. Expression rvalue = null; ComprehensionIter body = null; SequenceExpression target; .)
 =
-  "for"									(. ignore_parent_scope = true; .)
-  LValueList<out target_list>			(.		//CompFor構文内で出現した未知の識別子は、自動的にこのfor式をスコープとするローカル変数になる
-  											foreach(var target in target_list){
-  												var ident = target as Identifier;
-  												if(ident == null) SemErr("Expected a lvalue!");
-  												ident.ParamType = TypeAnnotation.InferenceType.Clone();
-  												if(!cur_scope.ContainsIn(ident.Name))
-  													cur_scope.AddLocal(ref ident);
-  											}
-  											ignore_parent_scope = false;
-  										.)
+  "for"
+  LValueList<out target>
   "in"
   ( IF(NotFollowedByDoubleDots())
     CondExpr<out rvalue>
   | IntSeqExpr<out rvalue>
   )
-  [CompIter<out body>]					(. expr = Node.MakeCompFor(target_list, rvalue, body); .).
+  [CompIter<out body>]					(. expr = Node.MakeCompFor(target, rvalue, body); .).
 /*------------------------------------------------------------------------*/
 CompIf<out ComprehensionIter expr>		(. Expression tmp; ComprehensionIter body = null; .)
 =

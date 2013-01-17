@@ -21,7 +21,9 @@ namespace Expresso.Ast
         /// ブロックの中身の文。
 		/// The body statements
         /// </summary>
-        public List<Statement> Statements { get { return this.statements; } }
+        public List<Statement> Statements{
+			get{return this.statements; }
+		}
 
         /// <summary>
         /// ブロック中で定義された変数一覧。
@@ -61,7 +63,7 @@ namespace Expresso.Ast
             return this.Statements.GetHashCode();
         }
 
-        internal override object Run(VariableStore varStore)
+        /*internal override object Run(VariableStore varStore)
         {
 			object result = null;
 			can_continue = true;
@@ -70,11 +72,20 @@ namespace Expresso.Ast
 				result = statements[i].Run(varStore);
 			
 			return result;
-        }
+        }*/
 
 		internal override CSharpExpr Compile(Emitter<CSharpExpr> emitter)
 		{
 			return emitter.Emit(this);
+		}
+
+		internal override void Walk(ExpressoWalker walker)
+		{
+			if(walker.Walk(this)){
+				foreach(var stmt in statements)
+					stmt.Walk(walker);
+			}
+			walker.PostWalk(this);
 		}
 
 		public IEnumerable<Identifier> CollectLocalVars()

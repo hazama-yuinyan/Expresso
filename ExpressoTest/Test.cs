@@ -9,6 +9,7 @@ using NUnit.Framework;
 
 using Expresso.Ast;
 using Expresso.Builtins;
+using Expresso.Compiler.Meta;
 using Expresso.Interpreter;
 using Expresso.Runtime;
 using Expresso.Runtime.Operations;
@@ -46,11 +47,11 @@ namespace Expresso.Test
 			}
 		}
 
-		public static void DoTest(ExpressoObj mainModule, List<Identifier> names, object[] expects)
+		public static void DoTest(ExpressoModule mainModule, List<string> names, object[] expects)
 		{
 			var len = expects.Length;
 			for(int i = 0; i < len; ++i){
-				var target = mainModule.AccessMember(names[i], true);
+				var target = mainModule.LookupMember(names[i]);
 				var expect = expects[i];
 				Type type_target = target.GetType(), type_expect = expect.GetType();
 				Assert.IsTrue(type_target.FullName == type_expect.FullName);
@@ -61,10 +62,10 @@ namespace Expresso.Test
 		public static void TestOnType(ExpressoObj instance, List<string> privateMembers, List<FunctionAnnotation> methodAnnots)
 		{
 			foreach(var private_name in privateMembers)
-				Assert.Throws(typeof(ReferenceException), () => instance.AccessMember(new Identifier(private_name), false));
+				Assert.Throws(typeof(ReferenceException), () => instance.AccessMemberWithName(private_name, false));
 
 			foreach(var method_annot in methodAnnots){
-				var method = instance.AccessMember(new Identifier(method_annot.Name), false) as Function;
+				var method = instance.AccessMemberWithName(method_annot.Name, false) as FunctionDefinition;
 				Assert.IsNotNull(method);
 				Assert.AreEqual(method_annot.Name, method.Name);
 				Assert.AreEqual(method_annot.ReturnType, method.ReturnType);
@@ -94,9 +95,9 @@ namespace Expresso.Test
 			parser.ParsingFileName = "simple_literals";
 			parser.Parse();
 			var interp = new Expresso.Interpreter.Interpreter();
-			Expresso.Interpreter.Interpreter.MainModule = parser.ParsingModule;
-			interp.Initialize();
-			var main_module = ExpressoModule.GetModule("simple_literals");
+			Expresso.Interpreter.Interpreter.MainModule = parser.TopmostAst;
+			interp.Run(parser.TopmostAst, false);
+			var main_module = interp.GlobalContext.GetModule("simple_literals");
 
 			var expected = new object[]{
 				255,	//a
@@ -111,21 +112,21 @@ namespace Expresso.Test
 				ExpressoOps.MakeDict(new List<object>(), new List<object>())	//g
 			};
 
-			var idents = new List<Identifier>{
-				new Identifier("a"),
-				new Identifier("h_a"),
-				new Identifier("b"),
-				new Identifier("f_b"),
-				new Identifier("c"),
-				new Identifier("f_c"),
-				new Identifier("d"),
-				new Identifier("e"),
-				new Identifier("f"),
-				new Identifier("g")
+			var names = new List<string>{
+				"a",
+				"h_a",
+				"b",
+				"f_b",
+				"c",
+				"f_c",
+				"d",
+				"e",
+				"f",
+				"g"
 			};
 
 			Assert.IsNotNull(main_module);
-			Helpers.DoTest(main_module, idents, expected);
+			Helpers.DoTest(main_module, names, expected);
 		}
 	}
 
@@ -138,8 +139,7 @@ namespace Expresso.Test
 			var parser = new Parser(new Scanner("../../sources/for_interpreter/simple_arithmetic.exs"));
 			parser.Parse();
 			var interp = new Expresso.Interpreter.Interpreter();
-			Expresso.Interpreter.Interpreter.MainModule = parser.ParsingModule;
-			interp.Initialize();
+			Expresso.Interpreter.Interpreter.MainModule = parser.TopmostAst;
 			var results = interp.Run() as List<object>;
 			Assert.IsNotNull(results);
 
@@ -168,8 +168,7 @@ namespace Expresso.Test
 			var parser = new Parser(new Scanner("../../sources/for_interpreter/basic_operations.exs"));
 			parser.Parse();
 			var interp = new Expresso.Interpreter.Interpreter();
-			Expresso.Interpreter.Interpreter.MainModule = parser.ParsingModule;
-			interp.Initialize();
+			Expresso.Interpreter.Interpreter.MainModule = parser.TopmostAst;
 			var results = interp.Run() as List<object>;
 			Assert.IsNotNull(results);
 
@@ -208,8 +207,7 @@ namespace Expresso.Test
 			var parser = new Parser(new Scanner("../../sources/for_interpreter/statements.exs"));
 			parser.Parse();
 			var interp = new Expresso.Interpreter.Interpreter();
-			Expresso.Interpreter.Interpreter.MainModule = parser.ParsingModule;
-			interp.Initialize();
+			Expresso.Interpreter.Interpreter.MainModule = parser.TopmostAst;
 			var results = interp.Run() as List<object>;
 			Assert.IsNotNull(results);
 
@@ -251,8 +249,7 @@ namespace Expresso.Test
 			var parser = new Parser(new Scanner("../../sources/for_interpreter/builtin_objects.exs"));
 			parser.Parse();
 			var interp = new Expresso.Interpreter.Interpreter();
-			Expresso.Interpreter.Interpreter.MainModule = parser.ParsingModule;
-			interp.Initialize();
+			Expresso.Interpreter.Interpreter.MainModule = parser.TopmostAst;
 			var results = interp.Run() as List<object>;
 			Assert.IsNotNull(results);
 
@@ -262,7 +259,7 @@ namespace Expresso.Test
 			var expected_c = ExpressoOps.MakeTuple(new List<object>{"akarichan", "kawakawa", "chinatsuchan", 2424});
 
 			var tmp_seq = new ExpressoIntegerSequence(0, 3, 1);
-			var expected_d = ImplementationHelpers.Slice(expected_a, tmp_seq);
+			var expected_d = ExpressoOps.Slice(expected_a, tmp_seq);
 
 			var expected = new object[]{
 				expected_a,
@@ -279,8 +276,7 @@ namespace Expresso.Test
 			var parser = new Parser(new Scanner("../../sources/for_interpreter/complex_expressions.exs"));
 			parser.Parse();
 			var interp = new Expresso.Interpreter.Interpreter();
-			Expresso.Interpreter.Interpreter.MainModule = parser.ParsingModule;
-			interp.Initialize();
+			Expresso.Interpreter.Interpreter.MainModule = parser.TopmostAst;
 			var results = interp.Run() as List<object>;
 			Assert.IsNotNull(results);
 
@@ -326,8 +322,7 @@ namespace Expresso.Test
 			var parser = new Parser(new Scanner("../../sources/for_interpreter/class.exs"));
 			parser.Parse();
 			var interp = new Expresso.Interpreter.Interpreter();
-			Expresso.Interpreter.Interpreter.MainModule = parser.ParsingModule;
-			interp.Initialize();
+			Expresso.Interpreter.Interpreter.MainModule = parser.TopmostAst;
 			var results = interp.Run() as List<object>;
 			Assert.IsNotNull(results);
 
@@ -353,7 +348,7 @@ namespace Expresso.Test
 			Assert.IsNotNull(a);
 			Helpers.TestOnType(a, private_names, method_annots);
 
-			var numeric_results = ImplementationHelpers.Slice(results, new ExpressoIntegerSequence(1, results.Count, 1)) as List<object>;
+			var numeric_results = ExpressoOps.Slice(results, new ExpressoIntegerSequence(1, results.Count, 1)) as List<object>;
 			Helpers.DoTest(numeric_results, expected);
 		}
 
@@ -370,8 +365,7 @@ namespace Expresso.Test
 			parser.Parse();
 			var interp = new Expresso.Interpreter.Interpreter();
 			interp.CurOpenedSourceFileName = "../../sources/for_interpreter/module.exs";
-			Expresso.Interpreter.Interpreter.MainModule = parser.ParsingModule;
-			interp.Initialize();
+			Expresso.Interpreter.Interpreter.MainModule = parser.TopmostAst;
 			var results = interp.Run() as List<object>;
 			Assert.IsNotNull(results);
 			

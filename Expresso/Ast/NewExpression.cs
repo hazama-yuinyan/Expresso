@@ -18,22 +18,35 @@ namespace Expresso.Ast
     /// </summary>
     public class NewExpression : Expression
     {
+		private Expression target;
+		private Expression[] args;
+
         /// <summary>
         /// オブジェクトを生成するクラスの定義を参照する式。
 		/// The target class definition of the new expression.
         /// </summary>
-        public Expression TargetDecl { get; internal set; }
+        public Expression TargetExpr{
+			get{return target;}
+		}
 
 		/// <summary>
 		/// コンストラクタに渡す引数。
 		/// The argument list that will be passed to the constructor.
 		/// </summary>
-		public List<Expression> Arguments{get; internal set;}
+		public Expression[] Arguments{
+			get{return args;}
+		}
 
         public override NodeType Type
         {
             get { return NodeType.New; }
         }
+
+		public NewExpression(Expression targetExpr, Expression[] arguments)
+		{
+			target = targetExpr;
+			args = arguments;
+		}
 
         public override bool Equals(object obj)
         {
@@ -41,31 +54,41 @@ namespace Expresso.Ast
 
             if (x == null) return false;
 
-            return this.TargetDecl == x.TargetDecl;
+            return this.target == x.target;
         }
 
         public override int GetHashCode()
         {
-            return this.TargetDecl.GetHashCode();
+            return this.target.GetHashCode();
         }
 
-        internal override object Run(VariableStore varStore)
+        /*internal override object Run(VariableStore varStore)
         {
 			var type_def = TargetDecl.Run(varStore) as BaseDefinition;
 			if(type_def == null)
 				throw ExpressoOps.ReferenceError("{0} doesn't refer to a type name.", TargetDecl);
 
 			return ExpressoObj.CreateInstance(type_def, Arguments, varStore);
-        }
+        }*/
 
 		internal override CSharpExpr Compile(Emitter<CSharpExpr> emitter)
 		{
 			return emitter.Emit(this);
 		}
 
+		internal override void Walk(ExpressoWalker walker)
+		{
+			if(walker.Walk(this)){
+				target.Walk(walker);
+				foreach(var arg in args)
+					arg.Walk(walker);
+			}
+			walker.PostWalk(this);
+		}
+
 		public override string ToString()
 		{
-			return string.Format("new {0} with {1}", TargetDecl, Arguments);
+			return string.Format("new {0} with {1}", target, args);
 		}
     }
 }

@@ -8,6 +8,7 @@ using System.Linq;
 using Expresso.Ast;
 using Expresso.Builtins;
 using Expresso.Builtins.Library;
+using Expresso.Compiler.Meta;
 using Expresso.Interpreter;
 using Expresso.Runtime;
 using Expresso.Runtime.Operations;
@@ -137,7 +138,8 @@ namespace Expresso.Builtins
 		}
 
 		/// <summary>
-		/// Iterates over some sequence and returns a tuple containing an index and the corresponding element.
+		/// Iterates over some sequence and returns a tuple containing an index and the corresponding element for each
+		/// element in the source sequence.
 		/// </summary>
 		public static IEnumerable<ExpressoTuple> Each(IEnumerable<object> src)
 		{
@@ -155,11 +157,11 @@ namespace Expresso.Builtins
 	{
 		private static BuiltinNativeMethods inst = null;
 
-		private Dictionary<string, Dictionary<string, NativeFunction>> native_methods;
+		//private Dictionary<string, Dictionary<string, NativeFunction>> native_methods;
 
 		private BuiltinNativeMethods()
 		{
-			var list = new Dictionary<string, NativeFunction>{
+			/*var list = new Dictionary<string, NativeFunction>{
 				{"add", new NativeFunctionNAry("add", Helpers.MakeNativeMethodCall(typeof(List<object>), "Add", typeof(object)))},
 				{"clear", new NativeFunctionNAry("clear", Helpers.MakeNativeMethodCall(typeof(List<object>), "Clear"))},
 				{"contains", new NativeFunctionNAry("contains", Helpers.MakeNativeMethodCall(typeof(List<object>), "Contains", typeof(object)))}
@@ -197,7 +199,7 @@ namespace Expresso.Builtins
 				{"Tuple", tuple},
 				{"Dictionary", dict},
 				{"File", file_obj}
-			};
+			};*/
 		}
 
 		public static BuiltinNativeMethods Instance()
@@ -208,7 +210,7 @@ namespace Expresso.Builtins
 			return inst;
 		}
 
-		public NativeFunction LookupMethod(string typeName, string methodName)
+		/*public NativeFunction LookupMethod(string typeName, string methodName)
 		{
 			Dictionary<string, NativeFunction> type_dict;
 			if(!native_methods.TryGetValue(typeName, out type_dict))
@@ -219,7 +221,7 @@ namespace Expresso.Builtins
 				throw ExpressoOps.ReferenceError("{0} doesn't have the method \"{1}\".", typeName, methodName);
 
 			return method;
-		}
+		}*/
 	}
 }
 

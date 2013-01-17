@@ -4,7 +4,9 @@ using System.Linq;
 
 using Expresso.Ast;
 using Expresso.Builtins;
+using Expresso.Compiler.Meta;
 using Expresso.Interpreter;
+using Expresso.Runtime.Operations;
 
 namespace Expresso.Compiler
 {
@@ -27,15 +29,18 @@ namespace Expresso.Compiler
 
 		internal override CSharpExpr Emit(Argument node)
 		{
-			return CSharpExpr.Parameter(Helper.GetNativeType(node.ParamType.ObjType), node.Name);
+			return CSharpExpr.Parameter(ExpressoOps.GetNativeType(node.ParamType.ObjType), node.Name);
+		}
+
+		internal override CSharpExpr Emit(AssertStatement node)
+		{
+			throw new System.NotImplementedException ();
 		}
 
 		internal override CSharpExpr Emit(Assignment node)
 		{
-			var rvalues = new List<CSharpExpr>();
+			/*var rvalues = node.Rhs.Compile(this);
 			var results = new List<CSharpExpr>();
-			foreach(var expr in node.Expressions)
-				rvalues.Add(expr.Compile(this));
 
 			var _self = this;
 			foreach(var rvalue in node.Targets.Zip(rvalues,
@@ -44,6 +49,8 @@ namespace Expresso.Compiler
 			}
 
 			return CSharpExpr.Block(results);	//x, y, z... = a, b, c...; => x = a, y = b, z = c...;
+			*/
+			return null;
 		}
 
 		internal override CSharpExpr Emit(BinaryExpression node)
@@ -68,17 +75,23 @@ namespace Expresso.Compiler
 
 		internal override CSharpExpr Emit(Call node)
 		{
-			var args =
+			/*var args =
 				from expr in node.Arguments
-				select expr.Compile(this);
+				select expr.Compile(this);*/
 
-			if(node.Function != null){
+			return null;
+			/*if(node.Function != null){
 				var func = node.Function.Compile(this);
 				return CSharpExpr.Invoke(func, args);		//func(args);
 			}else{
 				var method = node.Reference.Compile(this);
 				return CSharpExpr.Invoke(method, args);		//Parent.Subscript(args)
-			}
+			}*/
+		}
+
+		internal override CSharpExpr Emit(CastExpression node)
+		{
+			throw new System.NotImplementedException ();
 		}
 
 		internal override CSharpExpr Emit(Comprehension node)
@@ -125,6 +138,16 @@ namespace Expresso.Compiler
 			return CSharpExpr.Continue(continue_targets[continue_targets.Count - node.Count]);
 		}
 
+		internal override CSharpExpr Emit(DefaultExpression node)
+		{
+			return CSharpExpr.Default(ExpressoOps.GetNativeType(node.TargetType.ObjType));
+		}
+
+		internal override CSharpExpr Emit(EmptyStatement node)
+		{
+			return CSharpExpr.Empty();
+		}
+
 		internal override CSharpExpr Emit(ExprStatement node)
 		{
 			throw new System.NotImplementedException();
@@ -135,14 +158,14 @@ namespace Expresso.Compiler
 			throw new System.NotImplementedException();
 		}
 
-		internal override CSharpExpr Emit(Function node)
+		internal override CSharpExpr Emit(FunctionDefinition node)
 		{
 			throw new System.NotImplementedException();
 		}
 
 		internal override CSharpExpr Emit(Identifier node)
 		{
-			return CSharpExpr.Parameter(Helper.GetNativeType(node.ParamType.ObjType), node.Name);	//ObjType Name;
+			return CSharpExpr.Parameter(ExpressoOps.GetNativeType(node.ParamType.ObjType), node.Name);	//ObjType Name;
 		}
 
 		internal override CSharpExpr Emit(IfStatement node)
@@ -161,8 +184,8 @@ namespace Expresso.Compiler
 		{
 			var int_seq_ctor = typeof(ExpressoIntegerSequence).GetConstructor(new Type[]{typeof(int), typeof(int), typeof(int)});
 			var args = new List<CSharpExpr>{
-				node.Start.Compile(this),
-				node.End.Compile(this),
+				node.Lower.Compile(this),
+				node.Upper.Compile(this),
 				node.Step.Compile(this)
 			};
 			return CSharpExpr.New(int_seq_ctor, args);		//new ExpressoIntegerSequence(Start, End, Step)
@@ -173,7 +196,7 @@ namespace Expresso.Compiler
 			throw new System.NotImplementedException();
 		}
 
-		internal override CSharpExpr Emit (ModuleDeclaration node)
+		internal override CSharpExpr Emit(ExpressoAst node)
 		{
 			throw new System.NotImplementedException ();
 		}
@@ -183,7 +206,7 @@ namespace Expresso.Compiler
 			throw new System.NotImplementedException();
 		}
 
-		internal override CSharpExpr Emit(ObjectInitializer node)
+		internal override CSharpExpr Emit(SequenceInitializer node)
 		{
 			throw new System.NotImplementedException();
 		}
@@ -193,7 +216,7 @@ namespace Expresso.Compiler
 			throw new System.NotImplementedException();
 		}
 
-		internal override CSharpExpr Emit(RequireExpression node)
+		internal override CSharpExpr Emit(RequireStatement node)
 		{
 			throw new System.NotImplementedException();
 		}
@@ -203,19 +226,8 @@ namespace Expresso.Compiler
 			if(return_target == null)
 				throw new EmitterException("Invalid return target");
 
-			if(node.Expressions.Count == 0)				//return;
-				return CSharpExpr.Return(return_target);
-			else if(node.Expressions.Count == 1)		//return expr;
-				return CSharpExpr.Return(return_target, node.Expressions[0].Compile(this));
-			else{
-				var tuple_content = new List<CSharpExpr>();
-				foreach(var expr in node.Expressions)
-					tuple_content.Add(expr.Compile(this));
-
-				var tuple_ctor = typeof(ExpressoTuple).GetConstructor(new Type[]{typeof(List<object>)});
-				return CSharpExpr.Return(return_target,		//return expr1, expr2... -> return new ExpressoTuple(exprs);
-				                         CSharpExpr.New(tuple_ctor, tuple_content));
-			}
+			var return_value = node.Expression.Compile(this);
+			return CSharpExpr.Return(return_target, return_value);	//return expression;
 		}
 
 		internal override CSharpExpr Emit(SwitchStatement node)
@@ -234,6 +246,11 @@ namespace Expresso.Compiler
 		internal override CSharpExpr Emit(CaseClause node)
 		{
 			throw new NotImplementedException("Can not call this method directory. Use Emit(SwitchStatement) method.");
+		}
+
+		internal override CSharpExpr Emit(SequenceExpression node)
+		{
+			throw new System.NotImplementedException ();
 		}
 
 		internal override CSharpExpr Emit(ThrowStatement node)
@@ -276,7 +293,7 @@ namespace Expresso.Compiler
 			throw new System.NotImplementedException("Can not call this method directly. Use Emit(TryStatement) method.");
 		}
 
-		internal override CSharpExpr Emit(TypeDeclaration node)
+		internal override CSharpExpr Emit(TypeDefinition node)
 		{
 			throw new System.NotImplementedException();
 		}
@@ -361,7 +378,7 @@ namespace Expresso.Compiler
 			                             labels);					//case label2: body;
 		}
 
-		private CSharpExpr CompileCatch(List<CatchClause> clauses, ExprTree.ParameterExpression caughtException)
+		private CSharpExpr CompileCatch(CatchClause[] clauses, ExprTree.ParameterExpression caughtException)
 		{
 			return null;
 		}

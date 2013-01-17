@@ -11,15 +11,16 @@ namespace Expresso.Builtins
 {
 	/// <summary>
 	/// Expresso組み込みのtupleオブジェクト。
-	/// The built-in Tuple.
+	/// The built-in Tuple. A tuple is an immutable, fixed-size sequence like an array and it supports most of the operations
+	/// available for an array including accessing individual elements by index, iterating over the whole tuple with
+	/// enumerator etc.
 	/// </summary>
-	/// <seealso cref="ExpressoContainer"/>
 	[DebuggerTypeProxy(typeof(CollectionDebugProxy)), DebuggerDisplay("tuple, {Count} items")]
 	[ExpressoType("tuple")]
 	public class ExpressoTuple : ICollection, IEnumerable, IEnumerable<object>, IList<object>,
 		IStructuralEquatable, IStructuralComparable
 	{
-		private readonly object[] _content;
+		private readonly object[] items;
 		
 		/// <summary>
 		/// Tupleの中身。
@@ -28,22 +29,22 @@ namespace Expresso.Builtins
 		/// <value>
 		/// The contents.
 		/// </value>
-		public object[] Content{get{return this._content;}}
+		public object[] Items{get{return this.items;}}
 		
 		public ExpressoTuple(object[] content)
 		{
-			this._content = content;
+			this.items = content;
 		}
 		
 		public ExpressoTuple(List<object> content)
 		{
-			this._content = content.ToArray();
+			this.items = content.ToArray();
 		}
 
 		public object this[int index]
 		{
 			get{
-				return _content[index];
+				return items[index];
 			}
 		}
 		
@@ -56,13 +57,13 @@ namespace Expresso.Builtins
 		public int Count
 		{
 			[ExpressoHidden]
-			get{ return _content.Length; }
+			get{ return items.Length; }
 		}
 
 		[ExpressoHidden]
 		public void CopyTo(Array array, int index)
 		{
-			Array.Copy(_content, 0, array, index, _content.Length);
+			Array.Copy(items, 0, array, index, items.Length);
 		}
 		
 		object ICollection.SyncRoot
@@ -76,7 +77,7 @@ namespace Expresso.Builtins
 		#region IEnumerable members
 		IEnumerator IEnumerable.GetEnumerator()
 		{
-			return _content.GetEnumerator();
+			return GetEnumerator();
 		}
 		#endregion
 
@@ -132,8 +133,8 @@ namespace Expresso.Builtins
 		[ExpressoHidden]
 		public bool Contains(object item)
 		{
-			for(int i = 0; i < _content.Length; ++i){
-				if(_content[i].Equals(item)){
+			for(int i = 0; i < items.Length; ++i){
+				if(items[i].Equals(item)){
 					return true;
 				}
 			}
@@ -143,7 +144,7 @@ namespace Expresso.Builtins
 
 		public bool Empty()
 		{
-			return _content.Length == 0;
+			return items.Length == 0;
 		}
 		
 		[ExpressoHidden]
@@ -172,7 +173,7 @@ namespace Expresso.Builtins
 				throw new ArgumentException("expected tuple");
 			}
 			
-			return ExpressoOps.CompareArrays(_content, _content.Length, other._content, other._content.Length, comparer);
+			return ExpressoOps.CompareArrays(items, items.Length, other.items, other.items.Length, comparer);
 		}
 		#endregion
 
@@ -190,14 +191,14 @@ namespace Expresso.Builtins
 		
 		bool IStructuralEquatable.Equals(object other, IEqualityComparer comparer)
 		{
-			if (!Object.ReferenceEquals(other, this)) {
+			if(!Object.ReferenceEquals(other, this)){
 				ExpressoTuple l = other as ExpressoTuple;
-				if (l == null || _content.Length != l._content.Length) {
+				if(l == null || items.Length != l.items.Length){
 					return false;
 				}
 				
-				for (int i = 0; i < _content.Length; i++) {
-					object obj1 = _content[i], obj2 = l._content[i];
+				for(int i = 0; i < items.Length; i++){
+					object obj1 = items[i], obj2 = l.items[i];
 					
 					if(Object.ReferenceEquals(obj1, obj2)){
 						continue;
@@ -214,11 +215,11 @@ namespace Expresso.Builtins
 		{
 			if(!Object.ReferenceEquals(this, obj)){
 				ExpressoTuple other = obj as ExpressoTuple;
-				if(other == null || _content.Length != other._content.Length){
+				if(other == null || items.Length != other.items.Length){
 					return false;
 				}
 				
-				for(int i = 0; i < _content.Length; i++){
+				for(int i = 0; i < items.Length; i++){
 					object obj1 = this[i], obj2 = other[i];
 					
 					if(Object.ReferenceEquals(obj1, obj2)){
@@ -240,13 +241,13 @@ namespace Expresso.Builtins
 			int hash1 = 6551;
 			int hash2 = hash1;
 			
-			for(int i = 0; i < _content.Length; i += 2){
-				hash1 = ((hash1 << 27) + ((hash2 + 1) << 1) + (hash1 >> 5)) ^ _content[i].GetHashCode();
+			for(int i = 0; i < items.Length; i += 2){
+				hash1 = ((hash1 << 27) + ((hash2 + 1) << 1) + (hash1 >> 5)) ^ items[i].GetHashCode();
 				
-				if(i == _content.Length - 1){
+				if(i == items.Length - 1){
 					break;
 				}
-				hash2 = ((hash2 << 5) + ((hash1 - 1) >> 1) + (hash2 >> 27)) ^ _content[i + 1].GetHashCode();
+				hash2 = ((hash2 << 5) + ((hash1 - 1) >> 1) + (hash2 >> 27)) ^ items[i + 1].GetHashCode();
 			}
 			return hash1 + (hash2 * 1566083941);
 		}
@@ -256,13 +257,13 @@ namespace Expresso.Builtins
 			int hash1 = 6551;
 			int hash2 = hash1;
 			
-			for(int i = 0; i < _content.Length; i += 2){
-				hash1 = ((hash1 << 27) + ((hash2 + 1) << 1) + (hash1 >> 5)) ^ comparer.GetHashCode(_content[i]);
+			for(int i = 0; i < items.Length; i += 2){
+				hash1 = ((hash1 << 27) + ((hash2 + 1) << 1) + (hash1 >> 5)) ^ comparer.GetHashCode(items[i]);
 				
-				if(i == _content.Length - 1){
+				if(i == items.Length - 1){
 					break;
 				}
-				hash2 = ((hash2 << 5) + ((hash1 - 1) >> 1) + (hash2 >> 27)) ^ comparer.GetHashCode(_content[i + 1]);
+				hash2 = ((hash2 << 5) + ((hash1 - 1) >> 1) + (hash2 >> 27)) ^ comparer.GetHashCode(items[i + 1]);
 			}
 			return hash1 + (hash2 * 1566083941);
 		}
@@ -290,7 +291,7 @@ namespace Expresso.Builtins
 			
 			internal Enumerator(ExpressoTuple tuple)
 			{
-				this.er = tuple._content.GetEnumerator();
+				this.er = tuple.items.GetEnumerator();
 			}
 			
 			public void Dispose()
