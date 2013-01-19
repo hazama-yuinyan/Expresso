@@ -17,7 +17,7 @@ namespace Expresso.Ast
 	/// <summary>
 	/// Represents a list comprehension, which is syntactic sugar for sequence initialization.
 	/// Consider an expression, [x for x in [0..100]].
-	/// Which is equivalent in functionality to the statement for(let x in [0..100]) x;
+	/// Which is equivalent in functionality to the statement "for(let x in [0..100]) yield x;"
 	/// </summary>
 	public class Comprehension : Expression
 	{

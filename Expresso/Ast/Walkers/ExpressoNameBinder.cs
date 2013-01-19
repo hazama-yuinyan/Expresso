@@ -291,7 +291,8 @@ namespace Expresso.Ast
 			return base.Walk(node);
 		}
 		
-		public override bool Walk(Comprehension node) {
+		public override bool Walk(Comprehension node)
+		{
 			node.Parent = cur_scope;
 			return base.Walk(node);
 		}
@@ -357,7 +358,7 @@ namespace Expresso.Ast
 			return base.Walk(node);
 		}
 		
-		// ForEachStatement
+		// ForStatement
 		public override bool Walk(ForStatement node)
 		{
 			node.Parent = cur_scope;
@@ -370,17 +371,14 @@ namespace Expresso.Ast
 			if(node.HasLet)
 				node.Left.Walk(define);
 			
-			if(node.Left != null){
+			if(node.Left != null)
 				node.Left.Walk(this);
-			}
 
-			if(node.Target != null){
+			if(node.Target != null)
 				node.Target.Walk(this);
-			}
 			
-			if(node.Body != null){
+			if(node.Body != null)
 				node.Body.Walk(this);
-			}
 			
 			return false;
 		}
@@ -391,13 +389,11 @@ namespace Expresso.Ast
 			
 			// we only push the loop for the body of the loop
 			// so we need to walk the while statement ourselves
-			if (node.Condition != null) {
+			if(node.Condition != null)
 				node.Condition.Walk(this);
-			}
 			
-			if (node.Body != null) {
+			if(node.Body != null)
 				node.Body.Walk(this);
-			}
 			
 			return false;
 		}
@@ -420,9 +416,9 @@ namespace Expresso.Ast
 		{
 			node.Parent = cur_scope;
 			FunctionDefinition func_def = cur_scope as FunctionDefinition;
-			if(func_def != null){
+			if(func_def != null)
 				func_def.HasReturn = true;
-			}
+
 			return base.Walk(node);
 		}
 		
@@ -459,7 +455,8 @@ namespace Expresso.Ast
 		}*/
 		
 		// FunctionDefinition
-		public override bool Walk(FunctionDefinition node) {
+		public override bool Walk(FunctionDefinition node)
+		{
 			//node._nameVariable = global_scope.EnsureGlobalVariable("__name__");
 			
 			// Name is defined in the enclosing context
@@ -482,9 +479,8 @@ namespace Expresso.Ast
 			
 			PushScope(node);
 			
-			foreach(var p in node.Parameters){
+			foreach(var p in node.Parameters)
 				p.Walk(parameter);
-			}
 			
 			node.Body.Walk(this);
 			return false;
