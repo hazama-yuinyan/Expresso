@@ -98,7 +98,6 @@ namespace Expresso.Ast
 		private ExpressoAst global_scope;
 		internal ScopeStatement cur_scope;
 		private List<ScopeStatement> scopes = new List<ScopeStatement>();
-		//private List<ILoopStatement> _loops = new List<ILoopStatement>();
 		private List<int> finally_count = new List<int>();
 		private Parser parser;
 		
@@ -107,25 +106,16 @@ namespace Expresso.Ast
 		private ParameterBinder parameter;
 		#endregion
 		
-		/*private readonly CompilerContext _context;
-		
-		public CompilerContext Context {
-			get {
-				return _context;
-			}
-		}*/
-		
-		private ExpressoNameBinder(Parser parentParser/*CompilerContext context*/)
+		private ExpressoNameBinder(Parser parentParser)
 		{
 			define = new DefineBinder(this);
 			//_delete = new DeleteBinder(this);
 			parameter = new ParameterBinder(this);
-			//_context = context;
 			parser = parentParser;
 		}
 		
 		#region Public surface
-		internal static void BindAst(ExpressoAst ast, Parser parser/*, CompilerContext context*/)
+		internal static void BindAst(ExpressoAst ast, Parser parser)
 		{
 			Assert.NotNull(ast);
 			
@@ -303,12 +293,6 @@ namespace Expresso.Ast
 			return base.Walk(node);
 		}
 		
-		public override bool Walk(MemberReference node)
-		{
-			node.Parent = cur_scope;
-			return base.Walk(node);
-		}
-		
 		public override bool Walk(YieldStatement node)
 		{
 			node.Parent = cur_scope;
@@ -421,6 +405,18 @@ namespace Expresso.Ast
 
 			return base.Walk(node);
 		}
+
+		public override bool Walk(MemberReference node)
+		{
+			node.Parent = cur_scope;
+			var parent_ident = (Identifier)node.Target;
+			return base.Walk(node);
+		}
+
+		/*public override bool Walk<T>(LateBindExpression<T> node)
+		{
+			return base.Walk(node);
+		}*/
 		
 		// WithStatement
 		public override bool Walk(WithStatement node)

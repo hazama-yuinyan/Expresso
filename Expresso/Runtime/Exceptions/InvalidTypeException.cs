@@ -3,6 +3,7 @@ using System;
 namespace Expresso.Runtime.Exceptions
 {
 	/// <summary>
+	/// 対象の動作に対して型が合致しないことをあらわす。
 	/// Represents an error indicating that the type is not valid for the operation, action or something.
 	/// </summary>
 	public class InvalidTypeException : Exception

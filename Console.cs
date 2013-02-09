@@ -3,6 +3,7 @@ using System.Collections.Generic;
 
 using Expresso.Interpreter;
 using Expresso.Runtime.Exceptions;
+using Expresso.Runtime.Operations;
 
 namespace Expresso.Terminal
 {
@@ -11,17 +12,17 @@ namespace Expresso.Terminal
 		public static void Main(string[] args)
 		{
 			if(args.Length == 0){
-				Console.WriteLine("Welcome to the Expresso Console!");
-				Console.WriteLine("Usage: Expresso file_name");
+				Console.WriteLine(
+@"Welcome to the Expresso Console!
+Usage: expresso file_name");
 				return;
 			}
 			
 			var file_name = args[0];
-			var parser = new Parser(new Scanner(file_name));
-			parser.ParsingFileName = file_name;
-			parser.Parse();
+			var ast = ExpressoOps.ParseAndBind(file_name);
 			var interp = new Expresso.Interpreter.Interpreter();
-			Expresso.Interpreter.Interpreter.MainModule = parser.TopmostAst;
+
+			Expresso.Interpreter.Interpreter.MainModule = ast;
 			interp.CurOpenedSourceFileName = file_name;
 			try{
 				interp.Run(new List<object>(args));

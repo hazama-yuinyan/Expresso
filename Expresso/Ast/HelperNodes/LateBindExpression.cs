@@ -8,9 +8,11 @@ namespace Expresso.Ast
 	using CSharpExpr = System.Linq.Expressions.Expression;
 
 	/// <summary>
+	/// 実行時にならないと実際にひもづけられる変数がわからない場合に使用する。
 	/// Helper node for late binding. Used to cache the result of binding at runtime.
 	/// </summary>
 	public class LateBindExpression<T> : Expression
+		where T : class
 	{
 		private readonly Expression target;
 
@@ -18,7 +20,7 @@ namespace Expresso.Ast
 
 		private bool is_resolved = false;
 
-		private T bound_obj = null;
+		private T bound_obj = default(T);
 
 		public T Target{
 			get{
@@ -31,6 +33,12 @@ namespace Expresso.Ast
 				}
 
 				return bound_obj;
+			}
+		}
+
+		public override NodeType Type {
+			get {
+				return NodeType.LateBind;
 			}
 		}
 
@@ -52,7 +60,9 @@ namespace Expresso.Ast
 
 		internal override void Walk(ExpressoWalker walker)
 		{
-			throw new System.NotImplementedException();
+			if(walker.Walk(this)){
+				target.Walk(walker);
+			}
 		}
 	}
 }

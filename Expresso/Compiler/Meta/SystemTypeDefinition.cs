@@ -9,6 +9,7 @@ using Expresso.Runtime.Types;
 namespace Expresso.Compiler.Meta
 {
 	/// <summary>
+	/// システム定義型のメタデータを格納する。int, float(double)のほか、list, tupleなどもこの型を使用する。
 	/// Describes a system type, which is a standard .NET type.
 	/// </summary>
 	public class SystemTypeDefinition : BaseDefinition

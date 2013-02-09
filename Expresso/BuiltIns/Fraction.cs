@@ -3,6 +3,7 @@ using System.Numerics;
 
 using Expresso.Runtime;
 using Expresso.Runtime.Operations;
+using Expresso.Utils;
 
 namespace Expresso.Builtins
 {
@@ -99,7 +100,7 @@ namespace Expresso.Builtins
 		/// </summary>
 		public Fraction Reduce()
 		{
-			var gcd = ImplementationHelpers.CalcGCD(BigInteger.Abs(Numerator), Denominator);
+			var gcd = Utilities.CalcGCD(BigInteger.Abs(Numerator), Denominator);
 			Numerator /= gcd;
 			Denominator /= gcd;
 			return this;
@@ -113,7 +114,7 @@ namespace Expresso.Builtins
 		/// </param>
 		public Fraction Reduce(Fraction other)
 		{
-			var lcm = ImplementationHelpers.CalcLCM(Denominator, other.Denominator);
+			var lcm = Utilities.CalcLCM(Denominator, other.Denominator);
 			Numerator *= lcm / Denominator;
 			return new Fraction(other.Numerator * lcm / other.Denominator, lcm);
 		}

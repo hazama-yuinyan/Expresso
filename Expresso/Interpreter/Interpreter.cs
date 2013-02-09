@@ -193,6 +193,7 @@ namespace Expresso.Interpreter
 							goto MAIN_LOOP;
 						}else{
 							flow_manager.Pop();
+
 							ExpressoTuple rhs = (ExpressoTuple)flow_manager.PopValue();
 							for(int i = 0; i < assignment.Left.Length; ++i){		//その後左辺値に代入する
 								var seq = (SequenceExpression)assignment.Left[i];
@@ -228,6 +229,7 @@ namespace Expresso.Interpreter
 
 						case 2:
 							flow_manager.Pop();
+
 							object rhs = flow_manager.PopValue(), lhs = flow_manager.PopValue();
 							if(lhs == null || rhs == null)
 								throw ExpressoOps.RuntimeError("Can not apply the operation on null objects.");
@@ -365,11 +367,38 @@ namespace Expresso.Interpreter
 							break;
 
 						case 2:
-							flow_manager.PushValue(true);
 							flow_manager.Pop();
+							flow_manager.PushValue(true);
 							break;
 						}
 
+						break;
+					}
+
+					case NodeType.CastExpression:
+					{
+						var cast_expr = (CastExpression)node;
+						if(!flow_manager.IsEvaluating(cast_expr))
+							flow_manager.Push(cast_expr);
+
+						switch(flow_manager.Top().StepCounter){
+						case 0:
+							node = cast_expr.Target;
+							flow_manager.Top().StepCounter++;
+							goto MAIN_LOOP;
+
+						case 1:
+							node = cast_expr.ToExpression;
+							flow_manager.Top().StepCounter++;
+							goto MAIN_LOOP;
+
+						case 2:
+							flow_manager.Pop();
+
+							var to_expr = flow_manager.PopValue();
+							var target = flow_manager.PopValue();
+							break;
+						}
 						break;
 					}
 
@@ -387,13 +416,19 @@ namespace Expresso.Interpreter
 					}
 
 					case NodeType.Comprehension:
+					{
 						break;
+					}
 
 					case NodeType.ComprehensionFor:
+					{
 						break;
+					}
 
 					case NodeType.ComprehensionIf:
+					{
 						break;
+					}
 
 					case NodeType.ConditionalExpression:
 					{
@@ -402,8 +437,8 @@ namespace Expresso.Interpreter
 							node = cond_expr.Condition;
 							flow_manager.Push(cond_expr);
 						}else{
-							node = (bool)flow_manager.PopValue() ? cond_expr.TrueExpression : cond_expr.FalseExpression;
 							flow_manager.Pop();
+							node = (bool)flow_manager.PopValue() ? cond_expr.TrueExpression : cond_expr.FalseExpression;
 						}
 						goto MAIN_LOOP;
 					}
@@ -535,8 +570,9 @@ namespace Expresso.Interpreter
 							node = if_stmt.Condition;
 							flow_manager.Push(if_stmt);
 						}else{
-							node = (bool)flow_manager.PopValue() ? if_stmt.TrueBlock : if_stmt.FalseBlock;
 							flow_manager.Pop();
+
+							node = (bool)flow_manager.PopValue() ? if_stmt.TrueBlock : if_stmt.FalseBlock;
 						}
 						goto MAIN_LOOP;
 					}
@@ -551,6 +587,8 @@ namespace Expresso.Interpreter
 							node = initializer.Items[flow_manager.Top().ChildCounter++];
 							goto MAIN_LOOP;
 						}else{
+							flow_manager.Pop();
+
 							switch(initializer.ObjType){
 							case ObjectTypes.LIST:
 							{
@@ -591,8 +629,6 @@ namespace Expresso.Interpreter
 							default:
 								throw ExpressoOps.RuntimeError("Unknown type of initializer!");
 							}
-
-							flow_manager.Pop();
 						}
 						break;
 					}
@@ -616,6 +652,7 @@ namespace Expresso.Interpreter
 
 						case 2:
 							flow_manager.Pop();
+
 							var subscription = flow_manager.PopValue();
 							var obj = flow_manager.PopValue();
 							if(subscription is ExpressoIntegerSequence){
@@ -647,6 +684,8 @@ namespace Expresso.Interpreter
 							node = toplevel.Body[flow_manager.Top().ChildCounter++];
 							goto MAIN_LOOP;
 						}else{
+							flow_manager.Pop();
+
 							if(toplevel.IsModule){
 								var internals = new Dictionary<string, int>();
 								var exported = new Dictionary<string, int>();
@@ -691,7 +730,6 @@ namespace Expresso.Interpreter
 								var module_def = new ModuleDefinition(toplevel.ModuleName, internals, exported, members.ToArray());
 								var module_inst = new ExpressoModule(module_def);
 								context.LanguageContext.PublishModule(toplevel.ModuleName, module_inst);
-								flow_manager.Pop();
 							}
 						}
 						break;
@@ -705,12 +743,13 @@ namespace Expresso.Interpreter
 							flow_manager.Push(new_expr);
 							goto MAIN_LOOP;
 						}else{
+							flow_manager.Pop();
+
 							var type_def = flow_manager.PopValue() as BaseDefinition;
 							if(type_def == null)
 								throw ExpressoOps.InvalidTypeError("{0} doesn't refer to a type name.", new_expr.TargetExpr);
 
 							flow_manager.PushValue(ExpressoObj.CreateInstance(null, type_def, new_expr.Arguments));
-							flow_manager.Pop();
 						}
 						break;
 					}
@@ -726,6 +765,7 @@ namespace Expresso.Interpreter
 							goto MAIN_LOOP;
 						}else{
 							flow_manager.Pop();
+
 							var values = new List<object>(print_stmt.Expressions.Length);
 							for(int i = print_stmt.Expressions.Length; i > 0; --i)
 								values.Add(flow_manager.PopValue());
@@ -761,6 +801,7 @@ namespace Expresso.Interpreter
 								goto MAIN_LOOP;
 							}else{
 								flow_manager.Pop();
+
 								ExpressoTuple ret = (ExpressoTuple)flow_manager.PopValue();
 								if(ret.Count == 1)
 									flow_manager.PushValue(ret[0]);
@@ -794,6 +835,8 @@ namespace Expresso.Interpreter
 							goto MAIN_LOOP;
 
 						case 3:
+							flow_manager.Pop();
+
 							var step = flow_manager.PopValue();
 							var end = flow_manager.PopValue();
 							var start = flow_manager.PopValue();
@@ -801,7 +844,6 @@ namespace Expresso.Interpreter
 								throw ExpressoOps.InvalidTypeError("The start, end and step expressions of the IntSeq expression must yield an integer.");
 
 							flow_manager.PushValue(new ExpressoIntegerSequence((int)start, (int)end, (int)step));
-							flow_manager.Pop();
 							break;
 
 						default:
@@ -820,12 +862,13 @@ namespace Expresso.Interpreter
 							node = seq_expr.Items[flow_manager.Top().ChildCounter++];
 							goto MAIN_LOOP;
 						}else{
+							flow_manager.Pop();
+
 							var item_values = new object[seq_expr.Count];
 							for(int i = seq_expr.Count - 1; i >= 0; --i)
 								item_values[i] = flow_manager.PopValue();
 
 							flow_manager.PushValue(ExpressoOps.MakeTuple(item_values));
-							flow_manager.Pop();
 						}
 						break;
 					}
@@ -917,22 +960,35 @@ namespace Expresso.Interpreter
 					}
 
 					case NodeType.TypeDef:
+					{
+						var type_def = (TypeDefinition)node;
+						if(!flow_manager.IsEvaluating(type_def))
+							flow_manager.Push(type_def);
+
+						if(flow_manager.Top().ChildCounter < type_def.Body.Length){
+							node = type_def.Body[flow_manager.Top().ChildCounter++];
+							goto MAIN_LOOP;
+						}else{
+
+						}
 						break;
+					}
 
 					case NodeType.UnaryExpression:
 					{
 						var unary_op = (UnaryExpression)node;
-						if(flow_manager.IsEvaluating(unary_op)){
+						if(!flow_manager.IsEvaluating(unary_op)){
+							node = unary_op.Operand;
+							flow_manager.Push(unary_op);
+							goto MAIN_LOOP;
+						}else{
+							flow_manager.Pop();
+
 							var ope = flow_manager.PopValue();
 							if(ope == null)
 								throw ExpressoOps.InvalidTypeError("Invalid object type!");
 							
 							flow_manager.PushValue(EvalUnaryOperation(unary_op.Operator, ope));
-							flow_manager.Pop();
-						}else{
-							node = unary_op.Operand;
-							flow_manager.Push(unary_op);
-							goto MAIN_LOOP;
 						}
 						break;
 					}

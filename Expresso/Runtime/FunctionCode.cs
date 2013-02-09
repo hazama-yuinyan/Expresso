@@ -3,11 +3,12 @@ using System;
 namespace Expresso.Runtime
 {
 	/// <summary>
-	/// Represents a piece of code.  This can reference either a CompiledCode
+	/// 実行可能なコード断片をあらわす。
+	/// Represents a piece of code. This can reference either a CompiledCode
 	/// object or a Function. The user can explicitly call FunctionCode by
-	/// passing it into exec or eval.
+	/// passing it into eval.
 	/// </summary>
-	[ExpressoType("code")]
+	[ExpressoType("Code")]
 	public class FunctionCode
 	{
 		[ExpressoHidden]

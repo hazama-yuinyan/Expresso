@@ -3,6 +3,7 @@ using System;
 namespace Expresso.Runtime.Exceptions
 {
 	/// <summary>
+	/// 対象の型が見つからないことをあらわす。
 	/// Represents an error indicating that a paticular type is missing.
 	/// </summary>
 	public class TypeNotFoundException : Exception

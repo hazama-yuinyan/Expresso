@@ -3,6 +3,7 @@ using System;
 namespace Expresso.Runtime.Exceptions
 {
 	/// <summary>
+	/// Require文でモジュールのインポートに失敗したことをあらわす。
 	/// Represents an error indicating that an attempt to import a module results in failure.
 	/// </summary>
 	public class ImportException : Exception

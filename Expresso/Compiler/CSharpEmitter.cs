@@ -7,6 +7,7 @@ using Expresso.Builtins;
 using Expresso.Compiler.Meta;
 using Expresso.Interpreter;
 using Expresso.Runtime.Operations;
+using Expresso.Utils;
 
 namespace Expresso.Compiler
 {
@@ -324,8 +325,8 @@ namespace Expresso.Compiler
 				condition,
 				node.Body.Compile(this)
 			});
-			Helper.RemoveLast(break_targets);
-			Helper.RemoveLast(continue_targets);
+			break_targets.RemoveLast();
+			continue_targets.RemoveLast();
 
 			return has_continue ? CSharpExpr.Loop(body, end_loop, continue_loop) :
 				CSharpExpr.Loop(body, end_loop);		//while(condition){body...}

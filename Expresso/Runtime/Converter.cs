@@ -5,6 +5,10 @@ using Expresso.Runtime.Types;
 
 namespace Expresso.Runtime
 {
+	/// <summary>
+	/// 型変換に関するヘルパークラス。
+	/// Converter.
+	/// </summary>
 	public class Converter
 	{
 		public Converter()

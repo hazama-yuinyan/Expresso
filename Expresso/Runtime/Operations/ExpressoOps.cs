@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections;
 using System.Numerics;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.IO;
 
 using Expresso.Builtins;
@@ -16,6 +17,7 @@ using Expresso.Compiler.Meta;
 namespace Expresso.Runtime.Operations
 {
 	/// <summary>
+	/// Expresso固有の処理。
 	/// Contains functions that are called directly from
 	/// generated code to perform low-level runtime functionality.
 	/// </summary>
@@ -359,13 +361,13 @@ namespace Expresso.Runtime.Operations
 				return typeof(Fraction);
 				
 			case ObjectTypes.LIST:
-				return typeof(List<object>);
+				return typeof(List<>);
 				
 			case ObjectTypes.TUPLE:
 				return typeof(ExpressoTuple);
 				
 			case ObjectTypes.DICT:
-				return typeof(Dictionary<object, object>);
+				return typeof(Dictionary<,>);
 				
 			case ObjectTypes.SEQ:
 				return typeof(ExpressoIntegerSequence);
@@ -393,10 +395,28 @@ namespace Expresso.Runtime.Operations
 		}
 		#endregion
 
-		public static List<object> MakeEvaluationStackFromContext(CodeContext context)
+		public static Stack<object> MakeEvaluationStackFromContext(CodeContext context)
 		{
-			var stack = new List<object>();
-			return null;
+			return context.EvaluationStack;
+		}
+
+		internal static string Replace(this string str, Regex reg, string replacedWith)
+		{
+			return reg.Replace(str, replacedWith);
+		}
+		
+		internal static string Replace(this string str, Regex reg, MatchEvaluator replacer)
+		{
+			return reg.Replace(str, replacer);
+		}
+
+		public static ExpressoAst ParseAndBind(string srcFileName)
+		{
+			var parser = new Parser(new Scanner(srcFileName));
+			parser.ParsingFileName = srcFileName;
+			parser.Parse();
+			ExpressoNameBinder.BindAst(parser.TopmostAst, parser);
+			return parser.TopmostAst;
 		}
 	}
 }

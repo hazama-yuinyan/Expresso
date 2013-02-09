@@ -4,6 +4,7 @@ using System.Globalization;
 namespace Expresso.Utils
 {
 	/// <summary>
+	/// ソースコード内での位置を示す。デバッグ時に実行している箇所とソースコードを関連付けるために使う。
 	/// Represents a location in source code.
 	/// </summary>
 	[Serializable]
@@ -29,24 +30,26 @@ namespace Expresso.Utils
 			_column = column;
 		}
 		
-		private static void ValidateLocation(int index, int line, int column) {
-			if (index < 0) {
+		private static void ValidateLocation(int index, int line, int column)
+		{
+			if(index < 0)
 				throw ErrorOutOfRange("index", 0);
-			}
-			if (line < 1) {
+			
+			if(line < 1)
 				throw ErrorOutOfRange("line", 1);
-			}
-			if (column < 1) {
+
+			if(column < 1)
 				throw ErrorOutOfRange("column", 1);
-			}
 		}
 		
-		private static Exception ErrorOutOfRange(object p0, object p1) {
+		private static Exception ErrorOutOfRange(object p0, object p1)
+		{
 			return new ArgumentOutOfRangeException(string.Format("{0} must be greater than or equal to {1}", p0, p1));
 		}
 		
 		[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA1801:ReviewUnusedParameters")]
-		private SourceLocation(int index, int line, int column, bool noChecks) {
+		private SourceLocation(int index, int line, int column, bool noChecks)
+		{
 			_index = index;
 			_line = line;
 			_column = column;
@@ -79,7 +82,8 @@ namespace Expresso.Utils
 		/// <param name="left">One location to compare.</param>
 		/// <param name="right">The other location to compare.</param>
 		/// <returns>True if the locations are the same, False otherwise.</returns>
-		public static bool operator ==(SourceLocation left, SourceLocation right) {
+		public static bool operator ==(SourceLocation left, SourceLocation right)
+		{
 			return left._index == right._index && left._line == right._line && left._column == right._column;
 		}
 		
@@ -89,7 +93,8 @@ namespace Expresso.Utils
 		/// <param name="left">One location to compare.</param>
 		/// <param name="right">The other location to compare.</param>
 		/// <returns>True if the locations are not the same, False otherwise.</returns>
-		public static bool operator !=(SourceLocation left, SourceLocation right) {
+		public static bool operator !=(SourceLocation left, SourceLocation right)
+		{
 			return left._index != right._index || left._line != right._line || left._column != right._column;
 		}
 		
@@ -99,7 +104,8 @@ namespace Expresso.Utils
 		/// <param name="left">One location to compare.</param>
 		/// <param name="right">The other location to compare.</param>
 		/// <returns>True if the first location is before the other location, False otherwise.</returns>
-		public static bool operator <(SourceLocation left, SourceLocation right) {
+		public static bool operator <(SourceLocation left, SourceLocation right)
+		{
 			return left._index < right._index;
 		}
 		
@@ -109,7 +115,8 @@ namespace Expresso.Utils
 		/// <param name="left">One location to compare.</param>
 		/// <param name="right">The other location to compare.</param>
 		/// <returns>True if the first location is after the other location, False otherwise.</returns>
-		public static bool operator >(SourceLocation left, SourceLocation right) {
+		public static bool operator >(SourceLocation left, SourceLocation right)
+		{
 			return left._index > right._index;
 		}
 		
@@ -119,7 +126,8 @@ namespace Expresso.Utils
 		/// <param name="left">One location to compare.</param>
 		/// <param name="right">The other location to compare.</param>
 		/// <returns>True if the first location is before or the same as the other location, False otherwise.</returns>
-		public static bool operator <=(SourceLocation left, SourceLocation right) {
+		public static bool operator <=(SourceLocation left, SourceLocation right)
+		{
 			return left._index <= right._index;
 		}
 		
@@ -129,7 +137,8 @@ namespace Expresso.Utils
 		/// <param name="left">One location to compare.</param>
 		/// <param name="right">The other location to compare.</param>
 		/// <returns>True if the first location is after or the same as the other location, False otherwise.</returns>
-		public static bool operator >=(SourceLocation left, SourceLocation right) {
+		public static bool operator >=(SourceLocation left, SourceLocation right)
+		{
 			return left._index >= right._index;
 		}
 		
@@ -139,7 +148,8 @@ namespace Expresso.Utils
 		/// <param name="left">One location to compare.</param>
 		/// <param name="right">The other location to compare.</param>
 		/// <returns>0 if the locations are equal, -1 if the left one is less than the right one, 1 otherwise.</returns>
-		public static int Compare(SourceLocation left, SourceLocation right) {
+		public static int Compare(SourceLocation left, SourceLocation right)
+		{
 			if (left < right) return -1;
 			if (right > left) return 1;
 			
@@ -171,22 +181,26 @@ namespace Expresso.Utils
 			}
 		}
 		
-		public override bool Equals(object obj) {
-			if (!(obj is SourceLocation)) return false;
+		public override bool Equals(object obj)
+		{
+			if(!(obj is SourceLocation)) return false;
 			
 			SourceLocation other = (SourceLocation)obj;
 			return other._index == _index && other._line == _line && other._column == _column;
 		}
 		
-		public override int GetHashCode() {
+		public override int GetHashCode()
+		{
 			return (_line << 16) ^ _column;
 		}
 		
-		public override string ToString() {
+		public override string ToString()
+		{
 			return "(" + _line + "," + _column + ")";
 		}
 		
-		internal string ToDebugString() {
+		internal string ToDebugString()
+		{
 			return String.Format(CultureInfo.CurrentCulture, "({0},{1},{2})", _index, _line, _column);
 		}
 	}

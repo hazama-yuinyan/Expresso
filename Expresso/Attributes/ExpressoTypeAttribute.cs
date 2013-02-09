@@ -3,6 +3,7 @@ using System;
 namespace Expresso.Runtime
 {
 	/// <summary>
+	/// C#の型をExpressoの型として指定する属性。
 	/// Marks a type as being an ExpressoType for purposes of member lookup, creating instances, etc...  
 	/// 
 	/// If defined a ExpressoType will use op_new / constructor when creating instances. This allows the

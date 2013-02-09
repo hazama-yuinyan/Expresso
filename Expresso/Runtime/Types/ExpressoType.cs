@@ -10,10 +10,14 @@ using Expresso.Runtime.Binding;
 
 namespace Expresso.Runtime.Types
 {
+	/// <summary>
+	/// Expressoの型に関するメタデータなどを保持する。
+	/// Expresso type.
+	/// </summary>
 	[ExpressoType("Type")]
 	public class ExpressoType : ICodeFormattable
 	{
-		private BaseDefinition type_def;				// the metadata representing members of this user-defined type
+		private BaseDefinition type_def;				// the metadata representing members of this type
 		private Type underlying_system_type;            // the underlying CLI system type for this type
 		private ExpressoTypeAttributes attrs;			// attributes of the type
 		private ExpressoContext exs_context;            // the context the type was created from, or null for system types.

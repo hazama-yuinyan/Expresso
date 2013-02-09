@@ -19,7 +19,7 @@ namespace Expresso.Runtime.Types
 	{
 		/// <summary>No flags have been set </summary>
 		None = 0x0000,
-		/// <summary>This is a function w/ no instance pointer </summary>
+		/// <summary>This is a function with no instance pointer </summary>
 		Function = 0x0001,
 		/// <summary>This is a method that requires an instance</summary>
 		Method = 0x0002,
@@ -44,13 +44,14 @@ namespace Expresso.Runtime.Types
 	}
 
 	/// <summary>
+	/// 組み込み関数をあらわすクラス。
 	/// BuiltinFunction represents any standard CLR function exposed to Expresso.
 	/// This is used for both methods on standard Expresso types such as list or tuple
 	/// and for methods from arbitrary .NET assemblies.
 	/// 
 	/// All calls are made through the optimizedTarget which is created lazily.
 	/// </summary>    
-	[ExpressoType("builtinFunction")]
+	[ExpressoType("BuiltinFunction")]
 	public class BuiltinFunction : ICodeFormattable, IDelegateConvertible
 	{
 		internal readonly BuiltinFunctionData data;		//information describing the BuiltinFunction

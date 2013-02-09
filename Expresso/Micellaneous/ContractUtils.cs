@@ -5,6 +5,10 @@ using System.Diagnostics;
 
 namespace Expresso.Utils
 {
+	/// <summary>
+	/// Expresso.Utils.Assertと似たような働きをするメソッド郡。
+	/// Contract utils.
+	/// </summary>
 	public static class ContractUtils
 	{
 		public static void Requires(bool precondition)
@@ -161,7 +165,7 @@ namespace Expresso.Utils
 			
 			for(int i = 0; i < array.Count; i++){
 				if(array[i] == null)
-					throw Utils.MakeArgumentItemNullException(i, arrayName);
+					throw Utilities.MakeArgumentItemNullException(i, arrayName);
 			}
 		}
 		
@@ -176,7 +180,7 @@ namespace Expresso.Utils
 			int i = 0;
 			foreach(var item in collection){
 				if(item == null)
-					throw Utils.MakeArgumentItemNullException(i, collectionName);
+					throw Utilities.MakeArgumentItemNullException(i, collectionName);
 
 				i++;
 			}

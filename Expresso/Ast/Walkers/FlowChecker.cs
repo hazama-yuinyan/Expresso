@@ -370,8 +370,8 @@ namespace Expresso.Ast
 		// IfStmt
 		public override bool Walk(IfStatement node)
 		{
-			BitArray result = new BitArray(bits.Length, true);
-			BitArray save = bits;
+			//BitArray result = new BitArray(bits.Length, true);
+			//BitArray save = bits;
 			
 			bits = new BitArray(bits.Length);
 			

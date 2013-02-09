@@ -8,7 +8,8 @@ using Expresso.Runtime.Meta;
 namespace Expresso.Runtime.Types
 {
 	/// <summary>
-	/// Base class for helper which creates instances.  We have two derived types: One for user
+	/// インスタンスを生成するためのヘルパークラス。
+	/// Base class for helper which creates instances. We have two derived types: One for user
 	/// defined types which prepends the type before calling, and one for .NET types which
 	/// doesn't prepend the type.
 	/// </summary>

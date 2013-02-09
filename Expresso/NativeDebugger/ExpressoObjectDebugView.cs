@@ -5,6 +5,10 @@ using Expresso.Runtime.Operations;
 
 namespace Expresso.Runtime
 {
+	/// <summary>
+	/// Expressoのオブジェクトのデバッガー用プロクシー。
+	/// Expresso object debug view.
+	/// </summary>
 	[DebuggerDisplay("{Value}", Name = "{Name}", Type = "{GetClassName()}")]
 	internal class ExpressoObjectDebugView
 	{

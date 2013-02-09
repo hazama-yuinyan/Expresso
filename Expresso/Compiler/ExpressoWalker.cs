@@ -74,6 +74,9 @@ namespace Expresso.Compiler
 
 		public virtual bool Walk(IntSeqExpression node){return true;}
 		public virtual void PostWalk(IntSeqExpression node){}
+
+		public virtual bool Walk<T>(LateBindExpression<T> node) where T : class {return true;}
+		public virtual void PostWalk<T>(LateBindExpression<T> node) where T : class {}
 	
 		public virtual bool Walk(MemberReference node){return true;}
 		public virtual void PostWalk(MemberReference node){}
@@ -206,6 +209,9 @@ namespace Expresso.Compiler
 		
 		public override bool Walk(IntSeqExpression node){return false;}
 		public override void PostWalk(IntSeqExpression node){}
+
+		public override bool Walk<T>(LateBindExpression<T> node){return false;}
+		public override void PostWalk<T>(LateBindExpression<T> node){}
 		
 		public override bool Walk(MemberReference node){return false;}
 		public override void PostWalk(MemberReference node){}

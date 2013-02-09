@@ -11,6 +11,7 @@ namespace Expresso.Ast
 	using CSharpExpr = System.Linq.Expressions.Expression;
 
 	/// <summary>
+	/// print文。pythonの同名の構文要素と基本的には同じ働きをする。
 	/// The Print statement.
 	/// </summary>
 	public class PrintStatement : Statement

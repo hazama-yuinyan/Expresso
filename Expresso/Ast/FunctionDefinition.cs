@@ -58,7 +58,7 @@ namespace Expresso.Ast
 		/// このクロージャが定義された時の環境。
 		/// The environment in which the function is defined. It can be null if the function isn't a closure.
 		/// </summary>
-		public VariableStore Environment{get; internal set;}
+		public Stack<object> Environment{get; internal set;}
 
 		public SourceLocation Header{get; internal set;}
 
@@ -86,7 +86,7 @@ namespace Expresso.Ast
         }
 
 		public FunctionDefinition(string funcName, Argument[] formalParameters, Block body, TypeAnnotation returnType, bool isStatic = false,
-		                VariableStore environ = null)
+		                Stack<object> environ = null)
 		{
 			name = funcName;
 			parameters = formalParameters;

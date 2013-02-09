@@ -11,10 +11,11 @@ using Expresso.Compiler.Meta;
 namespace Expresso.Runtime
 {
 	/// <summary>
+	/// Expressoのモジュールをあらわす。
 	/// Expresso module. Stores classes, functions, and data. A module
 	/// is created by importing a file or package from disk.
 	/// </summary>
-	[ExpressoType("module"), DebuggerTypeProxy(typeof(ExpressoModule.DebugProxy)), DebuggerDisplay("module: {GetName()}")]
+	[ExpressoType("Module"), DebuggerTypeProxy(typeof(ExpressoModule.DebugProxy)), DebuggerDisplay("module: {GetName()}")]
 	public class ExpressoModule : IDynamicMetaObjectProvider/*, IPythonMembersList*/
 	{
 		private readonly ModuleDefinition def;

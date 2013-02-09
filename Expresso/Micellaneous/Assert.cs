@@ -4,6 +4,10 @@ using System.Diagnostics;
 
 namespace Expresso.Utils
 {
+	/// <summary>
+	/// あるコード片において想定されるべき条件を明示するために使用するメソッド郡。
+	/// Assert.
+	/// </summary>
 	public static class Assert
 	{
 		public static Exception Unreachable{

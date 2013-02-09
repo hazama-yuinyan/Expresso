@@ -10,6 +10,7 @@ using Expresso.Runtime.Operations;
 namespace Expresso.Runtime
 {
 	/// <summary>
+	/// ユーザー定義のExpressoの型のインスタンスをあらわす。
 	/// Represents an instance of user-defined Expresso types.
 	/// </summary>
 	public class ExpressoObj : IEnumerable<object>, IEnumerable

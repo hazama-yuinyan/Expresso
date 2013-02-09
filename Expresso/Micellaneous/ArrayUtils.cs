@@ -3,8 +3,14 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
 
+using Expresso.Runtime.Operations;
+
 namespace Expresso.Utils
 {
+	/// <summary>
+	/// 組み込みの配列型に対する拡張メソッド定義。
+	/// Array utils.
+	/// </summary>
 	public static class ArrayUtils
 	{
 		internal sealed class FunctorComparer<T> : IComparer<T>
@@ -219,6 +225,22 @@ namespace Expresso.Utils
 			
 			System.Array.Resize(ref array, array.Length - 1);
 			return array;
+		}
+
+		/// <summary>
+		/// Removes the last element of the list.
+		/// </summary>
+		/// <param name='list'>
+		/// The target List.
+		/// </param>
+		/// <typeparam name='T'>
+		/// The element type of the list.
+		/// </typeparam>
+		public static void RemoveLast<T>(this IList<T> list)
+		{
+			var len = list.Count;
+			if(len <= 0) throw ExpressoOps.SystemError("Can not delete last element of a list with zero elements!");
+			list.RemoveAt(len - 1);
 		}
 		
 		public static T[] RemoveAt<T>(IList<T> list, int indexToRemove)

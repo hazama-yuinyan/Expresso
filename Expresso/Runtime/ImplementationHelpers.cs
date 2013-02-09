@@ -20,16 +20,6 @@ namespace Expresso.Runtime
 	/// </summary>
 	public static class ImplementationHelpers
 	{
-		public static string Replace(this string str, Regex reg, string replacedWith)
-		{
-			return reg.Replace(str, replacedWith);
-		}
-
-		public static string Replace(this string str, Regex reg, MatchEvaluator replacer)
-		{
-			return reg.Replace(str, replacer);
-		}
-
 		public static IEnumerable<Identifier> CollectLocalVars(Expression expr)
 		{
 			if(expr.Type == NodeType.VarDecl)
@@ -46,65 +36,6 @@ namespace Expresso.Runtime
 			if(stmt == null || compound == null) return Enumerable.Empty<Identifier>();
 
 			return compound.CollectLocalVars();
-		}
-
-		/// <summary>
-		/// Removes the last element of the list.
-		/// </summary>
-		/// <param name='list'>
-		/// The target List.
-		/// </param>
-		/// <typeparam name='T'>
-		/// The element type of the list.
-		/// </typeparam>
-		public static void RemoveLast<T>(this List<T> list)
-		{
-			var len = list.Count;
-			if(len <= 0) throw new Exception("Can not delete last element of a list with zero elements!");
-			list.RemoveAt(len - 1);
-		}
-
-		/// <summary>
-		/// Calculates the GCD(Greatest common deivisor).
-		/// </summary>
-		/// <returns>
-		/// The GCD of the two BigIntegers.
-		/// </returns>
-		/// <param name='first'>
-		/// First.
-		/// </param>
-		/// <param name='second'>
-		/// Second.
-		/// </param>
-		public static BigInteger CalcGCD(BigInteger first, BigInteger second)
-		{
-			BigInteger r, a = (first > second) ? first : second, b = (first > second) ? second : first, last = b;
-			while(true){
-				r = a - b;
-				if(r == 0) break;
-				last = r;
-				a = (b > r) ? b : r; b = (b > r) ? r : b;
-			}
-			
-			return last;
-		}
-
-		/// <summary>
-		/// Calculates the LCM(Least common multiple).
-		/// </summary>
-		/// <returns>
-		/// The LCM of the two BigIntegers.
-		/// </returns>
-		/// <param name='first'>
-		/// First.
-		/// </param>
-		/// <param name='second'>
-		/// Second.
-		/// </param>
-		public static BigInteger CalcLCM(BigInteger first, BigInteger second)
-		{
-			BigInteger gcd = CalcGCD(first, second);
-			return first * second / gcd;
 		}
 
 		/*public static Argument MakeArg(string name, TypeAnnotation type, Expression option = null)

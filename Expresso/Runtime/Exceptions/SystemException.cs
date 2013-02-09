@@ -3,6 +3,7 @@ using System;
 namespace Expresso.Runtime.Exceptions
 {
 	/// <summary>
+	/// ユーザーコードではなく、Expressoの実装により発生したエラーをあらわす。
 	/// Represents an error has occurred during the language operations.
 	/// </summary>
 	public class ExpressoSystemException : Exception

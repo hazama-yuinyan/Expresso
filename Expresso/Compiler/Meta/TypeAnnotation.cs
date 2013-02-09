@@ -34,6 +34,7 @@ namespace Expresso.Compiler.Meta
 	};
 
 	/// <summary>
+	/// Expressoのオブジェクトの型に関するメタデータを保持する。
 	/// Contains type information of Expresso's object.
 	/// </summary>
 	public class TypeAnnotation : ICloneable

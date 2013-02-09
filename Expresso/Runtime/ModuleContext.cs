@@ -4,6 +4,7 @@ using System.Collections.Generic;
 namespace Expresso.Runtime
 {
 	/// <summary>
+	/// あるモジュールのコンテクスト。
 	/// Captures the globals and other state of module code.
 	/// </summary>
 	public sealed class ModuleContext

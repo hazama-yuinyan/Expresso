@@ -9,6 +9,7 @@
     <OutputType>Library</OutputType>
     <RootNamespace>Expresso</RootNamespace>
     <AssemblyName>Expresso</AssemblyName>
+    <ReleaseVersion>1.3</ReleaseVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
     <DebugSymbols>True</DebugSymbols>
@@ -45,7 +46,6 @@
     <Compile Include="BuiltIns\Primitives.cs" />
     <Compile Include="Parser.cs" />
     <Compile Include="Scanner.cs" />
-    <Compile Include="Interpreter\VariableStore.cs" />
     <Compile Include="Ast\VarDeclaration.cs" />
     <Compile Include="Ast\ExprStatement.cs" />
     <Compile Include="Ast\IfStatement.cs" />
@@ -137,6 +137,7 @@
     <Compile Include="Micellaneous\Utils.cs" />
     <Compile Include="Micellaneous\ArrayUtils.cs" />
     <Compile Include="Ast\HelperNodes\LateBindExpression.cs" />
+    <Compile Include="Attributes\ExpressoModuleAttibute.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System" />

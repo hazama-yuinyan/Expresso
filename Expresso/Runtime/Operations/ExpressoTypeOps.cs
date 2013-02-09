@@ -6,6 +6,10 @@ using Expresso.Runtime.Types;
 
 namespace Expresso.Runtime.Operations
 {
+	/// <summary>
+	/// ExpressoTypeクラスに対する処理。
+	/// Expresso type ops.
+	/// </summary>
 	internal static class ExpressoTypeOps
 	{
 		internal static BuiltinFunction GetConstructorFunction(Type type, string name)
@@ -15,9 +19,8 @@ namespace Expresso.Runtime.Operations
 			
 			foreach(ConstructorInfo ci in type.GetConstructors(BindingFlags.Public | BindingFlags.Instance)){
 				if(ci.IsPublic){
-					if(ci.GetParameters().Length == 0){
+					if(ci.GetParameters().Length == 0)
 						hasDefaultConstructor = true;
-					}
 					
 					methods.Add(ci);
 				}

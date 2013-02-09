@@ -3,6 +3,7 @@ using System;
 namespace Expresso.Runtime.Exceptions
 {
 	/// <summary>
+	/// 不正な参照が使用されていることをあらわす。(束縛前の参照を使用しているなど)
 	/// Represents an error indicating that a reference is invalid or that a reference actually points to nothing etc.
 	/// </summary>
 	public class ReferenceException : Exception

@@ -9,6 +9,7 @@
     <OutputType>Library</OutputType>
     <RootNamespace>ExpressoTest</RootNamespace>
     <AssemblyName>ExpressoTest</AssemblyName>
+    <ReleaseVersion>1.3</ReleaseVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>True</DebugSymbols>

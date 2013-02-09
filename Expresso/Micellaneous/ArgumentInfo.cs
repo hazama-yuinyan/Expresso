@@ -42,6 +42,10 @@ namespace Expresso.Runtime.Meta
 		Instance
 	};
 
+	/// <summary>
+	/// 引数に関するメタデータを保持する。
+	/// Argument info.
+	/// </summary>
 	public struct ArgumentInfo
 	{
 		private readonly ArgumentType kind;

@@ -7,6 +7,10 @@ using Expresso.Utils;
 
 namespace Expresso.Runtime.Binding
 {
+	/// <summary>
+	/// Expresso用のmember binder。今は未使用。
+	/// Expresso binder.
+	/// </summary>
 	public class ExpressoBinder
 	{
 		private static readonly Dictionary<Type, ExtensionTypeInfo> sys_types = MakeSystemTypes();

@@ -9,6 +9,7 @@ using Expresso.Utils;
 namespace Expresso.Runtime.Meta
 {
 	/// <summary>
+	/// Callsiteの引数定義をあらわす。C#コードへのコンパイルを実行するようになったら必要になると思われる。
 	/// Richly represents the signature of a callsite.
 	/// </summary>
 	public struct CallSignature : IEquatable<CallSignature>

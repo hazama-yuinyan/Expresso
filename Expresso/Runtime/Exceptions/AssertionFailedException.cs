@@ -3,6 +3,7 @@ using System;
 namespace Expresso.Runtime.Exceptions
 {
 	/// <summary>
+	/// Assert文でアサーションに失敗したことをあらわす。
 	/// Represents an error indicating that an assertion failed.
 	/// </summary>
 	public class AssertionFailedException : Exception

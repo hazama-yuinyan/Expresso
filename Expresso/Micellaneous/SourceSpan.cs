@@ -4,6 +4,7 @@ using System.Globalization;
 namespace Expresso.Utils
 {
 	/// <summary>
+	/// ソースコード内の範囲をあらわす。
 	/// Stores the location of a span of text in a source file.
 	/// </summary>
 	[Serializable]
@@ -17,21 +18,21 @@ namespace Expresso.Utils
 		/// </summary>
 		/// <param name="start">The beginning of the span.</param>
 		/// <param name="end">The end of the span.</param>
-		public SourceSpan(SourceLocation start, SourceLocation end) {
+		public SourceSpan(SourceLocation start, SourceLocation end)
+		{
 			ValidateLocations(start, end);
 			this._start = start;
 			this._end = end;
 		}
 		
-		private static void ValidateLocations(SourceLocation start, SourceLocation end) {
-			if (start.IsValid && end.IsValid) {
-				if (start > end) {
+		private static void ValidateLocations(SourceLocation start, SourceLocation end)
+		{
+			if(start.IsValid && end.IsValid){
+				if(start > end)
 					throw new ArgumentException("Start and End must be well ordered");
-				}
-			} else {
-				if (start.IsValid || end.IsValid) {
+			}else{
+				if(start.IsValid || end.IsValid)
 					throw new ArgumentException("Start and End must both be valid or both invalid");
-				}
 			}
 		}
 		
@@ -79,7 +80,8 @@ namespace Expresso.Utils
 		/// <param name="left">One span to compare.</param>
 		/// <param name="right">The other span to compare.</param>
 		/// <returns>True if the spans are the same, False otherwise.</returns>
-		public static bool operator ==(SourceSpan left, SourceSpan right) {
+		public static bool operator ==(SourceSpan left, SourceSpan right)
+		{
 			return left._start == right._start && left._end == right._end;
 		}
 		
@@ -89,28 +91,33 @@ namespace Expresso.Utils
 		/// <param name="left">One span to compare.</param>
 		/// <param name="right">The other span to compare.</param>
 		/// <returns>True if the spans are not the same, False otherwise.</returns>
-		public static bool operator !=(SourceSpan left, SourceSpan right) {
+		public static bool operator !=(SourceSpan left, SourceSpan right)
+		{
 			return left._start != right._start || left._end != right._end;
 		}
 		
-		public override bool Equals(object obj) {
-			if (!(obj is SourceSpan)) return false;
+		public override bool Equals(object obj)
+		{
+			if(!(obj is SourceSpan)) return false;
 			
 			SourceSpan other = (SourceSpan)obj;
 			return _start == other._start && _end == other._end;
 		}
 		
-		public override string ToString() {
+		public override string ToString()
+		{
 			return _start.ToString() + " - " + _end.ToString();
 		}
 		
-		public override int GetHashCode() {
+		public override int GetHashCode()
+		{
 			// 7 bits for each column (0-128), 9 bits for each row (0-512), xor helps if
 			// we have a bigger file.
 			return (_start.Column) ^ (_end.Column << 7) ^ (_start.Line << 14) ^ (_end.Line << 23);
 		}
 		
-		internal string ToDebugString() {
+		internal string ToDebugString()
+		{
 			return String.Format(CultureInfo.CurrentCulture, "{0}-{1}", _start.ToDebugString(), _end.ToDebugString());
 		}
 	}

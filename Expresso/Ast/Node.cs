@@ -60,7 +60,8 @@ namespace Expresso.Ast
 		CastExpression,
 		IsExpression,
 		Sequence,
-		DefaultExpression
+		DefaultExpression,
+		LateBind
     }
 
     /// <summary>
@@ -69,8 +70,8 @@ namespace Expresso.Ast
     /// </summary>
     public abstract class Node
     {
-		private SourceLocation _start = SourceLocation.Invalid;
-		private SourceLocation _end = SourceLocation.Invalid;
+		private SourceLocation start = SourceLocation.Invalid;
+		private SourceLocation end = SourceLocation.Invalid;
 
         /// <summary>
         /// ノードタイプ。
@@ -84,16 +85,16 @@ namespace Expresso.Ast
 			get; internal set;
 		}
 
-		public void SetLoc(SourceLocation start, SourceLocation end)
+		public void SetLoc(SourceLocation startLoc, SourceLocation endLoc)
 		{
-			_start = start;
-			_end = end;
+			start = startLoc;
+			end = endLoc;
 		}
 		
 		public void SetLoc(SourceSpan span)
 		{
-			_start = span.Start;
-			_end = span.End;
+			start = span.Start;
+			end = span.End;
 		}
 
 		internal ExpressoAst GlobalParent{
@@ -108,18 +109,18 @@ namespace Expresso.Ast
 		}
 		
 		public SourceLocation Start{
-			get { return _start; }
-			set { _start = value; }
+			get { return start; }
+			set { start = value; }
 		}
 		
 		public SourceLocation End{
-			get { return _end; }
-			set { _end = value; }
+			get { return end; }
+			set { end = value; }
 		}
 		
 		public SourceSpan Span{
 			get {
-				return new SourceSpan(_start, _end);
+				return new SourceSpan(start, end);
 			}
 		}
 
@@ -206,7 +207,7 @@ namespace Expresso.Ast
 			return new FunctionDefinition(name, parameters.ToArray(), body, returnType, isStatic);
 		}
 		
-		static internal FunctionDefinition MakeClosure(string name, IEnumerable<Argument> parameters, Block body, TypeAnnotation returnType, VariableStore environ)
+		static internal FunctionDefinition MakeClosure(string name, IEnumerable<Argument> parameters, Block body, TypeAnnotation returnType, Stack<object> environ)
 		{
 			return new FunctionDefinition(name, parameters.ToArray(), body, returnType, false, environ);
 		}

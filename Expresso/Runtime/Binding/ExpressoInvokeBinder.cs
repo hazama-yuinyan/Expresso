@@ -8,7 +8,8 @@ using Expresso.Runtime.Meta;
 namespace Expresso.Runtime.Binding
 {
 	/// <summary>
-	/// The Action used for Expresso call sites.  This supports both splatting of position and keyword arguments.
+	/// Expresso用のcallsite binder。未使用。
+	/// The Action used for Expresso call sites. This supports both splatting of position and keyword arguments.
 	/// 
 	/// When a foreign object is encountered the arguments are expanded into normal position/keyword arguments.
 	/// </summary>

@@ -5,6 +5,7 @@ using System.Diagnostics;
 namespace Expresso.Runtime
 {
 	/// <summary>
+	/// 実行中のコードのコンテクスト。
 	/// Captures and flows the state of executing code from the generated 
 	/// Expresso code into the Expresso runtime.
 	/// </summary>    
@@ -13,6 +14,7 @@ namespace Expresso.Runtime
 	{
 		private readonly ModuleContext mod_context;
 		private readonly Dictionary<object, object> dict;
+		private readonly Stack<object> evaluation_stack;
 		
 		/// <summary>
 		/// Creates a new CodeContext which is backed by the specified dictionary object.
@@ -23,6 +25,7 @@ namespace Expresso.Runtime
 			if(moduleContext == null) throw new ArgumentNullException("moduleContext");
 			dict = inputDict;
 			mod_context = moduleContext;
+			evaluation_stack = new Stack<object>();
 		}
 		
 		#region Public APIs
@@ -54,6 +57,12 @@ namespace Expresso.Runtime
 				return mod_context.Globals;
 			}
 		}
+
+		internal Stack<object> EvaluationStack{
+			get{
+				return evaluation_stack;
+			}
+		}
 		
 		/// <summary>
 		/// True if this global context should display CLR members on shared types (for example .ToString on int/bool/etc...)
@@ -72,11 +81,11 @@ namespace Expresso.Runtime
 		/// <summary>
 		/// Attempts to lookup the provided name in this scope or any outer scope.
 		/// </summary>
-		internal bool TryLookupName(string name, out object value) {
+		internal bool TryLookupName(string name, out object value)
+		{
 			string strName = name;
-			if (dict.TryGetValue(strName, out value)) {
+			if (dict.TryGetValue(strName, out value))
 				return true;
-			}
 			
 			return mod_context.Globals.TryGetValue(strName, out value);
 		}
@@ -201,10 +210,12 @@ namespace Expresso.Runtime
 			}
 		}
 		
-		internal class DebugProxy {
+		internal class DebugProxy
+		{
 			private readonly CodeContext context;
 			
-			public DebugProxy(CodeContext codeContext) {
+			public DebugProxy(CodeContext codeContext)
+			{
 				context = codeContext;
 			}
 			

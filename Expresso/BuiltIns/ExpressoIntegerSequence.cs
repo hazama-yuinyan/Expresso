@@ -21,40 +21,40 @@ namespace Expresso.Builtins
 		/// 数列の開始点。
 		/// The lower bound.
 		/// </summary>
-		private int _start;
+		private int lower;
 		
 		/// <summary>
 		/// 数列の終点。int.MinValueのときは無限リストを生成する。
 		/// The upper bound. When set to "int.MinValue", it generates an infinite series of list.
 		/// Note that the upper bound will not be included in the resulting sequence.
 		/// </summary>
-		private int _end;
+		private int upper;
 		
 		/// <summary>
 		/// ステップ。
 		/// The step by which the iteration proceeds at a time.
 		/// </summary>
-		private int _step;
+		private int step;
 		
 		public IEnumerator<object> Val
 		{
 			get{
-				int i = this._start;
-				while (true) {
-					if(this._end != -1 && i >= this._end)
+				int i = this.lower;
+				while(true){
+					if(this.upper != -1 && i >= this.upper)
 						yield break;
 					
 					yield return i;
-					i += this._step;
+					i += this.step;
 				}
 			}
 		}
 		
-		public ExpressoIntegerSequence(int start, int end, int step)
+		public ExpressoIntegerSequence(int start, int end, int inputStep)
 		{
-			this._start = start;
-			this._end = end;
-			this._step = step;
+			this.lower = start;
+			this.upper = end;
+			this.step = inputStep;
 		}
 
 		internal static ExpressoIntegerSequence Make(int start, int end, int step = 1)
@@ -105,7 +105,7 @@ namespace Expresso.Builtins
 			internal Enumerator(ExpressoIntegerSequence seq)
 			{
 				this.seq = seq;
-				this.next = seq._start - seq._step;
+				this.next = seq.lower - seq.step;
 				this.current = -127;
 			}
 			
@@ -115,7 +115,7 @@ namespace Expresso.Builtins
 			
 			void IEnumerator.Reset()
 			{
-				this.next = this.seq._start - seq._step;
+				this.next = this.seq.lower - seq.step;
 				this.current = -127;
 			}
 			
@@ -124,8 +124,8 @@ namespace Expresso.Builtins
 				if(this.next == int.MinValue)
 					return false;
 				
-				if(this.seq._end == int.MinValue || this.next + this.seq._step < this.seq._end){
-					this.next += this.seq._step;
+				if(this.seq.upper == int.MinValue || this.next + this.seq.step < this.seq.upper){
+					this.next += this.seq.step;
 					return true;
 				}
 				
@@ -143,8 +143,8 @@ namespace Expresso.Builtins
 		/// </param>
 		public bool Includes(int n)
 		{
-			var remaining = n % this._step;
-			return remaining - this._start == 0;
+			var remaining = n % this.step;
+			return remaining - this.lower == 0;
 		}
 		
 		/// <summary>
@@ -155,7 +155,7 @@ namespace Expresso.Builtins
 		/// </returns>
 		public bool IsSequential()
 		{
-			return this._step == 1;
+			return this.step == 1;
 		}
 	}
 }

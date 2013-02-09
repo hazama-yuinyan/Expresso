@@ -54,5 +54,6 @@ Global
 		$0.StandardHeader = $5
 		$5.Text = 
 		$5.IncludeInNewFiles = True
+		version = 1.3
 	EndGlobalSection
 EndGlobal

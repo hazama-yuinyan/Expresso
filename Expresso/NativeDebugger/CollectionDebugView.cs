@@ -5,6 +5,10 @@ using System.Diagnostics;
 
 namespace Expresso.Runtime
 {
+	/// <summary>
+	/// コレクションクラスのデバッガー用プロクシー。
+	/// Collection debug proxy.
+	/// </summary>
 	internal class CollectionDebugProxy
 	{
 		private readonly ICollection _collection;
