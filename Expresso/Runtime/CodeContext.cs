@@ -12,9 +12,9 @@ namespace Expresso.Runtime
 	/*[DebuggerTypeProxy(typeof(CodeContext.DebugProxy)), DebuggerDisplay("module: {ModuleName}", Type="module")]*/
 	public sealed class CodeContext
 	{
-		private readonly ModuleContext mod_context;
-		private readonly Dictionary<object, object> dict;
-		private readonly Stack<object> evaluation_stack;
+		readonly ModuleContext mod_context;
+		readonly Dictionary<object, object> dict;
+		readonly Stack<object> evaluation_stack;
 		
 		/// <summary>
 		/// Creates a new CodeContext which is backed by the specified dictionary object.
@@ -212,7 +212,7 @@ namespace Expresso.Runtime
 		
 		internal class DebugProxy
 		{
-			private readonly CodeContext context;
+			readonly CodeContext context;
 			
 			public DebugProxy(CodeContext codeContext)
 			{

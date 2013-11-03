@@ -21,8 +21,8 @@ namespace Expresso.Ast
     /// </summary>
     public class FunctionDefinition : ScopeStatement
     {
-		private readonly string name;
-		private readonly Argument[] parameters;
+		readonly string name;
+		readonly Argument[] parameters;
 
         /// <summary>
         /// 関数名。
@@ -78,8 +78,7 @@ namespace Expresso.Ast
         /// </summary>
         public IEnumerable<Identifier> LocalVariables
         {
-            get
-            {
+            get{
 				if(Body == null) return Enumerable.Empty<Identifier>();
                 return this.Body.LocalVariables;
             }
@@ -111,8 +110,7 @@ namespace Expresso.Ast
 
             bool first = true;
 
-            foreach (var param in this.Parameters)
-            {
+            foreach (var param in this.Parameters){
                 if (first) first = false;
                 else sb.Append(", ");
 
@@ -125,9 +123,8 @@ namespace Expresso.Ast
             return sb.ToString();
         }
 
-        public override NodeType Type
-        {
-            get { return NodeType.FunctionDef; }
+        public override NodeType Type{
+            get{return NodeType.FunctionDef;}
         }
 
 		internal override bool ExposesLocalVariable(ExpressoVariable variable)
@@ -200,7 +197,7 @@ namespace Expresso.Ast
 			base.FinishBind(binder);
 		}
 		
-		private void Verify(ExpressoNameBinder binder) {
+		void Verify(ExpressoNameBinder binder) {
 			/*if (ContainsImportStar && IsClosure) {
 				binder.ReportSyntaxError(
 					String.Format(
@@ -310,8 +307,8 @@ namespace Expresso.Ast
 	/// </summary>
 	public class NativeFunctionNAry : NativeFunction
 	{
-		private ExprTree.LambdaExpression func;
-		private Delegate compiled = null;
+		ExprTree.LambdaExpression func;
+		Delegate compiled = null;
 
 		public NativeFunctionNAry(string name, ExprTree.LambdaExpression func) :
 			base(name, null, null, new TypeAnnotation(ObjectTypes.VAR), false)
@@ -348,7 +345,7 @@ namespace Expresso.Ast
 	/// </summary>
 	/*public class NativeLambdaNullary : NativeFunction
 	{
-		private Func<object> func;
+		Func<object> func;
 
 		public NativeLambdaNullary(string name, Func<object> func, TypeAnnotation returnType = null) :
 			base(name, null, null, (returnType != null) ? returnType : new TypeAnnotation(ObjectTypes.VAR), true)
@@ -368,7 +365,7 @@ namespace Expresso.Ast
 	/// </summary>
 	/*public class NativeLambdaUnary : NativeFunction
 	{
-		private Func<object, object> func;
+		Func<object, object> func;
 
 		public NativeLambdaUnary(string name, Argument param, Func<object, object> func, TypeAnnotation returnType = null) :
 			base(name, new List<Argument>{param}, null, (returnType != null) ? returnType : new TypeAnnotation(ObjectTypes.VAR), true)
@@ -389,7 +386,7 @@ namespace Expresso.Ast
 	/// </summary>
 	/*public class NativeLambdaBinary : NativeFunction
 	{
-		private Func<object, object, object> func;
+		Func<object, object, object> func;
 
 		public NativeLambdaBinary(string name, Argument param1, Argument param2, Func<object, object, object> func, TypeAnnotation returnType = null) :
 			base(name, new List<Argument>{param1, param2}, null, (returnType != null) ? returnType : new TypeAnnotation(ObjectTypes.VAR), true)
@@ -411,7 +408,7 @@ namespace Expresso.Ast
 	/// </summary>
 	/*public class NativeLambdaTernary : NativeFunction
 	{
-		private Func<object, object, object, object> func;
+		Func<object, object, object, object> func;
 
 		public NativeLambdaTernary(string name, Argument param1, Argument param2, Argument param3,
 		                           Func<object, object, object, object> func, TypeAnnotation returnType = null) :

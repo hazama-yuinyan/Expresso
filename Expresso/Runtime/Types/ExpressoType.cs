@@ -17,17 +17,17 @@ namespace Expresso.Runtime.Types
 	[ExpressoType("Type")]
 	public class ExpressoType : ICodeFormattable
 	{
-		private BaseDefinition type_def;				// the metadata representing members of this type
-		private Type underlying_system_type;            // the underlying CLI system type for this type
-		private ExpressoTypeAttributes attrs;			// attributes of the type
-		private ExpressoContext exs_context;            // the context the type was created from, or null for system types.
+		BaseDefinition type_def;				// the metadata representing members of this type
+		Type underlying_system_type;            // the underlying CLI system type for this type
+		ExpressoTypeAttributes attrs;			// attributes of the type
+		ExpressoContext exs_context;            // the context the type was created from, or null for system types.
 
 		// commonly calculatable
-		//private List<PythonType> _resolutionOrder;          // the search order for methods in the type
-		private BuiltinFunction ctor;                   // the built-in function which allocates an instance - a .NET ctor
-		private InstanceCreator instance_ctor;
+		//List<PythonType> _resolutionOrder;          // the search order for methods in the type
+		BuiltinFunction ctor;                   // the built-in function which allocates an instance - a .NET ctor
+		InstanceCreator instance_ctor;
 
-		private static readonly Dictionary<Type, ExpressoType> exs_types = new Dictionary<Type, ExpressoType>();
+		static readonly Dictionary<Type, ExpressoType> exs_types = new Dictionary<Type, ExpressoType>();
 
 		public string Name{
 			get{return type_def.Name;}
@@ -165,7 +165,7 @@ namespace Expresso.Runtime.Types
 		/// can be shared with the Expresso type system. For example object, string, int,
 		/// etc... are all the same types.  
 		/// </summary>
-		private void InitializeSystemType()
+		void InitializeSystemType()
 		{
 			IsSystemType = true;
 			IsExpressoType = ExpressoBinder.IsExpressoType(underlying_system_type);
@@ -176,7 +176,7 @@ namespace Expresso.Runtime.Types
 		/// Creates a op_new method for the type. If the type defines interesting constructors
 		/// then the op_new method will call that. Otherwise if it has only a single argless
 		/// </summary>
-		private void AddSystemConstructors()
+		void AddSystemConstructors()
 		{
 			if(typeof(Delegate).IsAssignableFrom(underlying_system_type)){
 				SetConstructor(
@@ -196,7 +196,7 @@ namespace Expresso.Runtime.Types
 		}
 		
 		[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1024:UsePropertiesWhereAppropriate")]
-		private BuiltinFunction GetConstructors()
+		BuiltinFunction GetConstructors()
 		{
 			Type type = underlying_system_type;
 			string name = Name;
@@ -204,7 +204,7 @@ namespace Expresso.Runtime.Types
 			return ExpressoTypeOps.GetConstructorFunction(type, name);
 		}
 		
-		private void EnsureConstructor()
+		void EnsureConstructor()
 		{
 			if(ctor == null){
 				AddSystemConstructors();
@@ -214,7 +214,7 @@ namespace Expresso.Runtime.Types
 			}
 		}
 		
-		/*private void EnsureInstanceCtor()
+		/*void EnsureInstanceCtor()
 		{
 			if(instance_ctor == null)
 				instance_ctor = InstanceCreator.Make(this);
@@ -223,7 +223,7 @@ namespace Expresso.Runtime.Types
 
 		#region Private implementation details
 		[Flags]
-		private enum ExpressoTypeAttributes
+		enum ExpressoTypeAttributes
 		{
 			None = 0x00,
 			Immutable = 0x01,

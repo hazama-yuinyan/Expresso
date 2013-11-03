@@ -13,14 +13,14 @@ namespace Expresso.Runtime
 	{
 		[ExpressoHidden]
 		public Delegate Target;                                     // the current target for the function.  This can change based upon adaptive compilation, recursion enforcement, and tracing.
-		private Delegate normal_delegate;                           // the normal delegate - this can be a compiled or interpreted delegate.
-		private Ast.ScopeStatement lambda;               			// the original DLR lambda that contains the code
-		private readonly int local_count;                           // the number of local variables in the code
-		private readonly int arg_count;                             // cached locally because it's used during calls w/ defaults
+		Delegate normal_delegate;                           // the normal delegate - this can be a compiled or interpreted delegate.
+		Ast.ScopeStatement lambda;               			// the original DLR lambda that contains the code
+		readonly int local_count;                           // the number of local variables in the code
+		readonly int arg_count;                             // cached locally because it's used during calls w/ defaults
 		
 		// debugging/tracing support
-		//private LambdaExpression _tracingLambda;                    // the transformed lambda used for tracing/debugging
-		//private Delegate _tracingDelegate;                          // the delegate used for tracing/debugging, if one has been created. This can be interpreted or compiled.
+		//LambdaExpression _tracingLambda;                    // the transformed lambda used for tracing/debugging
+		//Delegate _tracingDelegate;                          // the delegate used for tracing/debugging, if one has been created. This can be interpreted or compiled.
 
 		/// <summary>
 		/// Constructor used to create a FunctionCode for code that's been serialized to disk.  
@@ -65,7 +65,7 @@ namespace Expresso.Runtime
 			//RegisterFunctionCode(context);
 		}
 
-		private int CalculateArgumentCount()
+		int CalculateArgumentCount()
 		{
 			int arg_cnt = lambda.ArgCount;
 			//FunctionAttributes flags = Flags;

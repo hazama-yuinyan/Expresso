@@ -22,7 +22,7 @@ namespace Expresso.Builtins
 	{
 		public TYPES Type{get{return TYPES.EXPRESSION;}}
 
-		private Function body;
+		Function body;
 	}*/
 	#endregion
 }

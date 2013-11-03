@@ -15,9 +15,9 @@ namespace Expresso.Runtime
 	/// </summary>
 	public class ExpressoObj : IEnumerable<object>, IEnumerable
 	{
-		private BaseDefinition definition;
+		BaseDefinition definition;
 		
-		private object[] members;
+		object[] members;
 		
 		/// <summary>
 		/// このインスタンスの型名。

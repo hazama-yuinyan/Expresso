@@ -17,9 +17,9 @@ namespace Expresso.Ast
 	/// </summary>
 	public class TryStatement : Statement, CompoundStatement
 	{
-		private readonly Block body;
-		private readonly CatchClause[] handlers;
-		private readonly FinallyClause finally_clause;
+		readonly Block body;
+		readonly CatchClause[] handlers;
+		readonly FinallyClause finally_clause;
 
 		/// <summary>
         /// 例外の捕捉を行うブロック。
@@ -136,8 +136,8 @@ namespace Expresso.Ast
 	/// </summary>
 	public class CatchClause : Statement
 	{
-		private readonly Identifier handler;
-		private readonly Block body;
+		readonly Identifier handler;
+		readonly Block body;
 
 		/// <summary>
         /// catchの対象となる例外の型とその識別子名。
@@ -205,7 +205,7 @@ namespace Expresso.Ast
 	/// </summary>
 	public class FinallyClause : Statement
 	{
-		private readonly Block body;
+		readonly Block body;
 
         /// <summary>
         /// 実行対象のブロック。

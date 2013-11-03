@@ -11,10 +11,10 @@ namespace Expresso.Utils
 	public struct SourceLocation
 	{
 		// TODO: remove index
-		private readonly int _index;
+		readonly int _index;
 		
-		private readonly int _line;
-		private readonly int _column;
+		readonly int _line;
+		readonly int _column;
 		
 		/// <summary>
 		/// Creates a new source location.
@@ -30,7 +30,7 @@ namespace Expresso.Utils
 			_column = column;
 		}
 		
-		private static void ValidateLocation(int index, int line, int column)
+		static void ValidateLocation(int index, int line, int column)
 		{
 			if(index < 0)
 				throw ErrorOutOfRange("index", 0);
@@ -42,13 +42,13 @@ namespace Expresso.Utils
 				throw ErrorOutOfRange("column", 1);
 		}
 		
-		private static Exception ErrorOutOfRange(object p0, object p1)
+		static Exception ErrorOutOfRange(object p0, object p1)
 		{
 			return new ArgumentOutOfRangeException(string.Format("{0} must be greater than or equal to {1}", p0, p1));
 		}
 		
 		[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA1801:ReviewUnusedParameters")]
-		private SourceLocation(int index, int line, int column, bool noChecks)
+		SourceLocation(int index, int line, int column, bool noChecks)
 		{
 			_index = index;
 			_line = line;

@@ -19,9 +19,9 @@ namespace Expresso.Ast
 	/// </summary>
 	public class ExpressoAst : ScopeStatement
 	{
-		private Statement[] body;
-		private readonly string name;
-		private readonly bool is_module;
+		Statement[] body;
+		readonly string name;
+		readonly bool is_module;
 
 		/// <summary>
 		/// モジュール名。Expressoには明示的なモジュール宣言がないので、たいていはファイル名になる。
@@ -30,7 +30,7 @@ namespace Expresso.Ast
 		/// If the module contains the main function, it would be called the "main" module.
 		/// </summary>
 		public string Name{
-			get{return "<module>";}
+            get{return is_module ? string.Format("<module {0}>", name) : ModuleName;}
 		}
 
 		/// <summary>
@@ -75,7 +75,7 @@ namespace Expresso.Ast
 		}
 
 		/// <summary>
-		/// Binds an AST and makes it capable of being reduced and compiled.  Before calling Bind an AST cannot successfully
+		/// Binds an AST and makes it capable of being reduced and compiled. Before calling Bind an AST cannot successfully
 		/// be reduced.
 		/// </summary>
 		public void Bind()
@@ -178,7 +178,7 @@ namespace Expresso.Ast
 
 		public override string ToString()
 		{
-			return string.Format("Declaration of module {0}", name == null ? "<anonymous>" : name);
+            return string.Format("Declaration of module {0}", is_module ? "<anonymous>" : name);
 		}
 	}
 }

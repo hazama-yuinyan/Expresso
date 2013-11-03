@@ -15,7 +15,7 @@ namespace Expresso.Ast
     /// </summary>
     public class ThrowStatement : Statement
     {
-		private readonly Expression expr;
+		readonly Expression expr;
 
         /// <summary>
         /// throwする式。

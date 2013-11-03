@@ -16,7 +16,7 @@ namespace Expresso.Ast
 	/// </summary>
 	public class ExprStatement : Statement, CompoundStatement
 	{
-		private readonly Expression[] exprs;
+		readonly Expression[] exprs;
 
         /// <summary>
         /// 実行する式のリスト。

@@ -24,9 +24,9 @@ namespace Expresso.Builtins
 	/// </summary>
 	public static class ExpressoFunctions
 	{
-		private static Regex substitution_refs = new Regex(@"\$\{(\d+|[a-zA-Z_][a-zA-Z_0-9]+)\}");
+		static Regex substitution_refs = new Regex(@"\$\{(\d+|[a-zA-Z_][a-zA-Z_0-9]+)\}");
 
-		private static Regex format_refs = new Regex(@"%([0-9.]*)([boxXsdfcueEgG])");
+		static Regex format_refs = new Regex(@"%([0-9.]*)([boxXsdfcueEgG])");
 
 		#region Expressoの組み込み関数郡
 		#region 数学関数郡
@@ -155,11 +155,11 @@ namespace Expresso.Builtins
 
 	public sealed class BuiltinNativeMethods
 	{
-		private static BuiltinNativeMethods inst = null;
+		static BuiltinNativeMethods inst = null;
 
-		//private Dictionary<string, Dictionary<string, NativeFunction>> native_methods;
+		//Dictionary<string, Dictionary<string, NativeFunction>> native_methods;
 
-		private BuiltinNativeMethods()
+		BuiltinNativeMethods()
 		{
 			/*var list = new Dictionary<string, NativeFunction>{
 				{"add", new NativeFunctionNAry("add", Helpers.MakeNativeMethodCall(typeof(List<object>), "Add", typeof(object)))},

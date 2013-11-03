@@ -18,9 +18,9 @@ namespace Expresso.Ast
 	/// </summary>
 	public class IfStatement : Statement, CompoundStatement
 	{
-		private readonly Expression condition;
-		private readonly Statement true_block;
-		private readonly Statement false_block;
+		readonly Expression condition;
+		readonly Statement true_block;
+		readonly Statement false_block;
 
 		/// <summary>
         /// 条件式。

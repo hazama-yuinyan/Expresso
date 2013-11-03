@@ -17,8 +17,8 @@ namespace Expresso.Ast
 	/// </summary>
 	public class MemberReference : Assignable
 	{
-		private Expression target;
-		private Expression subscription;
+		Expression target;
+		Expression subscription;
 
 		/// <summary>
 		/// The target expression of which a member will be referenced.

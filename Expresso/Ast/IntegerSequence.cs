@@ -15,7 +15,7 @@ namespace Expresso.Ast
 	/// </summary>
 	public class IntSeqExpression : Expression
 	{
-		private Expression lower, upper, step;
+		Expression lower, upper, step;
 
 		/// <summary>
 		/// 整数列の下限.

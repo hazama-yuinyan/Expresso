@@ -16,8 +16,8 @@ namespace Expresso.Ast
 	/// </summary>
 	public class UnaryExpression : Expression
 	{
-		private readonly OperatorType ope;
-		private readonly Expression operand;
+		readonly OperatorType ope;
+		readonly Expression operand;
 
 		/// <summary>
 		/// 演算子のタイプ。

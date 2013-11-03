@@ -14,9 +14,9 @@ namespace Expresso.Ast
     /// </summary>
     public class ConditionalExpression : Expression
     {
-		private readonly Expression condition;
-		private readonly Expression true_expr;
-		private readonly Expression false_expr;
+		readonly Expression condition;
+		readonly Expression true_expr;
+		readonly Expression false_expr;
 
         /// <summary>
         /// 条件式。

@@ -10,8 +10,8 @@ namespace Expresso.Utils
 	[Serializable]
 	public struct SourceSpan
 	{
-		private readonly SourceLocation _start;
-		private readonly SourceLocation _end;
+		readonly SourceLocation _start;
+		readonly SourceLocation _end;
 		
 		/// <summary>
 		/// Constructs a new span with a specific start and end location.
@@ -25,7 +25,7 @@ namespace Expresso.Utils
 			this._end = end;
 		}
 		
-		private static void ValidateLocations(SourceLocation start, SourceLocation end)
+		static void ValidateLocations(SourceLocation start, SourceLocation end)
 		{
 			if(start.IsValid && end.IsValid){
 				if(start > end)

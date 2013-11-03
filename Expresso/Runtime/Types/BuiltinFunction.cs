@@ -56,7 +56,7 @@ namespace Expresso.Runtime.Types
 	{
 		internal readonly BuiltinFunctionData data;		//information describing the BuiltinFunction
 		internal readonly object instance;				//the bound instance or null if unbound
-		private static readonly object no_instance = new object();
+		static readonly object no_instance = new object();
 
 		#region StaticFactories
 		/// <summary>
@@ -224,7 +224,7 @@ namespace Expresso.Runtime.Types
 		#endregion
 
 		#region Private members
-		private void EnsureBoundGenericDict()
+		void EnsureBoundGenericDict()
 		{
 			if(data.BoundGenerics == null){
 				Interlocked.CompareExchange<Dictionary<TypeList, BuiltinFunction>>(
@@ -236,7 +236,7 @@ namespace Expresso.Runtime.Types
 
 		internal class TypeList
 		{
-			private Type[] types;
+			Type[] types;
 			
 			public TypeList(Type[] inputTypes)
 			{

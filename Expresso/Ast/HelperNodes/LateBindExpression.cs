@@ -14,13 +14,13 @@ namespace Expresso.Ast
 	public class LateBindExpression<T> : Expression
 		where T : class
 	{
-		private readonly Expression target;
+		readonly Expression target;
 
-		private readonly Interpreter.Interpreter interp;
+		readonly Interpreter.Interpreter interp;
 
-		private bool is_resolved = false;
+		bool is_resolved = false;
 
-		private T bound_obj = default(T);
+		T bound_obj = default(T);
 
 		public T Target{
 			get{

@@ -47,22 +47,22 @@ namespace Expresso.Numeric
     /// <summary>
     /// 一般化座標 → 直交座標の変換関数 x(q1, q2)。
     /// </summary>
-		public Func2 X { private set; get; }
+		public Func2 X { set; get; }
 
     /// <summary>
     /// 一般化座標 → 直交座標の変換関数 y(q1, q2)。
     /// </summary>
-		public Func2 Y { private set; get; }
+		public Func2 Y { set; get; }
 
     /// <summary>
     /// 一般化座標 → 直交座標の変換関数 z(q1, q2)。
     /// </summary>
-		public Func2 Z { private set; get; }
+		public Func2 Z { set; get; }
 
     /// <summary>
     /// ポテンシャル φ(q1, q2)。
     /// </summary>
-		public Func2 Phi { private set; get; }
+		public Func2 Phi { set; get; }
 
     /// <summary>
     /// 質点の質量。

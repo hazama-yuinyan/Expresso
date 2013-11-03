@@ -18,9 +18,9 @@ namespace Expresso.Ast
     /// </summary>
     public class BinaryExpression : Expression
     {
-		private readonly OperatorType ope;
-		private readonly Expression lhs;
-		private readonly Expression rhs;
+		readonly OperatorType ope;
+		readonly Expression lhs;
+		readonly Expression rhs;
 
         /// <summary>
         /// 演算子のタイプ。
@@ -112,7 +112,7 @@ namespace Expresso.Ast
 			walker.PostWalk(this);
 		}
 		
-		private int BinaryExprAsInt(int lhs, int rhs, OperatorType opType)
+		int BinaryExprAsInt(int lhs, int rhs, OperatorType opType)
 		{
 			int result;
 			
@@ -148,7 +148,7 @@ namespace Expresso.Ast
 			return result;
 		}
 		
-		private double BinaryExprAsDouble(double lhs, double rhs, OperatorType opType)
+		double BinaryExprAsDouble(double lhs, double rhs, OperatorType opType)
 		{
 			double result;
 			
@@ -184,7 +184,7 @@ namespace Expresso.Ast
 			return result;
 		}
 
-		private Fraction BinaryExprAsFraction(Fraction lhs, object rhs, OperatorType opType)
+		Fraction BinaryExprAsFraction(Fraction lhs, object rhs, OperatorType opType)
 		{
 			if(!(rhs is Fraction) && !(rhs is long) && !(rhs is int) && !(rhs is double))
 				throw ExpressoOps.InvalidTypeError("The right operand have to be either a long, int, double or fraction!");
@@ -223,7 +223,7 @@ namespace Expresso.Ast
 			return result;
 		}
 
-		private string BinaryExprAsString(string lhs, object rhs, OperatorType opType)
+		string BinaryExprAsString(string lhs, object rhs, OperatorType opType)
 		{
 			string result;
 
@@ -250,7 +250,7 @@ namespace Expresso.Ast
 			return result;
 		}
 		
-		private bool EvalComparison(IComparable lhs, IComparable rhs, OperatorType opType)
+		bool EvalComparison(IComparable lhs, IComparable rhs, OperatorType opType)
 		{
 			if(lhs == null || rhs == null)
 				throw ExpressoOps.InvalidTypeError("The operands can not be compared");
@@ -279,7 +279,7 @@ namespace Expresso.Ast
 			}
 		}
 
-		private bool EvalLogicalOperation(bool lhs, bool rhs, OperatorType opType)
+		bool EvalLogicalOperation(bool lhs, bool rhs, OperatorType opType)
 		{
 			switch (opType) {
 			case OperatorType.AND:
@@ -293,7 +293,7 @@ namespace Expresso.Ast
 			}
 		}
 
-		private int EvalBitOperation(int lhs, int rhs, OperatorType opType)
+		int EvalBitOperation(int lhs, int rhs, OperatorType opType)
 		{
 			switch (opType) {
 			case OperatorType.BIT_AND:

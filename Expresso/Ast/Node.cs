@@ -70,8 +70,8 @@ namespace Expresso.Ast
     /// </summary>
     public abstract class Node
     {
-		private SourceLocation start = SourceLocation.Invalid;
-		private SourceLocation end = SourceLocation.Invalid;
+		SourceLocation start = SourceLocation.Invalid;
+		SourceLocation end = SourceLocation.Invalid;
 
         /// <summary>
         /// ノードタイプ。

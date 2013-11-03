@@ -52,7 +52,7 @@ namespace Expresso.Compiler.Meta
 			return new SystemTypeDefinition(systemType.Name, privates, publics, members.ToArray(), bases);
 		}
 
-		private static List<BaseDefinition> GetSystemBases(Type systemType)
+		static List<BaseDefinition> GetSystemBases(Type systemType)
 		{
 			var bases = new List<BaseDefinition>();
 			
@@ -96,7 +96,7 @@ namespace Expresso.Compiler.Meta
 			return bases;
 		}
 		
-		/*private static void AddSystemInterfaces(Type systemType, List<ExpressoType> mro)
+		/*static void AddSystemInterfaces(Type systemType, List<ExpressoType> mro)
 		{
 			if(systemType.IsArray){
 				// include the standard array interfaces in the array MRO.  We pick the

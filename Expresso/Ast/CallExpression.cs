@@ -17,8 +17,8 @@ namespace Expresso.Ast
     /// </summary>
     public class Call : Expression
     {
-		private readonly Expression target;
-		private readonly Expression[] args;
+		readonly Expression target;
+		readonly Expression[] args;
 
         /// <summary>
         /// 呼び出す対象。
@@ -40,7 +40,7 @@ namespace Expresso.Ast
 
 		//public MethodContainer MethodInfo{get{return method_info;}}
 
-		//private MethodContainer method_info = null;
+		//MethodContainer method_info = null;
 
 		public Call(Expression targetExpr, Expression[] arguments)
 		{

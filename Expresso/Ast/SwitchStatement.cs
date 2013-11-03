@@ -17,8 +17,8 @@ namespace Expresso.Ast
 	/// </summary>
 	public class SwitchStatement : Statement, CompoundStatement
 	{
-		private readonly Expression target;
-		private readonly CaseClause[] cases;
+		readonly Expression target;
+		readonly CaseClause[] cases;
 
 		/// <summary>
         /// 評価対象となる式。
@@ -97,8 +97,8 @@ namespace Expresso.Ast
 	/// </summary>
 	public class CaseClause : Expression
 	{
-		private readonly Expression[] labels;
-		private readonly Statement body;
+		readonly Expression[] labels;
+		readonly Statement body;
 
 		/// <summary>
         /// 分岐先となるラベル(郡)。
@@ -146,7 +146,7 @@ namespace Expresso.Ast
 			return Run(varStore, Target);
         }
 
-		private object Run(VariableStore varStore, object target)
+		object Run(VariableStore varStore, object target)
 		{
 			var pt = target;
 			bool result = false;

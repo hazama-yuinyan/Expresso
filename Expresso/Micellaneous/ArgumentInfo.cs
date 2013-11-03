@@ -48,8 +48,8 @@ namespace Expresso.Runtime.Meta
 	/// </summary>
 	public struct ArgumentInfo
 	{
-		private readonly ArgumentType kind;
-		private readonly string name;
+		readonly ArgumentType kind;
+		readonly string name;
 		
 		public static readonly ArgumentInfo Simple = new ArgumentInfo(ArgumentType.Simple, null);
 		

@@ -14,12 +14,12 @@ namespace Expresso.Ast
     /// 代入文。
 	/// The assignment statement.
 	/// targets.length == 1 for simple assignments like "x = 1"
-	/// and targets.length == 3 for assignments like "x = y = z = 3"
+    /// and targets.length == 3 for more complex assignments like "x = y = z = 3"
     /// </summary>
     public class Assignment : Statement
     {
-		private readonly Expression[] targets;
-		private readonly Expression rhs;
+		readonly Expression[] targets;
+		readonly Expression rhs;
 
         /// <summary>
         /// 代入先の変数郡。

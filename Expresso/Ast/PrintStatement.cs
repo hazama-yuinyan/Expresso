@@ -16,8 +16,8 @@ namespace Expresso.Ast
 	/// </summary>
 	public class PrintStatement : Statement
 	{
-		private readonly Expression[] exprs;
-		private bool trailing_comma;
+		readonly Expression[] exprs;
+		bool trailing_comma;
 
 		/// <summary>
 		/// Expressions generating output.

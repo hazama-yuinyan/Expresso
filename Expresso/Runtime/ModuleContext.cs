@@ -9,11 +9,11 @@ namespace Expresso.Runtime
 	/// </summary>
 	public sealed class ModuleContext
 	{
-		private readonly ExpressoContext exs_context;
-		private readonly Dictionary<object, object> globals;
-		private readonly CodeContext global_context;
-		private readonly ExpressoModule module;
-		//private ModuleOptions _features;
+		readonly ExpressoContext exs_context;
+		readonly Dictionary<object, object> globals;
+		readonly CodeContext global_context;
+		readonly ExpressoModule module;
+		//ModuleOptions _features;
 		
 		/// <summary>
 		/// Creates a new ModuleContext which is backed by the specified dictionary.

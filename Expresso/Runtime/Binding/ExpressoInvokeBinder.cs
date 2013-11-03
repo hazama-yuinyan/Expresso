@@ -15,8 +15,8 @@ namespace Expresso.Runtime.Binding
 	/// </summary>
 	class ExpressoInvokeBinder : DynamicMetaObjectBinder
 	{
-		private ExpressoContext context;
-		private CallSignature call_sig;
+		ExpressoContext context;
+		CallSignature call_sig;
 
 		public ExpressoInvokeBinder(ExpressoContext inputContext, CallSignature signature)
 		{

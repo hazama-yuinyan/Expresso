@@ -137,7 +137,7 @@ public class Buffer {
 	// Read the next chunk of bytes from the stream, increases the buffer
 	// if needed and updates the fields fileLen and bufLen.
 	// Returns the number of bytes read.
-	private int ReadNextStreamChunk() {
+	int ReadNextStreamChunk() {
 		int free = buf.Length - bufLen;
 		if (free == 0) {
 			// in the case of a growing input stream
@@ -662,7 +662,7 @@ public class Scanner {
 		return t;
 	}
 	
-	private void SetScannerBehindT() {
+	void SetScannerBehindT() {
 		buffer.Pos = t.pos;
 		NextCh();
 		line = t.line; col = t.col; charPos = t.charPos;

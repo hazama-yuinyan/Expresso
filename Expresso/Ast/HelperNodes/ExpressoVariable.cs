@@ -28,8 +28,8 @@ namespace Expresso.Ast
     /// </summary>
     internal class ExpressoVariable
     {
-		private readonly string name;
-		private readonly TypeAnnotation type;
+		readonly string name;
+		readonly TypeAnnotation type;
 
         /// <summary>
         /// 変数名。

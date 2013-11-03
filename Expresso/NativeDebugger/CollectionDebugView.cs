@@ -11,7 +11,7 @@ namespace Expresso.Runtime
 	/// </summary>
 	internal class CollectionDebugProxy
 	{
-		private readonly ICollection _collection;
+		readonly ICollection _collection;
 		
 		public CollectionDebugProxy(ICollection collection)
 		{
@@ -32,7 +32,7 @@ namespace Expresso.Runtime
 	
 	internal class ObjectCollectionDebugProxy
 	{
-		private readonly ICollection<object> _collection;
+		readonly ICollection<object> _collection;
 		
 		public ObjectCollectionDebugProxy(ICollection<object> collection)
 		{

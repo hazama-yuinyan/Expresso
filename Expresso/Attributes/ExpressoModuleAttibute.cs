@@ -14,8 +14,8 @@ namespace Expresso.Runtime
 	[AttributeUsage(AttributeTargets.Assembly, AllowMultiple = true, Inherited = false)]
 	public sealed class ExpressoModuleAttribute : Attribute
 	{
-		private readonly string module_name;
-		private readonly Type type;
+		readonly string module_name;
+		readonly Type type;
 		
 		/// <summary>
 		/// Creates a new ExpressoModuleAttribute that can be used to specify a built-in module that exists

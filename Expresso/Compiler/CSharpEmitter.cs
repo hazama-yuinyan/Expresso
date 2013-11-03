@@ -342,8 +342,8 @@ namespace Expresso.Compiler
 			throw new System.NotImplementedException();
 		}
 
-		#region private methods
-		private CSharpExpr CreateForeachLoop(ExprTree.ParameterExpression[] variables, CSharpExpr target, CSharpExpr body)
+		#region methods
+		CSharpExpr CreateForeachLoop(ExprTree.ParameterExpression[] variables, CSharpExpr target, CSharpExpr body)
 		{
 			if(variables == null)
 				throw new ArgumentNullException("variables", "For statement takes at least one variable!");
@@ -363,7 +363,7 @@ namespace Expresso.Compiler
 				return CSharpExpr.Loop(false_body, end_loop);
 		}
 
-		private ExprTree.SwitchCase CompileCase(CaseClause node)
+		ExprTree.SwitchCase CompileCase(CaseClause node)
 		{
 			var labels = new List<CSharpExpr>();
 			foreach(var label in node.Labels){
@@ -379,12 +379,12 @@ namespace Expresso.Compiler
 			                             labels);					//case label2: body;
 		}
 
-		private CSharpExpr CompileCatch(CatchClause[] clauses, ExprTree.ParameterExpression caughtException)
+		CSharpExpr CompileCatch(CatchClause[] clauses, ExprTree.ParameterExpression caughtException)
 		{
 			return null;
 		}
 
-		private CSharpExpr CompileCompIf(ComprehensionIf node)
+		CSharpExpr CompileCompIf(ComprehensionIf node)
 		{
 			if(node.Body == null)		//[generator...if Condition] -> ...if(Condition) seq.Add(generator);
 				return CSharpExpr.IfThen(node.Condition.Compile(this), comprehension_generator);
@@ -392,12 +392,12 @@ namespace Expresso.Compiler
 				return CSharpExpr.IfThen(node.Condition.Compile(this), node.Body.Compile(this));
 		}
 
-		private CSharpExpr CompileCompFor(ComprehensionFor node)
+		CSharpExpr CompileCompFor(ComprehensionFor node)
 		{
 			return null;
 		}
 
-		private CSharpExpr ConstructBinaryOpe(CSharpExpr lhs, CSharpExpr rhs, OperatorType opType)
+		CSharpExpr ConstructBinaryOpe(CSharpExpr lhs, CSharpExpr rhs, OperatorType opType)
 		{
 			switch(opType){
 			case OperatorType.AND:
@@ -462,7 +462,7 @@ namespace Expresso.Compiler
 			}
 		}
 
-		private CSharpExpr ConstructUnaryOpe(CSharpExpr operand, OperatorType opeType)
+		CSharpExpr ConstructUnaryOpe(CSharpExpr operand, OperatorType opeType)
 		{
 			switch(opeType){
 			case OperatorType.PLUS:

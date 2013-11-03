@@ -16,8 +16,8 @@ namespace Expresso.Ast
     /// </summary>
     public class Constant : Expression
     {
-		private readonly ObjectTypes val_type;
-		private readonly object val;
+		readonly ObjectTypes val_type;
+		readonly object val;
 
 		/// <summary>
 		/// この定数値の型。

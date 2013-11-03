@@ -52,7 +52,7 @@ public class Parser {
 	int errDist = minErrDist;
 
 internal ScopeStatement cur_scope = null;		//the current scope of variables
-	static private List<BreakableStatement> breakables = new List<BreakableStatement>();	//the current parent breakables hierarchy
+	static List<BreakableStatement> breakables = new List<BreakableStatement>();	//the current parent breakables hierarchy
 	public string ParsingFileName{get; set;}
 	public ExpressoAst TopmostAst{get; private set;}	//the top-level AST the parser is parsing
 	

@@ -15,7 +15,7 @@ namespace Expresso.Ast
 	/// <seealso cref="BreakableStatement"/>
     public class Block : BreakableStatement, CompoundStatement
     {
-        private List<Statement> statements = new List<Statement>();
+        List<Statement> statements = new List<Statement>();
 
         /// <summary>
         /// ブロックの中身の文。

@@ -19,7 +19,7 @@ namespace Expresso.Ast
     /// </summary>
     public class Identifier : Assignable
     {
-		private readonly string name;
+		readonly string name;
 
         /// <summary>
         /// 識別子名。

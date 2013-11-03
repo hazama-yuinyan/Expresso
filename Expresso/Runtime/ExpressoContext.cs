@@ -7,6 +7,7 @@ using System.Threading;
 using Expresso.Compiler.Meta;
 using Expresso.Runtime.Binding;
 using Expresso.Runtime.Meta;
+using Expresso.Runtime.Types;
 
 namespace Expresso.Runtime
 {
@@ -20,24 +21,24 @@ namespace Expresso.Runtime
 		internal const string ExpressoNames = "Expresso;exs";
 		internal const string ExpressoFileExtensions = ".exs";
 		
-		//private static readonly Guid ExpressoLanguageGuid = new Guid("03ed4b80-d10b-442f-ad9a-47dae85b2051");
+		//static readonly Guid ExpressoLanguageGuid = new Guid("03ed4b80-d10b-442f-ad9a-47dae85b2051");
 
-		private readonly CodeContext default_context;
-		private readonly Dictionary<string, ExpressoModule> loaded_modules = new Dictionary<string, ExpressoModule>();
-		private readonly Dictionary<string, Type> builtin_modules = new Dictionary<string, Type>(StringComparer.Ordinal);
-		private readonly Dictionary<Type, string> builtin_module_names = new Dictionary<Type, string>();
+		readonly CodeContext default_context;
+		readonly Dictionary<string, ExpressoModule> loaded_modules = new Dictionary<string, ExpressoModule>();
+		readonly Dictionary<string, Type> builtin_modules = new Dictionary<string, Type>(StringComparer.Ordinal);
+		readonly Dictionary<Type, string> builtin_module_names = new Dictionary<Type, string>();
 
-		private ExpressoInvokeBinder invoke_no_args, invoke_one_arg;
-		private Dictionary<CallSignature, ExpressoInvokeBinder> invoke_binders;
+		ExpressoInvokeBinder invoke_no_args, invoke_one_arg;
+		Dictionary<CallSignature, ExpressoInvokeBinder> invoke_binders;
 
 		#region Expresso shared call site storage
-		/*private CallSite<Func<CallSite, CodeContext, object, object>> callsite0;
-		private CallSite<Func<CallSite, CodeContext, object, object, object>> callsite1;
-		private CallSite<Func<CallSite, CodeContext, object, object, object, object>> callsite2;
-		private CallSite<Func<CallSite, CodeContext, object, object, object, object, object>> callsite3;
-		private CallSite<Func<CallSite, CodeContext, object, object, object, object, object, object>> callsite4;
-		private CallSite<Func<CallSite, CodeContext, object, object, object, object, object, object, object>> callsite5;
-		private CallSite<Func<CallSite, CodeContext, object, object, object, object, object, object, object, object>> callsite6;*/
+		/*CallSite<Func<CallSite, CodeContext, object, object>> callsite0;
+		CallSite<Func<CallSite, CodeContext, object, object, object>> callsite1;
+		CallSite<Func<CallSite, CodeContext, object, object, object, object>> callsite2;
+		CallSite<Func<CallSite, CodeContext, object, object, object, object, object>> callsite3;
+		CallSite<Func<CallSite, CodeContext, object, object, object, object, object, object>> callsite4;
+		CallSite<Func<CallSite, CodeContext, object, object, object, object, object, object, object>> callsite5;
+		CallSite<Func<CallSite, CodeContext, object, object, object, object, object, object, object, object>> callsite6;*/
 		#endregion
 
 		public ExpressoContext()
@@ -112,7 +113,12 @@ namespace Expresso.Runtime
 		}
 		#endregion
 
-		private Dictionary<string, Type> CreateBuiltinTable()
+        internal object Call(BuiltinFunction func, params object[] args)
+        {
+            return func.data.Targets;
+        }
+
+		Dictionary<string, Type> CreateBuiltinTable()
 		{
 			var table = new Dictionary<string, Type>();
 
@@ -120,7 +126,7 @@ namespace Expresso.Runtime
 			return table;
 		}
 
-		private void LoadBuiltins(Dictionary<string, Type> dict, Assembly assem)
+		void LoadBuiltins(Dictionary<string, Type> dict, Assembly assem)
 		{
 			var attrs = assem.GetCustomAttributes(typeof(ExpressoModuleAttribute), false);
 			if(attrs.Length > 0){

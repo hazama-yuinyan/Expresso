@@ -12,7 +12,7 @@ namespace Expresso.Interpreter
 	/// </summary>
 	internal sealed class EvaluationFrame
 	{
-		private InterpreterFlowManager manager;
+		InterpreterFlowManager manager;
 
 		public Node TargetNode{get; private set;}
 
@@ -74,13 +74,13 @@ namespace Expresso.Interpreter
 		/// <summary>
 		/// The maximum size of the (call) stack. (Maybe it's too large?)
 		/// </summary>
-		private const int MaxStackSize = 1024;
+		const int MaxStackSize = 1024;
 
-		private List<EvaluationFrame> frames = new List<EvaluationFrame>();
+		List<EvaluationFrame> frames = new List<EvaluationFrame>();
 
-		private List<object> stack = new List<object>(MaxStackSize);
+		List<object> stack = new List<object>(MaxStackSize);
 
-		private EvaluationFrame cur_scope = null;	//現在のスコープに対応する評価フレーム
+		EvaluationFrame cur_scope = null;	//現在のスコープに対応する評価フレーム
 
 		/// <summary>
 		/// Gets the count of currently active evaluation frames.

@@ -23,10 +23,10 @@ namespace Expresso.Ast
 	/// </summary>
 	public class TypeDefinition : ScopeStatement
 	{
-		private string name;
-		private string[] base_names;
-		private Statement[] body;
-		private DeclType target_type;
+		string name;
+		string[] base_names;
+		Statement[] body;
+		DeclType target_type;
 
 		public DeclType TargetType{
 			get{return target_type;}

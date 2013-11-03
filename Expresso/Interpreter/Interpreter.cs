@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Reflection;
 using System.Text;
 using System.Linq;
@@ -97,7 +98,7 @@ namespace Expresso.Interpreter
 		/// トップレベルのコンテクスト。
 		/// The toplevel context of a runtime.
 		/// </summary>
-		private ExpressoContext global_context = new ExpressoContext();
+		ExpressoContext global_context = new ExpressoContext();
 
 		public ExpressoContext GlobalContext{
 			get{return global_context;}
@@ -1064,10 +1065,11 @@ namespace Expresso.Interpreter
 				Console.WriteLine("{0}: {1}", exception_type.FullName, ex.Message);
 			}
 
+            Debug.Assert(flow_manager.ValueCount == 0 || flow_manager.ValueCount == 1);
 			return (flow_manager.ValueCount > 0) ? flow_manager.PopValue() : null;
 		}
 
-		private static int BinaryExprAsInt(int lhs, int rhs, OperatorType opType)
+		static int BinaryExprAsInt(int lhs, int rhs, OperatorType opType)
 		{
 			int result;
 			
@@ -1103,7 +1105,7 @@ namespace Expresso.Interpreter
 			return result;
 		}
 		
-		private static double BinaryExprAsDouble(double lhs, double rhs, OperatorType opType)
+		static double BinaryExprAsDouble(double lhs, double rhs, OperatorType opType)
 		{
 			double result;
 			
@@ -1139,7 +1141,7 @@ namespace Expresso.Interpreter
 			return result;
 		}
 		
-		private static Fraction BinaryExprAsFraction(Fraction lhs, object rhs, OperatorType opType)
+		static Fraction BinaryExprAsFraction(Fraction lhs, object rhs, OperatorType opType)
 		{
 			if(!(rhs is Fraction) && !(rhs is long) && !(rhs is int) && !(rhs is double))
 				throw ExpressoOps.InvalidTypeError("The right operand have to be either a long, int, double or fraction!");
@@ -1178,7 +1180,7 @@ namespace Expresso.Interpreter
 			return result;
 		}
 		
-		private static string BinaryExprAsString(string lhs, object rhs, OperatorType opType)
+		static string BinaryExprAsString(string lhs, object rhs, OperatorType opType)
 		{
 			string result;
 			
@@ -1205,7 +1207,7 @@ namespace Expresso.Interpreter
 			return result;
 		}
 		
-		private static bool EvalComparison(IComparable lhs, IComparable rhs, OperatorType opType)
+		static bool EvalComparison(IComparable lhs, IComparable rhs, OperatorType opType)
 		{
 			if(lhs == null || rhs == null)
 				throw ExpressoOps.InvalidTypeError("The operands can not be compared");
@@ -1234,7 +1236,7 @@ namespace Expresso.Interpreter
 			}
 		}
 		
-		private static bool EvalLogicalOperation(bool lhs, bool rhs, OperatorType opType)
+		static bool EvalLogicalOperation(bool lhs, bool rhs, OperatorType opType)
 		{
 			switch (opType) {
 			case OperatorType.AND:
@@ -1248,7 +1250,7 @@ namespace Expresso.Interpreter
 			}
 		}
 		
-		private static int EvalBitOperation(int lhs, int rhs, OperatorType opType)
+		static int EvalBitOperation(int lhs, int rhs, OperatorType opType)
 		{
 			switch (opType) {
 			case OperatorType.BIT_AND:
@@ -1271,7 +1273,7 @@ namespace Expresso.Interpreter
 			}
 		}
 
-		private static object EvalUnaryOperation(OperatorType opType, object operand)
+		static object EvalUnaryOperation(OperatorType opType, object operand)
 		{
 			object result = null;
 			if(opType == OperatorType.MINUS){

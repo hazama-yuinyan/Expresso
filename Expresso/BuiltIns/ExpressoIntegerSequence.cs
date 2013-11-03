@@ -21,23 +21,22 @@ namespace Expresso.Builtins
 		/// 数列の開始点。
 		/// The lower bound.
 		/// </summary>
-		private int lower;
+		int lower;
 		
 		/// <summary>
 		/// 数列の終点。int.MinValueのときは無限リストを生成する。
 		/// The upper bound. When set to "int.MinValue", it generates an infinite series of list.
 		/// Note that the upper bound will not be included in the resulting sequence.
 		/// </summary>
-		private int upper;
+		int upper;
 		
 		/// <summary>
 		/// ステップ。
 		/// The step by which the iteration proceeds at a time.
 		/// </summary>
-		private int step;
+		int step;
 		
-		public IEnumerator<object> Val
-		{
+        public IEnumerator<object> Val{
 			get{
 				int i = this.lower;
 				while(true){
@@ -63,7 +62,6 @@ namespace Expresso.Builtins
 		}
 		
 		#region IEnumerable implementation
-		
 		IEnumerator IEnumerable.GetEnumerator()
 		{
 			return this.GetEnumerator();
@@ -78,22 +76,18 @@ namespace Expresso.Builtins
 		#region The enumerator for IntegerSequence
 		public struct Enumerator : IEnumerator<object>, IEnumerator
 		{
-			private ExpressoIntegerSequence seq;
-			private int next;
-			private int current;
+			ExpressoIntegerSequence seq;
+			int next;
+			int current;
 			
-			object IEnumerator.Current
-			{
-				get
-				{
+            object IEnumerator.Current{
+                get{
 					return this.Current;
 				}
 			}
 			
-			public object Current
-			{
-				get
-				{
+            public object Current{
+                get{
 					if(next == int.MinValue)
 						throw new InvalidOperationException();
 					

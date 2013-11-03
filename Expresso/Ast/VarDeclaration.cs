@@ -15,8 +15,8 @@ namespace Expresso.Ast
 	/// </summary>
 	public class VarDeclaration : Expression
 	{
-		private Identifier[] left;
-		private Expression[] expressions;
+		Identifier[] left;
+		Expression[] expressions;
 
 		/// <summary>
 		/// 代入先の左辺値の式。

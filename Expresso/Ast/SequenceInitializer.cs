@@ -18,8 +18,8 @@ namespace Expresso.Ast
 	/// </summary>
 	public class SequenceInitializer : Expression
 	{
-		private readonly Expression[] items;
-		private readonly ObjectTypes type;
+		readonly Expression[] items;
+		readonly ObjectTypes type;
 
 		/// <summary>
         /// シーケンス生成に使用する式群。

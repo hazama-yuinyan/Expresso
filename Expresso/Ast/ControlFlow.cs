@@ -29,8 +29,8 @@ namespace Expresso.Ast
 	/// </summary>
 	public class BreakStatement : Statement
 	{
-		private readonly int count;
-		private readonly BreakableStatement[] enclosings;
+		readonly int count;
+		readonly BreakableStatement[] enclosings;
 
 		/// <summary>
 		/// breakの際に何階層分ループ構造を遡るか。
@@ -104,8 +104,8 @@ namespace Expresso.Ast
 	/// </summary>
 	public class ContinueStatement : Statement
 	{
-		private readonly int count;
-		private readonly BreakableStatement[] enclosings;
+		readonly int count;
+		readonly BreakableStatement[] enclosings;
 
 		/// <summary>
 		/// continueの際に何階層分ループ構造を遡るか。

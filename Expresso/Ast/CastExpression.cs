@@ -14,8 +14,8 @@ namespace Expresso.Ast
     /// </summary>
     public class CastExpression : Expression
     {
-		private readonly Expression to_expr;
-		private readonly Expression target;
+		readonly Expression to_expr;
+		readonly Expression target;
 
         /// <summary>
         /// キャスト先の型。

@@ -35,7 +35,7 @@ namespace Expresso.Ast
 {
 	class DefineBinder : ExpressoWalkerNonRecursive
 	{
-		private ExpressoNameBinder binder;
+		ExpressoNameBinder binder;
 		public DefineBinder(ExpressoNameBinder nameBinder)
 		{
 			binder = nameBinder;
@@ -43,9 +43,16 @@ namespace Expresso.Ast
 		public override bool Walk(Identifier node)
 		{
 			binder.DefineName(node.Name,
-			                  node.ParamType == TypeAnnotation.InferenceType ? TypeAnnotation.VariantType : node.ParamType);
+                node.ParamType == TypeAnnotation.InferenceType ? TypeAnnotation.VariantType : node.ParamType);    //TODO:ちゃんと実装する
 			return false;
 		}
+
+        public override bool Walk(MemberReference node)
+        {
+            //return new LateBindExpression<Runtime.Types.BuiltinFunction>(node);
+            return base.Walk(node);
+        }
+
 		public override bool Walk(SequenceExpression node)
 		{
 			return true;
@@ -54,7 +61,7 @@ namespace Expresso.Ast
 	
 	class ParameterBinder : ExpressoWalkerNonRecursive
 	{
-		private ExpressoNameBinder binder;
+		ExpressoNameBinder binder;
 		public ParameterBinder(ExpressoNameBinder nameBinder)
 		{
 			binder = nameBinder;
@@ -74,7 +81,7 @@ namespace Expresso.Ast
 			return false;
 		}
 		
-		private void WalkTuple(TupleExpression tuple) {
+		void WalkTuple(TupleExpression tuple) {
 			tuple.Parent = _binder._currentScope;
 			foreach (Expression innerNode in tuple.Items) {
 				NameExpression name = innerNode as NameExpression;
@@ -95,18 +102,18 @@ namespace Expresso.Ast
 	
 	class ExpressoNameBinder : ExpressoWalker
 	{
-		private ExpressoAst global_scope;
+		ExpressoAst global_scope;
 		internal ScopeStatement cur_scope;
-		private List<ScopeStatement> scopes = new List<ScopeStatement>();
-		private List<int> finally_count = new List<int>();
-		private Parser parser;
+		List<ScopeStatement> scopes = new List<ScopeStatement>();
+		List<int> finally_count = new List<int>();
+		Parser parser;
 		
 		#region Recursive binders
-		private DefineBinder define;
-		private ParameterBinder parameter;
+		DefineBinder define;
+		ParameterBinder parameter;
 		#endregion
 		
-		private ExpressoNameBinder(Parser parentParser)
+		ExpressoNameBinder(Parser parentParser)
 		{
 			define = new DefineBinder(this);
 			//_delete = new DeleteBinder(this);
@@ -124,7 +131,7 @@ namespace Expresso.Ast
 		}
 		#endregion
 		
-		private void Bind(ExpressoAst unboundAst)
+		void Bind(ExpressoAst unboundAst)
 		{
 			Assert.NotNull(unboundAst);
 			
@@ -153,14 +160,14 @@ namespace Expresso.Ast
 				FlowChecker.Check(scope);
 		}
 		
-		private void PushScope(ScopeStatement node)
+		void PushScope(ScopeStatement node)
 		{
 			node.Parent = cur_scope;
 			cur_scope = node;
 			finally_count.Add(0);
 		}
 		
-		private void PopScope()
+		void PopScope()
 		{
 			scopes.Add(cur_scope);
 			cur_scope = cur_scope.Parent;

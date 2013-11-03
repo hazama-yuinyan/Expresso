@@ -19,8 +19,8 @@ namespace Expresso.Ast
 	/// <seealso cref="Node"/>
 	public class WithStatement : Statement, CompoundStatement
 	{
-		private readonly Expression context;
-		private readonly Statement body;
+		readonly Expression context;
+		readonly Statement body;
 
 		/// <summary>
         /// 自動破棄の対象となるリソースを返す式。

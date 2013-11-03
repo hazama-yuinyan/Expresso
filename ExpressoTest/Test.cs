@@ -61,8 +61,14 @@ namespace Expresso.Test
 
 		public static void TestOnType(ExpressoObj instance, List<string> privateMembers, List<FunctionAnnotation> methodAnnots)
 		{
-			foreach(var private_name in privateMembers)
-				Assert.Throws(typeof(ReferenceException), () => instance.AccessMemberWithName(private_name, false));
+			foreach(var private_name in privateMembers){
+				try{
+					instance.AccessMemberWithName(private_name, false);
+				}
+				catch(Exception e){
+					Assert.IsInstanceOfType(typeof(ReferenceException), e);
+				}
+			}
 
 			foreach(var method_annot in methodAnnots){
 				var method = instance.AccessMemberWithName(method_annot.Name, false) as FunctionDefinition;
@@ -88,7 +94,7 @@ namespace Expresso.Test
 	[TestFixture]
 	public class ParserTests
 	{
-		[TestCase]
+		[Test]
 		public void SimpleLiterals()
 		{
 			var parser = new Parser(new Scanner("../../sources/for_parser/simple_literals.exs"));
@@ -133,7 +139,7 @@ namespace Expresso.Test
 	[TestFixture]
 	public class InterpreterTests
 	{
-		[TestCase]
+		[Test]
 		public void SimpleArithmetic()
 		{
 			var parser = new Parser(new Scanner("../../sources/for_interpreter/simple_arithmetic.exs"));
@@ -162,7 +168,7 @@ namespace Expresso.Test
 			Helpers.DoTest(results, expected);
 		}
 
-		[TestCase]
+		[Test]
 		public void BasicOperations()
 		{
 			var parser = new Parser(new Scanner("../../sources/for_interpreter/basic_operations.exs"));
@@ -201,7 +207,7 @@ namespace Expresso.Test
 			Helpers.DoTest(results, expected);
 		}
 
-		[TestCase]
+		[Test]
 		public void Statements()
 		{
 			var parser = new Parser(new Scanner("../../sources/for_interpreter/statements.exs"));
@@ -243,7 +249,7 @@ namespace Expresso.Test
 			Helpers.DoTest(results, expected);
 		}
 
-		[TestCase]
+		[Test]
 		public void BuiltinObjects()
 		{
 			var parser = new Parser(new Scanner("../../sources/for_interpreter/builtin_objects.exs"));
@@ -270,7 +276,7 @@ namespace Expresso.Test
 			};
 		}
 
-		[TestCase]
+		[Test]
 		public void ComplexExpressions()
 		{
 			var parser = new Parser(new Scanner("../../sources/for_interpreter/complex_expressions.exs"));
@@ -316,7 +322,7 @@ namespace Expresso.Test
 			Helpers.DoTest(results, expected);
 		}
 
-		[TestCase]
+		[Test]
 		public void Class()
 		{
 			var parser = new Parser(new Scanner("../../sources/for_interpreter/class.exs"));
@@ -352,13 +358,13 @@ namespace Expresso.Test
 			Helpers.DoTest(numeric_results, expected);
 		}
 
-		[TestCase]
+		[Test]
 		public void Library()
 		{
 
 		}
 
-		[TestCase]
+		[Test]
 		public void Module()
 		{
 			var parser = new Parser(new Scanner("../../sources/for_interpreter/module.exs"));
@@ -397,7 +403,7 @@ namespace Expresso.Test
 	[TestFixture]
 	public class NativeTests
 	{
-		[TestCase]
+		[Test]
 		public void TestFraction()
 		{
 			Fraction a = new Fraction(1, 3), b = new Fraction(2, 3), c = new Fraction(-1, 4), d = new Fraction(new BigInteger(3)), e = new Fraction(2.5);

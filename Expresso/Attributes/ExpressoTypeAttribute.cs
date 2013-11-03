@@ -19,7 +19,7 @@ namespace Expresso.Runtime
 	[AttributeUsage(AttributeTargets.Class | AttributeTargets.Interface | AttributeTargets.Struct, Inherited = false)]
 	public sealed class ExpressoTypeAttribute : Attribute
 	{
-		private readonly string type_name;
+		readonly string type_name;
 		
 		public ExpressoTypeAttribute()
 		{

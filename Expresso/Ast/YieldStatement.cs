@@ -14,7 +14,7 @@ namespace Expresso.Ast
     /// </summary>
     public class YieldStatement : Statement
     {
-		private readonly Expression expr;
+		readonly Expression expr;
 
         /// <summary>
         /// yieldする式。

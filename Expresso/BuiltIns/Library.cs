@@ -16,11 +16,11 @@ namespace Expresso.Builtins.Library
 	/// </summary>
 	public class StandardIn : IEnumerable<string>, IEnumerable
 	{
-		static private TextReader _in = Console.In;
+		static TextReader _in = Console.In;
 
-		static private StandardIn inst = null;
+		static StandardIn inst = null;
 
-		private StandardIn(){}
+		StandardIn(){}
 
 		public static StandardIn Instance()
 		{
@@ -58,11 +58,11 @@ namespace Expresso.Builtins.Library
 	/// </summary>
 	public class FileObject : IDisposable, IClosable, IEnumerable<string>, IEnumerable
 	{
-		private StreamReader _reader = null;
-		private StreamWriter _writer = null;
-		private BinaryReader _breader = null;
-		private BinaryWriter _bwriter = null;
-		private bool binary_mode;
+		StreamReader _reader = null;
+		StreamWriter _writer = null;
+		BinaryReader _breader = null;
+		BinaryWriter _bwriter = null;
+		bool binary_mode;
 		
 		public FileObject(string path, bool binaryMode, FileMode mode, FileAccess access, Encoding encode)
 		{

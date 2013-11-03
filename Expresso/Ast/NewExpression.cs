@@ -18,8 +18,8 @@ namespace Expresso.Ast
     /// </summary>
     public class NewExpression : Expression
     {
-		private Expression target;
-		private Expression[] args;
+		Expression target;
+		Expression[] args;
 
         /// <summary>
         /// オブジェクトを生成するクラスの定義を参照する式。

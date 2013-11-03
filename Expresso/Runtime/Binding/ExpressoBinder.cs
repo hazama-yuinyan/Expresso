@@ -13,13 +13,13 @@ namespace Expresso.Runtime.Binding
 	/// </summary>
 	public class ExpressoBinder
 	{
-		private static readonly Dictionary<Type, ExtensionTypeInfo> sys_types = MakeSystemTypes();
+		static readonly Dictionary<Type, ExtensionTypeInfo> sys_types = MakeSystemTypes();
 
 		public ExpressoBinder()
 		{
 		}
 
-		private class ExtensionTypeInfo
+		class ExtensionTypeInfo
 		{
 			public Type ExtensionType;
 			public string PythonName;
@@ -35,7 +35,7 @@ namespace Expresso.Runtime.Binding
 		/// Creates a table of standard .NET types which are also standard Python types.  These types have a standard
 		/// set of extension types which are shared between all runtimes.
 		/// </summary>
-		private static Dictionary<Type, ExtensionTypeInfo> MakeSystemTypes()
+		static Dictionary<Type, ExtensionTypeInfo> MakeSystemTypes()
 		{
 			var res = new Dictionary<Type, ExtensionTypeInfo>();
 			

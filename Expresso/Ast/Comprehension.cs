@@ -21,9 +21,9 @@ namespace Expresso.Ast
 	/// </summary>
 	public class Comprehension : Expression
 	{
-		private readonly Expression item;
-		private readonly ComprehensionFor body;
-		private ObjectTypes type;
+		readonly Expression item;
+		readonly ComprehensionFor body;
+		ObjectTypes type;
 
 		public Expression Item{
 			get{return item;}
@@ -127,9 +127,9 @@ namespace Expresso.Ast
 
 	public class ComprehensionFor : ComprehensionIter
 	{
-		private readonly SequenceExpression left;
-		private readonly Expression target;
-		private readonly ComprehensionIter body;
+		readonly SequenceExpression left;
+		readonly Expression target;
+		readonly ComprehensionIter body;
 
 		/// <summary>
         /// body内で操作対象となるオブジェクトを参照するのに使用する式。
@@ -250,8 +250,8 @@ namespace Expresso.Ast
 
 	public class ComprehensionIf : ComprehensionIter
 	{
-		private readonly Expression condition;
-		private readonly ComprehensionIter body;
+		readonly Expression condition;
+		readonly ComprehensionIter body;
 
 		/// <summary>
         /// 実行対象の文。

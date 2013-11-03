@@ -15,7 +15,7 @@ namespace Expresso.Ast
     /// </summary>
     public class ReturnStatement : Statement
     {
-		private readonly Expression expr;
+		readonly Expression expr;
 
         /// <summary>
         /// 戻り値の式。

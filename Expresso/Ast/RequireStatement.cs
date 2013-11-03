@@ -17,8 +17,8 @@ namespace Expresso.Ast
     /// </summary>
     public class RequireStatement : Statement
     {
-		private readonly string[] module_names;
-		private readonly string[] alias_names;
+		readonly string[] module_names;
+		readonly string[] alias_names;
 
         /// <summary>
         /// 対象となるモジュール名。

@@ -13,9 +13,9 @@ namespace Expresso.Runtime
 	internal class ExpressoObjectDebugView
 	{
 		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
-		private readonly string name;
+		readonly string name;
 		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
-		private readonly object value;
+		readonly object value;
 		
 		public ExpressoObjectDebugView(object objName, object val)
 		{

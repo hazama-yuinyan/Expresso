@@ -15,7 +15,7 @@ namespace Expresso.Runtime.Types
 	/// </summary>
 	abstract class InstanceCreator
 	{
-		private readonly ExpressoType type;
+		readonly ExpressoType type;
 		
 		protected InstanceCreator(ExpressoType inputType)
 		{
@@ -48,11 +48,11 @@ namespace Expresso.Runtime.Types
 	
 	class UserInstanceCreator : InstanceCreator
 	{
-		private CallSite<Func<CallSite, CodeContext, BuiltinFunction, ExpressoType, object[], object>> ctor_site;
-		private CallSite<Func<CallSite, CodeContext, BuiltinFunction, ExpressoType, object>> ctor_site0;
-		private CallSite<Func<CallSite, CodeContext, BuiltinFunction, ExpressoType, object, object>> ctor_site1;
-		private CallSite<Func<CallSite, CodeContext, BuiltinFunction, ExpressoType, object, object, object>> ctor_site2;
-		private CallSite<Func<CallSite, CodeContext, BuiltinFunction, ExpressoType, object, object, object, object>> ctor_site3;
+		CallSite<Func<CallSite, CodeContext, BuiltinFunction, ExpressoType, object[], object>> ctor_site;
+		CallSite<Func<CallSite, CodeContext, BuiltinFunction, ExpressoType, object>> ctor_site0;
+		CallSite<Func<CallSite, CodeContext, BuiltinFunction, ExpressoType, object, object>> ctor_site1;
+		CallSite<Func<CallSite, CodeContext, BuiltinFunction, ExpressoType, object, object, object>> ctor_site2;
+		CallSite<Func<CallSite, CodeContext, BuiltinFunction, ExpressoType, object, object, object, object>> ctor_site3;
 		
 		public UserInstanceCreator(ExpressoType type)
 		: base(type) {
@@ -152,11 +152,11 @@ namespace Expresso.Runtime.Types
 	
 	class SystemInstanceCreator : InstanceCreator
 	{
-		private CallSite<Func<CallSite, CodeContext, BuiltinFunction, object[], object>> ctor_site;
-		private CallSite<Func<CallSite, CodeContext, BuiltinFunction, object>> ctor_site0;
-		private CallSite<Func<CallSite, CodeContext, BuiltinFunction, object, object>> ctor_site1;
-		private CallSite<Func<CallSite, CodeContext, BuiltinFunction, object, object, object>> ctor_site2;
-		private CallSite<Func<CallSite, CodeContext, BuiltinFunction, object, object, object, object>> ctor_site3;
+		CallSite<Func<CallSite, CodeContext, BuiltinFunction, object[], object>> ctor_site;
+		CallSite<Func<CallSite, CodeContext, BuiltinFunction, object>> ctor_site0;
+		CallSite<Func<CallSite, CodeContext, BuiltinFunction, object, object>> ctor_site1;
+		CallSite<Func<CallSite, CodeContext, BuiltinFunction, object, object, object>> ctor_site2;
+		CallSite<Func<CallSite, CodeContext, BuiltinFunction, object, object, object, object>> ctor_site3;
 		
 		public SystemInstanceCreator(ExpressoType type)
 		: base(type) {

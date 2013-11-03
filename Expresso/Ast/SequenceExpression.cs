@@ -19,7 +19,7 @@ namespace Expresso.Ast
     /// </summary>
     public class SequenceExpression : Expression
     {
-		private readonly Expression[] items;
+		readonly Expression[] items;
 
         /// <summary>
         /// リストのアイテム。
@@ -33,8 +33,7 @@ namespace Expresso.Ast
 			get{return items.Length;}
 		}
 
-        public override NodeType Type
-        {
+        public override NodeType Type{
             get { return NodeType.Sequence; }
         }
 

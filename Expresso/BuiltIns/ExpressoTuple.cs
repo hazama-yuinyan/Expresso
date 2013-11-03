@@ -20,7 +20,7 @@ namespace Expresso.Builtins
 	public class ExpressoTuple : ICollection, IEnumerable, IEnumerable<object>, IList<object>,
 		IStructuralEquatable, IStructuralComparable
 	{
-		private readonly object[] items;
+		readonly object[] items;
 		
 		/// <summary>
 		/// Tupleの中身。
@@ -252,7 +252,7 @@ namespace Expresso.Builtins
 			return hash1 + (hash2 * 1566083941);
 		}
 
-		private int GetHashCode(IEqualityComparer comparer)
+		int GetHashCode(IEqualityComparer comparer)
 		{
 			int hash1 = 6551;
 			int hash2 = hash1;
@@ -271,7 +271,7 @@ namespace Expresso.Builtins
 		#region The enumerator for ExpressoTuple
 		public struct Enumerator : IEnumerator<object>, IEnumerator
 		{
-			private IEnumerator er;
+			IEnumerator er;
 			
 			object IEnumerator.Current
 			{

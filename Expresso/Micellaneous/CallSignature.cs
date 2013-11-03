@@ -20,12 +20,12 @@ namespace Expresso.Runtime.Meta
 		/// Array of additional meta information about the arguments, such as named arguments.
 		/// Null for a simple signature that's just an expression list. eg: foo(a*b,c,d)
 		/// </summary>
-		private readonly ArgumentInfo[] infos;
+		readonly ArgumentInfo[] infos;
 		
 		/// <summary>
 		/// Number of arguments in the signature.
 		/// </summary>
-		private readonly int arg_count;
+		readonly int arg_count;
 		
 		/// <summary>
 		/// All arguments are unnamed and matched by position. 

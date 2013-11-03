@@ -77,7 +77,7 @@ namespace Expresso.Ast
 {
 	class FlowDefiner : ExpressoWalkerNonRecursive
 	{
-		private readonly FlowChecker fc;
+		readonly FlowChecker fc;
 		
 		public FlowDefiner(FlowChecker flowChecker)
 		{
@@ -110,14 +110,14 @@ namespace Expresso.Ast
 	
 	class FlowChecker : ExpressoWalker
 	{
-		private BitArray bits;
-		private Stack<BitArray> loops;
-		private Dictionary<string, ExpressoVariable> variables;
+		BitArray bits;
+		Stack<BitArray> loops;
+		Dictionary<string, ExpressoVariable> variables;
 		
-		private readonly ScopeStatement scope;
-		private readonly FlowDefiner fdef;
+		readonly ScopeStatement scope;
+		readonly FlowDefiner fdef;
 		
-		private FlowChecker(ScopeStatement scopeStmt)
+		FlowChecker(ScopeStatement scopeStmt)
 		{
 			variables = scopeStmt.Variables;
 			bits = new BitArray(variables.Count * 2);
@@ -153,22 +153,22 @@ namespace Expresso.Ast
 			Debug.WriteLine(sb.ToString());
 		}
 		
-		private void SetAssigned(ExpressoVariable variable, bool value)
+		void SetAssigned(ExpressoVariable variable, bool value)
 		{
 			bits.Set(variable.Offset * 2, value);
 		}
 		
-		private void SetInitialized(ExpressoVariable variable, bool value)
+		void SetInitialized(ExpressoVariable variable, bool value)
 		{
 			bits.Set(variable.Offset * 2 + 1, value);
 		}
 
-		private bool IsAssigned(ExpressoVariable variable)
+		bool IsAssigned(ExpressoVariable variable)
 		{
 			return bits.Get(variable.Offset * 2);
 		}
 		
-		private bool IsInitialized(ExpressoVariable variable)
+		bool IsInitialized(ExpressoVariable variable)
 		{
 			return bits.Get(variable.Offset * 2 + 1);
 		}
@@ -199,7 +199,7 @@ namespace Expresso.Ast
 			}
 		}
 		
-		private void PushLoop(BitArray ba)
+		void PushLoop(BitArray ba)
 		{
 			if(loops == null){
 				loops = new Stack<BitArray>();
@@ -207,12 +207,12 @@ namespace Expresso.Ast
 			loops.Push(ba);
 		}
 		
-		private BitArray PeekLoop()
+		BitArray PeekLoop()
 		{
 			return loops != null && loops.Count > 0 ? loops.Peek() : null;
 		}
 		
-		private void PopLoop()
+		void PopLoop()
 		{
 			if(loops != null) loops.Pop();
 		}

@@ -84,8 +84,8 @@ namespace Expresso.Runtime
 	/// </summary>
 	/*public class MethodContainer
 	{
-		private FunctionDeclaration method;
-		private object inst;
+		FunctionDeclaration method;
+		object inst;
 
 		/// <summary>
 		/// A function instance that points to the method.

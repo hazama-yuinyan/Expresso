@@ -12,7 +12,7 @@ namespace Expresso.Ast
     /// </summary>
     class ExpressoReference
     {
-		private readonly string name;
+		readonly string name;
 
         /// <summary>
         /// 参照名。

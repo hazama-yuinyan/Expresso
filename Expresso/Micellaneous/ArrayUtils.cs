@@ -15,17 +15,17 @@ namespace Expresso.Utils
 	{
 		internal sealed class FunctorComparer<T> : IComparer<T>
 		{
-			private readonly Comparison<T> _comparison;
+			readonly Comparison<T> comparison;
 			
 			public FunctorComparer(Comparison<T> comparison)
 			{
 				Assert.NotNull(comparison);
-				_comparison = comparison;
+				this.comparison = comparison;
 			}
 			
 			public int Compare(T x, T y)
 			{
-				return _comparison(x, y);
+				return comparison(x, y);
 			}
 		}
 		
@@ -93,16 +93,16 @@ namespace Expresso.Utils
 		
 		public static T[] MakeArray<T>(ICollection<T> list)
 		{
-			if (list.Count == 0) {
-				return new T[0];
-			}
+            if(list.Count == 0)
+                return new T[0];
 			
-			T[] res = new T[list.Count];
-			list.CopyTo(res, 0);
-			return res;
-		}
+            T[] res = new T[list.Count];
+            list.CopyTo(res, 0);
+            return res;
+        }
+
 		
-		public static T[] MakeArray<T>(ICollection<T> elements, int reservedSlotsBefore, int reservedSlotsAfter)
+        public static T[] MakeArray<T>(ICollection<T> elements, int reservedSlotsBefore, int reservedSlotsAfter)
 		{
 			if(reservedSlotsAfter < 0) throw new ArgumentOutOfRangeException("reservedSlotsAfter");
 			if(reservedSlotsBefore < 0) throw new ArgumentOutOfRangeException("reservedSlotsBefore");

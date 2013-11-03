@@ -18,9 +18,9 @@ namespace Expresso.Runtime
 	[ExpressoType("Module"), DebuggerTypeProxy(typeof(ExpressoModule.DebugProxy)), DebuggerDisplay("module: {GetName()}")]
 	public class ExpressoModule : IDynamicMetaObjectProvider/*, IPythonMembersList*/
 	{
-		private readonly ModuleDefinition def;
+		readonly ModuleDefinition def;
 		
-		//private Scope _scope;
+		//Scope _scope;
 		
 		/*public PythonModule() {
 			_dict = new PythonDictionary();
@@ -56,7 +56,7 @@ namespace Expresso.Runtime
 			def = moduleDef;
 		}
 
-		/*public static ExpressoModule New(CodeContext context, ExpressoType cls, params object[] args)
+        /*public static ExpressoModule op_new(CodeContext context, ExpressoType cls, params object[] args)
 		{
 			ExpressoModule res;
 			//if (cls == TypeCache.Module) {
@@ -71,7 +71,7 @@ namespace Expresso.Runtime
 		}*/
 		
 		/*[StaticExtensionMethod]
-		public static PythonModule New(CodeContext context, ExpressoType cls, [ParamDictionary]PythonDictionary kwDict\u00F8, params object[] args\u00F8)
+        public static PythonModule op_new(CodeContext context, ExpressoType cls, [ParamDictionary]PythonDictionary kwDict\u00F8, params object[] args\u00F8)
 		{
 			return __new__(context, cls, args\u00F8);
 		}*/
@@ -252,7 +252,7 @@ namespace Expresso.Runtime
 			}
 			#endregion
 			
-			private DynamicMetaObject GetMemberWorker(DynamicMetaObjectBinder binder, DynamicMetaObject codeContext) {
+			DynamicMetaObject GetMemberWorker(DynamicMetaObjectBinder binder, DynamicMetaObject codeContext) {
 				string name = GetGetMemberName(binder);
 				var tmp = Expression.Variable(typeof(object), "res");                
 				
@@ -355,7 +355,7 @@ namespace Expresso.Runtime
 		
 		internal class DebugProxy
 		{
-			private readonly ExpressoModule module;
+			readonly ExpressoModule module;
 			
 			public DebugProxy(ExpressoModule inputModule)
 			{

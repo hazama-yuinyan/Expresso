@@ -18,7 +18,7 @@ namespace Expresso.Ast
     /// </summary>
     public class DefaultExpression : Expression
     {
-		private readonly TypeAnnotation target;
+		readonly TypeAnnotation target;
 
 		public TypeAnnotation TargetType{
 			get{return target;}

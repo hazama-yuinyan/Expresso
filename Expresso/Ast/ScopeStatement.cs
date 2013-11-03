@@ -18,12 +18,12 @@ namespace Expresso.Ast
     /// </summary>
     public abstract class ScopeStatement : Statement/*, CompoundStatement*/
     {
-		private Dictionary<string, ExpressoVariable> variables;          // mapping of string to variables
-		//private ClosureInfo[] _closureVariables;                        // closed over variables, bool indicates if we accessed it in this scope.
-		//private List<PythonVariable> _freeVars;                         // list of variables accessed from outer scopes
-		private List<string> global_vars;                                // global variables accessed from this scope
-		//private List<string> _cellVars;                                 // variables accessed from nested scopes
-		private Dictionary<string, ExpressoReference> references;        // names of all variables referenced, null after binding completes
+		Dictionary<string, ExpressoVariable> variables;          // mapping of string to variables
+		//ClosureInfo[] _closureVariables;                        // closed over variables, bool indicates if we accessed it in this scope.
+		//List<PythonVariable> _freeVars;                         // list of variables accessed from outer scopes
+		List<string> global_vars;                                // global variables accessed from this scope
+		//List<string> _cellVars;                                 // variables accessed from nested scopes
+		Dictionary<string, ExpressoReference> references;        // names of all variables referenced, null after binding completes
 
 		internal Dictionary<string, ExpressoVariable> Variables{
 			get{return variables;}
@@ -69,7 +69,7 @@ namespace Expresso.Ast
 
 		internal abstract bool ExposesLocalVariable(ExpressoVariable variable);
 		
-		private bool TryGetAnyVariable(string name, out ExpressoVariable variable)
+		bool TryGetAnyVariable(string name, out ExpressoVariable variable)
 		{
 			if(variables != null){
 				return variables.TryGetValue(name, out variable);
@@ -179,11 +179,10 @@ namespace Expresso.Ast
 			references = null;
 		}
 
-		private void EnsureVariables()
+		void EnsureVariables()
 		{
-			if(variables == null){
+			if(variables == null)
 				variables = new Dictionary<string, ExpressoVariable>(StringComparer.Ordinal);
-			}
 		}
 		
 		internal void AddGlobalVariable(ExpressoVariable variable)
@@ -194,14 +193,13 @@ namespace Expresso.Ast
 		
 		internal ExpressoReference Reference(string name)
 		{
-			if(references == null){
+			if(references == null)
 				references = new Dictionary<string, ExpressoReference>(StringComparer.Ordinal);
-			}
 
 			ExpressoReference reference;
-			if(!references.TryGetValue(name, out reference)){
+			if(!references.TryGetValue(name, out reference))
 				references[name] = reference = new ExpressoReference(name, null);
-			}
+			
 			return reference;
 		}
 		
@@ -223,9 +221,9 @@ namespace Expresso.Ast
 		internal ExpressoVariable EnsureVariable(string name, TypeAnnotation type)
 		{
 			ExpressoVariable variable;
-			if(!TryGetVariable(name, out variable)){
+			if(!TryGetVariable(name, out variable))
 				return CreateVariable(name, type, VariableKind.Local);
-			}
+			
 			return variable;
 		}
 		
