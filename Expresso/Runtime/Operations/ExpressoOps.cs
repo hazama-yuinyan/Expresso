@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections;
 using System.Numerics;
@@ -118,22 +118,31 @@ namespace Expresso.Runtime.Operations
 		}
 		#endregion
 
+		/// <summary>
+		/// Helper method for comparing native arrays.
+		/// </summary>
 		public static int CompareArrays(object[] data0, int size0, object[] data1, int size1, IComparer comparer)
 		{
 			int size = Math.Min(size0, size1);
-			for (int i = 0; i < size; i++) {
+			for(int i = 0; i < size; ++i){
 				int c = comparer.Compare(data0[i], data1[i]);
-				if (c != 0) return c;
+				if(c != 0) return c;
 			}
-			if (size0 == size1) return 0;
+			if(size0 == size1) return 0;
 			return size0 > size1 ? +1 : -1;
 		}
 
+		/// <summary>
+		/// The implementation of the print statement in Expresso.
+		/// </summary>
+		/// <param name="values"></param>
+		/// <param name="hasTrailing">Flag indicating whether the string to be displayed has a trailing comma.</param>
 		public static void DoPrint(List<object> values, bool hasTrailing)
 		{
 			var first = values[0];
 			var sb = new StringBuilder();
-			if(first is string){
+			
+			if(first is string){	//When the first argument is string, it means that the string is the format string.
 				sb.Append(first);
 				values.RemoveAt(0);
 				for(int i = 1; i < values.Count; ++i){
@@ -198,6 +207,12 @@ namespace Expresso.Runtime.Operations
 			return result;
 		}
 		
+		/// <summary>
+		/// Helper method for accessing a member on an Expresso's object.
+		/// </summary>
+		/// <param name="target">The Expresso's object</param>
+		/// <param name="subscription">The expression that determines which member is referenced</param>
+		/// <returns></returns>
 		public static object AccessMember(object target, object subscription)
 		{
 			if(target is Dictionary<object, object>){
@@ -244,6 +259,11 @@ namespace Expresso.Runtime.Operations
 			}
 		}
 		
+		/// <summary>
+		/// Enumerates an Expresso's collection object.
+		/// </summary>
+		/// <param name="enumerable">The object to enumerate on</param>
+		/// <returns>An IEnumerator object</returns>
 		public static IEnumerator<object> Enumerate(object enumerable)
 		{
 			if(enumerable is IEnumerable<object>){
@@ -254,8 +274,9 @@ namespace Expresso.Runtime.Operations
 				var dict = (Dictionary<object, object>)enumerable;
 				foreach(var elem in dict)
 					yield return ExpressoOps.MakeTuple(new object[]{elem.Key, elem.Value});
-			}else
+		    }else{
 				throw ExpressoOps.RuntimeError("Unknown object type!");
+		    }
 		}
 
 		#region Operations on types

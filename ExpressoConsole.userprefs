@@ -1,0 +1,53 @@
+﻿<Properties>
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug|x86" />
+  <MonoDevelop.Ide.Workbench ActiveDocument="Expresso/BuiltIns/Functions.cs">
+    <Files>
+      <File FileName="Expresso/Interpreter/Interpreter.cs" Line="1" Column="1" />
+      <File FileName="Expresso/Compiler/Meta/SystemTypeDefinition.cs" Line="1" Column="1" />
+      <File FileName="Expresso/Ast/Walkers/ExpressoNameBinder.cs" Line="1" Column="1" />
+      <File FileName="Expresso/Runtime/ExpressoContext.cs" Line="1" Column="1" />
+      <File FileName="Expresso/Ast/Walkers/FlowChecker.cs" Line="1" Column="1" />
+      <File FileName="Expresso/Ast/ExpressoAst.cs" Line="181" Column="73" />
+      <File FileName="Expresso/Ast/Node.cs" Line="75" Column="1" />
+      <File FileName="ExpressoTest/Test.cs" Line="1" Column="1" />
+      <File FileName="Expresso/BuiltIns/Functions.cs" Line="1" Column="1" />
+      <File FileName="Expresso/Micellaneous/ArrayUtils.cs" Line="1" Column="1" />
+      <File FileName="Expresso/Compiler/Meta/TypeDefinition.cs" Line="1" Column="1" />
+      <File FileName="Expresso/Ast/Assignment.cs" Line="1" Column="1" />
+      <File FileName="Expresso/Ast/FunctionDefinition.cs" Line="1" Column="1" />
+      <File FileName="Expresso/Ast/HelperNodes/LateBindExpression.cs" Line="1" Column="1" />
+      <File FileName="Expresso/Ast/ScopeStatement.cs" Line="1" Column="1" />
+      <File FileName="Expresso/Ast/SequenceExpression.cs" Line="1" Column="1" />
+      <File FileName="Expresso/BuiltIns/ExpressoIntegerSequence.cs" Line="1" Column="1" />
+      <File FileName="Expresso/BuiltIns/Library.cs" Line="1" Column="1" />
+      <File FileName="Expresso/Runtime/ExpressoModule.cs" Line="1" Column="1" />
+    </Files>
+  </MonoDevelop.Ide.Workbench>
+  <MonoDevelop.Ide.DebuggingService.Breakpoints>
+    <BreakpointStore>
+      <Breakpoint enabled="false" file="/home/ryouta/ドキュメント/MonoDevelopSolutions/ExpressoConsole/Expresso/BuiltIns/Functions.cs" line="133" column="1" />
+      <Breakpoint enabled="false" file="/home/ryouta/ドキュメント/MonoDevelopSolutions/ExpressoConsole/Expresso/Ast/ClassDeclaration.cs" line="62" column="1" />
+      <Breakpoint enabled="false" file="/home/ryouta/ドキュメント/MonoDevelopSolutions/ExpressoConsole/Expresso/Ast/Comprehension.cs" line="68" column="1" />
+      <Breakpoint enabled="false" file="/home/ryouta/ドキュメント/MonoDevelopSolutions/ExpressoConsole/Expresso/Ast/Function.cs" line="197" column="1" />
+      <Breakpoint enabled="false" file="/home/ryouta/ドキュメント/MonoDevelopSolutions/ExpressoConsole/Expresso/Ast/BinaryExpression.cs" line="80" column="1" />
+      <Breakpoint enabled="false" file="/home/ryouta/ドキュメント/MonoDevelopSolutions/ExpressoConsole/Expresso/Ast/TryStatement.cs" line="92" column="1" />
+      <Breakpoint enabled="false" file="/home/ryouta/ドキュメント/MonoDevelopSolutions/ExpressoConsole/Expresso/Ast/Function.cs" line="289" column="1" />
+      <Breakpoint enabled="false" file="/home/ryouta/ドキュメント/MonoDevelopSolutions/ExpressoConsole/Expresso/Ast/Comprehension.cs" line="210" column="1" />
+      <Breakpoint enabled="false" file="/home/ryouta/ドキュメント/MonoDevelopSolutions/ExpressoConsole/Expresso/Ast/NewExpression.cs" line="67" column="1" />
+      <Breakpoint file="/home/ryouta/ドキュメント/MonoDevelopSolutions/ExpressoConsole/ExpressoTest/Test.cs" line="97" column="1" />
+      <Breakpoint enabled="false" file="/home/ryouta/ドキュメント/MonoDevelopSolutions/ExpressoConsole/Expresso/Ast/RequireExpression.cs" line="55" column="1" />
+      <Breakpoint enabled="false" file="/home/ryouta/ドキュメント/MonoDevelopSolutions/ExpressoConsole/Expresso/Interpreter/Interpreter.cs" line="173" column="1" />
+      <Breakpoint enabled="false" file="/home/ryouta/ドキュメント/MonoDevelopSolutions/ExpressoConsole/Expresso/Interpreter/Interpreter.cs" line="123" column="1" />
+      <Breakpoint enabled="false" file="/home/ryouta/ドキュメント/MonoDevelopSolutions/ExpressoConsole/Expresso/Interpreter/Interpreter.cs" line="133" column="1" />
+      <Breakpoint enabled="false" file="/home/ryouta/ドキュメント/MonoDevelopSolutions/ExpressoConsole/Expresso/Interpreter/Interpreter.cs" line="548" column="1" />
+      <Breakpoint enabled="false" file="/home/ryouta/ドキュメント/MonoDevelopSolutions/ExpressoConsole/Expresso/Interpreter/Interpreter.cs" line="199" column="1" />
+      <Breakpoint enabled="false" file="/home/ryouta/ドキュメント/MonoDevelopSolutions/ExpressoConsole/Expresso/Interpreter/Interpreter.cs" line="1014" column="1" />
+      <Breakpoint file="/home/ryouta/ドキュメント/MonoDevelopSolutions/ExpressoConsole/Expresso/Interpreter/Interpreter.cs" line="662" column="1" />
+      <Breakpoint file="/home/ryouta/ドキュメント/MonoDevelopSolutions/ExpressoConsole/Expresso/Interpreter/Interpreter.cs" line="1067" column="1" />
+      <Breakpoint file="/home/ryouta/ドキュメント/MonoDevelopSolutions/ExpressoConsole/Expresso/Interpreter/Interpreter.cs" line="796" column="1" />
+      <Breakpoint file="/home/ryouta/ドキュメント/MonoDevelopSolutions/ExpressoConsole/Expresso/Interpreter/Interpreter.cs" line="592" column="1" />
+      <Breakpoint file="/home/ryouta/ドキュメント/MonoDevelopSolutions/ExpressoConsole/Expresso/Interpreter/Interpreter.cs" line="309" column="1" />
+    </BreakpointStore>
+  </MonoDevelop.Ide.DebuggingService.Breakpoints>
+  <MonoDevelop.Ide.DebuggingService.PinnedWatches />
+</Properties>

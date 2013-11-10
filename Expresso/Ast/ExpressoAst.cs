@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -61,9 +61,8 @@ namespace Expresso.Ast
 			}
 		}
 
-        public override NodeType Type
-        {
-            get { return NodeType.Toplevel; }
+		public override NodeType Type{
+            get{return NodeType.Toplevel;}
         }
 
 		public ExpressoAst(Statement[] bodyStmts, string maybeModuleName = null, bool[] exportMap = null)
@@ -75,7 +74,7 @@ namespace Expresso.Ast
 		}
 
 		/// <summary>
-		/// Binds an AST and makes it capable of being reduced and compiled. Before calling Bind an AST cannot successfully
+		/// Binds an AST and makes it capable of being reduced and compiled. Before calling Bind, an AST cannot successfully
 		/// be reduced.
 		/// </summary>
 		public void Bind()

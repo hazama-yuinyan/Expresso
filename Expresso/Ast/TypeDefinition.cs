@@ -8,75 +8,74 @@ using Expresso.Runtime.Operations;
 
 namespace Expresso.Ast
 {
-	using CSharpExpr = System.Linq.Expressions.Expression;
+    using CSharpExpr = System.Linq.Expressions.Expression;
 
-	public enum DeclType{
-		Class,
-		Interface,
-		Struct
-	};
+    public enum DeclType{
+        Class,
+        Interface,
+        Struct
+    };
 
-	/// <summary>
-	/// 型定義文。
-	/// The type definition. That is, it can represents either a class definition, an interface definition 
-	/// or a struct definition. 
-	/// </summary>
-	public class TypeDefinition : ScopeStatement
-	{
-		string name;
-		string[] base_names;
-		Statement[] body;
-		DeclType target_type;
+    /// <summary>
+    /// 型定義文。
+    /// The type definition. That is, it can represents either a class definition, an interface definition 
+    /// or a struct definition. 
+    /// </summary>
+    public class TypeDefinition : ScopeStatement
+    {
+        string name;
+        string[] base_names;
+        Statement[] body;
+        DeclType target_type;
 
-		public DeclType TargetType{
-			get{return target_type;}
-		}
-
-		/// <summary>
-		/// 型名。
-		/// The name of the type.
-		/// </summary>
-		public string Name{
-			get{return name;}
-		}
-
-		/// <summary>
-		/// 継承元の型名。
-		/// The names of the base types.
-		/// </summary>
-		public string[] BaseNames{
-			get{return base_names;}
-		}
-
-		public TypeDefinition[] Bases{get; internal set;}
-
-		/// <summary>
-		/// メンバの定義式郡。
-		/// The declarations for members.
-		/// </summary>
-		public Statement[] Body{
-			get{return body;}
-		}
-
-		/// <summary>
-		/// Variable corresponding to the class name
-		/// </summary>
-		internal ExpressoVariable ExpressoVariable{
-			get; set;
-		}
-
-        public override NodeType Type
-        {
-            get { return NodeType.TypeDef; }
+        public DeclType TargetType{
+            get{return target_type;}
         }
 
-		public TypeDefinition(string typeName, Statement[] bodyStmts, DeclType type, string[] basesList)
-		{
-			name = typeName;
-			body = bodyStmts;
-			base_names = basesList;
-			target_type = type;
-		}
+        /// <summary>
+        /// 型名。
+        /// The name of the type.
+        /// </summary>
+        public string Name{
+            get{return name;}
+        }
+
+        /// <summary>
+        /// 継承元の型名。
+        /// The names of the base types.
+        /// </summary>
+        public string[] BaseNames{
+            get{return base_names;}
+        }
+
+        public TypeDefinition[] Bases{get; internal set;}
+
+        /// <summary>
+        /// メンバの定義式郡。
+        /// The declarations for members.
+        /// </summary>
+        public Statement[] Body{
+            get{return body;}
+        }
+
+        /// <summary>
+        /// Variable corresponding to the class name
+        /// </summary>
+        internal ExpressoVariable ExpressoVariable{
+            get; set;
+        }
+
+        public override NodeType Type{
+            get{return NodeType.TypeDef;}
+        }
+
+        public TypeDefinition(string typeName, Statement[] bodyStmts, DeclType type, string[] basesList)
+        {
+            name = typeName;
+            body = bodyStmts;
+            base_names = basesList;
+            target_type = type;
+        }
 
         public override bool Equals(object obj)
         {
@@ -147,24 +146,25 @@ namespace Expresso.Ast
 			return type_def;
         }*/
 
-		internal override CSharpExpr Compile(Emitter<CSharpExpr> emitter)
-		{
-			return emitter.Emit(this);
-		}
+        internal override CSharpExpr Compile(Emitter<CSharpExpr> emitter)
+        {
+            return emitter.Emit(this);
+        }
 
-		internal override void Walk(ExpressoWalker walker)
-		{
-			if(walker.Walk(this)){
-				foreach(var stmt in body)
-					stmt.Walk(walker);
-			}
-			walker.PostWalk(this);
-		}
+        internal override void Walk(ExpressoWalker walker)
+        {
+            if(walker.Walk(this)){
+                foreach(var stmt in body)
+                    stmt.Walk(walker);
+            }
 
-		public override string ToString()
-		{
-			return string.Format("Definition of {0} {1}", target_type, name);
-		}
+            walker.PostWalk(this);
+        }
+
+        public override string ToString()
+        {
+            return string.Format("Definition of {0} {1}", target_type, name);
+        }
 
 		/*internal override bool NeedsLocalContext{
 			get {
@@ -172,40 +172,39 @@ namespace Expresso.Ast
 			}
 		}*/
 		
-		internal override bool ExposesLocalVariable(ExpressoVariable variable)
-		{
-			return true;
-		}
+        internal override bool ExposesLocalVariable(ExpressoVariable variable)
+        {
+            return true;
+        }
 		
-		internal override ExpressoVariable BindReference(ExpressoNameBinder binder, ExpressoReference reference)
-		{
-			ExpressoVariable variable;
+        internal override ExpressoVariable BindReference(ExpressoNameBinder binder, ExpressoReference reference)
+        {
+            ExpressoVariable variable;
 			
-			// Python semantics: The variables bound local in the class
-			// scope are accessed by name - the dictionary behavior of classes
-			if (TryGetVariable(reference.Name, out variable)) {
-				// TODO: This results in doing a dictionary lookup to get/set the local,
-				// when it should probably be an uninitialized check / global lookup for gets
-				// and a direct set
-				if (variable.Kind == VariableKind.Global) {
-					AddReferencedGlobal(reference.Name);
-				} else if (variable.Kind == VariableKind.Local) {
-					return null;
-				}
+            // Python semantics: The variables bound local in the class
+			         // scope are accessed by name - the dictionary behavior of classes
+            if(TryGetVariable(reference.Name, out variable)){
+                // TODO: This results in doing a dictionary lookup to get/set the local,
+                // when it should probably be an uninitialized check / global lookup for gets
+                // and a direct set
+                if(variable.Kind == VariableKind.Global){
+                    AddReferencedGlobal(reference.Name);
+                }else if(variable.Kind == VariableKind.Local){
+                    return null;
+                }
 				
-				return variable;
-			}
+                return variable;
+            }
 			
-			// Try to bind in outer scopes, if we have an unqualified exec we need to leave the
-			// variables as free for the same reason that locals are accessed by name.
-			for (ScopeStatement parent = Parent; parent != null; parent = parent.Parent) {
-				if (parent.TryBindOuter(this, reference, out variable)) {
-					return variable;
-				}
-			}
+            // Try to bind in outer scopes, if we have an unqualified exec we need to leave the
+            // variables as free for the same reason that locals are accessed by name.
+            for(ScopeStatement parent = Parent; parent != null; parent = parent.Parent){
+                if(parent.TryBindOuter(this, reference, out variable))
+                    return variable;
+            }
 			
-			return null;
-		}
-	}
+            return null;
+        }
+    }
 }
 

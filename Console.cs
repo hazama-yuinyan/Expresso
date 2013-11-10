@@ -23,7 +23,7 @@ Usage: expresso file_name");
 			var interp = new Expresso.Interpreter.Interpreter();
 
 			Expresso.Interpreter.Interpreter.MainModule = ast;
-			interp.CurOpenedSourceFileName = file_name;
+			interp.CurrentOpenedSourceFileName = file_name;
 			try{
 				interp.Run(new List<object>(args));
 			}

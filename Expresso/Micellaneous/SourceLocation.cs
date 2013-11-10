@@ -22,7 +22,8 @@ namespace Expresso.Utils
 		/// <param name="index">The index in the source stream the location represents (0-based).</param>
 		/// <param name="line">The line in the source stream the location represents (1-based).</param>
 		/// <param name="column">The column in the source stream the location represents (1-based).</param>
-		public SourceLocation(int index, int line, int column) {
+		public SourceLocation(int index, int line, int column)
+        {
 			ValidateLocation(index, line, column);
 			
 			_index = index;

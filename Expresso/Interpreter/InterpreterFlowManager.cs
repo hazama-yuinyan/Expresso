@@ -144,6 +144,11 @@ namespace Expresso.Interpreter
 		}
 		#endregion
 
+        /// <summary>
+        /// Pushes a new evaluation frame against the specified node.
+        /// </summary>
+        /// <param name="node">Node.</param>
+        /// <param name="childCounter">Child counter.</param>
 		public void Push(Node node, int childCounter = 0)
 		{
 			var frame = new EvaluationFrame(node, (node is Call) ? stack.Count :
@@ -154,6 +159,10 @@ namespace Expresso.Interpreter
 				cur_scope = frame;
 		}
 
+        /// <summary>
+        /// Pushes a value on the stack.
+        /// </summary>
+        /// <param name="item">Item.</param>
 		public void PushValue(object item)
 		{
 			if(stack.Count == MaxStackSize)
@@ -162,6 +171,9 @@ namespace Expresso.Interpreter
 			stack.Add(item);
 		}
 
+        /// <summary>
+        /// Peeks the top evaluation frame.
+        /// </summary>
 		public EvaluationFrame Top()
 		{
 			if(frames.Count == 0)
@@ -170,6 +182,10 @@ namespace Expresso.Interpreter
 			return frames[frames.Count - 1];
 		}
 
+        /// <summary>
+        /// Peeks the top value on the stack.
+        /// </summary>
+        /// <returns>The value.</returns>
 		public object TopValue()
 		{
 			if(stack.Count == 0)
@@ -178,6 +194,10 @@ namespace Expresso.Interpreter
 			return stack[stack.Count - 1];
 		}
 
+        /// <summary>
+        /// Pops the top evalution frame.
+        /// </summary>
+        /// <returns>The removed evaluation frame.</returns>
 		public EvaluationFrame Pop()
 		{
 			if(frames.Count == 0)
@@ -191,6 +211,10 @@ namespace Expresso.Interpreter
 			return tmp;
 		}
 
+        /// <summary>
+        /// Pops the top value on the stack.
+        /// </summary>
+        /// <returns>The value.</returns>
 		public object PopValue()
 		{
 			if(stack.Count == 0)
@@ -201,6 +225,12 @@ namespace Expresso.Interpreter
 			return tmp;
 		}
 
+        /// <summary>
+        /// Determines whether we are currently evaluating the specified node.
+        /// That is, we have the specified node in any of the evaluation frames.
+        /// </summary>
+        /// <returns><c>true</c> if we are evaluating the specified node; otherwise, <c>false</c>.</returns>
+        /// <param name="node">Node.</param>
 		public bool IsEvaluating(Node node)
 		{
 			return frames.Any(x => x.TargetNode == node);

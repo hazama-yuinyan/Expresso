@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -49,7 +49,7 @@ using Expresso.Runtime.Operations;
  * bigint        : いわゆる多倍長整数型。C#では、BigIntegerクラスを使用。
  * rational      : 分数型。分子と分母をBigInteger型でもつため、メモリーの許す限り有理数を完璧な精度で保持できる。
  * string        : いわゆる文字列型。C#のstring型を使用。C#以外で実装する場合、文字列の比較をオブジェクトの参照の比較で行うように実装すること。
- * bytearray     : Cで言うところのchar[]型。要するにバイトの配列。C#では、char型の配列で実装。
+ * bytearray     : Cで言うところのchar[]型。要するにバイトの配列。C#では、byte型の配列で実装。
  * var(variant)  : 総称型。実装上は、どんな型の変数でも指し示すことのできるポインターや参照。
  * tuple         : Pythonなどで実装されているタプル型と同じ。長さ不変、書き換え不可な配列とも言える。
  * list          : データ構造でよく話題に上るリスト型と同じ。長さ可変、書き換え可能な配列とも言える。C#では、Listクラスで実装。
@@ -92,7 +92,7 @@ namespace Expresso.Interpreter
 
 		public static Interpreter CurRuntime{get; internal set;}
 
-		public string CurOpenedSourceFileName{get; set;}
+		public string CurrentOpenedSourceFileName{get; set;}
 
 		/// <summary>
 		/// トップレベルのコンテクスト。
@@ -109,10 +109,10 @@ namespace Expresso.Interpreter
 		/// Run the program with the "main" function as the entry point.
 		/// </summary>
 		/// <param name="args">
-		/// Arguments passed into the C#'s main function.
+        /// Arguments passed into the Expresso's main function.
 		/// </param>
 		/// <exception cref='EvalException'>
-		/// Is thrown when the eval exception.
+        /// Is thrown when an error occurs while evaluating the source code.
 		/// </exception>
 		/// <returns>The return value of the Expresso's main function</returns>
 		public object Run(List<object> args = null)
@@ -164,8 +164,8 @@ namespace Expresso.Interpreter
 		
 		public string GetRelativePathToCurrentSource(string path)
 		{
-			var last_slash_pos = this.CurOpenedSourceFileName.LastIndexOf('/');
-			var parent_dir = this.CurOpenedSourceFileName.Substring(0, last_slash_pos + 1);
+			var last_slash_pos = this.CurrentOpenedSourceFileName.LastIndexOf('/');
+			var parent_dir = this.CurrentOpenedSourceFileName.Substring(0, last_slash_pos + 1);
 			return parent_dir + path;
 		}
 
@@ -685,8 +685,6 @@ namespace Expresso.Interpreter
 							node = toplevel.Body[flow_manager.Top().ChildCounter++];
 							goto MAIN_LOOP;
 						}else{
-							flow_manager.Pop();
-
 							if(toplevel.IsModule){
 								var internals = new Dictionary<string, int>();
 								var exported = new Dictionary<string, int>();
@@ -732,6 +730,8 @@ namespace Expresso.Interpreter
 								var module_inst = new ExpressoModule(module_def);
 								context.LanguageContext.PublishModule(toplevel.ModuleName, module_inst);
 							}
+						    
+						    flow_manager.Pop();
 						}
 						break;
 					}

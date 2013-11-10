@@ -66,7 +66,7 @@ namespace Expresso.Test
 					instance.AccessMemberWithName(private_name, false);
 				}
 				catch(Exception e){
-					Assert.IsInstanceOfType(typeof(ReferenceException), e);
+					Assert.IsInstanceOf(typeof(ReferenceException), e);
 				}
 			}
 
@@ -370,7 +370,7 @@ namespace Expresso.Test
 			var parser = new Parser(new Scanner("../../sources/for_interpreter/module.exs"));
 			parser.Parse();
 			var interp = new Expresso.Interpreter.Interpreter();
-			interp.CurOpenedSourceFileName = "../../sources/for_interpreter/module.exs";
+			interp.CurrentOpenedSourceFileName = "../../sources/for_interpreter/module.exs";
 			Expresso.Interpreter.Interpreter.MainModule = parser.TopmostAst;
 			var results = interp.Run() as List<object>;
 			Assert.IsNotNull(results);

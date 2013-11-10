@@ -119,6 +119,9 @@ namespace Expresso.Compiler.Meta
 		}
 	}
 
+    /// <summary>
+    /// Represents a module in Expresso.
+    /// </summary>
 	public sealed class ModuleDefinition : BaseDefinition
 	{
 		public Dictionary<string, int> InternalMembers{
@@ -151,6 +154,9 @@ namespace Expresso.Compiler.Meta
 		}
 	}
 	
+    /// <summary>
+    /// Represents an interface.
+    /// </summary>
 	public sealed class InterfaceDefinition : BaseDefinition
 	{
 		public InterfaceDefinition(string name, Dictionary<string, int> publicMembers, object[] members, List<BaseDefinition> bases)
@@ -159,6 +165,9 @@ namespace Expresso.Compiler.Meta
 		}
 	}
 	
+    /// <summary>
+    /// Represents a class.
+    /// </summary>
 	public sealed class ClassDefinition : BaseDefinition
 	{
 		public ClassDefinition(string name, Dictionary<string, int> privateMembers, Dictionary<string, int> publicMembers,
@@ -173,6 +182,9 @@ namespace Expresso.Compiler.Meta
 		}
 	}
 	
+    /// <summary>
+    /// Represents a struct.
+    /// </summary>
 	public sealed class StructDefinition : BaseDefinition
 	{
 		public StructDefinition(string name, Dictionary<string, int> privateMembers, Dictionary<string, int> publicMembers,

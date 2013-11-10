@@ -26,7 +26,7 @@ namespace Expresso.Ast
 
         /// <summary>
         /// 関数名。
-		/// The name of the function. It can be null if this definition is for a lambda.
+        /// The name of the function. It can be null if this definition is for a lambda function.
         /// </summary>
         public string Name {
 			get{return name;}

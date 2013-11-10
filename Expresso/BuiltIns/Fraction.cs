@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Numerics;
 
 using Expresso.Runtime;
@@ -35,8 +35,7 @@ namespace Expresso.Builtins
 		/// <value>
 		/// <c>true</c> if this object represents a positive fraction; otherwise, <c>false</c>.
 		/// </value>
-		public bool IsPositive
-		{
+		public bool IsPositive{
 			get{
 				return Numerator.Sign > 0;
 			}
