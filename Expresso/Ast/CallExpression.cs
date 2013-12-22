@@ -48,22 +48,23 @@ namespace Expresso.Ast
 			args = arguments;
 		}
 
-        public override NodeType Type
-        {
-            get { return NodeType.Call; }
+        public override NodeType Type{
+            get{return NodeType.Call;}
         }
 
         public override bool Equals(object obj)
         {
             var x = obj as Call;
 
-            if (x == null) return false;
+            if(x == null)
+                return false;
 
-            if (this.args.Length != x.args.Length) return false;
+            if(this.args.Length != x.args.Length)
+                return false;
 
-            for (int i = 0; i < this.args.Length; ++i)
-            {
-                if (!this.args[i].Equals(x.args[i])) return false;
+            for(int i = 0; i < this.args.Length; ++i){
+                if(!this.args[i].Equals(x.args[i]))
+                    return false;
             }
 
             return true;
@@ -170,8 +171,8 @@ namespace Expresso.Ast
 		{
 			if(walker.Walk(this)){
 				target.Walk(walker);
-				foreach(var arg in args)
-					arg.Walk(walker);
+                foreach(var arg in args)
+                    arg.Walk(walker);
 			}
 			walker.PostWalk(this);
 		}

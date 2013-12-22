@@ -35,9 +35,8 @@ namespace Expresso.Ast
 			get{return val;}
 		}
 
-        public override NodeType Type
-        {
-            get { return NodeType.Constant; }
+        public override NodeType Type{
+            get{return NodeType.Constant;}
         }
 
 		public Constant(object value, ObjectTypes valType)
@@ -50,7 +49,8 @@ namespace Expresso.Ast
         {
             var x = obj as Constant;
 
-            if (x == null) return false;
+            if(x == null)
+                return false;
 
             return val.Equals(x.val) && val_type.Equals(x.val_type);
         }

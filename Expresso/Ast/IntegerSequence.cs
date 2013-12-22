@@ -51,16 +51,16 @@ namespace Expresso.Ast
 			step = stepExpr;
 		}
 		
-		public override NodeType Type
-        {
-            get { return NodeType.IntSequence; }
+        public override NodeType Type{
+            get{return NodeType.IntSequence;}
         }
 
         public override bool Equals(object obj)
         {
             var x = obj as IntSeqExpression;
 
-            if (x == null) return false;
+            if(x == null)
+                return false;
 
             return this.Lower == x.Lower && this.Upper == x.Upper && this.Step == x.Step;
         }

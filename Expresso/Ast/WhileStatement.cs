@@ -35,9 +35,8 @@ namespace Expresso.Ast
         /// </summary>
         public Statement Body{get; internal set;}
 
-        public override NodeType Type
-        {
-            get { return NodeType.WhileStatement; }
+        public override NodeType Type{
+            get{return NodeType.WhileStatement;}
         }
 
 		public WhileStatement()
@@ -48,7 +47,8 @@ namespace Expresso.Ast
         {
             var x = obj as WhileStatement;
 
-            if (x == null) return false;
+            if(x == null)
+                return false;
 
             return Condition == x.Condition && Body.Equals(x.Body);
         }

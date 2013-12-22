@@ -154,7 +154,7 @@ internal ScopeStatement cur_scope = null;		//the current scope of variables
 	{
 		var arg_this = Node.MakeArg("this", new TypeAnnotation(ObjectTypes.INSTANCE, className));
 		var @params = new List<Argument>{arg_this};
-		var ctor = Node.MakeFunc("constructor", @params, new Block(), TypeAnnotation.VoidType.Clone(), true);
+		var ctor = Node.MakeFunc("constructor", @params, new Block(), TypeAnnotation.VoidType.Clone(), Flags.PublicAccess);
 		return ctor;
 	}
 	
@@ -360,7 +360,8 @@ internal ScopeStatement cur_scope = null;		//the current scope of variables
 
 	void ClassDecl(out Statement stmt) {
 		Expression expr = null; var stmts = new List<Statement>(); List<Expression> decls = null;
-		string name; var base_names = new List<string>(); Statement tmp = null; bool has_ctor = false;
+		string name; var base_names = new List<Identifier>(); Statement tmp = null; bool has_ctor = false;
+		    Expresso.Ast.Flags cur_flag = Flags.PrivateAccess;
 		
 		while (!(la.kind == 0 || la.kind == 22)) {SynErr(107); Get();}
 		Expect(22);
@@ -369,11 +370,11 @@ internal ScopeStatement cur_scope = null;		//the current scope of variables
 		if (la.kind == 3) {
 			Get();
 			Expect(12);
-			base_names.Add(t.val); 
+			base_names.Add(Node.MakeIdentifier(t.val)); 
 			while (la.kind == 10) {
 				Get();
 				Expect(12);
-				base_names.Add(t.val); 
+				base_names.Add(Node.MakeIdentifier(t.val)); 
 			}
 		}
 		Expect(5);
@@ -381,28 +382,28 @@ internal ScopeStatement cur_scope = null;		//the current scope of variables
 			if (la.kind == 23 || la.kind == 24 || la.kind == 25) {
 				if (la.kind == 23) {
 					Get();
-					expr = Node.MakeConstant(ObjectTypes._LABEL_PUBLIC, null); 
+					cur_flag = Flags.PrivateAccess; 
 				} else if (la.kind == 24) {
 					Get();
-					expr = Node.MakeConstant(ObjectTypes._LABEL_PROTECTED, null); 
+					cur_flag = Flags.ProtectedAccess; 
 				} else {
 					Get();
-					expr = Node.MakeConstant(ObjectTypes._LABEL_PRIVATE, null); 
+					cur_flag = Flags.PublicAccess; 
 				}
 				Expect(3);
 				tmp = Node.MakeExprStmt(new List<Expression>{expr});
 				stmts.Add(tmp);
 				
 			} else if (la.kind == 26) {
-				ConstructorDecl(out tmp, name);
+				ConstructorDecl(out tmp, name, cur_flag);
 				stmts.Add(tmp);
 				has_ctor = true;
 				
 			} else if (la.kind == 27) {
-				MethodDecl(out tmp, name);
+				MethodDecl(out tmp, name, cur_flag);
 				stmts.Add(tmp); 
 			} else if (la.kind == 12) {
-				FieldDecl(out decls);
+				FieldDecl(out decls, cur_flag);
 				Expect(4);
 				tmp = Node.MakeExprStmt(decls);
 				stmts.Add(tmp);
@@ -466,7 +467,7 @@ internal ScopeStatement cur_scope = null;		//the current scope of variables
 		name = sb.ToString(); 
 	}
 
-	void ConstructorDecl(out Statement func, string className) {
+	void ConstructorDecl(out Statement func, string className, Expresso.Ast.Flags flag) {
 		Statement block = null; var @params = new List<Argument>();
 		Argument arg_this = null;
 		
@@ -481,11 +482,11 @@ internal ScopeStatement cur_scope = null;		//the current scope of variables
 		}
 		Expect(8);
 		Block(out block);
-		func = Node.MakeFunc("constructor", @params, (Block)block, TypeAnnotation.VoidType.Clone(), true);
+		func = Node.MakeFunc("constructor", @params, (Block)block, TypeAnnotation.VoidType.Clone(), flag);
 		
 	}
 
-	void MethodDecl(out Statement func, string className) {
+	void MethodDecl(out Statement func, string className, Expresso.Ast.Flags flag) {
 		string name; var type = TypeAnnotation.InferenceType.Clone(); Statement block = null;
 		var @params = new List<Argument>(); Argument arg_this = null;
 		
@@ -506,10 +507,10 @@ internal ScopeStatement cur_scope = null;		//the current scope of variables
 			Type(out type);
 		}
 		Block(out block);
-		func = Node.MakeFunc(name, @params, (Block)block, type); 
+		func = Node.MakeFunc(name, @params, (Block)block, type, flag); 
 	}
 
-	void FieldDecl(out List<Expression> outs ) {
+	void FieldDecl(out List<Expression> outs, Expresso.Ast.Flags flag ) {
 		string name; TypeAnnotation type = TypeAnnotation.InferenceType.Clone(); Expression rhs = null;
 		Identifier variable; outs = new List<Expression>();
 		var vars = new List<Identifier>(); var exprs = new List<Expression>();
@@ -532,7 +533,11 @@ internal ScopeStatement cur_scope = null;		//the current scope of variables
 			Get();
 			variable = Node.MakeField(name, type);
 			vars.Add(variable);
+			                if(rhs == null)
+			                    rhs = Node.MakeDefaultExpr(type);
+			                
 			exprs.Add(rhs);
+			                rhs = null;
 			
 			Expect(12);
 			name = t.val; 
@@ -551,9 +556,12 @@ internal ScopeStatement cur_scope = null;		//the current scope of variables
 		}
 		variable = Node.MakeField(name, type);
 			vars.Add(variable);
+		                    if(rhs == null)
+		                        rhs = Node.MakeDefaultExpr(type);
+		                    
 			exprs.Add(rhs);
 		
-			outs.Add(Node.MakeVarDecl(vars, exprs));
+			outs.Add(Node.MakeVarDecl(vars, exprs, flag));
 		
 	}
 
@@ -938,6 +946,9 @@ internal ScopeStatement cur_scope = null;		//the current scope of variables
 		}
 		variable = Node.MakeLocalVar(name, type);
 		vars.Add(variable);
+		                    if(rhs == null)
+		                        rhs = Node.MakeDefaultExpr(type);
+		                    
 		exprs.Add(rhs);
 		rhs = null;
 		
@@ -959,6 +970,9 @@ internal ScopeStatement cur_scope = null;		//the current scope of variables
 			}
 			variable = Node.MakeLocalVar(name, type);
 			vars.Add(variable);
+			                    if(rhs == null)
+			                        rhs = Node.MakeDefaultExpr(type);
+			                    
 			exprs.Add(rhs);
 			rhs = null;
 			
@@ -1468,7 +1482,11 @@ internal ScopeStatement cur_scope = null;		//the current scope of variables
 		var args = new List<Expression>(); Expression subscript; 
 		if (la.kind == 6) {
 			Get();
-			args.Add(null); 
+			if(expr is MemberReference)
+			                       args.Add(((MemberReference)expr).Target);
+			                   else
+			                       args.Add(Node.MakeConstant(ObjectTypes.INSTANCE, this.TopmostAst));
+			               
 			if (StartOf(8)) {
 				ArgList(ref args);
 			}

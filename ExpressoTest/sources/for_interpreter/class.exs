@@ -32,7 +32,8 @@ public:
 	}
 }
 
-def main(){
+def main()
+{
 	let a = new Test(1, 3);
 	let b = a.getX();
 	let c = a.getY();

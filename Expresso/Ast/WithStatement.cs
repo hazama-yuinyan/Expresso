@@ -38,9 +38,8 @@ namespace Expresso.Ast
 			get{return body;}
 		}
 
-        public override NodeType Type
-        {
-            get { return NodeType.WithStatement; }
+        public override NodeType Type{
+            get{return NodeType.WithStatement;}
         }
 
 		public WithStatement(Expression contextExpr, Statement bodyStmt)
@@ -53,7 +52,8 @@ namespace Expresso.Ast
         {
             var x = obj as WithStatement;
 
-            if (x == null) return false;
+            if(x == null)
+                return false;
 
             return context == x.context && body.Equals(x.body);
         }

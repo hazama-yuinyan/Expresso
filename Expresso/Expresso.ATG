@@ -116,7 +116,7 @@ COMPILER Expresso
 	{
 		var arg_this = Node.MakeArg("this", new TypeAnnotation(ObjectTypes.INSTANCE, className));
 		var @params = new List<Argument>{arg_this};
-		var ctor = Node.MakeFunc("constructor", @params, new Block(), TypeAnnotation.VoidType.Clone(), true);
+		var ctor = Node.MakeFunc("constructor", @params, new Block(), TypeAnnotation.VoidType.Clone(), Flags.PublicAccess);
 		return ctor;
 	}
 	
@@ -246,46 +246,49 @@ ModuleName<out string name>		(. var sb = new StringBuilder(); .)
   }								(. name = sb.ToString(); .).
 /*------------------------------------------------------------------------*/
 ClassDecl<out Statement stmt>		(.  Expression expr = null; var stmts = new List<Statement>(); List<Expression> decls = null;
-										string name; var base_names = new List<string>(); Statement tmp = null; bool has_ctor = false;
+										string name; var base_names = new List<Identifier>(); Statement tmp = null; bool has_ctor = false;
+                                        Expresso.Ast.Flags cur_flag = Flags.PrivateAccess;
 									.)
 =
   SYNC
   "class"
-  ident								(. name = t.val; .)
+  ident				    				(. name = t.val; .)
   [ ':'
-    ident							(. base_names.Add(t.val); .)
+    ident		    					(. base_names.Add(Node.MakeIdentifier(t.val)); .)
     { ','
-      ident							(. base_names.Add(t.val); .)
+      ident							    (. base_names.Add(Node.MakeIdentifier(t.val)); .)
     }
   ]
   '{'
-  { 
-    ( "public"						(. expr = Node.MakeConstant(ObjectTypes._LABEL_PUBLIC, null); .)
-    | "protected"					(. expr = Node.MakeConstant(ObjectTypes._LABEL_PROTECTED, null); .)
-    | "private"						(. expr = Node.MakeConstant(ObjectTypes._LABEL_PRIVATE, null); .)
+  {
+    ( "public"						    (. cur_flag = Flags.PrivateAccess; .)
+    | "protected"					    (. cur_flag = Flags.ProtectedAccess; .)
+    | "private"					    	(. cur_flag = Flags.PublicAccess; .)
     )
-    ':'								(.  tmp = Node.MakeExprStmt(new List<Expression>{expr});
-    									stmts.Add(tmp);
-    								.)
-  | ConstructorDecl<out tmp, name>	(.  stmts.Add(tmp);
-  										has_ctor = true;
-  									.)
-  | MethodDecl<out tmp, name>		(. stmts.Add(tmp); .)
-  | FieldDecl<out decls>			
-    ';'								(.  tmp = Node.MakeExprStmt(decls);
-  										stmts.Add(tmp);
-  									.)
-  | ClassDecl<out tmp>				(. stmts.Add(tmp); .)
+    ':'								    (.  tmp = Node.MakeExprStmt(new List<Expression>{expr});
+    									    stmts.Add(tmp);
+    								    .)
+  | ConstructorDecl<out tmp, name, cur_flag>
+                                        (.  stmts.Add(tmp);
+  										    has_ctor = true;
+  									    .)
+  | MethodDecl<out tmp, name, cur_flag>	(. stmts.Add(tmp); .)
+  | FieldDecl<out decls, cur_flag>			
+    ';'								    (.  tmp = Node.MakeExprStmt(decls);
+  										    stmts.Add(tmp);
+  									    .)
+  | ClassDecl<out tmp>				    (. stmts.Add(tmp); .)
   }
-  SYNC '}'							(.  if(!has_ctor){		//Define the default constructor
-  											stmts.Add(MakeDefaultCtor(name));
-  										}
-  										stmt = Node.MakeClassDef(name, base_names, stmts);
-  									.) .
+  SYNC '}'							    (.  if(!has_ctor){		//Define the default constructor
+  										    	stmts.Add(MakeDefaultCtor(name));
+  									    	}
+  										    stmt = Node.MakeClassDef(name, base_names, stmts);
+  									    .) .
 /*------------------------------------------------------------------------*/
-ConstructorDecl<out Statement func, string className>	(.  Statement block = null; var @params = new List<Argument>();
-															Argument arg_this = null;
-														.)
+ConstructorDecl<out Statement func, string className, Expresso.Ast.Flags flag>
+                                (.  Statement block = null; var @params = new List<Argument>();
+									Argument arg_this = null;
+								.)
 =
   SYNC
   "constructor"					(.  arg_this = Node.MakeArg("this", new TypeAnnotation(ObjectTypes.INSTANCE, className));
@@ -294,13 +297,14 @@ ConstructorDecl<out Statement func, string className>	(.  Statement block = null
   '('
   [ParamList<ref @params>]
   ')'
-  Block<out block> 				(. func = Node.MakeFunc("constructor", @params, (Block)block, TypeAnnotation.VoidType.Clone(), true);
+  Block<out block> 				(. func = Node.MakeFunc("constructor", @params, (Block)block, TypeAnnotation.VoidType.Clone(), flag);
   								.).
 /*------------------------------------------------------------------------*/
-MethodDecl<out Statement func, string className>  (.
-													string name; var type = TypeAnnotation.InferenceType.Clone(); Statement block = null;
-													var @params = new List<Argument>(); Argument arg_this = null;
-												  .)
+MethodDecl<out Statement func, string className, Expresso.Ast.Flags flag>
+                                (.
+									string name; var type = TypeAnnotation.InferenceType.Clone(); Statement block = null;
+									var @params = new List<Argument>(); Argument arg_this = null;
+								.)
 =
   SYNC
   "def"							(.  arg_this = Node.MakeArg("this", new TypeAnnotation(ObjectTypes.INSTANCE, className));
@@ -313,12 +317,13 @@ MethodDecl<out Statement func, string className>  (.
   [ "->"
     Type<out type>
   ]
-  Block<out block> 				(.  func = Node.MakeFunc(name, @params, (Block)block, type); .).
+  Block<out block> 				(.  func = Node.MakeFunc(name, @params, (Block)block, type, flag); .).
 /*------------------------------------------------------------------------*/
-FieldDecl<. out List<Expression> outs .> (. string name; TypeAnnotation type = TypeAnnotation.InferenceType.Clone(); Expression rhs = null;
-											Identifier variable; outs = new List<Expression>();
-								   			var vars = new List<Identifier>(); var exprs = new List<Expression>();
-										 .)
+FieldDecl<. out List<Expression> outs, Expresso.Ast.Flags flag .>
+  (. string name; TypeAnnotation type = TypeAnnotation.InferenceType.Clone(); Expression rhs = null;
+	 Identifier variable; outs = new List<Expression>();
+	 var vars = new List<Identifier>(); var exprs = new List<Expression>();
+  .)
 = 
   ident							(. name = t.val; .)
   [ "(-"
@@ -332,7 +337,11 @@ FieldDecl<. out List<Expression> outs .> (. string name; TypeAnnotation type = T
   ]
   { ','					 		(.  variable = Node.MakeField(name, type);
  						 			vars.Add(variable);
+                                    if(rhs == null)
+                                        rhs = Node.MakeDefaultExpr(type);
+                                    
   						 			exprs.Add(rhs);
+                                    rhs = null;
   						 		.)
     ident						(. name = t.val; .)
   	[ "(-"
@@ -346,9 +355,12 @@ FieldDecl<. out List<Expression> outs .> (. string name; TypeAnnotation type = T
   	]
   }								(.  variable = Node.MakeField(name, type);
   					   	   			vars.Add(variable);
+                                    if(rhs == null)
+                                        rhs = Node.MakeDefaultExpr(type);
+                                    
   					   	   			exprs.Add(rhs);
   					   
-  					   	   			outs.Add(Node.MakeVarDecl(vars, exprs));
+  					   	   			outs.Add(Node.MakeVarDecl(vars, exprs, flag));
   								.).
 /*------------------------------------------------------------------------*/
 Type<out TypeAnnotation type>		(. type = TypeAnnotation.InferenceType.Clone(); .)
@@ -626,6 +638,9 @@ VarDecl<. out List<Expression> outs .> 	(.  string name; var type = TypeAnnotati
     )
   ]								(.  variable = Node.MakeLocalVar(name, type);
  						 			vars.Add(variable);
+                                    if(rhs == null)
+                                        rhs = Node.MakeDefaultExpr(type);
+                                    
   						 			exprs.Add(rhs);
   						 			rhs = null;
   						 		.)
@@ -641,6 +656,9 @@ VarDecl<. out List<Expression> outs .> 	(.  string name; var type = TypeAnnotati
 	  )
   	]							(.  variable = Node.MakeLocalVar(name, type);
   									vars.Add(variable);
+                                    if(rhs == null)
+                                        rhs = Node.MakeDefaultExpr(type);
+                                    
   									exprs.Add(rhs);
   									rhs = null;
   								.)
@@ -859,7 +877,11 @@ NewExpression<out Expression expr>		(. var args = new List<Expression>(); .)
 /*------------------------------------------------------------------------*/
 Trailer<ref Expression expr>	(. var args = new List<Expression>(); Expression subscript; .)
 =
-  '('							(. args.Add(null); .)
+  '('							(.  if(expr is MemberReference)
+                                        args.Add(((MemberReference)expr).Target);
+                                    else
+                                        args.Add(Node.MakeConstant(ObjectTypes.INSTANCE, this.TopmostAst));
+                                .)
   [ArgList<ref args>]
   ')'							(. expr = Node.MakeCallExpr(expr, args); .)
   | '['

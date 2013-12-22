@@ -21,16 +21,16 @@ namespace Expresso.Ast
 		{
 		}
 
-        public override NodeType Type
-        {
-            get { return NodeType.EmptyStatement; }
+        public override NodeType Type{
+            get{return NodeType.EmptyStatement;}
         }
 
         public override bool Equals(object obj)
         {
             var x = obj as EmptyStatement;
 
-            if (x == null) return false;
+            if(x == null)
+                return false;
 
             return true;
         }

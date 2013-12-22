@@ -19,24 +19,24 @@ namespace Expresso.Ast
         /// チェックする式。
         /// The test.
         /// </summary>
-        public Expression Test { get; internal set; }
+        public Expression Test{get; internal set;}
 
         /// <summary>
         /// Testがfalseになった時に表示するメッセージ。
 		/// The message that will be displayed if the test fails.
         /// </summary>
-        public Expression Message { get; internal set; }
+        public Expression Message{get; internal set;}
 
-        public override NodeType Type
-        {
-            get { return NodeType.AssertStatement; }
+        public override NodeType Type{
+            get{return NodeType.AssertStatement;}
         }
 
         public override bool Equals(object obj)
         {
             var x = obj as AssertStatement;
 
-            if (x == null) return false;
+            if(x == null)
+                return false;
 
             return this.Test.Equals(x.Test)
                 && this.Message.Equals(x.Message);

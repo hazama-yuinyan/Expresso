@@ -35,9 +35,8 @@ namespace Expresso.Ast
 			get{return cases;}
 		}
 
-        public override NodeType Type
-        {
-            get { return NodeType.SwitchStatement; }
+        public override NodeType Type{
+            get{return NodeType.SwitchStatement;}
         }
 
 		public SwitchStatement(Expression targetExpr, CaseClause[] caseClauses)
@@ -50,7 +49,8 @@ namespace Expresso.Ast
         {
             var x = obj as SwitchStatement;
 
-            if (x == null) return false;
+            if(x == null)
+                return false;
 
             return target == x.target && cases.Equals(x.cases);
         }
@@ -115,9 +115,8 @@ namespace Expresso.Ast
 			get{return body;}
 		}
 
-        public override NodeType Type
-        {
-            get { return NodeType.CaseClause; }
+        public override NodeType Type{
+            get{return NodeType.CaseClause;}
         }
 
 		public CaseClause(Expression[] labelExprs, Statement bodyStmt)
@@ -130,7 +129,8 @@ namespace Expresso.Ast
         {
             var x = obj as CaseClause;
 
-            if (x == null) return false;
+            if(x == null)
+                return false;
 
             return this.Labels.Equals(x.Labels)
                 && this.Body.Equals(x.Body);

@@ -37,9 +37,8 @@ namespace Expresso.Ast
 			get{return type;}
 		}
 
-		public override NodeType Type
-        {
-            get { return NodeType.Comprehension; }
+        public override NodeType Type{
+            get{return NodeType.Comprehension;}
         }
 
 		public Comprehension(Expression itemExpr, ComprehensionFor bodyExpr, ObjectTypes objType)
@@ -53,7 +52,8 @@ namespace Expresso.Ast
         {
             var x = obj as Comprehension;
 
-            if (x == null) return false;
+            if(x == null)
+                return false;
 
             return body.Equals(x.body) && item.Equals(x.item);
         }
@@ -163,9 +163,8 @@ namespace Expresso.Ast
 			get{return body;}
 		}
 
-        public override NodeType Type
-        {
-            get { return NodeType.ComprehensionFor; }
+        public override NodeType Type{
+            get{return NodeType.ComprehensionFor;}
         }
 
 		public ComprehensionFor(SequenceExpression lhs, Expression targetExpr, ComprehensionIter bodyExpr)
@@ -175,8 +174,7 @@ namespace Expresso.Ast
 			body = bodyExpr;
 		}
 
-		public override IEnumerable<Identifier> LocalVariables
-		{
+        public override IEnumerable<Identifier> LocalVariables{
 			get{
 				/*var inner = (Body == null) ? Enumerable.Empty<Identifier>() : Body.LocalVariables;
 				var on_this =
@@ -192,7 +190,8 @@ namespace Expresso.Ast
         {
             var x = obj as ComprehensionFor;
 
-            if (x == null) return false;
+            if(x == null)
+                return false;
 
             return this.Left.Equals(x.Left) && this.Target.Equals(x.Target) && this.Body.Equals(x.Body);
         }
@@ -269,9 +268,8 @@ namespace Expresso.Ast
 			get{return body;}
 		}
 
-        public override NodeType Type
-        {
-            get { return NodeType.ComprehensionIf; }
+        public override NodeType Type{
+            get{return NodeType.ComprehensionIf;}
         }
 
 		public ComprehensionIf(Expression test, ComprehensionIter bodyExpr)
@@ -280,8 +278,8 @@ namespace Expresso.Ast
 			body = bodyExpr;
 		}
 
-		public override IEnumerable<Identifier> LocalVariables {
-			get {
+        public override IEnumerable<Identifier> LocalVariables{
+			get{
 				return (Body == null) ? Enumerable.Empty<Identifier>() : Body.LocalVariables;
 			}
 		}
@@ -290,7 +288,8 @@ namespace Expresso.Ast
         {
             var x = obj as ComprehensionIf;
 
-            if (x == null) return false;
+            if(x == null)
+                return false;
 
             return this.Body.Equals(x.Body) && this.Condition.Equals(x.Condition);
         }

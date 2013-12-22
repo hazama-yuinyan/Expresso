@@ -231,7 +231,8 @@ namespace Expresso.Ast
 			node.ExpressoVariable = DefineName(node.Name, type);
 			
 			// Base references are in the outer context
-			//foreach (Expression b in node.Bases) b.Walk(this);
+			foreach(Expression b in node.Bases)
+                b.Walk(this);
 			
 			// process the decorators in the outer context
 			/*if (node.Decorators != null) {

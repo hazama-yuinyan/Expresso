@@ -3,7 +3,8 @@
  */
 
 
-def main(){
+def main()
+{
 	let x = 100, y = 200, z = 300, w = 400;
 	let flag (- bool;
 

@@ -10,6 +10,10 @@ namespace Expresso.Ast
 {
     using CSharpExpr = System.Linq.Expressions.Expression;
 
+    /// <summary>
+    /// 型の種類を表す。
+    /// Represents the kind of the type definition.
+    /// </summary>
     public enum DeclType{
         Class,
         Interface,
@@ -24,7 +28,6 @@ namespace Expresso.Ast
     public class TypeDefinition : ScopeStatement
     {
         string name;
-        string[] base_names;
         Statement[] body;
         DeclType target_type;
 
@@ -41,14 +44,11 @@ namespace Expresso.Ast
         }
 
         /// <summary>
-        /// 継承元の型名。
-        /// The names of the base types.
+        /// 継承元の型定義を参照する識別子。
+        /// Identifiers for the base types.
         /// </summary>
-        public string[] BaseNames{
-            get{return base_names;}
-        }
-
-        public TypeDefinition[] Bases{get; internal set;}
+        /// <value>The bases.</value>
+        public Identifier[] Bases{get; internal set;}
 
         /// <summary>
         /// メンバの定義式郡。
@@ -69,11 +69,11 @@ namespace Expresso.Ast
             get{return NodeType.TypeDef;}
         }
 
-        public TypeDefinition(string typeName, Statement[] bodyStmts, DeclType type, string[] basesList)
+        public TypeDefinition(string typeName, Statement[] bodyStmts, DeclType type, Identifier[] basesList)
         {
             name = typeName;
             body = bodyStmts;
-            base_names = basesList;
+            Bases = basesList;
             target_type = type;
         }
 
@@ -81,7 +81,7 @@ namespace Expresso.Ast
         {
             var x = obj as TypeDefinition;
 
-            if (x == null) return false;
+            if(x == null) return false;
 
             return this.target_type == x.target_type && this.name == x.name && this.body.Equals(x.body);
         }

@@ -63,9 +63,8 @@ namespace Expresso.Ast
 		/// </summary>
 		internal bool Assigned{get; set;}
 
-        public override NodeType Type
-        {
-            get { return NodeType.Identifier; }
+        public override NodeType Type{
+            get{return NodeType.Identifier;}
         }
 
 		internal Identifier(string identName, ExpressoReference reference)
@@ -78,7 +77,8 @@ namespace Expresso.Ast
         {
             var x = obj as Identifier;
 
-            if (x == null) return false;
+            if(x == null)
+                return false;
 
             return this.name == x.name;
         }

@@ -59,16 +59,16 @@ namespace Expresso.Ast
         /// </summary>
         public Statement Body{get; internal set;}
 
-        public override NodeType Type
-        {
-            get { return NodeType.ForStatement; }
+        public override NodeType Type{
+            get{return NodeType.ForStatement;}
         }
 
         public override bool Equals(object obj)
         {
             var x = obj as ForStatement;
 
-            if (x == null) return false;
+            if(x == null)
+                return false;
 			
 			return Left.Equals(x.Left) && Target.Equals(x.Target) && Body.Equals(x.Body);
         }

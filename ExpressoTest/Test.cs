@@ -66,7 +66,7 @@ namespace Expresso.Test
 					instance.AccessMemberWithName(private_name, false);
 				}
 				catch(Exception e){
-					Assert.IsInstanceOf(typeof(ReferenceException), e);
+                    Assert.IsInstanceOfType(typeof(ReferenceException), e);
 				}
 			}
 
@@ -102,7 +102,7 @@ namespace Expresso.Test
 			parser.Parse();
 			var interp = new Expresso.Interpreter.Interpreter();
 			Expresso.Interpreter.Interpreter.MainModule = parser.TopmostAst;
-			interp.Run(parser.TopmostAst, false);
+            interp.Run(parser.TopmostAst, true);
 			var main_module = interp.GlobalContext.GetModule("simple_literals");
 
 			var expected = new object[]{
@@ -274,6 +274,8 @@ namespace Expresso.Test
 				expected_d,
 				expected_c[2]	//e
 			};
+
+            Helpers.DoTest(results, expected);
 		}
 
 		[Test]

@@ -37,9 +37,8 @@ namespace Expresso.Ast
 			get{return type;}
 		}
 
-        public override NodeType Type
-        {
-            get { return NodeType.Initializer; }
+        public override NodeType Type{
+            get{return NodeType.Initializer;}
         }
 
 		public SequenceInitializer(Expression[] seqItems, ObjectTypes objType)
@@ -52,7 +51,8 @@ namespace Expresso.Ast
         {
             var x = obj as SequenceInitializer;
 
-            if (x == null) return false;
+            if(x == null)
+                return false;
 			
 			return items.Equals(x.items);
         }

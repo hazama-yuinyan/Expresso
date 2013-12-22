@@ -25,9 +25,8 @@ namespace Expresso.Ast
 			get{return expr;}
 		}
 
-        public override NodeType Type
-        {
-            get { return NodeType.Return; }
+        public override NodeType Type{
+            get{return NodeType.Return;}
         }
 
 		public ReturnStatement(Expression expression)
@@ -39,7 +38,8 @@ namespace Expresso.Ast
         {
             var x = obj as ReturnStatement;
 
-            if (x == null) return false;
+            if(x == null)
+                return false;
 
             return expr.Equals(x.expr);
         }

@@ -34,9 +34,8 @@ namespace Expresso.Ast
 			get{return subscription;}
 		}
 
-        public override NodeType Type
-        {
-            get { return NodeType.MemRef; }
+        public override NodeType Type{
+            get{return NodeType.MemRef;}
         }
 
 		public MemberReference(Expression targetExpr, Expression subscriptExpr)
@@ -49,7 +48,8 @@ namespace Expresso.Ast
         {
             var x = obj as MemberReference;
 
-            if (x == null) return false;
+            if(x == null)
+                return false;
 
             return this.target.Equals(x.target) && this.subscription.Equals(x.subscription);
         }

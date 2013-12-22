@@ -10,13 +10,14 @@ namespace Expresso.Ast
 	using CSharpExpr = System.Linq.Expressions.Expression;
 
 	/// <summary>
-	/// 変数宣言式。
-	/// The variable declaration.
+    /// 変数宣言式。 型定義文のメンバー宣言にも利用される。
+    /// The variable declaration. It can also represent member definitions.
 	/// </summary>
-	public class VarDeclaration : Expression
+    public class VarDeclaration : Expression, IFlaggable
 	{
 		Identifier[] left;
 		Expression[] expressions;
+        Flags flag;
 
 		/// <summary>
 		/// 代入先の左辺値の式。
@@ -35,22 +36,42 @@ namespace Expresso.Ast
 			get{return expressions;}
 		}
 
-        public override NodeType Type
-        {
-            get { return NodeType.VarDecl; }
+        public override NodeType Type{
+            get{return NodeType.VarDecl;}
         }
 
-		public VarDeclaration(Identifier[] lhs, Expression[] rhs)
+        public VarDeclaration(Identifier[] lhs, Expression[] rhs, Flags flag)
 		{
 			left = lhs;
 			expressions = rhs;
+            this.flag = flag;
 		}
+
+        #region IFlaggable implementation
+
+        public bool HasFlag(Flags flag)
+        {
+            return (this.flag & flag) == flag;
+        }
+
+        public Flags Flag{
+            get{
+                return flag;
+            }
+
+            set{
+                flag |= value;
+            }
+        }
+
+        #endregion
 
         public override bool Equals(object obj)
         {
             var x = obj as VarDeclaration;
 
-            if (x == null) return false;
+            if(x == null)
+                return false;
 
             return expressions.Equals(x.expressions) && left.Equals(x.left);
         }

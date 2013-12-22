@@ -25,7 +25,7 @@ namespace Expresso.Ast
         /// 例外の捕捉を行うブロック。
 		/// The block in which we'll catch exceptions.
         /// </summary>
-        public Block Body {
+        public Block Body{
 			get{return body;}
 		}
 
@@ -47,9 +47,8 @@ namespace Expresso.Ast
 			get{return finally_clause;}
 		}
 
-        public override NodeType Type
-        {
-            get { return NodeType.TryStatement; }
+        public override NodeType Type{
+            get{return NodeType.TryStatement;}
         }
 
 		public TryStatement(Block bodyBlock, CatchClause[] catches, FinallyClause finallyClause)
@@ -63,7 +62,8 @@ namespace Expresso.Ast
         {
             var x = obj as TryStatement;
 
-            if (x == null) return false;
+            if(x == null)
+                return false;
 
             return body == x.body
                 && handlers.Equals(x.handlers) && finally_clause == x.finally_clause;
@@ -155,9 +155,8 @@ namespace Expresso.Ast
 			get{return body;}
 		}
 
-        public override NodeType Type
-        {
-            get { return NodeType.CatchClause; }
+        public override NodeType Type{
+            get{return NodeType.CatchClause;}
         }
 
 		public CatchClause(Identifier catcher, Block bodyBlock)
@@ -170,7 +169,8 @@ namespace Expresso.Ast
         {
             var x = obj as CatchClause;
 
-            if (x == null) return false;
+            if(x == null)
+                return false;
 
             return handler.Equals(x.handler) && body.Equals(x.body);
         }
@@ -215,9 +215,8 @@ namespace Expresso.Ast
 			get{return body;}
 		}
 
-        public override NodeType Type
-        {
-            get { return NodeType.FinallyClause; }
+        public override NodeType Type{
+            get{return NodeType.FinallyClause;}
         }
 
 		public FinallyClause(Block bodyBlock)
@@ -229,7 +228,8 @@ namespace Expresso.Ast
         {
             var x = obj as FinallyClause;
 
-            if (x == null) return false;
+            if(x == null)
+                return false;
 
             return body.Equals(x.body);
         }

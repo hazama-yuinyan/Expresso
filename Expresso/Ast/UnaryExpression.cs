@@ -35,8 +35,8 @@ namespace Expresso.Ast
 			get{return operand;}
 		}
 
-		public override NodeType Type {
-			get { return NodeType.UnaryExpression; }
+		public override NodeType Type{
+			get{return NodeType.UnaryExpression;}
 		}
 
 		public UnaryExpression(OperatorType opType, Expression target)
@@ -49,7 +49,7 @@ namespace Expresso.Ast
 		{
 			var x = obj as UnaryExpression;
 
-			if (x == null)
+			if(x == null)
 				return false;
 
 			return ope == x.ope && operand.Equals(x.operand);

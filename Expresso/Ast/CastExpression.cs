@@ -33,9 +33,8 @@ namespace Expresso.Ast
 			get{return target;}
 		}
 
-        public override NodeType Type
-        {
-            get { return NodeType.CastExpression; }
+        public override NodeType Type{
+            get{return NodeType.CastExpression;}
         }
 
 		public CastExpression(Expression toExpr, Expression targetExpr)
@@ -48,7 +47,8 @@ namespace Expresso.Ast
         {
             var x = obj as CastExpression;
 
-            if (x == null) return false;
+            if(x == null)
+                return false;
 
             return this.to_expr == x.to_expr && this.target.Equals(x.target);
         }

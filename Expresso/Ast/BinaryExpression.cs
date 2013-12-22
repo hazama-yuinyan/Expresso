@@ -46,9 +46,8 @@ namespace Expresso.Ast
 			get{return rhs;}
 		}
 
-        public override NodeType Type
-        {
-            get { return NodeType.BinaryExpression; }
+        public override NodeType Type{
+            get{return NodeType.BinaryExpression;}
         }
 
 		public BinaryExpression(Expression left, Expression right, OperatorType opType)
@@ -62,7 +61,8 @@ namespace Expresso.Ast
         {
             var x = obj as BinaryExpression;
 
-            if (x == null) return false;
+            if(x == null)
+                return false;
 
             return this.ope == x.ope
                 && this.rhs.Equals(x.lhs)

@@ -98,7 +98,8 @@ namespace Expresso.Ast
         {
             var x = obj as ExpressoAst;
 
-            if (x == null) return false;
+            if(x == null)
+                return false;
 
             return this.name == x.name && this.body.Equals(x.body);
         }

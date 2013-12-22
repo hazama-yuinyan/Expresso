@@ -42,9 +42,8 @@ namespace Expresso.Ast
 			get{return false_expr;}
 		}
 
-        public override NodeType Type
-        {
-            get { return NodeType.ConditionalExpression; }
+        public override NodeType Type{
+            get{return NodeType.ConditionalExpression;}
         }
 
 		public ConditionalExpression(Expression test, Expression trueExpr, Expression falseExpr)
@@ -58,7 +57,8 @@ namespace Expresso.Ast
         {
             var x = obj as ConditionalExpression;
 
-            if (x == null) return false;
+            if(x == null)
+                return false;
 
             return this.condition == x.condition
                 && this.true_expr.Equals(x.true_expr)

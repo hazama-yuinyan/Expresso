@@ -37,9 +37,8 @@ namespace Expresso.Ast
 			get{return args;}
 		}
 
-        public override NodeType Type
-        {
-            get { return NodeType.New; }
+        public override NodeType Type{
+            get{return NodeType.New;}
         }
 
 		public NewExpression(Expression targetExpr, Expression[] arguments)
@@ -52,7 +51,8 @@ namespace Expresso.Ast
         {
             var x = obj as NewExpression;
 
-            if (x == null) return false;
+            if(x == null)
+                return false;
 
             return this.target == x.target;
         }

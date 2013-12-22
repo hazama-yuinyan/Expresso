@@ -29,16 +29,16 @@ namespace Expresso.Ast
 			target = targetType;
 		}
 
-        public override NodeType Type
-        {
-            get { return NodeType.DefaultExpression; }
+        public override NodeType Type{
+            get{return NodeType.DefaultExpression;}
         }
 
         public override bool Equals(object obj)
         {
             var x = obj as DefaultExpression;
 
-            if (x == null) return false;
+            if(x == null)
+                return false;
 
             return target == x.target;
         }
@@ -61,7 +61,7 @@ namespace Expresso.Ast
 
 		public override string ToString()
 		{
-			return string.Format("[Default expression]");
+            return string.Format("[Default expression for {0}]", TargetType.ObjType);
 		}
     }
 }

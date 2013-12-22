@@ -16,10 +16,9 @@ namespace Expresso.Ast
 	{
 		protected bool can_continue = true;
 
-		public bool CanContinue
-		{
-			get {return this.can_continue;}
-			internal set {this.can_continue = value;}
+        public bool CanContinue{
+			get{return this.can_continue;}
+			internal set{this.can_continue = value;}
 		}
 	}
 
@@ -48,9 +47,8 @@ namespace Expresso.Ast
 			get{return enclosings;}
 		}
 
-		public override NodeType Type
-        {
-            get { return NodeType.BreakStatement; }
+        public override NodeType Type{
+            get{return NodeType.BreakStatement;}
         }
 
 		public BreakStatement(int loopCount, BreakableStatement[] loops)
@@ -63,7 +61,8 @@ namespace Expresso.Ast
         {
             var x = obj as BreakStatement;
 
-            if (x == null) return false;
+            if(x == null)
+                return false;
 			
 			return count.Equals(x.count);
         }
@@ -123,9 +122,8 @@ namespace Expresso.Ast
 			get{return enclosings;}
 		}
 
-		public override NodeType Type
-        {
-            get { return NodeType.ContinueStatement; }
+        public override NodeType Type{
+            get{return NodeType.ContinueStatement;}
         }
 
 		public ContinueStatement(int loopCount, BreakableStatement[] loops)
@@ -138,7 +136,8 @@ namespace Expresso.Ast
         {
             var x = obj as ContinueStatement;
 
-            if (x == null) return false;
+            if(x == null)
+                return false;
 			
 			return count.Equals(x.count);
         }

@@ -27,9 +27,8 @@ namespace Expresso.Ast
 
 		internal bool InFinally{get; set;}
 
-        public override NodeType Type
-        {
-            get { return NodeType.ThrowStatement; }
+        public override NodeType Type{
+            get{return NodeType.ThrowStatement;}
         }
 
 		public ThrowStatement(Expression expression)
@@ -41,7 +40,8 @@ namespace Expresso.Ast
         {
             var x = obj as ThrowStatement;
 
-            if (x == null) return false;
+            if(x == null)
+                return false;
 
             return expr.Equals(x.expr);
         }

@@ -29,30 +29,29 @@ namespace Expresso.Ast
         /// ブロック中で定義された変数一覧。
 		/// The local variables defined in the block.
         /// </summary>
-        public IEnumerable<Identifier> LocalVariables
-        {
-            get
-            {
+        public IEnumerable<Identifier> LocalVariables{
+            get{
                 return CollectLocalVars();
             }
         }
 
-        public override NodeType Type
-        {
-            get { return NodeType.Block; }
+        public override NodeType Type{
+            get{return NodeType.Block;}
         }
 
         public override bool Equals(object obj)
         {
             var x = obj as Block;
 
-            if (x == null) return false;
+            if(x == null)
+                return false;
 
-            if (this.Statements.Count != x.Statements.Count) return false;
+            if(this.Statements.Count != x.Statements.Count)
+                return false;
 
-            for (int i = 0; i < this.Statements.Count; i++)
-            {
-                if (!this.Statements[i].Equals(x.Statements[i])) return false;
+            for(int i = 0; i < this.Statements.Count; i++){
+                if(!this.Statements[i].Equals(x.Statements[i]))
+                    return false;
             }
 
             return true;
@@ -92,7 +91,7 @@ namespace Expresso.Ast
 		{
 			var vars = 
 				from p in Statements
-					where p.Type == NodeType.ExprStatement || p.Type == NodeType.ForStatement || p.Type == NodeType.IfStatement ||
+                    where p.Type == NodeType.ExprStatement || p.Type == NodeType.ForStatement || p.Type == NodeType.IfStatement ||
 						p.Type == NodeType.SwitchStatement || p.Type == NodeType.WhileStatement || p.Type == NodeType.TryStatement
 					select ImplementationHelpers.CollectLocalVars(p) into t
 					from q in t

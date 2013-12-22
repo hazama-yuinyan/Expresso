@@ -202,14 +202,16 @@ namespace Expresso.Ast
 			return new CaseClause(labels.ToArray(), body);
 		}
 		
-		static internal FunctionDefinition MakeFunc(string name, IEnumerable<Argument> parameters, Block body, TypeAnnotation returnType, bool isStatic = false)
+		static internal FunctionDefinition MakeFunc(string name, IEnumerable<Argument> parameters, Block body,
+            TypeAnnotation returnType, Flags flag = Flags.None)
 		{
-			return new FunctionDefinition(name, parameters.ToArray(), body, returnType, isStatic);
+            return new FunctionDefinition(name, parameters.ToArray(), body, returnType, flag);
 		}
 		
-		static internal FunctionDefinition MakeClosure(string name, IEnumerable<Argument> parameters, Block body, TypeAnnotation returnType, Stack<object> environ)
+		static internal FunctionDefinition MakeClosure(string name, IEnumerable<Argument> parameters, Block body,
+            TypeAnnotation returnType, Stack<object> environ)
 		{
-			return new FunctionDefinition(name, parameters.ToArray(), body, returnType, false, environ);
+            return new FunctionDefinition(name, parameters.ToArray(), body, returnType, Flags.None, environ);
 		}
 
 		static internal Call MakeCallExpr(Expression target, IEnumerable<Expression> args)
@@ -227,7 +229,7 @@ namespace Expresso.Ast
 			return new Identifier(name, new ExpressoReference(name, new ExpressoVariable(name, type, VariableKind.Local)));
 		}
 
-		static internal Identifier MakeField(string name, TypeAnnotation type)
+        static internal Identifier MakeField(string name, TypeAnnotation type)
 		{
 			return new Identifier(name, new ExpressoReference(name, new ExpressoVariable(name, type, VariableKind.Field)));
 		}
@@ -312,12 +314,13 @@ namespace Expresso.Ast
 			return new IntSeqExpression(start, end, step);
 		}
 
-		static internal VarDeclaration MakeVarDecl(IEnumerable<Identifier> lhs, IEnumerable<Expression> rhs)
+        static internal VarDeclaration MakeVarDecl(IEnumerable<Identifier> lhs, IEnumerable<Expression> rhs,
+            Flags flag = Flags.None)
 		{
-			return new VarDeclaration(lhs.ToArray(), rhs.ToArray());
+            return new VarDeclaration(lhs.ToArray(), rhs.ToArray(), flag);
 		}
 		
-		static internal TypeDefinition MakeClassDef(string className, IEnumerable<string> bases, IEnumerable<Statement> decls)
+        static internal TypeDefinition MakeClassDef(string className, IEnumerable<Identifier> bases, IEnumerable<Statement> decls)
 		{
 			return new TypeDefinition(className, decls.ToArray(), Expresso.Ast.DeclType.Class, bases.ToArray());
 		}
@@ -365,6 +368,11 @@ namespace Expresso.Ast
 		{
 			return new YieldStatement(expr);
 		}
+
+        static internal DefaultExpression MakeDefaultExpr(TypeAnnotation targetType)
+        {
+            return new DefaultExpression(targetType);
+        }
 		#endregion
     }
 }

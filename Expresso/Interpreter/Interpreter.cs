@@ -154,9 +154,9 @@ namespace Expresso.Interpreter
 			if(node == null)
 				throw new ArgumentNullException("node", "Can not evaluate a null node.");
 
-			if(useShared)
-				return Interpret(node, global_context.SharedContext);
-			else{
+            if(useShared){
+                return Interpret(node, global_context.SharedContext);
+            }else{
 				var mod_context = new ModuleContext(new Dictionary<object, object>(), global_context);
 				return Interpret(node, mod_context.GlobalContext);
 			}
@@ -182,7 +182,7 @@ namespace Expresso.Interpreter
 						node = ((Argument)node).Option;
 						goto MAIN_LOOP;
 
-					case NodeType.AssertStatement:
+                    case NodeType.AssertStatement:  //TODO:実装する
 						break;
 
 					case NodeType.Assignment:
@@ -407,16 +407,16 @@ namespace Expresso.Interpreter
 					{
 						var catch_clause = (CatchClause)node;
 						var exception = flow_manager.TopValue() as ExpressoThrowException;
-						if(exception == null)
+                        if(exception == null){
 							throw ExpressoOps.SystemError("The top value of stack is not an exception.");
-						else if(catch_clause.Catcher.ParamType.TypeName == exception.Thrown.Name){
+                        }else if(catch_clause.Catcher.ParamType.TypeName == exception.Thrown.Name){
 							node = catch_clause.Body;
 							goto case NodeType.Block;
 						}
 						break;
 					}
 
-					case NodeType.Comprehension:
+                    case NodeType.Comprehension:  //TODO:実装する
 					{
 						break;
 					}
@@ -428,6 +428,32 @@ namespace Expresso.Interpreter
 
 					case NodeType.ComprehensionIf:
 					{
+                        var comp_if = (ComprehensionIf)node;
+                        if(!flow_manager.IsEvaluating(comp_if))
+                            flow_manager.Push(comp_if);
+
+                        switch(flow_manager.Top().StepCounter){
+                        case 0:
+                            node = comp_if.Condition;
+                            flow_manager.Top().StepCounter++;
+                            goto MAIN_LOOP;
+
+                        case 1:
+                            var cond = flow_manager.TopValue();
+                            if(!(cond is bool))
+                                throw ExpressoOps.InvalidTypeError("Can not evaluate the expression to a boolean.");
+
+                            if((bool)cond){
+                                var yield_expr = flow_manager.Top().Get(0) as Expression;
+                                node = (comp_if.Body == null) ? yield_expr : comp_if.Body;
+                                flow_manager.Pop();
+                                goto MAIN_LOOP;
+                            }else{
+                                flow_manager.Pop();
+                            }
+                            break;
+                        }
+
 						break;
 					}
 
@@ -459,6 +485,13 @@ namespace Expresso.Interpreter
 						}
 						break;
 					}
+
+                    case NodeType.DefaultExpression:
+                    {
+                        var default_expr = (DefaultExpression)node;
+                        flow_manager.PushValue(ExpressoOps.GetDefaultValueFor(default_expr.TargetType.ObjType));
+                        break;
+                    }
 
 					case NodeType.ExprStatement:
 					{
@@ -543,11 +576,11 @@ namespace Expresso.Interpreter
 					case NodeType.Identifier:
 					{
 						var ident = (Identifier)node;
-						if(ident.ParamType.ObjType == ObjectTypes._SUBSCRIPT)
+                        if(ident.ParamType.ObjType == ObjectTypes._SUBSCRIPT){
 							flow_manager.PushValue(ident);
-						else if(ident.IsResolved)
+                        }/*else if(ident.IsResolved){
 							flow_manager.Top().Dup(ident.Offset);
-						else if(ident.ParamType.ObjType == ObjectTypes.TYPE_CLASS){
+                        }*/else if(ident.ParamType.ObjType == ObjectTypes.TYPE_CLASS){
 							var cur_module = flow_manager.Top().Get(0) as ExpressoObj;
 							if(cur_module == null)
 								throw ExpressoOps.RuntimeError("\"this\" doesn't refer to the enclosing class instance.");
@@ -623,6 +656,8 @@ namespace Expresso.Interpreter
 									else
 										values.Add(flow_manager.PopValue());
 								}
+                                keys.Reverse();     //スタックからポップした順番では逆順になってしまうので、順序を入れ替える
+                                values.Reverse();
 								flow_manager.PushValue(ExpressoOps.MakeDict(keys, values));
 								break;
 							}
@@ -676,7 +711,7 @@ namespace Expresso.Interpreter
 					}
 
 					case NodeType.Toplevel:
-					{
+                    {
 						var toplevel = (ExpressoAst)node;
 						if(!flow_manager.IsEvaluating(toplevel))
 							flow_manager.Push(toplevel);
@@ -703,10 +738,10 @@ namespace Expresso.Interpreter
 											var var_decls = (VarDeclaration)expr_stmt.Expressions[0];
 											
 											for(int j = 0; j < var_decls.Left.Length; ++j){
-												val = flow_manager.Top().Get(offset);
-												decl_target.Add(var_decls.Left[i].Name, offset++);
+                                                val = flow_manager.Top().Get(offset);
+                                                decl_target.Add(var_decls.Left[j].Name, offset++);
 												members.Add(val);
-												val = flow_manager.Top().Get(offset);
+                                                //val = flow_manager.Top().Get(offset);
 												//varStore.Add(var_decls.Variables[i].Offset, obj);	//モジュールスコープの変数ストアにも実体を追加しておく
 											}
 										}else{
@@ -786,9 +821,9 @@ namespace Expresso.Interpreter
 							var module_parser = new Parser(new Scanner(path));
 							module_parser.ParsingFileName = module_name;
 							module_parser.Parse();
+                            Interpret(module_parser.TopmostAst, context);
 						}
 						
-						//module_parser.TopmostAst.Run(varStore);
 						break;
 					}
 
@@ -966,12 +1001,99 @@ namespace Expresso.Interpreter
 						if(!flow_manager.IsEvaluating(type_def))
 							flow_manager.Push(type_def);
 
-						if(flow_manager.Top().ChildCounter < type_def.Body.Length){
-							node = type_def.Body[flow_manager.Top().ChildCounter++];
-							goto MAIN_LOOP;
-						}else{
+                        switch(flow_manager.Top().StepCounter){
+                        case 0:
+                            if(flow_manager.Top().ChildCounter < type_def.Bases.Length){
+                                node = type_def.Bases[flow_manager.Top().ChildCounter++];
+                                goto MAIN_LOOP;
+                            }else{
+                                flow_manager.Top().ChildCounter = 0;
+                                flow_manager.Top().StepCounter++;
+                                goto case 1;
+                            }
 
-						}
+                        case 1:
+                            if(flow_manager.Top().ChildCounter < type_def.Body.Length){
+                                node = type_def.Body[flow_manager.Top().ChildCounter++];
+							    goto MAIN_LOOP;
+						    }else{
+                                flow_manager.Top().StepCounter++;
+                                goto case 2;
+                            }
+                            
+                        case 2:
+                            var private_members = new Dictionary<string, int>();
+                            var public_members = new Dictionary<string, int>();
+                            var members = new List<object>();
+                            int offset = 0;
+
+                            for(int i = 0; i < type_def.Body.Length; ++i){
+                                var stmt = type_def.Body[i];
+                                object val = flow_manager.Top().Get(offset);
+
+                                if(stmt is ExprStatement){
+                                    var expr_stmt = (ExprStatement)stmt;
+                                    if(expr_stmt.Expressions[0] is VarDeclaration){
+                                        var var_decls = (VarDeclaration)expr_stmt.Expressions[0];
+
+                                        for(int j = 0; j < var_decls.Left.Length; ++j){
+                                            val = flow_manager.Top().Get(offset);
+                                            if(var_decls.HasFlag(Flags.PrivateAccess))
+                                                private_members.Add(var_decls.Left[j].Name, offset++);
+                                            else if(var_decls.HasFlag(Flags.PublicAccess))
+                                                public_members.Add(var_decls.Left[j].Name, offset++);
+                                            
+                                            members.Add(val);
+                                        }
+                                    }else{
+                                        throw ExpressoOps.InvalidTypeError("A type declaration can not have that type of statements!");
+                                    }
+                                }else if(stmt is FunctionDefinition){
+                                    var method = (FunctionDefinition)stmt;
+                                    if(method.HasFlag(Flags.PrivateAccess))
+                                        private_members.Add(method.Name, offset++);
+                                    else if(method.HasFlag(Flags.PublicAccess))
+                                        public_members.Add(method.Name, offset++);
+                                    
+                                    members.Add(val);
+                                }else{
+                                    throw ExpressoOps.InvalidTypeError("A type declaration can not have that type of statements!");
+                                }
+                            }
+                            
+                            //継承元の型定義をスタックから参照する
+                            var base_definitions = new List<BaseDefinition>();
+                            for(int i = 0; i < type_def.Bases.Length; ++i){
+                                BaseDefinition base_def = flow_manager.Top().Get(i) as BaseDefinition;
+                                if(base_def == null){
+                                    throw ExpressoOps.RuntimeError("Something wrong has occurred.\n Could not find base type '{0}'",
+                                        type_def.Bases[i].Name);
+                                }
+                                base_definitions.Add(base_def);
+                            }
+                            
+                            object def_object = null;
+                            switch(type_def.TargetType){
+                            case DeclType.Interface:
+                                def_object = new InterfaceDefinition(type_def.Name, public_members, members.ToArray(), base_definitions);
+                                break;
+
+                            case DeclType.Class:
+                                def_object = new ClassDefinition(type_def.Name, private_members, public_members, members.ToArray(), base_definitions);
+                                break;
+
+                            case DeclType.Struct:
+                                def_object = new StructDefinition(type_def.Name, private_members, public_members, members.ToArray(), base_definitions);
+                                break;
+                            }
+
+                            flow_manager.PushValue(def_object);
+                            flow_manager.Pop();
+                            break;
+
+                        default:
+                            throw ExpressoOps.SystemError("Unknown path reached while evaluating a type definition.");
+                        }
 						break;
 					}
 
@@ -1029,8 +1151,9 @@ namespace Expresso.Interpreter
 									node = while_stmt.Body;
 									flow_manager.Top().StepCounter--;
 									goto MAIN_LOOP;
-								}else
+                                }else{
 									flow_manager.Pop();
+                                }
 							}
 							catch(Exception){
 								if(!(cond is bool))
@@ -1063,6 +1186,7 @@ namespace Expresso.Interpreter
 			catch(Exception ex){
 				Type exception_type = ex.GetType();
 				Console.WriteLine("{0}: {1}", exception_type.FullName, ex.Message);
+                Console.WriteLine("Stack trace: {0}", ex.StackTrace);
 			}
 
             Debug.Assert(flow_manager.ValueCount == 0 || flow_manager.ValueCount == 1);

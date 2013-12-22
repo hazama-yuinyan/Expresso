@@ -23,15 +23,15 @@ namespace Expresso.Ast
         /// <summary>
         /// 対象となるモジュール名。
 		/// The target module names to be required. It can contain a '.'(which can be used to point to a nested module)
-		/// or a '/'(which can be used to an external source file).
+        /// or a '/'(which can be used to point to an external source file).
         /// </summary>
-        public string[] ModuleNames {
+        public string[] ModuleNames{
 			get{return module_names;}
 		}
 
 		/// <summary>
 		/// モジュールに対して与えるエイリアス名。
-		/// Alias names that can be used to refer to the module within the scope.
+        /// Alias names that can be used to refer to the modules within the scope.
 		/// It can be null if none is specified.
 		/// </summary>
 		public string[] AliasNames{
@@ -40,9 +40,8 @@ namespace Expresso.Ast
 
 		internal ExpressoVariable[] Variables{get; set;}
 
-        public override NodeType Type
-        {
-            get { return NodeType.Require; }
+        public override NodeType Type{
+            get{return NodeType.Require;}
         }
 
 		public RequireStatement(string[] moduleNames, string[] aliasNames = null)
@@ -55,7 +54,8 @@ namespace Expresso.Ast
         {
             var x = obj as RequireStatement;
 
-            if (x == null) return false;
+            if(x == null)
+                return false;
 
             return this.ModuleNames == x.ModuleNames && this.AliasNames == x.AliasNames;
         }

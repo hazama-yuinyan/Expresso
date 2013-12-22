@@ -34,9 +34,8 @@ namespace Expresso.Ast
 			get{return trailing_comma;}
 		}
 		
-		public override NodeType Type
-        {
-            get { return NodeType.Print; }
+        public override NodeType Type{
+            get{return NodeType.Print;}
         }
 
 		public PrintStatement(Expression[] expressions, bool hasTrailingComma)
@@ -49,7 +48,8 @@ namespace Expresso.Ast
         {
             var x = obj as PrintStatement;
 
-            if (x == null) return false;
+            if(x == null)
+                return false;
 
             return this.Expressions.Equals(x.Expressions);
         }

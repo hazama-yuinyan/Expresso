@@ -122,9 +122,9 @@ namespace Expresso.Ast
 			variables = scopeStmt.Variables;
 			bits = new BitArray(variables.Count * 2);
 			int index = 0;
-			foreach(var binding in variables){
+			foreach(var binding in variables)
 				binding.Value.Offset = index++;
-			}
+			
 			scope = scopeStmt;
 			fdef = new FlowDefiner(this);
 		}

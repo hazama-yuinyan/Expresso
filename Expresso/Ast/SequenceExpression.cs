@@ -34,7 +34,7 @@ namespace Expresso.Ast
 		}
 
         public override NodeType Type{
-            get { return NodeType.Sequence; }
+            get{return NodeType.Sequence;}
         }
 
 		public SequenceExpression(Expression[] targetItems)
@@ -46,7 +46,8 @@ namespace Expresso.Ast
         {
             var x = obj as SequenceExpression;
 
-            if (x == null) return false;
+            if(x == null)
+                return false;
 
             return this.items == x.items;
         }

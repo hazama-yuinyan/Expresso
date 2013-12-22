@@ -19,8 +19,7 @@ namespace Expresso.Ast
         /// この引数の名前。
 		/// The name of the argument.
         /// </summary>
-        public string Name 
-		{
+        public string Name{
 			get{
 				return (ExpressoVariable != null) ? ExpressoVariable.Name : "<anonymous>";
 			}
@@ -36,8 +35,7 @@ namespace Expresso.Ast
 		/// 引数の評価スタック内でのオフセット値。
 		/// The offset of the argument in the evaluation stack.
 		/// </summary>
-		public int Offset
-		{
+        public int Offset{
 			get{
 				return (ExpressoVariable != null) ? ExpressoVariable.Offset : -1;
 			}
@@ -53,16 +51,14 @@ namespace Expresso.Ast
 		/// この引数の型。
 		/// The type of the argument.
 		/// </summary>
-		public TypeAnnotation ParamType
-		{
+        public TypeAnnotation ParamType{
 			get{
 				return (ExpressoVariable != null) ? ExpressoVariable.ParamType : null;
 			}
 		}
 
-        public override NodeType Type
-        {
-            get { return NodeType.Argument; }
+        public override NodeType Type{
+            get{return NodeType.Argument;}
         }
 
 		internal Argument(Expression option, ExpressoVariable variable)
@@ -75,7 +71,8 @@ namespace Expresso.Ast
         {
             var x = obj as Argument;
 
-            if (x == null) return false;
+            if(x == null)
+                return false;
 
             return ExpressoVariable.Equals(x.ExpressoVariable);
         }

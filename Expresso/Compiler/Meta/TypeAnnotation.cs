@@ -2,6 +2,10 @@ using System;
 
 namespace Expresso.Compiler.Meta
 {
+    /// <summary>
+    /// 実行時の型を表す。
+    /// Represents the types at runtime.
+    /// </summary>
 	public enum ObjectTypes
 	{
 		_SUBSCRIPT = -6,

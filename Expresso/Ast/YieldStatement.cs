@@ -23,9 +23,8 @@ namespace Expresso.Ast
 			get{return expr;}
 		}
 
-        public override NodeType Type
-        {
-            get { return NodeType.YieldStatement; }
+        public override NodeType Type{
+            get{return NodeType.YieldStatement;}
         }
 
 		public YieldStatement(Expression expression)
@@ -37,7 +36,8 @@ namespace Expresso.Ast
         {
             var x = obj as YieldStatement;
 
-            if (x == null) return false;
+            if(x == null)
+                return false;
 
             return expr.Equals(x.expr);
         }
@@ -49,7 +49,6 @@ namespace Expresso.Ast
 
         /*internal override object Run(VariableStore varStore)
         {
-			//TODO: implement it
 			return null;
         }*/
 

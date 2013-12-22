@@ -37,9 +37,8 @@ namespace Expresso.Ast
 			get{return rhs;}
 		}
 
-        public override NodeType Type
-        {
-            get { return NodeType.Assignment; }
+        public override NodeType Type{
+            get{return NodeType.Assignment;}
         }
 
 		public Assignment(Expression[] lhs, Expression rhsExpr)
@@ -52,7 +51,8 @@ namespace Expresso.Ast
         {
             var x = obj as Assignment;
 
-            if (x == null) return false;
+            if(x == null)
+                return false;
 
             return this.rhs.Equals(x.rhs)
                 && this.targets.Equals(x.targets);

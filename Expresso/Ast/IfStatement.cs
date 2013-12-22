@@ -44,12 +44,11 @@ namespace Expresso.Ast
 		/// It can be null if the if statement has no else clause.
         /// </summary>
         public Statement FalseBlock{
-			get{return false_block;}
-		}
+            get{return false_block;}
+        }
 
-        public override NodeType Type
-        {
-            get { return NodeType.IfStatement; }
+        public override NodeType Type{
+            get{return NodeType.IfStatement;}
         }
 
 		public IfStatement(Expression test, Statement trueBlock, Statement falseBlock)
@@ -63,7 +62,8 @@ namespace Expresso.Ast
         {
             var x = obj as IfStatement;
 
-            if (x == null) return false;
+            if(x == null)
+                return false;
 
             return this.condition == x.condition
                 && this.true_block.Equals(x.true_block)

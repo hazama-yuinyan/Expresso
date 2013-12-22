@@ -19,7 +19,7 @@ namespace Expresso.Ast
     /// 関数定義。
 	/// Represents a function definition.
     /// </summary>
-    public class FunctionDefinition : ScopeStatement
+    public class FunctionDefinition : ScopeStatement, IFlaggable
     {
 		readonly string name;
 		readonly Argument[] parameters;
@@ -28,7 +28,7 @@ namespace Expresso.Ast
         /// 関数名。
         /// The name of the function. It can be null if this definition is for a lambda function.
         /// </summary>
-        public string Name {
+        public string Name{
 			get{return name;}
 		}
 
@@ -37,7 +37,7 @@ namespace Expresso.Ast
 		/// The formal parameter list.
 		/// It can be null if the function takes no parameters.
         /// </summary>
-        public Argument[] Parameters {
+        public Argument[] Parameters{
 			get{return parameters;}
 		}
 
@@ -46,13 +46,13 @@ namespace Expresso.Ast
 		/// The body of the function.
 		/// It can be null if the function is native.
         /// </summary>
-        public Block Body { get; internal set; }
+        public Block Body{get; internal set;}
 		
 		/// <summary>
 		/// 戻り値の型。
 		/// The type of the return value.
 		/// </summary>
-		public TypeAnnotation ReturnType {get; internal set;}
+		public TypeAnnotation ReturnType{get; internal set;}
 
 		/// <summary>
 		/// このクロージャが定義された時の環境。
@@ -70,34 +70,50 @@ namespace Expresso.Ast
 		/// <value>
 		/// <c>true</c> if this instance is static; otherwise, <c>false</c>.
 		/// </value>
-		public bool IsStatic{get; internal set;}
+		public bool IsStatic{
+            get{
+                return HasFlag(Flags.StaticMember);
+            }
+        }
 
         /// <summary>
         /// 関数内で定義されたローカル変数一覧。
 		/// The list of local variables defined in this function.
         /// </summary>
-        public IEnumerable<Identifier> LocalVariables
-        {
+        public IEnumerable<Identifier> LocalVariables{
             get{
-				if(Body == null) return Enumerable.Empty<Identifier>();
+                if(Body == null)
+                    return Enumerable.Empty<Identifier>();
+
                 return this.Body.LocalVariables;
             }
         }
 
-		public FunctionDefinition(string funcName, Argument[] formalParameters, Block body, TypeAnnotation returnType, bool isStatic = false,
-		                Stack<object> environ = null)
+        #region IFlaggable implementation
+
+        public bool HasFlag(Flags flag)
+        {
+            return Flag == flag;
+        }
+
+        public Flags Flag{get; set;}
+
+        #endregion
+
+		public FunctionDefinition(string funcName, Argument[] formalParameters, Block body, TypeAnnotation returnType,
+            Flags flag, Stack<object> environ = null)
 		{
 			name = funcName;
 			parameters = formalParameters;
 			Body = body;
 			ReturnType = returnType;
-			IsStatic = isStatic;
+            Flag = flag;
 			Environment = environ;
 		}
 
         /// <summary>
         /// 関数＋引数名、
-        /// f(x, y) => some_type {x + y;} の f(x, y) => some_type の部分を文字列として返す。
+        /// f(x, y) -> some_type {x + y;} の f(x, y) -> some_type の部分を文字列として返す。
 		/// Returns the function signature.
         /// </summary>
         /// <returns>関数シグニチャ</returns>
@@ -161,17 +177,16 @@ namespace Expresso.Ast
 			
 			// First try variables local to this scope
 			if(TryGetVariable(reference.Name, out variable)){
-				if(variable.Kind == VariableKind.Global){
+				if(variable.Kind == VariableKind.Global)
 					AddReferencedGlobal(reference.Name);
-				}
+				
 				return variable;
 			}
 			
 			// Try to bind in outer scopes
 			for(ScopeStatement parent = Parent; parent != null; parent = parent.Parent){
-				if(parent.TryBindOuter(this, reference, out variable)){
+				if(parent.TryBindOuter(this, reference, out variable))
 					return variable;
-				}
 			}
 			
 			return null;
@@ -244,15 +259,18 @@ namespace Expresso.Ast
         {
             var x = obj as FunctionDefinition;
 
-            if (x == null) return false;
+            if(x == null)
+                return false;
 
-            if (this.Name != x.Name) return false;
+            if(this.Name != x.Name)
+                return false;
 
-            if (this.Parameters.Length != x.Parameters.Length) return false;
+            if(this.Parameters.Length != x.Parameters.Length)
+                return false;
 
-            for (int i = 0; i < this.Parameters.Length; i++)
-            {
-                if (!this.Parameters[i].Equals(x.Parameters[i])) return false;
+            for(int i = 0; i < this.Parameters.Length; i++){
+                if(!this.Parameters[i].Equals(x.Parameters[i]))
+                    return false;
             }
 
             return this.Body.Equals(x.Body);
