@@ -348,8 +348,8 @@ namespace Expresso.Test
 			var method_annots = new List<FunctionAnnotation>{
 				new FunctionAnnotation("constructor", TypeAnnotation.VoidType),
 				new FunctionAnnotation("getX", TypeAnnotation.VariantType),
-				new FunctionAnnotation("getY", new TypeAnnotation(ObjectTypes.INTEGER)),
-				new FunctionAnnotation("getXPlus", new TypeAnnotation(ObjectTypes.INTEGER))
+				new FunctionAnnotation("getY", new TypeAnnotation(ObjectTypes.Integer)),
+				new FunctionAnnotation("getXPlus", new TypeAnnotation(ObjectTypes.Integer))
 			};
 
 			var a = results[0] as ExpressoObj;
@@ -385,7 +385,7 @@ namespace Expresso.Test
 			var method_annots = new List<FunctionAnnotation>{
 				new FunctionAnnotation("constructor", TypeAnnotation.VoidType),
 				new FunctionAnnotation("getX", TypeAnnotation.VariantType),
-				new FunctionAnnotation("getY", new TypeAnnotation(ObjectTypes.INTEGER)),
+				new FunctionAnnotation("getY", new TypeAnnotation(ObjectTypes.Integer)),
 			};
 
 			var a = results[0] as ExpressoObj;

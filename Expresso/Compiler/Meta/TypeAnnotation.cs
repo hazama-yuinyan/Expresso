@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 
 namespace Expresso.Compiler.Meta
 {
@@ -8,33 +8,33 @@ namespace Expresso.Compiler.Meta
     /// </summary>
 	public enum ObjectTypes
 	{
-		_SUBSCRIPT = -6,
+		_Subscript = -6,
 		_CASE_DEFAULT = -5,
 		_LABEL_PRIVATE = -4,
 		_LABEL_PROTECTED = -3,
 		_LABEL_PUBLIC = -2,
 		_INFERENCE = -1,
-		UNDEF = 0,
-		NULL,
-		INTEGER,
-		BOOL,
-		FLOAT,
-		RATIONAL,
-		BIGINT,
-		STRING,
-		BYTEARRAY,
-		VAR,
-		TUPLE,
-		LIST,
-		DICT,
-		EXPRESSION,
-		FUNCTION,
-		SEQ,
-		INSTANCE,
-		TYPE_CLASS,
-		TYPE_MODULE,
-		TYPE_STRUCT,
-		TYPE_INTERFACE
+		Undef = 0,
+		Null,
+		Integer,
+		Bool,
+		Float,
+		Rational,
+		BigInt,
+		String,
+		ByteArray,
+		Var,
+		Tuple,
+		List,
+		Dict,
+		Expression,
+		Function,
+		Seq,
+		Instance,
+		TypeClass,
+		TypeModule,
+		TypeStruct,
+		TypeInterface
 	};
 
 	/// <summary>
@@ -79,16 +79,16 @@ namespace Expresso.Compiler.Meta
 		
 		public override string ToString()
 		{
-			return (ObjType == ObjectTypes.TYPE_CLASS) ? string.Format("[class: {0}]", TypeName) :
-				(ObjType == ObjectTypes.TYPE_MODULE) ? string.Format("[module: {0}]", TypeName) :
-					(ObjType == ObjectTypes.TYPE_STRUCT) ? string.Format("[struct: {0}]", TypeName) :
+			return (ObjType == ObjectTypes.TypeClass) ? string.Format("[class: {0}]", TypeName) :
+				(ObjType == ObjectTypes.TypeModule) ? string.Format("[module: {0}]", TypeName) :
+					(ObjType == ObjectTypes.TypeStruct) ? string.Format("[struct: {0}]", TypeName) :
 					(TypeName != null) ? string.Format("{0}", TypeName) : string.Format("{0}", ObjType);
 		}
 		
 		public static readonly TypeAnnotation InferenceType = new TypeAnnotation(ObjectTypes._INFERENCE);
-		public static readonly TypeAnnotation VariantType = new TypeAnnotation(ObjectTypes.VAR);
-		public static readonly TypeAnnotation VoidType = new TypeAnnotation(ObjectTypes.UNDEF);
-		internal static readonly TypeAnnotation Subscription = new TypeAnnotation(ObjectTypes._SUBSCRIPT);
+		public static readonly TypeAnnotation VariantType = new TypeAnnotation(ObjectTypes.Var);
+		public static readonly TypeAnnotation VoidType = new TypeAnnotation(ObjectTypes.Undef);
+		internal static readonly TypeAnnotation Subscription = new TypeAnnotation(ObjectTypes._Subscript);
 	}
 }
 

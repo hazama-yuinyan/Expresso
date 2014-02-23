@@ -67,9 +67,9 @@ internal ScopeStatement cur_scope = null;		//the current scope of variables
 	{
 		//Add built-in functions
 		/*FunctionDefinition[] native_funcs = {
-			new NativeLambdaUnary("abs", ImplementationHelpers.MakeArg(new Identifier("val", new TypeAnnotation(ObjectTypes.VAR), null, 0)), ExpressoFunctions.Abs),
-			new NativeLambdaUnary("sqrt", ImplementationHelpers.MakeArg(new Identifier("val", new TypeAnnotation(ObjectTypes.VAR), null, 0)), ExpressoFunctions.Sqrt),
-			new NativeLambdaUnary("toInt", ImplementationHelpers.MakeArg(new Identifier("val", new TypeAnnotation(ObjectTypes.VAR), null, 0)), ExpressoFunctions.ToInt)
+			new NativeLambdaUnary("abs", ImplementationHelpers.MakeArg(new Identifier("val", new TypeAnnotation(ObjectTypes.Var), null, 0)), ExpressoFunctions.Abs),
+			new NativeLambdaUnary("sqrt", ImplementationHelpers.MakeArg(new Identifier("val", new TypeAnnotation(ObjectTypes.Var), null, 0)), ExpressoFunctions.Sqrt),
+			new NativeLambdaUnary("toInt", ImplementationHelpers.MakeArg(new Identifier("val", new TypeAnnotation(ObjectTypes.Var), null, 0)), ExpressoFunctions.ToInt)
 		};
 		foreach(var tmp in native_funcs)
 			cur_scope.AddFunction(tmp);*/
@@ -80,19 +80,19 @@ internal ScopeStatement cur_scope = null;		//the current scope of variables
 		Constant result = null;
 		
 		switch(type){
-		case ObjectTypes.INTEGER:
+		case ObjectTypes.Integer:
 			result = Node.MakeConstant(type, 0);
 			break;
 			
-		case ObjectTypes.BOOL:
+		case ObjectTypes.Bool:
 			result = Node.MakeConstant(type, false);
 			break;
 			
-		case ObjectTypes.FLOAT:
+		case ObjectTypes.Float:
 			result = Node.MakeConstant(type, 0.0);
 			break;
 			
-		case ObjectTypes.STRING:
+		case ObjectTypes.String:
 			result = Node.MakeConstant(type, "");
 			break;
 			
@@ -152,7 +152,7 @@ internal ScopeStatement cur_scope = null;		//the current scope of variables
 	
 	Statement MakeDefaultCtor(string className)
 	{
-		var arg_this = Node.MakeArg("this", new TypeAnnotation(ObjectTypes.INSTANCE, className));
+		var arg_this = Node.MakeArg("this", new TypeAnnotation(ObjectTypes.Instance, className));
 		var @params = new List<Argument>{arg_this};
 		var ctor = Node.MakeFunc("constructor", @params, new Block(), TypeAnnotation.VoidType.Clone(), Flags.PublicAccess);
 		return ctor;
@@ -340,7 +340,7 @@ internal ScopeStatement cur_scope = null;		//the current scope of variables
 		while (!(la.kind == 0 || la.kind == 27)) {SynErr(106); Get();}
 		Expect(27);
 		block = null;
-		arg_this = Node.MakeArg("this", new TypeAnnotation(ObjectTypes.TYPE_MODULE));
+		arg_this = Node.MakeArg("this", new TypeAnnotation(ObjectTypes.TypeModule));
 		@params.Add(arg_this);
 		
 		Expect(12);
@@ -473,7 +473,7 @@ internal ScopeStatement cur_scope = null;		//the current scope of variables
 		
 		while (!(la.kind == 0 || la.kind == 26)) {SynErr(111); Get();}
 		Expect(26);
-		arg_this = Node.MakeArg("this", new TypeAnnotation(ObjectTypes.INSTANCE, className));
+		arg_this = Node.MakeArg("this", new TypeAnnotation(ObjectTypes.Instance, className));
 		@params.Add(arg_this);
 		
 		Expect(6);
@@ -492,7 +492,7 @@ internal ScopeStatement cur_scope = null;		//the current scope of variables
 		
 		while (!(la.kind == 0 || la.kind == 27)) {SynErr(112); Get();}
 		Expect(27);
-		arg_this = Node.MakeArg("this", new TypeAnnotation(ObjectTypes.INSTANCE, className));
+		arg_this = Node.MakeArg("this", new TypeAnnotation(ObjectTypes.Instance, className));
 		@params.Add(arg_this);
 		
 		Expect(12);
@@ -599,82 +599,82 @@ internal ScopeStatement cur_scope = null;		//the current scope of variables
 		switch (la.kind) {
 		case 31: {
 			Get();
-			type.ObjType = ObjectTypes.INTEGER; 
+			type.ObjType = ObjectTypes.Integer; 
 			break;
 		}
 		case 32: {
 			Get();
-			type.ObjType = ObjectTypes.BOOL; 
+			type.ObjType = ObjectTypes.Bool; 
 			break;
 		}
 		case 33: {
 			Get();
-			type.ObjType = ObjectTypes.FLOAT; 
+			type.ObjType = ObjectTypes.Float; 
 			break;
 		}
 		case 34: {
 			Get();
-			type.ObjType = ObjectTypes.RATIONAL; 
+			type.ObjType = ObjectTypes.Rational; 
 			break;
 		}
 		case 35: {
 			Get();
-			type.ObjType = ObjectTypes.BIGINT; 
+			type.ObjType = ObjectTypes.BigInt; 
 			break;
 		}
 		case 36: {
 			Get();
-			type.ObjType = ObjectTypes.STRING; 
+			type.ObjType = ObjectTypes.String; 
 			break;
 		}
 		case 37: {
 			Get();
-			type.ObjType = ObjectTypes.BYTEARRAY; 
+			type.ObjType = ObjectTypes.ByteArray; 
 			break;
 		}
 		case 38: {
 			Get();
-			type.ObjType = ObjectTypes.VAR; 
+			type.ObjType = ObjectTypes.Var; 
 			break;
 		}
 		case 39: {
 			Get();
-			type.ObjType = ObjectTypes.TUPLE; 
+			type.ObjType = ObjectTypes.Tuple; 
 			break;
 		}
 		case 40: {
 			Get();
-			type.ObjType = ObjectTypes.LIST; 
+			type.ObjType = ObjectTypes.List; 
 			break;
 		}
 		case 41: {
 			Get();
-			type.ObjType = ObjectTypes.DICT; 
+			type.ObjType = ObjectTypes.Dict; 
 			break;
 		}
 		case 42: {
 			Get();
-			type.ObjType = ObjectTypes.EXPRESSION; 
+			type.ObjType = ObjectTypes.Expression; 
 			break;
 		}
 		case 43: {
 			Get();
-			type.ObjType = ObjectTypes.FUNCTION; 
+			type.ObjType = ObjectTypes.Function; 
 			break;
 		}
 		case 44: {
 			Get();
-			type.ObjType = ObjectTypes.SEQ; 
+			type.ObjType = ObjectTypes.Seq; 
 			break;
 		}
 		case 45: {
 			Get();
-			type.ObjType = ObjectTypes.UNDEF; 
+			type.ObjType = ObjectTypes.Undef; 
 			break;
 		}
 		case 12: {
 			Get();
-			type.ObjType = ObjectTypes.INSTANCE; type.TypeName = t.val; 
+			type.ObjType = ObjectTypes.Instance; type.TypeName = t.val; 
 			break;
 		}
 		default: SynErr(115); break;
@@ -706,8 +706,8 @@ internal ScopeStatement cur_scope = null;		//the current scope of variables
 			OrTest(out step);
 		}
 		Expect(2);
-		if(start == null) start = CreateConstant(ObjectTypes.INTEGER);
-		if(step == null) step = Node.MakeConstant(ObjectTypes.INTEGER, 1);
+		if(start == null) start = CreateConstant(ObjectTypes.Integer);
+		if(step == null) step = Node.MakeConstant(ObjectTypes.Integer, 1);
 		expr = Node.MakeIntSeq(start, end, step);
 		
 	}
@@ -1188,27 +1188,27 @@ internal ScopeStatement cur_scope = null;		//the current scope of variables
 				}
 			}
 			if(has_suffix)
-			expr = Node.MakeConstant(ObjectTypes.BIGINT, BigInteger.Parse(tmp));
+			expr = Node.MakeConstant(ObjectTypes.BigInt, BigInteger.Parse(tmp));
 			else
-			expr = Node.MakeConstant(ObjectTypes.INTEGER, Convert.ToInt32(tmp));
+			expr = Node.MakeConstant(ObjectTypes.Integer, Convert.ToInt32(tmp));
 			
 			break;
 		}
 		case 15: {
 			Get();
-			expr = Node.MakeConstant(ObjectTypes.INTEGER, Convert.ToInt32(t.val, 16)); 
+			expr = Node.MakeConstant(ObjectTypes.Integer, Convert.ToInt32(t.val, 16)); 
 			break;
 		}
 		case 14: {
 			Get();
-			expr = Node.MakeConstant(ObjectTypes.FLOAT, Convert.ToDouble(t.val)); 
+			expr = Node.MakeConstant(ObjectTypes.Float, Convert.ToDouble(t.val)); 
 			break;
 		}
 		case 16: {
 			Get();
 			tmp = t.val;
 			tmp = tmp.Substring(1, tmp.Length - 2);
-			expr = Node.MakeConstant(ObjectTypes.STRING, tmp);
+			expr = Node.MakeConstant(ObjectTypes.String, tmp);
 			
 			break;
 		}
@@ -1218,12 +1218,12 @@ internal ScopeStatement cur_scope = null;		//the current scope of variables
 			} else {
 				Get();
 			}
-			expr = Node.MakeConstant(ObjectTypes.BOOL, Convert.ToBoolean(t.val)); 
+			expr = Node.MakeConstant(ObjectTypes.Bool, Convert.ToBoolean(t.val)); 
 			break;
 		}
 		case 100: {
 			Get();
-			expr = Node.MakeConstant(ObjectTypes.NULL, null); 
+			expr = Node.MakeConstant(ObjectTypes.Null, null); 
 			break;
 		}
 		default: SynErr(136); break;
@@ -1450,22 +1450,22 @@ internal ScopeStatement cur_scope = null;		//the current scope of variables
 		} else if (la.kind == 6) {
 			Get();
 			if (StartOf(8)) {
-				SequenceMaker(out expr, ObjectTypes.TUPLE);
+				SequenceMaker(out expr, ObjectTypes.Tuple);
 			}
 			while (!(la.kind == 0 || la.kind == 8)) {SynErr(140); Get();}
 			Expect(8);
 			if(expr == null)
-			expr = Node.MakeSeqInitializer(ObjectTypes.TUPLE, new List<Expression>());
+			expr = Node.MakeSeqInitializer(ObjectTypes.Tuple, new List<Expression>());
 			
 		} else if (la.kind == 7) {
 			Get();
 			if (StartOf(8)) {
-				SequenceMaker(out expr, ObjectTypes.LIST);
+				SequenceMaker(out expr, ObjectTypes.List);
 			}
 			while (!(la.kind == 0 || la.kind == 2)) {SynErr(141); Get();}
 			Expect(2);
 			if(expr == null)
-			expr = Node.MakeSeqInitializer(ObjectTypes.LIST, new List<Expression>());
+			expr = Node.MakeSeqInitializer(ObjectTypes.List, new List<Expression>());
 			
 		} else if (la.kind == 5) {
 			Get();
@@ -1474,7 +1474,7 @@ internal ScopeStatement cur_scope = null;		//the current scope of variables
 			}
 			while (!(la.kind == 0 || la.kind == 9)) {SynErr(142); Get();}
 			Expect(9);
-			if(expr == null) expr = Node.MakeSeqInitializer(ObjectTypes.DICT, new List<Expression>()); 
+			if(expr == null) expr = Node.MakeSeqInitializer(ObjectTypes.Dict, new List<Expression>()); 
 		} else SynErr(143);
 	}
 
@@ -1485,7 +1485,7 @@ internal ScopeStatement cur_scope = null;		//the current scope of variables
 			if(expr is MemberReference)
 			                       args.Add(((MemberReference)expr).Target);
 			                   else
-			                       args.Add(Node.MakeConstant(ObjectTypes.INSTANCE, this.TopmostAst));
+			                       args.Add(Node.MakeConstant(ObjectTypes.Instance, this.TopmostAst));
 			               
 			if (StartOf(8)) {
 				ArgList(ref args);
@@ -1579,7 +1579,7 @@ internal ScopeStatement cur_scope = null;		//the current scope of variables
 			CondExpr(out rhs);
 			if(rhs != null) list.Add(rhs); 
 		}
-		if(list.Count > 0) expr = Node.MakeSeqInitializer(ObjectTypes.DICT, list); 
+		if(list.Count > 0) expr = Node.MakeSeqInitializer(ObjectTypes.Dict, list); 
 	}
 
 	void CompFor(out ComprehensionIter expr) {

@@ -93,7 +93,7 @@ namespace Expresso.Ast
 
         public bool HasFlag(Flags flag)
         {
-            return Flag == flag;
+            return (Flag & flag) == flag;
         }
 
         public Flags Flag{get; set;}

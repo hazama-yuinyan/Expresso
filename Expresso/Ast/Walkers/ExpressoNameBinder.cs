@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 
@@ -225,9 +225,9 @@ namespace Expresso.Ast
 		// TypeDefinition
 		public override bool Walk(TypeDefinition node)
 		{
-			var type = new TypeAnnotation(node.TargetType == DeclType.Class ? ObjectTypes.TYPE_CLASS :
-			                              node.TargetType == DeclType.Interface ? ObjectTypes.TYPE_INTERFACE :
-			                              ObjectTypes.TYPE_STRUCT, node.Name);
+			var type = new TypeAnnotation(node.TargetType == DeclType.Class ? ObjectTypes.TypeClass :
+			                              node.TargetType == DeclType.Interface ? ObjectTypes.TypeInterface :
+			                              ObjectTypes.TypeStruct, node.Name);
 			node.ExpressoVariable = DefineName(node.Name, type);
 			
 			// Base references are in the outer context
@@ -556,7 +556,7 @@ namespace Expresso.Ast
 			ExpressoVariable[] variables = new ExpressoVariable[node.ModuleNames.Length];
 			for(int i = 0; i < node.ModuleNames.Length; ++i){
 				string name = node.AliasNames[i] != null ? node.AliasNames[i] : node.ModuleNames[i];
-				variables[i] = DefineName(name, new TypeAnnotation(ObjectTypes.TYPE_MODULE, node.ModuleNames[i]));
+				variables[i] = DefineName(name, new TypeAnnotation(ObjectTypes.TypeModule, node.ModuleNames[i]));
 			}
 			node.Variables = variables;
 			return true;

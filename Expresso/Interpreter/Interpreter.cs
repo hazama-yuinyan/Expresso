@@ -134,10 +134,10 @@ namespace Expresso.Interpreter
 			var mod_context = new ModuleContext(main_module, global_context);
 			var main_args = ExpressoOps.Slice(args, new ExpressoIntegerSequence(1, args.Count, 1));
 			var call = Node.MakeCallExpr(
-				Node.MakeConstant(ObjectTypes.FUNCTION, main_func),
+				Node.MakeConstant(ObjectTypes.Function, main_func),
 				new Expression[]{
-					Node.MakeConstant(ObjectTypes.INSTANCE, main_module),
-					Node.MakeConstant(ObjectTypes.LIST, main_args)
+					Node.MakeConstant(ObjectTypes.Instance, main_module),
+					Node.MakeConstant(ObjectTypes.List, main_args)
 				}
 			);
 
@@ -576,17 +576,17 @@ namespace Expresso.Interpreter
 					case NodeType.Identifier:
 					{
 						var ident = (Identifier)node;
-                        if(ident.ParamType.ObjType == ObjectTypes._SUBSCRIPT){
+                        if(ident.ParamType.ObjType == ObjectTypes._Subscript){
 							flow_manager.PushValue(ident);
-                        }/*else if(ident.IsResolved){
+                        }else if(ident.IsResolved){
 							flow_manager.Top().Dup(ident.Offset);
-                        }*/else if(ident.ParamType.ObjType == ObjectTypes.TYPE_CLASS){
+                        }else if(ident.ParamType.ObjType == ObjectTypes.TypeClass){
 							var cur_module = flow_manager.Top().Get(0) as ExpressoObj;
 							if(cur_module == null)
 								throw ExpressoOps.RuntimeError("\"this\" doesn't refer to the enclosing class instance.");
 							
 							flow_manager.PushValue(cur_module.AccessMember(ident, true));
-						}else if(ident.ParamType.ObjType == ObjectTypes.TYPE_MODULE){
+						}else if(ident.ParamType.ObjType == ObjectTypes.TypeModule){
 							var module = context.LanguageContext.GetModule(ident.Name);
 							if(module == null)
 								throw ExpressoOps.RuntimeError(string.Format("The requested module \"{0}\" doesn't exist.", ident.Name));
@@ -624,7 +624,7 @@ namespace Expresso.Interpreter
 							flow_manager.Pop();
 
 							switch(initializer.ObjType){
-							case ObjectTypes.LIST:
+							case ObjectTypes.List:
 							{
 								var values = new List<object>(initializer.Items.Length);
 								for(int i = initializer.Items.Length; i > 0; --i)
@@ -635,7 +635,7 @@ namespace Expresso.Interpreter
 								break;
 							}
 
-							case ObjectTypes.TUPLE:
+							case ObjectTypes.Tuple:
 							{
 								var values = new List<object>(initializer.Items.Length);
 								for(int i = initializer.Items.Length; i > 0; --i)
@@ -646,7 +646,7 @@ namespace Expresso.Interpreter
 								break;
 							}
 
-							case ObjectTypes.DICT:
+							case ObjectTypes.Dict:
 							{
 								var keys = new List<object>(initializer.Items.Length / 2);
 								var values = new List<object>(initializer.Items.Length / 2);

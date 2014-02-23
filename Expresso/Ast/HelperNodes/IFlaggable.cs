@@ -1,11 +1,11 @@
-using System;
+﻿using System;
 
 
 namespace Expresso.Ast
 {
     /// <summary>
     /// メソッドやフィールド変数などの属性を表す。
-    /// Indicates that 
+    /// Indicates accesibility or property of the associated fields. 
     /// </summary>
     [Flags]
     public enum Flags{
@@ -18,7 +18,7 @@ namespace Expresso.Ast
 
     /// <summary>
     /// 対象のオブジェクトに対して属性指定可能なことを宣言する。
-    /// Denotes that the inherited classes can be 
+    /// Denotes that the inherited classes can be "flag-enabled".
     /// </summary>
     public interface IFlaggable
     {

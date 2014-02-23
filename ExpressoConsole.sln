@@ -1,6 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual Studio 2010
+# SharpDevelop 4.4
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExpressoConsole", "ExpressoConsole.csproj", "{7429CF14-72B5-4019-94A4-4BA593C6FB4C}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Expresso", "Expresso\Expresso.csproj", "{4E28200A-5808-419F-8A57-F504842991AF}"
@@ -66,7 +67,6 @@ Global
 		$4.inheritsScope = text/plain
 		$4.scope = text/plain
 		$0.StandardHeader = $5
-		$5.Text = 
 		$5.IncludeInNewFiles = True
 		$0.TextStylePolicy = $6
 		$6.inheritsSet = null

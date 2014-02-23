@@ -29,9 +29,9 @@ COMPILER Expresso
 	{
 		//Add built-in functions
 		/*FunctionDefinition[] native_funcs = {
-			new NativeLambdaUnary("abs", ImplementationHelpers.MakeArg(new Identifier("val", new TypeAnnotation(ObjectTypes.VAR), null, 0)), ExpressoFunctions.Abs),
-			new NativeLambdaUnary("sqrt", ImplementationHelpers.MakeArg(new Identifier("val", new TypeAnnotation(ObjectTypes.VAR), null, 0)), ExpressoFunctions.Sqrt),
-			new NativeLambdaUnary("toInt", ImplementationHelpers.MakeArg(new Identifier("val", new TypeAnnotation(ObjectTypes.VAR), null, 0)), ExpressoFunctions.ToInt)
+			new NativeLambdaUnary("abs", ImplementationHelpers.MakeArg(new Identifier("val", new TypeAnnotation(ObjectTypes.Var), null, 0)), ExpressoFunctions.Abs),
+			new NativeLambdaUnary("sqrt", ImplementationHelpers.MakeArg(new Identifier("val", new TypeAnnotation(ObjectTypes.Var), null, 0)), ExpressoFunctions.Sqrt),
+			new NativeLambdaUnary("toInt", ImplementationHelpers.MakeArg(new Identifier("val", new TypeAnnotation(ObjectTypes.Var), null, 0)), ExpressoFunctions.ToInt)
 		};
 		foreach(var tmp in native_funcs)
 			cur_scope.AddFunction(tmp);*/
@@ -42,19 +42,19 @@ COMPILER Expresso
 		Constant result = null;
 		
 		switch(type){
-		case ObjectTypes.INTEGER:
+		case ObjectTypes.Integer:
 			result = Node.MakeConstant(type, 0);
 			break;
 			
-		case ObjectTypes.BOOL:
+		case ObjectTypes.Bool:
 			result = Node.MakeConstant(type, false);
 			break;
 			
-		case ObjectTypes.FLOAT:
+		case ObjectTypes.Float:
 			result = Node.MakeConstant(type, 0.0);
 			break;
 			
-		case ObjectTypes.STRING:
+		case ObjectTypes.String:
 			result = Node.MakeConstant(type, "");
 			break;
 			
@@ -114,7 +114,7 @@ COMPILER Expresso
 	
 	Statement MakeDefaultCtor(string className)
 	{
-		var arg_this = Node.MakeArg("this", new TypeAnnotation(ObjectTypes.INSTANCE, className));
+		var arg_this = Node.MakeArg("this", new TypeAnnotation(ObjectTypes.Instance, className));
 		var @params = new List<Argument>{arg_this};
 		var ctor = Node.MakeFunc("constructor", @params, new Block(), TypeAnnotation.VoidType.Clone(), Flags.PublicAccess);
 		return ctor;
@@ -291,7 +291,7 @@ ConstructorDecl<out Statement func, string className, Expresso.Ast.Flags flag>
 								.)
 =
   SYNC
-  "constructor"					(.  arg_this = Node.MakeArg("this", new TypeAnnotation(ObjectTypes.INSTANCE, className));
+  "constructor"					(.  arg_this = Node.MakeArg("this", new TypeAnnotation(ObjectTypes.Instance, className));
   									@params.Add(arg_this);
   								.)
   '('
@@ -307,7 +307,7 @@ MethodDecl<out Statement func, string className, Expresso.Ast.Flags flag>
 								.)
 =
   SYNC
-  "def"							(.  arg_this = Node.MakeArg("this", new TypeAnnotation(ObjectTypes.INSTANCE, className));
+  "def"							(.  arg_this = Node.MakeArg("this", new TypeAnnotation(ObjectTypes.Instance, className));
   									@params.Add(arg_this);
   								.)
   ident							(. name = t.val; .)
@@ -365,22 +365,22 @@ FieldDecl<. out List<Expression> outs, Expresso.Ast.Flags flag .>
 /*------------------------------------------------------------------------*/
 Type<out TypeAnnotation type>		(. type = TypeAnnotation.InferenceType.Clone(); .)
 =
- ( "int"                			(. type.ObjType = ObjectTypes.INTEGER; .)
- | "bool"               			(. type.ObjType = ObjectTypes.BOOL; .)
- | "float"							(. type.ObjType = ObjectTypes.FLOAT; .)
- | "rational"						(. type.ObjType = ObjectTypes.RATIONAL; .)
- | "bigint"							(. type.ObjType = ObjectTypes.BIGINT; .)
- | "string"							(. type.ObjType = ObjectTypes.STRING; .)
- | "bytearray"						(. type.ObjType = ObjectTypes.BYTEARRAY; .)
- | "var"							(. type.ObjType = ObjectTypes.VAR; .)
- | "tuple"							(. type.ObjType = ObjectTypes.TUPLE; .)
- | "list"							(. type.ObjType = ObjectTypes.LIST; .)
- | "dictionary"						(. type.ObjType = ObjectTypes.DICT; .)
- | "expression"						(. type.ObjType = ObjectTypes.EXPRESSION; .)
- | "function"						(. type.ObjType = ObjectTypes.FUNCTION; .)
- | "intseq"							(. type.ObjType = ObjectTypes.SEQ; .)
- | "void"							(. type.ObjType = ObjectTypes.UNDEF; .)
- | ident							(. type.ObjType = ObjectTypes.INSTANCE; type.TypeName = t.val; .)
+ ( "int"                			(. type.ObjType = ObjectTypes.Integer; .)
+ | "bool"               			(. type.ObjType = ObjectTypes.Bool; .)
+ | "float"							(. type.ObjType = ObjectTypes.Float; .)
+ | "rational"						(. type.ObjType = ObjectTypes.Rational; .)
+ | "bigint"							(. type.ObjType = ObjectTypes.BigInt; .)
+ | "string"							(. type.ObjType = ObjectTypes.String; .)
+ | "bytearray"						(. type.ObjType = ObjectTypes.ByteArray; .)
+ | "var"							(. type.ObjType = ObjectTypes.Var; .)
+ | "tuple"							(. type.ObjType = ObjectTypes.Tuple; .)
+ | "list"							(. type.ObjType = ObjectTypes.List; .)
+ | "dictionary"						(. type.ObjType = ObjectTypes.Dict; .)
+ | "expression"						(. type.ObjType = ObjectTypes.Expression; .)
+ | "function"						(. type.ObjType = ObjectTypes.Function; .)
+ | "intseq"							(. type.ObjType = ObjectTypes.Seq; .)
+ | "void"							(. type.ObjType = ObjectTypes.Undef; .)
+ | ident							(. type.ObjType = ObjectTypes.Instance; type.TypeName = t.val; .)
  ).
 /*------------------------------------------------------------------------*/
 Stmt<out Statement stmt>			(. stmt = null; .)
@@ -670,7 +670,7 @@ FuncDecl<out Statement func>    (.  string name; var type = TypeAnnotation.Varia
 =
   SYNC
   "def"							(.  block = null;
-  									arg_this = Node.MakeArg("this", new TypeAnnotation(ObjectTypes.TYPE_MODULE));
+  									arg_this = Node.MakeArg("this", new TypeAnnotation(ObjectTypes.TypeModule));
   									@params.Add(arg_this);
   								.)
   ident							(. name = t.val; .)
@@ -749,8 +749,8 @@ IntSeqExpr<out Expression expr>		(. Expression start = null, end = null, step = 
   [ ':'
     OrTest<out step>
   ]
-  ']'								(.  if(start == null) start = CreateConstant(ObjectTypes.INTEGER);
-  										if(step == null) step = Node.MakeConstant(ObjectTypes.INTEGER, 1);
+  ']'								(.  if(start == null) start = CreateConstant(ObjectTypes.Integer);
+  										if(step == null) step = Node.MakeConstant(ObjectTypes.Integer, 1);
   										expr = Node.MakeIntSeq(start, end, step);
   									.).
 /*------------------------------------------------------------------------*/
@@ -880,7 +880,7 @@ Trailer<ref Expression expr>	(. var args = new List<Expression>(); Expression su
   '('							(.  if(expr is MemberReference)
                                         args.Add(((MemberReference)expr).Target);
                                     else
-                                        args.Add(Node.MakeConstant(ObjectTypes.INSTANCE, this.TopmostAst));
+                                        args.Add(Node.MakeConstant(ObjectTypes.Instance, this.TopmostAst));
                                 .)
   [ArgList<ref args>]
   ')'							(. expr = Node.MakeCallExpr(expr, args); .)
@@ -910,18 +910,18 @@ Atom<out Expression expr>			(. string name; expr = null; .)
   									.)
   | Literal<out expr>
   | '('
-    [SequenceMaker<out expr, ObjectTypes.TUPLE>]
+    [SequenceMaker<out expr, ObjectTypes.Tuple>]
     SYNC ')'						(.  if(expr == null)
-    										expr = Node.MakeSeqInitializer(ObjectTypes.TUPLE, new List<Expression>());
+    										expr = Node.MakeSeqInitializer(ObjectTypes.Tuple, new List<Expression>());
     								.)
   | '['
-    [SequenceMaker<out expr, ObjectTypes.LIST>]
+    [SequenceMaker<out expr, ObjectTypes.List>]
     SYNC ']'						(.  if(expr == null)
-    										expr = Node.MakeSeqInitializer(ObjectTypes.LIST, new List<Expression>());
+    										expr = Node.MakeSeqInitializer(ObjectTypes.List, new List<Expression>());
     								.)
   | '{'
     [DictMaker<out expr>]
-    SYNC '}' 						(. if(expr == null) expr = Node.MakeSeqInitializer(ObjectTypes.DICT, new List<Expression>()); .).
+    SYNC '}' 						(. if(expr == null) expr = Node.MakeSeqInitializer(ObjectTypes.Dict, new List<Expression>()); .).
 /*------------------------------------------------------------------------*/
 SequenceMaker<out Expression expr, ObjectTypes ObjType>	(.  Expression tmp = null; List<Expression> list = new List<Expression>();
 															expr = null; ComprehensionIter comprehen = null;
@@ -948,7 +948,7 @@ DictMaker<out Expression expr>			(. Expression lhs, rhs; List<Expression> list =
     ':'
     CondExpr<out rhs>					(. if(rhs != null) list.Add(rhs); .)
   }
-  										(. if(list.Count > 0) expr = Node.MakeSeqInitializer(ObjectTypes.DICT, list); .).
+  										(. if(list.Count > 0) expr = Node.MakeSeqInitializer(ObjectTypes.Dict, list); .).
 /*------------------------------------------------------------------------*/
 CompIter<out ComprehensionIter expr>			(. expr = null; .)
 =
@@ -978,20 +978,20 @@ Literal<out Expression expr>	(. expr = null; string tmp; bool has_suffix = false
   [ 'l'							(. has_suffix = true; .)
   | 'L'							(. has_suffix = true; .)
   ]								(.  if(has_suffix)
-  										expr = Node.MakeConstant(ObjectTypes.BIGINT, BigInteger.Parse(tmp));
+  										expr = Node.MakeConstant(ObjectTypes.BigInt, BigInteger.Parse(tmp));
   									else
-  										expr = Node.MakeConstant(ObjectTypes.INTEGER, Convert.ToInt32(tmp));
+  										expr = Node.MakeConstant(ObjectTypes.Integer, Convert.ToInt32(tmp));
   								.)
-  | hex_digit					(. expr = Node.MakeConstant(ObjectTypes.INTEGER, Convert.ToInt32(t.val, 16)); .)
-  | float						(. expr = Node.MakeConstant(ObjectTypes.FLOAT, Convert.ToDouble(t.val)); .)
+  | hex_digit					(. expr = Node.MakeConstant(ObjectTypes.Integer, Convert.ToInt32(t.val, 16)); .)
+  | float						(. expr = Node.MakeConstant(ObjectTypes.Float, Convert.ToDouble(t.val)); .)
   | string_literal				(. tmp = t.val;
   								   tmp = tmp.Substring(1, tmp.Length - 2);
-  								   expr = Node.MakeConstant(ObjectTypes.STRING, tmp);
+  								   expr = Node.MakeConstant(ObjectTypes.String, tmp);
   								.)
   | 
     ( "true"				
   	| "false"
-  	)							(. expr = Node.MakeConstant(ObjectTypes.BOOL, Convert.ToBoolean(t.val)); .)
-  | "null"						(. expr = Node.MakeConstant(ObjectTypes.NULL, null); .).
+  	)							(. expr = Node.MakeConstant(ObjectTypes.Bool, Convert.ToBoolean(t.val)); .)
+  | "null"						(. expr = Node.MakeConstant(ObjectTypes.Null, null); .).
 /*------------------------------------------------------------------------*/
 END Expresso.
