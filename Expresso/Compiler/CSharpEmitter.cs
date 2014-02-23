@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -40,25 +40,23 @@ namespace Expresso.Compiler
 
 		internal override CSharpExpr Emit(Assignment node)
 		{
-			/*var rvalues = node.Rhs.Compile(this);
+		    var rvalues = node.Right.Compile(this);
 			var results = new List<CSharpExpr>();
 
 			var _self = this;
-			foreach(var rvalue in node.Targets.Zip(rvalues,
-			                                       (first, second) => new Tuple<CSharpExpr, CSharpExpr>(first.Compile(_self), second))){
+			foreach(var rvalue in node.Left.Zip(rvalues,
+			                                    (first, second) => new Tuple<CSharpExpr, CSharpExpr>(first.Compile(_self), second))){
 				results.Add(CSharpExpr.Assign(rvalue.Item1, rvalue.Item2));
 			}
 
 			return CSharpExpr.Block(results);	//x, y, z... = a, b, c...; => x = a, y = b, z = c...;
-			*/
-			return null;
 		}
 
 		internal override CSharpExpr Emit(BinaryExpression node)
 		{
-			//var lhs = node.Left.Compile(this);
-			//var rhs = node.Right.Compile(this);
-			throw new System.NotImplementedException();
+			var lhs = node.Left.Compile(this);
+			var rhs = node.Right.Compile(this);
+			return ConstructBinaryOpe(lhs, rhs, node.Operator);
 		}
 
 		internal override CSharpExpr Emit(Block node)
@@ -307,7 +305,15 @@ namespace Expresso.Compiler
 
 		internal override CSharpExpr Emit(VarDeclaration node)
 		{
-			throw new System.NotImplementedException();
+		    var _self = this;
+		    var variables = node.Left.Select(l => CSharpExpr.Variable(ExpressoOps.GetNativeType(l.ParamType.ObjType), l.Name));
+		    var result = new List<CSharpExpr>();
+		    foreach(var pair in node.Expressions.Select(e => e.Compile(_self))
+		                                        .Zip(variables,
+		                                             (expr, v) => new Tuple<CSharpExpr, CSharpExpr>(v, expr))){
+		        result.Add(CSharpExpr.Assign(pair.Item1, pair.Item2));
+		    }
+		    return CSharpExpr.Block(result);
 		}
 
 		internal override CSharpExpr Emit(WhileStatement node)
