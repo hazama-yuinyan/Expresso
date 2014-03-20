@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 
 using Expresso.Compiler;
 using Expresso.Compiler.Meta;
+using Expresso.Parsing;
 using Expresso.Utils;
 
 /*
@@ -40,20 +42,41 @@ namespace Expresso.Ast
 		{
 			binder = nameBinder;
 		}
-		public override bool Walk(Identifier node)
+		public override bool Walk(Identifier ident)
 		{
-			binder.DefineName(node.Name,
-                node.ParamType == TypeAnnotation.InferenceType ? TypeAnnotation.VariantType : node.ParamType);    //TODO:ちゃんと実装する
+            binder.DefineName(ident.Name, ident.ParamType);
 			return false;
 		}
 
-        public override bool Walk(MemberReference node)
+        public override bool Walk(MemberReference memRef)
         {
             //return new LateBindExpression<Runtime.Types.BuiltinFunction>(node);
-            return base.Walk(node);
+            return true;
         }
 
-		public override bool Walk(SequenceExpression node)
+        public override bool Walk(VarDeclaration varDecl)
+        {
+            foreach(var item in varDecl.Left.Zip(varDecl.Expressions, (lhs, rhs) => new Tuple<Identifier, Expression>(lhs, rhs))){
+                item.Item1.Reference = binder.Reference(item.Item1.Name);
+                item.Item2.Walk(binder);
+                item.Item1.Reference.Variable = binder.DefineName(item.Item1.Name, InferenceHelper.InferType(item.Item2));
+            }
+            return false;
+        }
+
+        public override bool Walk(ForStatement forStmt)
+        {
+            if(forStmt.HasLet){
+                forStmt.Target.Walk(binder);
+                foreach(var ident in forStmt.Left.Items.Cast<Identifier>()){
+                    ident.Reference = binder.Reference(ident.Name);
+                    ident.Reference.Variable = binder.DefineName(ident.Name, InferenceHelper.InferTypeForForStatement(forStmt.Target));
+                }
+            }
+            return base.Walk(forStmt);
+        }
+
+		public override bool Walk(SequenceExpression seqExpr)
 		{
 			return true;
 		}
@@ -418,7 +441,7 @@ namespace Expresso.Ast
 		{
 			node.Parent = cur_scope;
 			var parent_ident = (Identifier)node.Target;
-			return base.Walk(node);
+            return true;
 		}
 
 		/*public override bool Walk<T>(LateBindExpression<T> node)
@@ -439,7 +462,8 @@ namespace Expresso.Ast
 		}
 		
 		// FromImportStatement
-		/*public override bool Walk(FromImportStatement node) {
+		/*public override bool Walk(FromImportStatement node)
+        {
 			node.Parent = _currentScope;
 			
 			if (node.Names != FromImportStatement.Star) {
@@ -492,8 +516,7 @@ namespace Expresso.Ast
 		
 		// FunctionDefinition
 		public override void PostWalk(FunctionDefinition node)
-		{
-			Debug.Assert(cur_scope == node);
+        {
 			PopScope();
 		}
 		
@@ -593,9 +616,7 @@ namespace Expresso.Ast
 		public override bool Walk(VarDeclaration node)
 		{
 			node.Parent = cur_scope;
-			foreach(var lhs in node.Left)
-				lhs.Walk(define);
-
+            node.Walk(define);
 			return true;
 		}
 		

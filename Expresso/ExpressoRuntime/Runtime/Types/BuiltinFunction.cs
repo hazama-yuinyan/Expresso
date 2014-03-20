@@ -352,7 +352,7 @@ namespace Expresso.Runtime.Types
 						}
 					}
 					
-					throw ExpressoOps.InvalidTypeError(hasGenerics ? string.Format("bad type args to this generic method {0}", Name) :
+					throw ExpressoOps.MakeInvalidTypeError(hasGenerics ? string.Format("bad type args to this generic method {0}", Name) :
 					                                   string.Format("{0} is not a generic method and is unsubscriptable", Name));
 				}
 				

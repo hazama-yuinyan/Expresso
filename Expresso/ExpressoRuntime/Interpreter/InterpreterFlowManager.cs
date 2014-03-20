@@ -111,7 +111,7 @@ namespace Expresso.Interpreter
 		{
 #if DEBUG
 			if(offset < 0 || offset > stack.Count)
-				throw ExpressoOps.RuntimeError("Memory offset is out of range!");
+				throw ExpressoOps.MakeRuntimeError("Memory offset is out of range!");
 #endif
 			stack[offset] = value;
 		}
@@ -120,7 +120,7 @@ namespace Expresso.Interpreter
 		{
 #if DEBUG
 			if(offset < 0 || offset > stack.Count)
-				throw ExpressoOps.RuntimeError("Memory offset is out of range!");
+				throw ExpressoOps.MakeRuntimeError("Memory offset is out of range!");
 #endif
 			return stack[offset];
 		}
@@ -129,7 +129,7 @@ namespace Expresso.Interpreter
 		{
 #if DEBUG
 			if(offset < 0 || offset > stack.Count)
-				throw ExpressoOps.RuntimeError("Memory offset is out of range!");
+				throw ExpressoOps.MakeRuntimeError("Memory offset is out of range!");
 #endif
 			stack.RemoveAt(offset);
 		}
@@ -138,7 +138,7 @@ namespace Expresso.Interpreter
 		{
 #if DEBUG
 			if(srcIndex < 0 || srcIndex > stack.Count)
-				throw ExpressoOps.RuntimeError("Memory offset is out of range!");
+				throw ExpressoOps.MakeRuntimeError("Memory offset is out of range!");
 #endif
 			stack.Add(stack[srcIndex]);
 		}
@@ -151,13 +151,24 @@ namespace Expresso.Interpreter
         /// <param name="childCounter">Child counter.</param>
 		public void Push(Node node, int childCounter = 0)
 		{
-			var frame = new EvaluationFrame(node, (node is Call) ? stack.Count :
-			                                	(cur_scope != null) ? cur_scope.ScopeFramePointer : 0,
+            var frame = new EvaluationFrame(node, (cur_scope == null) ? 0 :
+                                                  ShouldIntroduceScope(node) ? stack.Count : cur_scope.ScopeFramePointer,
 			                                childCounter, this);
 			frames.Add(frame);
 			if(node is Call)
 				cur_scope = frame;
 		}
+
+        /// <summary>
+        /// Pushes a new evaluation frame without introducing a new scope.
+        /// </summary>
+        /// <param name="node">Node.</param>
+        /// <param name="childCounter">Child counter.</param>
+        public void PushWithoutScope(Node node, int childCounter = 0)
+        {
+            var frame = new EvaluationFrame(node, (cur_scope != null) ? cur_scope.ScopeFramePointer : 0, childCounter, this);
+            frames.Add(frame);
+        }
 
         /// <summary>
         /// Pushes a value on the stack.
@@ -166,7 +177,7 @@ namespace Expresso.Interpreter
 		public void PushValue(object item)
 		{
 			if(stack.Count == MaxStackSize)
-				throw ExpressoOps.RuntimeError("Stack overflow");
+				throw ExpressoOps.MakeRuntimeError("Stack overflow");
 
 			stack.Add(item);
 		}
@@ -235,6 +246,11 @@ namespace Expresso.Interpreter
 		{
 			return frames.Any(x => x.TargetNode == node);
 		}
+
+        private bool ShouldIntroduceScope(Node targetNode)
+        {
+            return targetNode is Call && frames[frames.Count - 1].TargetNode is Call;
+        }
 
 		public override string ToString()
 		{

@@ -119,14 +119,14 @@ namespace Expresso.Interpreter
 		{
 			Interpreter.CurRuntime = this;
 			if(MainModule == null)
-				throw ExpressoOps.ReferenceError("Missing main module!");
+				throw ExpressoOps.MakeReferenceError("Missing main module!");
 
 			Interpret(MainModule, global_context.SharedContext);
 
 			var main_module = global_context.GetModule("main");
 			var main_func = main_module.LookupMember("main") as FunctionDefinition;
 			if(main_func == null)
-				throw ExpressoOps.RuntimeError("No entry point");
+				throw ExpressoOps.MakeRuntimeError("No entry point");
 
 			if(args == null)
 				args = new List<object>();
@@ -202,7 +202,7 @@ namespace Expresso.Interpreter
 								for(int j = 0; j < rhs.Count; ++j){
 									var assignable = seq.Items[j] as Assignable;
 									if(assignable == null)
-										throw ExpressoOps.RuntimeError("{0} is not an assignable reference.", seq.Items[j]);
+										throw ExpressoOps.MakeRuntimeError("{0} is not an assignable reference.", seq.Items[j]);
 							
 									assignable.Assign(flow_manager.Top(), rhs[j]);
 								}
@@ -233,7 +233,7 @@ namespace Expresso.Interpreter
 
 							object rhs = flow_manager.PopValue(), lhs = flow_manager.PopValue();
 							if(lhs == null || rhs == null)
-								throw ExpressoOps.RuntimeError("Can not apply the operation on null objects.");
+								throw ExpressoOps.MakeRuntimeError("Can not apply the operation on null objects.");
 
 							object ret = null;
 							if((int)binary_op.Operator <= (int)OperatorType.MOD){
@@ -408,7 +408,7 @@ namespace Expresso.Interpreter
 						var catch_clause = (CatchClause)node;
 						var exception = flow_manager.TopValue() as ExpressoThrowException;
                         if(exception == null){
-							throw ExpressoOps.SystemError("The top value of stack is not an exception.");
+							throw ExpressoOps.MakeSystemError("The top value of stack is not an exception.");
                         }else if(catch_clause.Catcher.ParamType.TypeName == exception.Thrown.Name){
 							node = catch_clause.Body;
 							goto case NodeType.Block;
@@ -441,7 +441,7 @@ namespace Expresso.Interpreter
                         case 1:
                             var cond = flow_manager.TopValue();
                             if(!(cond is bool))
-                                throw ExpressoOps.InvalidTypeError("Can not evaluate the expression to a boolean.");
+                                throw ExpressoOps.MakeInvalidTypeError("Can not evaluate the expression to a boolean.");
 
                             if((bool)cond){
                                 var yield_expr = flow_manager.Top().Get(0) as Expression;
@@ -531,13 +531,13 @@ namespace Expresso.Interpreter
 						{
 							object iterable = flow_manager.TopValue();
 							if(!(iterable is IEnumerable))
-								throw ExpressoOps.InvalidTypeError("Can not evaluate the expression to an iterable object!");
+								throw ExpressoOps.MakeInvalidTypeError("Can not evaluate the expression to an iterable object!");
 
 							Identifier[] lvalues = new Identifier[for_stmt.Left.Count];
 							for(int i = 0; i < for_stmt.Left.Count; ++i){
 								lvalues[i] = for_stmt.Left.Items[i] as Identifier;
 								if(lvalues[i] == null)
-									throw ExpressoOps.ReferenceError("The left-hand-side of the \"in\" keyword must be a lvalue(a referencible value such as variables)");
+									throw ExpressoOps.MakeReferenceError("The left-hand-side of the \"in\" keyword must be a lvalue(a referencible value such as variables)");
 							}
 							flow_manager.PushValue(lvalues);
 							flow_manager.Top().StepCounter++;
@@ -553,7 +553,7 @@ namespace Expresso.Interpreter
 									lhs[j].Assign(flow_manager.Top(), rvalue.Current);
 									if(j + 1 != lhs.Length){
 										if(!rvalue.MoveNext())
-											throw ExpressoOps.RuntimeError("The number of rvalues must be some multiple of that of lvalues.");
+											throw ExpressoOps.MakeRuntimeError("The number of rvalues must be some multiple of that of lvalues.");
 									}
 								}
 
@@ -583,13 +583,13 @@ namespace Expresso.Interpreter
                         }else if(ident.ParamType.ObjType == ObjectTypes.TypeClass){
 							var cur_module = flow_manager.Top().Get(0) as ExpressoObj;
 							if(cur_module == null)
-								throw ExpressoOps.RuntimeError("\"this\" doesn't refer to the enclosing class instance.");
+								throw ExpressoOps.MakeRuntimeError("\"this\" doesn't refer to the enclosing class instance.");
 							
 							flow_manager.PushValue(cur_module.AccessMember(ident, true));
 						}else if(ident.ParamType.ObjType == ObjectTypes.TypeModule){
 							var module = context.LanguageContext.GetModule(ident.Name);
 							if(module == null)
-								throw ExpressoOps.RuntimeError(string.Format("The requested module \"{0}\" doesn't exist.", ident.Name));
+								throw ExpressoOps.MakeRuntimeError(string.Format("The requested module \"{0}\" doesn't exist.", ident.Name));
 							
 							flow_manager.PushValue(module);
 						}
@@ -663,7 +663,7 @@ namespace Expresso.Interpreter
 							}
 
 							default:
-								throw ExpressoOps.RuntimeError("Unknown type of initializer!");
+								throw ExpressoOps.MakeRuntimeError("Unknown type of initializer!");
 							}
 						}
 						break;
@@ -673,7 +673,7 @@ namespace Expresso.Interpreter
 					{
 						var mem_ref = (MemberReference)node;
 						if(!flow_manager.IsEvaluating(mem_ref))
-							flow_manager.Push(mem_ref);
+                            flow_manager.Push(mem_ref);
 
 						switch(flow_manager.Top().StepCounter){
 						case 0:
@@ -705,7 +705,7 @@ namespace Expresso.Interpreter
 							break;
 
 						default:
-							throw ExpressoOps.SystemError("Unknown path reached while evaluating a member reference expression!");
+							throw ExpressoOps.MakeSystemError("Unknown path reached while evaluating a member reference expression!");
 						}
 						break;
 					}
@@ -745,7 +745,7 @@ namespace Expresso.Interpreter
 												//varStore.Add(var_decls.Variables[i].Offset, obj);	//モジュールスコープの変数ストアにも実体を追加しておく
 											}
 										}else{
-											throw ExpressoOps.InvalidTypeError("A module declaration can not have that type of statements!");
+											throw ExpressoOps.MakeInvalidTypeError("A module declaration can not have that type of statements!");
 										}
 									}else if(stmt is FunctionDefinition){
 										var method = (FunctionDefinition)stmt;
@@ -757,7 +757,7 @@ namespace Expresso.Interpreter
 										decl_target.Add(type_decl.Name, offset++);
 										members.Add(type_def);
 									}else{
-										throw ExpressoOps.InvalidTypeError("A module declaration can not have that type of statements!");
+										throw ExpressoOps.MakeInvalidTypeError("A module declaration can not have that type of statements!");
 									}
 								}
 
@@ -783,7 +783,7 @@ namespace Expresso.Interpreter
 
 							var type_def = flow_manager.PopValue() as BaseDefinition;
 							if(type_def == null)
-								throw ExpressoOps.InvalidTypeError("{0} doesn't refer to a type name.", new_expr.TargetExpr);
+								throw ExpressoOps.MakeInvalidTypeError("{0} doesn't refer to a type name.", new_expr.TargetExpr);
 
 							flow_manager.PushValue(ExpressoObj.CreateInstance(null, type_def, new_expr.Arguments));
 						}
@@ -877,13 +877,13 @@ namespace Expresso.Interpreter
 							var end = flow_manager.PopValue();
 							var start = flow_manager.PopValue();
 							if(!(start is int) || !(end is int) || !(step is int))
-								throw ExpressoOps.InvalidTypeError("The start, end and step expressions of the IntSeq expression must yield an integer.");
+								throw ExpressoOps.MakeInvalidTypeError("The start, end and step expressions of the IntSeq expression must yield an integer.");
 
 							flow_manager.PushValue(new ExpressoIntegerSequence((int)start, (int)end, (int)step));
 							break;
 
 						default:
-							throw ExpressoOps.SystemError("An error occurred while evaluating an IntegerSequence expression.");
+							throw ExpressoOps.MakeSystemError("An error occurred while evaluating an IntegerSequence expression.");
 						}
 						break;
 					}
@@ -938,7 +938,7 @@ namespace Expresso.Interpreter
 							break;
 
 						default:
-							throw ExpressoOps.SystemError("Unknown path reached while evaluating a switch statement!");
+							throw ExpressoOps.MakeSystemError("Unknown path reached while evaluating a switch statement!");
 						}
 						break;
 					}
@@ -1046,7 +1046,7 @@ namespace Expresso.Interpreter
                                             members.Add(val);
                                         }
                                     }else{
-                                        throw ExpressoOps.InvalidTypeError("A type declaration can not have that type of statements!");
+                                        throw ExpressoOps.MakeInvalidTypeError("A type declaration can not have that type of statements!");
                                     }
                                 }else if(stmt is FunctionDefinition){
                                     var method = (FunctionDefinition)stmt;
@@ -1057,7 +1057,7 @@ namespace Expresso.Interpreter
                                     
                                     members.Add(val);
                                 }else{
-                                    throw ExpressoOps.InvalidTypeError("A type declaration can not have that type of statements!");
+                                    throw ExpressoOps.MakeInvalidTypeError("A type declaration can not have that type of statements!");
                                 }
                             }
                             
@@ -1066,7 +1066,7 @@ namespace Expresso.Interpreter
                             for(int i = 0; i < type_def.Bases.Length; ++i){
                                 BaseDefinition base_def = flow_manager.Top().Get(i) as BaseDefinition;
                                 if(base_def == null){
-                                    throw ExpressoOps.RuntimeError("Something wrong has occurred.\n Could not find base type '{0}'",
+                                    throw ExpressoOps.MakeRuntimeError("Something wrong has occurred.\n Could not find base type '{0}'",
                                         type_def.Bases[i].Name);
                                 }
                                 base_definitions.Add(base_def);
@@ -1092,7 +1092,7 @@ namespace Expresso.Interpreter
                             break;
 
                         default:
-                            throw ExpressoOps.SystemError("Unknown path reached while evaluating a type definition.");
+                            throw ExpressoOps.MakeSystemError("Unknown path reached while evaluating a type definition.");
                         }
 						break;
 					}
@@ -1109,7 +1109,7 @@ namespace Expresso.Interpreter
 
 							var ope = flow_manager.PopValue();
 							if(ope == null)
-								throw ExpressoOps.InvalidTypeError("Invalid object type!");
+								throw ExpressoOps.MakeInvalidTypeError("Invalid object type!");
 							
 							flow_manager.PushValue(EvalUnaryOperation(unary_op.Operator, ope));
 						}
@@ -1157,12 +1157,12 @@ namespace Expresso.Interpreter
 							}
 							catch(Exception){
 								if(!(cond is bool))
-									throw ExpressoOps.InvalidTypeError("Invalid expression! The condition of a while statement must yield a boolean!");
+									throw ExpressoOps.MakeInvalidTypeError("Invalid expression! The condition of a while statement must yield a boolean!");
 							}
 							break;
 
 						default:
-							throw ExpressoOps.SystemError("Unknown path reached while evaluating a while statement!");
+							throw ExpressoOps.MakeSystemError("Unknown path reached while evaluating a while statement!");
 						}
 						break;
 					}
@@ -1174,7 +1174,7 @@ namespace Expresso.Interpreter
 						break;
 
 					default:
-						throw ExpressoOps.RuntimeError("Unknown AST type!");
+						throw ExpressoOps.MakeRuntimeError("Unknown AST type!");
 					}
 
 					if(flow_manager.Count != 0)
@@ -1184,13 +1184,13 @@ namespace Expresso.Interpreter
 				}
 			}
 			catch(Exception ex){
-				Type exception_type = ex.GetType();
-				Console.WriteLine("{0}: {1}", exception_type.FullName, ex.Message);
+                Type exception_type = ex.GetType();
+                Console.WriteLine("{0}: {1}", exception_type.FullName, ex.Message);
                 Console.WriteLine("Stack trace: {0}", ex.StackTrace);
 			}
 
             Debug.Assert(flow_manager.ValueCount == 0 || flow_manager.ValueCount == 1);
-			return (flow_manager.ValueCount > 0) ? flow_manager.PopValue() : null;
+            return (flow_manager.ValueCount > 0) ? flow_manager.PopValue() : null;
 		}
 
 		static int BinaryExprAsInt(int lhs, int rhs, OperatorType opType)
@@ -1223,7 +1223,7 @@ namespace Expresso.Interpreter
 				break;
 				
 			default:
-				throw ExpressoOps.SystemError("Unreachable code");
+				throw ExpressoOps.MakeSystemError("Unreachable code");
 			}
 			
 			return result;
@@ -1259,7 +1259,7 @@ namespace Expresso.Interpreter
 				break;
 				
 			default:
-				throw ExpressoOps.SystemError("Unreachable code");
+				throw ExpressoOps.MakeSystemError("Unreachable code");
 			}
 			
 			return result;
@@ -1268,7 +1268,7 @@ namespace Expresso.Interpreter
 		static Fraction BinaryExprAsFraction(Fraction lhs, object rhs, OperatorType opType)
 		{
 			if(!(rhs is Fraction) && !(rhs is long) && !(rhs is int) && !(rhs is double))
-				throw ExpressoOps.InvalidTypeError("The right operand have to be either a long, int, double or fraction!");
+				throw ExpressoOps.MakeInvalidTypeError("The right operand have to be either a long, int, double or fraction!");
 			
 			Fraction result;
 			
@@ -1298,7 +1298,7 @@ namespace Expresso.Interpreter
 				break;
 				
 			default:
-				throw ExpressoOps.SystemError("Unreachable code");
+				throw ExpressoOps.MakeSystemError("Unreachable code");
 			}
 			
 			return result;
@@ -1315,7 +1315,7 @@ namespace Expresso.Interpreter
 				
 			case OperatorType.TIMES:
 				if(!(rhs is int))
-					throw ExpressoOps.InvalidTypeError("Can not muliply string by objects other than an integer.");
+					throw ExpressoOps.MakeInvalidTypeError("Can not muliply string by objects other than an integer.");
 				
 				int times = (int)rhs;
 				var sb = new StringBuilder(lhs.Length * times);
@@ -1325,7 +1325,7 @@ namespace Expresso.Interpreter
 				break;
 				
 			default:
-				throw ExpressoOps.RuntimeError("Strings don't support that operation!");
+				throw ExpressoOps.MakeRuntimeError("Strings don't support that operation!");
 			}
 			
 			return result;
@@ -1334,7 +1334,7 @@ namespace Expresso.Interpreter
 		static bool EvalComparison(IComparable lhs, IComparable rhs, OperatorType opType)
 		{
 			if(lhs == null || rhs == null)
-				throw ExpressoOps.InvalidTypeError("The operands can not be compared");
+				throw ExpressoOps.MakeInvalidTypeError("The operands can not be compared");
 			
 			switch (opType) {
 			case OperatorType.EQUAL:
@@ -1393,7 +1393,7 @@ namespace Expresso.Interpreter
 				return lhs >> rhs;
 				
 			default:
-				throw ExpressoOps.RuntimeError("Invalid Operation!");
+				throw ExpressoOps.MakeRuntimeError("Invalid Operation!");
 			}
 		}
 
@@ -1408,12 +1408,12 @@ namespace Expresso.Interpreter
 				else if(operand is Fraction)
 					result = -(Fraction)operand;
 				else
-					throw ExpressoOps.InvalidTypeError("The minus operator is not applicable to the operand!");
+					throw ExpressoOps.MakeInvalidTypeError("The minus operator is not applicable to the operand!");
 			}else if(opType == OperatorType.NOT){
 				if(operand is bool)
 					result = !(bool)operand;
 				else
-					throw ExpressoOps.InvalidTypeError("The not operator is not applicable to the operand!");
+					throw ExpressoOps.MakeInvalidTypeError("The not operator is not applicable to the operand!");
 			}
 
 			return result;

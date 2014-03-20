@@ -81,8 +81,6 @@
     <Compile Include="Ast\Statement.cs" />
     <Compile Include="Ast\UnaryExpression.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Interpreter\Interpreter.cs" />
-    <Compile Include="BuiltIns\Primitives.cs" />
     <Compile Include="Parser.cs" />
     <Compile Include="Scanner.cs" />
     <Compile Include="Ast\VarDeclaration.cs" />
@@ -90,7 +88,6 @@
     <Compile Include="Ast\IfStatement.cs" />
     <Compile Include="Ast\WhileStatement.cs" />
     <Compile Include="Ast\ForStatement.cs" />
-    <Compile Include="BuiltIns\Functions.cs" />
     <Compile Include="Ast\Argument.cs" />
     <Compile Include="Ast\ControlFlow.cs" />
     <Compile Include="Ast\SwitchStatement.cs" />
@@ -98,9 +95,7 @@
     <Compile Include="Ast\MemberReference.cs" />
     <Compile Include="Ast\Comprehension.cs" />
     <Compile Include="Ast\Identifier.cs" />
-    <Compile Include="BuiltIns\Library.cs" />
     <Compile Include="Ast\TryStatement.cs" />
-    <Compile Include="Interpreter\ExpressoThrowException.cs" />
     <Compile Include="Ast\WithStatement.cs" />
     <Compile Include="Ast\ThrowStatement.cs" />
     <Compile Include="Compiler\CSharpEmitter.cs" />
@@ -110,23 +105,11 @@
     <Compile Include="Ast\NewExpression.cs" />
     <Compile Include="Compiler\EmitterException.cs" />
     <Compile Include="Ast\YieldStatement.cs" />
-    <Compile Include="Runtime\ImplementationHelpers.cs" />
-    <Compile Include="BuiltIns\ExpressoIntegerSequence.cs" />
-    <Compile Include="BuiltIns\ExpressoTuple.cs" />
-    <Compile Include="BuiltIns\Fraction.cs" />
     <Compile Include="Attributes\ExpressoHiddenAttribute.cs" />
-    <Compile Include="Runtime\Exceptions\RuntimeException.cs" />
-    <Compile Include="Runtime\Exceptions\InvalidTypeException.cs" />
-    <Compile Include="Runtime\Exceptions\ImportException.cs" />
-    <Compile Include="Runtime\Exceptions\ReferenceException.cs" />
     <Compile Include="Attributes\ExpressoTypeAttribute.cs" />
-    <Compile Include="Runtime\Exceptions\TypeNotFoundException.cs" />
-    <Compile Include="Runtime\Exceptions\SystemException.cs" />
     <Compile Include="Ast\AssertStatement.cs" />
     <Compile Include="Compiler\ExpressoWalker.cs" />
     <Compile Include="Ast\CastExpression.cs" />
-    <Compile Include="Interpreter\InterpreterFlowManager.cs" />
-    <Compile Include="Runtime\Exceptions\InvalidValueException.cs" />
     <Compile Include="Ast\ExpressoAst.cs" />
     <Compile Include="NativeDebugger\CollectionDebugView.cs" />
     <Compile Include="NativeDebugger\ExpressoObjectDebugView.cs" />
@@ -136,19 +119,10 @@
     <Compile Include="Ast\ScopeStatement.cs" />
     <Compile Include="Ast\FunctionDefinition.cs" />
     <Compile Include="Ast\TypeDefinition.cs" />
-    <Compile Include="Runtime\FunctionCode.cs" />
     <Compile Include="Ast\EmptyStatement.cs" />
-    <Compile Include="Runtime\CodeContext.cs" />
-    <Compile Include="Runtime\ModuleContext.cs" />
-    <Compile Include="Runtime\ExpressoContext.cs" />
-    <Compile Include="Runtime\ExpressoModule.cs" />
-    <Compile Include="Runtime\Types\ExpressoType.cs" />
-    <Compile Include="Runtime\Exceptions\AssertionFailedException.cs" />
     <Compile Include="Compiler\Meta\TypeDefinition.cs" />
     <Compile Include="Compiler\Meta\TypeAnnotation.cs" />
-    <Compile Include="Runtime\ExpressoObj.cs" />
     <Compile Include="Ast\SequenceExpression.cs" />
-    <Compile Include="Runtime\Types\InstanceCreator.cs" />
     <Compile Include="Ast\Walkers\ExpressoNameBinder.cs" />
     <Compile Include="Ast\Walkers\FlowChecker.cs" />
     <Compile Include="Ast\HelperNodes\ExpressoReference.cs" />
@@ -157,19 +131,11 @@
     <Compile Include="Ast\HelperNodes\IReferencible.cs" />
     <Compile Include="Ast\DefaultExpression.cs" />
     <Compile Include="Ast\HelperNodes\Assignable.cs" />
-    <Compile Include="Runtime\Types\BuiltinFunction.cs" />
     <Compile Include="Micellaneous\SourceLocation.cs" />
     <Compile Include="Micellaneous\SourceSpan.cs" />
     <Compile Include="Micellaneous\Assert.cs" />
     <Compile Include="Micellaneous\Interfaces.cs" />
-    <Compile Include="Runtime\Operations\ExpressoOps.cs" />
-    <Compile Include="Runtime\Operations\DelegateOps.cs" />
-    <Compile Include="Runtime\Converter.cs" />
-    <Compile Include="Runtime\Binding\ExpressoBinder.cs" />
     <Compile Include="Compiler\Meta\SystemTypeDefinition.cs" />
-    <Compile Include="Runtime\Types\DynamicHelpers.cs" />
-    <Compile Include="Runtime\Operations\ExpressoTypeOps.cs" />
-    <Compile Include="Runtime\Binding\ExpressoInvokeBinder.cs" />
     <Compile Include="Micellaneous\CallSignature.cs" />
     <Compile Include="Micellaneous\ArgumentInfo.cs" />
     <Compile Include="Micellaneous\ContractUtils.cs" />
@@ -178,6 +144,8 @@
     <Compile Include="Ast\HelperNodes\LateBindExpression.cs" />
     <Compile Include="Attributes\ExpressoModuleAttibute.cs" />
     <Compile Include="Ast\HelperNodes\IFlaggable.cs" />
+    <Compile Include="AstManipulation\InferenceHelper.cs" />
+    <Compile Include="ParserException.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -188,31 +156,33 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Expresso.ATG" />
+    <None Include="Bugs.txt" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Interpreter\" />
-    <Folder Include="BuiltIns\" />
     <Folder Include="Compiler\" />
-    <Folder Include="Runtime\" />
     <Folder Include="Attributes\" />
     <Folder Include="NativeDebugger\" />
-    <Folder Include="Runtime\Types\" />
     <Folder Include="Compiler\Meta\" />
     <Folder Include="Ast\Walkers\" />
     <Folder Include="Ast\HelperNodes\" />
     <Folder Include="Micellaneous\" />
-    <Folder Include="Runtime\Operations\" />
-    <Folder Include="Runtime\Binding\" />
+    <Folder Include="AstManipulation\" />
   </ItemGroup>
   <ProjectExtensions>
     <MonoDevelop>
       <Properties>
         <Policies>
-          <TextStylePolicy inheritsSet="VisualStudio" inheritsScope="text/plain" scope="text/x-csharp" />
+          <TextStylePolicy EolMarker="Unix" inheritsSet="VisualStudio" inheritsScope="text/plain" scope="text/x-csharp" />
           <CSharpFormattingPolicy AnonymousMethodBraceStyle="EndOfLineWithoutSpace" PropertyBraceStyle="EndOfLineWithoutSpace" PropertyGetBraceStyle="EndOfLineWithoutSpace" PropertySetBraceStyle="EndOfLineWithoutSpace" EventBraceStyle="EndOfLineWithoutSpace" EventAddBraceStyle="EndOfLineWithoutSpace" EventRemoveBraceStyle="EndOfLineWithoutSpace" StatementBraceStyle="EndOfLineWithoutSpace" CatchNewLinePlacement="NewLine" FinallyNewLinePlacement="NewLine" WhileNewLinePlacement="DoNotCare" ArrayInitializerWrapping="DoNotChange" ArrayInitializerBraceStyle="NextLine" BeforeMethodDeclarationParentheses="False" BeforeMethodCallParentheses="False" BeforeConstructorDeclarationParentheses="False" BeforeIndexerDeclarationBracket="False" BeforeDelegateDeclarationParentheses="False" NewParentheses="False" IfParentheses="False" WhileParentheses="False" ForParentheses="False" ForeachParentheses="False" CatchParentheses="False" SwitchParentheses="False" LockParentheses="False" UsingParentheses="False" SpacesBeforeBrackets="False" BlankLinesAfterUsings="2" inheritsSet="Mono" inheritsScope="text/x-csharp" scope="text/x-csharp" />
-          <TextStylePolicy inheritsSet="VisualStudio" inheritsScope="text/plain" scope="text/plain" />
+          <TextStylePolicy EolMarker="Unix" inheritsSet="VisualStudio" inheritsScope="text/plain" scope="text/plain" />
         </Policies>
       </Properties>
     </MonoDevelop>
   </ProjectExtensions>
+  <ItemGroup>
+    <ProjectReference Include="..\Libraries\NRefactory\ICSharpCode.NRefactory\ICSharpCode.NRefactory.csproj">
+      <Project>{3B2A5653-EC97-4001-BB9B-D90F1AF2C371}</Project>
+      <Name>ICSharpCode.NRefactory</Name>
+    </ProjectReference>
+  </ItemGroup>
 </Project>

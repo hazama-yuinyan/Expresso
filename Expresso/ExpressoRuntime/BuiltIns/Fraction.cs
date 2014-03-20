@@ -186,7 +186,7 @@ namespace Expresso.Builtins
 			else if(y is double)
 				return Power((double)y);
 			else
-				throw ExpressoOps.InvalidTypeError("The power operation cann't take that type of object as the right operand.");
+				throw ExpressoOps.MakeInvalidTypeError("The power operation cann't take that type of object as the right operand.");
 		}
 		
 		#region Arithmetic operators
@@ -232,7 +232,7 @@ namespace Expresso.Builtins
 			else if(rhs is double)
 				return lhs + (double)rhs;
 			else
-				throw ExpressoOps.InvalidTypeError("Can not apply the + operator on that type of object.");
+				throw ExpressoOps.MakeInvalidTypeError("Can not apply the + operator on that type of object.");
 		}
 		
 		/// <remarks>The unary operator minus.</remarks>
@@ -272,7 +272,7 @@ namespace Expresso.Builtins
 			else if(rhs is double)
 				return lhs - (double)rhs;
 			else
-				throw ExpressoOps.InvalidTypeError("Can not apply the - operator on that type of object.");
+				throw ExpressoOps.MakeInvalidTypeError("Can not apply the - operator on that type of object.");
 		}
 		
 		public static Fraction operator*(Fraction lhs, Fraction rhs)
@@ -307,7 +307,7 @@ namespace Expresso.Builtins
 			else if(rhs is double)
 				return lhs * (double)rhs;
 			else
-				throw ExpressoOps.InvalidTypeError("Can not apply the * operator on that type of object.");
+				throw ExpressoOps.MakeInvalidTypeError("Can not apply the * operator on that type of object.");
 		}
 		
 		public static Fraction operator/(Fraction lhs, Fraction rhs)
@@ -345,7 +345,7 @@ namespace Expresso.Builtins
 			else if(rhs is double)
 				return lhs / (double)rhs;
 			else
-				throw ExpressoOps.InvalidTypeError("Can not apply the / operator on that type of object.");
+				throw ExpressoOps.MakeInvalidTypeError("Can not apply the / operator on that type of object.");
 		}
 		
 		public static Fraction operator%(Fraction lhs, Fraction rhs)
@@ -389,7 +389,7 @@ namespace Expresso.Builtins
 			else if(rhs is double)
 				return lhs % (double)rhs;
 			else
-				throw ExpressoOps.InvalidTypeError("Can not apply the % operator on that type of object.");
+				throw ExpressoOps.MakeInvalidTypeError("Can not apply the % operator on that type of object.");
 		}
 		#endregion
 		

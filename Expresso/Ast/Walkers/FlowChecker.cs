@@ -84,26 +84,26 @@ namespace Expresso.Ast
 			fc = flowChecker;
 		}
 		
-		public override bool Walk(Identifier node)
+		public override bool Walk(Identifier ident)
 		{
-			fc.Define(node.Name);
+			fc.Define(ident.Name);
 			return false;
 		}
 		
-		public override bool Walk(MemberReference node)
+		public override bool Walk(MemberReference memRef)
 		{
-			node.Walk(fc);
+			memRef.Walk(fc);
 			return false;
 		}
 		
-		public override bool Walk(SequenceExpression node)
+		public override bool Walk(SequenceExpression seqExpr)
 		{
 			return true;
 		}
 		
-		public override bool Walk(Argument node)
+		public override bool Walk(Argument arg)
 		{
-			fc.Define(node.Name);
+			fc.Define(arg.Name);
 			return true;
 		}
 	}
@@ -222,45 +222,45 @@ namespace Expresso.Ast
 		//public override bool Walk(LambdaExpression node) { return false; }
 		
 		// Comprehension
-		public override bool Walk(Comprehension node)
+		public override bool Walk(Comprehension comprehension)
 		{
 			BitArray save = bits;
 			bits = new BitArray(bits);
 			
-			node.Body.Walk(this);
-			node.Item.Walk(this);
+			comprehension.Body.Walk(this);
+			comprehension.Item.Walk(this);
 			
 			bits = save;
 			return false;
 		}
 
 		// ComprehensionFor
-		public override bool Walk(ComprehensionFor node)
+		public override bool Walk(ComprehensionFor compFor)
 		{
-			return base.Walk(node);
+			return base.Walk(compFor);
 		}
 
 		// ComprehensionIf
-		public override bool Walk(ComprehensionIf node)
+		public override bool Walk(ComprehensionIf compIf)
 		{
-			return base.Walk(node);
+			return base.Walk(compIf);
 		}
 
 		// SequenceInitializer
-		public override bool Walk(SequenceInitializer node)
+		public override bool Walk(SequenceInitializer seqInitializer)
 		{
-			foreach(var e in node.Items)
+			foreach(var e in seqInitializer.Items)
 				e.Walk(this);
 
 			return false;
 		}
 		
 		// Identifier
-		public override bool Walk(Identifier node)
+		public override bool Walk(Identifier ident)
 		{
 			ExpressoVariable binding;
-			if(variables.TryGetValue(node.Name, out binding)){
-				node.Assigned = IsAssigned(binding);
+			if(variables.TryGetValue(ident.Name, out binding)){
+				ident.Assigned = IsAssigned(binding);
 				
 				if(!IsInitialized(binding)){
 					binding.ReadBeforeInitialized = true;
@@ -271,10 +271,10 @@ namespace Expresso.Ast
 		public override void PostWalk(Identifier node) { }
 		
 		// AssignStmt
-		public override bool Walk(Assignment node)
+		public override bool Walk(Assignment assignment)
 		{
-			node.Right.Walk(this);
-			foreach(Expression e in node.Left)
+			assignment.Right.Walk(this);
+			foreach(Expression e in assignment.Left)
 				e.Walk(fdef);
 
 			return false;
@@ -282,7 +282,7 @@ namespace Expresso.Ast
 		public override void PostWalk(Assignment node) { }
 		
 		// BreakStmt
-		public override bool Walk(BreakStatement node)
+		public override bool Walk(BreakStatement breakStmt)
 		{
 			BitArray exit = PeekLoop();
 			if(exit != null){ // break outside loop
@@ -292,14 +292,14 @@ namespace Expresso.Ast
 		}
 		
 		// TypeDef
-		public override bool Walk(TypeDefinition node)
+		public override bool Walk(TypeDefinition typeDef)
 		{
-			if(scope == node){
+			if(scope == typeDef){
 				// the class body is being analyzed, go deep:
 				return true;
 			}else{
 				// analyze the type definition itself (it is visited while analyzing parent scope):
-				Define(node.Name);
+				Define(typeDef.Name);
 				//foreach(Expression e in node.Bases){
 				//	e.Walk(this);
 				//}
@@ -311,21 +311,21 @@ namespace Expresso.Ast
 		public override bool Walk(ContinueStatement node) { return true; }
 		
 		// ForStmt
-		public override bool Walk(ForStatement node)
+		public override bool Walk(ForStatement fotStmt)
 		{
 			// Walk the expression
-			node.Target.Walk(this);
+			fotStmt.Target.Walk(this);
 			
 			BitArray opte = new BitArray(bits);
 			BitArray exit = new BitArray(bits.Length, true);
 			PushLoop(exit);
 			
 			// Define the lhs
-			if(node.HasLet)
-				node.Left.Walk(fdef);
+			if(fotStmt.HasLet)
+				fotStmt.Left.Walk(fdef);
 
 			// Walk the body
-			node.Body.Walk(this);
+			fotStmt.Body.Walk(this);
 			
 			PopLoop();
 			
@@ -338,28 +338,28 @@ namespace Expresso.Ast
 		}
 		
 		// RequireStmt
-		public override bool Walk(RequireStatement node)
+		public override bool Walk(RequireStatement requireStmt)
 		{
 			// A Require statement always introduce new variable(s) into the module scope.
-			for(int i = 0; i < node.ModuleNames.Length; ++i)
-				Define(node.AliasNames[i] != null ? node.AliasNames[i] : node.ModuleNames[i]);
+			for(int i = 0; i < requireStmt.ModuleNames.Length; ++i)
+				Define(requireStmt.AliasNames[i] != null ? requireStmt.AliasNames[i] : requireStmt.ModuleNames[i]);
 
 			return true;
 		}
 		
 		// FuncDef
-		public override bool Walk(FunctionDefinition node)
+		public override bool Walk(FunctionDefinition funcDef)
 		{
-			if(node == scope){
+			if(funcDef == scope){
 				// the function body is being analyzed, go deep:
-				foreach(Argument p in node.Parameters)
+				foreach(Argument p in funcDef.Parameters)
 					p.Walk(fdef);
 
 				return true;
 			}else{
 				// analyze the function definition itself (it is visited while analyzing parent scope):
-				Define(node.Name);
-				foreach(Argument p in node.Parameters){
+				Define(funcDef.Name);
+				foreach(Argument p in funcDef.Parameters){
 					if(p.Option != null)
 						p.Option.Walk(this);
 				} 
@@ -368,7 +368,7 @@ namespace Expresso.Ast
 		}
 		
 		// IfStmt
-		public override bool Walk(IfStatement node)
+		public override bool Walk(IfStatement ifStmt)
 		{
 			//BitArray result = new BitArray(bits.Length, true);
 			//BitArray save = bits;
@@ -411,7 +411,7 @@ namespace Expresso.Ast
 		public override void PostWalk(ReturnStatement node) { }
 		
 		// WithStmt
-		public override bool Walk(WithStatement node)
+		public override bool Walk(WithStatement withStmt)
 		{
 			// Walk the expression
 			/*node.ContextManager.Walk(this);
@@ -427,20 +427,20 @@ namespace Expresso.Ast
 			
 			_bits = save;
 			return false;*/
-			return base.Walk(node);
+			return base.Walk(withStmt);
 		}
 		
 		// TryStmt
-		public override bool Walk(TryStatement node)
+		public override bool Walk(TryStatement tryStmt)
 		{
 			BitArray save = bits;
 			bits = new BitArray(bits);
 			
 			// Flow the body
-			node.Body.Walk(this);
+			tryStmt.Body.Walk(this);
 			
-			if(node.Catches != null){
-				foreach(var handler in node.Catches){
+			if(tryStmt.Catches != null){
+				foreach(var handler in tryStmt.Catches){
 					// Restore to saved state
 					bits.SetAll(false);
 					bits.Or(save);
@@ -457,24 +457,24 @@ namespace Expresso.Ast
 			
 			bits = save;
 			
-			if(node.FinallyClause != null){
+			if(tryStmt.FinallyClause != null){
 				// Flow finally - this executes no matter what
-				node.FinallyClause.Walk(this);
+				tryStmt.FinallyClause.Walk(this);
 			}
 			
 			return false;
 		}
 		
 		// WhileStmt
-		public override bool Walk(WhileStatement node)
+		public override bool Walk(WhileStatement whileStmt)
 		{
 			// Walk the expression
-			node.Condition.Walk(this);
+			whileStmt.Condition.Walk(this);
 			
 			BitArray exit = new BitArray(bits.Length, true);
 			
 			PushLoop(exit);
-			node.Body.Walk(this);
+			whileStmt.Body.Walk(this);
 			PopLoop();
 			
 			bits.And(exit);
@@ -483,18 +483,18 @@ namespace Expresso.Ast
 		}
 
 		// ExpressionStmt
-		public override bool Walk(ExprStatement node)
+		public override bool Walk(ExprStatement exprStmt)
 		{
-			foreach(var expr in node.Expressions)
+			foreach(var expr in exprStmt.Expressions)
 				expr.Walk(this);
 
 			return false;
 		}
 
 		// VariableDecl
-		public override bool Walk(VarDeclaration node)
+		public override bool Walk(VarDeclaration varDecl)
 		{
-			foreach(var ident in node.Left)
+			foreach(var ident in varDecl.Left)
 				ident.Walk(fdef);
 
 			return false;

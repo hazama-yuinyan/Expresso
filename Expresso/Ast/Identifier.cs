@@ -124,7 +124,7 @@ namespace Expresso.Ast
 			if(Reference != null)
 				frame.Assign(this.Offset, val);
 			else
-				throw ExpressoOps.RuntimeError("Unbound name: {0}", name);
+				throw ExpressoOps.MakeRuntimeError("Unbound name: {0}", name);
 		}
 
 		public override string ToString()

@@ -142,7 +142,7 @@ namespace Expresso.Ast
 				break;
 				
 			default:
-				throw ExpressoOps.RuntimeError("Internal Error: Unreachable code");
+				throw ExpressoOps.MakeRuntimeError("Internal Error: Unreachable code");
 			}
 			
 			return result;
@@ -178,7 +178,7 @@ namespace Expresso.Ast
 				break;
 				
 			default:
-				throw ExpressoOps.RuntimeError("Internal Error: Unreachable code");
+				throw ExpressoOps.MakeRuntimeError("Internal Error: Unreachable code");
 			}
 			
 			return result;
@@ -187,7 +187,7 @@ namespace Expresso.Ast
 		Fraction BinaryExprAsFraction(Fraction lhs, object rhs, OperatorType opType)
 		{
 			if(!(rhs is Fraction) && !(rhs is long) && !(rhs is int) && !(rhs is double))
-				throw ExpressoOps.InvalidTypeError("The right operand have to be either a long, int, double or fraction!");
+				throw ExpressoOps.MakeInvalidTypeError("The right operand have to be either a long, int, double or fraction!");
 
 			Fraction result;
 
@@ -217,7 +217,7 @@ namespace Expresso.Ast
 				break;
 
 			default:
-				throw ExpressoOps.RuntimeError("Internal Error: Unreachable code");
+				throw ExpressoOps.MakeRuntimeError("Internal Error: Unreachable code");
 			}
 
 			return result;
@@ -234,7 +234,7 @@ namespace Expresso.Ast
 
 			case OperatorType.TIMES:
 				if(!(rhs is int))
-					throw ExpressoOps.InvalidTypeError("Can not muliply string by objects other than an integer.");
+					throw ExpressoOps.MakeInvalidTypeError("Can not muliply string by objects other than an integer.");
 
 				int times = (int)rhs;
 				var sb = new StringBuilder(lhs.Length * times);
@@ -244,7 +244,7 @@ namespace Expresso.Ast
 				break;
 
 			default:
-				throw ExpressoOps.RuntimeError("Strings don't support that operation!");
+				throw ExpressoOps.MakeRuntimeError("Strings don't support that operation!");
 			}
 
 			return result;
@@ -253,7 +253,7 @@ namespace Expresso.Ast
 		bool EvalComparison(IComparable lhs, IComparable rhs, OperatorType opType)
 		{
 			if(lhs == null || rhs == null)
-				throw ExpressoOps.InvalidTypeError("The operands can not be compared");
+				throw ExpressoOps.MakeInvalidTypeError("The operands can not be compared");
 			
 			switch (opType) {
 			case OperatorType.EQUAL:
@@ -312,7 +312,7 @@ namespace Expresso.Ast
 				return lhs >> rhs;
 
 			default:
-				throw ExpressoOps.RuntimeError("Invalid Operation!");
+				throw ExpressoOps.MakeRuntimeError("Invalid Operation!");
 			}
 		}
 		

@@ -29,6 +29,11 @@
     <PlatformTarget>x86</PlatformTarget>
     <Externalconsole>True</Externalconsole>
     <Commandlineparameters>../../ExpressoTest/sources/for_interpreter/basic_operations.exs</Commandlineparameters>
+    <BaseAddress>4194304</BaseAddress>
+    <RegisterForComInterop>False</RegisterForComInterop>
+    <GenerateSerializationAssemblies>Auto</GenerateSerializationAssemblies>
+    <FileAlignment>4096</FileAlignment>
+    <DefineConstants>DEBUG;</DefineConstants>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
     <DebugType>None</DebugType>
@@ -39,6 +44,11 @@
     <PlatformTarget>AnyCPU</PlatformTarget>
     <Externalconsole>True</Externalconsole>
     <Commandlineparameters>../../Expresso/tests/calc_prime_nums.exs</Commandlineparameters>
+    <BaseIntermediateOutputPath>obj\</BaseIntermediateOutputPath>
+    <BaseAddress>4194304</BaseAddress>
+    <RegisterForComInterop>False</RegisterForComInterop>
+    <GenerateSerializationAssemblies>Auto</GenerateSerializationAssemblies>
+    <FileAlignment>4096</FileAlignment>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <DefineConstants>DEBUG;</DefineConstants>
@@ -65,6 +75,10 @@
     <ProjectReference Include="Expresso\Expresso.csproj">
       <Project>{4E28200A-5808-419F-8A57-F504842991AF}</Project>
       <Name>Expresso</Name>
+    </ProjectReference>
+    <ProjectReference Include="Expresso\ExpressoRuntime\ExpressoRuntime.csproj">
+      <Project>{D60E49D6-6CBA-4D54-A009-6A0528181C88}</Project>
+      <Name>ExpressoRuntime</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

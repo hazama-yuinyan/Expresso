@@ -47,7 +47,7 @@ namespace Expresso.Ast
 		public SequenceExpression Left{get; internal set;}
 
         /// <summary>
-        /// 操作する対象の式。
+        /// 走査する対象の式。
         /// The target expression to be iterated over. It must yields a iterable object, otherwise a compile-time error
 		/// (when compiling the code) or a runtime exception occurs(when in interpretering)
         /// </summary>

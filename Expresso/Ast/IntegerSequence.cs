@@ -101,6 +101,11 @@ namespace Expresso.Ast
 			}
 			walker.PostWalk(this);
 		}
+
+        public override string ToString()
+        {
+            return string.Format("seq({0}..{1} with step={2})", Lower, Upper, Step);
+        }
 	}
 }
 

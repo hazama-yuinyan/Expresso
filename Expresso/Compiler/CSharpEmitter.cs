@@ -40,16 +40,16 @@ namespace Expresso.Compiler
 
 		internal override CSharpExpr Emit(Assignment node)
 		{
-		    var rvalues = node.Right.Compile(this);
-			var results = new List<CSharpExpr>();
+            var rvalues = node.Right.Compile(this);
+            var results = new List<CSharpExpr>();
 
-			var _self = this;
-			foreach(var rvalue in node.Left.Zip(rvalues,
-			                                    (first, second) => new Tuple<CSharpExpr, CSharpExpr>(first.Compile(_self), second))){
-				results.Add(CSharpExpr.Assign(rvalue.Item1, rvalue.Item2));
-			}
+            var _self = this;
+            /*foreach(var rvalue in node.Left.Zip(rvalues,
+                (first, second) => new Tuple<CSharpExpr, CSharpExpr>(first.Compile(_self), second))){
+                results.Add(CSharpExpr.Assign(rvalue.Item1, rvalue.Item2));
+            }*/
 
-			return CSharpExpr.Block(results);	//x, y, z... = a, b, c...; => x = a, y = b, z = c...;
+            return null;//CSharpExpr.Block(results);	//x, y, z... = a, b, c...; => x = a, y = b, z = c...;
 		}
 
 		internal override CSharpExpr Emit(BinaryExpression node)

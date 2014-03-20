@@ -58,16 +58,16 @@ namespace Expresso.Compiler.Meta
 					int offset;
 					if(!PublicMembers.TryGetValue(mem_name.Name, out offset)){
 						if(!isInsideClass)
-							throw ExpressoOps.ReferenceError("{0} is not accessible.", mem_name.Name);
+							throw ExpressoOps.MakeReferenceError("{0} is not accessible.", mem_name.Name);
 						
 						if(!PrivateMembers.TryGetValue(mem_name.Name, out offset))
-							throw ExpressoOps.InvalidTypeError("{0} doesn't have the member called {1}", Name, mem_name.Name);
+							throw ExpressoOps.MakeInvalidTypeError("{0} doesn't have the member called {1}", Name, mem_name.Name);
 					}
 					//mem_name.Offset = offset;
 				}
 				return mem_name.Offset;
 			}else{
-				throw ExpressoOps.RuntimeError("Invalid use of accessor!");
+				throw ExpressoOps.MakeRuntimeError("Invalid use of accessor!");
 			}
 		}
 
@@ -76,10 +76,10 @@ namespace Expresso.Compiler.Meta
 			int offset = -1;
 			if(!PublicMembers.TryGetValue(name, out offset)){
 				if(!accessedFromInsideClass)
-					throw ExpressoOps.ReferenceError("{0} is not accessible.", name);
+					throw ExpressoOps.MakeReferenceError("{0} is not accessible.", name);
 
 				if(!PrivateMembers.TryGetValue(name, out offset))
-					throw ExpressoOps.InvalidTypeError("{0} doesn't have the member called {1}", Name, name);
+					throw ExpressoOps.MakeInvalidTypeError("{0} doesn't have the member called {1}", Name, name);
 			}
 			return Members[offset];
 		}

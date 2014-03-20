@@ -15,4 +15,6 @@
   <Task file="" description="プロパティーの実装" />
   <Task file="" description="実引数・仮引数の属性対応(ref,outなど)" />
   <Task file="" description="require ... in ...構文の追加(Pythonのfrom...import...構文相当)" />
+  <Task file="" description="最低限初期化構文から変数の型推論する機能の追加" priority="High" />
+  <Task file="" description="NRefactoryを使用した型システムの導入" priority="High" />
 </ListOfTask>

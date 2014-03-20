@@ -239,7 +239,7 @@ namespace Expresso.Utils
 		public static void RemoveLast<T>(this IList<T> list)
 		{
 			var len = list.Count;
-			if(len <= 0) throw ExpressoOps.SystemError("Can not delete last element of a list with zero elements!");
+			if(len <= 0) throw ExpressoOps.MakeSystemError("Can not delete last element of a list with zero elements!");
 			list.RemoveAt(len - 1);
 		}
 		

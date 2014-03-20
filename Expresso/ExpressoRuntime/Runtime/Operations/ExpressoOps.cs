@@ -24,54 +24,54 @@ namespace Expresso.Runtime.Operations
 	public static class ExpressoOps
 	{
 		#region Helpers for throwing Expresso's various exceptions
-		public static Exception InvalidTypeError(string format, params object[] args)
+		public static Exception MakeInvalidTypeError(string format, params object[] args)
 		{
 			return new InvalidTypeException(format, args);
 		}
 
-		public static Exception RuntimeError(string format, params object[] args)
+		public static Exception MakeRuntimeError(string format, params object[] args)
 		{
 			return new RuntimeException(format, args);
 		}
 
-		public static Exception ImportError(string format, params object[] args)
+		public static Exception MakeImportError(string format, params object[] args)
 		{
 			return new ImportException(format, args);
 		}
 
-		public static Exception ReferenceError(string format, params object[] args)
+		public static Exception MakeReferenceError(string format, params object[] args)
 		{
 			return new ReferenceException(format, args);
 		}
 
-		public static Exception MissingTypeError(string format, params object[] args)
+		public static Exception MakeMissingTypeError(string format, params object[] args)
 		{
 			return new TypeNotFoundException(format, args);
 		}
 
-		public static Exception SystemError(string format, params object[] args)
+		public static Exception MakeSystemError(string format, params object[] args)
 		{
 			return new ExpressoSystemException(format, args);
 		}
 
-		public static Exception ValueError(string format, params object[] args)
+		public static Exception MakeValueError(string format, params object[] args)
 		{
 			return new InvalidValueException(format, args);
 		}
 
-		public static Exception AssertError(string format, params object[] args)
+		public static Exception MakeAssertError(string format, params object[] args)
 		{
 			return new AssertionFailedException(format, args);
 		}
 
-		public static Exception IOError(string format, params object[] args)
+		public static Exception MakeIOError(string format, params object[] args)
 		{
 			return new IOException(string.Format(format, args));
 		}
 
 		public static Exception TypeErrorForTypeMismatch(string expectedTypeName, object instance)
 		{
-			return InvalidTypeError("expected {0}, got {1}", expectedTypeName, ExpressoOps.GetExpressoTypeName(instance));
+			return MakeInvalidTypeError("expected {0}, got {1}", expectedTypeName, ExpressoOps.GetExpressoTypeName(instance));
 		}
 		#endregion
 
@@ -201,7 +201,7 @@ namespace Expresso.Runtime.Operations
 				
 				result = ExpressoOps.MakeTuple(tmp);
 			}else{
-				throw ExpressoOps.InvalidTypeError("This object doesn't support slice operation!");
+				throw ExpressoOps.MakeInvalidTypeError("This object doesn't support slice operation!");
 			}
 			
 			return result;
@@ -231,9 +231,9 @@ namespace Expresso.Runtime.Operations
 				else if(target is ExpressoTuple)
 					return ((ExpressoTuple)target)[index];
 				else
-					throw ExpressoOps.InvalidTypeError("Can not apply the [] operator on that type of object!");
+					throw ExpressoOps.MakeInvalidTypeError("Can not apply the [] operator on that type of object!");
 			}else{
-				throw ExpressoOps.RuntimeError("Invalid use of accessor!");
+				throw ExpressoOps.MakeRuntimeError("Invalid use of accessor!");
 			}
 		}
 		
@@ -250,12 +250,12 @@ namespace Expresso.Runtime.Operations
 				else if(collection is ExpressoTuple)
 					throw new InvalidOperationException("Can not assign a value on a tuple!");
 				else
-					throw ExpressoOps.InvalidTypeError("Unknown seqeunce type!");
+					throw ExpressoOps.MakeInvalidTypeError("Unknown seqeunce type!");
 			}else{
 				if(collection is Dictionary<object, object>)
 					((Dictionary<object, object>)collection)[target] = value;
 				else
-					throw ExpressoOps.RuntimeError("Invalid use of the [] operator!");
+					throw ExpressoOps.MakeRuntimeError("Invalid use of the [] operator!");
 			}
 		}
 		
@@ -275,7 +275,7 @@ namespace Expresso.Runtime.Operations
 				foreach(var elem in dict)
 					yield return ExpressoOps.MakeTuple(new object[]{elem.Key, elem.Value});
 		    }else{
-				throw ExpressoOps.RuntimeError("Unknown object type!");
+				throw ExpressoOps.MakeRuntimeError("Unknown object type!");
 		    }
 		}
 
@@ -317,7 +317,7 @@ namespace Expresso.Runtime.Operations
 				else if(t.Name.StartsWith("Dictionary"))
 					return ObjectTypes.Dict;
 				else
-					throw ExpressoOps.InvalidTypeError(string.Format("{0} is not a primitive type in Expresso.", t.FullName));
+					throw ExpressoOps.MakeInvalidTypeError(string.Format("{0} is not a primitive type in Expresso.", t.FullName));
 			}
 		}
 		
@@ -359,7 +359,7 @@ namespace Expresso.Runtime.Operations
 				return null;
 				
 			default:
-				throw ExpressoOps.InvalidTypeError("Unknown object type");
+				throw ExpressoOps.MakeInvalidTypeError("Unknown object type");
 			}
 		}
 		

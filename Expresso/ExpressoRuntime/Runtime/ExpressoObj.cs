@@ -81,7 +81,7 @@ namespace Expresso.Runtime
 				foreach(var tmp in enumerable)
 					yield return tmp;
 			}else
-				throw ExpressoOps.InvalidTypeError("Can not evaluate the object to an iterable.");
+				throw ExpressoOps.MakeInvalidTypeError("Can not evaluate the object to an iterable.");
 		}
 		
 		/// <summary>
@@ -137,9 +137,9 @@ namespace Expresso.Runtime
 			else if(definition is StructDefinition)
 				new_inst = new ExpressoObj((StructDefinition)definition);
 			else if(definition is InterfaceDefinition)
-				throw ExpressoOps.InvalidTypeError("Can not instantiate an interface!");
+				throw ExpressoOps.MakeInvalidTypeError("Can not instantiate an interface!");
 			else
-				throw ExpressoOps.InvalidTypeError("Unknown definition.");
+				throw ExpressoOps.MakeInvalidTypeError("Unknown definition.");
 			
 			var constructor = new_inst.AccessMember(new Identifier("constructor", null), true) as FunctionDefinition;
 			/*if(constructor != null){

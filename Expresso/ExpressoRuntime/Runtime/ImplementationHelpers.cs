@@ -27,7 +27,7 @@ namespace Expresso.Runtime
 			else if(expr.Type == NodeType.Identifier)
 				return new Identifier[]{(Identifier)expr};
 			else
-				throw ExpressoOps.RuntimeError("Unreachable code reached!");
+				throw ExpressoOps.MakeRuntimeError("Unreachable code reached!");
 		}
 
 		public static IEnumerable<Identifier> CollectLocalVars(Statement stmt)

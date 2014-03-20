@@ -117,7 +117,7 @@ namespace Expresso.Builtins
 			tmp = tmp.Replace(format_refs, m => {
 				if(m.Groups[2].Value == "b"){
 					if(!(vars[i] is int))
-						throw ExpressoOps.InvalidTypeError("Can not format objects in binary except an integer!");
+						throw ExpressoOps.MakeInvalidTypeError("Can not format objects in binary except an integer!");
 
 					var sb = new StringBuilder();
 				

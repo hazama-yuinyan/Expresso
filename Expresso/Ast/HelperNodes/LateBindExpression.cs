@@ -27,7 +27,7 @@ namespace Expresso.Ast
 				if(!is_resolved){
 					bound_obj = interp.Interpret(target, null) as T;
 					if(bound_obj == null)
-						throw ExpressoOps.RuntimeError("{0} is not evaluated to an object of type {1}", target, typeof(T).FullName);
+						throw ExpressoOps.MakeRuntimeError("{0} is not evaluated to an object of type {1}", target, typeof(T).FullName);
 
 					is_resolved = true;
 				}

@@ -209,7 +209,7 @@ namespace Expresso.Runtime.Types
 			if(ctor == null){
 				AddSystemConstructors();
 				if(ctor == null)
-					throw ExpressoOps.InvalidTypeError(string.Format("{0} does not define any public constructors.",
+					throw ExpressoOps.MakeInvalidTypeError(string.Format("{0} does not define any public constructors.",
 					                                                 underlying_system_type.FullName));
 			}
 		}
