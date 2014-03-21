@@ -14,7 +14,7 @@ namespace Expresso.Interpreter
 	{
 		InterpreterFlowManager manager;
 
-		public Node TargetNode{get; private set;}
+		public AstNode TargetNode{get; private set;}
 
 		public int ScopeFramePointer{get; internal set;}
 
@@ -28,7 +28,7 @@ namespace Expresso.Interpreter
 		/// </summary>
 		public int StepCounter{get; internal set;}
 
-		public EvaluationFrame(Node node, int framePointer, int childCounter, InterpreterFlowManager flowManager)
+		public EvaluationFrame(AstNode node, int framePointer, int childCounter, InterpreterFlowManager flowManager)
 		{
 			TargetNode = node;
 			ScopeFramePointer = framePointer;
@@ -149,7 +149,7 @@ namespace Expresso.Interpreter
         /// </summary>
         /// <param name="node">Node.</param>
         /// <param name="childCounter">Child counter.</param>
-		public void Push(Node node, int childCounter = 0)
+		public void Push(AstNode node, int childCounter = 0)
 		{
             var frame = new EvaluationFrame(node, (cur_scope == null) ? 0 :
                                                   ShouldIntroduceScope(node) ? stack.Count : cur_scope.ScopeFramePointer,
@@ -164,7 +164,7 @@ namespace Expresso.Interpreter
         /// </summary>
         /// <param name="node">Node.</param>
         /// <param name="childCounter">Child counter.</param>
-        public void PushWithoutScope(Node node, int childCounter = 0)
+        public void PushWithoutScope(AstNode node, int childCounter = 0)
         {
             var frame = new EvaluationFrame(node, (cur_scope != null) ? cur_scope.ScopeFramePointer : 0, childCounter, this);
             frames.Add(frame);
@@ -242,12 +242,12 @@ namespace Expresso.Interpreter
         /// </summary>
         /// <returns><c>true</c> if we are evaluating the specified node; otherwise, <c>false</c>.</returns>
         /// <param name="node">Node.</param>
-		public bool IsEvaluating(Node node)
+		public bool IsEvaluating(AstNode node)
 		{
 			return frames.Any(x => x.TargetNode == node);
 		}
 
-        private bool ShouldIntroduceScope(Node targetNode)
+        private bool ShouldIntroduceScope(AstNode targetNode)
         {
             return targetNode is Call && frames[frames.Count - 1].TargetNode is Call;
         }

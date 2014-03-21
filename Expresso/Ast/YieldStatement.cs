@@ -52,7 +52,7 @@ namespace Expresso.Ast
 			return null;
         }*/
 
-		internal override void Walk(ExpressoWalker walker)
+		internal override void Walk(AstWalker walker)
 		{
 			if(walker.Walk(this))
 				expr.Walk(walker);

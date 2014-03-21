@@ -35,7 +35,7 @@ using Expresso.Utils;
 
 namespace Expresso.Ast
 {
-	class DefineBinder : ExpressoWalkerNonRecursive
+	class DefineBinder : AstWalkerNonRecursive
 	{
 		ExpressoNameBinder binder;
 		public DefineBinder(ExpressoNameBinder nameBinder)
@@ -82,7 +82,7 @@ namespace Expresso.Ast
 		}
 	}
 	
-	class ParameterBinder : ExpressoWalkerNonRecursive
+	class ParameterBinder : AstWalkerNonRecursive
 	{
 		ExpressoNameBinder binder;
 		public ParameterBinder(ExpressoNameBinder nameBinder)
@@ -123,7 +123,7 @@ namespace Expresso.Ast
 		}*/
 	}
 	
-	class ExpressoNameBinder : ExpressoWalker
+	class ExpressoNameBinder : AstWalker
 	{
 		ExpressoAst global_scope;
 		internal ScopeStatement cur_scope;

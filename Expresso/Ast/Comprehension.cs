@@ -12,25 +12,21 @@ using Expresso.Runtime.Operations;
 
 namespace Expresso.Ast
 {
-	using CSharpExpr = System.Linq.Expressions.Expression;
-
 	/// <summary>
 	/// Represents a list comprehension, which is syntactic sugar for sequence initialization.
-	/// Consider an expression, [x for x in [0..100]].
-	/// Which is equivalent in functionality to the statement "for(let x in [0..100]) yield x;"
+    /// Consider an expression, [x for x in [0..100]],
+    /// which is equivalent in functionality to the statement "for(let x in [0..100]) yield x;"
 	/// </summary>
 	public class Comprehension : Expression
 	{
-		readonly Expression item;
-		readonly ComprehensionFor body;
 		ObjectTypes type;
 
 		public Expression Item{
-			get{return item;}
+            get{return (Expression)FirstChild;}
 		}
 
 		public ComprehensionFor Body{
-			get{return body;}
+            get{return (ComprehensionFor)LastChild;}
 		}
 
 		public ObjectTypes ObjType{
@@ -43,9 +39,9 @@ namespace Expresso.Ast
 
 		public Comprehension(Expression itemExpr, ComprehensionFor bodyExpr, ObjectTypes objType)
 		{
-			item = itemExpr;
-			body = bodyExpr;
 			type = objType;
+            AddChild(itemExpr);
+            AddChild(bodyExpr);
 		}
 
         public override bool Equals(object obj)
@@ -55,64 +51,19 @@ namespace Expresso.Ast
             if(x == null)
                 return false;
 
-            return body.Equals(x.body) && item.Equals(x.item);
+            return Body.Equals(x.Body) && Item.Equals(x.Item);
         }
 
         public override int GetHashCode()
         {
-            return body.GetHashCode() ^ item.GetHashCode();
+            return Body.GetHashCode() ^ Item.GetHashCode();
         }
 
-        /*internal override object Run(VariableStore varStore)
-        {
-			var child_store = new VariableStore{Parent = varStore};
-			foreach(var local in Body.LocalVariables)
-				child_store.Add(local.Offset, ImplementationHelpers.GetDefaultValueFor(local.ParamType.ObjType));
-
-			object obj = null;
-
-			if(ObjType == ObjectTypes.LIST || ObjType == ObjectTypes.TUPLE){
-				var container = new List<object>();
-
-				foreach(var result in Body.Run(child_store, YieldExpr)){
-					if(result != null)
-						container.Add(result);
-				}
-
-				if(ObjType == ObjectTypes.LIST)
-					obj = ExpressoOps.MakeList(container);
-				else
-					obj = ExpressoOps.MakeTuple(container);
-			}else if(ObjType == ObjectTypes.DICT){
-				var keys = new List<object>();
-				var values = new List<object>();
-
-				var i = 0;
-				foreach(var result in Body.Run(varStore, YieldExpr)){
-					if(result != null){
-						if(i % 2 == 0)
-							keys.Add(result);
-						else
-							values.Add(result);
-					}
-				}
-
-				obj = ExpressoOps.MakeDict(keys, values);
-			}
-
-			return obj;
-        }*/
-
-		internal override CSharpExpr Compile(Emitter<CSharpExpr> emitter)
-		{
-			return emitter.Emit(this);
-		}
-
-		internal override void Walk(ExpressoWalker walker)
+        public override void AcceptWalker(AstWalker walker)
 		{
 			if(walker.Walk(this)){
-				item.Walk(walker);
-				body.Walk(walker);
+                Item.AcceptWalker(walker);
+                Body.AcceptWalker(walker);
 			}
 			walker.PostWalk(this);
 		}
@@ -127,10 +78,6 @@ namespace Expresso.Ast
 
 	public class ComprehensionFor : ComprehensionIter
 	{
-		readonly SequenceExpression left;
-		readonly Expression target;
-		readonly ComprehensionIter body;
-
 		/// <summary>
         /// body内で操作対象となるオブジェクトを参照するのに使用する式。
         /// 評価結果はlvalueにならなければならない。
@@ -144,7 +91,7 @@ namespace Expresso.Ast
         /// the third and forth the next time, and the fifth and sixth at last.
         /// </summary>
         public SequenceExpression Left{
-			get{return left;}
+            get{return (SequenceExpression)FirstChild;}
 		}
 
         /// <summary>
@@ -152,7 +99,7 @@ namespace Expresso.Ast
         /// The target expression.
         /// </summary>
         public Expression Target{
-			get{return target;}
+            get{return (Expression)FirstChild.NextSibling;}
 		}
 
 		/// <summary>
@@ -160,7 +107,7 @@ namespace Expresso.Ast
         /// The body that will be executed.
         /// </summary>
 		public ComprehensionIter Body{
-			get{return body;}
+            get{return (ComprehensionIter)LastChild;}
 		}
 
         public override NodeType Type{
@@ -169,9 +116,9 @@ namespace Expresso.Ast
 
 		public ComprehensionFor(SequenceExpression lhs, Expression targetExpr, ComprehensionIter bodyExpr)
 		{
-			left = lhs;
-			target = targetExpr;
-			body = bodyExpr;
+            AddChild(lhs);
+            AddChild(targetExpr);
+            AddChild(bodyExpr);
 		}
 
         public override IEnumerable<Identifier> LocalVariables{
@@ -201,63 +148,41 @@ namespace Expresso.Ast
             return this.Left.GetHashCode() ^ this.Target.GetHashCode() ^ this.Body.GetHashCode();
         }
 
-        /*internal override IEnumerable<object> Run(VariableStore varStore, Expression yieldExpr)
-        {
-			IEnumerable<object> iterable = Target.Run(varStore) as IEnumerable<object>;
-			if(iterable == null)
-				throw ExpressoOps.InvalidTypeError("Can not evaluate the expression to an iterable object!");
-
-			Identifier[] lvalues = new Identifier[LValues.Count];
-			for (int i = 0; i < LValues.Count; ++i) {
-				lvalues[i] = LValues[i] as Identifier;
-				if(lvalues[i] == null)
-					throw ExpressoOps.ReferenceError("The left-hand-side of the \"in\" keyword must yield a lvalue(a referencible value such as variables)");
-			}
-
-			var enumerator = iterable.GetEnumerator();
-			while(enumerator.MoveNext()) {
-				foreach (var lvalue in lvalues) {
-					var val = enumerator.Current;
-					varStore.Assign(lvalue.Level, lvalue.Offset, val);
-				}
-
-				if(Body == null){
-					yield return yieldExpr.Run(varStore);
-				}else{
-					foreach(var result in Body.Run(varStore, yieldExpr))
-						yield return result;
-				}
-			}
-        }*/
-
-		internal override CSharpExpr Compile(Emitter<CSharpExpr> emitter)
-		{
-			return emitter.Emit(this);
-		}
-
-		internal override void Walk(ExpressoWalker walker)
+        public override void AcceptWalker(AstWalker walker)
 		{
 			if(walker.Walk(this)){
-				left.Walk(walker);
-				target.Walk(walker);
-				if(body != null)
-					body.Walk(walker);
+                Left.AcceptWalker(walker);
+                Target.AcceptWalker(walker);
+                if(Body != null)
+                    Body.AcceptWalker(walker);
 			}
 			walker.PostWalk(this);
 		}
+
+        public override void AcceptWalker<TResult>(IAstWalker<TResult> walker)
+        {
+            return walker.Walk(this);
+        }
+
+        public override string GetText()
+        {
+            return string.Format("<CompFor: {0} {1} in {2}>", Target.GetText(), Left.GetText(), Body.GetText());
+        }
+
+        public override string ToString()
+        {
+            return GetText();
+        }
 	}
 
 	public class ComprehensionIf : ComprehensionIter
 	{
-		readonly Expression condition;
-		readonly ComprehensionIter body;
-
 		/// <summary>
         /// 実行対象の文。
         /// The body that will be executed.
         /// </summary>
         public Expression Condition{
-			get{return condition;}
+            get{return (Expression)FirstChild;}
 		}
 
 		/// <summary>
@@ -265,7 +190,7 @@ namespace Expresso.Ast
         /// The body that will be executed.
         /// </summary>
 		public ComprehensionIter Body{
-			get{return body;}
+            get{return (ComprehensionIter)LastChild;}
 		}
 
         public override NodeType Type{
@@ -274,8 +199,8 @@ namespace Expresso.Ast
 
 		public ComprehensionIf(Expression test, ComprehensionIter bodyExpr)
 		{
-			condition = test;
-			body = bodyExpr;
+            AddChild(test);
+            AddChild(bodyExpr);
 		}
 
         public override IEnumerable<Identifier> LocalVariables{
@@ -299,38 +224,30 @@ namespace Expresso.Ast
             return this.Body.GetHashCode() ^ this.Condition.GetHashCode();
         }
 
-        /*internal override IEnumerable<object> Run(VariableStore varStore, Expression yieldExpr)
-        {
-			var cond = Condition.Run(varStore) as Nullable<bool>;
-			if(cond == null)
-				throw ExpressoOps.InvalidTypeError("Can not evaluate the expression to a boolean.");
-
-			if((bool)cond){
-				if(Body == null){
-					yield return yieldExpr.Run(varStore);
-				}else{
-					foreach(var result in Body.Run(varStore, yieldExpr))
-						yield return result;
-				}
-			}else{
-				yield return null;
-			}
-        }*/
-
-		internal override CSharpExpr Compile(Emitter<CSharpExpr> emitter)
-		{
-			return emitter.Emit(this);
-		}
-
-		internal override void Walk(ExpressoWalker walker)
+        public override void AcceptWalker(AstWalker walker)
 		{
 			if(walker.Walk(this)){
-				condition.Walk(walker);
-				if(body != null)
-					body.Walk(walker);
+                Condition.AcceptWalker(walker);
+                if(Body != null)
+                    Body.AcceptWalker(walker);
 			}
 			walker.PostWalk(this);
 		}
+
+        public override TResult AcceptWalker<TResult>(IAstWalker<TResult> walker)
+        {
+            return walker.Walk(this);
+        }
+
+        public override string GetText()
+        {
+            return string.Format("<CompIf: {0} {1}>", Condition.GetText(), Body.GetText());
+        }
+
+        public override string ToString()
+        {
+            return GetText();
+        }
 	}
 }
 

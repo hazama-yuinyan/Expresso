@@ -77,7 +77,7 @@ namespace Expresso.Parsing
             }
 
             throw new ParserException("{0} : {1} -- Can not infer the type of the variable from the right-hand-side expression.",
-                memRef.Start.Line, memRef.Start.Column);
+                memRef.StartLocation.Line, memRef.StartLocation.Column);
         }
 
         private static bool IsIterableType(TypeAnnotation type)

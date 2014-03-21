@@ -9,7 +9,7 @@ namespace Expresso.Ast
     /// <summary>
     /// 文の共通基底。
     /// </summary>
-    public abstract class Statement : Node
+    public abstract class Statement : AstNode
     {
     }
 

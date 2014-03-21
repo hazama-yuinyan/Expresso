@@ -10,8 +10,6 @@ using Expresso.Runtime.Operations;
 
 namespace Expresso.Ast
 {
-	using CSharpExpr = System.Linq.Expressions.Expression;
-
     /// <summary>
     /// デフォルト式。C#の同名の文法要素と同じ働きをする。
 	/// Reperesents a default expression in the sense of the C#'s default expression.
@@ -53,7 +51,7 @@ namespace Expresso.Ast
 			return emitter.Emit(this);
 		}
 
-		internal override void Walk(ExpressoWalker walker)
+		internal override void Walk(AstWalker walker)
 		{
 			if(walker.Walk(this)){}
 			walker.PostWalk(this);

@@ -19,7 +19,7 @@ namespace Expresso.Compiler
 	/// Expressoの構文木を解釈してC#の式木にコンパイルするクラス。
 	/// It emitts C#'s expression tree nodes from the AST of Expresso.
 	/// </summary>
-	public class CSharpEmitter : Emitter<CSharpExpr>
+    public class CSharpEmitter : IAstWalker<CSharpExpr>
 	{
 		ExprTree.LabelTarget return_target = null;
 		bool has_default_clause;

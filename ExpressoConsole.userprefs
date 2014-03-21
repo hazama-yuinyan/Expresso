@@ -1,15 +1,20 @@
 ﻿<Properties>
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug|x86" />
-  <MonoDevelop.Ide.Workbench ActiveDocument="Expresso/AstManipulation/InferenceHelper.cs">
+  <MonoDevelop.Ide.Workbench ActiveDocument="Expresso/OutputVisitor/ExpressoOutputWalker.cs">
     <Files>
-      <File FileName="Expresso/Ast/Walkers/ExpressoNameBinder.cs" Line="73" Column="133" />
-      <File FileName="Expresso/Ast/TypeDefinition.cs" Line="1" Column="1" />
-      <File FileName="ExpressoTest/sources/for_interpreter/builtin_objects.exs" Line="1" Column="1" />
-      <File FileName="Expresso/AstManipulation/InferenceHelper.cs" Line="77" Column="14" />
+      <File FileName="Expresso/Ast/Walkers/ExpressoNameBinder.cs" Line="79" Column="35" />
+      <File FileName="Expresso/Ast/TypeDefinition.cs" Line="18" Column="5" />
       <File FileName="Expresso/Expresso.ATG" Line="1" Column="1" />
-      <File FileName="Expresso/Ast/Identifier.cs" Line="1" Column="1" />
       <File FileName="Expresso/Ast/HelperNodes/ExpressoVariable.cs" Line="1" Column="1" />
-      <File FileName="Expresso/Ast/ScopeStatement.cs" Line="1" Column="1" />
+      <File FileName="Expresso/ExpressoRuntime/Interpreter/Interpreter.cs" Line="1" Column="1" />
+      <File FileName="Expresso/Ast/AstType.cs" Line="85" Column="10" />
+      <File FileName="Expresso/Ast/NodeType.cs" Line="57" Column="16" />
+      <File FileName="Expresso/Ast/AstNode.cs" Line="1183" Column="41" />
+      <File FileName="Expresso/Ast/Walkers/IAstWalker.cs" Line="103" Column="40" />
+      <File FileName="Expresso/OutputVisitor/ExpressoOutputWalker.cs" Line="4" Column="1" />
+      <File FileName="Expresso/OutputVisitor/TokenWriter.cs" Line="3" Column="1" />
+      <File FileName="Expresso/OutputVisitor/InsertRequiredSpacesDecorator.cs" Line="2" Column="1" />
+      <File FileName="Expresso/Formatting/FormattingOptionsFactory.cs" Line="395" Column="23" />
     </Files>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>
@@ -42,7 +47,7 @@
       <Breakpoint file="/home/hazama/Documents/MonoDevelopSolutions/Expresso/Expresso/Interpreter/Interpreter.cs" line="1187" column="1" />
       <Breakpoint file="/home/hazama/Documents/MonoDevelopSolutions/Expresso/Expresso/Interpreter/Interpreter.cs" line="832" column="1" />
       <Breakpoint file="/home/hazama/Documents/MonodevelopSolutions/Expresso/Expresso/Interpreter/Interpreter.cs" line="680" column="1" />
-      <Breakpoint file="/home/hazama/Documents/MonodevelopSolutions/Expresso/Expresso/Ast/Walkers/ExpressoNameBinder.cs" line="60" column="1" />
+      <Breakpoint file="/home/hazama/Documents/MonodevelopSolutions/Expresso/Expresso/Ast/Walkers/ExpressoNameBinder.cs" line="693" column="1" />
     </BreakpointStore>
   </MonoDevelop.Ide.DebuggingService.Breakpoints>
   <MonoDevelop.Ide.DebuggingService.PinnedWatches />

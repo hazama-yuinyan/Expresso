@@ -14,7 +14,8 @@ namespace Expresso.Ast
     /// 型の種類を表す。
     /// Represents the kind of the type definition.
     /// </summary>
-    public enum DeclType{
+    public enum DeclType
+    {
         Class,
         Interface,
         Struct
@@ -22,7 +23,7 @@ namespace Expresso.Ast
 
     /// <summary>
     /// 型定義文。
-    /// The type definition. That is, it can represents either a class definition, an interface definition 
+    /// The type definition. That is, it can represent either a class definition, an interface definition 
     /// or a struct definition. 
     /// </summary>
     public class TypeDefinition : ScopeStatement
@@ -151,7 +152,7 @@ namespace Expresso.Ast
             return emitter.Emit(this);
         }
 
-        internal override void Walk(ExpressoWalker walker)
+        internal override void Walk(AstWalker walker)
         {
             if(walker.Walk(this)){
                 foreach(var stmt in body)

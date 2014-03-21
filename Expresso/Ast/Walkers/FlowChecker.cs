@@ -75,7 +75,7 @@ using Expresso.Compiler;
 
 namespace Expresso.Ast
 {
-	class FlowDefiner : ExpressoWalkerNonRecursive
+	class FlowDefiner : AstWalkerNonRecursive
 	{
 		readonly FlowChecker fc;
 		
@@ -108,7 +108,7 @@ namespace Expresso.Ast
 		}
 	}
 	
-	class FlowChecker : ExpressoWalker
+	class FlowChecker : AstWalker
 	{
 		BitArray bits;
 		Stack<BitArray> loops;

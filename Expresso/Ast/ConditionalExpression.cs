@@ -6,24 +6,18 @@ using Expresso.Compiler;
 
 namespace Expresso.Ast
 {
-	using CSharpExpr = System.Linq.Expressions.Expression;
-
     /// <summary>
     /// 条件演算。
 	/// The conditional expression.
     /// </summary>
     public class ConditionalExpression : Expression
     {
-		readonly Expression condition;
-		readonly Expression true_expr;
-		readonly Expression false_expr;
-
         /// <summary>
         /// 条件式。
 		/// The condition expression to be tested.
         /// </summary>
         public Expression Condition{
-			get{return condition;}
+            get{return (Expression)FirstChild;}
 		}
 
         /// <summary>
@@ -31,7 +25,7 @@ namespace Expresso.Ast
 		/// The expression to be evaluated when the condition is true.
         /// </summary>
         public Expression TrueExpression{
-			get{return true_expr;}
+            get{return (Expression)FirstChild.NextSibling;}
 		}
 
         /// <summary>
@@ -39,7 +33,7 @@ namespace Expresso.Ast
 		/// The expression to be evaluated when the condition is false.
         /// </summary>
         public Expression FalseExpression{
-			get{return false_expr;}
+            get{return (Expression)LastChild;}
 		}
 
         public override NodeType Type{
@@ -48,9 +42,9 @@ namespace Expresso.Ast
 
 		public ConditionalExpression(Expression test, Expression trueExpr, Expression falseExpr)
 		{
-			condition = test;
-			true_expr = trueExpr;
-			false_expr = falseExpr;
+            AddChild(test);
+            AddChild(trueExpr);
+            AddChild(falseExpr);
 		}
 
         public override bool Equals(object obj)
@@ -60,42 +54,39 @@ namespace Expresso.Ast
             if(x == null)
                 return false;
 
-            return this.condition == x.condition
-                && this.true_expr.Equals(x.true_expr)
-                && this.false_expr.Equals(x.false_expr);
+            return this.Condition == x.Condition
+                && this.TrueExpression.Equals(x.TrueExpression)
+                && this.FalseExpression.Equals(x.FalseExpression);
         }
 
         public override int GetHashCode()
         {
-            return this.condition.GetHashCode() ^ this.true_expr.GetHashCode() ^ this.false_expr.GetHashCode();
+            return this.Condition.GetHashCode() ^ this.TrueExpression.GetHashCode() ^ this.FalseExpression.GetHashCode();
         }
 
-        /*internal override object Run(VariableStore varStore)
-        {
-            if((bool)Condition.Run(varStore))
-				return TrueExpression.Run(varStore);
-			else
-				return FalseExpression.Run(varStore);
-        }*/
-
-		internal override CSharpExpr Compile(Emitter<CSharpExpr> emitter)
-		{
-			return emitter.Emit(this);
-		}
-
-		internal override void Walk(ExpressoWalker walker)
+        public override void AcceptWalker(AstWalker walker)
 		{
 			if(walker.Walk(this)){
-				condition.Walk(walker);
-				true_expr.Walk(walker);
-				false_expr.Walk(walker);
+                Condition.AcceptWalker(walker);
+                TrueExpression.AcceptWalker(walker);
+                FalseExpression.AcceptWalker(walker);
 			}
 			walker.PostWalk(this);
 		}
 
-		public override string ToString()
+        public override TResult AcceptWalker<TResult>(IAstWalker<TResult> walker)
+        {
+            return walker.Walk(this);
+        }
+
+        public override string GetText()
 		{
-			return string.Format("{0} ? {1} : {2}", condition, true_expr, false_expr);
+            return string.Format("{0} ? {1} : {2}", Condition, TrueExpression, FalseExpression);
 		}
+
+        public override string ToString()
+        {
+            return GetText();
+        }
     }
 }

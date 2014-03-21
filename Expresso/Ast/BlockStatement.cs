@@ -6,8 +6,6 @@ using Expresso.Compiler;
 
 namespace Expresso.Ast
 {
-	using CSharpExpr = System.Linq.Expressions.Expression;
-
     /// <summary>
     /// 複文ブロック。
 	/// Represents a block of statements.
@@ -15,14 +13,15 @@ namespace Expresso.Ast
 	/// <seealso cref="BreakableStatement"/>
     public class Block : BreakableStatement, CompoundStatement
     {
-        List<Statement> statements = new List<Statement>();
-
         /// <summary>
         /// ブロックの中身の文。
 		/// The body statements
         /// </summary>
-        public List<Statement> Statements{
-			get{return this.statements; }
+        public IEnumerable<Statement> Statements{
+            get{
+                foreach(var child in Children)
+                    yield return child;
+            }
 		}
 
         /// <summary>
@@ -46,15 +45,10 @@ namespace Expresso.Ast
             if(x == null)
                 return false;
 
-            if(this.Statements.Count != x.Statements.Count)
+            if(this.Statements.Count() != x.Statements.Count())
                 return false;
 
-            for(int i = 0; i < this.Statements.Count; i++){
-                if(!this.Statements[i].Equals(x.Statements[i]))
-                    return false;
-            }
-
-            return true;
+            return Statements.SequenceEqual(x.Statements);
         }
 
         public override int GetHashCode()
@@ -62,30 +56,19 @@ namespace Expresso.Ast
             return this.Statements.GetHashCode();
         }
 
-        /*internal override object Run(VariableStore varStore)
-        {
-			object result = null;
-			can_continue = true;
-			
-			for(int i = 0; can_continue && i < statements.Count; ++i)
-				result = statements[i].Run(varStore);
-			
-			return result;
-        }*/
-
-		internal override CSharpExpr Compile(Emitter<CSharpExpr> emitter)
-		{
-			return emitter.Emit(this);
-		}
-
-		internal override void Walk(ExpressoWalker walker)
+        public override void AcceptWalker(AstWalker walker)
 		{
 			if(walker.Walk(this)){
-				foreach(var stmt in statements)
-					stmt.Walk(walker);
+                foreach(var stmt in Statements)
+                    stmt.AcceptWalker(walker);
 			}
 			walker.PostWalk(this);
 		}
+
+        public override TResult AcceptWalker<TResult>(IAstWalker<TResult> walker)
+        {
+            return walker.Walk(this);
+        }
 
 		public IEnumerable<Identifier> CollectLocalVars()
 		{
@@ -100,9 +83,14 @@ namespace Expresso.Ast
 			return vars;
 		}
 		
-		public override string ToString()
+        public override string GetText()
 		{
-			return string.Format("[Statements.length={0}, ({1})]", Statements.Count, LocalVariables);
+            return string.Format("<Block: length={0}, ({1})>", Statements.Count, LocalVariables);
 		}
+
+        public override string ToString()
+        {
+            return GetText();
+        }
     }
 }

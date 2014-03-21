@@ -77,7 +77,6 @@
     <Compile Include="Ast\ConditionalExpression.cs" />
     <Compile Include="Ast\Constant.cs" />
     <Compile Include="Ast\Expression.cs" />
-    <Compile Include="Ast\Node.cs" />
     <Compile Include="Ast\Statement.cs" />
     <Compile Include="Ast\UnaryExpression.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -108,7 +107,6 @@
     <Compile Include="Attributes\ExpressoHiddenAttribute.cs" />
     <Compile Include="Attributes\ExpressoTypeAttribute.cs" />
     <Compile Include="Ast\AssertStatement.cs" />
-    <Compile Include="Compiler\ExpressoWalker.cs" />
     <Compile Include="Ast\CastExpression.cs" />
     <Compile Include="Ast\ExpressoAst.cs" />
     <Compile Include="NativeDebugger\CollectionDebugView.cs" />
@@ -146,6 +144,15 @@
     <Compile Include="Ast\HelperNodes\IFlaggable.cs" />
     <Compile Include="AstManipulation\InferenceHelper.cs" />
     <Compile Include="ParserException.cs" />
+    <Compile Include="Ast\AstNode.cs" />
+    <Compile Include="Ast\NodeType.cs" />
+    <Compile Include="Ast\AstType.cs" />
+    <Compile Include="Ast\Walkers\IAstWalker.cs" />
+    <Compile Include="Formatting\ExpressoFormattingOptions.cs" />
+    <Compile Include="OutputVisitor\ExpressoOutputWalker.cs" />
+    <Compile Include="OutputVisitor\TokenWriter.cs" />
+    <Compile Include="OutputVisitor\InsertRequiredSpacesDecorator.cs" />
+    <Compile Include="Formatting\FormattingOptionsFactory.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -167,6 +174,8 @@
     <Folder Include="Ast\HelperNodes\" />
     <Folder Include="Micellaneous\" />
     <Folder Include="AstManipulation\" />
+    <Folder Include="Formatting\" />
+    <Folder Include="OutputVisitor\" />
   </ItemGroup>
   <ProjectExtensions>
     <MonoDevelop>

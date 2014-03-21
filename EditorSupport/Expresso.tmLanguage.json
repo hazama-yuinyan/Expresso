@@ -1,0 +1,203 @@
+{
+    "fileTypes" : ["exs"],
+    "foldingStartMarker" : "^\\s*/\\*|^(?![^{]*?//|[^{]*?/\\*(?!.*?\\*/.*?\\{)).*?\\{\\s*($|//|/\\*(?!.*?\\*/.*\\S))",
+    "foldingStopMarker" : "^\\s*\\*/|^\\s*\\}",
+    "keyEquivalent" : "^~EXS",
+    "name" : "Expresso",
+    "patterns" : [
+        {
+            "include" : "#comments"
+        },
+        {
+            "begin" : "(?x)^\\s*((?:\b(?:export|static)\b\\s)*)(class)\\s+([A-Za-z_]\\w+)\b",
+            "captures" : {
+                "1" : {
+                    "name" : "storage.modifier.source.exs"
+                },
+                "2" : {
+                    "name" : "storage.type.source.exs"
+                },
+                "3" : {
+                    "name" : "entity.name.type.class.source.exs"
+                }
+            },
+            "end" : "{",
+            "name" : "meta.definition.class.source.exs",
+            "patterns" : [
+                {
+                    "include" : "#classInheritance"
+                }
+            ]
+        },
+        {
+            "match" : "\b(true|false|null|this|base)\b",
+            "name" : "constant.language.source.exs"
+        },
+        {
+            "match" : "\b((0(x|X)[0-9a-fA-F]*)|(([0-9]+\\.?[0-9]*)|(\\.[0-9]+))((e|E)(\\+|-)?[0-9]+)?)(L|l)?\b",
+            "name" : "constant.numeric.source.exs"
+        },
+        {
+            "match" : "\b(if|else|for|while|return|continue|break|switch|case|default|goto|throw|try|catch|finally|yield)\b",
+            "name" : "keyword.control.source.exs"
+        },
+        {
+            "match" : "\b(new|is|typeof|sizeof|override|in|out|ref|readonly|params|as)\b",
+            "name" : "keyword.operator.source.exs"
+        },
+        {
+            "match" : "\b(event|delegate|explicit|implicit|in|set|get)\b",
+            "name" : "keyword.other.source.exs"
+        },
+        {
+            "match" : "\b(internal|public|protected|private|static|const|new|abstract|override|export|readonly|volatile|operator)\b",
+            "name" : "storage.modifier.source.exs"
+        },
+        {
+            "include" : "#doubleQuotedStringLiteral"
+        },
+        {
+            "include" : "#doubleQuotedString"
+        },
+        {
+            "include" : "#singleQuotedString"
+        },
+        {
+            "captures" : {
+                "1" : {
+                    "name" : "keyword.other.require.source.exs"
+                },
+                "2" : {
+                    "name" : "entity.name.type.package.source.exs"
+                },
+                "3" : {
+                    "name" : "keyword.other.as.source.exs"
+                },
+                "4" : {
+                    "name" : "entity.name.type.package.alias.source.exs"
+                }
+            },
+            "match" : "^\\s*(require)\\s+([^ ;]*)(?:\\s+(as)\\s+([^ ;]*))?;",
+            "name" : "meta.keyword.require.source.exs"
+        },
+        {
+            "include" : "#builtinTypes"
+        },
+        {
+            "repository" : {
+                "builtinTypes" : {
+                    "patterns" : [
+                        {
+                            "match" : "\b(bool|byte|float|int|bigint|list|dict|rational|tuple|bytearray|intseq|string|function|void|class|struct|interface)\b",
+                            "name" : "storage.type.source.exs"
+                        }
+                    ]
+                },
+                "classInheritance" : {
+                    "patterns" : [
+                        {
+                            "begin" : ":",
+                            "end" : "(?={)",
+                            "patterns" : [
+                                {
+                                    "captures" : {
+                                        "1" : {
+                                            "name" : "storage.type.source.exs"
+                                        }
+                                    },
+                                    "match" : "\\s*,?([A-Za-z_]\\w*)\b"
+                                }
+                            ]
+                        }
+                    ]
+                },
+                "comments" : {
+                    "patterns" : [
+                        {
+                            "captures" : {
+                                "1" : {
+                                    "name" : "punctuation.definition.comment.source.exs"
+                                }
+                            },
+                            "begin" : "/\\*",
+                            "end" : "\\*\n?",
+                            "name" : "comment.block.source.exs"
+                        },
+                        {
+                            "captures" : {
+                                "1" : {
+                                    "name" : "punctuation.definition.comment.source.exs"
+                                }
+                            },
+                            "match" : "(//).*$\n?",
+                            "name" : "comment.line.source.exs"
+                        }
+                    ]
+                },
+                "doubleQuotedString" : {
+                    "begin" : "\"",
+                    "beginCaptures" : {
+                        "0" : {
+                            "name" : "punctuation.definition.string.begin.source.exs"
+                        }
+                    },
+                    "end" : "\"",
+                    "endCaptures" : {
+                        "0" : {
+                            "name" : "punctuation.definition.string.end.source.exs"
+                        }
+                    },
+                    "name" : "string.quoted.double.source.exs",
+                    "patterns" : [
+                        {
+                            "match" : "\\.",
+                            "name" : "constant.character.escape.source.exs"
+                        }
+                    ]
+                },
+                "doubleQuotedStringLiteral" : {
+                    "captures" : {
+                        "0" : {
+                            "name" : "punctuation.definition.string.begin.source.exs"
+                        }
+                    },
+                    "match" : "@\"([^\"]|\"\")*\"",
+                    "name" : "string.quoted.string.literal.source.exs"
+                },
+                "singleQuotedString" : {
+                    "begin" : "'",
+                    "beginCaptures" : {
+                        "0" : {
+                            "name" : "punctuation.definition.string.begin.source.exs"
+                        }
+                    },
+                    "end" : "'",
+                    "endCaptures" : {
+                        "0" : {
+                            "name" : "punctuation.definition.string.end.source.exs"
+                        }
+                    },
+                    "name" : "string.quoted.single.source.exs",
+                    "patterns" : [
+                        {
+                            "match" : "\\.",
+                            "name" : "constant.character.escape.source.exs"
+                        }
+                    ]
+                },
+                "statementRemainder" : {
+                    "begin" : "\\(",
+                    "end" : "(?=\\))",
+                    "name" : "meta.definition.param-list.source.exs",
+                    "patterns" : [
+                        {
+                            "include" : "#builtinTypes"
+                        }
+                    ]
+                }
+            }
+        }
+    ],
+    "scopeName" : "source.exs",
+    "uuid" : "f0fd0faa-a6a3-11e3-a1bd-a73dc654913e"
+}

@@ -8,8 +8,6 @@ using Expresso.Compiler.Meta;
 
 namespace Expresso.Ast
 {
-	using CSharpExpr = System.Linq.Expressions.Expression;
-
     /// <summary>
     /// 定数。
 	/// Represents a constant.
@@ -60,25 +58,25 @@ namespace Expresso.Ast
             return this.val.GetHashCode() ^ val_type.GetHashCode();
         }
 
-        /*internal override object Run(VariableStore varStore)
-        {
-			return Value;
-        }*/
-
-		internal override CSharpExpr Compile(Emitter<CSharpExpr> emitter)
-		{
-			return emitter.Emit(this);
-		}
-
-		internal override void Walk(ExpressoWalker walker)
+        public override void AcceptWalker(AstWalker walker)
 		{
 			if(walker.Walk(this)){}
 			walker.PostWalk(this);
 		}
 
-		public override string ToString()
+        public override TResult AcceptWalker<TResult>(IAstWalker<TResult> walker)
+        {
+            return walker.Walk(this);
+        }
+
+        public override string GetText()
 		{
 			return string.Format("{0}", val);
 		}
+
+        public override string ToString()
+        {
+            return GetText();
+        }
     }
 }

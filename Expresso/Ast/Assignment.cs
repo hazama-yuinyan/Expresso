@@ -5,11 +5,10 @@ using Expresso.Builtins;
 using Expresso.Interpreter;
 using Expresso.Compiler;
 using Expresso.Runtime.Operations;
+using System.Linq;
 
 namespace Expresso.Ast
 {
-	using CSharpExpr = System.Linq.Expressions.Expression;
-
     /// <summary>
     /// 代入文。
 	/// The assignment statement.
@@ -18,15 +17,14 @@ namespace Expresso.Ast
     /// </summary>
     public class Assignment : Statement
     {
-		readonly Expression[] targets;
-		readonly Expression rhs;
+        int num_left;
 
         /// <summary>
         /// 代入先の変数郡。
         /// The target expressions that will be bounded.
         /// </summary>
         public Expression[] Left{
-			get{return targets;}
+            get{return Children.Take(num_left);}
 		}
 
         /// <summary>
@@ -34,7 +32,7 @@ namespace Expresso.Ast
 		/// The expression that will be assigned.
         /// </summary>
         public Expression Right{
-			get{return rhs;}
+            get{return LastChild;}
 		}
 
         public override NodeType Type{
@@ -43,8 +41,10 @@ namespace Expresso.Ast
 
 		public Assignment(Expression[] lhs, Expression rhsExpr)
 		{
-			targets = lhs;
-			rhs = rhsExpr;
+            foreach(var left in lhs)
+                AddChild(left);
+			
+            AddChild(rhsExpr);
 		}
 
         public override bool Equals(object obj)
@@ -54,56 +54,44 @@ namespace Expresso.Ast
             if(x == null)
                 return false;
 
-            return this.rhs.Equals(x.rhs)
-                && this.targets.Equals(x.targets);
+            return this.Right.Equals(x.Right)
+                && this.Left.Equals(x.Left);
         }
 
         public override int GetHashCode()
         {
-            return this.targets.GetHashCode() ^ this.rhs.GetHashCode();
+            return this.Left.GetHashCode() ^ this.Right.GetHashCode();
         }
 
-        /*internal override object Run(VariableStore varStore)
-        {
-			int i;
-			var rvalues = new List<object>(Expressions.Count);
-			for(i = 0; i < Expressions.Count; ++i)	//まず右辺をすべて評価する
-				rvalues.Add(Expressions[i].Run(varStore));
-
-			for(i = 0; i < Targets.Count; ++i){		//その後左辺値に代入する
-				var assignable = Targets[i] as Assignable;
-				if(assignable == null)
-					throw ExpressoOps.ReferenceError("Can not assign a value to the target!");
-
-				assignable.Assign(varStore, rvalues[i]);
-			}
-			return rvalues[0];	//x = y = 0;みたいな表記を許容するために右辺値の一番目を戻り値にする
-        }*/
-		
-		internal override CSharpExpr Compile(Emitter<CSharpExpr> emitter)
-		{
-			return emitter.Emit(this);
-		}
-
-		internal override void Walk(ExpressoWalker walker)
+        public override void AcceptWalker(AstWalker walker)
 		{
 			if(walker.Walk(this)){
-				foreach(var e in targets)
-					e.Walk(walker);
+                foreach(var e in Left)
+                    e.AcceptWalker(walker);
 
-				rhs.Walk(walker);
+                Right.AcceptWalker(walker);
 			}
 			walker.PostWalk(this);
 		}
 
-		public override string ToString()
+        public override TResult AcceptWalker<TResult>(IAstWalker<TResult> walker)
+        {
+            return walker.Walk(this);
+        }
+
+        public override string GetText()
 		{
 			var sb = new StringBuilder();
-			foreach(var target in targets)
+            foreach(var target in Left)
 				sb.Append(target + " = ");
 
-			sb.Append(rhs);
+            sb.Append(Right);
 			return sb.ToString();
 		}
+
+        public override string ToString()
+        {
+            return GetText();
+        }
     }
 }

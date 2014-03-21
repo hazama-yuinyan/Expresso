@@ -7,7 +7,7 @@ namespace Expresso.Ast
     /// 式の共通基底。
 	/// Base class for all expressions.
     /// </summary>
-    public abstract class Expression : Node
+    public abstract class Expression : AstNode
     {
     }
 

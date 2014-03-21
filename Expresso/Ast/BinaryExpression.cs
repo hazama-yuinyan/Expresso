@@ -10,8 +10,6 @@ using Expresso.Runtime.Operations;
 
 namespace Expresso.Ast
 {
-	using CSharpExpr = System.Linq.Expressions.Expression;
-
     /// <summary>
     /// 二項演算。
 	/// Represents a binary expression.
@@ -19,8 +17,6 @@ namespace Expresso.Ast
     public class BinaryExpression : Expression
     {
 		readonly OperatorType ope;
-		readonly Expression lhs;
-		readonly Expression rhs;
 
         /// <summary>
         /// 演算子のタイプ。
@@ -35,7 +31,7 @@ namespace Expresso.Ast
 		/// The left operand.
         /// </summary>
         public Expression Left{
-			get{return lhs;}
+            get{return (Expression)FirstChild;}
 		}
 
         /// <summary>
@@ -43,7 +39,7 @@ namespace Expresso.Ast
 		/// The right operand.
         /// </summary>
         public Expression Right{
-			get{return rhs;}
+            get{return (Expression)FirstChild.NextSibling;}
 		}
 
         public override NodeType Type{
@@ -53,8 +49,8 @@ namespace Expresso.Ast
 		public BinaryExpression(Expression left, Expression right, OperatorType opType)
 		{
 			ope = opType;
-			lhs = left;
-			rhs = right;
+            AddChild(left);
+            AddChild(right);
 		}
 
         public override bool Equals(object obj)
@@ -65,261 +61,33 @@ namespace Expresso.Ast
                 return false;
 
             return this.ope == x.ope
-                && this.rhs.Equals(x.lhs)
-                && this.rhs.Equals(x.rhs);
+                && this.Left.Equals(x.Left)
+                && this.Right.Equals(x.Right);
         }
 
         public override int GetHashCode()
         {
-            return this.ope.GetHashCode() ^ this.lhs.GetHashCode() ^ this.rhs.GetHashCode();
+            return this.ope.GetHashCode() ^ this.Left.GetHashCode() ^ this.Right.GetHashCode();
         }
 
-        /*internal override object Run(VariableStore varStore)
-        {
-            object first = Left.Run(varStore), second = Right.Run(varStore);
-			if(first == null || second == null)
-				throw ExpressoOps.InvalidTypeError("Can not apply the operation on null objects.");
-
-			if((int)Operator <= (int)OperatorType.MOD){
-				if(first is int)
-					return BinaryExprAsInt((int)first, (int)second, Operator);
-				else if(first is double)
-					return BinaryExprAsDouble((double)first, (double)second, Operator);
-				else if(first is Fraction)
-					return BinaryExprAsFraction((Fraction)first, second, Operator);
-				else
-					return BinaryExprAsString((string)first, second, Operator);
-			}else if((int)Operator < (int)OperatorType.AND){
-				return EvalComparison(first as IComparable, second as IComparable, Operator);
-			}else if((int)Operator < (int)OperatorType.BIT_OR){
-				return EvalLogicalOperation((bool)first, (bool)second, Operator);
-			}else{
-				return EvalBitOperation((int)first, (int)second, Operator);
-			}
-        }*/
-
-		internal override CSharpExpr Compile(Emitter<CSharpExpr> emitter)
-		{
-			return emitter.Emit(this);
-		}
-
-		internal override void Walk(ExpressoWalker walker)
+        public override void AcceptWalker(AstWalker walker)
 		{
 			if(walker.Walk(this)){
-				Left.Walk(walker);
-				Right.Walk(walker);
+                Left.AcceptWalker(walker);
+                Right.AcceptWalker(walker);
 			}
 			walker.PostWalk(this);
 		}
+
+        public override TResult AcceptWalker<TResult>(IAstWalker<TResult> walker)
+        {
+            return walker.Walk(this);
+        }
 		
-		int BinaryExprAsInt(int lhs, int rhs, OperatorType opType)
-		{
-			int result;
-			
-			switch (opType) {
-			case OperatorType.PLUS:
-				result = lhs + rhs;
-				break;
-				
-			case OperatorType.MINUS:
-				result = lhs - rhs;
-				break;
-				
-			case OperatorType.TIMES:
-				result = lhs * rhs;
-				break;
-				
-			case OperatorType.DIV:
-				result = lhs / rhs;
-				break;
-				
-			case OperatorType.POWER:
-				result = (int)Math.Pow(lhs, rhs);
-				break;
-				
-			case OperatorType.MOD:
-				result = lhs % rhs;
-				break;
-				
-			default:
-				throw ExpressoOps.MakeRuntimeError("Internal Error: Unreachable code");
-			}
-			
-			return result;
-		}
-		
-		double BinaryExprAsDouble(double lhs, double rhs, OperatorType opType)
-		{
-			double result;
-			
-			switch (opType) {
-			case OperatorType.PLUS:
-				result = lhs + rhs;
-				break;
-				
-			case OperatorType.MINUS:
-				result = lhs - rhs;
-				break;
-				
-			case OperatorType.TIMES:
-				result = lhs * rhs;
-				break;
-				
-			case OperatorType.DIV:
-				result = lhs / rhs;
-				break;
-				
-			case OperatorType.POWER:
-				result = Math.Pow(lhs, rhs);
-				break;
-				
-			case OperatorType.MOD:
-				result = Math.IEEERemainder(lhs, rhs);
-				break;
-				
-			default:
-				throw ExpressoOps.MakeRuntimeError("Internal Error: Unreachable code");
-			}
-			
-			return result;
-		}
-
-		Fraction BinaryExprAsFraction(Fraction lhs, object rhs, OperatorType opType)
-		{
-			if(!(rhs is Fraction) && !(rhs is long) && !(rhs is int) && !(rhs is double))
-				throw ExpressoOps.MakeInvalidTypeError("The right operand have to be either a long, int, double or fraction!");
-
-			Fraction result;
-
-			switch(opType){
-			case OperatorType.PLUS:
-				result = lhs + rhs;
-				break;
-
-			case OperatorType.MINUS:
-				result = lhs - rhs;
-				break;
-
-			case OperatorType.TIMES:
-				result = lhs * rhs;
-				break;
-
-			case OperatorType.DIV:
-				result = lhs / rhs;
-				break;
-
-			case OperatorType.POWER:
-				result = lhs.Power(rhs);
-				break;
-
-			case OperatorType.MOD:
-				result = lhs % rhs;
-				break;
-
-			default:
-				throw ExpressoOps.MakeRuntimeError("Internal Error: Unreachable code");
-			}
-
-			return result;
-		}
-
-		string BinaryExprAsString(string lhs, object rhs, OperatorType opType)
-		{
-			string result;
-
-			switch(opType){
-			case OperatorType.PLUS:
-				result = String.Concat(lhs, rhs.ToString());
-				break;
-
-			case OperatorType.TIMES:
-				if(!(rhs is int))
-					throw ExpressoOps.MakeInvalidTypeError("Can not muliply string by objects other than an integer.");
-
-				int times = (int)rhs;
-				var sb = new StringBuilder(lhs.Length * times);
-				for(; times > 0; --times) sb.Append(lhs);
-
-				result = sb.ToString();
-				break;
-
-			default:
-				throw ExpressoOps.MakeRuntimeError("Strings don't support that operation!");
-			}
-
-			return result;
-		}
-		
-		bool EvalComparison(IComparable lhs, IComparable rhs, OperatorType opType)
-		{
-			if(lhs == null || rhs == null)
-				throw ExpressoOps.MakeInvalidTypeError("The operands can not be compared");
-			
-			switch (opType) {
-			case OperatorType.EQUAL:
-				return object.Equals(lhs, rhs);
-				
-			case OperatorType.GREAT:
-				return lhs.CompareTo(rhs) > 0;
-				
-			case OperatorType.GRTE:
-				return lhs.CompareTo(rhs) >= 0;
-				
-			case OperatorType.LESE:
-				return lhs.CompareTo(rhs) <= 0;
-				
-			case OperatorType.LESS:
-				return lhs.CompareTo(rhs) < 0;
-				
-			case OperatorType.NOTEQ:
-				return !object.Equals(lhs, rhs);
-				
-			default:
-				return false;
-			}
-		}
-
-		bool EvalLogicalOperation(bool lhs, bool rhs, OperatorType opType)
-		{
-			switch (opType) {
-			case OperatorType.AND:
-				return lhs && rhs;
-
-			case OperatorType.OR:
-				return lhs || rhs;
-
-			default:
-				return false;
-			}
-		}
-
-		int EvalBitOperation(int lhs, int rhs, OperatorType opType)
-		{
-			switch (opType) {
-			case OperatorType.BIT_AND:
-				return lhs & rhs;
-
-			case OperatorType.BIT_XOR:
-				return lhs ^ rhs;
-
-			case OperatorType.BIT_OR:
-				return lhs | rhs;
-
-			case OperatorType.BIT_LSHIFT:
-				return lhs << rhs;
-
-			case OperatorType.BIT_RSHIFT:
-				return lhs >> rhs;
-
-			default:
-				throw ExpressoOps.MakeRuntimeError("Invalid Operation!");
-			}
-		}
-		
-		public override string ToString()
+        public override string GetText()
 		{
 			string op;
-			switch (Operator) {
+			switch(Operator){
 			case OperatorType.AND:
 				op = "and";
 				break;
@@ -382,5 +150,10 @@ namespace Expresso.Ast
 			}
 			return string.Format("{1} {0} {2}", op, Left, Right);
 		}
+
+        public override string ToString()
+        {
+            return GetText();
+        }
     }
 }

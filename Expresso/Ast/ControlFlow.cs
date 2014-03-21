@@ -6,8 +6,6 @@ using Expresso.Compiler;
 
 namespace Expresso.Ast
 {
-	using CSharpExpr = System.Linq.Expressions.Expression;
-
 	/// <summary>
 	/// break,continue文でコントロールできる文。
 	/// Represents a breakable statement, which is the statement on which a break or a continue statement has its effect.
@@ -29,7 +27,6 @@ namespace Expresso.Ast
 	public class BreakStatement : Statement
 	{
 		readonly int count;
-		readonly BreakableStatement[] enclosings;
 
 		/// <summary>
 		/// breakの際に何階層分ループ構造を遡るか。
@@ -43,8 +40,8 @@ namespace Expresso.Ast
 		/// このbreak文が含まれるループ構文。
 		/// Loops that have this statement as their child.
 		/// </summary>
-		public BreakableStatement[] Enclosings{
-			get{return enclosings;}
+        public IEnumerable<BreakableStatement> Enclosings{
+            get{return Children;}
 		}
 
         public override NodeType Type{
@@ -54,7 +51,9 @@ namespace Expresso.Ast
 		public BreakStatement(int loopCount, BreakableStatement[] loops)
 		{
 			count = loopCount;
-			enclosings = loops;
+			
+            foreach(var enclosing in loops)
+                AddChild(enclosing);
 		}
 
         public override bool Equals(object obj)
@@ -72,29 +71,26 @@ namespace Expresso.Ast
             return this.count.GetHashCode();
         }
 
-        /*internal override object Run(VariableStore varStore)
-        {
-			foreach(var enclosing in Enclosings)	//Count階層分ループを遡るまで出会ったbreakableに中断命令を出す
-				enclosing.CanContinue = false;
-
-			return null;
-        }*/
-
-		internal override CSharpExpr Compile(Emitter<CSharpExpr> emitter)
-		{
-			return emitter.Emit(this);
-		}
-
-		internal override void Walk(ExpressoWalker walker)
+        public override void AcceptWalker(AstWalker walker)
 		{
 			if(walker.Walk(this)){}
 			walker.PostWalk(this);
 		}
 
-		public override string ToString()
+        public override TResult AcceptWalker<TResult>(IAstWalker<TResult> walker)
+        {
+            return walker.Walk(this);
+        }
+
+        public override string GetText()
 		{
-			return string.Format("break upto {0}", Count);
+            return string.Format("<Break upto {0}>", Count);
 		}
+
+        public override string ToString()
+        {
+            return GetText();
+        }
 	}
 
 	/// <summary>
@@ -104,7 +100,6 @@ namespace Expresso.Ast
 	public class ContinueStatement : Statement
 	{
 		readonly int count;
-		readonly BreakableStatement[] enclosings;
 
 		/// <summary>
 		/// continueの際に何階層分ループ構造を遡るか。
@@ -118,8 +113,8 @@ namespace Expresso.Ast
 		/// continue文が含まれるループ構文。
 		/// Loops that have this statement as their child.
 		/// </summary>
-		public BreakableStatement[] Enclosings{
-			get{return enclosings;}
+        public IEnumerable<BreakableStatement> Enclosings{
+            get{return Children;}
 		}
 
         public override NodeType Type{
@@ -129,7 +124,9 @@ namespace Expresso.Ast
 		public ContinueStatement(int loopCount, BreakableStatement[] loops)
 		{
 			count = loopCount;
-			enclosings = loops;
+			
+            foreach(var enclosing in loops)
+                AddChild(enclosing);
 		}
 
         public override bool Equals(object obj)
@@ -147,29 +144,26 @@ namespace Expresso.Ast
             return this.count.GetHashCode();
         }
 
-        /*internal override object Run(VariableStore varStore)
-        {
-			foreach(var enclosing in Enclosings)	//Note:continueすべきループは構文木生成段階で除かれているので
-				enclosing.CanContinue = false;		//単純に内包されているbreakableに中断命令を出すだけでいい
-
-			return null;
-        }*/
-
-		internal override CSharpExpr Compile(Emitter<CSharpExpr> emitter)
-		{
-			return emitter.Emit(this);
-		}
-
-		internal override void Walk(ExpressoWalker walker)
+        public override void AcceptWalker(AstWalker walker)
 		{
 			if(walker.Walk(this)){}
 			walker.PostWalk(this);
 		}
 
-		public override string ToString()
+        public override TResult AcceptWalker<TResult>(IAstWalker<TResult> walker)
+        {
+            return walker.Walk(this);
+        }
+
+        public override string GetText()
 		{
-			return string.Format("continue on {0} up", Count);
+            return string.Format("<Continue on {0} up>", Count);
 		}
+
+        public override string ToString()
+        {
+            return GetText();
+        }
 	}
 }
 

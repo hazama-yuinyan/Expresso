@@ -6,23 +6,18 @@ using Expresso.Compiler;
 
 namespace Expresso.Ast
 {
-	using CSharpExpr = System.Linq.Expressions.Expression;
-
     /// <summary>
     /// キャスト式。
 	/// The cast expression.
     /// </summary>
     public class CastExpression : Expression
     {
-		readonly Expression to_expr;
-		readonly Expression target;
-
         /// <summary>
         /// キャスト先の型。
 		/// The target type to which the expression casts the object.
         /// </summary>
         public Expression ToExpression{
-			get{return to_expr;}
+            get{return FirstChild;}
 		}
 
         /// <summary>
@@ -30,7 +25,7 @@ namespace Expresso.Ast
 		/// The target object to be casted.
         /// </summary>
         public Expression Target{
-			get{return target;}
+            get{return LastChild;}
 		}
 
         public override NodeType Type{
@@ -39,8 +34,8 @@ namespace Expresso.Ast
 
 		public CastExpression(Expression toExpr, Expression targetExpr)
 		{
-			to_expr = toExpr;
-			target = targetExpr;
+            AddChild(toExpr);
+            AddChild(targetExpr);
 		}
 
         public override bool Equals(object obj)
@@ -50,36 +45,36 @@ namespace Expresso.Ast
             if(x == null)
                 return false;
 
-            return this.to_expr == x.to_expr && this.target.Equals(x.target);
+            return this.ToExpression == x.ToExpression && this.Target.Equals(x.Target);
         }
 
         public override int GetHashCode()
         {
-            return this.to_expr.GetHashCode() ^ this.target.GetHashCode();
+            return this.ToExpression.GetHashCode() ^ this.Target.GetHashCode();
         }
 
-        /*internal override object Run(VariableStore varStore)
-        {
-            return null;
-        }*/
-
-		internal override CSharpExpr Compile(Emitter<CSharpExpr> emitter)
-		{
-			return emitter.Emit(this);
-		}
-
-		internal override void Walk(ExpressoWalker walker)
+        public override void AcceptWalker(AstWalker walker)
 		{
 			if(walker.Walk(this)){
-				to_expr.Walk(walker);
-				target.Walk(walker);
+                ToExpression.AcceptWalker(walker);
+                Target.AcceptWalker(walker);
 			}
 			walker.PostWalk(this);
 		}
 
-		public override string ToString()
+        public override TResult AcceptWalker<TResult>(IAstWalker<TResult> walker)
+        {
+            return walker.Walk(this);
+        }
+
+        public override string GetText()
 		{
-			return string.Format("(Cast){0} => {1}", target, to_expr);
+            return string.Format("<Cast: {0} => {1}>", Target.GetText(), ToExpression.GetText());
 		}
+
+        public override string ToString()
+        {
+            return GetText();
+        }
     }
 }

@@ -7,8 +7,6 @@ using Expresso.Runtime.Operations;
 
 namespace Expresso.Ast
 {
-	using CSharpExpr = System.Linq.Expressions.Expression;
-
     /// <summary>
     /// アサート文。
 	/// The assert statement.
@@ -19,16 +17,30 @@ namespace Expresso.Ast
         /// チェックする式。
         /// The test.
         /// </summary>
-        public Expression Test{get; internal set;}
+        public Expression Test{
+            get{
+                return (Expression)FirstChild;
+            }
+        }
 
         /// <summary>
         /// Testがfalseになった時に表示するメッセージ。
 		/// The message that will be displayed if the test fails.
         /// </summary>
-        public Expression Message{get; internal set;}
+        public Expression Message{
+            get{
+                return (Expression)FirstChild.NextSibling;
+            }
+        }
 
         public override NodeType Type{
             get{return NodeType.AssertStatement;}
+        }
+
+        public AssertStatement(Expression test, Expression message)
+        {
+            AddChild(test);
+            AddChild(message);
         }
 
         public override bool Equals(object obj)
@@ -47,31 +59,31 @@ namespace Expresso.Ast
             return this.Test.GetHashCode() ^ this.Message.GetHashCode();
         }
 
-        /*internal override object Run(VariableStore varStore)
-        {
-			return null;
-        }*/
-		
-		internal override CSharpExpr Compile(Emitter<CSharpExpr> emitter)
-		{
-			return emitter.Emit(this);
-		}
-
-		internal override void Walk(ExpressoWalker walker)
+        public override void AcceptWalker(AstWalker walker)
 		{
 			if(walker.Walk(this)){
 				if(Test != null)
-					Test.Walk(walker);
+                    Test.AcceptWalker(walker);
 
 				if(Message != null)
-					Message.Walk(walker);
+                    Message.AcceptWalker(walker);
 			}
 			walker.PostWalk(this);
 		}
 
-		public override string ToString()
+        public override TResult AcceptWalker<TResult>(IAstWalker<TResult> walker)
+        {
+            return walker.Walk(this);
+        }
+
+        public override string GetText()
 		{
-			return string.Format("(Assert) {0} {1}", Test, Message);
+            return string.Format("<Assert: {0} {1}>", Test, Message);
 		}
+
+        public override string ToString()
+        {
+            return GetText();
+        }
     }
 }

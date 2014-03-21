@@ -90,7 +90,7 @@ namespace Expresso.Ast
 			return emitter.Emit(this);
 		}
 
-		internal override void Walk(ExpressoWalker walker)
+		internal override void Walk(AstWalker walker)
 		{
 			if(walker.Walk(this))
 				operand.Walk(walker);

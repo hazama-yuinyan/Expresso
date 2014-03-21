@@ -11,8 +11,6 @@ using Expresso.Runtime.Operations;
 
 namespace Expresso.Ast
 {
-	using CSharpExpr = System.Linq.Expressions.Expression;
-
     /// <summary>
     /// 識別子。
 	/// Reperesents a symbol.
@@ -88,36 +86,16 @@ namespace Expresso.Ast
             return this.name.GetHashCode();
         }
 
-        /*internal override object Run(VariableStore varStore)
-        {
-			if(ParamType.ObjType == ObjectTypes._SUBSCRIPT)
-				return this;
-			else if(ParamType.ObjType == ObjectTypes.TYPE_CLASS){
-				var cur_module = varStore.Get(0) as ExpressoObj;
-				if(cur_module == null)
-					throw ExpressoOps.ReferenceError("\"this\" doesn't refer to the enclosing module instance.");
-
-				return cur_module.AccessMember(this, true);
-			}else if(ParamType.ObjType == ObjectTypes.TYPE_MODULE){
-				var module = ExpressoModule.GetModule(Name);
-				if(module == null)
-					throw ExpressoOps.MissingTypeError(string.Format("The requested module \"{0}\" doesn't exist.", Name));
-
-				return module;
-			}else
-				return varStore.Get(Offset, Level);
-        }*/
-
-		internal override CSharpExpr Compile(Emitter<CSharpExpr> emitter)
-		{
-			return emitter.Emit(this);
-		}
-
-		internal override void Walk(ExpressoWalker walker)
+        public override void AcceptWalker(AstWalker walker)
 		{
 			if(walker.Walk(this)){}
 			walker.PostWalk(this);
 		}
+
+        public override TResult AcceptWalker<TResult>(IAstWalker<TResult> walker)
+        {
+            return walker.Walk(this);
+        }
 
 		internal override void Assign(EvaluationFrame frame, object val)
 		{
@@ -127,9 +105,14 @@ namespace Expresso.Ast
 				throw ExpressoOps.MakeRuntimeError("Unbound name: {0}", name);
 		}
 
-		public override string ToString()
+        public override string GetText()
 		{
 			return (Reference != null) ? Reference.ToString() : string.Format("[Unbound name: {0}]", name);
 		}
+
+        public override string ToString()
+        {
+            return GetText();
+        }
     }
 }

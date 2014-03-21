@@ -133,11 +133,11 @@ namespace Expresso.Interpreter
 
 			var mod_context = new ModuleContext(main_module, global_context);
 			var main_args = ExpressoOps.Slice(args, new ExpressoIntegerSequence(1, args.Count, 1));
-			var call = Node.MakeCallExpr(
-				Node.MakeConstant(ObjectTypes.Function, main_func),
+			var call = AstNode.MakeCallExpr(
+				AstNode.MakeConstant(ObjectTypes.Function, main_func),
 				new Expression[]{
-					Node.MakeConstant(ObjectTypes.Instance, main_module),
-					Node.MakeConstant(ObjectTypes.List, main_args)
+					AstNode.MakeConstant(ObjectTypes.Instance, main_module),
+					AstNode.MakeConstant(ObjectTypes.List, main_args)
 				}
 			);
 
@@ -149,7 +149,7 @@ namespace Expresso.Interpreter
 		/// Run the interpreter on a specified AST node.
 		/// Can be useful for interactive mode.
 		/// </summary>
-		public object Run(Node node, bool useShared)
+		public object Run(AstNode node, bool useShared)
 		{
 			if(node == null)
 				throw new ArgumentNullException("node", "Can not evaluate a null node.");
@@ -169,9 +169,9 @@ namespace Expresso.Interpreter
 			return parent_dir + path;
 		}
 
-		internal object Interpret(Node inputNode, CodeContext context)
+		internal object Interpret(AstNode inputNode, CodeContext context)
 		{
-			Node node = inputNode;	//The next node to be evaluated
+			AstNode node = inputNode;	//The next node to be evaluated
 			var flow_manager = new InterpreterFlowManager();
 
 			try{
@@ -277,7 +277,7 @@ namespace Expresso.Interpreter
 					{
 						var break_stmt = (BreakStatement)node;
 						for(int i = break_stmt.Count; i > 0;){		//Count階層分ループを遡るまで出会ったbreakableをノードスタックから取り除く
-							Node popped = flow_manager.Pop().TargetNode;
+							AstNode popped = flow_manager.Pop().TargetNode;
 							if(popped.Type == NodeType.ForStatement || popped.Type == NodeType.WhileStatement)
 								--i;
 						}
@@ -478,7 +478,7 @@ namespace Expresso.Interpreter
 					{
 						var continue_stmt = (ContinueStatement)node;
 						for(int i = continue_stmt.Count; i > 0;){		//Count階層分ループを遡るまで出会ったbreakableをノードスタックから取り除く
-							Node popped = flow_manager.Pop().TargetNode;
+							AstNode popped = flow_manager.Pop().TargetNode;
 							if(popped.Type == NodeType.ForStatement || popped.Type == NodeType.WhileStatement &&
 							   i != 1)				//continueすべきループはスタックから外さない
 								--i;

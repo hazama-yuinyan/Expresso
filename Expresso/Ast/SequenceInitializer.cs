@@ -117,7 +117,7 @@ namespace Expresso.Ast
 			return emitter.Emit(this);
 		}
 
-		internal override void Walk(ExpressoWalker walker)
+		internal override void Walk(AstWalker walker)
 		{
 			if(walker.Walk(this)){
 				foreach(var item in items)

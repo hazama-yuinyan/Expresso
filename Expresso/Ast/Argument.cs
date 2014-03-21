@@ -45,7 +45,11 @@ namespace Expresso.Ast
         /// この引数のデフォルト値。
 		/// The optional value for this argument. It would be null if none is specified.
         /// </summary>
-        public Expression Option{get; internal set;}
+        public Expression Option{
+            get{
+                return (Expression)FirstChild;
+            }
+        }
 
 		/// <summary>
 		/// この引数の型。
@@ -63,8 +67,8 @@ namespace Expresso.Ast
 
 		internal Argument(Expression option, ExpressoVariable variable)
 		{
-			Option = option;
 			ExpressoVariable = variable;
+            AddChild(option);
 		}
 
         public override bool Equals(object obj)
@@ -82,29 +86,29 @@ namespace Expresso.Ast
             return ExpressoVariable.GetHashCode();
         }
 
-        /*internal override object Run(VariableStore varStore)
-        {
-            return Option;
-        }*/
-
-		internal override CSharpExpr Compile(Emitter<CSharpExpr> emitter)
-		{
-			return emitter.Emit(this);
-		}
-
-		internal override void Walk(ExpressoWalker walker)
+        public override void AcceptWalker(AstWalker walker)
 		{
 			if(walker.Walk(this)){
 				if(Option != null)
-					Option.Walk(walker);
+                    Option.AcceptWalker(walker);
 			}
 			walker.PostWalk(this);
 		}
 
+        public override TResult AcceptWalker<TResult>(IAstWalker<TResult> walker)
+        {
+            return walker.Walk(this);
+        }
+
+        public override string GetText()
+        {
+            return (Option != null) ? string.Format("{0} (- {1} [= {2}]", Name, ParamType, Option)
+                    : string.Format("{0} (- {1}", Name, ParamType);
+        }
+
 		public override string ToString()
 		{
-			return (Option != null) ? string.Format("{0} (- {1} [= {2}]", Name, ParamType, Option)
-				: string.Format("{0} (- {1}", Name, ParamType);
+            return GetText();
 		}
 	}
 }
