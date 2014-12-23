@@ -9,145 +9,217 @@ namespace Expresso.Ast
 	/// </summary>
     public interface IAstWalker
 	{
-        void VisitArgument(Argument arg);
-        void VisitAssertStatement(AssertStatement assertStmt);
-        void VisitAssignment(Assignment assignment);
+        void VisitAst(ExpressoAst ast);
+
+        void VisitBlock(BlockStatement block);
+        void VisitBreakStatement(BreakStatement breakStmt);
+        void VisitContinueStatement(ContinueStatement continueStmt);
+        void VisitEmptyStatement(EmptyStatement emptyStmt);
+        void VisitExpressionStatement(ExpressionStatement exprStmt);
+        void VisitForStatement(ForStatement forStmt);
+        void VisitIfStatement(IfStatement ifStmt);
+        void VisitImportStatement(ImportStatement importStmt);
+        void VisitReturnStatement(ReturnStatement returnStmt);
+        void VisitSwitchStatement(SwitchStatement switchStmt);
+        void VisitThrowStatement(ThrowStatement throwStmt);
+        void VisitTryStatement(TryStatement tryStmt);
+        void VisitWhileStatement(WhileStatement whileStmt);
+        void VisitWithStatement(WithStatement withStmt);
+        void VisitYieldStatement(YieldStatement yieldStmt);
+        void VisitVariableDeclarationStatement(VariableDeclarationStatement varDecl);
+
+        void VisitArgument(ParameterDeclaration arg);
+        void VisitAssignment(AssignmentExpression assignment);
         void VisitBinaryExpression(BinaryExpression binaryExpr);
-        void VisitBlock(Block block);
-        void WalkCallExpression(Call callExpr);
-        void WalkCastExpression(CastExpression castExpr);
-        void WalkComprehensionFor(ComprehensionFor compFor);
-        void WalkComprehensionIf(ComprehensionIf compIf);
-        void WalkConditional(ConditionalExpression condExpr);
-        void WalkConstant(Constant constant);
-        void WalkBreakStatement(BreakStatement breakStmt);
-        void WalkContinueStatement(ContinueStatement continueStmt);
-        void WalkDefaultExpression(DefaultExpression defaultExpr);
-        void WalkEmptyStatement(EmptyStatement emptyStmt);
-        void WalkExpressionStatement(ExprStatement exprStmt);
-        void WalkForStatement(ForStatement forStmt);
-        void WalkFunctionDefinition(FunctionDefinition funcDef);
-        void WalkIdentifier(Identifier ident);
-        void WalkIfStatement(IfStatement ifStmt);
-        void WalkIntSequence(IntSeqExpression intSeq);
-        void WalkLateBinding<T>(LateBindExpression<T> lateBinding) where T : class;
-        void WalkMemberReference(MemberReference memRef);
-        void WalkAst(ExpressoAst ast);
-        void WalkNewExpression(NewExpression newExpr);
-        void WalkSequenceInitializer(SequenceInitializer seqInitializer);
-        void WalkRequireStatement(RequireStatement requireStmt);
-        void WalkReturnStatement(ReturnStatement returnStmt);
-        void WalkSwitchStatement(SwitchStatement switchStmt);
-        void WalkCaseClause(CaseClause caseClause);
-        void WalkThrowStatement(ThrowStatement throwStmt);
-        void WalkTryStatement(TryStatement tryStmt);
-        void WalkSequence(SequenceExpression seqExpr);
-        void WalkCatchClause(CatchClause catchClause);
-        void WalkFinallyClause(FinallyClause finallyClause);
-        void WalkTypeDefinition(TypeDefinition typeDef);
-        void WalkUnaryExpression(UnaryExpression unaryExpr);
-        void WalkVarDeclaration(VarDeclaration varDecl);
-        void WalkWhileStatement(WhileStatement whileStmt);
-        void WalkWithStatement(WithStatement withStmt);
-        void WalkYieldStatement(YieldStatement yieldStmt);
+        void VisitCallExpression(CallExpression callExpr);
+        void VisitCastExpression(CastExpression castExpr);
+        void VisitComprehensionExpression(ComprehensionExpression comp);
+        void VisitComprehensionForClause(ComprehensionForClause compFor);
+        void VisitComprehensionIfClause(ComprehensionIfClause compIf);
+        void VisitConditionalExpression(ConditionalExpression condExpr);
+        void VisitLiteralExpression(LiteralExpression literal);
+        void VisitDefaultExpression(DefaultExpression defaultExpr);
+        void VisitIdentifier(Identifier ident);
+        void VisitIntgerSequenceExpression(IntegerSequenceExpression intSeq);
+        void VisitIndexerExpression(IndexerExpression indexExpr);
+        void VisitMemberReference(MemberReference memRef);
+        void VisitNewExpression(NewExpression newExpr);
+        void VisitParenthesizedExpression(ParenthesizedExpression parensExpr);
+        void VisitSequenceInitializer(SequenceInitializer seqInitializer);
+        void VisitCaseClause(CaseClause caseClause);
+        void VisitSequence(SequenceExpression seqExpr);
+        void VisitCatchClause(CatchClause catchClause);
+        void VisitFinallyClause(FinallyClause finallyClause);
+        void VisitUnaryExpression(UnaryExpression unaryExpr);
+
+        void VisitNullReferenceExpression(NullReferenceExpression nullRef);
+        void VisitThisReferenceExpression(ThisReferenceExpression thisRef);
+        void VisitBaseReferenceExpression(BaseReferenceExpression baseRef);
+
+        void VisitCommentNode(CommentNode comment);
+        void VisitTextNode(TextNode textNode);
+
+        void VisitAstType(AstType typeNode);
+        void VisitSimpleType(SimpleType simpleType);
+        void VisitPrimitiveType(PrimitiveType primitiveType);
+
+        void VisitFunctionDeclaration(FunctionDeclaration funcDecl);
+
+        void VisitConstructorDeclaration(ConstructorDeclaration constructor);
+        void VisitConstructorInitializer(ConstructorInitializer constructorInitializer);
+        void VisitFieldDeclaration(FieldDeclaration fieldDecl);
+        void VisitMethodDeclaration(MethodDeclaration methodDecl);
+        void VisitParameterDeclaration(ParameterDeclaration parameterDecl);
+        void VisitVariableInitializer(VariableInitializer initializer);
 
         void VisitNullNode(AstNode nullNode);
+        void VisitNewLine(NewLineNode newlineNode);
+        void VisitWhitespace(WhitespaceNode whitespaceNode);
+        void VisitExpressoTokenNode(ExpressoTokenNode tokenNode);
         void VisitPatternPlaceholder(AstNode placeholder, Pattern child);
 	}
 
     public interface IAstWalker<out TResult>
     {
-        TResult Walk(Argument arg);
-        TResult Walk(AssertStatement assertStmt);
-        TResult Walk(Assignment assignment);
-        TResult Walk(BinaryExpression binaryExpr);
-        TResult Walk(Block block);
-        TResult Walk(Call call);
-        TResult Walk(CastExpression castExpr);
-        TResult Walk(ComprehensionFor compFor);
-        TResult Walk(ComprehensionIf compIf);
-        TResult Walk(ConditionalExpression condExpr);
-        TResult Walk(Constant constant);
-        TResult Walk(BreakStatement breakStmt);
-        TResult Walk(ContinueStatement continueStmt);
-        TResult Walk(DefaultExpression defaultExpr);
-        TResult Walk(EmptyStatement emptyStmt);
-        TResult Walk(ExprStatement exprStmt);
-        TResult Walk(ForStatement forStmt);
-        TResult Walk(FunctionDefinition funcDef);
-        TResult Walk(Identifier ident);
-        TResult Walk(IfStatement ifStmt);
-        TResult Walk(IntSeqExpression intSeq);
-        TResult Walk<T>(LateBindExpression<T> lateBinding);
-        TResult Walk(MemberReference memRef);
-        TResult Walk(ExpressoAst ast);
-        TResult Walk(NewExpression newExpr);
-        TResult Walk(SequenceInitializer seqInitializer);
-        TResult Walk(RequireStatement requireStmt);
-        TResult Walk(ReturnStatement returnStmt);
-        TResult Walk(SwitchStatement switchStmt);
-        TResult Walk(CaseClause caseClause);
-        TResult Walk(SequenceExpression seqExpr);
-        TResult Walk(ThrowStatement throwStmt);
-        TResult Walk(TryStatement tryStmt);
-        TResult Walk(CatchClause catchClause);
-        TResult Walk(FinallyClause finallyClause);
-        TResult Walk(TypeDefinition typeDef);
-        TResult Walk(UnaryExpression unaryExpr);
-        TResult Walk(VarDeclaration varDecl);
-        TResult Walk(WhileStatement whileStmt);
-        TResult Walk(WithStatement withStmt);
-        TResult Walk(YieldStatement yieldStmt);
+        TResult VisitAst(ExpressoAst ast);
+
+        TResult VisitBlock(BlockStatement block);
+        TResult VisitBreakStatement(BreakStatement breakStmt);
+        TResult VisitContinueStatement(ContinueStatement continueStmt);
+        TResult VisitEmptyStatement(EmptyStatement emptyStmt);
+        TResult VisitExpressionStatement(ExpressionStatement exprStmt);
+        TResult VisitForStatement(ForStatement forStmt);
+        TResult VisitIfStatement(IfStatement ifStmt);
+        TResult VisitImportStatement(ImportStatement importStmt);
+        TResult VisitReturnStatement(ReturnStatement returnStmt);
+        TResult VisitSwitchStatement(SwitchStatement switchStmt);
+        TResult VisitThrowStatement(ThrowStatement throwStmt);
+        TResult VisitTryStatement(TryStatement tryStmt);
+        TResult VisitWhileStatement(WhileStatement whileStmt);
+        TResult VisitWithStatement(WithStatement withStmt);
+        TResult VisitYieldStatement(YieldStatement yieldStmt);
+        TResult VisitVariableDeclarationStatement(VariableDeclarationStatement varDecl);
+
+        TResult VisitArgument(ParameterDeclaration arg);
+        TResult VisitAssinment(AssignmentExpression assignment);
+        TResult VisitBinaryExpression(BinaryExpression binaryExpr);
+        TResult VisitCallExpression(CallExpression call);
+        TResult VisitCastExpression(CastExpression castExpr);
+        TResult VisitComprehensionExpression(ComprehensionExpression comp);
+        TResult VisitComprehensionForClause(ComprehensionForClause compFor);
+        TResult VisitComprehensionIfClause(ComprehensionIfClause compIf);
+        TResult VisitConditionalExpression(ConditionalExpression condExpr);
+        TResult VisitLiteralExpression(LiteralExpression literal);
+        TResult VisitDefaultExpression(DefaultExpression defaultExpr);
+        TResult VisitIdentifier(Identifier ident);
+        TResult VisitIntegerSequenceExpression(IntegerSequenceExpression intSeq);
+        TResult VisitIndexerExpression(IndexerExpression indexExpr);
+        TResult VisitMemberReference(MemberReference memRef);
+        TResult VisitNewExpression(NewExpression newExpr);
+        TResult VisitParenthesizedExpression(ParenthesizedExpression parensExpr);
+        TResult VisitSequenceInitializer(SequenceInitializer seqInitializer);
+        TResult VisitCaseClause(CaseClause caseClause);
+        TResult VisitSequence(SequenceExpression seqExpr);
+        TResult VisitCatchClause(CatchClause catchClause);
+        TResult VisitFinallyClause(FinallyClause finallyClause);
+        TResult VisitUnaryExpression(UnaryExpression unaryExpr);
+
+        TResult VisitNullReferenceExpression(NullReferenceExpression nullRef);
+        TResult VisitThisReferenceExpression(ThisReferenceExpression thisRef);
+        TResult VisitBaseReferenceExpression(BaseReferenceExpression baseRef);
+
+        TResult VisitCommentNode(CommentNode comment);
+        TResult VisitTextNode(TextNode textNode);
+
+        TResult VisitAstType(AstType typeNode);
+        TResult VisitSimpleType(SimpleType simpleType);
+        TResult VisitPrimitiveType(PrimitiveType primitiveType);
+
+        TResult VisitFunctionDeclaration(FunctionDeclaration funcDecl);
+
+        TResult VisitConstructorDeclaration(ConstructorDeclaration constructor);
+        TResult VisitConstructorInitializer(ConstructorInitializer constructorInitializer);
+        TResult VisitFieldDeclaration(FieldDeclaration fieldDecl);
+        TResult VisitMethodDeclaration(MethodDeclaration methodDecl);
+        TResult VisitParameterDeclaration(ParameterDeclaration parameterDecl);
+        TResult VisitVariableInitializer(VariableInitializer initializer);
 
         TResult VisitNullNode(AstNode nullNode);
+        TResult VisitNewLine(NewLineNode newlineNode);
+        TResult VisitWhitespace(WhitespaceNode whitespaceNode);
+        TResult VisitExpressoTokenNode(ExpressoTokenNode tokenNode);
         TResult VisitPatternPlaceholder(AstNode placeholder, Pattern child);
     }
 
     public interface IAstWalker<in TData, out TResult>
     {
-        TResult Visit(Argument arg, TData data);
-        TResult Visit(AssertStatement assertStmt, TData data);
-        TResult Visit(Assignment assignment, TData data);
-        TResult Visit(BinaryExpression binaryExpr, TData data);
-        TResult Visit(Block block, TData data);
-        TResult Visit(Call call, TData data);
-        TResult Visit(CastExpression castExpr, TData data);
-        TResult Visit(ComprehensionFor compFor, TData data);
-        TResult Visit(ComprehensionIf compIf, TData data);
-        TResult Visit(ConditionalExpression condExpr, TData data);
-        TResult Visit(Constant constant, TData data);
-        TResult Visit(BreakStatement breakStmt, TData data);
-        TResult Visit(ContinueStatement continueStmt, TData data);
-        TResult Visit(DefaultExpression defaultExpr, TData data);
-        TResult Visit(EmptyStatement emptyStmt, TData data);
-        TResult Visit(ExprStatement exprStmt, TData data);
-        TResult Visit(ForStatement forStmt, TData data);
-        TResult Visit(FunctionDefinition funcDef, TData data);
-        TResult Visit(Identifier ident, TData data);
-        TResult Visit(IfStatement ifStmt, TData data);
-        TResult Visit(IntSeqExpression intSeq, TData data);
-        TResult Visit<T>(LateBindExpression<T> lateBinding, TData data);
-        TResult Visit(MemberReference memRef, TData data);
-        TResult Visit(ExpressoAst ast, TData data);
-        TResult Visit(NewExpression newExpr, TData data);
-        TResult Visit(SequenceInitializer seqInitializer, TData data);
-        TResult Visit(RequireStatement requireStmt, TData data);
-        TResult Visit(ReturnStatement returnStmt, TData data);
-        TResult Visit(SwitchStatement switchStmt, TData data);
-        TResult Visit(CaseClause caseClause, TData data);
-        TResult Visit(SequenceExpression seqExpr, TData data);
-        TResult Visit(ThrowStatement throwStmt, TData data);
-        TResult Visit(TryStatement tryStmt, TData data);
-        TResult Visit(CatchClause catchClause, TData data);
-        TResult Visit(FinallyClause finallyClause, TData data);
-        TResult Visit(TypeDefinition typeDef, TData data);
-        TResult Visit(UnaryExpression unaryExpr, TData data);
-        TResult Visit(VarDeclaration varDecl, TData data);
-        TResult Visit(WhileStatement whileStmt, TData data);
-        TResult Visit(WithStatement withStmt, TData data);
-        TResult Visit(YieldStatement yieldStmt, TData data);
+        TResult VisitAst(ExpressoAst ast, TData data);
+
+        TResult VisitBlock(BlockStatement block, TData data);
+        TResult VisitBreakStatement(BreakStatement breakStmt, TData data);
+        TResult VisitContinueStatement(ContinueStatement continueStmt, TData data);
+        TResult VisitEmptyStatement(EmptyStatement emptyStmt, TData data);
+        TResult VisitExpressionStatement(ExpressionStatement exprStmt, TData data);
+        TResult VisitForStatement(ForStatement forStmt, TData data);
+        TResult VisitIfStatement(IfStatement ifStmt, TData data);
+        TResult VisitImportStatement(ImportStatement importStmt, TData data);
+        TResult VisitReturnStatement(ReturnStatement returnStmt, TData data);
+        TResult VisitSwitchStatement(SwitchStatement switchStmt, TData data);
+        TResult VisitThrowStatement(ThrowStatement throwStmt, TData data);
+        TResult VisitTryStatement(TryStatement tryStmt, TData data);
+        TResult VisitWhileStatement(WhileStatement whileStmt, TData data);
+        TResult VisitWithStatement(WithStatement withStmt, TData data);
+        TResult VisitYieldStatement(YieldStatement yieldStmt, TData data);
+        TResult VisitVariableDeclarationStatement(VariableDeclarationStatement varDecl, TData data);
+
+        TResult VisitArgument(ParameterDeclaration arg, TData data);
+        TResult VisitAssignment(AssignmentExpression assignment, TData data);
+        TResult VisitBinaryExpression(BinaryExpression binaryExpr, TData data);
+        TResult VisitCallExpression(CallExpression call, TData data);
+        TResult VisitCastExpression(CastExpression castExpr, TData data);
+        TResult VisitComprehensionExpression(ComprehensionExpression comp, TData data);
+        TResult VisitComprehensionForClause(ComprehensionForClause compFor, TData data);
+        TResult VisitComprehensionIfClause(ComprehensionIfClause compIf, TData data);
+        TResult VisitConditionalExpression(ConditionalExpression condExpr, TData data);
+        TResult VisitLiteralExpression(LiteralExpression literal, TData data);
+        TResult VisitDefaultExpression(DefaultExpression defaultExpr, TData data);
+        TResult VisitIdentifier(Identifier ident, TData data);
+        TResult VisitIntegerSequenceExpression(IntegerSequenceExpression intSeq, TData data);
+        TResult VisitIndexerExpression(IndexerExpression indexExpr, TData data);
+        TResult VisitMemberReference(MemberReference memRef, TData data);
+        TResult VisitNewExpression(NewExpression newExpr, TData data);
+        TResult VisitParenthesizedExpression(ParenthesizedExpression parensExpr, TData data);
+        TResult VisitSequenceInitializer(SequenceInitializer seqInitializer, TData data);
+        TResult VisitCaseClause(CaseClause caseClause, TData data);
+        TResult VisitSequence(SequenceExpression seqExpr, TData data);
+        TResult VisitCatchClause(CatchClause catchClause, TData data);
+        TResult VisitFinallyClause(FinallyClause finallyClause, TData data);
+        TResult VisitUnaryExpression(UnaryExpression unaryExpr, TData data);
+
+        TResult VisitNullReferenceExpression(NullReferenceExpression nullRef, TData data);
+        TResult VisitThisReferenceExpression(ThisReferenceExpression thisRef, TData data);
+        TResult VisitBaseReferenceExpression(BaseReferenceExpression baseRef, TData data);
+
+        TResult VisitCommentNode(CommentNode comment, TData data);
+        TResult VisitTextNode(TextNode textNode, TData data);
+
+        TResult VisitAstType(AstType typeNode, TData data);
+        TResult VisitSimpleType(SimpleType simpleType, TData data);
+        TResult VisitPrimitiveType(PrimitiveType primitiveType, TData data);
+
+        TResult VisitFunctionDeclaration(FunctionDeclaration funcDecl, TData data);
+
+        TResult VisitConstructorDeclaration(ConstructorDeclaration constructor, TData data);
+        TResult VisitConstructorInitializer(ConstructorInitializer constructorInitializer, TData data);
+        TResult VisitFieldDeclaration(FieldDeclaration fieldDecl, TData data);
+        TResult VisitMethodDeclaration(MethodDeclaration methodDecl, TData data);
+        TResult VisitParameterDeclaration(ParameterDeclaration parameterDecl, TData data);
+        TResult VisitVariableInitializer(VariableInitializer initializer, TData data);
 
         TResult VisitNullNode(AstNode nullNode, TData data);
+        TResult VisitNewLine(NewLineNode newlineNode, TData data);
+        TResult VisitWhitespace(WhitespaceNode whitespaceNode, TData data);
+        TResult VisitExpressoTokenNode(ExpressoTokenNode tokenNode, TData data);
         TResult VisitPatternPlaceholder(AstNode placeholder, Pattern child, TData data);
     }
 }

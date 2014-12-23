@@ -1,9 +1,11 @@
 /***
  * Test program for basic operations
  */
+module main;
 
 
-def main(){
+def main()
+{
 	let a = [1, 2, 3];
  	let b = {"a" : 1, "b" : 4, "y" : 10};
  	let c = "akarichan";
@@ -17,6 +19,8 @@ def main(){
  	let t = r & s;
  	let u = x | t;
  	let v = c + d;
+    let w = a[0] + a[1] * b["a"];
+    let y = v * w;
 
- 	return [a, b, c, d, x, p, q, r, s, t, u, v];
+ 	return [a, b, c, d, x, p, q, r, s, t, u, v, w, y];
  }

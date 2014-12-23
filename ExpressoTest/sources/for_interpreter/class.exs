@@ -1,13 +1,14 @@
 /***
  * Test program for class in Expresso
  */
+module main;
 
 //require a as b;
 
 class Test
 {
 private:
-	x (- int, y (- int;
+	let x (- int, y (- int;
 
 public:
 	constructor(x, y)

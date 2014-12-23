@@ -41,21 +41,18 @@ namespace Expresso.Builtins
 			this.items = content.ToArray();
 		}
 
-		public object this[int index]
-		{
+        public object this[int index]{
 			get{
 				return items[index];
 			}
 		}
 		
 		#region ICollection members
-		bool ICollection.IsSynchronized
-		{
+        bool ICollection.IsSynchronized{
 			get { return false; }
 		}
 		
-		public int Count
-		{
+        public int Count{
 			[ExpressoHidden]
 			get{ return items.Length; }
 		}
@@ -66,8 +63,7 @@ namespace Expresso.Builtins
 			Array.Copy(items, 0, array, index, items.Length);
 		}
 		
-		object ICollection.SyncRoot
-		{
+        object ICollection.SyncRoot{
 			get {
 				return this;
 			}
@@ -93,7 +89,8 @@ namespace Expresso.Builtins
 		public int IndexOf(object item)
 		{
 			for(int i = 0; i < Count; i++){
-				if(this[i].Equals(item)) return i;
+				if(this[i].Equals(item))
+                    return i;
 			}
 			return -1;
 		}
@@ -108,8 +105,7 @@ namespace Expresso.Builtins
 			throw new InvalidOperationException("Tuple is readonly");
 		}
 		
-		object IList<object>.this[int index]
-		{
+        object IList<object>.this[int index]{
 			get {
 				return this[index];
 			}
@@ -134,9 +130,8 @@ namespace Expresso.Builtins
 		public bool Contains(object item)
 		{
 			for(int i = 0; i < items.Length; ++i){
-				if(items[i].Equals(item)){
+				if(items[i].Equals(item))
 					return true;
-				}
 			}
 			
 			return false;
@@ -150,9 +145,8 @@ namespace Expresso.Builtins
 		[ExpressoHidden]
 		public void CopyTo(object[] array, int arrayIndex)
 		{
-			for(int i = 0; i < Count; ++i){
+			for(int i = 0; i < Count; ++i)
 				array[arrayIndex + i] = this[i];
-			}
 		}
 		
 		bool ICollection<object>.IsReadOnly{
@@ -169,9 +163,8 @@ namespace Expresso.Builtins
 		int IStructuralComparable.CompareTo(object obj, IComparer comparer)
 		{
 			ExpressoTuple other = obj as ExpressoTuple;
-			if(other == null){
+			if(other == null)
 				throw new ArgumentException("expected tuple");
-			}
 			
 			return ExpressoOps.CompareArrays(items, items.Length, other.items, other.items.Length, comparer);
 		}
@@ -193,18 +186,16 @@ namespace Expresso.Builtins
 		{
 			if(!Object.ReferenceEquals(other, this)){
 				ExpressoTuple l = other as ExpressoTuple;
-				if(l == null || items.Length != l.items.Length){
+				if(l == null || items.Length != l.items.Length)
 					return false;
-				}
 				
 				for(int i = 0; i < items.Length; i++){
 					object obj1 = items[i], obj2 = l.items[i];
 					
-					if(Object.ReferenceEquals(obj1, obj2)){
+					if(Object.ReferenceEquals(obj1, obj2))
 						continue;
-					}else if(!comparer.Equals(obj1, obj2)){
+					else if(!comparer.Equals(obj1, obj2))
 						return false;
-					}
 				}
 			}
 			return true;
@@ -215,9 +206,8 @@ namespace Expresso.Builtins
 		{
 			if(!Object.ReferenceEquals(this, obj)){
 				ExpressoTuple other = obj as ExpressoTuple;
-				if(other == null || items.Length != other.items.Length){
+				if(other == null || items.Length != other.items.Length)
 					return false;
-				}
 				
 				for(int i = 0; i < items.Length; i++){
 					object obj1 = this[i], obj2 = other[i];
@@ -244,9 +234,9 @@ namespace Expresso.Builtins
 			for(int i = 0; i < items.Length; i += 2){
 				hash1 = ((hash1 << 27) + ((hash2 + 1) << 1) + (hash1 >> 5)) ^ items[i].GetHashCode();
 				
-				if(i == items.Length - 1){
+				if(i == items.Length - 1)
 					break;
-				}
+
 				hash2 = ((hash2 << 5) + ((hash1 - 1) >> 1) + (hash2 >> 27)) ^ items[i + 1].GetHashCode();
 			}
 			return hash1 + (hash2 * 1566083941);
@@ -260,9 +250,9 @@ namespace Expresso.Builtins
 			for(int i = 0; i < items.Length; i += 2){
 				hash1 = ((hash1 << 27) + ((hash2 + 1) << 1) + (hash1 >> 5)) ^ comparer.GetHashCode(items[i]);
 				
-				if(i == items.Length - 1){
+				if(i == items.Length - 1)
 					break;
-				}
+
 				hash2 = ((hash2 << 5) + ((hash1 - 1) >> 1) + (hash2 >> 27)) ^ comparer.GetHashCode(items[i + 1]);
 			}
 			return hash1 + (hash2 * 1566083941);
@@ -273,18 +263,14 @@ namespace Expresso.Builtins
 		{
 			IEnumerator er;
 			
-			object IEnumerator.Current
-			{
-				get
-				{
+            object IEnumerator.Current{
+                get{
 					return this.Current;
 				}
 			}
 			
-			public object Current
-			{
-				get
-				{
+            public object Current{
+                get{
 					return er.Current;
 				}
 			}
@@ -311,4 +297,3 @@ namespace Expresso.Builtins
 		#endregion
 	}
 }
-

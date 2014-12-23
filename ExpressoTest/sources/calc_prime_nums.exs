@@ -1,11 +1,12 @@
 /***
  * This is a performance test for Expresso
  */
- 
+module main; 
  
 //require math;
  
-def main(){
+def main()
+{
 	let n = 100000, i = 2, j, results = [];
 	for(i in [2..n + 1]){
 		let SQRT_I = toInt(sqrt(i) + 1.0);

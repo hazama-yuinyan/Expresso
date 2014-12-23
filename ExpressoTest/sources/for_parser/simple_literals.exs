@@ -1,6 +1,7 @@
 /***
  * Test program for parsing Expresso
  */
+module main;
 
 
 let a = 255;

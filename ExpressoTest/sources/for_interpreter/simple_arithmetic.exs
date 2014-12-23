@@ -1,10 +1,12 @@
 /***
  * Test program for simple arithmetic.
  */
- 
+module main;
 
-def main(){
-	let x = 3, xp = 3, xm = 3, xt = 3, xd = 4, xmod = 4, xpower = 3;
+
+def main()
+{
+	var x = 3, xp = 3, xm = 3, xt = 3, xd = 4, xmod = 4, xpower = 3;
 	let a = x + 4;
 	let b = x - 4;
 	let c = x * 4;

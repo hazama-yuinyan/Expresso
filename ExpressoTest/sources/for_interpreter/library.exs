@@ -1,9 +1,11 @@
 /***
  * Test program for the standard library of Expresso
  */
+module main;
 
 
-def main(){
+def main()
+{
  	try{
  		let file = File.openFile("./test.txt", "r");
  		let content = file.readAll();

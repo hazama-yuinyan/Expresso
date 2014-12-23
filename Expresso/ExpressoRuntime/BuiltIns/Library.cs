@@ -17,18 +17,18 @@ namespace Expresso.Builtins.Library
 	public class StandardIn : IEnumerable<string>, IEnumerable
 	{
 		static TextReader _in = Console.In;
-
 		static StandardIn inst = null;
 
+        public static StandardIn Instance{
+            get{
+                if(inst == null)
+                    inst = new StandardIn();
+
+                return inst;
+            }
+        }
+
 		StandardIn(){}
-
-		public static StandardIn Instance()
-		{
-			if(inst == null)
-				inst = new StandardIn();
-
-			return inst;
-		}
 
 		IEnumerator IEnumerable.GetEnumerator()
 		{

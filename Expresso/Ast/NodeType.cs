@@ -9,51 +9,26 @@ namespace Expresso.Ast
     /// </summary>
     public enum NodeType
     {
-        Block,
-        UnaryExpression,
-        BinaryExpression,
-        ConditionalExpression,
-        Constant,
-        Identifier,
-        Argument,
-        Call,
-        Assignment,
-        FunctionDef,
-        EmptyStatement,
-        Return,
-        Print,
-        IntSequence,
-        MemRef,
-        Comprehension,
-        ComprehensionFor,
-        ComprehensionIf,
-        VarDecl,
-        ExprStatement,
-        IfStatement,
-        WhileStatement,
-        ForStatement,
-        BreakStatement,
-        ContinueStatement,
-        AssertStatement,
-        TryStatement,
-        Initializer,
-        SwitchStatement,
-        CaseClause,
-        TypeDef,
-        Toplevel,
-        New,
-        Require,
-        WithStatement,
-        CatchClause,
-        FinallyClause,
-        ThrowStatement,
-        YieldStatement,
-        CastExpression,
-        IsExpression,
-        Sequence,
-        DefaultExpression,
-        LateBind,
-        Pattern,
-        Unknown
+        Unknown,
+        /// <summary>
+        /// AstType
+        /// </summary>
+        TypeReference,
+        /// <summary>
+        /// Type or delegate declaration.
+        /// </summary>
+        TypeDeclaration,
+        Member,
+        Statement,
+        Expression,
+        Token,
+        /// <summary>
+        /// Comment or whitespace
+        /// </summary>
+        Whitespace,
+        /// <summary>
+        /// Placeholder for a pattern
+        /// </summary>
+        Pattern
     }
 }

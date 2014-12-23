@@ -28,61 +28,61 @@ using Expresso.Utils;
  *    TypeDefinition,
  *    FunctionDefinition,
  *    VarDeclaration,
- *    RequireStatement,
+ *    ImportStatement,
  *    TryStatement(CatchClause),
  *    Comprehension(ComprehensionFor expression)
  */
 
 namespace Expresso.Ast
 {
-	class DefineBinder : AstWalkerNonRecursive
+    class DefineBinder : IAstWalker
 	{
 		ExpressoNameBinder binder;
 		public DefineBinder(ExpressoNameBinder nameBinder)
 		{
 			binder = nameBinder;
 		}
-		public override bool Walk(Identifier ident)
+
+        public bool VisitIdentifier(Identifier ident)
 		{
-            binder.DefineName(ident.Name, ident.ParamType);
+            binder.DefineName(ident.Name, ident.Type);
 			return false;
 		}
 
-        public override bool Walk(MemberReference memRef)
+        public bool VisitMemberReference(MemberReference memRef)
         {
             //return new LateBindExpression<Runtime.Types.BuiltinFunction>(node);
             return true;
         }
 
-        public override bool Walk(VarDeclaration varDecl)
+        public bool VisitVarDecl(VariableDeclarationStatement varDecl)
         {
             foreach(var item in varDecl.Left.Zip(varDecl.Expressions, (lhs, rhs) => new Tuple<Identifier, Expression>(lhs, rhs))){
                 item.Item1.Reference = binder.Reference(item.Item1.Name);
-                item.Item2.Walk(binder);
+                item.Item2.AcceptWalker(binder);
                 item.Item1.Reference.Variable = binder.DefineName(item.Item1.Name, InferenceHelper.InferType(item.Item2));
             }
             return false;
         }
 
-        public override bool Walk(ForStatement forStmt)
+        public bool VisitForStatement(ForStatement forStmt)
         {
             if(forStmt.HasLet){
-                forStmt.Target.Walk(binder);
+                forStmt.Target.AcceptWalker(binder);
                 foreach(var ident in forStmt.Left.Items.Cast<Identifier>()){
                     ident.Reference = binder.Reference(ident.Name);
                     ident.Reference.Variable = binder.DefineName(ident.Name, InferenceHelper.InferTypeForForStatement(forStmt.Target));
                 }
             }
-            return base.Walk(forStmt);
         }
 
-		public override bool Walk(SequenceExpression seqExpr)
+        public override bool VisitSequence(SequenceExpression seqExpr)
 		{
 			return true;
 		}
 	}
 	
-	class ParameterBinder : AstWalkerNonRecursive
+    class ParameterBinder : IAstWalker
 	{
 		ExpressoNameBinder binder;
 		public ParameterBinder(ExpressoNameBinder nameBinder)
@@ -90,7 +90,7 @@ namespace Expresso.Ast
 			binder = nameBinder;
 		}
 		
-		public override bool Walk(Argument node)
+        public override bool VisitParameter(ParameterDeclaration node)
 		{
 			node.ExpressoVariable = binder.DefineParameter(node.Name,
 			                                               node.ParamType == TypeAnnotation.InferenceType ? TypeAnnotation.VariantType :
@@ -123,7 +123,7 @@ namespace Expresso.Ast
 		}*/
 	}
 	
-	class ExpressoNameBinder : AstWalker
+    class ExpressoNameBinder : IAstWalker
 	{
 		ExpressoAst global_scope;
 		internal ScopeStatement cur_scope;
@@ -162,7 +162,7 @@ namespace Expresso.Ast
 			finally_count.Add(0);
 			
 			// Find all scopes and variables
-			unboundAst.Walk(this);
+            unboundAst.AcceptWalker(this);
 			
 			// Bind
 			foreach(ScopeStatement scope in scopes)
@@ -212,10 +212,10 @@ namespace Expresso.Ast
 			return cur_scope.DefineParameter(name, type);
 		}
 		
-		internal void ReportSyntaxWarning(string message, Node node)
+        internal void ReportSyntaxWarning(string message, AstNode node)
 		{
 			if(parser != null)
-				parser.SemanticError(message, node.Span, -1);
+                parser.SemanticError(message, node.StartLocation, -1);
 		}
 		
 		/*internal void ReportSyntaxError(string message, Node node)
@@ -225,25 +225,302 @@ namespace Expresso.Ast
 		}*/
 		
 		#region AstBinder Overrides
-		// AssignmentStatement
-		public override bool Walk(Assignment node)
-		{
-			node.Parent = cur_scope;
-			return base.Walk(node);
-		}
-		
-		/*public override bool Walk( node) {
-			node.Parent = _currentScope;
-			node.Left.Walk(_define);
-			return true;
-		}*/
-		
-		public override void PostWalk(Call node)
-		{
-			/*if(node.NeedsLocalsDictionary()){
-				_currentScope.NeedsLocalsDictionary = true;
-			}*/
-		}
+
+        public void VisitAst(ExpressoAst ast)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void VisitBlock(BlockStatement block)
+        {
+            block.Statements.AcceptWalker(this);
+        }
+
+        public void VisitBreakStatement(BreakStatement breakStmt)
+        {
+        }
+
+        public void VisitContinueStatement(ContinueStatement continueStmt)
+        {
+        }
+
+        public void VisitEmptyStatement(EmptyStatement emptyStmt)
+        {
+        }
+
+        public void VisitForStatement(ForStatement forStmt)
+        {
+        }
+
+        public void VisitIfStatement(IfStatement ifStmt)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void VisitImportStatement(ImportStatement importStmt)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void VisitReturnStatement(ReturnStatement returnStmt)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void VisitSwitchStatement(SwitchStatement switchStmt)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void VisitThrowStatement(ThrowStatement throwStmt)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void VisitTryStatement(TryStatement tryStmt)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void VisitWhileStatement(WhileStatement whileStmt)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void VisitWithStatement(WithStatement withStmt)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void VisitYieldStatement(YieldStatement yieldStmt)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void VisitVariableDeclarationStatement(VariableDeclarationStatement varDecl)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void VisitArgument(ParameterDeclaration arg)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void VisitAssignment(AssignmentExpression assignment)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void VisitBinaryExpression(BinaryExpression binaryExpr)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void VisitCallExpression(CallExpression callExpr)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void VisitCastExpression(CastExpression castExpr)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void VisitComprehensionExpression(ComprehensionExpression comp)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void VisitComprehensionForClause(ComprehensionForClause compFor)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void VisitComprehensionIfClause(ComprehensionIfClause compIf)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void VisitConditionalExpression(ConditionalExpression condExpr)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void VisitLiteralExpression(LiteralExpression literal)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void VisitDefaultExpression(DefaultExpression defaultExpr)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void VisitIdentifier(Identifier ident)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void VisitIntgerSequenceExpression(IntegerSequenceExpression intSeq)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void VisitIndexerExpression(IndexerExpression indexExpr)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void VisitLateBinding<T>(LateBindExpression<T> lateBinding) where T : class
+        {
+            throw new NotImplementedException();
+        }
+
+        public void VisitMemberReference(MemberReference memRef)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void VisitNewExpression(NewExpression newExpr)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void VisitParenthesizedExpression(ParenthesizedExpression parensExpr)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void VisitSequenceInitializer(SequenceInitializer seqInitializer)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void VisitCaseClause(CaseClause caseClause)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void VisitSequence(SequenceExpression seqExpr)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void VisitCatchClause(CatchClause catchClause)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void VisitFinallyClause(FinallyClause finallyClause)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void VisitUnaryExpression(UnaryExpression unaryExpr)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void VisitNullReferenceExpression(NullReferenceExpression nullRef)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void VisitThisReferenceExpression(ThisReferenceExpression thisRef)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void VisitBaseReferenceExpression(BaseReferenceExpression baseRef)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void VisitCommentNode(CommentNode comment)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void VisitTextNode(TextNode textNode)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void VisitAstType(AstType typeNode)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void VisitSimpleType(SimpleType simpleType)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void VisitPrimitiveType(PrimitiveType primitiveType)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void VisitFunctionDeclaration(FunctionDeclaration funcDecl)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void VisitConstructorDeclaration(ConstructorDeclaration constructor)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void VisitConstructorInitializer(ConstructorInitializer constructorInitializer)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void VisitFieldDeclaration(FieldDeclaration fieldDecl)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void VisitMethodDeclaration(MethodDeclaration methodDecl)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void VisitParameterDeclaration(ParameterDeclaration parameterDecl)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void VisitVariableInitializer(VariableInitializer initializer)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void VisitNullNode(AstNode nullNode)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void VisitNewLine(NewLineNode newlineNode)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void VisitWhitespace(WhitespaceNode whitespaceNode)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void VisitExpressoTokenNode(ExpressoTokenNode tokenNode)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void VisitPatternPlaceholder(AstNode placeholder, ICSharpCode.NRefactory.PatternMatching.Pattern child)
+        {
+            throw new NotImplementedException();
+        }
 		
 		// TypeDefinition
 		public override bool Walk(TypeDefinition node)
@@ -255,7 +532,7 @@ namespace Expresso.Ast
 			
 			// Base references are in the outer context
 			foreach(Expression b in node.Bases)
-                b.Walk(this);
+                b.AcceptWalker(this);
 			
 			// process the decorators in the outer context
 			/*if (node.Decorators != null) {
@@ -276,31 +553,22 @@ namespace Expresso.Ast
 			*/
 			// Walk the body
 			foreach(var stmt in node.Body)
-				stmt.Walk(this);
+                stmt.AcceptWalker(this);
 
 			return false;
 		}
 		
-		// TypeDefinition
-		public override void PostWalk(TypeDefinition node)
+        public override void VisitExpressionStatement(ExpressionStatement exprStmt)
 		{
-			Debug.Assert(node == cur_scope);
-			PopScope();
-		}
-		
-		public override bool Walk(ExprStatement node)
-		{
-			node.Parent = cur_scope;
-			return base.Walk(node);
+			exprStmt.Parent = cur_scope;
 		}
 		
 		public override bool Walk(BinaryExpression node)
 		{
 			node.Parent = cur_scope;
-			return base.Walk(node);
 		}
 		
-		public override bool Walk(Call node)
+		public override bool Walk(CallExpression node)
 		{
 			node.Parent = cur_scope;
 			return base.Walk(node);
@@ -312,13 +580,13 @@ namespace Expresso.Ast
 			return base.Walk(node);
 		}
 		
-		public override bool Walk(Comprehension node)
+		public override bool Walk(ComprehensionExpression node)
 		{
 			node.Parent = cur_scope;
 			return base.Walk(node);
 		}
 		
-		public override bool Walk(ComprehensionIf node)
+		public override bool Walk(ComprehensionIfClause node)
 		{
 			node.Parent = cur_scope;
 			return base.Walk(node);
@@ -336,7 +604,7 @@ namespace Expresso.Ast
 			return base.Walk(node);
 		}
 		
-		public override bool Walk(IntSeqExpression node)
+		public override bool Walk(IntegerSequenceExpression node)
 		{
 			node.Parent = cur_scope;
 			return base.Walk(node);
@@ -367,7 +635,7 @@ namespace Expresso.Ast
 			return base.Walk(node);
 		}
 		
-		public override bool Walk(Block node)
+		public override bool Walk(BlockStatement node)
 		{
 			node.Parent = cur_scope;
 			return base.Walk(node);
@@ -430,7 +698,7 @@ namespace Expresso.Ast
 		public override bool Walk(ReturnStatement node)
 		{
 			node.Parent = cur_scope;
-			FunctionDefinition func_def = cur_scope as FunctionDefinition;
+			FunctionDeclaration func_def = cur_scope as FunctionDeclaration;
 			if(func_def != null)
 				func_def.HasReturn = true;
 
@@ -483,7 +751,7 @@ namespace Expresso.Ast
 		}*/
 		
 		// FunctionDefinition
-		public override bool Walk(FunctionDefinition node)
+		public override bool Walk(FunctionDeclaration node)
 		{
 			//node._nameVariable = global_scope.EnsureGlobalVariable("__name__");
 			
@@ -515,7 +783,7 @@ namespace Expresso.Ast
 		}
 		
 		// FunctionDefinition
-		public override void PostWalk(FunctionDefinition node)
+		public override void PostWalk(FunctionDeclaration node)
         {
 			PopScope();
 		}
@@ -525,12 +793,6 @@ namespace Expresso.Ast
 			node.Parent = cur_scope;
 			node.Reference = Reference(node.Name);
 			return true;
-		}
-		
-		public override bool Walk(PrintStatement node)
-		{
-			node.Parent = cur_scope;
-			return base.Walk(node);
 		}
 		
 		public override bool Walk(IfStatement node)
@@ -571,8 +833,8 @@ namespace Expresso.Ast
 			finally_count.RemoveAt(finally_count.Count - 1);
 		}
 		
-		// RequireStatement
-		public override bool Walk(RequireStatement node)
+		// ImportStatement
+		public override bool Walk(ImportStatement node)
 		{
 			node.Parent = cur_scope;
 			
@@ -613,7 +875,7 @@ namespace Expresso.Ast
 		}
 
 		// VarDecl
-		public override bool Walk(VarDeclaration node)
+		public override bool Walk(VariableDeclarationStatement node)
 		{
 			node.Parent = cur_scope;
             node.Walk(define);
@@ -621,7 +883,7 @@ namespace Expresso.Ast
 		}
 		
 		// ListComprehensionFor
-		public override bool Walk(ComprehensionFor node)
+		public override bool Walk(ComprehensionForClause node)
 		{
 			node.Parent = cur_scope;
 			node.Left.Walk(define);

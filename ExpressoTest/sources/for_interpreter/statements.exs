@@ -1,28 +1,29 @@
 /***
  * Test program for statements
  */
+module main;
 
 
 def main()
 {
 	let x = 100, y = 200, z = 300, w = 400;
-	let flag (- bool;
+	var flag (- bool;
 
-	print "(x, y, z, w) = ", x, y, z, w;
+	print("(x, y, z, w) = ", x, y, z, w);
 
 	if(x == 100)
 		flag = true;
 	else
 		flag = false;
 
-	let sum = 0;
-	for(let p in [0..y]){
+	var sum = 0;
+	for(p in [0..y]){
 		sum += p;
 		print p, sum;
 	}
 
 	let strs = ["akarichan", "chinatsu", "kyoko", "yui"];
-	for(let tmp in strs){
+	for(tmp in strs){
 		switch(tmp){
 		case "akarichan":
 			print "kawakawa";
@@ -38,15 +39,15 @@ def main()
 		}
 	}
 
-	let fibs = [], a = 0, b = 1;
+	var fibs = [], a = 0, b = 1;
 	while(b < 1000){
 		fibs.add(b);
 		a, b = b, a + b;
 	}
 
-	let ary = [];
-	for(let i in [0..10]){
-		for(let j in [0..10]){
+	var ary = [];
+	for(i in [0..10]){
+		for(j in [0..10]){
 			if(i == 3 || i == 6) break;
 			if(j == 8) continue upto 2;
 			ary.add((i, j));

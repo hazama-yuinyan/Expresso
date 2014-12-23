@@ -9,7 +9,7 @@
             "include" : "#comments"
         },
         {
-            "begin" : "(?x)^\\s*((?:\b(?:export|static)\b\\s)*)(class)\\s+([A-Za-z_]\\w+)\b",
+            "begin" : "(?x)^\\s*((?:\\b(?:export|static)\\b\\s)*)(class)\\s+([A-Za-z_]\\w+)\\b",
             "captures" : {
                 "1" : {
                     "name" : "storage.modifier.source.exs"
@@ -30,27 +30,27 @@
             ]
         },
         {
-            "match" : "\b(true|false|null|this|base)\b",
+            "match" : "\\b(true|false|null|this|base)\\b",
             "name" : "constant.language.source.exs"
         },
         {
-            "match" : "\b((0(x|X)[0-9a-fA-F]*)|(([0-9]+\\.?[0-9]*)|(\\.[0-9]+))((e|E)(\\+|-)?[0-9]+)?)(L|l)?\b",
+            "match" : "\\b((0(x|X)[0-9a-fA-F]*)|(([0-9]+\\.?[0-9]*)|(\\.[0-9]+))((e|E)(\\+|-)?[0-9]+)?)(L|l)?\\b",
             "name" : "constant.numeric.source.exs"
         },
         {
-            "match" : "\b(if|else|for|while|return|continue|break|switch|case|default|goto|throw|try|catch|finally|yield)\b",
+            "match" : "\\b(if|else|for|while|return|continue|break|switch|case|default|goto|throw|try|catch|finally|yield)\\b",
             "name" : "keyword.control.source.exs"
         },
         {
-            "match" : "\b(new|is|typeof|sizeof|override|in|out|ref|readonly|params|as)\b",
+            "match" : "\\b(new|is|typeof|sizeof|override|in|out|ref|readonly|params|as)\\b",
             "name" : "keyword.operator.source.exs"
         },
         {
-            "match" : "\b(event|delegate|explicit|implicit|in|set|get)\b",
+            "match" : "\\b(def|event|func|explicit|implicit|in|set|get)\\b",
             "name" : "keyword.other.source.exs"
         },
         {
-            "match" : "\b(internal|public|protected|private|static|const|new|abstract|override|export|readonly|volatile|operator)\b",
+            "match" : "\\b(internal|public|protected|private|static|const|new|abstract|override|export|readonly|volatile|operator)\\b",
             "name" : "storage.modifier.source.exs"
         },
         {
@@ -78,7 +78,43 @@
                 }
             },
             "match" : "^\\s*(require)\\s+([^ ;]*)(?:\\s+(as)\\s+([^ ;]*))?;",
-            "name" : "meta.keyword.require.source.exs"
+            "name" : "meta.keyword.require.source.exs",
+            "comment" : "Match on require statements"
+        },
+        {
+            "captures" : {
+                "1" : {
+                    "name" : "keyword.other.module.source.exs"
+                },
+                "2" : {
+                    "name" : "entity.name.type.package.source.exs"
+                }
+            },
+            "match" : "^\\s*(module)\\s+([^ ;]*);",
+            "name" : "meta.keyword.module.source.exs",
+            "comment" : "Match on module definition statements"
+        },
+        {
+            "captures" : {
+                "1" : {
+                    "name" : "keyword.storage.export.source.exs"
+                },
+                "2" : {
+                    "name" : "keyword.other.kind.variable.source.exs"
+                },
+                "3" : {
+                    "name" : "entity.name.variable.other.source.exs"
+                },
+                "4" : {
+                    "name" : "operator.variable.definition.source.exs"
+                },
+                "5" : {
+                    "name" : "entity.name.type.source.exs"
+                }
+            },
+            "match" : "^\\s*(export)?\\s*(let|var)\\s+(?:([^ ;]*)(?:\\s+(\\(-)\\s+([^ ;]+))?\\s*(?:,\\s*)?)+;$",
+            "name" : "meta.keyword.variable.source.exs",
+            "comment" : "Match on variable definition statements"
         },
         {
             "include" : "#builtinTypes"
@@ -88,7 +124,7 @@
                 "builtinTypes" : {
                     "patterns" : [
                         {
-                            "match" : "\b(bool|byte|float|int|bigint|list|dict|rational|tuple|bytearray|intseq|string|function|void|class|struct|interface)\b",
+                            "match" : "\\b(bool|byte|float|int|bigint|list|dict|rational|tuple|intseq|string|function|void|class|struct|interface)\\b",
                             "name" : "storage.type.source.exs"
                         }
                     ]
@@ -105,7 +141,7 @@
                                             "name" : "storage.type.source.exs"
                                         }
                                     },
-                                    "match" : "\\s*,?([A-Za-z_]\\w*)\b"
+                                    "match" : "\\s*,?([A-Za-z_]\\w*)\\b"
                                 }
                             ]
                         }
@@ -116,20 +152,20 @@
                         {
                             "captures" : {
                                 "1" : {
-                                    "name" : "punctuation.definition.comment.source.exs"
+                                    "name" : "punctuation.definition.multi.comment.source.exs"
                                 }
                             },
-                            "begin" : "/\\*",
-                            "end" : "\\*\n?",
+                            "begin" : "(/\\*)",
+                            "end" : "\\*/\\n?",
                             "name" : "comment.block.source.exs"
                         },
                         {
                             "captures" : {
                                 "1" : {
-                                    "name" : "punctuation.definition.comment.source.exs"
+                                    "name" : "punctuation.definition.single.comment.source.exs"
                                 }
                             },
-                            "match" : "(//).*$\n?",
+                            "match" : "(//).*\\n?$",
                             "name" : "comment.line.source.exs"
                         }
                     ]
@@ -152,6 +188,10 @@
                         {
                             "match" : "\\.",
                             "name" : "constant.character.escape.source.exs"
+                        },
+                        {
+                            "match" : ".",
+                            "name" : "constant.character.source.exs"
                         }
                     ]
                 },
@@ -182,6 +222,10 @@
                         {
                             "match" : "\\.",
                             "name" : "constant.character.escape.source.exs"
+                        },
+                        {
+                            "match" : ".",
+                            "name" : "constant.character.source.exs"
                         }
                     ]
                 },
@@ -199,5 +243,5 @@
         }
     ],
     "scopeName" : "source.exs",
-    "uuid" : "f0fd0faa-a6a3-11e3-a1bd-a73dc654913e"
+    "uuid" : "F0FD0FAA-A6A3-11E3-A1BD-A73DC654913E"
 }

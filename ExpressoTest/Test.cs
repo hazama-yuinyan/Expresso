@@ -71,7 +71,7 @@ namespace Expresso.Test
 			}
 
 			foreach(var method_annot in methodAnnots){
-				var method = instance.AccessMemberWithName(method_annot.Name, false) as FunctionDefinition;
+				var method = instance.AccessMemberWithName(method_annot.Name, false) as FunctionDeclaration;
 				Assert.IsNotNull(method);
 				Assert.AreEqual(method_annot.Name, method.Name);
 				Assert.AreEqual(method_annot.ReturnType, method.ReturnType);

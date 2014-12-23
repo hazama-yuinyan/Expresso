@@ -3,16 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 
 using Expresso.Ast;
-using Expresso.Builtins;
 using Expresso.Compiler.Meta;
-using Expresso.Interpreter;
-using Expresso.Runtime.Operations;
 using Expresso.Utils;
 
 namespace Expresso.Compiler
 {
 	using ExprTree = System.Linq.Expressions;
-	using CSharpExpr = System.Linq.Expressions.Expression;
 	using Helper = Expresso.Runtime.ImplementationHelpers;
 
 	/// <summary>
@@ -72,7 +68,7 @@ namespace Expresso.Compiler
 			return CSharpExpr.Block(compiled_locals, children);	//{children...}
 		}
 
-		internal override CSharpExpr Emit(Call node)
+		internal override CSharpExpr Emit(CallExpression node)
 		{
 			/*var args =
 				from expr in node.Arguments
@@ -157,7 +153,7 @@ namespace Expresso.Compiler
 			throw new System.NotImplementedException();
 		}
 
-		internal override CSharpExpr Emit(FunctionDefinition node)
+		internal override CSharpExpr Emit(FunctionDeclaration node)
 		{
 			throw new System.NotImplementedException();
 		}
@@ -215,7 +211,7 @@ namespace Expresso.Compiler
 			throw new System.NotImplementedException();
 		}
 
-		internal override CSharpExpr Emit(RequireStatement node)
+		internal override CSharpExpr Emit(ImportStatement node)
 		{
 			throw new System.NotImplementedException();
 		}
@@ -406,61 +402,61 @@ namespace Expresso.Compiler
 		CSharpExpr ConstructBinaryOpe(CSharpExpr lhs, CSharpExpr rhs, OperatorType opType)
 		{
 			switch(opType){
-			case OperatorType.AND:
+			case OperatorType.ConditionalAnd:
 				return CSharpExpr.MakeBinary(ExprTree.ExpressionType.AndAlso, lhs, rhs);
 
-			case OperatorType.BIT_AND:
+			case OperatorType.BitwiseAnd:
 				return CSharpExpr.MakeBinary(ExprTree.ExpressionType.And, lhs, rhs);
 
-			case OperatorType.BIT_LSHIFT:
+			case OperatorType.BitwiseShiftLeft:
 				return CSharpExpr.MakeBinary(ExprTree.ExpressionType.LeftShift, lhs, rhs);
 
-			case OperatorType.BIT_OR:
+			case OperatorType.BitwiseOr:
 				return CSharpExpr.MakeBinary(ExprTree.ExpressionType.Or, lhs, rhs);
 
-			case OperatorType.BIT_RSHIFT:
+			case OperatorType.BitwiseShiftRight:
 				return CSharpExpr.MakeBinary(ExprTree.ExpressionType.RightShift, lhs, rhs);
 
-			case OperatorType.BIT_XOR:
+			case OperatorType.ExclusiveOr:
 				return CSharpExpr.MakeBinary(ExprTree.ExpressionType.ExclusiveOr, lhs, rhs);
 
-			case OperatorType.DIV:
+			case OperatorType.Divide:
 				return CSharpExpr.MakeBinary(ExprTree.ExpressionType.Divide, lhs, rhs);
 
-			case OperatorType.EQUAL:
+			case OperatorType.Equality:
 				return CSharpExpr.MakeBinary(ExprTree.ExpressionType.Equal, lhs, rhs);
 
-			case OperatorType.GREAT:
+			case OperatorType.GreaterThan:
 				return CSharpExpr.MakeBinary(ExprTree.ExpressionType.GreaterThan, lhs, rhs);
 
-			case OperatorType.GRTE:
+			case OperatorType.GreaterThanOrEqual:
 				return CSharpExpr.MakeBinary(ExprTree.ExpressionType.GreaterThanOrEqual, lhs, rhs);
 
-			case OperatorType.LESE:
+			case OperatorType.LessThanOrEqual:
 				return CSharpExpr.MakeBinary(ExprTree.ExpressionType.LessThanOrEqual, lhs, rhs);
 
-			case OperatorType.LESS:
+			case OperatorType.LessThan:
 				return CSharpExpr.MakeBinary(ExprTree.ExpressionType.LessThan, lhs, rhs);
 
-			case OperatorType.MINUS:
+			case OperatorType.Minus:
 				return CSharpExpr.MakeBinary(ExprTree.ExpressionType.Subtract, lhs, rhs);
 
-			case OperatorType.MOD:
+			case OperatorType.Modulus:
 				return CSharpExpr.MakeBinary(ExprTree.ExpressionType.Modulo, lhs, rhs);
 
-			case OperatorType.NOTEQ:
+			case OperatorType.InEquality:
 				return CSharpExpr.MakeBinary(ExprTree.ExpressionType.NotEqual, lhs, rhs);
 
-			case OperatorType.OR:
+			case OperatorType.ConditionalOr:
 				return CSharpExpr.MakeBinary(ExprTree.ExpressionType.OrElse, lhs, rhs);
 
-			case OperatorType.PLUS:
+			case OperatorType.Plus:
 				return CSharpExpr.MakeBinary(ExprTree.ExpressionType.Add, lhs, rhs);
 
-			case OperatorType.POWER:
+			case OperatorType.Power:
 				return CSharpExpr.MakeBinary(ExprTree.ExpressionType.Power, lhs, rhs);
 
-			case OperatorType.TIMES:
+			case OperatorType.Times:
 				return CSharpExpr.MakeBinary(ExprTree.ExpressionType.Multiply, lhs, rhs);
 
 			default:
@@ -471,13 +467,13 @@ namespace Expresso.Compiler
 		CSharpExpr ConstructUnaryOpe(CSharpExpr operand, OperatorType opeType)
 		{
 			switch(opeType){
-			case OperatorType.PLUS:
+			case OperatorType.Plus:
 				return CSharpExpr.UnaryPlus(operand);
 
-			case OperatorType.MINUS:
+			case OperatorType.Minus:
 				return CSharpExpr.Negate(operand);
 
-			case OperatorType.NOT:
+			case OperatorType.Not:
 				return CSharpExpr.Not(operand);
 
 			default:

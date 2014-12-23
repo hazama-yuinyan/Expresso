@@ -1,6 +1,7 @@
 /**
  * Test for module declaration and import
  */
+module main;
 
 
 require test_module as TestModule;

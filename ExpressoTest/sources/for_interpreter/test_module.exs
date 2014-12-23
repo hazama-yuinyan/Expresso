@@ -1,6 +1,7 @@
 /**
  * Test module
  */
+module TestModule;
 
 
 export class Test

@@ -155,7 +155,7 @@ namespace Expresso.Interpreter
                                                   ShouldIntroduceScope(node) ? stack.Count : cur_scope.ScopeFramePointer,
 			                                childCounter, this);
 			frames.Add(frame);
-			if(node is Call)
+			if(node is CallExpression)
 				cur_scope = frame;
 		}
 
@@ -217,7 +217,7 @@ namespace Expresso.Interpreter
 			var tmp = frames[frames.Count - 1];
 			frames.RemoveAt(frames.Count - 1);
 			if(tmp.TargetNode is ScopeStatement)	//一つ上のスコープに対応する評価フレームをセットする
-				cur_scope = ((IEnumerable<EvaluationFrame>)frames).Reverse().FirstOrDefault(x => x.TargetNode is Call);
+				cur_scope = ((IEnumerable<EvaluationFrame>)frames).Reverse().FirstOrDefault(x => x.TargetNode is CallExpression);
 
 			return tmp;
 		}
@@ -249,7 +249,7 @@ namespace Expresso.Interpreter
 
         private bool ShouldIntroduceScope(AstNode targetNode)
         {
-            return targetNode is Call && frames[frames.Count - 1].TargetNode is Call;
+            return targetNode is CallExpression && frames[frames.Count - 1].TargetNode is CallExpression;
         }
 
 		public override string ToString()

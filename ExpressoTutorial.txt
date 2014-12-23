@@ -1,0 +1,5 @@
+﻿Expresso primarily aims to be an alternative PHP, or more precisely another Java.
+Even though it's a type-strict language, it looks rather in type-free way.
+First of all, we starts from the traditional "hello world" program.
+You may expect it to be a one-liner program, but uunfortunately it's two liners like the following.
+Every Expresso program consists of at least one module and every module must be explicitly named.

@@ -1,7 +1,6 @@
 using System;
 using Expresso.Ast;
 using Expresso.Compiler.Meta;
-using Expresso.Runtime.Operations;
 
 
 namespace Expresso.Parsing
@@ -20,18 +19,18 @@ namespace Expresso.Parsing
             }else{
                 var ident = inferenceTarget as Identifier;
                 if(ident != null)
-                    return ident.ParamType;
+                    return ident.Type;
 
                 var seq_initializer = inferenceTarget as SequenceInitializer;
                 if(seq_initializer != null)
-                    return new TypeAnnotation(seq_initializer.ObjType);
+                    return new TypeAnnotation(seq_initializer.ObjectType);
 
-                var literal = inferenceTarget as Constant;
+                var literal = inferenceTarget as LiteralExpression;
                 if(literal != null)
-                    return new TypeAnnotation(literal.ValType);
+                    return new TypeAnnotation(literal.Type);
 
                 throw new ParserException("{0} : {1} -- Can not infer the type of the variable from the right-hand-side expression.",
-                    inferenceTarget.Start.Line, inferenceTarget.Start.Column);
+                    inferenceTarget.StartLocation.Line, inferenceTarget.StartLocation.Column);
             }
         }
 
@@ -39,9 +38,9 @@ namespace Expresso.Parsing
         {
             Identifier ident = target as Identifier;
             if(ident != null){
-                if(!IsIterableType(ident.ParamType)){
+                if(!IsIterableType(ident.Type)){
                     throw new ParserException("{0} : {1} -- The right-hand-side of a for statement must be an expression yielding an iterable type.",
-                        target.Start.Line, target.Start.Column);
+                        target.StartLocation.Line, target.StartLocation.Column);
                 }
 
                 //TODO: iterableの中身を参照して型推論をする
@@ -56,7 +55,7 @@ namespace Expresso.Parsing
             }
         }
 
-        private static TypeAnnotation InferComplicatedType(MemberReference memRef)
+        static TypeAnnotation InferComplicatedType(MemberReference memRef)
         {
             MemberReference parent = null, mem_ref;
             Expression tmp = memRef;
@@ -67,10 +66,10 @@ namespace Expresso.Parsing
 
             var parent_ident = (parent != null) ? parent.Target as Identifier : null;
             if(parent_ident != null){
-                if(tmp is Constant || tmp is IntSeqExpression){    //a.b or a[$n] where $n is an integer or a string
-                    return parent_ident.ParamType;
+                if(tmp is LiteralExpression || tmp is IntegerSequenceExpression){    //a.b or a[$n] where $n is an integer or a string
+                    return parent_ident.Type;
                 }else{
-                    var method_call = parent.Subscription as Call;
+                    var method_call = parent.Subscription as CallExpression;
                     var method_ident = method_call.Target as Identifier;
                     throw new NotImplementedException();
                 }
@@ -80,7 +79,7 @@ namespace Expresso.Parsing
                 memRef.StartLocation.Line, memRef.StartLocation.Column);
         }
 
-        private static bool IsIterableType(TypeAnnotation type)
+        static bool IsIterableType(TypeAnnotation type)
         {
             return type.ObjType == ObjectTypes.Dict || type.ObjType == ObjectTypes.List ||
                 type.ObjType == ObjectTypes.Tuple;

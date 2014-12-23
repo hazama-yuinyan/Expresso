@@ -3,11 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-using Expresso.Builtins;
-using Expresso.Interpreter;
 using Expresso.Compiler;
 using Expresso.Compiler.Meta;
-using Expresso.Runtime.Operations;
 
 namespace Expresso.Ast
 {
@@ -15,8 +12,38 @@ namespace Expresso.Ast
     /// 識別子。
 	/// Reperesents a symbol.
     /// </summary>
-    public class Identifier : Assignable
+    public class Identifier : AstNode
     {
+        public static new Identifier Null = new NullIdentifier();
+        sealed class NullIdentifier : Identifier
+        {
+            public override bool IsNull{
+                get{
+                    return true;
+                }
+            }
+
+            public override void AcceptWalker(IAstWalker walker)
+            {
+                walker.VisitNullNode(this);
+            }
+
+            public override TResult AcceptWalker<TResult>(IAstWalker<TResult> walker)
+            {
+                return walker.VisitNullNode(this);
+            }
+
+            public override TResult AcceptWalker<TResult, TData>(IAstWalker<TData, TResult> walker, TData data)
+            {
+                return walker.VisitNullNode(this, data);
+            }
+
+            protected override bool DoMatch(AstNode other, ICSharpCode.NRefactory.PatternMatching.Match match)
+            {
+                return other == null || other.IsNull;
+            }
+        }
+
 		readonly string name;
 
         /// <summary>
@@ -24,95 +51,70 @@ namespace Expresso.Ast
 		/// The name of the identifier.
         /// </summary>
         public string Name{
-			get{return name;}
+            get{return name;}
 		}
 
-		/// <summary>
-		/// 変数の評価スタック内でのオフセット値。
-		/// The offset of the variable in the evaluation stack.
-		/// </summary>
-		public int Offset{
-			get{
-				return (Reference != null && Reference.Variable != null) ? Reference.Variable.Offset : -1;
-			}
-		}
-
-		internal ExpressoReference Reference{get; set;}
-
-		/// <summary>
-		/// Indicates whether the identifier is resolved(whether the name is bound to a value).
-		/// </summary>
-		internal bool IsResolved{
-			get{return Reference != null && Reference.IsBound;}
-		}
+        public bool IsVerbatim{
+            get{
+                return true;
+            }
+        }
 
 		/// <summary>
 		/// 変数の型。
 		/// The type of the variable.
 		/// </summary>
-		public TypeAnnotation ParamType{
-			get{
-				return (Reference != null) ? Reference.VariableType : TypeAnnotation.VoidType;
-			}
+        public AstType Type{
+            get{return GetChildByRole(Roles.Type);}
+            set{SetChildByRole(Roles.Type, value);}
 		}
 
-		/// <summary>
-		/// Indicates whether the identifier is definitely assigned to a value.
-		/// </summary>
-		internal bool Assigned{get; set;}
-
-        public override NodeType Type{
-            get{return NodeType.Identifier;}
+        public override NodeType NodeType{
+            get{return NodeType.Unknown;}
         }
 
-		internal Identifier(string identName, ExpressoReference reference)
+        public Identifier(string name)
 		{
-			name = identName;
-			Reference = reference;
+            this.name = name;
 		}
 
-        public override bool Equals(object obj)
+        public Identifier(string name, AstType type)
         {
-            var x = obj as Identifier;
-
-            if(x == null)
-                return false;
-
-            return this.name == x.name;
+            this.name = name;
+            Type = type;
         }
 
-        public override int GetHashCode()
-        {
-            return this.name.GetHashCode();
-        }
-
-        public override void AcceptWalker(AstWalker walker)
+        public override void AcceptWalker(IAstWalker walker)
 		{
-			if(walker.Walk(this)){}
-			walker.PostWalk(this);
+            walker.VisitIdentifier(this);
 		}
 
         public override TResult AcceptWalker<TResult>(IAstWalker<TResult> walker)
         {
-            return walker.Walk(this);
+            return walker.VisitIdentifier(this);
         }
 
-		internal override void Assign(EvaluationFrame frame, object val)
+        public override TResult AcceptWalker<TResult, TData>(IAstWalker<TData, TResult> walker, TData data)
+        {
+            return walker.VisitIdentifier(this, data);
+        }
+
+        #region implemented abstract members of AstNode
+
+        protected internal override bool DoMatch(AstNode other, ICSharpCode.NRefactory.PatternMatching.Match match)
+        {
+            var o = other as Identifier;
+            return o != null && Name == o.Name && Type.DoMatch(o.Type);
+        }
+
+        #endregion
+
+        /*internal override void Assign(EvaluationFrame frame, object val)
 		{
 			if(Reference != null)
 				frame.Assign(this.Offset, val);
 			else
 				throw ExpressoOps.MakeRuntimeError("Unbound name: {0}", name);
-		}
-
-        public override string GetText()
-		{
-			return (Reference != null) ? Reference.ToString() : string.Format("[Unbound name: {0}]", name);
-		}
-
-        public override string ToString()
-        {
-            return GetText();
-        }
+		}*/
     }
 }

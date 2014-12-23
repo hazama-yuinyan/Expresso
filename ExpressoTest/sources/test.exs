@@ -1,7 +1,9 @@
 /***
  *	This is a test program for Expresso
  */
- 
+module main;
+
+
 def GetInt()
 {
 	return 10;
@@ -31,7 +33,7 @@ def PrintList(input, header = "")
 {
 	print header;
 	print "リストの中身は";
-	for(let tmp in input)
+	for(tmp in input)
 		print tmp;
 	
 	print "です。";

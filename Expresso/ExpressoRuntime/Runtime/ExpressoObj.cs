@@ -141,7 +141,7 @@ namespace Expresso.Runtime
 			else
 				throw ExpressoOps.MakeInvalidTypeError("Unknown definition.");
 			
-			var constructor = new_inst.AccessMember(new Identifier("constructor", null), true) as FunctionDefinition;
+			var constructor = new_inst.AccessMember(new Identifier("constructor", null), true) as FunctionDeclaration;
 			/*if(constructor != null){
 				var value_this = new Constant{ValType = ObjectTypes.INSTANCE, Value = new_inst};	//thisの値としてインスタンスを追加する
 				args.Insert(0, value_this);

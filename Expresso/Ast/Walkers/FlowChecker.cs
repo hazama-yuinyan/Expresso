@@ -5,7 +5,7 @@ using System.Diagnostics;
 
 using Expresso.Compiler;
 
-/*
+/**
  * The data flow.
  * 
  * Each local name is represented as 2 bits:
@@ -14,43 +14,6 @@ using Expresso.Compiler;
  * On delete, the name is not assigned to meaningful value (we need to check at runtime if it's initialized),
  * but it is not uninitialized either (because delete statement will set it to Uninitialized.instance).
  * This way, codegen doesn't have to emit an explicit initialization for it.
- * 
- * Consider:
- * 
- * def f():
- *     print a  # uninitialized use
- *     a = 10
- * 
- * We compile this into:
- * 
- * static void f$f0() {
- *     object a = Uninitialized.instance; // explicit initialization because of the uninitialized use
- *     // print statement
- *     if(a == Uninitialized.instance)
- *       throw ThrowUnboundLocalError("a");
- *     else
- *       Ops.Print(a);
- *     // a = 10
- *     a = 10
- * }
- * 
- * Whereas:
- * 
- * def f():
- *     a = 10
- *     del a        # explicit deletion which will set to Uninitialized.instance
- *     print a
- * 
- * compiles into:
- * 
- * static void f$f0() {
- *     object a = 10;                        // a = 10
- *     a = Uninitialized.instance;           // del a
- *     if(a == Uninitialized.instance)       // print a
- *       throw ThrowUnboundLocalError("a");
- *     else
- *       Ops.Print(a);
- * }
  * 
  * The bit arrays in the flow checker hold the state and upon encountering NameExpr we figure
  * out whether the name has not yet been initialized at all (in which case we need to emit the
@@ -75,14 +38,288 @@ using Expresso.Compiler;
 
 namespace Expresso.Ast
 {
-	class FlowDefiner : AstWalkerNonRecursive
-	{
+    class FlowDefiner : IAstWalker
+    {
 		readonly FlowChecker fc;
 		
 		public FlowDefiner(FlowChecker flowChecker)
 		{
 			fc = flowChecker;
 		}
+
+        #region IAstWalker implementation
+
+        public void VisitAst(ExpressoAst ast)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void VisitFunctionDefinition(FunctionDeclaration funcDecl)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void VisitTypeDefinition(TypeDefinition typeDef)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void VisitBlock(BlockStatement block)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void VisitBreakStatement(BreakStatement breakStmt)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void VisitContinueStatement(ContinueStatement continueStmt)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void VisitEmptyStatement(EmptyStatement emptyStmt)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void VisitExpressionStatement(ExpressionStatement exprStmt)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void VisitForStatement(ForStatement forStmt)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void VisitIfStatement(IfStatement ifStmt)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void VisitImportStatement(ImportStatement importStmt)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void VisitReturnStatement(ReturnStatement returnStmt)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void VisitSwitchStatement(SwitchStatement switchStmt)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void VisitThrowStatement(ThrowStatement throwStmt)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void VisitTryStatement(TryStatement tryStmt)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void VisitWhileStatement(WhileStatement whileStmt)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void VisitWithStatement(WithStatement withStmt)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void VisitYieldStatement(YieldStatement yieldStmt)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void VisitArgument(ParameterDeclaration arg)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void VisitAssignment(AssignmentExpression assignment)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void VisitBinaryExpression(BinaryExpression binaryExpr)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void VisitCallExpression(CallExpression callExpr)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void VisitCastExpression(CastExpression castExpr)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void VisitComprehensionFor(ComprehensionForClause compFor)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void VisitComprehensionIf(ComprehensionIfClause compIf)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void VisitConditional(ConditionalExpression condExpr)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void VisitLiteral(LiteralExpression literal)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void VisitDefaultExpression(DefaultExpression defaultExpr)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void VisitIdentifier(Identifier ident)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void VisitIntSequence(IntegerSequenceExpression intSeq)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void VisitMemberReference(MemberReference memRef)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void VisitNewExpression(NewExpression newExpr)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void VisitSequenceInitializer(SequenceInitializer seqInitializer)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void VisitCaseClause(CaseClause caseClause)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void VisitSequence(SequenceExpression seqExpr)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void VisitCatchClause(CatchClause catchClause)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void VisitFinallyClause(FinallyClause finallyClause)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void VisitUnaryExpression(UnaryExpression unaryExpr)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void VisitVarDeclaration(VariableDeclarationStatement varDecl)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void VisitCommentNode(CommentNode comment)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void VisitAstType(AstType typeNode)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void VisitSimpleType(SimpleType simpleType)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void VisitPrimitiveType(PrimitiveType primitiveType)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void VisitConstructorDeclaration(ConstructorDeclaration constructor)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void VisitConstructorInitializer(ConstructorInitializer constructorInitializer)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void VisitFieldDeclaration(FieldDeclaration fieldDecl)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void VisitMethodDeclaration(MethodDeclaration methodDecl)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void VisitParameterDeclaration(ParameterDeclaration parameterDecl)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void VisitVariableInitializer(VariableInitializer initializer)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void VisitNullNode(AstNode nullNode)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void VisitNewLine(NewLineNode newlineNode)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void VisitWhitespace(WhitespaceNode whitespaceNode)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void VisitExpressoTokenNode(ExpressoTokenNode tokenNode)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void VisitPatternPlaceholder(AstNode placeholder, ICSharpCode.NRefactory.PatternMatching.Pattern child)
+        {
+            throw new NotImplementedException();
+        }
+
+        #endregion
 		
 		public override bool Walk(Identifier ident)
 		{
@@ -101,14 +338,14 @@ namespace Expresso.Ast
 			return true;
 		}
 		
-		public override bool Walk(Argument arg)
+		public override bool Walk(ParameterDeclaration arg)
 		{
 			fc.Define(arg.Name);
 			return true;
 		}
 	}
 	
-	class FlowChecker : AstWalker
+    class FlowChecker : IAstWalker
 	{
 		BitArray bits;
 		Stack<BitArray> loops;
@@ -133,7 +370,7 @@ namespace Expresso.Ast
 		public void Dump(BitArray bits)
 		{
 			System.Text.StringBuilder sb = new System.Text.StringBuilder();
-			sb.AppendFormat("FlowChecker ({0})", scope is FunctionDefinition ? ((FunctionDefinition)scope).Name :
+			sb.AppendFormat("FlowChecker ({0})", scope is FunctionDeclaration ? ((FunctionDeclaration)scope).Name :
 			                scope is TypeDefinition ? ((TypeDefinition)scope).Name : "");
 			sb.Append('{');
 			bool comma = false;
@@ -222,7 +459,7 @@ namespace Expresso.Ast
 		//public override bool Walk(LambdaExpression node) { return false; }
 		
 		// Comprehension
-		public override bool Walk(Comprehension comprehension)
+		public override bool Walk(ComprehensionExpression comprehension)
 		{
 			BitArray save = bits;
 			bits = new BitArray(bits);
@@ -235,13 +472,13 @@ namespace Expresso.Ast
 		}
 
 		// ComprehensionFor
-		public override bool Walk(ComprehensionFor compFor)
+		public override bool Walk(ComprehensionForClause compFor)
 		{
 			return base.Walk(compFor);
 		}
 
 		// ComprehensionIf
-		public override bool Walk(ComprehensionIf compIf)
+		public override bool Walk(ComprehensionIfClause compIf)
 		{
 			return base.Walk(compIf);
 		}
@@ -271,7 +508,7 @@ namespace Expresso.Ast
 		public override void PostWalk(Identifier node) { }
 		
 		// AssignStmt
-		public override bool Walk(Assignment assignment)
+		public override bool Walk(AssignmentExpression assignment)
 		{
 			assignment.Right.Walk(this);
 			foreach(Expression e in assignment.Left)
@@ -279,7 +516,7 @@ namespace Expresso.Ast
 
 			return false;
 		}
-		public override void PostWalk(Assignment node) { }
+		public override void PostWalk(AssignmentExpression node) { }
 		
 		// BreakStmt
 		public override bool Walk(BreakStatement breakStmt)
@@ -338,28 +575,28 @@ namespace Expresso.Ast
 		}
 		
 		// RequireStmt
-		public override bool Walk(RequireStatement requireStmt)
+                public override bool Walk(ImportStatement importStmts)
 		{
 			// A Require statement always introduce new variable(s) into the module scope.
-			for(int i = 0; i < requireStmt.ModuleNames.Length; ++i)
-				Define(requireStmt.AliasNames[i] != null ? requireStmt.AliasNames[i] : requireStmt.ModuleNames[i]);
+			for(int i = 0; i < importStmt.ModuleNames.Length; ++i)
+				Define(importStmt.AliasNames[i] != null ? importStmt.AliasNames[i] : importStmt.ModuleNames[i]);
 
 			return true;
 		}
 		
 		// FuncDef
-		public override bool Walk(FunctionDefinition funcDef)
+		public override bool Walk(FunctionDeclaration funcDef)
 		{
 			if(funcDef == scope){
 				// the function body is being analyzed, go deep:
-				foreach(Argument p in funcDef.Parameters)
+				foreach(ParameterDeclaration p in funcDef.Parameters)
 					p.Walk(fdef);
 
 				return true;
 			}else{
 				// analyze the function definition itself (it is visited while analyzing parent scope):
 				Define(funcDef.Name);
-				foreach(Argument p in funcDef.Parameters){
+				foreach(ParameterDeclaration p in funcDef.Parameters){
 					if(p.Option != null)
 						p.Option.Walk(this);
 				} 
@@ -483,7 +720,7 @@ namespace Expresso.Ast
 		}
 
 		// ExpressionStmt
-		public override bool Walk(ExprStatement exprStmt)
+		public override bool Walk(ExpressionStatement exprStmt)
 		{
 			foreach(var expr in exprStmt.Expressions)
 				expr.Walk(this);
@@ -492,7 +729,7 @@ namespace Expresso.Ast
 		}
 
 		// VariableDecl
-		public override bool Walk(VarDeclaration varDecl)
+		public override bool Walk(VariableDeclarationStatement varDecl)
 		{
 			foreach(var ident in varDecl.Left)
 				ident.Walk(fdef);

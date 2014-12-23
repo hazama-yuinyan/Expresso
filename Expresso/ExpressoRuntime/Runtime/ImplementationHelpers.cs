@@ -23,7 +23,7 @@ namespace Expresso.Runtime
 		public static IEnumerable<Identifier> CollectLocalVars(Expression expr)
 		{
 			if(expr.Type == NodeType.VarDecl)
-				return ((VarDeclaration)expr).Left;
+				return ((VariableDeclarationStatement)expr).Left;
 			else if(expr.Type == NodeType.Identifier)
 				return new Identifier[]{(Identifier)expr};
 			else

@@ -3,16 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-using Expresso.Builtins;
-using Expresso.Interpreter;
 using Expresso.Compiler;
 using Expresso.Compiler.Meta;
-using Expresso.Runtime.Operations;
 
 namespace Expresso.Ast
 {
-	using CSharpExpr = System.Linq.Expressions.Expression;
-
 	internal enum VariableKind
 	{
 		Local,

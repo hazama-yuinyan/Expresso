@@ -3,7 +3,7 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
-    <ProductVersion>10.0.0</ProductVersion>
+    <ProductVersion>8.0.30703</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{4E28200A-5808-419F-8A57-F504842991AF}</ProjectGuid>
     <OutputType>Library</OutputType>
@@ -39,6 +39,12 @@
     <GenerateSerializationAssemblies>Auto</GenerateSerializationAssemblies>
     <FileAlignment>4096</FileAlignment>
     <DefineConstants>DEBUG;</DefineConstants>
+    <CustomCommands>
+      <CustomCommands>
+        <Command type="BeforeBuild" command="./Coco Expresso.ATG" workingdir="${ProjectDir}" />
+      </CustomCommands>
+    </CustomCommands>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
     <DebugType>None</DebugType>
@@ -53,6 +59,7 @@
     <GenerateSerializationAssemblies>Auto</GenerateSerializationAssemblies>
     <FileAlignment>4096</FileAlignment>
     <BaseIntermediateOutputPath>obj\</BaseIntermediateOutputPath>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <CheckForOverflowUnderflow>False</CheckForOverflowUnderflow>
@@ -72,76 +79,28 @@
   </PropertyGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
-    <Compile Include="Ast\Assignment.cs" />
-    <Compile Include="Ast\BinaryExpression.cs" />
-    <Compile Include="Ast\ConditionalExpression.cs" />
-    <Compile Include="Ast\Constant.cs" />
-    <Compile Include="Ast\Expression.cs" />
-    <Compile Include="Ast\Statement.cs" />
-    <Compile Include="Ast\UnaryExpression.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Parser.cs" />
     <Compile Include="Scanner.cs" />
-    <Compile Include="Ast\VarDeclaration.cs" />
-    <Compile Include="Ast\ExprStatement.cs" />
-    <Compile Include="Ast\IfStatement.cs" />
-    <Compile Include="Ast\WhileStatement.cs" />
-    <Compile Include="Ast\ForStatement.cs" />
-    <Compile Include="Ast\Argument.cs" />
-    <Compile Include="Ast\ControlFlow.cs" />
-    <Compile Include="Ast\SwitchStatement.cs" />
-    <Compile Include="Ast\IntegerSequence.cs" />
-    <Compile Include="Ast\MemberReference.cs" />
-    <Compile Include="Ast\Comprehension.cs" />
     <Compile Include="Ast\Identifier.cs" />
-    <Compile Include="Ast\TryStatement.cs" />
-    <Compile Include="Ast\WithStatement.cs" />
-    <Compile Include="Ast\ThrowStatement.cs" />
-    <Compile Include="Compiler\CSharpEmitter.cs" />
-    <Compile Include="Compiler\Emitter.cs" />
-    <Compile Include="Ast\ReturnStatement.cs" />
-    <Compile Include="Ast\PrintStatement.cs" />
-    <Compile Include="Ast\NewExpression.cs" />
     <Compile Include="Compiler\EmitterException.cs" />
-    <Compile Include="Ast\YieldStatement.cs" />
     <Compile Include="Attributes\ExpressoHiddenAttribute.cs" />
     <Compile Include="Attributes\ExpressoTypeAttribute.cs" />
-    <Compile Include="Ast\AssertStatement.cs" />
-    <Compile Include="Ast\CastExpression.cs" />
     <Compile Include="Ast\ExpressoAst.cs" />
-    <Compile Include="NativeDebugger\CollectionDebugView.cs" />
-    <Compile Include="NativeDebugger\ExpressoObjectDebugView.cs" />
-    <Compile Include="Ast\CallExpression.cs" />
-    <Compile Include="Ast\BlockStatement.cs" />
-    <Compile Include="Ast\RequireStatement.cs" />
-    <Compile Include="Ast\ScopeStatement.cs" />
-    <Compile Include="Ast\FunctionDefinition.cs" />
-    <Compile Include="Ast\TypeDefinition.cs" />
-    <Compile Include="Ast\EmptyStatement.cs" />
-    <Compile Include="Compiler\Meta\TypeDefinition.cs" />
-    <Compile Include="Compiler\Meta\TypeAnnotation.cs" />
-    <Compile Include="Ast\SequenceExpression.cs" />
     <Compile Include="Ast\Walkers\ExpressoNameBinder.cs" />
     <Compile Include="Ast\Walkers\FlowChecker.cs" />
     <Compile Include="Ast\HelperNodes\ExpressoReference.cs" />
     <Compile Include="Ast\HelperNodes\ExpressoVariable.cs" />
-    <Compile Include="Ast\SequenceInitializer.cs" />
     <Compile Include="Ast\HelperNodes\IReferencible.cs" />
-    <Compile Include="Ast\DefaultExpression.cs" />
-    <Compile Include="Ast\HelperNodes\Assignable.cs" />
-    <Compile Include="Micellaneous\SourceLocation.cs" />
     <Compile Include="Micellaneous\SourceSpan.cs" />
     <Compile Include="Micellaneous\Assert.cs" />
     <Compile Include="Micellaneous\Interfaces.cs" />
-    <Compile Include="Compiler\Meta\SystemTypeDefinition.cs" />
     <Compile Include="Micellaneous\CallSignature.cs" />
     <Compile Include="Micellaneous\ArgumentInfo.cs" />
     <Compile Include="Micellaneous\ContractUtils.cs" />
     <Compile Include="Micellaneous\Utils.cs" />
     <Compile Include="Micellaneous\ArrayUtils.cs" />
-    <Compile Include="Ast\HelperNodes\LateBindExpression.cs" />
     <Compile Include="Attributes\ExpressoModuleAttibute.cs" />
-    <Compile Include="Ast\HelperNodes\IFlaggable.cs" />
     <Compile Include="AstManipulation\InferenceHelper.cs" />
     <Compile Include="ParserException.cs" />
     <Compile Include="Ast\AstNode.cs" />
@@ -153,6 +112,73 @@
     <Compile Include="OutputVisitor\TokenWriter.cs" />
     <Compile Include="OutputVisitor\InsertRequiredSpacesDecorator.cs" />
     <Compile Include="Formatting\FormattingOptionsFactory.cs" />
+    <Compile Include="Compiler\TypeAnnotation.cs" />
+    <Compile Include="OutputVisitor\DebugOutputWalker.cs" />
+    <Compile Include="Ast\Roles.cs" />
+    <Compile Include="Ast\Statements\BlockStatement.cs" />
+    <Compile Include="Ast\Statements\EmptyStatement.cs" />
+    <Compile Include="Ast\Statements\ForStatement.cs" />
+    <Compile Include="Ast\Statements\IfStatement.cs" />
+    <Compile Include="Ast\Statements\ReturnStatement.cs" />
+    <Compile Include="Ast\Statements\SwitchStatement.cs" />
+    <Compile Include="Ast\Statements\ThrowStatement.cs" />
+    <Compile Include="Ast\Statements\TryStatement.cs" />
+    <Compile Include="Ast\Statements\WhileStatement.cs" />
+    <Compile Include="Ast\Statements\WithStatement.cs" />
+    <Compile Include="Ast\Statements\YieldStatement.cs" />
+    <Compile Include="Ast\TypeMembers\EntityDeclaration.cs" />
+    <Compile Include="Ast\ExpressoTokenNode.cs" />
+    <Compile Include="Ast\TokenRole.cs" />
+    <Compile Include="Ast\ExpressoModifierToken.cs" />
+    <Compile Include="Ast\Modifiers.cs" />
+    <Compile Include="Ast\Expressions\BinaryExpression.cs" />
+    <Compile Include="Ast\Expressions\CallExpression.cs" />
+    <Compile Include="Ast\Expressions\CastExpression.cs" />
+    <Compile Include="Ast\Expressions\ConditionalExpression.cs" />
+    <Compile Include="Ast\Expressions\DefaultExpression.cs" />
+    <Compile Include="Ast\Expressions\MemberReference.cs" />
+    <Compile Include="Ast\Expressions\UnaryExpression.cs" />
+    <Compile Include="Ast\Expressions\SequenceExpression.cs" />
+    <Compile Include="Ast\Expressions\NewExpression.cs" />
+    <Compile Include="Ast\Expressions\Expression.cs" />
+    <Compile Include="Ast\AstNodeCollection.cs" />
+    <Compile Include="Ast\GeneralScope\NewLineNode.cs" />
+    <Compile Include="Ast\GeneralScope\WhitespaceNode.cs" />
+    <Compile Include="Ast\TypeMembers\ParameterDeclaration.cs" />
+    <Compile Include="Ast\TypeMembers\ConstructorDeclaration.cs" />
+    <Compile Include="Ast\TypeMembers\FieldDeclaration.cs" />
+    <Compile Include="Ast\TypeMembers\VariableInitializer.cs" />
+    <Compile Include="Ast\TypeMembers\MethodDeclaration.cs" />
+    <Compile Include="Ast\GeneralScope\TypeDeclaration.cs" />
+    <Compile Include="Ast\Statements\BreakStatement.cs" />
+    <Compile Include="Ast\Statements\ContinueStatement.cs" />
+    <Compile Include="Ast\GeneralScope\FunctionDeclaration.cs" />
+    <Compile Include="Ast\PrimitiveType.cs" />
+    <Compile Include="TypeSystem\KnownTypeReference.cs" />
+    <Compile Include="Ast\SimpleType.cs" />
+    <Compile Include="TypeSystem\SimpleTypeOrModule.cs" />
+    <Compile Include="TypeSystem\TypeOrModuleReference.cs" />
+    <Compile Include="Resolver\ExpressoResolver.cs" />
+    <Compile Include="TypeSystem\ExpressoTypeResolveContext.cs" />
+    <Compile Include="TypeSystem\ExpressoUnresolvedFile.cs" />
+    <Compile Include="Ast\Statements\ImportStatement.cs" />
+    <Compile Include="Ast\Expressions\IndexerExpression.cs" />
+    <Compile Include="Ast\Expressions\AssignmentExpression.cs" />
+    <Compile Include="Ast\Statements\Statement.cs" />
+    <Compile Include="Ast\Statements\VariableDeclarationStatement.cs" />
+    <Compile Include="Ast\Statements\ExpressionStatement.cs" />
+    <Compile Include="Ast\Expressions\ParenthesizedExpression.cs" />
+    <Compile Include="Ast\GeneralScope\TextNode.cs" />
+    <Compile Include="Ast\Expressions\ComprehensionExpression.cs" />
+    <Compile Include="Ast\GeneralScope\CommentNode.cs" />
+    <Compile Include="Ast\Expressions\LiteralExpression.cs" />
+    <Compile Include="Ast\Expressions\SequenceInitializer.cs" />
+    <Compile Include="Ast\Expressions\KeywordReferenceExpression.cs" />
+    <Compile Include="Ast\Expressions\IntegerSequenceExpression.cs" />
+    <Compile Include="Ast\Expressions\NullReferenceExpression.cs" />
+    <Compile Include="Ast\Expressions\ThisReferenceExpression.cs" />
+    <Compile Include="Ast\Expressions\BaseReferenceExpression.cs" />
+    <Compile Include="NameLookupMode.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -164,18 +190,23 @@
   <ItemGroup>
     <None Include="Expresso.ATG" />
     <None Include="Bugs.txt" />
+    <None Include="Compiler\CSharpEmitter.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Compiler\" />
     <Folder Include="Attributes\" />
-    <Folder Include="NativeDebugger\" />
-    <Folder Include="Compiler\Meta\" />
     <Folder Include="Ast\Walkers\" />
     <Folder Include="Ast\HelperNodes\" />
     <Folder Include="Micellaneous\" />
     <Folder Include="AstManipulation\" />
     <Folder Include="Formatting\" />
     <Folder Include="OutputVisitor\" />
+    <Folder Include="Ast\Statements\" />
+    <Folder Include="Ast\Expressions\" />
+    <Folder Include="Ast\TypeMembers\" />
+    <Folder Include="Ast\GeneralScope\" />
+    <Folder Include="TypeSystem\" />
+    <Folder Include="Resolver\" />
   </ItemGroup>
   <ProjectExtensions>
     <MonoDevelop>

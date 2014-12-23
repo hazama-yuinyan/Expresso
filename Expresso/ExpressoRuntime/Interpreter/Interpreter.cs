@@ -45,15 +45,17 @@ using Expresso.Runtime.Operations;
  * Expresso組み込みの型に関して
  * int           : いわゆる整数型。C#のint型を使用。
  * bool          : C#のboolean型を使用。
- * float         : いわゆる浮動小数点型。６４ビット精度版のみ実装。C#ではdoubleを使用。
+ * float         : いわゆる浮動小数点型。32ビット精度。C#ではfloatを使用。
+ * double        : いわゆる倍精度浮動小数点型。64ビット精度版のfloat。C#ではdoubleを使用。
  * bigint        : いわゆる多倍長整数型。C#では、BigIntegerクラスを使用。
  * rational      : 分数型。分子と分母をBigInteger型でもつため、メモリーの許す限り有理数を完璧な精度で保持できる。
  * string        : いわゆる文字列型。C#のstring型を使用。C#以外で実装する場合、文字列の比較をオブジェクトの参照の比較で行うように実装すること。
- * bytearray     : Cで言うところのchar[]型。要するにバイトの配列。C#では、byte型の配列で実装。
+ * byte　　　　　     : Cで言うところのchar型。要するにバイト型。C#では、byte型を使用。
  * var(variant)  : 総称型。実装上は、どんな型の変数でも指し示すことのできるポインターや参照。
  * tuple         : Pythonなどで実装されているタプル型と同じ。長さ不変、書き換え不可な配列とも言える。
  * list          : データ構造でよく話題に上るリスト型と同じ。長さ可変、書き換え可能な配列とも言える。C#では、Listクラスで実装。
  * dictionary    : いわゆる辞書型。言語によっては、連想配列とも呼ばれるもの。C#では、Dictionaryクラスで実装。
+ * array         : いわゆる配列。
  * expression    : 基本的にはワンライナーのクロージャーの糖衣構文。記号演算もサポートする点が通常のクロージャーと異なる。
  * function      : 普通の関数型。構文は違えど、クロージャーも実装上はこの型になる。
  * intseq        : PythonのxrangeオブジェクトやRubyのRangeオブジェクトと似たようなもの。整数の数列を作り出すジェネレーターと思えばいい。
@@ -124,7 +126,7 @@ namespace Expresso.Interpreter
 			Interpret(MainModule, global_context.SharedContext);
 
 			var main_module = global_context.GetModule("main");
-			var main_func = main_module.LookupMember("main") as FunctionDefinition;
+			var main_func = main_module.LookupMember("main") as FunctionDeclaration;
 			if(main_func == null)
 				throw ExpressoOps.MakeRuntimeError("No entry point");
 
@@ -179,7 +181,7 @@ namespace Expresso.Interpreter
 				MAIN_LOOP:	//sub-expressionを評価する必要があるノードの飛び先
 					switch(node.Type){
 					case NodeType.Argument:
-						node = ((Argument)node).Option;
+						node = ((ParameterDeclaration)node).Option;
 						goto MAIN_LOOP;
 
                     case NodeType.AssertStatement:  //TODO:実装する
@@ -187,7 +189,7 @@ namespace Expresso.Interpreter
 
 					case NodeType.Assignment:
 					{
-						var assignment = (Assignment)node;
+						var assignment = (AssignmentExpression)node;
 						if(!flow_manager.IsEvaluating(assignment)){		//まず右辺値を評価する
 							flow_manager.Push(assignment);
 							node = assignment.Right;
@@ -236,7 +238,7 @@ namespace Expresso.Interpreter
 								throw ExpressoOps.MakeRuntimeError("Can not apply the operation on null objects.");
 
 							object ret = null;
-							if((int)binary_op.Operator <= (int)OperatorType.MOD){
+							if((int)binary_op.Operator <= (int)OperatorType.Modulus){
 								if(lhs is int)
 									ret = BinaryExprAsInt((int)lhs, (int)rhs, binary_op.Operator);
 								else if(lhs is double)
@@ -245,9 +247,9 @@ namespace Expresso.Interpreter
 									ret = BinaryExprAsFraction((Fraction)lhs, rhs, binary_op.Operator);
 								else
 									ret = BinaryExprAsString((string)lhs, rhs, binary_op.Operator);
-							}else if((int)binary_op.Operator < (int)OperatorType.AND){
+							}else if((int)binary_op.Operator < (int)OperatorType.ConditionalAnd){
 								ret = EvalComparison(lhs as IComparable, rhs as IComparable, binary_op.Operator);
-							}else if((int)binary_op.Operator < (int)OperatorType.BIT_OR){
+							}else if((int)binary_op.Operator < (int)OperatorType.BitwiseOr){
 								ret = EvalLogicalOperation((bool)lhs, (bool)rhs, binary_op.Operator);
 							}else{
 								ret = EvalBitOperation((int)lhs, (int)rhs, binary_op.Operator);
@@ -260,7 +262,7 @@ namespace Expresso.Interpreter
 
 					case NodeType.Block:
 					{
-						var block = (Block)node;
+						var block = (BlockStatement)node;
 						if(!flow_manager.IsEvaluating(block))
 							flow_manager.Push(block);
 
@@ -286,7 +288,7 @@ namespace Expresso.Interpreter
 
 					case NodeType.Call:
 					{
-						var call = (Call)node;
+						var call = (CallExpression)node;
 						if(!flow_manager.IsEvaluating(call))
 							flow_manager.Push(call);
 
@@ -297,7 +299,7 @@ namespace Expresso.Interpreter
 							goto MAIN_LOOP;
 
 						case 1:
-							var fn = flow_manager.Top().Get(0) as FunctionDefinition;
+							var fn = flow_manager.Top().Get(0) as FunctionDeclaration;
 							if(flow_manager.Top().ChildCounter < fn.Parameters.Length){	//実引数を評価してスタックに積む
 								var index = flow_manager.Top().ChildCounter++;
 								var param = fn.Parameters[index];
@@ -354,7 +356,7 @@ namespace Expresso.Interpreter
 								}else{
 									flow_manager.Top().StepCounter--;
 								}
-							}else if(label_obj is Constant && ((Constant)label_obj).ValType == ObjectTypes._CASE_DEFAULT){
+							}else if(label_obj is LiteralExpression && ((LiteralExpression)label_obj).Type == ObjectTypes._CASE_DEFAULT){
 								node = case_clause.Body;
 								flow_manager.Top().StepCounter++;
 								goto MAIN_LOOP;
@@ -428,7 +430,7 @@ namespace Expresso.Interpreter
 
 					case NodeType.ComprehensionIf:
 					{
-                        var comp_if = (ComprehensionIf)node;
+                        var comp_if = (ComprehensionIfClause)node;
                         if(!flow_manager.IsEvaluating(comp_if))
                             flow_manager.Push(comp_if);
 
@@ -471,7 +473,7 @@ namespace Expresso.Interpreter
 					}
 
 					case NodeType.Constant:
-						flow_manager.PushValue(((Constant)node).Value);
+						flow_manager.PushValue(((LiteralExpression)node).Value);
 						break;
 
 					case NodeType.ContinueStatement:
@@ -495,7 +497,7 @@ namespace Expresso.Interpreter
 
 					case NodeType.ExprStatement:
 					{
-						var expr_stmt = (ExprStatement)node;
+						var expr_stmt = (ExpressionStatement)node;
 						if(!flow_manager.IsEvaluating(expr_stmt))
 							flow_manager.Push(expr_stmt);
 
@@ -623,7 +625,7 @@ namespace Expresso.Interpreter
 						}else{
 							flow_manager.Pop();
 
-							switch(initializer.ObjType){
+							switch(initializer.ObjectType){
 							case ObjectTypes.List:
 							{
 								var values = new List<object>(initializer.Items.Length);
@@ -732,10 +734,10 @@ namespace Expresso.Interpreter
 									var stmt = toplevel.Body[i];
 									object val = flow_manager.Top().Get(offset);
 
-									if(stmt is ExprStatement){
-										var expr_stmt = (ExprStatement)stmt;
-										if(expr_stmt.Expressions[0] is VarDeclaration){
-											var var_decls = (VarDeclaration)expr_stmt.Expressions[0];
+									if(stmt is ExpressionStatement){
+										var expr_stmt = (ExpressionStatement)stmt;
+										if(expr_stmt.Expressions[0] is VariableDeclarationStatement){
+											var var_decls = (VariableDeclarationStatement)expr_stmt.Expressions[0];
 											
 											for(int j = 0; j < var_decls.Left.Length; ++j){
                                                 val = flow_manager.Top().Get(offset);
@@ -747,8 +749,8 @@ namespace Expresso.Interpreter
 										}else{
 											throw ExpressoOps.MakeInvalidTypeError("A module declaration can not have that type of statements!");
 										}
-									}else if(stmt is FunctionDefinition){
-										var method = (FunctionDefinition)stmt;
+									}else if(stmt is FunctionDeclaration){
+										var method = (FunctionDeclaration)stmt;
 										decl_target.Add(method.Name, offset++);
 										members.Add(val);
 									}else if(stmt is TypeDefinition){
@@ -813,7 +815,7 @@ namespace Expresso.Interpreter
 
 					case NodeType.Require:
 					{
-						var require_expr = (RequireStatement)node;
+						var require_expr = (ImportStatement)node;
 						foreach(var module_name in require_expr.ModuleNames){
 							var path = module_name.Replace('.', '/');
 							path += ".exs";
@@ -850,7 +852,7 @@ namespace Expresso.Interpreter
 
 					case NodeType.IntSequence:
 					{
-						var intseq_expr = (IntSeqExpression)node;
+						var intseq_expr = (IntegerSequenceExpression)node;
 						if(!flow_manager.IsEvaluating(intseq_expr))
 							flow_manager.Push(intseq_expr);
 
@@ -1031,10 +1033,10 @@ namespace Expresso.Interpreter
                                 var stmt = type_def.Body[i];
                                 object val = flow_manager.Top().Get(offset);
 
-                                if(stmt is ExprStatement){
-                                    var expr_stmt = (ExprStatement)stmt;
-                                    if(expr_stmt.Expressions[0] is VarDeclaration){
-                                        var var_decls = (VarDeclaration)expr_stmt.Expressions[0];
+                                if(stmt is ExpressionStatement){
+                                    var expr_stmt = (ExpressionStatement)stmt;
+                                    if(expr_stmt.Expressions[0] is VariableDeclarationStatement){
+                                        var var_decls = (VariableDeclarationStatement)expr_stmt.Expressions[0];
 
                                         for(int j = 0; j < var_decls.Left.Length; ++j){
                                             val = flow_manager.Top().Get(offset);
@@ -1048,8 +1050,8 @@ namespace Expresso.Interpreter
                                     }else{
                                         throw ExpressoOps.MakeInvalidTypeError("A type declaration can not have that type of statements!");
                                     }
-                                }else if(stmt is FunctionDefinition){
-                                    var method = (FunctionDefinition)stmt;
+                                }else if(stmt is FunctionDeclaration){
+                                    var method = (FunctionDeclaration)stmt;
                                     if(method.HasFlag(Flags.PrivateAccess))
                                         private_members.Add(method.Name, offset++);
                                     else if(method.HasFlag(Flags.PublicAccess))
@@ -1118,7 +1120,7 @@ namespace Expresso.Interpreter
 
 					case NodeType.VarDecl:
 					{
-						var var_decl = (VarDeclaration)node;
+						var var_decl = (VariableDeclarationStatement)node;
 						if(!flow_manager.IsEvaluating(var_decl))
 							flow_manager.Push(var_decl);
 
@@ -1198,27 +1200,27 @@ namespace Expresso.Interpreter
 			int result;
 			
 			switch (opType) {
-			case OperatorType.PLUS:
+			case OperatorType.Plus:
 				result = lhs + rhs;
 				break;
 				
-			case OperatorType.MINUS:
+			case OperatorType.Minus:
 				result = lhs - rhs;
 				break;
 				
-			case OperatorType.TIMES:
+			case OperatorType.Times:
 				result = lhs * rhs;
 				break;
 				
-			case OperatorType.DIV:
+			case OperatorType.Divide:
 				result = lhs / rhs;
 				break;
 				
-			case OperatorType.POWER:
+			case OperatorType.Power:
 				result = (int)Math.Pow(lhs, rhs);
 				break;
 				
-			case OperatorType.MOD:
+			case OperatorType.Modulus:
 				result = lhs % rhs;
 				break;
 				
@@ -1234,27 +1236,27 @@ namespace Expresso.Interpreter
 			double result;
 			
 			switch (opType) {
-			case OperatorType.PLUS:
+			case OperatorType.Plus:
 				result = lhs + rhs;
 				break;
 				
-			case OperatorType.MINUS:
+			case OperatorType.Minus:
 				result = lhs - rhs;
 				break;
 				
-			case OperatorType.TIMES:
+			case OperatorType.Times:
 				result = lhs * rhs;
 				break;
 				
-			case OperatorType.DIV:
+			case OperatorType.Divide:
 				result = lhs / rhs;
 				break;
 				
-			case OperatorType.POWER:
+			case OperatorType.Power:
 				result = Math.Pow(lhs, rhs);
 				break;
 				
-			case OperatorType.MOD:
+			case OperatorType.Modulus:
 				result = Math.IEEERemainder(lhs, rhs);
 				break;
 				
@@ -1273,27 +1275,27 @@ namespace Expresso.Interpreter
 			Fraction result;
 			
 			switch(opType){
-			case OperatorType.PLUS:
+			case OperatorType.Plus:
 				result = lhs + rhs;
 				break;
 				
-			case OperatorType.MINUS:
+			case OperatorType.Minus:
 				result = lhs - rhs;
 				break;
 				
-			case OperatorType.TIMES:
+			case OperatorType.Times:
 				result = lhs * rhs;
 				break;
 				
-			case OperatorType.DIV:
+			case OperatorType.Divide:
 				result = lhs / rhs;
 				break;
 				
-			case OperatorType.POWER:
+			case OperatorType.Power:
 				result = lhs.Power(rhs);
 				break;
 				
-			case OperatorType.MOD:
+			case OperatorType.Modulus:
 				result = lhs % rhs;
 				break;
 				
@@ -1309,11 +1311,11 @@ namespace Expresso.Interpreter
 			string result;
 			
 			switch(opType){
-			case OperatorType.PLUS:
+			case OperatorType.Plus:
 				result = String.Concat(lhs, rhs.ToString());
 				break;
 				
-			case OperatorType.TIMES:
+			case OperatorType.Times:
 				if(!(rhs is int))
 					throw ExpressoOps.MakeInvalidTypeError("Can not muliply string by objects other than an integer.");
 				
@@ -1337,22 +1339,22 @@ namespace Expresso.Interpreter
 				throw ExpressoOps.MakeInvalidTypeError("The operands can not be compared");
 			
 			switch (opType) {
-			case OperatorType.EQUAL:
+			case OperatorType.Equality:
 				return object.Equals(lhs, rhs);
 				
-			case OperatorType.GREAT:
+			case OperatorType.GreaterThan:
 				return lhs.CompareTo(rhs) > 0;
 				
-			case OperatorType.GRTE:
+			case OperatorType.GreaterThanOrEqual:
 				return lhs.CompareTo(rhs) >= 0;
 				
-			case OperatorType.LESE:
+			case OperatorType.LessThanOrEqual:
 				return lhs.CompareTo(rhs) <= 0;
 				
-			case OperatorType.LESS:
+			case OperatorType.LessThan:
 				return lhs.CompareTo(rhs) < 0;
 				
-			case OperatorType.NOTEQ:
+			case OperatorType.InEquality:
 				return !object.Equals(lhs, rhs);
 				
 			default:
@@ -1363,10 +1365,10 @@ namespace Expresso.Interpreter
 		static bool EvalLogicalOperation(bool lhs, bool rhs, OperatorType opType)
 		{
 			switch (opType) {
-			case OperatorType.AND:
+			case OperatorType.ConditionalAnd:
 				return lhs && rhs;
 				
-			case OperatorType.OR:
+			case OperatorType.ConditionalOr:
 				return lhs || rhs;
 				
 			default:
@@ -1377,19 +1379,19 @@ namespace Expresso.Interpreter
 		static int EvalBitOperation(int lhs, int rhs, OperatorType opType)
 		{
 			switch (opType) {
-			case OperatorType.BIT_AND:
+			case OperatorType.BitwiseAnd:
 				return lhs & rhs;
 				
-			case OperatorType.BIT_XOR:
+			case OperatorType.ExclusiveOr:
 				return lhs ^ rhs;
 				
-			case OperatorType.BIT_OR:
+			case OperatorType.BitwiseOr:
 				return lhs | rhs;
 				
-			case OperatorType.BIT_LSHIFT:
+			case OperatorType.BitwiseShiftLeft:
 				return lhs << rhs;
 				
-			case OperatorType.BIT_RSHIFT:
+			case OperatorType.BitwiseShiftRight:
 				return lhs >> rhs;
 				
 			default:
@@ -1400,7 +1402,7 @@ namespace Expresso.Interpreter
 		static object EvalUnaryOperation(OperatorType opType, object operand)
 		{
 			object result = null;
-			if(opType == OperatorType.MINUS){
+			if(opType == OperatorType.Minus){
 				if(operand is int)
 					result = -(int)operand;
 				else if(operand is double)
@@ -1409,7 +1411,7 @@ namespace Expresso.Interpreter
 					result = -(Fraction)operand;
 				else
 					throw ExpressoOps.MakeInvalidTypeError("The minus operator is not applicable to the operand!");
-			}else if(opType == OperatorType.NOT){
+			}else if(opType == OperatorType.Not){
 				if(operand is bool)
 					result = !(bool)operand;
 				else

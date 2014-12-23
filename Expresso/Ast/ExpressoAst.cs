@@ -3,29 +3,26 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
-using Expresso.Builtins;
-using Expresso.Interpreter;
 using Expresso.Compiler;
-using Expresso.Runtime.Operations;
+using ICSharpCode.NRefactory;
 
 namespace Expresso.Ast
 {
-	using CSharpExpr = System.Linq.Expressions.Expression;
-
 	/// <summary>
 	/// ExpressoのASTのトップレベルノード。ファイルから生成された場合はモジュールを表すが、evalによって作られた場合もある。
 	/// Top-level ast for all Expresso code. Typically represents a module but could also
 	/// be exec or eval code.
 	/// </summary>
-	public class ExpressoAst : ScopeStatement
+    public class ExpressoAst : AstNode
 	{
-		readonly string name;
+        public static readonly Role<EntityDeclaration> MemberRole = new Role<EntityDeclaration>("Member", EntityDeclaration.Null);
+		
+        readonly string name;
 		readonly bool is_module;
 
 		/// <summary>
-		/// モジュール名。Expressoには明示的なモジュール宣言がないので、たいていはファイル名になる。
-		/// The name of the module. Since Expresso doesn't have an explicit module declaration, it would be very likely to be
-		/// the file name.
+		/// モジュール名。
+		/// The name of the module.
 		/// If the module contains the main function, it would be called the "main" module.
 		/// </summary>
 		public string Name{
@@ -44,15 +41,9 @@ namespace Expresso.Ast
 		/// The body of this node. If this node represents a module, then the body includes the require statement, if any,
 		/// and the definitions of the module.
 		/// </summary>
-        public IEnumerable<Statement> Body{
-            get{return Children;}
+        public AstNodeCollection<EntityDeclaration> Body{
+            get{return GetChildrenByRole(Roles.Body);}
 		}
-
-		/// <summary>
-		/// Bodyのn番目の定義をエクスポートするかどうかをあらわす。
-		/// A map indicating which declarations would be exported.
-		/// </summary>
-		public BitArray ExportMap{get; internal set;}
 
 		public string ModuleName{
 			get{
@@ -60,90 +51,52 @@ namespace Expresso.Ast
 			}
 		}
 
-		public override NodeType Type{
-            get{return NodeType.Toplevel;}
+		public override NodeType NodeType{
+            get{return NodeType.Unknown;}
         }
 
-		public ExpressoAst(Statement[] bodyStmts, string maybeModuleName = null, bool[] exportMap = null)
+        public ExpressoAst(IEnumerable<EntityDeclaration> body, string maybeModuleName = null)
 		{
 			name = maybeModuleName;
 			is_module = maybeModuleName != null;
-			ExportMap = new BitArray(exportMap);
 
-            foreach(var stmt in bodyStmts)
-                AddChild(stmt);
+            foreach(var decl in body)
+                AddChild(decl, MemberRole);
 		}
 
-		/// <summary>
-		/// Binds an AST and makes it capable of being reduced and compiled. Before calling Bind, an AST cannot successfully
-		/// be reduced.
-		/// </summary>
-		public void Bind()
+        public override void AcceptWalker(IAstWalker walker)
 		{
-			ExpressoNameBinder.BindAst(this, null);
-		}
-
-		#region Name binding support
-		internal override bool ExposesLocalVariable(ExpressoVariable variable)
-		{
-			return true;
-		}
-
-		internal override ExpressoVariable BindReference(ExpressoNameBinder binder, ExpressoReference reference)
-		{
-			return EnsureVariable(reference.Name, reference.VariableType);
-		}
-		#endregion
-
-        public override bool Equals(object obj)
-        {
-            var x = obj as ExpressoAst;
-
-            if(x == null)
-                return false;
-
-            return this.name == x.name && Body.SequenceEqual(x.Body);
-        }
-
-        public override int GetHashCode()
-        {
-            return this.name.GetHashCode() ^ this.Body.GetHashCode();
-        }
-
-        public override void AcceptWalker(AstWalker walker)
-		{
-			if(walker.Walk(this)){
-                if(Body != null){
-                    foreach(var stmt in Body)
-                        stmt.AcceptWalker(walker);
-				}
-			}
-			walker.PostWalk(this);
+            walker.VisitAst(this);
 		}
 
         public override TResult AcceptWalker<TResult>(IAstWalker<TResult> walker)
         {
-            return walker.Walk(this);
+            return walker.VisitAst(this);
         }
 
-        public override string GetText()
-		{
-            return string.Format("<Module decl: {0}>", is_module ? "<anonymous>" : name);
-		}
-
-        public override string ToString()
+        public override TResult AcceptWalker<TResult, TData>(IAstWalker<TData, TResult> walker, TData data)
         {
-            return GetText();
+            return walker.VisitAst(this, data);
         }
+
+        #region implemented abstract members of AstNode
+
+        protected internal override bool DoMatch(AstNode other, ICSharpCode.NRefactory.PatternMatching.Match match)
+        {
+            var o = other as ExpressoAst;
+            return o != null && Body.DoMatch(o.Body, match) && Name == o.Name;
+        }
+
+        #endregion
 
         public ExpressoUnresolvedFile ToTypeSystem()
         {
             if(string.IsNullOrEmpty(name))
-                throw new InvalidOperationException("Can not use toTypeSystem() on a syntax tree without file name.");
+                throw new InvalidOperationException("Can not use ToTypeSystem() on a syntax tree without file name.");
 
             var type_def = new DefaultUnresolvedTypeDefinition("global");
             var walker = new TypeSystemConvertWalker(new ExpressoUnresolvedFile(name, type_def, null));
-            walker.Walk(this);
+            walker.AcceptWalker(this);
             return walker.UnresolvedFile;
         }
 	}
