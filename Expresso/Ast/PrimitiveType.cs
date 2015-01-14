@@ -52,25 +52,25 @@ namespace Expresso.Ast
         public static KnownTypeCode GetKnownTypeCodeForPrimitiveType(string keyword)
         {
             switch(keyword){
-            case "Object":
+            case "object":
                 return KnownTypeCode.Object;
 
-            case "Bool":
+            case "bool":
                 return KnownTypeCode.Boolean;
 
-            case "Byte":
+            case "byte":
                 return KnownTypeCode.Byte;
 
-            case "Int":
+            case "int":
                 return KnownTypeCode.Int;
 
-            case "Float":
+            case "float":
                 return KnownTypeCode.Float;
 
-            case "Bigint":
+            case "bigint":
                 return KnownTypeCode.BigInteger;
 
-            case "Void":
+            case "void":
                 return KnownTypeCode.Void;
             }
         }

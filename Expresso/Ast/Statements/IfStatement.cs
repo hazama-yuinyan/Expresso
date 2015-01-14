@@ -11,6 +11,7 @@ namespace Expresso.Ast
 	/// <summary>
 	/// If文。
 	/// The If statement.
+    /// "if" Expression Block [ "else" Statement ]
 	/// </summary>
 	public class IfStatement : Statement
 	{

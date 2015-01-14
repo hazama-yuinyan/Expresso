@@ -5,7 +5,8 @@ using ICSharpCode.NRefactory.PatternMatching;
 namespace Expresso.Ast
 {
 	/// <summary>
-    /// Expresso Walker interface
+    /// Expresso Walker interface.
+    /// An AST walker is a class that walks through all nodes 
 	/// </summary>
     public interface IAstWalker
 	{
@@ -18,9 +19,8 @@ namespace Expresso.Ast
         void VisitExpressionStatement(ExpressionStatement exprStmt);
         void VisitForStatement(ForStatement forStmt);
         void VisitIfStatement(IfStatement ifStmt);
-        void VisitImportStatement(ImportStatement importStmt);
         void VisitReturnStatement(ReturnStatement returnStmt);
-        void VisitSwitchStatement(SwitchStatement switchStmt);
+        void VisitMatchStatement(MatchStatement matchStmt);
         void VisitThrowStatement(ThrowStatement throwStmt);
         void VisitTryStatement(TryStatement tryStmt);
         void VisitWhileStatement(WhileStatement whileStmt);
@@ -38,23 +38,22 @@ namespace Expresso.Ast
         void VisitComprehensionIfClause(ComprehensionIfClause compIf);
         void VisitConditionalExpression(ConditionalExpression condExpr);
         void VisitLiteralExpression(LiteralExpression literal);
-        void VisitDefaultExpression(DefaultExpression defaultExpr);
         void VisitIdentifier(Identifier ident);
         void VisitIntgerSequenceExpression(IntegerSequenceExpression intSeq);
         void VisitIndexerExpression(IndexerExpression indexExpr);
         void VisitMemberReference(MemberReference memRef);
         void VisitNewExpression(NewExpression newExpr);
         void VisitParenthesizedExpression(ParenthesizedExpression parensExpr);
+        void VisitObjectCreationExpression(ObjectCreationExpression creation);
         void VisitSequenceInitializer(SequenceInitializer seqInitializer);
-        void VisitCaseClause(CaseClause caseClause);
+        void VisitMatchClause(MatchPatternClause matchClause);
         void VisitSequence(SequenceExpression seqExpr);
         void VisitCatchClause(CatchClause catchClause);
         void VisitFinallyClause(FinallyClause finallyClause);
         void VisitUnaryExpression(UnaryExpression unaryExpr);
 
-        void VisitNullReferenceExpression(NullReferenceExpression nullRef);
-        void VisitThisReferenceExpression(ThisReferenceExpression thisRef);
-        void VisitBaseReferenceExpression(BaseReferenceExpression baseRef);
+        void VisitSelfReferenceExpression(SelfReferenceExpression selfRef);
+        void VisitSuperReferenceExpression(SuperReferenceExpression superRef);
 
         void VisitCommentNode(CommentNode comment);
         void VisitTextNode(TextNode textNode);
@@ -63,14 +62,20 @@ namespace Expresso.Ast
         void VisitSimpleType(SimpleType simpleType);
         void VisitPrimitiveType(PrimitiveType primitiveType);
 
+        void VisitImportDeclaration(ImportDeclaration importDecl);
         void VisitFunctionDeclaration(FunctionDeclaration funcDecl);
+        void VisitTypeDeclaration(TypeDeclaration typeDecl);
 
-        void VisitConstructorDeclaration(ConstructorDeclaration constructor);
-        void VisitConstructorInitializer(ConstructorInitializer constructorInitializer);
         void VisitFieldDeclaration(FieldDeclaration fieldDecl);
         void VisitMethodDeclaration(MethodDeclaration methodDecl);
         void VisitParameterDeclaration(ParameterDeclaration parameterDecl);
         void VisitVariableInitializer(VariableInitializer initializer);
+
+        void VisitWildcardPattern(WildcardPattern wildcardPattern);
+        void VisitIdentifierPattern(IdentifierPattern identifierPattern);
+        void VisitValueBindingPattern(ValueBindingPattern valueBindingPattern);
+        void VisitTuplePattern(TuplePattern tuplePattern);
+        void VisitExpressionPattern(ExpressionPattern exprPattern);
 
         void VisitNullNode(AstNode nullNode);
         void VisitNewLine(NewLineNode newlineNode);
@@ -90,9 +95,8 @@ namespace Expresso.Ast
         TResult VisitExpressionStatement(ExpressionStatement exprStmt);
         TResult VisitForStatement(ForStatement forStmt);
         TResult VisitIfStatement(IfStatement ifStmt);
-        TResult VisitImportStatement(ImportStatement importStmt);
         TResult VisitReturnStatement(ReturnStatement returnStmt);
-        TResult VisitSwitchStatement(SwitchStatement switchStmt);
+        TResult VisitMatchStatement(MatchStatement matchStmt);
         TResult VisitThrowStatement(ThrowStatement throwStmt);
         TResult VisitTryStatement(TryStatement tryStmt);
         TResult VisitWhileStatement(WhileStatement whileStmt);
@@ -110,23 +114,22 @@ namespace Expresso.Ast
         TResult VisitComprehensionIfClause(ComprehensionIfClause compIf);
         TResult VisitConditionalExpression(ConditionalExpression condExpr);
         TResult VisitLiteralExpression(LiteralExpression literal);
-        TResult VisitDefaultExpression(DefaultExpression defaultExpr);
         TResult VisitIdentifier(Identifier ident);
         TResult VisitIntegerSequenceExpression(IntegerSequenceExpression intSeq);
         TResult VisitIndexerExpression(IndexerExpression indexExpr);
         TResult VisitMemberReference(MemberReference memRef);
         TResult VisitNewExpression(NewExpression newExpr);
         TResult VisitParenthesizedExpression(ParenthesizedExpression parensExpr);
+        TResult VisitObjectCreationExpression(ObjectCreationExpression creation);
         TResult VisitSequenceInitializer(SequenceInitializer seqInitializer);
-        TResult VisitCaseClause(CaseClause caseClause);
+        TResult VisitMatchClause(MatchPatternClause matchClause);
         TResult VisitSequence(SequenceExpression seqExpr);
         TResult VisitCatchClause(CatchClause catchClause);
         TResult VisitFinallyClause(FinallyClause finallyClause);
         TResult VisitUnaryExpression(UnaryExpression unaryExpr);
 
-        TResult VisitNullReferenceExpression(NullReferenceExpression nullRef);
-        TResult VisitThisReferenceExpression(ThisReferenceExpression thisRef);
-        TResult VisitBaseReferenceExpression(BaseReferenceExpression baseRef);
+        TResult VisitSelfReferenceExpression(SelfReferenceExpression selfRef);
+        TResult VisitSuperReferenceExpression(SuperReferenceExpression superRef);
 
         TResult VisitCommentNode(CommentNode comment);
         TResult VisitTextNode(TextNode textNode);
@@ -135,14 +138,20 @@ namespace Expresso.Ast
         TResult VisitSimpleType(SimpleType simpleType);
         TResult VisitPrimitiveType(PrimitiveType primitiveType);
 
+        TResult VisitImportDeclaration(ImportDeclaration importDecl);
         TResult VisitFunctionDeclaration(FunctionDeclaration funcDecl);
+        TResult VisitTypeDeclaration(TypeDeclaration typeDecl);
 
-        TResult VisitConstructorDeclaration(ConstructorDeclaration constructor);
-        TResult VisitConstructorInitializer(ConstructorInitializer constructorInitializer);
         TResult VisitFieldDeclaration(FieldDeclaration fieldDecl);
         TResult VisitMethodDeclaration(MethodDeclaration methodDecl);
         TResult VisitParameterDeclaration(ParameterDeclaration parameterDecl);
         TResult VisitVariableInitializer(VariableInitializer initializer);
+
+        TResult VisitWildcardPattern(WildcardPattern wildcardPattern);
+        TResult VisitIdentifierPattern(IdentifierPattern identifierPattern);
+        TResult VisitValueBindingPattern(ValueBindingPattern valueBindingPattern);
+        TResult VisitTuplePattern(TuplePattern tuplePattern);
+        TResult VisitExpressionPattern(ExpressionPattern exprPattern);
 
         TResult VisitNullNode(AstNode nullNode);
         TResult VisitNewLine(NewLineNode newlineNode);
@@ -162,9 +171,8 @@ namespace Expresso.Ast
         TResult VisitExpressionStatement(ExpressionStatement exprStmt, TData data);
         TResult VisitForStatement(ForStatement forStmt, TData data);
         TResult VisitIfStatement(IfStatement ifStmt, TData data);
-        TResult VisitImportStatement(ImportStatement importStmt, TData data);
         TResult VisitReturnStatement(ReturnStatement returnStmt, TData data);
-        TResult VisitSwitchStatement(SwitchStatement switchStmt, TData data);
+        TResult VisitMatchStatement(MatchStatement matchStmt, TData data);
         TResult VisitThrowStatement(ThrowStatement throwStmt, TData data);
         TResult VisitTryStatement(TryStatement tryStmt, TData data);
         TResult VisitWhileStatement(WhileStatement whileStmt, TData data);
@@ -182,23 +190,22 @@ namespace Expresso.Ast
         TResult VisitComprehensionIfClause(ComprehensionIfClause compIf, TData data);
         TResult VisitConditionalExpression(ConditionalExpression condExpr, TData data);
         TResult VisitLiteralExpression(LiteralExpression literal, TData data);
-        TResult VisitDefaultExpression(DefaultExpression defaultExpr, TData data);
         TResult VisitIdentifier(Identifier ident, TData data);
         TResult VisitIntegerSequenceExpression(IntegerSequenceExpression intSeq, TData data);
         TResult VisitIndexerExpression(IndexerExpression indexExpr, TData data);
         TResult VisitMemberReference(MemberReference memRef, TData data);
         TResult VisitNewExpression(NewExpression newExpr, TData data);
         TResult VisitParenthesizedExpression(ParenthesizedExpression parensExpr, TData data);
+        TResult VisitObjectCreationExpression(ObjectCreationExpression creation, TData data);
         TResult VisitSequenceInitializer(SequenceInitializer seqInitializer, TData data);
-        TResult VisitCaseClause(CaseClause caseClause, TData data);
+        TResult VisitMatchClause(MatchPatternClause matchClause, TData data);
         TResult VisitSequence(SequenceExpression seqExpr, TData data);
         TResult VisitCatchClause(CatchClause catchClause, TData data);
         TResult VisitFinallyClause(FinallyClause finallyClause, TData data);
         TResult VisitUnaryExpression(UnaryExpression unaryExpr, TData data);
 
-        TResult VisitNullReferenceExpression(NullReferenceExpression nullRef, TData data);
-        TResult VisitThisReferenceExpression(ThisReferenceExpression thisRef, TData data);
-        TResult VisitBaseReferenceExpression(BaseReferenceExpression baseRef, TData data);
+        TResult VisitSelfReferenceExpression(SelfReferenceExpression selfRef, TData data);
+        TResult VisitSuperReferenceExpression(SuperReferenceExpression superRef, TData data);
 
         TResult VisitCommentNode(CommentNode comment, TData data);
         TResult VisitTextNode(TextNode textNode, TData data);
@@ -207,14 +214,20 @@ namespace Expresso.Ast
         TResult VisitSimpleType(SimpleType simpleType, TData data);
         TResult VisitPrimitiveType(PrimitiveType primitiveType, TData data);
 
+        TResult VisitImportDeclaration(ImportDeclaration importDecl, TData data);
         TResult VisitFunctionDeclaration(FunctionDeclaration funcDecl, TData data);
+        TResult VisitTypeDeclaration(TypeDeclaration typeDecl, TData data);
 
-        TResult VisitConstructorDeclaration(ConstructorDeclaration constructor, TData data);
-        TResult VisitConstructorInitializer(ConstructorInitializer constructorInitializer, TData data);
         TResult VisitFieldDeclaration(FieldDeclaration fieldDecl, TData data);
         TResult VisitMethodDeclaration(MethodDeclaration methodDecl, TData data);
         TResult VisitParameterDeclaration(ParameterDeclaration parameterDecl, TData data);
         TResult VisitVariableInitializer(VariableInitializer initializer, TData data);
+
+        TResult VisitWildcardPattern(WildcardPattern wildcardPattern, TData data);
+        TResult VisitIdentifierPattern(IdentifierPattern identifierPattern, TData data);
+        TResult VisitValueBindingPattern(ValueBindingPattern valueBindingPattern, TData data);
+        TResult VisitTuplePattern(TuplePattern tuplePattern, TData data);
+        TResult VisitExpressionPattern(ExpressionPattern exprPattern, TData data);
 
         TResult VisitNullNode(AstNode nullNode, TData data);
         TResult VisitNewLine(NewLineNode newlineNode, TData data);

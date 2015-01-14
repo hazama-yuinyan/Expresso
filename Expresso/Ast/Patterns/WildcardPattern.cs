@@ -1,40 +1,38 @@
 ﻿using System;
-using ICSharpCode.NRefactory;
 
 
 namespace Expresso.Ast
 {
     /// <summary>
-    /// Represents the keyword "null" as expression.
+    /// Represents the wildcard pattern.
+    /// '_'
     /// </summary>
-    public class NullReferenceExpression : Expression
+    public class WildcardPattern : PatternConstruct
     {
-        public NullReferenceExpression(TextLocation start)
+        public WildcardPattern()
         {
-            start_loc = start;
-            end_loc = new TextLocation(start.Line, start.Column + "null".Length);
         }
 
         #region implemented abstract members of AstNode
 
         public override void AcceptWalker(IAstWalker walker)
         {
-            throw new NotImplementedException();
+            walker.VisitWildcardPattern(this);
         }
 
         public override TResult AcceptWalker<TResult>(IAstWalker<TResult> walker)
         {
-            throw new NotImplementedException();
+            return walker.VisitWildcardPattern(this);
         }
 
         public override TResult AcceptWalker<TResult, TData>(IAstWalker<TData, TResult> walker, TData data)
         {
-            throw new NotImplementedException();
+            return walker.VisitWildcardPattern(this, data);
         }
 
         protected internal override bool DoMatch(AstNode other, ICSharpCode.NRefactory.PatternMatching.Match match)
         {
-            return other is NullReferenceExpression;
+            return other is WildcardPattern;
         }
 
         #endregion

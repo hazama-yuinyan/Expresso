@@ -3,14 +3,14 @@
  */
 module main; 
  
-//require math;
+//import math;
  
 def main()
 {
-	let n = 100000, i = 2, j, results = [];
-	for(i in [2..n + 1]){
-		let SQRT_I = toInt(sqrt(i) + 1.0);
-		for(j in [2..SQRT_I + 1]){
+	let n = 100000, results = [];
+	for i in 2...n {
+		let SQRT_I = (sqrt(i as float) + 1.0) as int;
+		for j in 2...SQRT_I {
 			if(j == SQRT_I)
 				results.add(i);
 			else if(i % j == 0)
@@ -18,8 +18,8 @@ def main()
 		}
 	}
 	
-	print "Results: ";
-	for(j in results){
-		print j;
+	print("Results: ");
+	for j in results {
+		print(j);
 	}
 }

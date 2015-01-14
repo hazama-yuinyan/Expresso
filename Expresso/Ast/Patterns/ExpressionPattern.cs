@@ -1,40 +1,45 @@
 ﻿using System;
-using ICSharpCode.NRefactory;
 
 
 namespace Expresso.Ast
 {
     /// <summary>
-    /// Represents the keyword "this" as expression.
+    /// Represents an expression pattern.
+    /// Expression
     /// </summary>
-    public class ThisReferenceExpression : Expression
+    public class ExpressionPattern : PatternConstruct
     {
-        public ThisReferenceExpression(TextLocation start)
+        public Expression Expression{
+            get{return GetChildByRole(Roles.Expression);}
+            set{SetChildByRole(Roles.Expression);}
+        }
+
+        public ExpressionPattern(Expression expr)
         {
-            start_loc = start;
-            end_loc = new TextLocation(start.Line, start.Column + "this".Length);
+            Expression = expr;
         }
 
         #region implemented abstract members of AstNode
 
         public override void AcceptWalker(IAstWalker walker)
         {
-            throw new NotImplementedException();
+            walker.VisitExpressionPattern(this);
         }
 
         public override TResult AcceptWalker<TResult>(IAstWalker<TResult> walker)
         {
-            throw new NotImplementedException();
+            return walker.VisitExpressionPattern(this);
         }
 
         public override TResult AcceptWalker<TResult, TData>(IAstWalker<TData, TResult> walker, TData data)
         {
-            throw new NotImplementedException();
+            return walker.VisitExpressionPattern(this, data);
         }
 
         protected internal override bool DoMatch(AstNode other, ICSharpCode.NRefactory.PatternMatching.Match match)
         {
-            return other is ThisReferenceExpression;
+            var o = other as ExpressionPattern;
+            return o != null && Expression.DoMatch(o.Expression, match);
         }
 
         #endregion

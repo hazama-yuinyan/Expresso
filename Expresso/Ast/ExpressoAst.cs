@@ -16,7 +16,8 @@ namespace Expresso.Ast
     public class ExpressoAst : AstNode
 	{
         public static readonly Role<EntityDeclaration> MemberRole = new Role<EntityDeclaration>("Member", EntityDeclaration.Null);
-		
+        public static readonly Role<ImportDeclaration> ImportRole = new Role<ImportDeclaration>("Import", ImportDeclaration.Null);
+
         readonly string name;
 		readonly bool is_module;
 
@@ -36,15 +37,30 @@ namespace Expresso.Ast
 			get{return is_module;}
 		}
 
+        /// <summary>
+        /// インポート宣言
+        /// Gets the import declarations.
+        /// If this node doesn't represent a module, it will be an empty collection.
+        /// </summary>
+        /// <value>The imports.</value>
+        public AstNodeCollection<ImportDeclaration> Imports{
+            get{return GetChildrenByRole(ImportRole);}
+        }
+
 		/// <summary>
-		/// 本体。このノードがモジュールだった場合にはrequire文とモジュールの定義文が含まれる。
-		/// The body of this node. If this node represents a module, then the body includes the require statement, if any,
-		/// and the definitions of the module.
+		/// 本体。このノードがモジュールだった場合にはモジュールの定義文が含まれる。
+		/// The body of this node. If this node represents a module, then the body includes
+		/// the definitions of the module.
 		/// </summary>
         public AstNodeCollection<EntityDeclaration> Body{
             get{return GetChildrenByRole(Roles.Body);}
 		}
 
+        /// <summary>
+        /// モジュール名
+        /// Gets the name of the module.
+        /// </summary>
+        /// <value>The name of the module.</value>
 		public string ModuleName{
 			get{
 				return is_module ? name : "<not a module>";
@@ -55,10 +71,15 @@ namespace Expresso.Ast
             get{return NodeType.Unknown;}
         }
 
-        public ExpressoAst(IEnumerable<EntityDeclaration> body, string maybeModuleName = null)
-		{
+        public ExpressoAst(IEnumerable<EntityDeclaration> body, IEnumerable<ImportDeclaration> imports, string maybeModuleName = null)
+        {
 			name = maybeModuleName;
 			is_module = maybeModuleName != null;
+
+            if(imports != null){
+                foreach(var import in imports)
+                    AddChild(import, ImportRole);
+            }
 
             foreach(var decl in body)
                 AddChild(decl, MemberRole);

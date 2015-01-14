@@ -1,44 +1,40 @@
 ﻿using System;
+using ICSharpCode.NRefactory;
 
 
 namespace Expresso.Ast
 {
-    public enum KeywordExpressions
+    /// <summary>
+    /// Represents the keyword "super" as expression.
+    /// </summary>
+    public class SuperReferenceExpression : Expression
     {
-        Null,
-        This
-    }
-
-    public class KeywordReferenceExpression : Expression
-    {
-        public KeywordExpressions ExprType{
-            get; set;
-        }
-
-        public KeywordReferenceExpression()
+        public SuperReferenceExpression(TextLocation start)
         {
+            start_loc = start;
+            end_loc = new TextLocation(start.Line, start.Column + "super".Length);
         }
 
         #region implemented abstract members of AstNode
 
         public override void AcceptWalker(IAstWalker walker)
         {
-            throw new NotImplementedException();
+            walker.VisitSuperReferenceExpression(this);
         }
 
         public override TResult AcceptWalker<TResult>(IAstWalker<TResult> walker)
         {
-            throw new NotImplementedException();
+            return walker.VisitSuperReferenceExpression(this);
         }
 
         public override TResult AcceptWalker<TResult, TData>(IAstWalker<TData, TResult> walker, TData data)
         {
-            throw new NotImplementedException();
+            return walker.VisitSuperReferenceExpression(this, data);
         }
 
         protected internal override bool DoMatch(AstNode other, ICSharpCode.NRefactory.PatternMatching.Match match)
         {
-            throw new NotImplementedException();
+            return other is SuperReferenceExpression;
         }
 
         #endregion

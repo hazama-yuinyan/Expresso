@@ -75,9 +75,51 @@ namespace Expresso.Ast
             get{return GetChildByRole(Roles.ColonToken);}
         }
 
+        public AstNodeCollection<AstType> BaseTypes{
+            get{return GetChildrenByRole(Roles.BaseType);}
+        }
+
+        public ExpressoTokenNode LBrace{
+            get{return GetChildByRole(Roles.LBraceToken);}
+        }
+
+        public AstNodeCollection<EntityDeclaration> Members{
+            get{return GetChildrenByRole(Roles.TypeMember);}
+        }
+
+        public ExpressoTokenNode RBrace{
+            get{return GetChildByRole(Roles.RBraceToken);}
+        }
+
         public TypeDeclaration()
         {
         }
+
+        #region implemented abstract members of AstNode
+
+        public override void AcceptWalker(IAstWalker walker)
+        {
+            return walker.VisitTypeDeclaration(this);
+        }
+
+        public override TResult AcceptWalker<TResult>(IAstWalker<TResult> walker)
+        {
+            return walker.VisitTypeDeclaration(this);
+        }
+
+        public override TResult AcceptWalker<TResult, TData>(IAstWalker<TData, TResult> walker, TData data)
+        {
+            return walker.VisitTypeDeclaration(this, data);
+        }
+
+        protected internal override bool DoMatch(AstNode other, ICSharpCode.NRefactory.PatternMatching.Match match)
+        {
+            var o = other as TypeDeclaration;
+            return o != null && ClassType == o.ClassType && BaseTypes.DoMatch(o.BaseTypes, match)
+                && Members.DoMatch(o.Members, match);
+        }
+
+        #endregion
     }
 }
 

@@ -5,6 +5,7 @@ namespace Expresso.Ast
     /// <summary>
     /// yield文。
 	/// The yield statement.
+    /// "yield" Expression ';'
     /// </summary>
     public class YieldStatement : Statement
     {

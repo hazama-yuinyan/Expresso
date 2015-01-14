@@ -52,7 +52,7 @@ using Expresso.Runtime.Operations;
  * string        : いわゆる文字列型。C#のstring型を使用。C#以外で実装する場合、文字列の比較をオブジェクトの参照の比較で行うように実装すること。
  * byte　　　　　     : Cで言うところのchar型。要するにバイト型。C#では、byte型を使用。
  * var(variant)  : 総称型。実装上は、どんな型の変数でも指し示すことのできるポインターや参照。
- * tuple         : Pythonなどで実装されているタプル型と同じ。長さ不変、書き換え不可な配列とも言える。
+ * tuple         : Pythonなどで実装されているタプル型と同じ。長さ不変、書き換え不可な配列とも言える。リストや配列と違い、要素の型が混合していてもいい。
  * list          : データ構造でよく話題に上るリスト型と同じ。長さ可変、書き換え可能な配列とも言える。C#では、Listクラスで実装。
  * dictionary    : いわゆる辞書型。言語によっては、連想配列とも呼ばれるもの。C#では、Dictionaryクラスで実装。
  * array         : いわゆる配列。
@@ -135,8 +135,8 @@ namespace Expresso.Interpreter
 
 			var mod_context = new ModuleContext(main_module, global_context);
 			var main_args = ExpressoOps.Slice(args, new ExpressoIntegerSequence(1, args.Count, 1));
-			var call = AstNode.MakeCallExpr(
-				AstNode.MakeConstant(ObjectTypes.Function, main_func),
+            var call = Expression.MakeCall(
+                AstNode.MakeIdentifier(ObjectTypes.Function, main_func),
 				new Expression[]{
 					AstNode.MakeConstant(ObjectTypes.Instance, main_module),
 					AstNode.MakeConstant(ObjectTypes.List, main_args)
@@ -183,9 +183,6 @@ namespace Expresso.Interpreter
 					case NodeType.Argument:
 						node = ((ParameterDeclaration)node).Option;
 						goto MAIN_LOOP;
-
-                    case NodeType.AssertStatement:  //TODO:実装する
-						break;
 
 					case NodeType.Assignment:
 					{
@@ -329,7 +326,7 @@ namespace Expresso.Interpreter
 
 					case NodeType.CaseClause:
 					{
-						var case_clause = (CaseClause)node;
+						var case_clause = (MatchPatternClause)node;
 						if(!flow_manager.IsEvaluating(case_clause))
 							flow_manager.Push(case_clause);
 
@@ -578,7 +575,7 @@ namespace Expresso.Interpreter
 					case NodeType.Identifier:
 					{
 						var ident = (Identifier)node;
-                        if(ident.ParamType.ObjType == ObjectTypes._Subscript){
+                        if(ident.Type.ObjType == ObjectTypes._Subscript){
 							flow_manager.PushValue(ident);
                         }else if(ident.IsResolved){
 							flow_manager.Top().Dup(ident.Offset);
@@ -777,7 +774,7 @@ namespace Expresso.Interpreter
 					{
 						var new_expr = (NewExpression)node;
 						if(!flow_manager.IsEvaluating(new_expr)){
-							node = new_expr.TargetExpr;
+							node = new_expr.CreationExpression;
 							flow_manager.Push(new_expr);
 							goto MAIN_LOOP;
 						}else{
@@ -785,7 +782,7 @@ namespace Expresso.Interpreter
 
 							var type_def = flow_manager.PopValue() as BaseDefinition;
 							if(type_def == null)
-								throw ExpressoOps.MakeInvalidTypeError("{0} doesn't refer to a type name.", new_expr.TargetExpr);
+								throw ExpressoOps.MakeInvalidTypeError("{0} doesn't refer to a type name.", new_expr.CreationExpression);
 
 							flow_manager.PushValue(ExpressoObj.CreateInstance(null, type_def, new_expr.Arguments));
 						}
@@ -815,7 +812,7 @@ namespace Expresso.Interpreter
 
 					case NodeType.Require:
 					{
-						var require_expr = (ImportStatement)node;
+						var require_expr = (ImportDeclaration)node;
 						foreach(var module_name in require_expr.ModuleNames){
 							var path = module_name.Replace('.', '/');
 							path += ".exs";
@@ -913,7 +910,7 @@ namespace Expresso.Interpreter
 
 					case NodeType.SwitchStatement:
 					{
-						var switch_stmt = (SwitchStatement)node;
+						var switch_stmt = (MatchStatement)node;
 						if(!flow_manager.IsEvaluating(switch_stmt))
 							flow_manager.Push(switch_stmt);
 
@@ -924,13 +921,13 @@ namespace Expresso.Interpreter
 							goto MAIN_LOOP;
 
 						case 1:
-							if(flow_manager.Top().ChildCounter < switch_stmt.Cases.Length){
+							if(flow_manager.Top().ChildCounter < switch_stmt.Clauses.Length){
 								if(flow_manager.Top().ChildCounter != 0){
 									object top = flow_manager.PopValue();
 									if(top is bool && (bool)top)
 										goto CLEANUP_SWITCH;
 								}
-								node = switch_stmt.Cases[flow_manager.Top().ChildCounter++];
+								node = switch_stmt.Clauses[flow_manager.Top().ChildCounter++];
 								goto MAIN_LOOP;
 							}else{
 								flow_manager.Pop();

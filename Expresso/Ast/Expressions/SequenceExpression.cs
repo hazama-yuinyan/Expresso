@@ -1,14 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
-using Expresso.Compiler;
 
 namespace Expresso.Ast
 {
-	using CSharpExpr = System.Linq.Expressions.Expression;
-
     /// <summary>
     /// カンマで区切られたリテラル式をあらわす。
 	/// Reperesents a comma-separated list expression like "1,2,3,4".
@@ -21,37 +16,22 @@ namespace Expresso.Ast
 		/// The items of this list.
         /// </summary>
         public AstNodeCollection<Expression> Items{
-            get{return GetChildrenByRole(Roles.TargetExpression);}
+            get{return GetChildrenByRole(Roles.Expression);}
 		}
 
 		public int Count{
-            get{return Items.Count();}
+            get{return Items.Count;}
 		}
 
         public override NodeType NodeType{
             get{return NodeType.Expression;}
         }
 
-        public SequenceExpression(IEnumerable<Expression> targetItems)
+        public SequenceExpression(IEnumerable<Expression> items)
 		{
-            foreach(var item in targetItems)
-                AddChild(item, Roles.TargetExpression);
+            foreach(var item in items)
+                AddChild(item, Roles.Expression);
 		}
-
-        public override bool Equals(object obj)
-        {
-            var x = obj as SequenceExpression;
-
-            if(x == null)
-                return false;
-
-            return this.Items == x.Items;
-        }
-
-        public override int GetHashCode()
-        {
-            return this.Items.GetHashCode();
-        }
 
         public override void AcceptWalker(IAstWalker walker)
 		{
@@ -68,16 +48,14 @@ namespace Expresso.Ast
             return walker.VisitSequence(this, data);
         }
 
-		public override string ToString()
-		{
-			var sb = new StringBuilder();
-            for(int i = 0; i < Items.Count(); ++i){
-				if(i != 0)
-					sb.Append(",");
+        #region implemented abstract members of AstNode
 
-                sb.Append(Items[i]);
-			}
-			return sb.ToString();
-		}
+        protected internal override bool DoMatch(AstNode other, ICSharpCode.NRefactory.PatternMatching.Match match)
+        {
+            var o = other as SequenceExpression;
+            return o != null && Items.DoMatch(o.Items, match);
+        }
+
+        #endregion
     }
 }

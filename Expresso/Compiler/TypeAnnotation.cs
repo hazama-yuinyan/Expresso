@@ -10,7 +10,6 @@ namespace Expresso.Compiler.Meta
 	{
 		_INFERENCE = -1,
 		Undef = 0,
-		Null,
 		Integer,
 		Bool,
 		Float,
@@ -21,6 +20,7 @@ namespace Expresso.Compiler.Meta
 		Tuple,
 		List,
 		Dict,
+        Var,
 		Expression,
 		Function,
 		Seq,

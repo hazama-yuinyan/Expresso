@@ -154,7 +154,7 @@ namespace Expresso.Ast
             while(outermost_type.Parent is AstType)
                 outermost_type = (AstType)outermost_type.Parent;
 
-            if(outermost_type.Parent is ImportStatement){
+            if(outermost_type.Parent is ImportDeclaration){
                 return NameLookupMode.TypeInImportDeclaration;
             }else if(outermost_type.Role == Roles.BaseType){
                 // Use BaseTypeReference for a type's base type, and for a constraint on a type.

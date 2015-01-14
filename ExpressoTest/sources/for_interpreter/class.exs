@@ -40,7 +40,7 @@ def main()
 	let c = a.getY();
 	let d = a.getXPlus(100);
 	
-	print "(a.x, a.y) = ", b, c;
+	print("(a.x, a.y) = {}, {}", b, c);
 
 	return [a, b, c, d];
 }

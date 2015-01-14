@@ -11,6 +11,7 @@ namespace Expresso.Ast
     /// <summary>
     /// 二項演算。
 	/// Represents a binary expression.
+    /// Expression BinaryOperator Expression
     /// </summary>
     public class BinaryExpression : Expression
     {
@@ -73,23 +74,6 @@ namespace Expresso.Ast
             AddChild(left, LhsRole);
             AddChild(right, RhsRole);
 		}
-
-        public override bool Equals(object obj)
-        {
-            var x = obj as BinaryExpression;
-
-            if(x == null)
-                return false;
-
-            return this.ope == x.ope
-                && this.Left.Equals(x.Left)
-                && this.Right.Equals(x.Right);
-        }
-
-        public override int GetHashCode()
-        {
-            return this.ope.GetHashCode() ^ this.Left.GetHashCode() ^ this.Right.GetHashCode();
-        }
 
         public override void AcceptWalker(IAstWalker walker)
 		{

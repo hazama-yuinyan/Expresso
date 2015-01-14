@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 using Expresso.Compiler;
@@ -8,12 +9,15 @@ using ICSharpCode.NRefactory;
 namespace Expresso.Ast
 {
     /// <summary>
-    /// モジュールインポート文。
-    /// Reperesents an import statement.
+    /// モジュールインポート宣言。
+    /// Reperesents an import declaration.
+    /// A module import can be done in 2 phases.
+    /// 1. Path resolving.
+    /// 2. Name imports.
     /// "import" ModuleName [ "as" AliasName ] {',' ModuleName [ "as" AliasName ] }
     /// | 
     /// </summary>
-    public class ImportStatement : Statement
+    public class ImportDeclaration : AstNode
     {
         public static readonly TokenRole ImportKeyword = new TokenRole("import");
         public static readonly TokenRole AsKeyword = new TokenRole("as");
@@ -27,7 +31,7 @@ namespace Expresso.Ast
 
         /// <summary>
         /// 対象となるモジュール名。
-		/// The target module names to be required. It can contain a '.'(which can be used to point to a nested module)
+        /// The target module names to be imported. It can contain a '.'(which can be used to point to a nested module)
         /// or a '/'(which can be used to point to an external source file).
         /// </summary>
         public IEnumerable<string> ModuleNames{
@@ -81,7 +85,7 @@ namespace Expresso.Ast
             get{return NodeType.Statement;}
         }
 
-        public ImportStatement(IEnumerable<string> moduleNames, IEnumerable<string> aliasNames = null)
+        public ImportDeclaration(IEnumerable<string> moduleNames, IEnumerable<string> aliasNames = null)
 		{
             foreach(var module_name in moduleNames)
                 AddChild(AstNode.MakeIdentifier(module_name), ModuleNameRole);
@@ -94,24 +98,24 @@ namespace Expresso.Ast
 
         public override void AcceptWalker(IAstWalker walker)
 		{
-            walker.VisitImportStatement(this);
+            walker.VisitImportDeclaration(this);
 		}
 
         public override TResult AcceptWalker<TResult>(IAstWalker<TResult> walker)
         {
-            return walker.VisitImportStatement(this);
+            return walker.VisitImportDeclaration(this);
         }
 
         public override TResult AcceptWalker<TResult, TData>(IAstWalker<TData, TResult> walker, TData data)
         {
-            return walker.VisitImportStatement(this, data);
+            return walker.VisitImportDeclaration(this, data);
         }
 
         #region implemented abstract members of AstNode
 
         protected internal override bool DoMatch(AstNode other, ICSharpCode.NRefactory.PatternMatching.Match match)
         {
-            var o = other as ImportStatement;
+            var o = other as ImportDeclaration;
             return o != null && ModuleNameTokens.DoMatch(o.ModuleNameTokens, match)
                 && AliasNameTokens.DoMatch(o.AliasNameTokens, match);
         }

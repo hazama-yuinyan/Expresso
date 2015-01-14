@@ -13,12 +13,15 @@ namespace Expresso.Ast
         public static readonly Role<ParameterDeclaration> Parameter = new Role<ParameterDeclaration>("Parameter");
         public static readonly Role<Expression> Argument = new Role<Expression>("Argument", Expression.NullObject);
         public static readonly Role<AstType> Type = new Role<AstType>("Type", AstType.Null);
+        public static readonly Role<AstType> BaseType = new Role<AstType>("BaseType", AstType.Null);
         public static readonly Role<Expression> Expression = new Role<Expression>("Expression", Expression.NullObject);
         public static readonly Role<Expression> TargetExpression = new Role<Expression>("Target", Expression.NullObject);
         public static readonly Role<AstType> TypeArgument = new Role<AstType>("TypeArgument", AstType.Null);
         //public static readonly Role<TypeParameterDeclaration> 
-        public static readonly Role<VariableInitializer> Variable = new Role<VariableInitializer>("Variable", VariableInitializer.Null);
         public static readonly Role<Statement> EmbeddedStatement = new Role<Statement>("EmbeddedStatement", Statement.Null);
+        public static readonly Role<EntityDeclaration> TypeMember = new Role<EntityDeclaration>("TypeMember", EntityDeclaration.Null);
+        public static readonly Role<VariableInitializer> Variable = new Role<VariableInitializer>("Variable", VariableInitializer.Null);
+        public static readonly Role<PatternConstruct> Pattern = new Role<PatternConstruct>("Pattern", PatternConstruct.Null);
 
         // some pre-defined roles for most used punctuations
         public static readonly TokenRole LParenthesisToken = new TokenRole("(");

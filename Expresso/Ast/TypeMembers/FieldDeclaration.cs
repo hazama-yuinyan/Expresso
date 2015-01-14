@@ -1,11 +1,13 @@
 using System;
 using System.ComponentModel;
+using System.Collections.Generic;
 
 
 namespace Expresso.Ast
 {
     /// <summary>
     /// Represents a field declaration.
+    /// ("let" | "var") ident [ "(-" Type ] { ',' ident [ "(-" Type ] } ';'
     /// </summary>
     public class FieldDeclaration : EntityDeclaration
     {
@@ -35,8 +37,10 @@ namespace Expresso.Ast
             }
         }
 
-        public FieldDeclaration()
+        public FieldDeclaration(IEnumerable<VariableInitializer> variables)
         {
+            foreach(var variable in variables)
+                AddChild(variable, Roles.Variable);
         }
 
         public override void AcceptWalker(IAstWalker walker)

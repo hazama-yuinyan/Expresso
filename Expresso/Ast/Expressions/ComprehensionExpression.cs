@@ -103,9 +103,9 @@ namespace Expresso.Ast
         /// When evaluating the both sides of the "in" keyword,
         /// the same rule as the assignment applies.
         /// So for example,
-        /// for(let x, y in [1,2,3,4,5,6])...
+        /// for(x, y in [1,2,3,4,5,6])...
         /// the x and y captures the first and second element of the list at the first time,
-        /// the third and forth the next time, and the fifth and sixth at last.
+        /// the third and forth the next time, and the fifth and sixth the last time.
         /// </summary>
         public SequenceExpression Left{
             get{return GetChildByRole(References);}

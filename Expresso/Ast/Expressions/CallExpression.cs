@@ -10,6 +10,7 @@ namespace Expresso.Ast
     /// <summary>
     /// 関数呼び出し。
 	/// Reperesents a function call.
+    /// Expression '(' Arguments ')'
     /// </summary>
     public class CallExpression : Expression
     {

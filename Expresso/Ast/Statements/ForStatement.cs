@@ -16,6 +16,7 @@ namespace Expresso.Ast
 	/// <summary>
 	/// For文。
 	/// The For statement.
+    /// "for" PatternConstruct "in" Expression Block
 	/// </summary>
 	/// <seealso cref="BreakableStatement"/>
     public class ForStatement : Statement
@@ -39,12 +40,13 @@ namespace Expresso.Ast
         /// When evaluating the both sides of the "in" keyword,
         /// the same rule as the assignment applies.
         /// So for example,
-        /// for(let x, y in [1,2,3,4,5,6])...
+        /// for(let (x, y) in [1,2,3,4,5,6])...
         /// the x and y captures the first and second element of the list at the first time,
-        /// the third and forth the next time, and the fifth and sixth at last.
+        /// the third and forth the next time, and the fifth and sixth the last time.
         /// </summary>
-		public Expression Left{
-            get{return GetChildByRole(InitializerRole);}
+        public PatternConstruct Left{
+            get{return GetChildByRole(Roles.Pattern);}
+            set{SetChildByRole(Roles.Pattern, value);}
         }
 
         /// <summary>
@@ -54,18 +56,23 @@ namespace Expresso.Ast
         /// </summary>
         public Expression Target{
             get{return GetChildByRole(IterableRole);}
-        }
-
-        public ExpressoTokenNode RPar{
-            get{return GetChildByRole(Roles.RParenthesisToken);}
+            set{SetChildByRole(IterableRole, value);}
         }
 
         /// <summary>
         /// 操作対象のオブジェクトが存在する間評価し続けるブロック。
         /// The block we'll continue to evaluate until the sequence is ate up.
         /// </summary>
-        public Statement Body{
+        public BlockStatement Body{
             get{return GetChildByRole(Roles.Body);}
+            set{SetChildByRole(Roles.Body, value);}
+        }
+
+        public ForStatement(PatternConstruct left, Expression iterable, BlockStatement body)
+        {
+            Left = left;
+            Target = iterable;
+            Body = body;
         }
 
         public override void AcceptWalker(IAstWalker walker)

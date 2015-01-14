@@ -38,7 +38,7 @@ namespace Expresso.Ast
                 return walker.VisitNullNode(this, data);
             }
 
-            protected override bool DoMatch(AstNode other, ICSharpCode.NRefactory.PatternMatching.Match match)
+            internal protected override bool DoMatch(AstNode other, ICSharpCode.NRefactory.PatternMatching.Match match)
             {
                 return other == null || other.IsNull;
             }

@@ -6,7 +6,7 @@ using ICSharpCode.NRefactory.TypeSystem;
 namespace Expresso.Ast
 {
     /// <summary>
-    /// Represents a primitive type.
+    /// A simple type represents an identifier and type arguments.
     /// </summary>
     public class SimpleType : AstType
     {

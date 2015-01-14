@@ -4,52 +4,34 @@ using System.Linq;
 using System.Text;
 
 using Expresso.Compiler;
+using ICSharpCode.NRefactory;
 
 namespace Expresso.Ast
 {
     /// <summary>
-    /// オブジェクト生成式。
+    /// ヒープオブジェクト生成式。
 	/// Reperesents a new expression.
+    /// A new expression always allocate memory on the heap.
+    /// "new" ObjectCreationExpression
     /// </summary>
     public class NewExpression : Expression
     {
+        public static readonly Role<ObjectCreationExpression> ObjectCreationRole =
+            new Role<ObjectCreationExpression>("ObjectCreation", ObjectCreationExpression.Null);
+
         /// <summary>
         /// オブジェクトを生成するクラスの定義を参照する式。
 		/// The target class definition of the new expression.
         /// </summary>
-        public Expression TargetExpr{
-            get{return GetChildByRole(Roles.TargetExpression);}
+        public ObjectCreationExpression CreationExpression{
+            get{return GetChildByRole(ObjectCreationRole);}
+            set{SetChildByRole(ObjectCreationRole, value);}
 		}
 
-		/// <summary>
-		/// コンストラクタに渡す引数。
-		/// The argument list that will be passed to the constructor.
-		/// </summary>
-        public AstNodeCollection<Expression> Arguments{
-            get{return GetChildrenByRole(Roles.Argument);}
-		}
-
-		public NewExpression(Expression targetExpr, Expression[] arguments)
+        public NewExpression(ObjectCreationExpression objectCreation)
 		{
-            AddChild(targetExpr, Roles.TargetExpression);
-            foreach(var arg in arguments)
-                AddChild(arg, Roles.Argument);
+            CreationExpression = objectCreation;
 		}
-
-        public override bool Equals(object obj)
-        {
-            var x = obj as NewExpression;
-
-            if(x == null)
-                return false;
-
-            return this.TargetExpr == x.TargetExpr;
-        }
-
-        public override int GetHashCode()
-        {
-            return this.TargetExpr.GetHashCode();
-        }
 
         public override void AcceptWalker(IAstWalker walker)
 		{
@@ -65,5 +47,15 @@ namespace Expresso.Ast
         {
             return walker.VisitNewExpression(this, data);
         }
+
+        #region implemented abstract members of AstNode
+
+        protected internal override bool DoMatch(AstNode other, ICSharpCode.NRefactory.PatternMatching.Match match)
+        {
+            var o = other as NewExpression;
+            return o != null && CreationExpression.DoMatch(o.CreationExpression, match);
+        }
+
+        #endregion
     }
 }

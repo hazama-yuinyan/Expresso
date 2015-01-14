@@ -9,20 +9,17 @@ using ICSharpCode.NRefactory;
 namespace Expresso.Ast
 {
 	/// <summary>
-	/// Switch文。
-	/// The Switch statement.
+    /// Match文。
+    /// The Match statement.
+    /// "match" Expression '{' MatchPatternClause { MatchPatternClause } '}'
 	/// </summary>
-    public class SwitchStatement : Statement
+    public class MatchStatement : Statement
 	{
-        public static readonly TokenRole SwitchKeywordRole = new TokenRole("switch");
-        public static readonly Role<Expression> CaseClauseRole = new Role<Expression>("CaseClause", Expression.Null);
+        public static readonly TokenRole MatchKeywordRole = new TokenRole("match");
+        public static readonly Role<Expression> PatternClauseRole = new Role<Expression>("PatternClause", Expression.Null);
 
-        public ExpressoTokenNode SwitchToken{
-            get{GetChildByRole(SwitchKeywordRole);}
-        }
-
-        public ExpressoTokenNode LPar{
-            get{return GetChildByRole(Roles.LParenthesisToken);}
+        public ExpressoTokenNode MatchToken{
+            get{GetChildByRole(MatchKeywordRole);}
         }
 
 		/// <summary>
@@ -33,22 +30,18 @@ namespace Expresso.Ast
             get{return GetChildByRole(Roles.TargetExpression);}
 		}
 
-        public ExpressoTokenNode RPar{
-            get{return GetChildByRole(Roles.RParenthesisToken);}
-        }
-
         /// <summary>
-        /// 分岐先となるラベル(郡)。
+        /// 分岐先となるパターン(郡)。
         /// </summary>
-        public AstNodeCollection<CaseClause> Cases{
-            get{return GetChildrenByRole(CaseClauseRole);}
+        public AstNodeCollection<MatchPatternClause> Clauses{
+            get{return GetChildrenByRole(PatternClauseRole);}
 		}
 
-        public SwitchStatement(Expression targetExpr, IEnumerable<CaseClause> caseClauses)
+        public MatchStatement(Expression targetExpr, IEnumerable<MatchPatternClause> patternClauses)
 		{
             AddChild(targetExpr, Roles.TargetExpression);
-            foreach(var case_clause in caseClauses)
-                AddChild(case_clause, CaseClauseRole);
+            foreach(var pattern_clause in patternClauses)
+                AddChild(pattern_clause, PatternClauseRole);
 		}
 
         public override void AcceptWalker(IAstWalker walker)
@@ -63,37 +56,31 @@ namespace Expresso.Ast
 
         public override TResult AcceptWalker<TResult, TData>(IAstWalker<TData, TResult> walker, TData data)
         {
-            return walker.VisitSwitchStatement(this, data);
+            return walker.VisitMatchStatement(this, data);
         }
 
         #region implemented abstract members of AstNode
 
         protected internal override bool DoMatch(AstNode other, ICSharpCode.NRefactory.PatternMatching.Match match)
         {
-            var o = other as SwitchStatement;
-            return o != null && Target.DoMatch(o.Target, match) && Cases.DoMatch(o.Cases, match);
+            var o = other as MatchStatement;
+            return o != null && Target.DoMatch(o.Target, match) && Clauses.DoMatch(o.Clauses, match);
         }
 
         #endregion
 	}
 
 	/// <summary>
-	/// Represents a case clause in switch statements.
+    /// Represents a pattern clause in match statements.
+    /// PatternConstruct { '|' PatternConstruct } "=>" Statement
 	/// </summary>
-	public class CaseClause : Expression
+	public class MatchPatternClause : Expression
 	{
-        public static readonly TokenRole CaseKeywordRole = new TokenRole("case");
-        public static readonly TokenRole DefaultKeywordRole = new TokenRole("default");
-
-        public ExpressoTokenNode CaseToken{
-            get{return GetChildByRole(CaseKeywordRole);}
-        }
-
 		/// <summary>
-        /// 分岐先となるラベル(郡)。
+        /// 分岐先となるパターン(郡)。
         /// </summary>
-        public AstNodeCollection<Expression> Labels{
-            get{return GetChildrenByRole(Roles);}
+        public AstNodeCollection<PatternConstruct> Labels{
+            get{return GetChildrenByRole(Roles.Pattern);}
 		}
 
         /// <summary>
@@ -104,9 +91,9 @@ namespace Expresso.Ast
             get{return GetChildByRole(Roles.Body);}
 		}
 
-        public CaseClause(IEnumerable<Expression> labelExprs, Statement bodyStmt)
+        public MatchPatternClause(IEnumerable<PatternConstruct> patternExprs, Statement bodyStmt)
 		{
-            foreach(var label in labelExprs)
+            foreach(var label in patternExprs)
                 AddChild(label, Roles.Expression);
 
             AddChild(bodyStmt, Roles.Body);
@@ -129,7 +116,7 @@ namespace Expresso.Ast
 
         protected internal override bool DoMatch(AstNode other, ICSharpCode.NRefactory.PatternMatching.Match match)
         {
-            var o = other as CaseClause;
+            var o = other as MatchPatternClause;
             return o != null && Labels.DoMatch(o.Labels, match) && Body.DoMatch(o.Body, match);
         }
 	}

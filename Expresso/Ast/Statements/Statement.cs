@@ -105,5 +105,91 @@ namespace Expresso.Ast
 
             return (Statement)base.ReplaceWith(node => replaceFunction((Statement)node));
         }
+
+        #region Factory methods
+        static internal BreakStatement MakeBreakStmt(int count)
+        {
+            return new BreakStatement(count);
+        }
+
+        static internal ContinueStatement MakeContinueStmt(int count)
+        {
+            return new ContinueStatement(count);
+        }
+
+        static internal BlockStatement MakeBlock(IEnumerable<Statement> stmts)
+        {
+            return new BlockStatement(stmts);
+        }
+
+        static internal VariableDeclarationStatement MakeVarDecl(IEnumerable<Identifier> lhs, IEnumerable<Expression> rhs,
+            Modifiers modifiers = Modifiers.None)
+        {
+            return new VariableDeclarationStatement(lhs, rhs, modifiers);
+        }
+
+        static internal ExpressionStatement MakeExprStmt(Expression expr)
+        {
+            return new ExpressionStatement(expr);
+        }
+
+        static internal ReturnStatement MakeReturnStmt(Expression expr)
+        {
+            return new ReturnStatement(expr);
+        }
+
+        static internal IfStatement MakeIfStmt(Expression condition, BlockStatement trueBlock, BlockStatement falseBlock)
+        {
+            return new IfStatement(condition, trueBlock, falseBlock);
+        }
+
+        static internal WhileStatement MakeWhileStmt(Expression condition, BlockStatement body)
+        {
+            return new WhileStatement(condition, body);
+        }
+
+        static internal ForStatement MakeForStmt(PatternConstruct pattern, Expression rvalue, BlockStatement body)
+        {
+            return new ForStatement(pattern, rvalue, body);
+        }
+
+        static internal MatchStatement MakeSwitchStmt(Expression target, IEnumerable<MatchPatternClause> cases)
+        {
+            return new MatchStatement(target, cases);
+        }
+
+        static internal EmptyStatement MakeEmptyStmt()
+        {
+            return new EmptyStatement();
+        }
+
+        static internal MatchPatternClause MakeCaseClause(IEnumerable<Expression> labels, Statement body)
+        {
+            return new MatchPatternClause(labels, body);
+        }
+
+        static internal TryStatement MakeTryStmt(BlockStatement body, IEnumerable<CatchClause> catches, BlockStatement finallyClause)
+        {
+            if(finallyClause != null)
+                return new TryStatement(body, catches, new FinallyClause(finallyClause));
+            else
+                return new TryStatement(body, catches, null);
+        }
+
+        static internal CatchClause MakeCatchClause(BlockStatement body, Identifier ident)
+        {
+            return new CatchClause(ident, body);
+        }
+
+        static internal ThrowStatement MakeThrowStmt(Expression expr)
+        {
+            return new ThrowStatement(expr);
+        }
+
+        static internal YieldStatement MakeYieldStmt(Expression expr)
+        {
+            return new YieldStatement(expr);
+        }
+        #endregion
     }
 }

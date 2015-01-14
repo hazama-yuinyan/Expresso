@@ -1,6 +1,7 @@
 ﻿using ICSharpCode.NRefactory.PatternMatching;
 using ICSharpCode.NRefactory;
 using System;
+using System.Collections.Generic;
 
 namespace Expresso.Ast
 {
@@ -109,6 +110,104 @@ namespace Expresso.Ast
 
             return (Expression)base.ReplaceWith(node => replaceFunction((Expression)node));
         }
+
+        #region Factory methods
+        static internal CallExpression MakeCallExpr(Expression target, IEnumerable<Expression> args)
+        {
+            return new CallExpression(target, args);
+        }
+
+        static internal SequenceExpression MakeSequence(IEnumerable<Expression> items)
+        {
+            return new SequenceExpression(items);
+        }
+
+        static internal UnaryExpression MakeUnaryExpr(OperatorType op, Expression operand)
+        {
+            return new UnaryExpression(op, operand);
+        }
+
+        static internal BinaryExpression MakeBinaryExpr(OperatorType op, Expression lhs, Expression rhs)
+        {
+            return new BinaryExpression(lhs, rhs, op);
+        }
+
+        static internal SequenceInitializer MakeSeqInitializer(AstType type, IEnumerable<Expression> initializeList)
+        {
+            return new SequenceInitializer(initializeList, type);
+        }
+
+        static internal AssignmentExpression MakeAssignment(IEnumerable<Expression> targets, SequenceExpression rhs)
+        {
+            return new AssignmentExpression(MakeSequence(targets), rhs);
+        }
+
+        static internal ObjectCreationExpression MakeObjectCreation(IEnumerable<Identifier> names,
+            IEnumerable<Expression> values)
+        {
+            return new ObjectCreationExpression(names, values);
+        }
+
+        static internal AssignmentExpression MakeAugumentedAssignment(SequenceExpression targets, SequenceExpression rhs, OperatorType opType)
+        {
+            return new AssignmentExpression(targets, rhs, opType);
+        }
+
+        static internal CastExpression MakeCastExpr(Expression target, Expression toExpr)
+        {
+            return new CastExpression(toExpr, target);
+        }
+
+        static internal ConditionalExpression MakeCondExpr(Expression test, Expression trueExpr, Expression falseExpr)
+        {
+            return new ConditionalExpression(test, trueExpr, falseExpr);
+        }
+
+        static internal ComprehensionExpression MakeComp(Expression yieldExpr, ComprehensionForClause body, AstType objType)
+        {
+            return new ComprehensionExpression(yieldExpr, body, objType);
+        }
+
+        static internal ComprehensionForClause MakeCompFor(SequenceExpression left, Expression target, ComprehensionIter body)
+        {
+            return new ComprehensionForClause(left, target, body);
+        }
+
+        static internal ComprehensionIfClause MakeCompIf(Expression condition, ComprehensionIter body)
+        {
+            return new ComprehensionIfClause(condition, body);
+        }
+
+        static internal LiteralExpression MakeConstant(AstType type, object val)
+        {
+            return new LiteralExpression(val, type);
+        }
+
+        static internal SelfReferenceExpression MakeSelfRef(TextLocation start)
+        {
+            return new SelfReferenceExpression(start);
+        }
+
+        static internal SuperReferenceExpression MakeSuperRef(TextLocation start)
+        {
+            return new SuperReferenceExpression(start);
+        }
+
+        static internal MemberReference MakeMemRef(Expression parent, Expression child)
+        {
+            return new MemberReference(parent, child);
+        }
+
+        static internal IntegerSequenceExpression MakeIntSeq(Expression start, Expression end, Expression step, bool upperInclusive)
+        {
+            return new IntegerSequenceExpression(start, end, step, upperInclusive);
+        }
+
+        static internal NewExpression MakeNewExpr(ObjectCreationExpression creationExpr)
+        {
+            return new NewExpression(creationExpr);
+        }
+        #endregion
     }
 
     /// <summary>
@@ -138,7 +237,7 @@ namespace Expresso.Ast
 		ExclusiveOr,
 		BitwiseShiftLeft,
 		BitwiseShiftRight,
-        Is,
+        As,
         /// <summary>
         /// Any operator(for pattern matching).
         /// </summary>

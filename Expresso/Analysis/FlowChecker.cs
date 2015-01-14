@@ -99,7 +99,7 @@ namespace Expresso.Ast
             throw new NotImplementedException();
         }
 
-        public void VisitImportStatement(ImportStatement importStmt)
+        public void VisitImportStatement(ImportDeclaration importStmt)
         {
             throw new NotImplementedException();
         }
@@ -109,7 +109,7 @@ namespace Expresso.Ast
             throw new NotImplementedException();
         }
 
-        public void VisitSwitchStatement(SwitchStatement switchStmt)
+        public void VisitSwitchStatement(MatchStatement switchStmt)
         {
             throw new NotImplementedException();
         }
@@ -214,7 +214,7 @@ namespace Expresso.Ast
             throw new NotImplementedException();
         }
 
-        public void VisitCaseClause(CaseClause caseClause)
+        public void VisitCaseClause(MatchPatternClause caseClause)
         {
             throw new NotImplementedException();
         }
@@ -575,7 +575,7 @@ namespace Expresso.Ast
 		}
 		
 		// RequireStmt
-                public override bool Walk(ImportStatement importStmts)
+                public override bool Walk(ImportDeclaration importStmts)
 		{
 			// A Require statement always introduce new variable(s) into the module scope.
 			for(int i = 0; i < importStmt.ModuleNames.Length; ++i)

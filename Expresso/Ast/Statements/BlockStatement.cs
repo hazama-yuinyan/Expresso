@@ -8,6 +8,7 @@ namespace Expresso.Ast
     /// <summary>
     /// 複文ブロック。
 	/// Represents a block of statements.
+    /// '{' { Statement } '}'
     /// </summary>
 	/// <seealso cref="BreakableStatement"/>
     public class BlockStatement : Statement
@@ -19,6 +20,12 @@ namespace Expresso.Ast
         public AstNodeCollection<Statement> Statements{
             get{GetChildrenByRole(Roles.EmbeddedStatement);}
 		}
+
+        public BlockStatement(IEnumerable<Statement> stmts)
+        {
+            foreach(var stmt in stmts)
+                AddChild(Roles.EmbeddedStatement, stmt);
+        }
 
         public override void AcceptWalker(IAstWalker walker)
 		{

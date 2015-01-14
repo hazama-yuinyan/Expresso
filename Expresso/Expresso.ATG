@@ -5,8 +5,11 @@ using System.Text;
 
 using Expresso.Ast;
 using Expresso.Compiler.Meta;
+using Expresso.Parsing;
 using Expresso.Runtime;
 using Expresso.Utils;
+
+using ICSharpCode.NRefactory;
 
 
 
@@ -15,7 +18,12 @@ COMPILER Expresso
 	static List<BreakableStatement> breakables = new List<BreakableStatement>();	//the current parent breakables hierarchy
 	public string ParsingFileName{get; set;}
 	public ExpressoAst TopmostAst{get; private set;}	//the top-level AST the parser is parsing
-	
+    public TextLocation CurrentTokenLocation{
+        get{
+            return new TextLocation(t.line, t.col);
+        }
+    }
+
 	///<summary>
 	/// Parser Implementation details:
 	/// 	During parsing we'll resolve break and continue statements.(Find which a break or continue statement would have its effect
@@ -38,23 +46,24 @@ COMPILER Expresso
 	LiteralExpression CreateConstant(KnownTypeCode type)
 	{
 		LiteralExpression result = null;
-		var loc = new TextLocation(t.line, t.col);
+		var loc = CurrentTokenLocation;
+        var primitive_type = new PrimitiveType(type, loc);
 
 		switch(type){
 		case ObjectTypes.Integer:
-			result = AstNode.MakeConstant(new PrimitiveType("int", loc), 0);
+			result = Expression.MakeConstant(primitive_type, 0);
 			break;
 			
 		case ObjectTypes.Bool:
-			result = AstNode.MakeConstant(new PrimitiveType("bool", loc), false);
+			result = Expression.MakeConstant(primitive_type, false);
 			break;
 			
 		case ObjectTypes.Float:
-			result = AstNode.MakeConstant(new PrimitiveType("float", loc), 0.0);
+			result = Expression.MakeConstant(primitive_type, 0.0);
 			break;
 			
 		case ObjectTypes.String:
-			result = AstNode.MakeConstant(new PrimitiveType("string", loc), "");
+			result = Expression.MakeConstant(primitive_type, "");
 			break;
 			
 		default:
@@ -65,7 +74,7 @@ COMPILER Expresso
 		return result;
 	}
 	
-	bool NotFollowedByDoubleDots()
+	/*bool NotFollowedByDoubleDots()
 	{
 		Token x = la;
 		scanner.ResetPeek();
@@ -76,7 +85,7 @@ COMPILER Expresso
 			x = scanner.Peek();
 		
 		return x.kind != _double_dots;
-	}
+	}*/
 	
 	bool IsSequenceInitializer()
 	{
@@ -117,18 +126,6 @@ COMPILER Expresso
 		return AstNode.MakeContinueStmt(count, tmp);
 	}
 	
-	Statement MakeDefaultCtor(string className)
-	{
-		var ctor = AstNode.MakeFunc("constructor", null, new BlockStatement(), TypeAnnotation.VoidType.Clone(), Modifiers.Public);
-		return ctor;
-	}
-
-    Statement MakeDefaultDtor(string className)
-    {
-        var dtor = AstNode.MakeFunc("destructor", null, new BlockStatement(), TypeAnnotation.VoidType.Clone(), Modifiers.Public);
-        return dtor;
-    }
-	
 	public void SemanticError(string format, params object[] args)
 	{
 		//Convenient method for printing a semantic error with a format string
@@ -161,7 +158,8 @@ TOKENS
   dot = '.'.
   ident  = (letter | '_') {'_' | letter | digit}.
   integer = digit {digit}
-  			| digit {digit} CONTEXT("..").
+  			| digit {digit} CONTEXT("..")
+            | digit {digit} CONTEXT("...").
   float = digit {digit} dot {digit} [('e' | 'E') ['+' | '-'] digit {digit}]
   		  | [digit {digit}] dot digit {digit} [('e' | 'E') ['+' | '-'] digit {digit}].
   hex_digit = '0' ('x' | 'X') hex_letter {hex_letter}.
@@ -191,11 +189,11 @@ Expresso                    		(. ExpressoAst module_decl = null; .)
 /*------------------------------------------------------------------------*/
 ModuleBody<out ExpressoAst decl>	(.  var decls = new List<Statement>();
                                         string module_name; Modifiers modifiers = Modifiers.None;
-										List<Statement> prog_defs = null; Statement stmt = null;
+										List<ImportDeclaration> prog_defs = null; Statement stmt = null;
 									.)
 =
   ModuleNameDefinition<out module_name>
-  [ ProgramDefinition<out prog_defs> (. if(prog_defs !=null) decls.AddRange(prog_defs); .)
+  [ ProgramDefinition<out prog_defs>
   ]
   								
   [ "export"						(. modifiers = Modifiers.Export; .)
@@ -215,22 +213,24 @@ ModuleBody<out ExpressoAst decl>	(.  var decls = new List<Statement>();
     )								(.  decls.Add(stmt);
     									modifiers = Modifiers.None;
     								.)
-  }									(.  decl = AstNode.MakeModuleDef(module_name, decls, export_map);
+  }									(.  decl = AstNode.MakeModuleDef(module_name, decls, prog_defs);
   									.) .
 /*------------------------------------------------------------------------*/
 ModuleNameDefinition<out string moduleName>
 =
   "module"
-  ident                             (. moduleName = t.val; .)
+  ident                         (. moduleName = t.val; .)
   SYNC ';'.
 /*------------------------------------------------------------------------*/
-ProgramDefinition<. out List<Statement> imports .>	(. imports = new List<Statement>(); Statement tmp; .)
+ProgramDefinition<. out List<ImportDeclaration> imports .>	(. imports = new List<ImportDeclatation>();
+                                                               ImportDeclaration tmp;
+                                                            .)
 =
-  ImportStmt<out tmp>			(. imports.Add(tmp); .)
-  { ImportStmt<out tmp>		    (. imports.Add(tmp); .)
+  ImportDecl<out tmp>			(. imports.Add(tmp); .)
+  { ImportDecl<out tmp>		    (. imports.Add(tmp); .)
   }.
 /*------------------------------------------------------------------------*/
-ImportDecl<out EntityDeclaration decl>
+ImportDecl<out ImportDeclaration decl>
             (.  string module_name, alias = null; var module_names = new List<string>();
 				var aliases = new List<string>();
 			.)
@@ -251,7 +251,7 @@ ImportDecl<out EntityDeclaration decl>
   									aliases.Add(alias);
   								.)
   }
-  SYNC ';' 						(. stmt = AstNode.MakeImportStmt(module_names, aliases); .).
+  SYNC ';' 						(. stmt = AstNode.MakeImportDecl(module_names, aliases); .).
 /*------------------------------------------------------------------------*/
 ModuleName<out string name>		(. var sb = new StringBuilder(); .)
 =
@@ -262,8 +262,7 @@ ModuleName<out string name>		(. var sb = new StringBuilder(); .)
 /*------------------------------------------------------------------------*/
 ClassDecl<out EntityDeclaration decl, Modifiers modifiers>   
   (.  EntityDeclaration entity = null; var decls = new List<EntityDeclaration>();
-      string name; var base_names = new List<Identifier>(); bool has_ctor = false;
-      Modifiers cur_flag = Modifiers.Private;
+      string name; var base_names = new List<Identifier>(); Modifiers cur_flag;
   .)
 =
   SYNC
@@ -277,52 +276,26 @@ ClassDecl<out EntityDeclaration decl, Modifiers modifiers>
   ]
   '{'
   {
-    ( "public"						    (. cur_flag = Modifiers.Private; .)
-    | "protected"					    (. cur_flag = Modifiers.Protected; .)
-    | "private"					    	(. cur_flag = Modifiers.Public; .)
+    Modifiers<out cur_flag>
+    ( MethodDecl<out entity, name, cur_flag>(. decls.Add(entity); .)
+    | FieldDecl<out entity, cur_flag>
+      ';'								    (. decls.Add(entity); .)
+    | ClassDecl<out entity>			    (. decls.Add(entity); .)
     )
-    ':'
-  | ConstructorDecl<out entity, name, cur_flag>
-                                        (.  decls.Add(entity);
-  										    has_ctor = true;
-  									    .)
-  | DestructorDecl<out entity, name, cur_flag>
-                                        (. decls.Add(entity); .)
-  | MethodDecl<out entity, name, cur_flag>(. decls.Add(entity); .)
-  | FieldDecl<out entity, cur_flag>
-    ';'								    (. decls.Add(entity); .)
-  | ClassDecl<out entity>			    (. decls.Add(entity); .)
   }
-  SYNC '}'							    (.  if(!has_ctor){		//Define the default constructor
-  										    	decls.Add(MakeDefaultCtor(name));
-  									    	}
-  										    decl = AstNode.MakeClassDecl(name, base_names, decls, modifiers);
-  									    .) .
+  SYNC '}'							    (. decl = AstNode.MakeClassDecl(name, base_names, decls, modifiers); .) .
 /*------------------------------------------------------------------------*/
-ConstructorDecl<out EntityDeclaration decl, string className, Modifiers modifiers>
-                                (.  Statement block = null; var @params = new List<Argument>(); .)
+Modifiers<out Modifiers modifiers>  (. modifiers = Modifiers.None; .)
 =
-  SYNC
-  "constructor"
-  '('
-  [ParamList<ref @params>]
-  ')'
-  Block<out block> 				(. decl = AstNode.MakeFunc("constructor", @params, (Block)block, TypeAnnotation.VoidType.Clone(), modifiers);
-  								.).
-/*------------------------------------------------------------------------*/
-DestructorDecl<out EntityDeclaration decl, string className, Modifiers modifiers>
-                                (. Statement block = null; var @params = new List<Argument>(); .)
-=
-  SYNC
-  "destructor"
-  '('
-  [ParamList<ref @params>]
-  ')'
-  Block<out block>              (. decl = AstNode.MakeFunc("destructor", @params, (Block)block, TypeAnnotation.VoidType.Clone(), modifiers); .).
+  { "public"                (. modifiers |= Modifiers.Public; .)
+  | "protected"             (. modifiers |= Modifiers.Protected; .)
+  | "private"               (. modifiers |= Modifiers.Private; .)
+  | "static"                (. modifiers |= Modifiers.Static; .)
+  }                         (. if(modifiers == Modifiers.None) modifiers.Private; .).
 /*------------------------------------------------------------------------*/
 MethodDecl<out EntityDeclaration decl, string className, Modifiers modifiers>
                                 (.
-									string name; var type = TypeAnnotation.InferenceType.Clone(); Statement block = null;
+									string name; var type = TypeAnnotation.InferenceType.Clone(); BlockStatement block;
 									var @params = new List<Argument>();
 								.)
 =
@@ -335,7 +308,7 @@ MethodDecl<out EntityDeclaration decl, string className, Modifiers modifiers>
   [ "->"
     Type<out type>
   ]
-  Block<out block> 				(.  decl = AstNode.MakeFunc(name, @params, (Block)block, type, modifiers); .).
+  Block<out block> 				(.  decl = AstNode.MakeFunc(name, @params, block, type, modifiers); .).
 /*------------------------------------------------------------------------*/
 FieldDecl<. out List<EntityDeclaration> outs, Modifiers modifiers .>
   (. string name; var type = TypeAnnotation.InferenceType.Clone(); Expression rhs = null;
@@ -348,39 +321,33 @@ FieldDecl<. out List<EntityDeclaration> outs, Modifiers modifiers .>
   )
   VarDef<out name, out type, out rhs> (.  variable = AstNode.MakeField(name, type);
                                           vars.Add(variable);
-                                          if(rhs == null)
-                                              rhs = AstNode.MakeDefaultExpr(type);
-                                    
                                           exprs.Add(rhs);
                                           rhs = null;
                                       .)  
   { ','					 		
     VarDef<out name, out type, out rhs> (. variable = AstNode.MakeField(name, type);
                                            vars.Add(variable);
-                                           if(rhs == null)
-                                               rhs = AstNode.MakeDefaultExpr(type);
-                                    
                                            exprs.Add(rhs);
                                         .)
   }								       (. outs.Add(AstNode.MakeVarDecl(vars, exprs, flag)); .).
 /*------------------------------------------------------------------------*/
 Type<out TypeAnnotation type>		(. type = TypeAnnotation.InferenceType.Clone(); int dimension = 0; .)
 =
- ( "Int"                			(. type.ObjType = ObjectTypes.Integer; .)
- | "Bool"               			(. type.ObjType = ObjectTypes.Bool; .)
- | "Float"							(. type.ObjType = ObjectTypes.Float; .)
- | "Rational"						(. type.ObjType = ObjectTypes.Rational; .)
- | "Bigint"							(. type.ObjType = ObjectTypes.BigInt; .)
- | "String"							(. type.ObjType = ObjectTypes.String; .)
- | "Byte"						    (. type.ObjType = ObjectTypes.Byte; .)
- | "Variadic"						(. type.ObjType = ObjectTypes.Var; .)
- | "Tuple"							(. type.ObjType = ObjectTypes.Tuple; .)
- | "List"							(. type.ObjType = ObjectTypes.List; .)
- | "Dictionary"						(. type.ObjType = ObjectTypes.Dict; .)
- | "Expression"						(. type.ObjType = ObjectTypes.Expression; .)
- | "Function"						(. type.ObjType = ObjectTypes.Function; .)
- | "Intseq"							(. type.ObjType = ObjectTypes.Seq; .)
- | "Void"							(. type.ObjType = ObjectTypes.Undef; .)
+ ( "int"                			(. type.ObjType = ObjectTypes.Integer; .)
+ | "bool"               			(. type.ObjType = ObjectTypes.Bool; .)
+ | "float"							(. type.ObjType = ObjectTypes.Float; .)
+ | "double"                         (. type.ObjType = ObjectTypes.Double; .)
+ | "rational"						(. type.ObjType = ObjectTypes.Rational; .)
+ | "bigint"							(. type.ObjType = ObjectTypes.BigInt; .)
+ | "string"							(. type.ObjType = ObjectTypes.String; .)
+ | "byte"						    (. type.ObjType = ObjectTypes.Byte; .)
+ | TupleTypeSignature<out type>
+ | "vector"							(. type.ObjType = ObjectTypes.Vector; .)
+ | "dictionary"						(. type.ObjType = ObjectTypes.Dict; .)
+ | "expression"						(. type.ObjType = ObjectTypes.Expression; .)
+ | "function"						(. type.ObjType = ObjectTypes.Function; .)
+ | "intseq"							(. type.ObjType = ObjectTypes.Seq; .)
+ | "void"							(. type.ObjType = ObjectTypes.Undef; .)
  | ident							(. type.ObjType = ObjectTypes.Instance; type.TypeName = t.val; .)
  )
  { "[]"                             (. if(!type.IsArray)
@@ -389,6 +356,13 @@ Type<out TypeAnnotation type>		(. type = TypeAnnotation.InferenceType.Clone(); i
                                        ++dimension;
                                     .)
  }                                  (. type.Dimension = dimension; .).
+/*------------------------------------------------------------------------*/
+TupleTypeSignature<out TypeAnnotation type> (. TypeAnnotation inner; .)
+=
+  '('
+  { Type<out inner>
+  }
+  ')'.
 /*------------------------------------------------------------------------*/
 Stmt<out Statement stmt>			(. stmt = null; .)
 =
@@ -458,46 +432,38 @@ AugAssignOpe<ref OperatorType type>
   | ">>="							(. type = OperatorType.BitwiseShiftRight; .)
   ).
 /*------------------------------------------------------------------------*/
-ExprStmt<out Statement stmt>				(.  List<Expression> lvalues = null; var targets = new List<SequenceExpression>();
-												SequenceExpression seq = null;
-												stmt = null; OperatorType op_type = OperatorType.None;
-											.)
+ExprStmt<out Statement stmt>			(.  List<Expression> lvalues = null; SequenceExpression targets = null;
+											SequenceExpression seq = null;
+											stmt = null; OperatorType op_type = OperatorType.None;
+										.)
 =
   ( VarDecl<out lvalues>
-  |
-  LValueList<out seq>						(. targets.Add(seq); .)
+  | LValueList<out targets>
   { ( AugAssignOpe<ref op_type>
     | '='
     )
-    RValueList<out seq>						(. targets.Add(seq); .)
-  }											(.
-  												seq = targets[targets.Count - 1];
-  												targets.RemoveAt(targets.Count - 1);
-  												if(op_type != OperatorType.None && targets.Count != 1)
-  													SemErr("An augumented assignment can't have multiple left-hand-side.");
-  												if(op_type != OperatorType.None &&		//See if it is an augumented assignment and
-  													targets[0].Count != seq.Count)		//both sides have the same number of items
-  													SemErr("An augumented assignment must have both sides balanced.");
+    RValueList<out seq>
+  }										(.
+  											if(targets.Count != seq.Count)      //See if both sides have the same number of items
+                                                SemErr("An augumented assignment must have both sides balanced.");
   													
-  												if(op_type != OperatorType.None)
-  													stmt = AstNode.MakeAugumentedAssignment(targets[0], seq, op_type);
-  												else
-  													stmt = AstNode.MakeAssignment(targets.Cast<Expression>(), seq);
-  											.)
+  											if(op_type != OperatorType.None)
+  												stmt = Expression.MakeAugumentedAssignment(targets, seq, op_type);
+  											else
+  												stmt = Expression.MakeAssignment(targets, seq);
+  										.)
   )
-  SYNC ';' 									(.  if(stmt == null)
-  													stmt = AstNode.MakeExprStmt(lvalues);
-  											.).
+  SYNC ';' 								(.  if(stmt == null)
+  												stmt = Statement.MakeExprStmt(lvalues);
+  										.).
 /*------------------------------------------------------------------------*/
-Block<out Statement block>			(. Block tmp; Statement stmt; .)
+Block<out BlockStatement block>		(. List<Statement> stmts = new List<Statement>(); Statement stmt; .)
 =
-  '{'								(.  tmp = new Block();
-  									.)
-  Stmt<out stmt>					(. tmp.Statements.Add(stmt); .)
-  { Stmt<out stmt>					(. tmp.Statements.Add(stmt); .)
+  '{'
+  Stmt<out stmt>			(. stmts.Add(stmt); .)
+  { Stmt<out stmt>			(. stmts.Add(stmt); .)
   }
-  '}' 								(.  block = tmp;
-  									.).
+  '}' 						(. block = Statement.MakeBlock(stmts); .).
 /*------------------------------------------------------------------------*/
 CompoundStmt<out Statement stmt>	(. stmt = null; .)
 =
@@ -505,87 +471,64 @@ CompoundStmt<out Statement stmt>	(. stmt = null; .)
     IfStmt<out stmt>					
   | WhileStmt<out stmt>
   | ForStmt<out stmt>
-  | SwitchStmt<out stmt>
+  | MatchStmt<out stmt>
   | FuncDecl<out stmt>
-  | WithStmt<out stmt>
   | TryStmt<out stmt>.
 /*------------------------------------------------------------------------*/
-IfStmt<out Statement stmt>			(. Expression tmp; Statement true_block, false_block = null; .)
+IfStmt<out Statement stmt>			(. Expression tmp; BlockStatement true_block, false_block = null; .)
 =
   "if" 
-  '(' CondExpr<out tmp> ')'
-  Stmt<out true_block>
+  CondExpr<out tmp>
+  Block<out true_block>
   [ "else"
-    Stmt<out false_block>
-  ]                      			(. stmt = AstNode.MakeIfStmt(tmp, true_block, false_block); .).
+    Block<out false_block>
+  ]                      			(. stmt = Statement.MakeIfStmt(tmp, true_block, false_block); .).
 /*------------------------------------------------------------------------*/
-WhileStmt<out Statement stmt>		(. Expression cond; Statement body = null; WhileStatement tmp; .)
+WhileStmt<out Statement stmt>		(. Expression cond; BlockStatement body; .)
 =
-  "while"							(.  tmp = AstNode.MakeWhileStmt(); .)
-  '(' CondExpr<out cond> ')'
-  Stmt<out body>                   	(.  tmp.Condition = cond;
-  										tmp.Body = body;
-  										stmt = tmp;
-  									.).
+  "while"
+  CondExpr<out cond>
+  Block<out body>                   (. stmt = Statement.MakeWhileStmt(cond, body); .).
 /*------------------------------------------------------------------------*/
-ForStmt<out Statement stmt>				(.  SequenceExpression left = null; Expression rvalue = null; Statement body;
-											ForStatement tmp;
+ForStmt<out Statement stmt>				(.  PatternConstruct left; Expression rvalue; BlockStatement body;
 										.)
 =
-  "for"									(.  tmp = AstNode.MakeForStmt(); .)
-  '('
-  LValueList<out left>
+  "for"
+  LhsPattern<out left>
   "in"
-  ( IF(NotFollowedByDoubleDots())
-    CondExpr<out rvalue>
-  | IntSeqExpr<out rvalue>
-  )
-  ')'
-  Stmt<out body>						(.  tmp.Left = left;
-	  										tmp.Target = rvalue;
-	  										tmp.Body = body;
-	  										stmt = tmp;
-	  									.).
+  CondExpr<out rvalue>
+  Block<out body>						(. stmt = Statement.MakeForStmt(left, rvalue, body); .).
 /*------------------------------------------------------------------------*/
-SwitchStmt<out Statement stmt>		(. Expression target; List<CaseClause> cases; .)
+MatchStmt<out Statement stmt>		(. PatternConstruct target; List<MatchClause> matches; .)
 =
-  "switch"
-  '('
-  CondExpr<out target>
-  ')'
+  "match"
+  LhsPattern<out target>
   '{'
-  CaseClauseList<out cases>
-  '}'								(. stmt = AstNode.MakeSwitchStmt(target, cases); .).
+  MatchPatternList<out matches>
+  '}'								(. stmt = Statement.MakeMatchStmt(target, matches); .).
 /*------------------------------------------------------------------------*/
-CaseClauseList<. out List<CaseClause> clauses .>	(. clauses = new List<CaseClause>(); List<Expression> label_list; Statement inner; .)
+MatchPatternList<. out List<MatchClause> clauses .>	(. clauses = new List<MatchClause>(); List<PatternConstruct> pattern_list; Statement inner; .)
 =
-  CaseLabelList<out label_list>
-  Stmt<out inner>									(. clauses.Add(AstNode.MakeCaseClause(label_list, inner)); .)
-  { CaseLabelList<out label_list>
-    Stmt<out inner>									(. clauses.Add(AstNode.MakeCaseClause(label_list, inner)); .)
+  PatternList<out pattern_list>
+  Stmt<out inner>									(. clauses.Add(AstNode.MakeMatchClause(pattern_list, inner)); .)
+  { PatternList<out pattern_list>
+    Stmt<out inner>									(. clauses.Add(AstNode.MakeMatchClause(pattern_list, inner)); .)
   }.
 /*------------------------------------------------------------------------*/
-CaseLabelList<. out List<Expression> label_list .>	(. label_list = new List<Expression>(); Expression tmp; .)
+PatternList<. out List<PatternConstruct> patterns .>    (. patterns = new List<PatternConstruct>(); PatternConstruct tmp; .)
 =
-  CaseLabel<out tmp>								(. label_list.Add(tmp); .)
-  { CaseLabel<out tmp>								(. label_list.Add(tmp); .)
-  }.
-/*------------------------------------------------------------------------*/
-CaseLabel<out Expression expr>				(. expr = null; .)
-=
-  "case"
-  ( Literal<out expr>
-  | IntSeqExpr<out expr>
-  | "default"								(. expr = AstNode.MakeConstant(ObjectTypes._CASE_DEFAULT, "default"); .)
-  )
-  SYNC ':' .
+  Pattern<out tmp>								        (. patterns.Add(tmp); .)
+  { SYNC '|'
+    Pattern<out tmp>								    (. patterns.Add(tmp); .)
+  }
+  "=>" .
 /*------------------------------------------------------------------------*/
 LValueList<out SequenceExpression target>	(. Expression tmp; var exprs = new List<Expression>(); .)
 =
   Primary<out tmp>							(. exprs.Add(tmp); .)
   { SYNC ','
     Primary<out tmp>						(. exprs.Add(tmp); .)
-  }											(. target = AstNode.MakeSequence(exprs); .).
+  }											(. target = Expression.MakeSequence(exprs); .).
 /*------------------------------------------------------------------------*/
 VarDecl<. out List<Expression> outs .> 	(.  string name; var type = TypeAnnotation.InferenceType.Clone(); Expression rhs = null;
 											Identifier variable; outs = new List<Expression>();
@@ -598,22 +541,16 @@ VarDecl<. out List<Expression> outs .> 	(.  string name; var type = TypeAnnotati
   )
   VarDef<out name, out type, out rhs>	(.  variable = AstNode.MakeLocalVar(name, type);
                                             vars.Add(variable);
-                                            if(rhs == null)
-                                                rhs = AstNode.MakeDefaultExpr(type);
-                                    
   						 			        exprs.Add(rhs);
   						 			        rhs = null;
   						 		        .)
   { WEAK ','
     VarDef<out name, out type, out rhs>(. variable = AstNode.MakeLocalVar(name, type);
                                           vars.Add(variable);
-                                          if(rhs == null)
-                                              rhs = AstNode.MakeDefaultExpr(type);
-                                    
   									      exprs.Add(rhs);
   									      rhs = null;
   								       .)
-  }								       (. outs.Add(AstNode.MakeVarDecl(vars, exprs)); .).
+  }								       (. outs.Add(Statement.MakeVarDecl(vars, exprs)); .).
 /*------------------------------------------------------------------------*/
 VarDef<out string name, out Type type, out Expression @default>  (. type = TypeAnnotation.InferenceType.Clone();
                                                                     @default = null;
@@ -624,68 +561,52 @@ VarDef<out string name, out Type type, out Expression @default>  (. type = TypeA
     Type<out type>
   ]
   [ '='
-    ( IF(NotFollowedByDoubleDots())
-      CondExpr<out @default>
-    | IntSeqExpr<out @default>
-    )
+    CondExpr<out @default>
   ].
 /*------------------------------------------------------------------------*/
-FuncDecl<out Statement func>    (.  string name; var type = TypeAnnotation.VariantType.Clone(); Statement block;
-									var @params = new List<Argument>(); Argument arg_this = null;
+FuncDecl<out Statement func>    (.  string name; var type = TypeAnnotation.VariantType.Clone(); BlockStatement block = null;
+									var @params = new List<ParameterDeclaration>();
 								.)
 =
   SYNC
-  "def"							(.  block = null;
-  									arg_this = AstNode.MakeArg("this", new TypeAnnotation(ObjectTypes.TypeModule));
-  									@params.Add(arg_this);
-  								.)
+  "def"
   ident							(. name = t.val; .)
   '('
-  [ParamList<ref @params>]
+  [ParamList<out @params>]
   ')'
   [ "->"
     Type<out type>
   ]
-  Block<out block> 				(. func = AstNode.MakeFunc(name, @params, (Block)block, type); .).
+  Block<out block> 				(. func = AstNode.MakeFunc(name, @params, block, type); .).
 /*------------------------------------------------------------------------*/
-WithStmt<out Statement stmt>		(. Statement block = null; .)
-=
-  "with"
-  '('
-  ')'
-  Block<out block>					(. stmt = null; .).
-/*------------------------------------------------------------------------*/
-TryStmt<out Statement stmt>			(.  Statement body, catch_body = null, finally_body = null; List<CatchClause> catches = null;
+TryStmt<out Statement stmt>			(.  BlockStatement body, catch_body = null, finally_body = null; List<CatchClause> catches = null;
 										TypeAnnotation excp_type = null; Identifier catch_ident = null; string name = null;
 									.)
 =
   "try"
   Block<out body>
   { "catch"							(. if(catches == null) catches = new List<CatchClause>(); .)
-    '('
     ident							(. name = t.val; .)
     "(-"
-    Type<out excp_type>
-    ')'								(. catch_ident = AstNode.MakeLocalVar(name, excp_type); .)
-    Block<out catch_body>			(. catches.Add(AstNode.MakeCatchClause((Block)catch_body, catch_ident)); .)
+    Type<out excp_type>             (. catch_ident = AstNode.MakeLocalVar(name, excp_type); .)
+    Block<out catch_body>			(. catches.Add(AstNode.MakeCatchClause(catch_body, catch_ident)); .)
   }									
   [ "finally"
     Block<out finally_body>
-  ]									(. stmt = AstNode.MakeTryStmt((Block)body, catches, (Block)finally_body); .).
+  ]									(. stmt = Statement.MakeTryStmt(body, catches, finally_body); .).
 /*------------------------------------------------------------------------*/
-ParamList<. ref List<ParameterDeclaration> @params .>	(. ParameterDeclaration expr; .)
+ParamList<. out List<ParameterDeclaration> @params .>	(. @params = new List<ParameterDeclaration>(); ParameterDeclaration expr; .)
 =
-  Argument<out expr>							        (. @params.Add(expr); .)
+  Parameter<out expr>							        (. @params.Add(expr); .)
   { WEAK ','
-    Argument<out expr>							        (. @params.Add(expr); .)
+    Parameter<out expr>							        (. @params.Add(expr); .)
   }.
 /*------------------------------------------------------------------------*/
-Argument<out ParameterDeclaration arg>	(. string name; Expression default_val = null; var type = TypeAnnotation.VariantType.Clone(); .)
+Parameter<out ParameterDeclaration arg>	(. string name; Expression default_val = null; var type = TypeAnnotation.VariantType.Clone(); .)
 =
   ident							        (. name = t.val; .)
-  [ "(-"
-    Type<out type>
-  ]
+  "(-"
+  Type<out type>
   [ '='
     Literal<out default_val>
   ]								        (. arg = AstNode.MakeArg(name, type, default_val); .).
@@ -695,7 +616,40 @@ RValueList<out SequenceExpression seq>		(. Expression tmp; var exprs = new List<
   CondExpr<out tmp>							(. exprs.Add(tmp); .)
   { WEAK ','
     CondExpr<out tmp>						(. exprs.Add(tmp);	.)
-  }											(. seq = AstNode.MakeSequence(exprs); .).
+  }											(. seq = Expression.MakeSequence(exprs); .).
+/*------------------------------------------------------------------------*/
+Pattern<out PatternConstruct pattern>
+=
+  LhsPattern<out pattern>
+  | ExpressionPattern<out pattern>.
+/*------------------------------------------------------------------------*/
+ExpressionPattern<out PatternConstruct expr_pattern>    (. Expression expr; .)
+=
+  CondExpr<out expr>                                    (. expr_pattern = PatternConstruct.MakeExpressionPattern(expr); .).
+/*------------------------------------------------------------------------*/
+LhsPattern<out PatternConstruct pattern>
+=
+  WildcardPattern<out pattern>
+  | IdentifierPattern<out pattern>
+  | ValueBindingPattern<out pattern>.
+/*------------------------------------------------------------------------*/
+WildcardPattern<out PatternConstruct pattern>
+=
+  '_'                                   (. pattern = PatternConstruct.MakeWildcardPattern(); .).
+/*------------------------------------------------------------------------*/
+IdentifierPattern<out PatternConstruct pattern> (. var type = TypeAnnotation.InferenceType.Clone(); .)
+=
+  ident
+  [ "(-"
+    Type<ref type>
+  ]                                (. pattern = PatternConstruct.MakeIdentifierPattern(t.val, type); .).
+/*------------------------------------------------------------------------*/
+ValueBindingPattern<out PatternConstruct pattern>   (. PatternConstruct inner; .)
+=
+  ( "let"
+  | "var"
+  )
+  Pattern<out inner>                    (. pattern = PatternConstruct.MakeValueBindingPattern(inner); .).
 /*------------------------------------------------------------------------*/
 CondExpr<out Expression expr>		(. Expression true_expr, false_expr; .)
 =
@@ -703,45 +657,27 @@ CondExpr<out Expression expr>		(. Expression true_expr, false_expr; .)
   [ '?'
     OrTest<out true_expr>
     ':'
-    CondExpr<out false_expr>		(. expr = AstNode.MakeCondExpr(expr, true_expr, false_expr); .)
+    CondExpr<out false_expr>		(. expr = Expression.MakeCondExpr(expr, true_expr, false_expr); .)
   ].
-/*------------------------------------------------------------------------*/
-IntSeqExpr<out Expression expr>		(. Expression start = null, end = null, step = null;
-                                       bool upper_inclusive = true;
-                                    .)
-=
-  '['
-  [OrTest<out start>]
-  ( ".."                            (. upper_inclusive = false; .)
-  | "..."
-  )
-  OrTest<out end>
-  [ ':'
-    OrTest<out step>
-  ]
-  ']'								(.  if(start == null) start = CreateConstant(ObjectTypes.Integer);
-  										if(step == null) step = AstNode.MakeConstant(ObjectTypes.Integer, 1);
-  										expr = AstNode.MakeIntSeq(start, end, step, upper_inclusive);
-  									.).
 /*------------------------------------------------------------------------*/
 OrTest<out Expression expr>			(. Expression rhs; .)
 =
   AndTest<out expr>
-  { "||"
-    AndTest<out rhs>				(. expr = AstNode.MakeBinaryExpr(OperatorType.ConditionalOr, expr, rhs); .)
-  }.
+  [ "||"
+    OrTest<out rhs>                 (. expr = Expression.MakeBinaryExpr(OperatorType.ConditionalOr, expr, rhs); .)
+  ].
 /*------------------------------------------------------------------------*/
 AndTest<out Expression expr>		(. Expression rhs; .)
 =
   NotTest<out expr>
-  { "&&"
-    NotTest<out rhs>				(. expr = AstNode.MakeBinaryExpr(OperatorType.ConditionalAnd, expr, rhs); .)
-  }.
+  [ "&&"
+    AndTest<out rhs>				(. expr = Expression.MakeBinaryExpr(OperatorType.ConditionalAnd, expr, rhs); .)
+  ].
 /*------------------------------------------------------------------------*/
 NotTest<out Expression expr>		(. Expression term; expr = null; .)
 =
   ( '!'
-    NotTest<out term>				(. expr = AstNode.MakeUnaryExpr(OperatorType.Not, term); .)
+    NotTest<out term>				(. expr = Expression.MakeUnaryExpr(OperatorType.Not, term); .)
   )
   | Comparison<out expr>.
 /*------------------------------------------------------------------------*/
@@ -756,115 +692,115 @@ Comparison<out Expression expr>	(. Expression rhs; OperatorType type; .)
     | "<="				 		(. type = OperatorType.LessThanOrEqual; .)
     | ">="				 		(. type = OperatorType.GreaterThanOrEqual; .)
     )
-    BitOr<out rhs>				(. expr = AstNode.MakeBinaryExpr(type, expr, rhs); .)
+    Comparison<out rhs>			(. expr = Expression.MakeBinaryExpr(type, expr, rhs); .)
   ].
 /*------------------------------------------------------------------------*/
 BitOr<out Expression expr>			(. Expression rhs; .)
 =
   BitXor<out expr>
-  { '|'
-    BitXor<out rhs>					(. expr = AstNode.MakeBinaryExpr(OperatorType.BitwiseOr, expr, rhs); .)
-  }.
+  [ '|'
+    BitOr<out rhs>					(. expr = Expression.MakeBinaryExpr(OperatorType.BitwiseOr, expr, rhs); .)
+  ].
 /*------------------------------------------------------------------------*/
 BitXor<out Expression expr>			(. Expression rhs; .)
 =
   BitAnd<out expr>
-  { '^'
-    BitAnd<out rhs>					(. expr = AstNode.MakeBinaryExpr(OperatorType.ExclusiveOr, expr, rhs); .)
-  }.
+  [ '^'
+    BitXor<out rhs>					(. expr = Expression.MakeBinaryExpr(OperatorType.ExclusiveOr, expr, rhs); .)
+  ].
 /*------------------------------------------------------------------------*/
 BitAnd<out Expression expr>			(. Expression rhs; .)
 =
-  ShiftOpe<out expr>
-  { '&'
-    ShiftOpe<out rhs>				(. expr = AstNode.MakeBinaryExpr(OperatorType.BitwiseAnd, expr, rhs); .)
-  }.
+  ShiftOp<out expr>
+  [ '&'
+    BitAnd<out rhs>			    	(. expr = Expression.MakeBinaryExpr(OperatorType.BitwiseAnd, expr, rhs); .)
+  ].
 /*------------------------------------------------------------------------*/
-ShiftOpe<out Expression expr>		(. Expression rhs; OperatorType type; .)
+ShiftOp<out Expression expr>		(. Expression rhs; OperatorType type; .)
 =
-  AddOpe<out expr>
-  {
+  AddOp<out expr>
+  [
   	( "<<" 							(. type = OperatorType.BitwiseShiftLeft; .)
     | ">>"							(. type = OperatorType.BitwiseShiftRight; .)
     )
-    AddOpe<out rhs>					(. expr = AstNode.MakeBinaryExpr(type, expr, rhs); .)
-  }.
+    ShiftOp<out rhs>				(. expr = Expression.MakeBinaryExpr(type, expr, rhs); .)
+  ].
 /*------------------------------------------------------------------------*/
-AddOpe<out Expression expr>    		(. Expression rhs; OperatorType type; .)
+AddOp<out Expression expr>    		(. Expression rhs; OperatorType type; .)
 = 
   Term<out expr>
-  { 
+  [ 
     ( '+'							(. type = OperatorType.Plus; .)
     | '-'							(. type = OperatorType.Minus; .)
     )
-    Term<out rhs>					(. expr = AstNode.MakeBinaryExpr(type, expr, rhs); .)
-  }.
+    AddOp<out rhs>					(. expr = Expression.MakeBinaryExpr(type, expr, rhs); .)
+  ].
 /*------------------------------------------------------------------------*/
 Term<out Expression expr>   (. Expression rhs; OperatorType type; .)
 = 
   Factor<out expr>
-  {
+  [
     ( '*'					(. type = OperatorType.Times; .)
     | '/'					(. type = OperatorType.Divide; .)
     | '%'					(. type = OperatorType.Modulus; .)
     )
-    Factor<out rhs>			(. expr = AstNode.MakeBinaryExpr(type, expr, rhs); .)
-  }.
+    Term<out rhs>			(. expr = Expression.MakeBinaryExpr(type, expr, rhs); .)
+  ].
 /*------------------------------------------------------------------------*/
 Factor<out Expression expr> (. OperatorType type; Expression factor; expr = null; .)
 =
-  ( '+'                     (. type = OperatorType.Plus; .)
-  | '-'                     (. type = OperatorType.Minus; .)
-  )
-  Factor<out factor>        (. expr = AstNode.MakeUnaryExpr(type, factor); .)
-  | PowerOpe<out expr> .
+  PowerOp<out expr>
+  |
+  ( ( '+'                   (. type = OperatorType.Plus; .)
+    | '-'                   (. type = OperatorType.Minus; .)
+    )
+    Factor<out factor>
+  )                         (. expr = Expression.MakeUnaryExpr(type, factor); .).
 /*------------------------------------------------------------------------*/
-PowerOpe<out Expression expr>    (. Expression rhs; .)
+PowerOp<out Expression expr>   (. Expression rhs; .)
 = 
   Primary<out expr>
   [ "**"
-    Factor<out rhs>              (. expr = AstNode.MakeBinaryExpr(OperatorType.Power, expr, rhs); .)
+    Factor<out rhs>            (. expr = Expression.MakeBinaryExpr(OperatorType.Power, expr, rhs); .)
   ].
 /*------------------------------------------------------------------------*/
 Primary<out Expression expr>		(. expr = null; .)
 =
   ( Atom<out expr>
-    { Trailer<ref expr>
-    }
-  )
-  | NewExpression<out expr>.
+  | NewExpression<out expr>
+  | ObjectCreation<out expr>
+  ) 
+  { Trailer<ref expr>
+  }.
 /*------------------------------------------------------------------------*/
-NewExpression<out Expression expr>		(. var args = new List<Expression>(); .)
+NewExpression<out Expression expr>
 =
   "new"
-  ident									(. expr = AstNode.MakeIdentifier(t.val); .)
+  ObjectCreation<out expr>				(. expr = Expression.MakeNewExpr(expr); .).
+/*------------------------------------------------------------------------*/
+ObjectCreation<out Expression expr>     (. var fields = new List<Identifier>(); var values = new List<Expression>(); .)
+=
+  ident                                 (. expr = AstNode.MakeIdentifier(t.val); .)
   { '.'
-    ident								(. expr = AstNode.MakeMemRef(expr, AstNode.MakeIdentifier(t.val)); .)
+    ident                               (. expr = Expression.MakeMemRef(expr, AstNode.MakeIdentifier(t.val)); .)
   }
+  '{'
+  { ident                               (. fields.Add(AstNode.MakeIdentifier(t.val)); .)
+    ':'
+    OrTest<out expr>                    (. values.Add(expr); .)
+  }
+  '}'                                   (. Expression.MakeObjectCreation(fields, values); .).
+/*------------------------------------------------------------------------*/
+Trailer<ref Expression expr>	(. var args = new List<Expression>(); .)
+=
   '('
   [ArgList<ref args>]
-  ')'									(. expr = AstNode.MakeNewExpr(expr, args); .).
-/*------------------------------------------------------------------------*/
-Trailer<ref Expression expr>	(. var args = new List<Expression>(); Expression subscript; .)
-=
-  '('							(.  if(expr is MemberReference)
-                                        args.Add(((MemberReference)expr).Target);
-                                    else
-                                        args.Add(AstNode.MakeConstant(ObjectTypes.Instance, this.TopmostAst));
-                                .)
-  [ArgList<ref args>]
-  ')'							(. expr = AstNode.MakeCallExpr(expr, args); .)
+  ')'							(. expr = Expression.MakeCallExpr(expr, args); .)
   | '['
-    Subscript<out subscript>
-    ']'							(. expr = AstNode.MakeIndexer(expr, subscript); .)
+    ArgList<ref args>
+    ']'							(. expr = Expression.MakeIndexer(expr, args); .)
   | '.'
-    ident						(. expr = AstNode.MakeMemRef(expr, AstNode.MakeIdent(t.val)); .).
-/*------------------------------------------------------------------------*/
-Subscript<out Expression subscript>	(. subscript = null; .)
-=
-  IF(NotFollowedByDoubleDots())
-  CondExpr<out subscript>
-  | IntSeqExpr<out subscript>.
+    ident						(. expr = Expression.MakeMemRef(expr, AstNode.MakeIdent(t.val)); .).
 /*------------------------------------------------------------------------*/
 ArgList<. ref List<Expression> args .>		(. Expression expr; .)
 =
@@ -879,66 +815,77 @@ Atom<out Expression expr>			(. string name; expr = null; .)
   										expr = AstNode.MakeIdentifier(name);
   									.)
   | Literal<out expr>
+  | IntSeqExpr<out expr>
+  | '('
+    CondExpr<out expr>
+    ')'                             (. expr = Expression.MakeParenExpr(expr); .)
   | '('
     [SequenceMaker<out expr, ObjectTypes.Tuple>]
     SYNC ')'						(.  if(expr == null)
-    										expr = AstNode.MakeSeqInitializer(ObjectTypes.Tuple, new List<Expression>());
+    										expr = Expression.MakeSeqInitializer(ObjectTypes.Tuple, new List<Expression>());
     								.)
   | '['
     [SequenceMaker<out expr, ObjectTypes.List>]
     SYNC ']'						(.  if(expr == null)
-    										expr = AstNode.MakeSeqInitializer(ObjectTypes.List, new List<Expression>());
+    										expr = Expression.MakeSeqInitializer(ObjectTypes.List, new List<Expression>());
     								.)
   | '{'
     [DictMaker<out expr>]
-    SYNC '}' 						(. if(expr == null) expr = AstNode.MakeSeqInitializer(ObjectTypes.Dict, new List<Expression>()); .).
+    SYNC '}' 						(. if(expr == null) expr = Expression.MakeSeqInitializer(ObjectTypes.Dict, new List<Expression>()); .).
+/*------------------------------------------------------------------------*/
+IntSeqExpr<out Expression expr>     (. Expression start = null, end = null, step = null;
+                                       bool upper_inclusive = true;
+                                    .)
+=
+  [BitOr<out start>]
+  ( ".."                            (. upper_inclusive = false; .)
+  | "..."
+  )
+  BitOr<out end>
+  [ ':'
+    BitOr<out step>
+  ]                                 (.  if(start == null) start = CreateConstant(ObjectTypes.Integer);
+                                        if(step == null) step = Expression.MakeConstant(ObjectTypes.Integer, 1);
+                                        expr = Expression.MakeIntSeq(start, end, step, upper_inclusive);
+                                    .).
 /*------------------------------------------------------------------------*/
 SequenceMaker<out Expression expr, ObjectTypes ObjType>	(.  Expression tmp = null; List<Expression> list = new List<Expression>();
 															expr = null; ComprehensionIter comprehen = null;
 														.)
 =
-  CondExpr<out tmp>						(. if(tmp != null) list.Add(tmp); .)
-  ( { WEAK ','
-    CondExpr<out tmp>					(. if(tmp != null) list.Add(tmp); .)
-    }								    (. expr = AstNode.MakeSeqInitializer(ObjType, list); .)
-  | CondExpr<out tmp>
-    CompFor<out comprehen>              (. expr = AstNode.MakeComp(tmp, (ComprehensionForClause)comprehen, ObjType); .)
-  ).
+  CondExpr<out tmp>
+  CompFor<out comprehen>              (. expr = Expression.MakeComp(tmp, (ComprehensionForClause)comprehen, ObjType); .).
 /*------------------------------------------------------------------------*/
-DictMaker<out Expression expr>			(. Expression key, val; List<Expression> list = new List<Expression>(); expr = null; .)
+DictMaker<out Expression expr>			(. Expression key, val; List<Expression> list = new List<Expression>(); expr = null;
+                                           ComprehensionIter comp_for, comp_val;
+                                        .)
 =
-  ( CondExpr<out key>					(. if(key != null) list.Add(key); .)
-    ':'
-    CondExpr<out val>					(. if(val != null) list.Add(val); .)
-  )
-  { ','
-    CondExpr<out key>					(. if(key != null) list.Add(key); .)
-    ':'
-    CondExpr<out val>					(. if(val != null) list.Add(val); .)
-  }
-  										(. if(list.Count > 0) expr = AstNode.MakeSeqInitializer(ObjectTypes.Dict, list); .).
+  CondExpr<out key>
+  CompFor<out comp_key>               (. comp_key = Expression.MakeComp(key, (ComprehensionForClause)comp_key, Objtype); .)
+  ':'
+  CondExpr<out val>
+  CompFor<out comp_val>               (. comp_val = Expression.MakeComp(val, (ComprehensionForClause)comp_val);
+                                         expr = Expression.MakeSeqInitializer(ObjType, new []{comp_key, comp_val});
+                                      .).
 /*------------------------------------------------------------------------*/
-CompIter<out ComprehensionIter expr>			(. expr = null; .)
+CompIter<out ComprehensionIter expr>    (. expr = null; .)
 =
   CompFor<out expr>
   | CompIf<out expr> .
 /*------------------------------------------------------------------------*/
-CompFor<out ComprehensionIter expr>		(. Expression rvalue = null; ComprehensionIter body = null; SequenceExpression target; .)
+CompFor<out ComprehensionIter expr>		(. Expression rvalue = null; ComprehensionIter body = null; PatternConstruct target; .)
 =
   "for"
-  LValueList<out target>
+  LhsPattern<out target>
   "in"
-  ( IF(NotFollowedByDoubleDots())
-    CondExpr<out rvalue>
-  | IntSeqExpr<out rvalue>
-  )
-  [CompIter<out body>]					(. expr = AstNode.MakeCompFor(target, rvalue, body); .).
+  CondExpr<out rvalue>
+  [CompIter<out body>]					(. expr = Expression.MakeCompFor(target, rvalue, body); .).
 /*------------------------------------------------------------------------*/
 CompIf<out ComprehensionIter expr>		(. Expression tmp; ComprehensionIter body = null; .)
 =
   "if"
   OrTest<out tmp>
-  [CompIter<out body>]					(. expr = AstNode.MakeCompIf(tmp, body); .).
+  [CompIter<out body>]					(. expr = Expression.MakeCompIf(tmp, body); .).
 /*------------------------------------------------------------------------*/
 Literal<out Expression expr>	(. expr = null; string tmp; bool has_suffix = false; .)
 = 
@@ -946,7 +893,7 @@ Literal<out Expression expr>	(. expr = null; string tmp; bool has_suffix = false
   [ 'l'							(. has_suffix = true; .)
   | 'L'							(. has_suffix = true; .)
   ]								(.  if(has_suffix)
-  										expr = AstNode.MakeConstant(ObjectTypes.BigInt, BigInteger.Parse(tmp));
+  										expr = AstNode.MakeConstant(ObjectTypes.BigInteger, BigInteger.Parse(tmp));
   									else
   										expr = AstNode.MakeConstant(ObjectTypes.Integer, Convert.ToInt32(tmp));
   								.)
@@ -960,8 +907,7 @@ Literal<out Expression expr>	(. expr = null; string tmp; bool has_suffix = false
     ( "true"				
   	| "false"
   	)							(. expr = AstNode.MakeConstant(ObjectTypes.Bool, Convert.ToBoolean(t.val)); .)
-  | "null"						(. expr = AstNode.MakeNullRef(); .)
-  | "this"                      (. expr = AstNode.MakeThisRef(); .)
-  | "base"                      (. expr = AstNode.MakeThisRef(); .).
+  | "self"                      (. expr = AstNode.MakeSelfRef(); .)
+  | "super"                     (. expr = AstNode.MakeSuperRef(); .).
 /*------------------------------------------------------------------------*/
 END Expresso.

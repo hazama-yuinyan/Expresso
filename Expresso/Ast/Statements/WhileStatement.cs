@@ -10,6 +10,7 @@ namespace Expresso.Ast
 	/// <summary>
 	/// While文.
 	/// The While statement.
+    /// "while" Expression Block
 	/// </summary>
 	/// <seealso cref="Node"/>
 	/// <seealso cref="BreakableStatement"/>
@@ -21,22 +22,26 @@ namespace Expresso.Ast
         /// </summary>
         public Expression Condition{
             get{return GetChildByRole(Roles.Expression);}
+            set{SetChildByRole(Roles.Expression);}
         }
 
         /// <summary>
-        /// 条件が真の間評価し続ける文(郡)。
-		/// A statement or a block to be processed while the condition is true.
+        /// 条件が真の間評価し続けるブロック文。
+        /// The block to be processed while the condition is true.
         /// </summary>
-        public Statement Body{
-            get{return GetChildByRole(Roles.EmbeddedStatement);}
+        public BlockStatement Body{
+            get{return GetChildByRole(Roles.Body);}
+            set{SetChildByRole(Roles.Body, value);}
         }
 
         public override NodeType NodeType{
             get{return NodeType.Statement;}
         }
 
-		public WhileStatement()
+        public WhileStatement(Expression condition, BlockStatement block)
 		{
+            Condition = condition;
+            Body = block;
 		}
 
         public override void AcceptWalker(IAstWalker walker)

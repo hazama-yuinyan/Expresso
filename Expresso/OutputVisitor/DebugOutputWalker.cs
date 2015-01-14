@@ -222,7 +222,7 @@ namespace Expresso.Ast
         public void VisitNewExpression(NewExpression newExpr)
         {
             writer.Write("new ");
-            newExpr.TargetExpr.AcceptWalker(this);
+            newExpr.CreationExpression.AcceptWalker(this);
             writer.Write("(");
             PrintList(newExpr.Arguments);
             writer.Write(")");
@@ -233,7 +233,7 @@ namespace Expresso.Ast
             throw new NotImplementedException();
         }
 
-        public void VisitImportStatement(ImportStatement importStmt)
+        public void VisitImportStatement(ImportDeclaration importStmt)
         {
             writer.Write("<Import: ");
             if(importStmt.AliasNames != null){
@@ -252,18 +252,18 @@ namespace Expresso.Ast
             writer.Write(">");
         }
 
-        public void VisitSwitchStatement(SwitchStatement switchStmt)
+        public void VisitSwitchStatement(MatchStatement switchStmt)
         {
             writer.Write("<switch: (");
             switchStmt.Target.AcceptWalker(this);
             writer.WriteLine("){");
-            foreach(var case_clause in switchStmt.Cases)
+            foreach(var case_clause in switchStmt.Clauses)
                 case_clause.AcceptWalker(this);
 
             writer.Write("}");
         }
 
-        public void VisitCaseClause(CaseClause caseClause)
+        public void VisitCaseClause(MatchPatternClause caseClause)
         {
             writer.Write("case ");
             foreach(var label in caseClause.Labels){

@@ -37,6 +37,8 @@ namespace Expresso.TypeSystem
 
         // String was the last element from System.TypeCode, now our additional known types start
 
+        /// <summary>System.Tuple</summary>
+        Tuple,
         /// <summary><c>void</c> (System.Void)</summary>
         Void,
         /// <summary><c>System.Type</c></summary>

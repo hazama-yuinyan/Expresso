@@ -6,18 +6,19 @@ namespace Expresso.Ast
     /// <summary>
     /// continue文。
     /// The continue statement.
+    /// "continue" [ "upto" Expression ] ';'
     /// </summary>
     public class ContinueStatement : Statement
     {
         public static readonly TokenRole ContinueTokenRole = new TokenRole("continue");
-        readonly int count;
 
         /// <summary>
         /// continueの際に何階層分ループ構造を遡るか。
         /// Indicates how many loops we will break out.
         /// </summary>
-        public int Count{
-            get{return count;}
+        public Expression Count{
+            get{return GetChildByRole(Roles.Expression);}
+            set{SetChildByRole(Roles.Expression, value);}
         }
 
         /// <summary>
@@ -28,9 +29,9 @@ namespace Expresso.Ast
             get{return Children;}
         }*/
 
-        public ContinueStatement(int loopCount/*, BreakableStatement[] loops*/)
+        public ContinueStatement(Expression countExpr/*, BreakableStatement[] loops*/)
         {
-            count = loopCount;
+            Count = countExpr;
 
             //foreach(var enclosing in loops)
             //    AddChild(enclosing);
@@ -54,7 +55,7 @@ namespace Expresso.Ast
         protected override bool DoMatch(AstNode other, ICSharpCode.NRefactory.PatternMatching.Match match)
         {
             var o = other as ContinueStatement;
-            return o != null;
+            return o != null && Count.DoMatch(o.Count, match);
         }
     }
 }

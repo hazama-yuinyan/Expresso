@@ -25,7 +25,7 @@ namespace Expresso.Ast
         }
 
 		/// <summary>
-		/// The subscript expression. It can be an identifier or index.
+		/// The subscript expression. It can be an identifier.
 		/// </summary>
 		public Expression Subscription{
             get{return GetChildByRole(Roles.Expression);}

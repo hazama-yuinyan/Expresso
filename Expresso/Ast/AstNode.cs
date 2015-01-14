@@ -122,34 +122,66 @@ namespace Expresso.Ast
         AstNode parent, prev_sibling, next_sibling, first_child, last_child;
 
         #region Properties
+        /// <summary>
+        /// Gets the start location.
+        /// </summary>
+        /// <value>The start location in the source code.</value>
         public TextLocation StartLocation{
             get{return start_loc;}
         }
 
+        /// <summary>
+        /// Gets the end location.
+        /// </summary>
+        /// <value>The end location in the source code.</value>
         public TextLocation EndLocation{
             get{return end_loc;}
         }
 
+        /// <summary>
+        /// Gets the parent node.
+        /// </summary>
+        /// <value>The parent AST node.</value>
         public AstNode Parent{
             get{return parent;}
         }
 
+        /// <summary>
+        /// Gets the next node.
+        /// </summary>
+        /// <value>The next AST node.</value>
         public AstNode NextSibling{
             get{return next_sibling;}
         }
 
+        /// <summary>
+        /// Gets the previous node.
+        /// </summary>
+        /// <value>The previous AST node.</value>
         public AstNode PrevSibling{
             get{return prev_sibling;}
         }
 
+        /// <summary>
+        /// Gets the first child node.
+        /// </summary>
+        /// <value>The first child AST node.</value>
         public AstNode FirstChild{
             get{return first_child;}
         }
 
+        /// <summary>
+        /// Gets the last child node.
+        /// </summary>
+        /// <value>The last child AST node.</value>
         public AstNode LastChild{
             get{return last_child;}
         }
 
+        /// <summary>
+        /// Determines whether this AST node has any child AST nodes.
+        /// </summary>
+        /// <value><c>true</c> if this node has children; otherwise, <c>false</c>.</value>
         public bool HasChildren{
             get{return first_child != null;}
         }
@@ -166,6 +198,10 @@ namespace Expresso.Ast
         /// </summary>
         public abstract NodeType NodeType{get;}
 
+        /// <summary>
+        /// Gets whether this node is a null node.
+        /// </summary>
+        /// <value><c>true</c> if this node is a null node; otherwise, <c>false</c>.</value>
         public virtual bool IsNull{
             get{return false;}
         }
@@ -1211,55 +1247,6 @@ namespace Expresso.Ast
         }
 
 		#region AST node factory methods
-		static internal BreakStatement MakeBreakStmt(int count)
-		{
-			return new BreakStatement(count);
-		}
-
-		static internal ContinueStatement MakeContinueStmt(int count)
-		{
-            return new ContinueStatement(count);
-		}
-
-        static internal ExpressionStatement MakeExprStmt(Expression expr)
-		{
-			return new ExpressionStatement(expr);
-		}
-
-		static internal ReturnStatement MakeReturnStmt(Expression expr)
-		{
-			return new ReturnStatement(expr);
-		}
-		
-		static internal IfStatement MakeIfStmt(Expression condition, Statement trueBlock, Statement falseBlock)
-		{
-			return new IfStatement(condition, trueBlock, falseBlock);
-		}
-		
-		static internal WhileStatement MakeWhileStmt()
-		{
-			return new WhileStatement();
-		}
-		
-		static internal ForStatement MakeForStmt()
-		{
-			return new ForStatement();
-		}
-		
-		static internal SwitchStatement MakeSwitchStmt(Expression target, IEnumerable<CaseClause> cases)
-		{
-			return new SwitchStatement(target, cases.ToArray());
-		}
-
-		static internal EmptyStatement MakeEmptyStmt()
-		{
-			return new EmptyStatement();
-		}
-		
-		static internal CaseClause MakeCaseClause(IEnumerable<Expression> labels, Statement body)
-		{
-			return new CaseClause(labels.ToArray(), body);
-		}
 		
         static internal FunctionDeclaration MakeFunc(string name, IEnumerable<ParameterDeclaration> parameters, BlockStatement body,
             AstType returnType = null, Modifiers modifiers = Modifiers.None)
@@ -1272,11 +1259,6 @@ namespace Expresso.Ast
 		{
             return new FunctionDeclaration(name, parameters.ToArray(), body, returnType, Flags.None, environ);
 		}*/
-
-		static internal CallExpression MakeCallExpr(Expression target, IEnumerable<Expression> args)
-		{
-            return new CallExpression(target, args);
-		}
 
 		static internal Identifier MakeIdentifier(string name)
 		{
@@ -1293,155 +1275,26 @@ namespace Expresso.Ast
             return new FieldDeclaration();
 		}
 
-		static internal SequenceExpression MakeSequence(IEnumerable<Expression> items)
-		{
-			return new SequenceExpression(items);
-		}
-		
-		static internal UnaryExpression MakeUnaryExpr(OperatorType op, Expression operand)
-		{
-			return new UnaryExpression(op, operand);
-		}
-		
-		static internal BinaryExpression MakeBinaryExpr(OperatorType op, Expression lhs, Expression rhs)
-		{
-			return new BinaryExpression(lhs, rhs, op);
-		}
-		
-        static internal SequenceInitializer MakeSeqInitializer(AstType type, IEnumerable<Expression> initializeList)
-		{
-			return new SequenceInitializer(initializeList, type);
-		}
-		
-		static internal AssignmentExpression MakeAssignment(IEnumerable<Expression> targets, SequenceExpression rhs)
-		{
-            return new AssignmentExpression(MakeSequence(targets), rhs);
-		}
-		
-		static internal AssignmentExpression MakeAugumentedAssignment(SequenceExpression targets, SequenceExpression rhs, OperatorType opType)
-		{
-            return new AssignmentExpression(targets, rhs, opType);
-		}
-
-		static internal CastExpression MakeCastExpr(Expression target, Expression toExpr)
-		{
-			return new CastExpression(toExpr, target);
-		}
-
-		static internal ConditionalExpression MakeCondExpr(Expression test, Expression trueExpr, Expression falseExpr)
-		{
-			return new ConditionalExpression(test, trueExpr, falseExpr);
-		}
-		
-        static internal ComprehensionExpression MakeComp(Expression yieldExpr, ComprehensionForClause body, AstType objType)
-		{
-			return new ComprehensionExpression(yieldExpr, body, objType);
-		}
-		
-		static internal ComprehensionForClause MakeCompFor(SequenceExpression left, Expression target, ComprehensionIter body)
-		{
-			return new ComprehensionForClause(left, target, body);
-		}
-		
-		static internal ComprehensionIfClause MakeCompIf(Expression condition, ComprehensionIter body)
-		{
-			return new ComprehensionIfClause(condition, body);
-		}
-		
-        static internal LiteralExpression MakeConstant(AstType type, object val)
-		{
-			return new LiteralExpression(val, type);
-		}
-
-        static internal NullReferenceExpression MakeNullRef(TextLocation start)
-        {
-            return new NullReferenceExpression(start);
-        }
-
-        static internal ThisReferenceExpression MakeThisRef(TextLocation start)
-        {
-            return new ThisReferenceExpression(start);
-        }
-
-        static internal BaseReferenceExpression MakeBaseRef(TextLocation start)
-        {
-            return new BaseReferenceExpression(start);
-        }
-
-        static internal ParameterDeclaration MakeArg(string name, AstType type, Expression option = null)
-		{
-            return new ParameterDeclaration(name, type, option);
-		}
-
-		static internal MemberReference MakeMemRef(Expression parent, Expression child)
-		{
-			return new MemberReference(parent, child);
-		}
-		
-        static internal IntegerSequenceExpression MakeIntSeq(Expression start, Expression end, Expression step, bool upperInclusive)
-		{
-            return new IntegerSequenceExpression(start, end, step, upperInclusive);
-		}
-
-        static internal VariableDeclarationStatement MakeVarDecl(IEnumerable<Identifier> lhs, IEnumerable<Expression> rhs,
-            Modifiers modifiers = Modifiers.None)
-		{
-            return new VariableDeclarationStatement(lhs, rhs, modifiers);
-		}
-		
         /*static internal AstType MakeClassDef(string className, IEnumerable<Identifier> bases, IEnumerable<Statement> decls)
 		{
             return new SimpleType(className, decls.ToArray(), Expresso.Ast.DeclType.Class, bases.ToArray());
 		}*/
 
-        static internal ExpressoAst MakeModuleDef(string moduleName, IEnumerable<EntityDeclaration> decls)
+        static internal ExpressoAst MakeModuleDef(string moduleName, IEnumerable<EntityDeclaration> decls, IEnumerable<ImportDeclaration> imports)
 		{
-			return new ExpressoAst(decls, moduleName);
-		}
-		
-		static internal NewExpression MakeNewExpr(Expression target, IEnumerable<Expression> args)
-		{
-			return new NewExpression(target, args.ToArray());
-		}
-		
-        static internal ImportStatement MakeImportStmt(IEnumerable<string> moduleNames, IEnumerable<string> aliasNames)
-		{
-			return (aliasNames.Any((name) => name != null)) ? new ImportStatement(moduleNames, aliasNames) :
-                new ImportStatement(moduleNames);
-		}
-		
-		static internal TryStatement MakeTryStmt(BlockStatement body, IEnumerable<CatchClause> catches, BlockStatement finallyClause)
-		{
-			if(finallyClause != null)
-				return new TryStatement(body, catches, new FinallyClause(finallyClause));
-			else
-				return new TryStatement(body, catches, null);
+            return new ExpressoAst(decls, imports, moduleName);
 		}
 
-		static internal CatchClause MakeCatchClause(BlockStatement body, Identifier ident)
-		{
-			return new CatchClause(ident, body);
-		}
-
-		static internal WithStatement MakeWithStmt(Expression context, Statement body)
-		{
-			return new WithStatement(context, body);
-		}
-		
-		static internal ThrowStatement MakeThrowStmt(Expression expr)
-		{
-			return new ThrowStatement(expr);
-		}
-		
-		static internal YieldStatement MakeYieldStmt(Expression expr)
-		{
-			return new YieldStatement(expr);
-		}
-
-        static internal DefaultExpression MakeDefaultExpr(TypeAnnotation targetType)
+        static internal ParameterDeclaration MakeArg(string name, AstType type, Expression option = null)
         {
-            return new DefaultExpression(targetType);
+            return new ParameterDeclaration(name, type, option);
         }
+		
+        static internal ImportDeclaration MakeImportDecl(IEnumerable<string> moduleNames, IEnumerable<string> aliasNames)
+		{
+			return (aliasNames.Any((name) => name != null)) ? new ImportDeclaration(moduleNames, aliasNames) :
+                new ImportDeclaration(moduleNames);
+		}
 		#endregion
     }
 }

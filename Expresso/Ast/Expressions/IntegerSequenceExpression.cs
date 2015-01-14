@@ -8,6 +8,7 @@ namespace Expresso.Ast
 	/// <summary>
 	/// 整数の数列をあらわす式.
 	/// Represents an integer sequence.
+    /// [ integer_literal ] (".." | "...") integer_literal [ ':' integer_literal ]
 	/// </summary>
     public class IntegerSequenceExpression : Expression
 	{
@@ -82,7 +83,8 @@ namespace Expresso.Ast
         {
             var o = other as IntegerSequenceExpression;
             return o != null && Lower.DoMatch(o.Lower, match)
-                && Upper.DoMatch(o.Upper, match) && Step.DoMatch(o.Step, match);
+                && Upper.DoMatch(o.Upper, match) && Step.DoMatch(o.Step, match)
+                && UpperInclusive == o.UpperInclusive;
         }
 
         #endregion

@@ -24,13 +24,13 @@ using Expresso.Utils;
  * processing its free variables, it also knows already which of its locals are being lifted
  * to the closure and can report error if such closure variable is being deleted.
  * 
- * The following list names statements that will introduce new variables into the enclosing scope:
- *    TypeDefinition,
- *    FunctionDefinition,
- *    VarDeclaration,
- *    ImportStatement,
+ * The following list names constructs that will introduce new variables into the enclosing scope:
+ *    TypeDeclaration,
+ *    FunctionDeclaration,
+ *    VariableDeclarationStatement,
+ *    ImportDeclaration,
  *    TryStatement(CatchClause),
- *    Comprehension(ComprehensionFor expression)
+ *    Comprehension(ComprehensionForClause expression)
  */
 
 namespace Expresso.Ast
@@ -67,12 +67,10 @@ namespace Expresso.Ast
 
         public bool VisitForStatement(ForStatement forStmt)
         {
-            if(forStmt.HasLet){
-                forStmt.Target.AcceptWalker(binder);
-                foreach(var ident in forStmt.Left.Items.Cast<Identifier>()){
-                    ident.Reference = binder.Reference(ident.Name);
-                    ident.Reference.Variable = binder.DefineName(ident.Name, InferenceHelper.InferTypeForForStatement(forStmt.Target));
-                }
+            forStmt.Target.AcceptWalker(binder);
+            foreach(var ident in forStmt.Left.Items.Cast<Identifier>()){
+                ident.Reference = binder.Reference(ident.Name);
+                ident.Reference.Variable = binder.DefineName(ident.Name, InferenceHelper.InferTypeForForStatement(forStmt.Target));
             }
         }
 
@@ -80,6 +78,230 @@ namespace Expresso.Ast
 		{
 			return true;
 		}
+
+        public void VisitAst(ExpressoAst ast)
+        {
+        }
+
+        public void VisitBlock(BlockStatement block)
+        {
+        }
+
+        public void VisitBreakStatement(BreakStatement breakStmt)
+        {
+        }
+
+        public void VisitContinueStatement(ContinueStatement continueStmt)
+        {
+        }
+
+        public void VisitEmptyStatement(EmptyStatement emptyStmt)
+        {
+        }
+
+        public void VisitExpressionStatement(ExpressionStatement exprStmt)
+        {
+        }
+
+        public void VisitIfStatement(IfStatement ifStmt)
+        {
+        }
+
+        public void VisitReturnStatement(ReturnStatement returnStmt)
+        {
+        }
+
+        public void VisitSwitchStatement(MatchStatement switchStmt)
+        {
+        }
+
+        public void VisitThrowStatement(ThrowStatement throwStmt)
+        {
+        }
+
+        public void VisitTryStatement(TryStatement tryStmt)
+        {
+        }
+
+        public void VisitWhileStatement(WhileStatement whileStmt)
+        {
+        }
+
+        public void VisitWithStatement(WithStatement withStmt)
+        {
+        }
+
+        public void VisitYieldStatement(YieldStatement yieldStmt)
+        {
+        }
+
+        public void VisitVariableDeclarationStatement(VariableDeclarationStatement varDecl)
+        {
+        }
+
+        public void VisitArgument(ParameterDeclaration arg)
+        {
+            binder.DefineName(arg.Name, arg.Type);
+        }
+
+        public void VisitAssignment(AssignmentExpression assignment)
+        {
+        }
+
+        public void VisitBinaryExpression(BinaryExpression binaryExpr)
+        {
+        }
+
+        public void VisitCallExpression(CallExpression callExpr)
+        {
+        }
+
+        public void VisitCastExpression(CastExpression castExpr)
+        {
+        }
+
+        public void VisitComprehensionExpression(ComprehensionExpression comp)
+        {
+        }
+
+        public void VisitComprehensionForClause(ComprehensionForClause compFor)
+        {
+        }
+
+        public void VisitComprehensionIfClause(ComprehensionIfClause compIf)
+        {
+        }
+
+        public void VisitConditionalExpression(ConditionalExpression condExpr)
+        {
+        }
+
+        public void VisitLiteralExpression(LiteralExpression literal)
+        {
+        }
+
+        public void VisitIntgerSequenceExpression(IntegerSequenceExpression intSeq)
+        {
+        }
+
+        public void VisitIndexerExpression(IndexerExpression indexExpr)
+        {
+        }
+
+        public void VisitNewExpression(NewExpression newExpr)
+        {
+        }
+
+        public void VisitParenthesizedExpression(ParenthesizedExpression parensExpr)
+        {
+        }
+
+        public void VisitObjectCreationExpression(ObjectCreationExpression creation)
+        {
+        }
+
+        public void VisitSequenceInitializer(SequenceInitializer seqInitializer)
+        {
+        }
+
+        public void VisitCaseClause(MatchPatternClause caseClause)
+        {
+        }
+
+        public void VisitCatchClause(CatchClause catchClause)
+        {
+        }
+
+        public void VisitFinallyClause(FinallyClause finallyClause)
+        {
+        }
+
+        public void VisitUnaryExpression(UnaryExpression unaryExpr)
+        {
+        }
+
+        public void VisitSelfReferenceExpression(SelfReferenceExpression selfRef)
+        {
+        }
+
+        public void VisitSuperReferenceExpression(SuperReferenceExpression superRef)
+        {
+        }
+
+        public void VisitCommentNode(CommentNode comment)
+        {
+        }
+
+        public void VisitTextNode(TextNode textNode)
+        {
+        }
+
+        public void VisitAstType(AstType typeNode)
+        {
+        }
+
+        public void VisitSimpleType(SimpleType simpleType)
+        {
+        }
+
+        public void VisitPrimitiveType(PrimitiveType primitiveType)
+        {
+        }
+
+        public void VisitImportDeclaration(ImportDeclaration importDecl)
+        {
+            foreach(var pair in importDecl.ModuleNames.Zip(importDecl.AliasNames,
+                (first, second) => new Tuple<string, string>(first, second))){
+                binder.DefineName(pair.Item1, );
+            }
+        }
+
+        public void VisitFunctionDeclaration(FunctionDeclaration funcDecl)
+        {
+        }
+
+        public void VisitTypeDeclaration(TypeDeclaration typeDecl)
+        {
+            binder.DefineName(typeDecl.Name, typeDecl.ReturnType);
+        }
+
+        public void VisitFieldDeclaration(FieldDeclaration fieldDecl)
+        {
+            binder.DefineName(fieldDecl.Name, fieldDecl.ReturnType);
+        }
+
+        public void VisitMethodDeclaration(MethodDeclaration methodDecl)
+        {
+        }
+
+        public void VisitParameterDeclaration(ParameterDeclaration parameterDecl)
+        {
+            binder.DefineName(parameterDecl.Name, parameterDecl.Type);
+        }
+
+        public void VisitVariableInitializer(VariableInitializer initializer)
+        {
+        }
+
+        public void VisitNullNode(AstNode nullNode)
+        {
+        }
+
+        public void VisitNewLine(NewLineNode newlineNode)
+        {
+        }
+
+        public void VisitWhitespace(WhitespaceNode whitespaceNode)
+        {
+        }
+
+        public void VisitExpressoTokenNode(ExpressoTokenNode tokenNode)
+        {
+        }
+
+        public void VisitPatternPlaceholder(AstNode placeholder, ICSharpCode.NRefactory.PatternMatching.Pattern child)
+        {
+        }
 	}
 	
     class ParameterBinder : IAstWalker
@@ -126,8 +348,7 @@ namespace Expresso.Ast
     class ExpressoNameBinder : IAstWalker
 	{
 		ExpressoAst global_scope;
-		internal ScopeStatement cur_scope;
-		List<ScopeStatement> scopes = new List<ScopeStatement>();
+        SymbolTable symbol_table;
 		List<int> finally_count = new List<int>();
 		Parser parser;
 		
@@ -142,6 +363,7 @@ namespace Expresso.Ast
 			//_delete = new DeleteBinder(this);
 			parameter = new ParameterBinder(this);
 			parser = parentParser;
+            symbol_table = new SymbolTable();
 		}
 		
 		#region Public surface
@@ -158,7 +380,7 @@ namespace Expresso.Ast
 		{
 			Assert.NotNull(unboundAst);
 			
-			cur_scope = global_scope = unboundAst;
+			global_scope = unboundAst;
 			finally_count.Add(0);
 			
 			// Find all scopes and variables
@@ -183,39 +405,33 @@ namespace Expresso.Ast
 				FlowChecker.Check(scope);
 		}
 		
-		void PushScope(ScopeStatement node)
+        void PushScope(AstNode node)
 		{
-			node.Parent = cur_scope;
-			cur_scope = node;
+            //node.Parent = cur_scope;
+            //cur_scope = node;
+            symbol_table.AddScope();
 			finally_count.Add(0);
 		}
 		
 		void PopScope()
 		{
-			scopes.Add(cur_scope);
-			cur_scope = cur_scope.Parent;
+            //scopes.Add(cur_scope);
+            //cur_scope = cur_scope.Parent;
+            symbol_table.RemoveScope();
 			finally_count.RemoveAt(finally_count.Count - 1);
 		}
 		
-		internal ExpressoReference Reference(string name)
+        internal void DefineName(string name, AstType type)
 		{
-			return cur_scope.Reference(name);
-		}
-		
-		internal ExpressoVariable DefineName(string name, TypeAnnotation type)
-		{
-			return cur_scope.EnsureVariable(name, type);
-		}
-		
-		internal ExpressoVariable DefineParameter(string name, TypeAnnotation type)
-		{
-			return cur_scope.DefineParameter(name, type);
+            symbol_table.AddSymbol(name, type);
 		}
 		
         internal void ReportSyntaxWarning(string message, AstNode node)
 		{
-			if(parser != null)
-                parser.SemanticError(message, node.StartLocation, -1);
+            if(parser != null){
+                var real_message = "{0} " + message;
+                parser.SemanticError(real_message, node.StartLocation);
+            }
 		}
 		
 		/*internal void ReportSyntaxError(string message, Node node)
@@ -228,7 +444,8 @@ namespace Expresso.Ast
 
         public void VisitAst(ExpressoAst ast)
         {
-            throw new NotImplementedException();
+            ast.Imports.AcceptWalker(this);
+            ast.Body.AcceptWalker(this);
         }
 
         public void VisitBlock(BlockStatement block)
@@ -238,395 +455,300 @@ namespace Expresso.Ast
 
         public void VisitBreakStatement(BreakStatement breakStmt)
         {
+            //no op
         }
 
         public void VisitContinueStatement(ContinueStatement continueStmt)
         {
+            //no op
         }
 
         public void VisitEmptyStatement(EmptyStatement emptyStmt)
         {
+            //no op
         }
 
         public void VisitForStatement(ForStatement forStmt)
         {
+            foreach(var scope_var in forStmt.Left.Items)
+                scope_var.AcceptWalker(define);
+
+            forStmt.Target.AcceptWalker(this);
+            forStmt.Body.AcceptWalker(this);
         }
 
         public void VisitIfStatement(IfStatement ifStmt)
         {
-            throw new NotImplementedException();
+            ifStmt.Condition.AcceptWalker(this);
+            ifStmt.TrueBlock.AcceptWalker(this);
+            ifStmt.FalseBlock.AcceptWalker(this);
         }
 
-        public void VisitImportStatement(ImportStatement importStmt)
+        public void VisitImportStatement(ImportDeclaration importStmt)
         {
-            throw new NotImplementedException();
+            importStmt.ModuleNameTokens.AcceptWalker(this);
+            importStmt.AliasNameTokens.AcceptWalker(this);
         }
 
         public void VisitReturnStatement(ReturnStatement returnStmt)
         {
-            throw new NotImplementedException();
+            returnStmt.Expression.AcceptWalker(this);
         }
 
-        public void VisitSwitchStatement(SwitchStatement switchStmt)
+        public void VisitSwitchStatement(MatchStatement switchStmt)
         {
-            throw new NotImplementedException();
+            switchStmt.Target.AcceptWalker(this);
+            switchStmt.Clauses.AcceptWalker(this);
         }
 
         public void VisitThrowStatement(ThrowStatement throwStmt)
         {
-            throw new NotImplementedException();
+            throwStmt.Expression.AcceptWalker(this);
         }
 
         public void VisitTryStatement(TryStatement tryStmt)
         {
-            throw new NotImplementedException();
+            tryStmt.Catches.AcceptWalker(this);
+            tryStmt.Body.AcceptWalker(this);
+            tryStmt.FinallyClause.AcceptWalker(this);
         }
 
         public void VisitWhileStatement(WhileStatement whileStmt)
         {
-            throw new NotImplementedException();
+            whileStmt.Condition.AcceptWalker(this);
+            whileStmt.Body.AcceptWalker(this);
         }
 
         public void VisitWithStatement(WithStatement withStmt)
         {
-            throw new NotImplementedException();
         }
 
         public void VisitYieldStatement(YieldStatement yieldStmt)
         {
-            throw new NotImplementedException();
+            yieldStmt.Expression.AcceptWalker(this);
         }
 
         public void VisitVariableDeclarationStatement(VariableDeclarationStatement varDecl)
         {
-            throw new NotImplementedException();
+            varDecl.Variables.AcceptWalker(this);
         }
 
         public void VisitArgument(ParameterDeclaration arg)
         {
-            throw new NotImplementedException();
         }
 
         public void VisitAssignment(AssignmentExpression assignment)
         {
-            throw new NotImplementedException();
+            assignment.Left.AcceptWalker(this);
+            assignment.Right.AcceptWalker(this);
         }
 
         public void VisitBinaryExpression(BinaryExpression binaryExpr)
         {
-            throw new NotImplementedException();
+            binaryExpr.Left.AcceptWalker(this);
+            binaryExpr.Right.AcceptWalker(this);
         }
 
         public void VisitCallExpression(CallExpression callExpr)
         {
-            throw new NotImplementedException();
+            callExpr.Target.AcceptWalker(this);
+            callExpr.Arguments.AcceptWalker(this);
         }
 
         public void VisitCastExpression(CastExpression castExpr)
         {
-            throw new NotImplementedException();
+            castExpr.Target.AcceptWalker(this);
+            castExpr.ToExpression.AcceptWalker(this);
         }
 
         public void VisitComprehensionExpression(ComprehensionExpression comp)
         {
-            throw new NotImplementedException();
+            comp.Item.AcceptWalker(this);
+            comp.Body.Left.AcceptWalker(define);
+            comp.Body.Target.AcceptWalker(this);
+            comp.Body.Body.AcceptWalker(this);
         }
 
         public void VisitComprehensionForClause(ComprehensionForClause compFor)
         {
-            throw new NotImplementedException();
+            compFor.Left.AcceptWalker(this);
+            compFor.Target.AcceptWalker(this);
+            compFor.Body.AcceptWalker(this);
         }
 
         public void VisitComprehensionIfClause(ComprehensionIfClause compIf)
         {
-            throw new NotImplementedException();
+            compIf.Condition.AcceptWalker(this);
+            compIf.Body.AcceptWalker(this);
         }
 
         public void VisitConditionalExpression(ConditionalExpression condExpr)
         {
-            throw new NotImplementedException();
+            condExpr.Condition.AcceptWalker(this);
+            condExpr.TrueExpression.AcceptWalker(this);
+            condExpr.FalseExpression.AcceptWalker(this);
         }
 
         public void VisitLiteralExpression(LiteralExpression literal)
         {
-            throw new NotImplementedException();
+            //no op
         }
 
         public void VisitDefaultExpression(DefaultExpression defaultExpr)
         {
-            throw new NotImplementedException();
+            //no op
         }
 
         public void VisitIdentifier(Identifier ident)
         {
-            throw new NotImplementedException();
+            if(!symbol_table.IsSymbol(ident.Name))
+                ReportSyntaxWarning(string.Format("Unknown identifier {0}", ident.Name), ident);
         }
 
         public void VisitIntgerSequenceExpression(IntegerSequenceExpression intSeq)
         {
-            throw new NotImplementedException();
+            intSeq.Lower.AcceptWalker(this);
+            intSeq.Upper.AcceptWalker(this);
+            intSeq.Step.AcceptWalker(this);
         }
 
         public void VisitIndexerExpression(IndexerExpression indexExpr)
         {
-            throw new NotImplementedException();
-        }
-
-        public void VisitLateBinding<T>(LateBindExpression<T> lateBinding) where T : class
-        {
-            throw new NotImplementedException();
+            indexExpr.Target.AcceptWalker(this);
+            indexExpr.Arguments.AcceptWalker(this);
         }
 
         public void VisitMemberReference(MemberReference memRef)
         {
-            throw new NotImplementedException();
+            memRef.Target.AcceptWalker(this);
+            memRef.Subscription.AcceptWalker(this);
         }
 
         public void VisitNewExpression(NewExpression newExpr)
         {
-            throw new NotImplementedException();
+            newExpr.CreationExpression.AcceptWalker(this);
+            newExpr.Arguments.AcceptWalker(this);
         }
 
         public void VisitParenthesizedExpression(ParenthesizedExpression parensExpr)
         {
-            throw new NotImplementedException();
+            parensExpr.Expression.AcceptWalker(this);
         }
 
         public void VisitSequenceInitializer(SequenceInitializer seqInitializer)
         {
-            throw new NotImplementedException();
+            seqInitializer.Items.AcceptWalker(this);
         }
 
-        public void VisitCaseClause(CaseClause caseClause)
+        public void VisitCaseClause(MatchPatternClause caseClause)
         {
-            throw new NotImplementedException();
+            caseClause.Labels.AcceptWalker(this);
+            caseClause.Body.AcceptWalker(this);
         }
 
         public void VisitSequence(SequenceExpression seqExpr)
         {
-            throw new NotImplementedException();
+            seqExpr.Items.AcceptWalker(this);
         }
 
         public void VisitCatchClause(CatchClause catchClause)
         {
-            throw new NotImplementedException();
+            catchClause.AcceptWalker(define);
+            catchClause.Body.AcceptWalker(this);
         }
 
         public void VisitFinallyClause(FinallyClause finallyClause)
         {
-            throw new NotImplementedException();
+            finallyClause.Body.AcceptWalker(this);
         }
 
         public void VisitUnaryExpression(UnaryExpression unaryExpr)
         {
-            throw new NotImplementedException();
+            unaryExpr.Operand.AcceptWalker(this);
         }
 
         public void VisitNullReferenceExpression(NullReferenceExpression nullRef)
         {
-            throw new NotImplementedException();
         }
 
-        public void VisitThisReferenceExpression(ThisReferenceExpression thisRef)
+        public void VisitThisReferenceExpression(SelfReferenceExpression thisRef)
         {
-            throw new NotImplementedException();
         }
 
-        public void VisitBaseReferenceExpression(BaseReferenceExpression baseRef)
+        public void VisitBaseReferenceExpression(SuperReferenceExpression baseRef)
         {
-            throw new NotImplementedException();
         }
 
         public void VisitCommentNode(CommentNode comment)
         {
-            throw new NotImplementedException();
         }
 
         public void VisitTextNode(TextNode textNode)
         {
-            throw new NotImplementedException();
         }
 
         public void VisitAstType(AstType typeNode)
         {
-            throw new NotImplementedException();
         }
 
         public void VisitSimpleType(SimpleType simpleType)
         {
-            throw new NotImplementedException();
         }
 
         public void VisitPrimitiveType(PrimitiveType primitiveType)
         {
-            throw new NotImplementedException();
         }
 
         public void VisitFunctionDeclaration(FunctionDeclaration funcDecl)
         {
-            throw new NotImplementedException();
         }
 
         public void VisitConstructorDeclaration(ConstructorDeclaration constructor)
         {
-            throw new NotImplementedException();
         }
 
         public void VisitConstructorInitializer(ConstructorInitializer constructorInitializer)
         {
-            throw new NotImplementedException();
         }
 
         public void VisitFieldDeclaration(FieldDeclaration fieldDecl)
         {
-            throw new NotImplementedException();
+            fieldDecl.AcceptWalker(define);
         }
 
         public void VisitMethodDeclaration(MethodDeclaration methodDecl)
         {
-            throw new NotImplementedException();
+            methodDecl.AcceptWalker(define);
         }
 
         public void VisitParameterDeclaration(ParameterDeclaration parameterDecl)
         {
-            throw new NotImplementedException();
+            parameterDecl.AcceptWalker(define);
         }
 
         public void VisitVariableInitializer(VariableInitializer initializer)
         {
-            throw new NotImplementedException();
         }
 
         public void VisitNullNode(AstNode nullNode)
         {
-            throw new NotImplementedException();
         }
 
         public void VisitNewLine(NewLineNode newlineNode)
         {
-            throw new NotImplementedException();
         }
 
         public void VisitWhitespace(WhitespaceNode whitespaceNode)
         {
-            throw new NotImplementedException();
         }
 
         public void VisitExpressoTokenNode(ExpressoTokenNode tokenNode)
         {
-            throw new NotImplementedException();
         }
 
         public void VisitPatternPlaceholder(AstNode placeholder, ICSharpCode.NRefactory.PatternMatching.Pattern child)
         {
-            throw new NotImplementedException();
         }
-		
-		// TypeDefinition
-		public override bool Walk(TypeDefinition node)
-		{
-			var type = new TypeAnnotation(node.TargetType == DeclType.Class ? ObjectTypes.TypeClass :
-			                              node.TargetType == DeclType.Interface ? ObjectTypes.TypeInterface :
-			                              ObjectTypes.TypeStruct, node.Name);
-			node.ExpressoVariable = DefineName(node.Name, type);
-			
-			// Base references are in the outer context
-			foreach(Expression b in node.Bases)
-                b.AcceptWalker(this);
-			
-			// process the decorators in the outer context
-			/*if (node.Decorators != null) {
-				foreach (Expression dec in node.Decorators) {
-					dec.Walk(this);
-				}
-			}*/
-			
-			PushScope(node);
-			
-			//node.ModuleNameVariable = _globalScope.EnsureGlobalVariable("__name__");
-			
-			// define the __doc__ and the __module__
-			/*if (node.Body.Documentation != null) {
-				node.DocVariable = DefineName("__doc__");
-			}
-			node.ModVariable = DefineName("__module__");
-			*/
-			// Walk the body
-			foreach(var stmt in node.Body)
-                stmt.AcceptWalker(this);
-
-			return false;
-		}
-		
-        public override void VisitExpressionStatement(ExpressionStatement exprStmt)
-		{
-			exprStmt.Parent = cur_scope;
-		}
-		
-		public override bool Walk(BinaryExpression node)
-		{
-			node.Parent = cur_scope;
-		}
-		
-		public override bool Walk(CallExpression node)
-		{
-			node.Parent = cur_scope;
-			return base.Walk(node);
-		}
-		
-		public override bool Walk(ConditionalExpression node)
-		{
-			node.Parent = cur_scope;
-			return base.Walk(node);
-		}
-		
-		public override bool Walk(ComprehensionExpression node)
-		{
-			node.Parent = cur_scope;
-			return base.Walk(node);
-		}
-		
-		public override bool Walk(ComprehensionIfClause node)
-		{
-			node.Parent = cur_scope;
-			return base.Walk(node);
-		}
-		
-		public override bool Walk(YieldStatement node)
-		{
-			node.Parent = cur_scope;
-			return base.Walk(node);
-		}
-		
-		public override bool Walk(UnaryExpression node)
-		{
-			node.Parent = cur_scope;
-			return base.Walk(node);
-		}
-		
-		public override bool Walk(IntegerSequenceExpression node)
-		{
-			node.Parent = cur_scope;
-			return base.Walk(node);
-		}
-		
-		public override void PostWalk(ConditionalExpression node)
-		{
-			node.Parent = cur_scope;
-			base.PostWalk(node);
-		}
-		
-		public override bool Walk(Constant node)
-		{
-			node.Parent = cur_scope;
-			return base.Walk(node);
-		}
-		
-		public override bool Walk(EmptyStatement node)
-		{
-			node.Parent = cur_scope;
-			return base.Walk(node);
-		}
 		
 		public override bool Walk(ThrowStatement node)
 		{
@@ -635,195 +757,6 @@ namespace Expresso.Ast
 			return base.Walk(node);
 		}
 		
-		public override bool Walk(BlockStatement node)
-		{
-			node.Parent = cur_scope;
-			return base.Walk(node);
-		}
-		
-		// ForStatement
-		public override bool Walk(ForStatement node)
-		{
-			node.Parent = cur_scope;
-			/*if (cur_scope is FunctionDefinition) {
-				cur_scope.ShouldInterpret = false;
-			}*/
-			
-			// we only push the loop for the body of the loop
-			// so we need to walk the for statement ourselves
-			if(node.HasLet)
-				node.Left.Walk(define);
-			
-			if(node.Left != null)
-				node.Left.Walk(this);
-
-			if(node.Target != null)
-				node.Target.Walk(this);
-			
-			if(node.Body != null)
-				node.Body.Walk(this);
-			
-			return false;
-		}
-		
-		public override bool Walk(WhileStatement node)
-		{
-			node.Parent = cur_scope;
-			
-			// we only push the loop for the body of the loop
-			// so we need to walk the while statement ourselves
-			if(node.Condition != null)
-				node.Condition.Walk(this);
-			
-			if(node.Body != null)
-				node.Body.Walk(this);
-			
-			return false;
-		}
-		
-		public override bool Walk(BreakStatement node)
-		{
-			node.Parent = cur_scope;
-			
-			return base.Walk(node);
-		}
-		
-		public override bool Walk(ContinueStatement node)
-		{
-			node.Parent = cur_scope;
-			
-			return base.Walk(node);
-		}
-		
-		public override bool Walk(ReturnStatement node)
-		{
-			node.Parent = cur_scope;
-			FunctionDeclaration func_def = cur_scope as FunctionDeclaration;
-			if(func_def != null)
-				func_def.HasReturn = true;
-
-			return base.Walk(node);
-		}
-
-		public override bool Walk(MemberReference node)
-		{
-			node.Parent = cur_scope;
-			var parent_ident = (Identifier)node.Target;
-            return true;
-		}
-
-		/*public override bool Walk<T>(LateBindExpression<T> node)
-		{
-			return base.Walk(node);
-		}*/
-		
-		// WithStatement
-		public override bool Walk(WithStatement node)
-		{
-			/*node.Parent = cur_scope;
-			cur_scope.ContainsExceptionHandling = true;
-			
-			if(node.Variable != null){
-				node.Variable.Walk(_define);
-			}*/
-			return true;
-		}
-		
-		// FromImportStatement
-		/*public override bool Walk(FromImportStatement node)
-        {
-			node.Parent = _currentScope;
-			
-			if (node.Names != FromImportStatement.Star) {
-				PythonVariable[] variables = new PythonVariable[node.Names.Count];
-				for (int i = 0; i < node.Names.Count; i++) {
-					string name = node.AsNames[i] != null ? node.AsNames[i] : node.Names[i];
-					variables[i] = DefineName(name);
-				}
-				node.Variables = variables;
-			} else {
-				Debug.Assert(_currentScope != null);
-				_currentScope.ContainsImportStar = true;
-				_currentScope.NeedsLocalsDictionary = true;
-				_currentScope.HasLateBoundVariableSets = true;
-			}
-			return true;
-		}*/
-		
-		// FunctionDefinition
-		public override bool Walk(FunctionDeclaration node)
-		{
-			//node._nameVariable = global_scope.EnsureGlobalVariable("__name__");
-			
-			// Name is defined in the enclosing context
-			/*if(!node.IsLambda){
-				node.PythonVariable = DefineName(node.Name);
-			}*/
-			
-			// process the default arg values in the outer context
-			/*foreach(var p in node.Parameters){
-				if(p.Option != null){
-					p.Option.Walk(this);
-				}
-			}*/
-			// process the decorators in the outer context
-			/*if (node.Decorators != null) {
-				foreach (Expression dec in node.Decorators) {
-					dec.Walk(this);
-				}
-			}*/
-			
-			PushScope(node);
-			
-			foreach(var p in node.Parameters)
-				p.Walk(parameter);
-			
-			node.Body.Walk(this);
-			return false;
-		}
-		
-		// FunctionDefinition
-		public override void PostWalk(FunctionDeclaration node)
-        {
-			PopScope();
-		}
-		
-		public override bool Walk(Identifier node)
-		{
-			node.Parent = cur_scope;
-			node.Reference = Reference(node.Name);
-			return true;
-		}
-		
-		public override bool Walk(IfStatement node)
-		{
-			node.Parent = cur_scope;
-			return base.Walk(node);
-		}
-		
-		public override bool Walk(AssertStatement node)
-		{
-			node.Parent = cur_scope;
-			return base.Walk(node);
-		}        
-		
-		// ExpressoAst
-		public override bool Walk(ExpressoAst node)
-		{
-			/*if(node){
-				node.NameVariable = DefineName("__name__");
-				node.FileVariable = DefineName("__file__");
-				node.DocVariable = DefineName("__doc__");
-				
-				// commonly used module variables that we want defined for optimization purposes
-				DefineName("__path__");
-				DefineName("__builtins__");
-				DefineName("__package__");
-			}*/
-			return true;
-		}
-		
-		// ExpressoAst
 		public override void PostWalk(ExpressoAst node)
 		{
 			// Do not add the global suite to the list of processed nodes,
@@ -834,7 +767,7 @@ namespace Expresso.Ast
 		}
 		
 		// ImportStatement
-		public override bool Walk(ImportStatement node)
+		public override bool Walk(ImportDeclaration node)
 		{
 			node.Parent = cur_scope;
 			
