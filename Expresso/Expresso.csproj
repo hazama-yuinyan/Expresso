@@ -84,28 +84,12 @@
     <Compile Include="Scanner.cs" />
     <Compile Include="Ast\Identifier.cs" />
     <Compile Include="Compiler\EmitterException.cs" />
-    <Compile Include="Attributes\ExpressoHiddenAttribute.cs" />
-    <Compile Include="Attributes\ExpressoTypeAttribute.cs" />
     <Compile Include="Ast\ExpressoAst.cs" />
-    <Compile Include="Ast\HelperNodes\ExpressoReference.cs" />
-    <Compile Include="Ast\HelperNodes\ExpressoVariable.cs" />
-    <Compile Include="Ast\HelperNodes\IReferencible.cs" />
-    <Compile Include="Micellaneous\Assert.cs" />
-    <Compile Include="Micellaneous\Interfaces.cs" />
-    <Compile Include="Micellaneous\CallSignature.cs" />
-    <Compile Include="Micellaneous\ArgumentInfo.cs" />
-    <Compile Include="Micellaneous\ContractUtils.cs" />
-    <Compile Include="Micellaneous\Utils.cs" />
-    <Compile Include="Micellaneous\ArrayUtils.cs" />
-    <Compile Include="Attributes\ExpressoModuleAttibute.cs" />
     <Compile Include="ParserException.cs" />
     <Compile Include="Ast\AstNode.cs" />
     <Compile Include="Ast\NodeType.cs" />
     <Compile Include="Ast\AstType.cs" />
     <Compile Include="Formatting\ExpressoFormattingOptions.cs" />
-    <Compile Include="OutputVisitor\ExpressoOutputWalker.cs" />
-    <Compile Include="OutputVisitor\TokenWriter.cs" />
-    <Compile Include="OutputVisitor\InsertRequiredSpacesDecorator.cs" />
     <Compile Include="Formatting\FormattingOptionsFactory.cs" />
     <Compile Include="Compiler\TypeAnnotation.cs" />
     <Compile Include="OutputVisitor\DebugOutputWalker.cs" />
@@ -115,10 +99,7 @@
     <Compile Include="Ast\Statements\ForStatement.cs" />
     <Compile Include="Ast\Statements\IfStatement.cs" />
     <Compile Include="Ast\Statements\ReturnStatement.cs" />
-    <Compile Include="Ast\Statements\ThrowStatement.cs" />
-    <Compile Include="Ast\Statements\TryStatement.cs" />
     <Compile Include="Ast\Statements\WhileStatement.cs" />
-    <Compile Include="Ast\Statements\WithStatement.cs" />
     <Compile Include="Ast\Statements\YieldStatement.cs" />
     <Compile Include="Ast\TypeMembers\EntityDeclaration.cs" />
     <Compile Include="Ast\ExpressoTokenNode.cs" />
@@ -140,7 +121,6 @@
     <Compile Include="Ast\TypeMembers\ParameterDeclaration.cs" />
     <Compile Include="Ast\TypeMembers\FieldDeclaration.cs" />
     <Compile Include="Ast\TypeMembers\VariableInitializer.cs" />
-    <Compile Include="Ast\TypeMembers\MethodDeclaration.cs" />
     <Compile Include="Ast\GeneralScope\TypeDeclaration.cs" />
     <Compile Include="Ast\Statements\BreakStatement.cs" />
     <Compile Include="Ast\Statements\ContinueStatement.cs" />
@@ -180,9 +160,14 @@
     <Compile Include="Analysis\InferenceHelper.cs" />
     <Compile Include="Analysis\SymbolTable.cs" />
     <Compile Include="Analysis\ExpressoNameBinder.cs" />
-    <Compile Include="Analysis\FlowChecker.cs" />
     <Compile Include="Analysis\IAstWalker.cs" />
     <Compile Include="Ast\PlaceholderType.cs" />
+    <Compile Include="Ast\Expressions\OperatorType.cs" />
+    <Compile Include="Ast\Expressions\PathExpression.cs" />
+    <Compile Include="Analysis\TypeChecker.cs" />
+    <Compile Include="Analysis\TypeInferenceRunner.cs" />
+    <Compile Include="Analysis\TypeContext.cs" />
+    <Compile Include="Ast\Expressions\KeyValueLikeExpression.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -194,16 +179,21 @@
   <ItemGroup>
     <None Include="Expresso.ATG" />
     <None Include="Compiler\CSharpEmitter.cs" />
-    <None Include="Micellaneous\SourceSpan.cs" />
     <None Include="Documentation\Bugs.txt" />
     <None Include="Documentation\ExpressoDesignMemo.txt" />
     <None Include="Documentation\ExpressoTutorial.txt" />
+    <None Include="Ast\HelperNodes\ExpressoVariable.cs" />
+    <None Include="Ast\HelperNodes\ExpressoReference.cs" />
+    <None Include="Ast\HelperNodes\IReferencible.cs" />
+    <None Include="Documentation\ExpressoLanguageSpecificationMemo.txt" />
+    <None Include="OutputVisitor\TokenWriter.cs" />
+    <None Include="OutputVisitor\InsertRequiredSpacesDecorator.cs" />
+    <None Include="OutputVisitor\ExpressoOutputWalker.cs" />
+    <None Include="Analysis\FlowChecker.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Compiler\" />
-    <Folder Include="Attributes\" />
     <Folder Include="Ast\HelperNodes\" />
-    <Folder Include="Micellaneous\" />
     <Folder Include="Formatting\" />
     <Folder Include="OutputVisitor\" />
     <Folder Include="Ast\Statements\" />

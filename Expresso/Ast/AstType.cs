@@ -1,4 +1,5 @@
 using System;
+using ICSharpCode.NRefactory;
 using ICSharpCode.NRefactory.PatternMatching;
 using ICSharpCode.NRefactory.TypeSystem;
 
@@ -11,7 +12,7 @@ namespace Expresso.Ast
     public abstract class AstType : AstNode
     {
         #region Null
-        public static readonly AstType NullType = new NullAstType();
+        public new static readonly AstType Null = new NullAstType();
         sealed class NullAstType : AstType
         {
             public override bool IsNull{
@@ -39,6 +40,15 @@ namespace Expresso.Ast
             {
                 return other == null || other.IsNull;
             }
+
+            #region implemented abstract members of AstType
+
+            public override ITypeReference ToTypeReference(NameLookupMode lookupMode, InterningProvider interningProvider = null)
+            {
+                throw new NotImplementedException();
+            }
+
+            #endregion
         }
         #endregion
 
@@ -67,12 +77,12 @@ namespace Expresso.Ast
 
             public bool DoMatch(INode other, Match match)
             {
-                child.DoMatch(other, match);
+                return child.DoMatch(other, match);
             }
 
             public bool DoMatchCollection(ICSharpCode.NRefactory.Role role, INode pos, Match match, BacktrackingInfo backtrackingInfo)
             {
-                return child.DoMatchCollection(role, pos, match);
+                return child.DoMatchCollection(role, pos, match, backtrackingInfo);
             }
 
             public override bool IsNull{
@@ -82,16 +92,39 @@ namespace Expresso.Ast
             }
 
             #endregion
+
+            #region implemented abstract members of AstNode
+
+            protected internal override bool DoMatch(AstNode other, Match match)
+            {
+                throw new NotImplementedException();
+            }
+
+            #endregion
+
+            #region implemented abstract members of AstType
+
+            public override ITypeReference ToTypeReference(NameLookupMode lookupMode, InterningProvider interningProvider = null)
+            {
+                throw new NotImplementedException();
+            }
+
+            #endregion
         }
         #endregion
 
         public override NodeType NodeType{
             get{
-                NodeType.TypeReference;
+                return NodeType.TypeReference;
             }
         }
 
-        public AstType()
+        protected AstType()
+        {
+        }
+
+        protected AstType(TextLocation start, TextLocation end)
+            : base(start, end)
         {
         }
 
@@ -113,7 +146,7 @@ namespace Expresso.Ast
 
         public override TResult AcceptWalker<TResult, TData>(IAstWalker<TData, TResult> walker, TData data)
         {
-            return walker.VisitArgument(this, data);
+            return walker.VisitAstType(this, data);
         }
         #endregion
 
@@ -159,7 +192,7 @@ namespace Expresso.Ast
             }else if(outermost_type.Role == Roles.BaseType){
                 // Use BaseTypeReference for a type's base type, and for a constraint on a type.
                 // Do not use it for a constraint on a method.
-                if(outermost_type.Parent is TypeDeclaration || (outermost_type.Parent is Constraint && outermost_type.Parent.Parent is TypeDeclaration))
+                if(outermost_type.Parent is TypeDeclaration /*|| (outermost_type.Parent is Constraint && outermost_type.Parent.Parent is TypeDeclaration)*/)
                     return NameLookupMode.BaseTypeReference;
             }
             return NameLookupMode.Type;

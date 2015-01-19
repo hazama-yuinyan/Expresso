@@ -1,9 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
-using System.Linq;
 
-using Expresso.Compiler;
 using ICSharpCode.NRefactory;
 
 namespace Expresso.Ast
@@ -11,7 +8,7 @@ namespace Expresso.Ast
     /// <summary>
     /// 二項演算。
 	/// Represents a binary expression.
-    /// Expression BinaryOperator Expression
+    /// Expression BinaryOperator Expression ;
     /// </summary>
     public class BinaryExpression : Expression
     {
@@ -26,8 +23,6 @@ namespace Expresso.Ast
         public static readonly TokenRole InEqualityRole = new TokenRole("!=");
         public static readonly TokenRole LessThanRole = new TokenRole("<");
         public static readonly TokenRole LessThanOrEqualRole = new TokenRole("<=");
-        public static readonly TokenRole AddRole = new TokenRole("+");
-        public static readonly TokenRole SubtractRole = new TokenRole("-");
         public static readonly TokenRole MultiplyRole = new TokenRole("*");
         public static readonly TokenRole DivideRole = new TokenRole("/");
         public static readonly TokenRole ModulusRole = new TokenRole("%");
@@ -54,6 +49,7 @@ namespace Expresso.Ast
         /// </summary>
         public Expression Left{
             get{return GetChildByRole(LhsRole);}
+            set{SetChildByRole(LhsRole, value);}
 		}
 
         public ExpressoTokenNode OperatorToken{
@@ -66,13 +62,16 @@ namespace Expresso.Ast
         /// </summary>
         public Expression Right{
             get{return GetChildByRole(RhsRole);}
+            set{SetChildByRole(RhsRole, value);}
 		}
 
 		public BinaryExpression(Expression left, Expression right, OperatorType opType)
 		{
 			ope = opType;
-            AddChild(left, LhsRole);
-            AddChild(right, RhsRole);
+            var op_role = GetOperatorRole(opType);
+            SetChildByRole(op_role, new ExpressoTokenNode(TextLocation.Empty, op_role));
+            Left = left;
+            Right = right;
 		}
 
         public override void AcceptWalker(IAstWalker walker)
@@ -89,6 +88,17 @@ namespace Expresso.Ast
         {
             return walker.VisitBinaryExpression(this, data);
         }
+
+        #region implemented abstract members of AstNode
+
+        protected internal override bool DoMatch(AstNode other, ICSharpCode.NRefactory.PatternMatching.Match match)
+        {
+            var o = other as BinaryExpression;
+            return o != null && OperatorToken.DoMatch(o.OperatorToken, match)
+                && Left.DoMatch(o.Left, match) && Right.DoMatch(o.Right, match);
+        }
+
+        #endregion
 
         public static TokenRole GetOperatorRole(OperatorType op)
         {
@@ -116,9 +126,9 @@ namespace Expresso.Ast
             case OperatorType.LessThanOrEqual:
                 return LessThanOrEqualRole;
             case OperatorType.Plus:
-                return AddRole;
+                return Roles.PlusToken;
             case OperatorType.Minus:
-                return SubtractRole;
+                return Roles.MinusToken;
             case OperatorType.Times:
                 return MultiplyRole;
             case OperatorType.Divide:

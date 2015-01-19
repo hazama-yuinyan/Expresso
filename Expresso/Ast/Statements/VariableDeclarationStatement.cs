@@ -1,17 +1,17 @@
 using System;
 using System.Collections.Generic;
 
-using Expresso.Compiler;
 using System.Linq;
+using ICSharpCode.NRefactory;
 
 namespace Expresso.Ast
 {
 	/// <summary>
     /// 変数宣言文。
-    /// The variable declaration.
-    /// "let" | "var" Name ["(-" Type] {',' Name ["(-" Type]}
+    /// The variable declaration statement.
+    /// ("let" | "var") Name ["(-" Type] {',' Name ["(-" Type]} ;
 	/// </summary>
-    public class VariableDeclarationStatement : Expression
+    public class VariableDeclarationStatement : Statement
 	{
 		/// <summary>
         /// 定義される変数郡。
@@ -35,19 +35,11 @@ namespace Expresso.Ast
             get{return GetChildByRole(Roles.SemicolonToken);}
         }
 
-        public override NodeType NodeType{
-            get{return NodeType.Statement;}
-        }
-
-        public VariableDeclarationStatement(Identifier lhs, Expression rhs, Modifiers modifiers)
-		{
-            AddChild(new VariableInitializer(lhs, rhs), Roles.Variable);
-            Modifiers = modifiers;
-		}
-
-        public VariableDeclarationStatement(IEnumerable<Identifier> lhs, IEnumerable<Expression> rhs, Modifiers modifiers)
+        public VariableDeclarationStatement(IEnumerable<Identifier> lhs, IEnumerable<Expression> rhs,
+            Modifiers modifiers, TextLocation start, TextLocation end)
+            : base(start, end)
         {
-            foreach(var items in Enumerable.Zip(lhs, rhs, (left, right) => new Tuple<Identifier, Expression>(left, right)))
+            foreach(var items in lhs.Zip(rhs, (left, right) => new Tuple<Identifier, Expression>(left, right)))
                 AddChild(new VariableInitializer(items.Item1, items.Item2), Roles.Variable);
             
             Modifiers = modifiers;

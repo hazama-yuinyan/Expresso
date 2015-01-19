@@ -1,16 +1,13 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
-using Expresso.Runtime;
-using Expresso.Compiler;
+using ICSharpCode.NRefactory;
 
 namespace Expresso.Ast
 {
     /// <summary>
     /// 複文ブロック。
 	/// Represents a block of statements.
-    /// '{' { Statement } '}'
+    /// '{' { Statement } '}' ;
     /// </summary>
-	/// <seealso cref="BreakableStatement"/>
     public class BlockStatement : Statement
     {
         /// <summary>
@@ -18,13 +15,14 @@ namespace Expresso.Ast
 		/// The body statements
         /// </summary>
         public AstNodeCollection<Statement> Statements{
-            get{GetChildrenByRole(Roles.EmbeddedStatement);}
+            get{return GetChildrenByRole(Roles.EmbeddedStatement);}
 		}
 
-        public BlockStatement(IEnumerable<Statement> stmts)
+        public BlockStatement(IEnumerable<Statement> stmts, TextLocation start, TextLocation end)
+            : base(start, end)
         {
             foreach(var stmt in stmts)
-                AddChild(Roles.EmbeddedStatement, stmt);
+                AddChild(stmt, Roles.EmbeddedStatement);
         }
 
         public override void AcceptWalker(IAstWalker walker)

@@ -3,7 +3,7 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProductVersion>10.0.0</ProductVersion>
+    <ProductVersion>8.0.30703</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{D60E49D6-6CBA-4D54-A009-6A0528181C88}</ProjectGuid>
     <OutputType>Library</OutputType>
@@ -74,6 +74,16 @@
     <Compile Include="NativeDebugger\ExpressoObjectDebugView.cs" />
     <Compile Include="Meta\SystemTypeDefinition.cs" />
     <Compile Include="Meta\TypeDefinition.cs" />
+    <Compile Include="Micellaneous\ArgumentInfo.cs" />
+    <Compile Include="Micellaneous\ArrayUtils.cs" />
+    <Compile Include="Micellaneous\Assert.cs" />
+    <Compile Include="Micellaneous\CallSignature.cs" />
+    <Compile Include="Micellaneous\ContractUtils.cs" />
+    <Compile Include="Micellaneous\Interfaces.cs" />
+    <Compile Include="Micellaneous\Utils.cs" />
+    <Compile Include="Attributes\ExpressoHiddenAttribute.cs" />
+    <Compile Include="Attributes\ExpressoModuleAttibute.cs" />
+    <Compile Include="Attributes\ExpressoTypeAttribute.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
@@ -81,5 +91,8 @@
       <Project>{4E28200A-5808-419F-8A57-F504842991AF}</Project>
       <Name>Expresso</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Micellaneous\SourceSpan.cs" />
   </ItemGroup>
 </Project>

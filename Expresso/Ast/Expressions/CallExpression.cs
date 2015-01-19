@@ -1,16 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 
-using Expresso.Runtime;
-using Expresso.Compiler;
 
 namespace Expresso.Ast
 {
     /// <summary>
     /// 関数呼び出し。
 	/// Reperesents a function call.
-    /// Expression '(' Arguments ')'
+    /// Expression '(' [ Arguments ] ')' ;
     /// </summary>
     public class CallExpression : Expression
     {
@@ -22,6 +19,7 @@ namespace Expresso.Ast
         /// </summary>
         public Expression Target{
             get{return GetChildByRole(Roles.TargetExpression);}
+            set{SetChildByRole(Roles.TargetExpression, value);}
 		}
 
         public ExpressoTokenNode LPar{
@@ -45,7 +43,7 @@ namespace Expresso.Ast
             foreach(var arg in arguments)
                 AddChild(arg, Roles.Argument);
 
-            AddChild(targetExpr, Roles.TargetExpression);
+            Target = targetExpr;
         }
 
         public override void AcceptWalker(IAstWalker walker)

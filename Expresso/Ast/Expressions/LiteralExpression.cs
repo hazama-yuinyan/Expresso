@@ -1,8 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 
-using Expresso.Compiler;
-using Expresso.Compiler.Meta;
 using ICSharpCode.NRefactory;
 
 namespace Expresso.Ast
@@ -24,7 +21,7 @@ namespace Expresso.Ast
 		/// </summary>
         public AstType Type{
             get{return GetChildByRole(Roles.Type);}
-            set{SetChildByRole(Roles.Type);}
+            set{SetChildByRole(Roles.Type, value);}
 		}
 		
         /// <summary>
@@ -44,11 +41,8 @@ namespace Expresso.Ast
             get{return literal_value ?? "";}
         }
 
-        public override NodeType NodeType{
-            get{return NodeType.Expression;}
-        }
-
-        public LiteralExpression(object value, AstType valType)
+        public LiteralExpression(object value, AstType valType, TextLocation loc)
+            : base(loc, new TextLocation(loc.Line, loc.Column + value.ToString().Length))
 		{
             Type = valType;
             Value = value;

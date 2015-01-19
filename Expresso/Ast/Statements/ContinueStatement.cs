@@ -1,4 +1,5 @@
 using System;
+using ICSharpCode.NRefactory;
 
 
 namespace Expresso.Ast
@@ -6,7 +7,7 @@ namespace Expresso.Ast
     /// <summary>
     /// continue文。
     /// The continue statement.
-    /// "continue" [ "upto" Expression ] ';'
+    /// "continue" [ "upto" Expression ] ';' ;
     /// </summary>
     public class ContinueStatement : Statement
     {
@@ -16,25 +17,15 @@ namespace Expresso.Ast
         /// continueの際に何階層分ループ構造を遡るか。
         /// Indicates how many loops we will break out.
         /// </summary>
-        public Expression Count{
-            get{return GetChildByRole(Roles.Expression);}
-            set{SetChildByRole(Roles.Expression, value);}
+        public LiteralExpression Count{
+            get{return GetChildByRole(BreakStatement.LiteralRole);}
+            set{SetChildByRole(BreakStatement.LiteralRole, value);}
         }
 
-        /// <summary>
-        /// continue文が含まれるループ構文。
-        /// Loops that have this statement as their child.
-        /// </summary>
-        /*public IEnumerable<BreakableStatement> Enclosings{
-            get{return Children;}
-        }*/
-
-        public ContinueStatement(Expression countExpr/*, BreakableStatement[] loops*/)
+        public ContinueStatement(LiteralExpression countExpr, TextLocation start, TextLocation end)
+            : base(start, end)
         {
             Count = countExpr;
-
-            //foreach(var enclosing in loops)
-            //    AddChild(enclosing);
         }
 
         public override void AcceptWalker(IAstWalker walker)
@@ -52,7 +43,7 @@ namespace Expresso.Ast
             return walker.VisitContinueStatement(this, data);
         }
 
-        protected override bool DoMatch(AstNode other, ICSharpCode.NRefactory.PatternMatching.Match match)
+        protected internal override bool DoMatch(AstNode other, ICSharpCode.NRefactory.PatternMatching.Match match)
         {
             var o = other as ContinueStatement;
             return o != null && Count.DoMatch(o.Count, match);

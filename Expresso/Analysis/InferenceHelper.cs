@@ -3,7 +3,7 @@ using Expresso.Ast;
 using Expresso.Compiler.Meta;
 
 
-namespace Expresso.Parsing
+namespace Expresso.Ast.Analysis
 {
     /// <summary>
     /// Contains logics for inference.

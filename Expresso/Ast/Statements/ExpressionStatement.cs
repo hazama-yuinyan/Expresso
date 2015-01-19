@@ -1,16 +1,12 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
-
-using Expresso.Runtime;
-using Expresso.Compiler;
+using ICSharpCode.NRefactory;
 
 namespace Expresso.Ast
 {
 	/// <summary>
 	/// 式文。
 	/// The expression statement.
-    /// Expression ';'
+    /// Expression ';' ;
 	/// </summary>
     public class ExpressionStatement : Statement
 	{
@@ -27,11 +23,8 @@ namespace Expresso.Ast
             get{return GetChildByRole(Roles.SemicolonToken);}
         }
 
-        public override NodeType NodeType{
-            get{return NodeType.Statement;}
-        }
-
-        public ExpressionStatement(Expression expr)
+        public ExpressionStatement(Expression expr, TextLocation start, TextLocation end)
+            : base(start, end)
 		{
             Expression = expr;
 		}
@@ -56,7 +49,7 @@ namespace Expresso.Ast
         protected internal override bool DoMatch(AstNode other, ICSharpCode.NRefactory.PatternMatching.Match match)
         {
             var o = other as ExpressionStatement;
-            return o != null && Expression.DoMatch(o.Expression);
+            return o != null && Expression.DoMatch(o.Expression, match);
         }
 
         #endregion

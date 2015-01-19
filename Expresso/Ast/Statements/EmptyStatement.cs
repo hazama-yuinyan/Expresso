@@ -1,21 +1,19 @@
 ﻿using System;
+using ICSharpCode.NRefactory;
 
 namespace Expresso.Ast
 {
     /// <summary>
     /// 空の文。
     /// Represents an empty statement.
-    /// ';'
+    /// ';' ;
     /// </summary>
     public class EmptyStatement : Statement
     {
-		public EmptyStatement()
+        public EmptyStatement(TextLocation location)
+            : base(location, new TextLocation(location.Line, location.Column + ";".Length))
 		{
 		}
-
-        public override NodeType NodeType{
-            get{return NodeType.Statement;}
-        }
 
         public override void AcceptWalker(IAstWalker walker)
 		{

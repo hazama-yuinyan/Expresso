@@ -5,13 +5,13 @@ namespace Expresso.Ast
 {
     /// <summary>
     /// Represents an expression pattern.
-    /// Expression
+    /// Expression ;
     /// </summary>
     public class ExpressionPattern : PatternConstruct
     {
         public Expression Expression{
             get{return GetChildByRole(Roles.Expression);}
-            set{SetChildByRole(Roles.Expression);}
+            set{SetChildByRole(Roles.Expression, value);}
         }
 
         public ExpressionPattern(Expression expr)

@@ -1,8 +1,5 @@
 using System.Collections.Generic;
-using System.Linq;
 
-using Expresso.Compiler;
-using Expresso.Compiler.Meta;
 
 namespace Expresso.Ast
 {
@@ -28,10 +25,6 @@ namespace Expresso.Ast
             get{return GetChildByRole(Roles.Type);}
             set{SetChildByRole(Roles.Type, value);}
 		}
-
-        public override NodeType NodeType{
-            get{return NodeType.Expression;}
-        }
 
         public SequenceInitializer(IEnumerable<Expression> seqItems, AstType objType)
 		{

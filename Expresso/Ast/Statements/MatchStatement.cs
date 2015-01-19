@@ -1,9 +1,6 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 
-using Expresso.Compiler;
-using Expresso.Runtime;
 using ICSharpCode.NRefactory;
 
 namespace Expresso.Ast
@@ -11,15 +8,15 @@ namespace Expresso.Ast
 	/// <summary>
     /// Match文。
     /// The Match statement.
-    /// "match" Expression '{' MatchPatternClause { MatchPatternClause } '}'
+    /// "match" Expression '{' MatchPatternClause { MatchPatternClause } '}' ;
 	/// </summary>
     public class MatchStatement : Statement
 	{
         public static readonly TokenRole MatchKeywordRole = new TokenRole("match");
-        public static readonly Role<Expression> PatternClauseRole = new Role<Expression>("PatternClause", Expression.Null);
+        public static readonly Role<MatchPatternClause> PatternClauseRole = new Role<MatchPatternClause>("PatternClause");
 
         public ExpressoTokenNode MatchToken{
-            get{GetChildByRole(MatchKeywordRole);}
+            get{return GetChildByRole(MatchKeywordRole);}
         }
 
 		/// <summary>
@@ -28,6 +25,7 @@ namespace Expresso.Ast
         /// </summary>
         public Expression Target{
             get{return GetChildByRole(Roles.TargetExpression);}
+            set{SetChildByRole(Roles.TargetExpression, value);}
 		}
 
         /// <summary>
@@ -37,21 +35,23 @@ namespace Expresso.Ast
             get{return GetChildrenByRole(PatternClauseRole);}
 		}
 
-        public MatchStatement(Expression targetExpr, IEnumerable<MatchPatternClause> patternClauses)
+        public MatchStatement(Expression targetExpr, IEnumerable<MatchPatternClause> patternClauses,
+            TextLocation start, TextLocation end)
+            : base(start, end)
 		{
-            AddChild(targetExpr, Roles.TargetExpression);
+            Target = targetExpr;
             foreach(var pattern_clause in patternClauses)
                 AddChild(pattern_clause, PatternClauseRole);
 		}
 
         public override void AcceptWalker(IAstWalker walker)
 		{
-            walker.VisitSwitchStatement(this);
+            walker.VisitMatchStatement(this);
 		}
 
         public override TResult AcceptWalker<TResult>(IAstWalker<TResult> walker)
         {
-            return walker.VisitSwitchStatement(this);
+            return walker.VisitMatchStatement(this);
         }
 
         public override TResult AcceptWalker<TResult, TData>(IAstWalker<TData, TResult> walker, TData data)
@@ -88,30 +88,31 @@ namespace Expresso.Ast
 		/// The body statement or block.
         /// </summary>
         public Statement Body{
-            get{return GetChildByRole(Roles.Body);}
+            get{return GetChildByRole(Roles.EmbeddedStatement);}
+            set{SetChildByRole(Roles.EmbeddedStatement, value);}
 		}
 
         public MatchPatternClause(IEnumerable<PatternConstruct> patternExprs, Statement bodyStmt)
 		{
-            foreach(var label in patternExprs)
-                AddChild(label, Roles.Expression);
+            foreach(var pattern in patternExprs)
+                AddChild(pattern, Roles.Pattern);
 
-            AddChild(bodyStmt, Roles.Body);
+            Body = bodyStmt;
 		}
 
         public override void AcceptWalker(IAstWalker walker)
 		{
-            walker.VisitCaseClause(this);
+            walker.VisitMatchClause(this);
 		}
 
         public override TResult AcceptWalker<TResult>(IAstWalker<TResult> walker)
         {
-            return walker.VisitCaseClause(this);
+            return walker.VisitMatchClause(this);
         }
 
         public override TResult AcceptWalker<TResult, TData>(IAstWalker<TData, TResult> walker, TData data)
         {
-            return walker.VisitCaseClause(this, data);
+            return walker.VisitMatchClause(this, data);
         }
 
         protected internal override bool DoMatch(AstNode other, ICSharpCode.NRefactory.PatternMatching.Match match)
@@ -121,4 +122,3 @@ namespace Expresso.Ast
         }
 	}
 }
-

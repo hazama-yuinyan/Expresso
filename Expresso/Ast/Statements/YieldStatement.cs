@@ -1,27 +1,26 @@
 ﻿using System;
+using ICSharpCode.NRefactory;
 
 namespace Expresso.Ast
 {
     /// <summary>
     /// yield文。
 	/// The yield statement.
-    /// "yield" Expression ';'
+    /// "yield" Expression ';' ;
     /// </summary>
     public class YieldStatement : Statement
     {
         /// <summary>
         /// yieldする式。
+        /// The expression to be yielded.
         /// </summary>
         public Expression Expression{
             get{return GetChildByRole(Roles.Expression);}
             set{SetChildByRole(Roles.Expression, value);}
 		}
 
-        public override NodeType NodeType{
-            get{return NodeType.Statement;}
-        }
-
-		public YieldStatement(Expression expression)
+        public YieldStatement(Expression expression, TextLocation start, TextLocation end)
+            : base(start, end)
 		{
             Expression = expression;
 		}
@@ -46,7 +45,7 @@ namespace Expresso.Ast
         protected internal override bool DoMatch(AstNode other, ICSharpCode.NRefactory.PatternMatching.Match match)
         {
             var o = other as YieldStatement;
-            return o != null && Expression.DoMatch(o.Expression);
+            return o != null && Expression.DoMatch(o.Expression, match);
         }
 
         #endregion

@@ -7,7 +7,7 @@ namespace Expresso.Ast
     /// <summary>
     /// インデクサ式
     /// Represents an indexer expression.
-    /// Target '[' Arguments ']'
+    /// Target '[' { Expression } ']' ;
     /// </summary>
     public class IndexerExpression : Expression
     {
@@ -18,7 +18,7 @@ namespace Expresso.Ast
         /// <value>The target.</value>
         public Expression Target{
             get{return GetChildByRole(Roles.TargetExpression);}
-            set{SetChildByRole(Roles.TargetExpression);}
+            set{SetChildByRole(Roles.TargetExpression, value);}
         }
 
         public ExpressoTokenNode LBracket{
@@ -42,11 +42,12 @@ namespace Expresso.Ast
             Target = target;
             if(arguments != null){
                 foreach(var argument in arguments)
-                    AddChild(Roles.Argument, argument);
+                    AddChild(argument, Roles.Argument);
             }
         }
 
-        public IndexerExpression(Expression target, params Expression[] arguments) : this(target, arguments)
+        public IndexerExpression(Expression target, params Expression[] arguments)
+            : this(target, (IEnumerable<Expression>)arguments)
         {
         }
 

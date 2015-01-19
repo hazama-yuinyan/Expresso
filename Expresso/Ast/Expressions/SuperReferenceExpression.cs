@@ -6,13 +6,13 @@ namespace Expresso.Ast
 {
     /// <summary>
     /// Represents the keyword "super" as expression.
+    /// "super" ;
     /// </summary>
     public class SuperReferenceExpression : Expression
     {
-        public SuperReferenceExpression(TextLocation start)
+        public SuperReferenceExpression(TextLocation loc)
+            : base(loc, new TextLocation(loc.Line, loc.Column + "super".Length))
         {
-            start_loc = start;
-            end_loc = new TextLocation(start.Line, start.Column + "super".Length);
         }
 
         #region implemented abstract members of AstNode

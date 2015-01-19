@@ -1,14 +1,11 @@
 using System;
-using System.Collections.Generic;
-
-using Expresso.Runtime;
-using Expresso.Compiler;
 
 
 namespace Expresso.Ast
 {
 	/// <summary>
 	/// Represents a member reference.
+    /// Expression '.' Identifier ;
 	/// </summary>
     public class MemberReference : Expression
 	{
@@ -17,7 +14,7 @@ namespace Expresso.Ast
 		/// </summary>
 		public Expression Target{
             get{return GetChildByRole(Roles.TargetExpression);}
-            set{SetChildByRole(Roles.TargetExpression);}
+            set{SetChildByRole(Roles.TargetExpression, value);}
 		}
 
         public ExpressoTokenNode DotToken{
@@ -25,18 +22,14 @@ namespace Expresso.Ast
         }
 
 		/// <summary>
-		/// The subscript expression. It can be an identifier.
+		/// The subscript expression.
 		/// </summary>
-		public Expression Subscription{
-            get{return GetChildByRole(Roles.Expression);}
-            set{SetChildByRole(Roles.Expression, value);}
+        public Identifier Subscription{
+            get{return GetChildByRole(Roles.Identifier);}
+            set{SetChildByRole(Roles.Identifier, value);}
 		}
 
-        public override NodeType NodeType{
-            get{return NodeType.Expression;}
-        }
-
-		public MemberReference(Expression targetExpr, Expression subscriptExpr)
+        public MemberReference(Expression targetExpr, Identifier subscriptExpr)
 		{
             Target = targetExpr;
             Subscription = subscriptExpr;

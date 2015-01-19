@@ -20,7 +20,7 @@ namespace Expresso.Ast
 
         void PrintList<TObject>(IEnumerable<TObject> list) where TObject : AstNode
         {
-            const int length = list.Count();
+            int length = list.Count();
             var enumerator = list.GetEnumerator();
             for(int i = 0; i < length; ++i){
                 enumerator.MoveNext();
@@ -34,7 +34,7 @@ namespace Expresso.Ast
         void PrintPairList<TObject>(IEnumerable<Tuple<TObject, TObject>> list, Func<string> connector)
             where TObject : AstNode
         {
-            const int length = list.Count();
+            int length = list.Count();
             var enumerator = list.GetEnumerator();
             for(int i = 0; i < length; ++i){
                 enumerator.MoveNext();
@@ -53,19 +53,12 @@ namespace Expresso.Ast
         {
             writer.Write(arg.Name);
             writer.Write(" (- ");
-            arg.Type.AcceptWalker(this);
+            arg.ReturnType.AcceptWalker(this);
             if(arg.Option != null){
                 writer.Write("[= ");
                 arg.Option.AcceptWalker(this);
                 writer.Write("]");
             }
-        }
-
-        public void VisitAssertStatement(AssertStatement assertStmt)
-        {
-            writer.Write("<Assert: ");
-            assertStmt.Test.AcceptWalker(this);
-            writer.Write(">");
         }
 
         public void VisitAssignment(AssignmentExpression assignment)
@@ -151,13 +144,6 @@ namespace Expresso.Ast
             writer.Write(">");
         }
 
-        public void VisitDefaultExpression(DefaultExpression defaultExpr)
-        {
-            writer.Write("<default: ");
-            defaultExpr.TargetType.AcceptWalker(this);
-            writer.Write(">");
-        }
-
         public void VisitEmptyStatement(EmptyStatement emptyStmt)
         {
         }
@@ -180,7 +166,7 @@ namespace Expresso.Ast
 
         public void VisitIdentifier(Identifier ident)
         {
-            writer.Write(ident.ParamType.TypeName);
+            ident.Type.AcceptWalker(this);
             writer.Write(" ");
             writer.Write(ident.Name);
         }
@@ -203,10 +189,6 @@ namespace Expresso.Ast
             writer.Write(">");
         }
 
-        public void VisitLateBinding<T>(LateBindExpression<T> lateBinding) where T : class
-        {
-        }
-
         public void VisitMemberReference(MemberReference memRef)
         {
             memRef.Target.AcceptWalker(this);
@@ -223,9 +205,6 @@ namespace Expresso.Ast
         {
             writer.Write("new ");
             newExpr.CreationExpression.AcceptWalker(this);
-            writer.Write("(");
-            PrintList(newExpr.Arguments);
-            writer.Write(")");
         }
 
         public void VisitSequenceInitializer(SequenceInitializer seqInitializer)
@@ -252,42 +231,24 @@ namespace Expresso.Ast
             writer.Write(">");
         }
 
-        public void VisitSwitchStatement(MatchStatement switchStmt)
+        public void VisitMatchStatement(MatchStatement matchStmt)
         {
-            writer.Write("<switch: (");
-            switchStmt.Target.AcceptWalker(this);
+            writer.Write("<match: (");
+            matchStmt.Target.AcceptWalker(this);
             writer.WriteLine("){");
-            foreach(var case_clause in switchStmt.Clauses)
-                case_clause.AcceptWalker(this);
+            foreach(var clause in matchStmt.Clauses)
+                clause.AcceptWalker(this);
 
             writer.Write("}");
         }
 
-        public void VisitCaseClause(MatchPatternClause caseClause)
+        public void VisitMatchPatternClause(MatchPatternClause clause)
         {
-            writer.Write("case ");
-            foreach(var label in caseClause.Labels){
+            foreach(var label in clause.Labels){
                 label.AcceptWalker(this);
                 writer.Write(":");
             }
 
-        }
-
-        public void VisitThrowStatement(ThrowStatement throwStmt)
-        {
-            writer.Write("<Throw: ");
-            throwStmt.Expression.AcceptWalker(this);
-            writer.Write(">");
-        }
-
-        public void VisitTryStatement(TryStatement tryStmt)
-        {
-            writer.WriteLine("<Try: ");
-            tryStmt.Body.AcceptWalker(this);
-            foreach(var catch_clause in tryStmt.Catches)
-                catch_clause.AcceptWalker(this);
-
-            tryStmt.FinallyClause.AcceptWalker(this);
         }
 
         public void VisitSequence(SequenceExpression seqExpr)
@@ -295,27 +256,14 @@ namespace Expresso.Ast
             PrintList(seqExpr.Items);
         }
 
-        public void VisitCatchClause(CatchClause catchClause)
-        {
-            writer.Write("<Catch: ");
-            catchClause.CatcherToken.AcceptWalker(this);
-            catchClause.Body.AcceptWalker(this);
-        }
-
-        public void VisitFinallyClause(FinallyClause finallyClause)
-        {
-            writer.Write("<Finally: ");
-            finallyClause.Body.AcceptWalker(this);
-        }
-
-        public void VisitTypeDefinition(TypeDefinition typeDef)
+        /*public void VisitTypeDefinition(TypeDefinition typeDef)
         {
             throw new NotImplementedException();
-        }
+        }*/
 
         public void VisitUnaryExpression(UnaryExpression unaryExpr)
         {
-            throw new NotImplementedException();
+            unaryExpr.Operand.AcceptWalker(this);
         }
 
         public void VisitVarDeclaration(VariableDeclarationStatement varDecl)
@@ -328,11 +276,6 @@ namespace Expresso.Ast
             throw new NotImplementedException();
         }
 
-        public void VisitWithStatement(WithStatement withStmt)
-        {
-            throw new NotImplementedException();
-        }
-
         public void VisitYieldStatement(YieldStatement yieldStmt)
         {
             throw new NotImplementedException();
@@ -340,15 +283,178 @@ namespace Expresso.Ast
 
         public void VisitAstType(AstType typeNode)
         {
-            throw new NotImplementedException();
+            writer.Write(typeNode.ToString());
         }
 
         public void VisitNullNode(AstNode nullNode)
         {
-            throw new NotImplementedException();
         }
 
         public void VisitPatternPlaceholder(AstNode placeholder, ICSharpCode.NRefactory.PatternMatching.Pattern child)
+        {
+        }
+
+        public void VisitVariableDeclarationStatement(VariableDeclarationStatement varDecl)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void VisitComprehensionExpression(ComprehensionExpression comp)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void VisitComprehensionForClause(ComprehensionForClause compFor)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void VisitComprehensionIfClause(ComprehensionIfClause compIf)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void VisitConditionalExpression(ConditionalExpression condExpr)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void VisitKeyValueLikeExpression(KeyValueLikeExpression keyValue)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void VisitLiteralExpression(LiteralExpression literal)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void VisitIntgerSequenceExpression(IntegerSequenceExpression intSeq)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void VisitIndexerExpression(IndexerExpression indexExpr)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void VisitPathExpression(PathExpression pathExpr)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void VisitParenthesizedExpression(ParenthesizedExpression parensExpr)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void VisitObjectCreationExpression(ObjectCreationExpression creation)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void VisitMatchClause(MatchPatternClause matchClause)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void VisitSelfReferenceExpression(SelfReferenceExpression selfRef)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void VisitSuperReferenceExpression(SuperReferenceExpression superRef)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void VisitCommentNode(CommentNode comment)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void VisitTextNode(TextNode textNode)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void VisitSimpleType(SimpleType simpleType)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void VisitPrimitiveType(PrimitiveType primitiveType)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void VisitImportDeclaration(ImportDeclaration importDecl)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void VisitFunctionDeclaration(FunctionDeclaration funcDecl)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void VisitTypeDeclaration(TypeDeclaration typeDecl)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void VisitFieldDeclaration(FieldDeclaration fieldDecl)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void VisitParameterDeclaration(ParameterDeclaration parameterDecl)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void VisitVariableInitializer(VariableInitializer initializer)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void VisitWildcardPattern(WildcardPattern wildcardPattern)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void VisitIdentifierPattern(IdentifierPattern identifierPattern)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void VisitValueBindingPattern(ValueBindingPattern valueBindingPattern)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void VisitTuplePattern(TuplePattern tuplePattern)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void VisitExpressionPattern(ExpressionPattern exprPattern)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void VisitNewLine(NewLineNode newlineNode)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void VisitWhitespace(WhitespaceNode whitespaceNode)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void VisitExpressoTokenNode(ExpressoTokenNode tokenNode)
         {
             throw new NotImplementedException();
         }

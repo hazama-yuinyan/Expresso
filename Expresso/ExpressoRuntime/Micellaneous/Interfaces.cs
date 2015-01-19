@@ -8,7 +8,7 @@ namespace Expresso.Runtime
 	/// </summary>
 	public interface ICodeFormattable
 	{
-		string Repr(CodeContext context);
+        //string Repr(CodeContext context);
 	}
 }
 

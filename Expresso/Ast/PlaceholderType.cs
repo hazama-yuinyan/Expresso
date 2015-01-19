@@ -11,8 +11,8 @@ namespace Expresso.Ast
     public class PlaceholderType : AstType
     {
         public PlaceholderType(TextLocation start)
+            : base(start, TextLocation.Empty)
         {
-            start_loc = start;
         }
 
         #region implemented abstract members of AstNode

@@ -14,3 +14,5 @@ let d = 10000000L;
 let e = "This is a test";
 let f = [];
 let g = {};
+var h = "私変わっちゃうの・・？";
+var i = "Yes, you can!";

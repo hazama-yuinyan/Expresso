@@ -4,9 +4,18 @@
 namespace Expresso.Ast
 {
     /// <summary>
-    /// Represents a parenthesized expression.
-    /// '(' Expression ')'
+    /// Represents an expression surrounded by a pair of parenthesis.
+    /// Also, a tuple expression is represented as 
+    /// ParenthesizedExpression{
+    ///     SequenceExpression{
+    ///         Expression...
+    ///     }
+    /// }
+    /// '(' Expression [ [','] Expression { ',' Expression } ')' ;
     /// </summary>
+    /// <remarks>
+    /// Note that this single node doesn't specify any semantics in Expresso.
+    /// </remarks>
     public class ParenthesizedExpression : Expression
     {
         public ExpressoTokenNode LPar{
@@ -36,17 +45,18 @@ namespace Expresso.Ast
 
         public override TResult AcceptWalker<TResult>(IAstWalker<TResult> walker)
         {
-            throw new NotImplementedException();
+            return walker.VisitParenthesizedExpression(this);
         }
 
         public override TResult AcceptWalker<TResult, TData>(IAstWalker<TData, TResult> walker, TData data)
         {
-            throw new NotImplementedException();
+            return walker.VisitParenthesizedExpression(this, data);
         }
 
         protected internal override bool DoMatch(AstNode other, ICSharpCode.NRefactory.PatternMatching.Match match)
         {
-            throw new NotImplementedException();
+            var o = other as ParenthesizedExpression;
+            return o != null && o.Expression.DoMatch(o.Expression, match);
         }
 
         #endregion

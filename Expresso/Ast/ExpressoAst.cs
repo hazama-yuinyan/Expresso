@@ -1,9 +1,7 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
-using Expresso.Compiler;
 using ICSharpCode.NRefactory;
 
 namespace Expresso.Ast
@@ -15,11 +13,15 @@ namespace Expresso.Ast
 	/// </summary>
     public class ExpressoAst : AstNode
 	{
-        public static readonly Role<EntityDeclaration> MemberRole = new Role<EntityDeclaration>("Member", EntityDeclaration.Null);
-        public static readonly Role<ImportDeclaration> ImportRole = new Role<ImportDeclaration>("Import", ImportDeclaration.Null);
+        public static readonly Role<EntityDeclaration> MemberRole = new Role<EntityDeclaration>("Member");
+        public static readonly Role<ImportDeclaration> ImportRole = new Role<ImportDeclaration>("Import");
 
-        readonly string name;
 		readonly bool is_module;
+
+        public Identifier NameToken{
+            get{return GetChildByRole(Roles.Identifier);}
+            set{SetChildByRole(Roles.Identifier, value);}
+        }
 
 		/// <summary>
 		/// モジュール名。
@@ -27,7 +29,7 @@ namespace Expresso.Ast
 		/// If the module contains the main function, it would be called the "main" module.
 		/// </summary>
 		public string Name{
-            get{return is_module ? string.Format("<module {0}>", name) : ModuleName;}
+            get{return is_module ? string.Format("<module {0}>", NameToken.Name) : ModuleName;}
 		}
 
 		/// <summary>
@@ -53,7 +55,7 @@ namespace Expresso.Ast
 		/// the definitions of the module.
 		/// </summary>
         public AstNodeCollection<EntityDeclaration> Body{
-            get{return GetChildrenByRole(Roles.Body);}
+            get{return GetChildrenByRole(MemberRole);}
 		}
 
         /// <summary>
@@ -63,7 +65,7 @@ namespace Expresso.Ast
         /// <value>The name of the module.</value>
 		public string ModuleName{
 			get{
-				return is_module ? name : "<not a module>";
+                return is_module ? Name : "<not a module>";
 			}
 		}
 
@@ -73,7 +75,7 @@ namespace Expresso.Ast
 
         public ExpressoAst(IEnumerable<EntityDeclaration> body, IEnumerable<ImportDeclaration> imports, string maybeModuleName = null)
         {
-			name = maybeModuleName;
+            NameToken = AstNode.MakeIdentifier(maybeModuleName);
 			is_module = maybeModuleName != null;
 
             if(imports != null){
@@ -105,21 +107,21 @@ namespace Expresso.Ast
         protected internal override bool DoMatch(AstNode other, ICSharpCode.NRefactory.PatternMatching.Match match)
         {
             var o = other as ExpressoAst;
-            return o != null && Body.DoMatch(o.Body, match) && Name == o.Name;
+            return o != null && Body.DoMatch(o.Body, match) && NameToken.DoMatch(o.NameToken, match);
         }
 
         #endregion
 
-        public ExpressoUnresolvedFile ToTypeSystem()
+        /*public ExpressoUnresolvedFile ToTypeSystem()
         {
-            if(string.IsNullOrEmpty(name))
+            if(string.IsNullOrEmpty(Name))
                 throw new InvalidOperationException("Can not use ToTypeSystem() on a syntax tree without file name.");
 
             var type_def = new DefaultUnresolvedTypeDefinition("global");
-            var walker = new TypeSystemConvertWalker(new ExpressoUnresolvedFile(name, type_def, null));
+            var walker = new TypeSystemConvertWalker(new ExpressoUnresolvedFile(Name, type_def, null));
             walker.AcceptWalker(this);
             return walker.UnresolvedFile;
-        }
+        }*/
 	}
 }
 

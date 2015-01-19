@@ -1,24 +1,20 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System;
+﻿using System;
+using System.Collections.Generic;
 
-using Expresso.Runtime;
-using Expresso.Compiler;
-using Expresso.Compiler.Meta;
-using Expresso.Utils;
 using ICSharpCode.NRefactory;
+using ICSharpCode.NRefactory.TypeSystem;
+using System.Text;
 
 namespace Expresso.Ast
 {
     /// <summary>
     /// 関数定義。
     /// Represents a function declaration.
-    /// [ "export" ] "def" Name '(' Arguments ')' [ "->" ReturnType ] '{' Body '}'
+    /// [ Modifiers ] "def" Name '(' [ Arguments ] ')' [ "->" ReturnType ] '{' Body '}' ;
     /// </summary>
     public class FunctionDeclaration : EntityDeclaration
     {
-        public override ICSharpCode.NRefactory.TypeSystem.SymbolKind SymbolKind{
+        public override SymbolKind SymbolKind{
             get{
                 return SymbolKind.Method;
             }
@@ -27,10 +23,10 @@ namespace Expresso.Ast
         /// <summary>
         /// 仮引数リスト。
 		/// The formal parameter list.
-		/// It can be null if the function takes no parameters.
+        /// It can be empty if the function takes no parameters.
         /// </summary>
         public AstNodeCollection<ParameterDeclaration> Parameters{
-            get{return GetChildrenByRole(Roles.Argument);}
+            get{return GetChildrenByRole(Roles.Parameter);}
 		}
 
         /// <summary>
@@ -66,12 +62,13 @@ namespace Expresso.Ast
         }
 
         public FunctionDeclaration(string funcName, IEnumerable<ParameterDeclaration> formalParameters,
-            BlockStatement body, AstType returnType, Modifiers modifiers)
+            BlockStatement body, AstType returnType, Modifiers modifiers, TextLocation loc)
+            : base(loc, body.EndLocation)
 		{
-            Name = funcName;
-            if(formalParameters){
+            SetChildByRole(Roles.Identifier, AstNode.MakeIdentifier(funcName));
+            if(formalParameters != null){
                 foreach(var param in formalParameters)
-                    AddChild(param, Roles.Argument);
+                    AddChild(param, Roles.Parameter);
             }
             Body = body;
             AddChild(returnType, Roles.Type);
@@ -108,118 +105,6 @@ namespace Expresso.Ast
             return sb.ToString();
         }
 
-		internal override bool ExposesLocalVariable(ExpressoVariable variable)
-		{
-			return false;
-		}
-
-		internal override bool TryBindOuter(ScopeStatement from, ExpressoReference reference, out ExpressoVariable variable)
-		{
-			// Functions expose their locals to direct access
-			//ContainsNestedFreeVariables = true;
-			if(TryGetVariable(reference.Name, out variable)){
-				//variable.AccessedInNestedScope = true;
-				
-				/*if(variable.Kind == VariableKind.Local || variable.Kind == VariableKind.Parameter){
-					from.AddFreeVariable(variable, true);
-					
-					for(ScopeStatement scope = from.Parent; scope != this; scope = scope.Parent){
-						scope.AddFreeVariable(variable, false);
-					}
-					
-					AddCellVariable(variable);
-				} else {
-					from.AddReferencedGlobal(reference.Name);
-				}*/
-				return true;
-			}
-			return false;
-		}
-		
-		internal override ExpressoVariable BindReference(ExpressoNameBinder binder, ExpressoReference reference)
-		{
-			ExpressoVariable variable;
-			
-			// First try variables local to this scope
-			if(TryGetVariable(reference.Name, out variable)){
-				if(variable.Kind == VariableKind.Global)
-					AddReferencedGlobal(reference.Name);
-				
-				return variable;
-			}
-			
-			// Try to bind in outer scopes
-			for(ScopeStatement parent = Parent; parent != null; parent = parent.Parent){
-				if(parent.TryBindOuter(this, reference, out variable))
-					return variable;
-			}
-			
-			return null;
-		}
-		
-		
-		internal override void Bind(ExpressoNameBinder binder)
-		{
-			base.Bind(binder);
-			Verify(binder);
-			
-			/*if(((PythonContext)binder.Context.SourceUnit.LanguageContext).PythonOptions.FullFrames){
-				// force a dictionary if we have enabled full frames for sys._getframe support
-				NeedsLocalsDictionary = true;
-			}*/
-		}
-		
-		internal override void FinishBind(ExpressoNameBinder binder)
-		{
-			/*foreach(var param in parameters) {
-				_variableMapping[param.PythonVariable] = param.FinishBind(NeedsLocalsDictionary);
-			}*/
-			base.FinishBind(binder);
-		}
-		
-		void Verify(ExpressoNameBinder binder) {
-			/*if (ContainsImportStar && IsClosure) {
-				binder.ReportSyntaxError(
-					String.Format(
-					System.Globalization.CultureInfo.InvariantCulture,
-					"import * is not allowed in function '{0}' because it is a nested function",
-					Name),
-					this);
-			}
-			if (ContainsImportStar && Parent is FunctionDefinition) {
-				binder.ReportSyntaxError(
-					String.Format(
-					System.Globalization.CultureInfo.InvariantCulture,
-					"import * is not allowed in function '{0}' because it is a nested function",
-					Name),
-					this);
-			}
-			if (ContainsImportStar && ContainsNestedFreeVariables) {
-				binder.ReportSyntaxError(
-					String.Format(
-					System.Globalization.CultureInfo.InvariantCulture,
-					"import * is not allowed in function '{0}' because it contains a nested function with free variables",
-					Name),
-					this);
-			}
-			if (ContainsUnqualifiedExec && ContainsNestedFreeVariables) {
-				binder.ReportSyntaxError(
-					String.Format(
-					System.Globalization.CultureInfo.InvariantCulture,
-					"unqualified exec is not allowed in function '{0}' because it contains a nested function with free variables",
-					Name),
-					this);
-			}
-			if (ContainsUnqualifiedExec && IsClosure) {
-				binder.ReportSyntaxError(
-					String.Format(
-					System.Globalization.CultureInfo.InvariantCulture,
-					"unqualified exec is not allowed in function '{0}' because it is a nested function",
-					Name),
-					this);
-			}*/
-		}
-
         public override void AcceptWalker(IAstWalker walker)
 		{
             walker.VisitFunctionDeclaration(this);
@@ -238,7 +123,8 @@ namespace Expresso.Ast
         internal protected override bool DoMatch(AstNode other, ICSharpCode.NRefactory.PatternMatching.Match match)
         {
             var o = other as FunctionDeclaration;
-            return o != null;
+            return o != null && Name == o.Name && Parameters.DoMatch(o.Parameters, match)
+                && ReturnType.DoMatch(o.ReturnType, match) && Body.DoMatch(o.Body, match);
         }
     }
 

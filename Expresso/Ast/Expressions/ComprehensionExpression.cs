@@ -1,23 +1,20 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 
-using Expresso.Runtime;
-using Expresso.Compiler;
-using Expresso.Compiler.Meta;
 using ICSharpCode.NRefactory;
 
 
 namespace Expresso.Ast
 {
 	/// <summary>
-	/// Represents a list comprehension, which is syntactic sugar for sequence initialization.
-    /// Consider an expression, [x for x in [0..100]],
-    /// which is equivalent in functionality to the statement "for(let x in [0..100]) yield x;"
+    /// Represents a list comprehension, which is a syntactic sugar for sequence initialization.
+    /// Consider an expression, [x for x in 0..100],
+    /// which is equivalent in functionality to the statement "for(let x in 0..100) yield x;"
+    /// Expression "for" PatternConstruct "in" Expression { ComprehensionIter } ;
 	/// </summary>
     public class ComprehensionExpression : Expression
 	{
-        public static readonly Role<ComprehensionForClause> CompBodyRole = new Role<ComprehensionForClause>("Body", ComprehensionForClause.Null);
+        public static readonly Role<ComprehensionForClause> CompBodyRole = new Role<ComprehensionForClause>("Body");
 
         /// <summary>
         /// The expression that yields an item at a time.
@@ -45,10 +42,6 @@ namespace Expresso.Ast
             get{return GetChildByRole(Roles.Type);}
             set{SetChildByRole(Roles.Type, value);}
 		}
-
-        public override NodeType NodeType{
-            get{return NodeType.Expression;}
-        }
 
         public ComprehensionExpression(Expression itemExpr, ComprehensionForClause bodyExpr, AstType objType)
 		{
@@ -85,15 +78,16 @@ namespace Expresso.Ast
 
 	public abstract class ComprehensionIter : Expression
 	{
-        public static readonly Role<ComprehensionIter> CompBody = new Role<ComprehensionIter>("CompBody", ComprehensionIter.Null);
+        public static readonly Role<ComprehensionIter> CompBody = new Role<ComprehensionIter>("CompBody");
 	}
 
     /// <summary>
     /// Represents the for clause in a comprehension expression.
+    /// "for" PatternConstruct "in" Expression [ ComprehensionIter ] ;
     /// </summary>
     public class ComprehensionForClause : ComprehensionIter
 	{
-        public static readonly Role<SequenceExpression> References = new Role<SequenceExpression>("References", SequenceExpression.Null);
+        public static readonly Role<SequenceExpression> References = new Role<SequenceExpression>("References");
 
 		/// <summary>
         /// body内で操作対象となるオブジェクトを参照するのに使用する式。
@@ -129,10 +123,6 @@ namespace Expresso.Ast
             get{return GetChildByRole(ComprehensionIter.CompBody);}
             set{SetChildByRole(ComprehensionIter.CompBody, value);}
 		}
-
-        public override NodeType NodeType{
-            get{return NodeType.Expression;}
-        }
 
 		public ComprehensionForClause(SequenceExpression lhs, Expression targetExpr, ComprehensionIter bodyExpr)
 		{
@@ -170,6 +160,7 @@ namespace Expresso.Ast
 
     /// <summary>
     /// Represents the if clause in a comprehension expression.
+    /// "if" Expression [ ComprehensionIter ] ;
     /// </summary>
     public class ComprehensionIfClause : ComprehensionIter
 	{
@@ -190,10 +181,6 @@ namespace Expresso.Ast
             get{return GetChildByRole(ComprehensionIter.CompBody);}
             set{SetChildByRole(ComprehensionIter.CompBody, value);}
 		}
-
-        public override NodeType NodeType{
-            get{return NodeType.Expression;}
-        }
 
 		public ComprehensionIfClause(Expression test, ComprehensionIter bodyExpr)
 		{

@@ -1,12 +1,12 @@
 ﻿using System.Collections.Generic;
 
-using Expresso.Compiler;
 
 namespace Expresso.Ast
 {
     /// <summary>
     /// リターン文。
 	/// The Return statement.
+    /// "return" Expression ;
     /// </summary>
     public class ReturnStatement : Statement
     {
@@ -16,12 +16,8 @@ namespace Expresso.Ast
         /// </summary>
         public Expression Expression{
             get{return GetChildByRole(Roles.Expression);}
-            set{SetChildByRole(Roles.Expression);}
+            set{SetChildByRole(Roles.Expression, value);}
 		}
-
-        public override NodeType NodeType{
-            get{return NodeType.Statement;}
-        }
 
 		public ReturnStatement(Expression expression)
 		{
@@ -48,7 +44,7 @@ namespace Expresso.Ast
         protected internal override bool DoMatch(AstNode other, ICSharpCode.NRefactory.PatternMatching.Match match)
         {
             var o = other as ReturnStatement;
-            return o != null && Expression.DoMatch(o.Expression);
+            return o != null && Expression.DoMatch(o.Expression, match);
         }
 
         #endregion

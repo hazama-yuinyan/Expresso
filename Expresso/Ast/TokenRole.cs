@@ -40,7 +40,7 @@ namespace Expresso.Ast
             Token = token;
             Length = token.Length;
 
-            int index = Tokens.FindIndex(token);
+            int index = Tokens.FindIndex((input) => input == token);
             if(index < 0){
                 TokenIndex = (uint)Tokens.Count;
                 Tokens.Add(token);

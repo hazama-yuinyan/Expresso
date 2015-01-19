@@ -5,7 +5,6 @@ using System.Diagnostics;
 
 using Expresso.Compiler;
 using Expresso.Compiler.Meta;
-using Expresso.Utils;
 using ICSharpCode.NRefactory;
 using ICSharpCode.NRefactory.TypeSystem;
 using ICSharpCode.NRefactory.PatternMatching;
@@ -41,7 +40,7 @@ namespace Expresso.Ast
 
             public override void AcceptWalker(IAstWalker walker)
             {
-                return walker.VisitNullNode(this);
+                walker.VisitNullNode(this);
             }
 
             public override TResult AcceptWalker<TResult>(IAstWalker<TResult> walker)
@@ -82,7 +81,7 @@ namespace Expresso.Ast
 
             public override void AcceptWalker(IAstWalker walker)
             {
-                return walker.VisitPatternPlaceholder(this, child);
+                walker.VisitPatternPlaceholder(this, child);
             }
 
             public override TResult AcceptWalker<TResult>(IAstWalker<TResult> walker)
@@ -116,7 +115,7 @@ namespace Expresso.Ast
 
         const uint RoleIndexMask = (1u << Role.RoleIndexBits) - 1;
         const uint FrozenBits = 1u << Role.RoleIndexBits;
-        protected uint AstNodeFlagsUsedBits = Role.RoleIndexBits + 1;
+        protected const uint AstNodeFlagsUsedBits = Role.RoleIndexBits + 1;
 
         protected readonly TextLocation start_loc, end_loc;
         AstNode parent, prev_sibling, next_sibling, first_child, last_child;
@@ -206,6 +205,10 @@ namespace Expresso.Ast
             get{return false;}
         }
         #endregion
+
+        protected AstNode()
+        {
+        }
 
         protected AstNode(TextLocation startLoc, TextLocation endLoc)
         {
@@ -331,7 +334,7 @@ namespace Expresso.Ast
             if(child.IsFrozen)
                 throw new ArgumentException("Can not add a frozen node.", "child");
 
-            AddChildUnsafe(child);
+            AddChildUnsafe(child, role);
         }
 
         public void AddChildWithExistingRole(AstNode child)
@@ -399,7 +402,7 @@ namespace Expresso.Ast
 
             // No need to test for "Can not add children to null nodes",
             // as there isn't any valid nextSibling in null nodes.
-            InsertChildBeforeUnsafe(nextSibling, child);
+            InsertChildBeforeUnsafe(nextSibling, child, role);
         }
 
         internal void InsertChildBeforeUnsafe(AstNode nextSibling, AstNode child, Role role)
@@ -449,7 +452,7 @@ namespace Expresso.Ast
                     Debug.Assert(next_sibling.prev_sibling == this);
                     next_sibling.prev_sibling = prev_sibling;
                 }else{
-                    Debug.Assert(parent.last_child);
+                    Debug.Assert(parent.last_child == this);
                     parent.last_child = prev_sibling;
                 }
 
@@ -477,7 +480,7 @@ namespace Expresso.Ast
                 throw new InvalidOperationException((IsNull ? "Can not replace the null nodes" : "Can not replace the root node"));
 
             ThrowIfFrozen();
-            // Becuase this method doesn't statically check the new node's type with the role,
+            // Because this method doesn't statically check the new node's type with the role,
             // we perform a runtime test:
             if(!Role.IsValid(newNode)){
                 throw new ArgumentException(
@@ -558,9 +561,9 @@ namespace Expresso.Ast
                         string.Format("The new node '{0}' is invalid in the role {1}", replacement.GetType().Name, old_role.ToString()));
                 }
                 if(old_successor != null)
-                    old_parent.InsertChildBeforeUnsafe(old_successor, replacement);
+                    old_parent.InsertChildBeforeUnsafe(old_successor, replacement, old_role);
                 else
-                    old_parent.AddChildUnsafe(replacement);
+                    old_parent.AddChildUnsafe(replacement, old_role);
             }
 
             return replacement;
@@ -781,6 +784,7 @@ namespace Expresso.Ast
         /// <param name="role">Role.</param>
         /// <typeparam name="T">The 1st type parameter.</typeparam>
         public AstNodeCollection<T> GetChildrenByRole<T>(Role<T> role)
+            where T : AstNode
         {
             return new AstNodeCollection<T>(this, role);
         }
@@ -1232,7 +1236,7 @@ namespace Expresso.Ast
                 return "";
 
             var sw = new StringWriter();
-            AcceptWalker(new ExpressoOutputWalker(sw, formattingOptions ?? FormattingOptionsFactory.CreateMono()));
+            //AcceptWalker(new ExpressoOutputWalker(sw, formattingOptions ?? FormattingOptionsFactory.CreateMono()));
             return sw.ToString();
         }
 
@@ -1248,31 +1252,19 @@ namespace Expresso.Ast
 
 		#region AST node factory methods
 		
-        static internal FunctionDeclaration MakeFunc(string name, IEnumerable<ParameterDeclaration> parameters, BlockStatement body,
-            AstType returnType = null, Modifiers modifiers = Modifiers.None)
-		{
-            return new FunctionDeclaration(name, parameters, body, returnType, modifiers);
-		}
-		
-        /*static internal FunctionDeclaration MakeClosure(string name, IEnumerable<ParameterDeclaration> parameters, Block body,
-            TypeAnnotation returnType, Stack<object> environ)
-		{
-            return new FunctionDeclaration(name, parameters.ToArray(), body, returnType, Flags.None, environ);
-		}*/
-
 		static internal Identifier MakeIdentifier(string name)
 		{
 			return new Identifier(name, null);
 		}
 
+        static internal Identifier MakeIdentifier(string name, AstType type)
+        {
+            return new Identifier(name, type);
+        }
+
         static internal Identifier MakeLocalVar(string name, AstType type)
 		{
             return new Identifier(name, type);
-		}
-
-        static internal FieldDeclaration MakeField(string name, TypeAnnotation type)
-		{
-            return new FieldDeclaration();
 		}
 
         /*static internal AstType MakeClassDef(string className, IEnumerable<Identifier> bases, IEnumerable<Statement> decls)
@@ -1285,11 +1277,6 @@ namespace Expresso.Ast
             return new ExpressoAst(decls, imports, moduleName);
 		}
 
-        static internal ParameterDeclaration MakeArg(string name, AstType type, Expression option = null)
-        {
-            return new ParameterDeclaration(name, type, option);
-        }
-		
         static internal ImportDeclaration MakeImportDecl(IEnumerable<string> moduleNames, IEnumerable<string> aliasNames)
 		{
 			return (aliasNames.Any((name) => name != null)) ? new ImportDeclaration(moduleNames, aliasNames) :

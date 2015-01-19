@@ -1,9 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
-using Expresso.Compiler;
 using ICSharpCode.NRefactory;
 
 namespace Expresso.Ast
@@ -12,12 +8,12 @@ namespace Expresso.Ast
     /// ヒープオブジェクト生成式。
 	/// Reperesents a new expression.
     /// A new expression always allocate memory on the heap.
-    /// "new" ObjectCreationExpression
+    /// "new" ObjectCreationExpression ;
     /// </summary>
     public class NewExpression : Expression
     {
         public static readonly Role<ObjectCreationExpression> ObjectCreationRole =
-            new Role<ObjectCreationExpression>("ObjectCreation", ObjectCreationExpression.Null);
+            new Role<ObjectCreationExpression>("ObjectCreation");
 
         /// <summary>
         /// オブジェクトを生成するクラスの定義を参照する式。

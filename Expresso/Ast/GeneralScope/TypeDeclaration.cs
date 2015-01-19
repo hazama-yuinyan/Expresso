@@ -1,5 +1,7 @@
 using System;
 
+using ICSharpCode.NRefactory.TypeSystem;
+
 
 namespace Expresso.Ast
 {
@@ -15,8 +17,8 @@ namespace Expresso.Ast
     /// 型定義。
     /// Represents a type declaration.
     /// 
-    /// "class" | "struct" | "interface" | "enum" TypeName [':' {BaseType}]
-    /// '{' {Decls} '}'
+    /// ("class" | "struct" | "interface" | "enum") TypeName [':' {BaseType}]
+    /// '{' {Decls} '}' ;
     /// </summary>
     public class TypeDeclaration : EntityDeclaration
     {
@@ -31,7 +33,7 @@ namespace Expresso.Ast
             }
         }
 
-        public override ICSharpCode.NRefactory.TypeSystem.SymbolKind SymbolKind{
+        public override SymbolKind SymbolKind{
             get{
                 return SymbolKind.TypeDefinition;
             }
@@ -99,7 +101,7 @@ namespace Expresso.Ast
 
         public override void AcceptWalker(IAstWalker walker)
         {
-            return walker.VisitTypeDeclaration(this);
+            walker.VisitTypeDeclaration(this);
         }
 
         public override TResult AcceptWalker<TResult>(IAstWalker<TResult> walker)

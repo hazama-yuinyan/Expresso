@@ -7,7 +7,7 @@ namespace Expresso.Ast
 {
     /// <summary>
     /// Represents a tuple pattern.
-    /// '(' {ident ','} ')'
+    /// '(' {ident ','} ')' ;
     /// </summary>
     public class TuplePattern : PatternConstruct
     {

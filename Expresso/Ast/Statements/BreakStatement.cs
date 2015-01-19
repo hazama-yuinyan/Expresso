@@ -1,4 +1,5 @@
 using System;
+using ICSharpCode.NRefactory;
 
 
 namespace Expresso.Ast
@@ -6,35 +7,26 @@ namespace Expresso.Ast
     /// <summary>
     /// break文。
     /// The break statement.
-    /// "break" [ "upto" LiteralExpression ] ';'
+    /// "break" [ "upto" LiteralExpression ] ';' ;
     /// </summary>
     public class BreakStatement : Statement
     {
         public static readonly TokenRole BreakTokenRole = new TokenRole("break");
+        public static readonly Role<LiteralExpression> LiteralRole = new Role<LiteralExpression>("Literal");
 
         /// <summary>
         /// breakの際に何階層分ループ構造を遡るか。
         /// Indicates how many loops we will break out.
         /// </summary>
-        public Expression Count{
-            get{return GetChildByRole(Roles.Expression);}
-            set{SetChildByRole(Roles.Expression, value);}
+        public LiteralExpression Count{
+            get{return GetChildByRole(LiteralRole);}
+            set{SetChildByRole(LiteralRole, value);}
         }
 
-        /// <summary>
-        /// このbreak文が含まれるループ構文。
-        /// Loops that have this statement as their child.
-        /// </summary>
-        /*public IEnumerable<BreakableStatement> Enclosings{
-            get{return Children;}
-        }*/
-
-        public BreakStatement(Expression countExpr/*, BreakableStatement[] loops*/)
+        public BreakStatement(LiteralExpression countExpr, TextLocation start, TextLocation end)
+            : base(start, end)
         {
             Count = countExpr;
-
-            //foreach(var enclosing in loops)
-            //    AddChild(enclosing);
         }
 
         public override void AcceptWalker(IAstWalker walker)
@@ -52,7 +44,7 @@ namespace Expresso.Ast
             return walker.VisitBreakStatement(this, data);
         }
 
-        protected override bool DoMatch(AstNode other, ICSharpCode.NRefactory.PatternMatching.Match match)
+        protected internal override bool DoMatch(AstNode other, ICSharpCode.NRefactory.PatternMatching.Match match)
         {
             var o = other as BreakStatement;
             return o != null && Count.DoMatch(o.Count, match);

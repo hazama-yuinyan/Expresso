@@ -1,17 +1,20 @@
 using System;
-using System.ComponentModel;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Linq;
+using ICSharpCode.NRefactory;
+using ICSharpCode.NRefactory.TypeSystem;
 
 
 namespace Expresso.Ast
 {
     /// <summary>
     /// Represents a field declaration.
-    /// ("let" | "var") ident [ "(-" Type ] { ',' ident [ "(-" Type ] } ';'
+    /// Modifiers ("let" | "var") ident [ "(-" Type ] { ',' ident [ "(-" Type ] } ';' ;
     /// </summary>
     public class FieldDeclaration : EntityDeclaration
     {
-        public override ICSharpCode.NRefactory.TypeSystem.SymbolKind SymbolKind{
+        public override SymbolKind SymbolKind{
             get{
                 return SymbolKind.Field;
             }
@@ -37,10 +40,14 @@ namespace Expresso.Ast
             }
         }
 
-        public FieldDeclaration(IEnumerable<VariableInitializer> variables)
+        public FieldDeclaration(IEnumerable<Identifier> lhs, IEnumerable<Expression> rhs,
+            Modifiers modifiers, TextLocation start, TextLocation end)
+            : base(start, end)
         {
-            foreach(var variable in variables)
-                AddChild(variable, Roles.Variable);
+            foreach(var variable in lhs.Zip(rhs, (ident, expr) => new Tuple<Identifier, Expression>(ident, expr)))
+                AddChild(new VariableInitializer(variable.Item1, variable.Item2), Roles.Variable);
+
+            EntityDeclaration.SetModifiers(this, modifiers);
         }
 
         public override void AcceptWalker(IAstWalker walker)

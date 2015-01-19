@@ -1,13 +1,12 @@
-﻿using System.Collections.Generic;
-using System.Linq;
+﻿using System;
 
-using Expresso.Compiler;
 
 namespace Expresso.Ast
 {
     /// <summary>
     /// キャスト式。
 	/// The cast expression.
+    /// Expression "as" Type ;
     /// </summary>
     public class CastExpression : Expression
     {
@@ -15,8 +14,9 @@ namespace Expresso.Ast
         /// キャスト先の型。
 		/// The target type to which the expression casts the object.
         /// </summary>
-        public Expression ToExpression{
-            get{return FirstChild;}
+        public AstType ToExpression{
+            get{return GetChildByRole(Roles.Type);}
+            set{SetChildByRole(Roles.Type, value);}
 		}
 
         /// <summary>
@@ -24,33 +24,15 @@ namespace Expresso.Ast
 		/// The target object to be casted.
         /// </summary>
         public Expression Target{
-            get{return LastChild;}
+            get{return GetChildByRole(Roles.Expression);}
+            set{SetChildByRole(Roles.Expression, value);}
 		}
 
-        public override NodeType NodeType{
-            get{return NodeType.CastExpression;}
-        }
-
-		public CastExpression(Expression toExpr, Expression targetExpr)
+        public CastExpression(AstType toExpr, Expression targetExpr)
 		{
-            AddChild(toExpr);
-            AddChild(targetExpr);
+            Target = targetExpr;
+            ToExpression = toExpr;
 		}
-
-        public override bool Equals(object obj)
-        {
-            var x = obj as CastExpression;
-
-            if(x == null)
-                return false;
-
-            return this.ToExpression == x.ToExpression && this.Target.Equals(x.Target);
-        }
-
-        public override int GetHashCode()
-        {
-            return this.ToExpression.GetHashCode() ^ this.Target.GetHashCode();
-        }
 
         public override void AcceptWalker(IAstWalker walker)
 		{
@@ -67,14 +49,12 @@ namespace Expresso.Ast
             return walker.VisitCastExpression(this, data);
         }
 
-        public override string GetText()
-		{
-            return string.Format("<Cast: {0} => {1}>", Target.GetText(), ToExpression.GetText());
-		}
-
-        public override string ToString()
+        #region implemented abstract members of AstNode
+        protected internal override bool DoMatch(AstNode other, ICSharpCode.NRefactory.PatternMatching.Match match)
         {
-            return GetText();
+            var o = other as CastExpression;
+            return o != null && Target.DoMatch(o.Target, match) && ToExpression.DoMatch(o.ToExpression, match);
         }
+        #endregion
     }
 }

@@ -34,7 +34,7 @@ namespace Expresso.Ast
         static readonly Modifiers[] allModifiers = {
             Modifiers.Public, Modifiers.Protected, Modifiers.Private,
             Modifiers.Abstract, Modifiers.Virtual, Modifiers.Static, Modifiers.Override,
-            Modifiers.Const,
+            Modifiers.Immutable,
             Modifiers.Any
         };
 
@@ -42,10 +42,9 @@ namespace Expresso.Ast
             get{return allModifiers;}
         }
 
-        public ExpressoModifierToken(TextLocation location, Modifiers modifier) : base(location, null)
+        public ExpressoModifierToken(TextLocation loc, Modifiers modifier)
+            : base(loc, new TokenRole(modifier.ToString().ToLower()))
         {
-            int token_length = modifier.ToString().Length;
-            end_loc = new TextLocation(location.Line, location.Column + token_length);
         }
     }
 }

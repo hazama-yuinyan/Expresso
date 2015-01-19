@@ -8,7 +8,9 @@ namespace Expresso.Ast
     /// カンマで区切られたリテラル式をあらわす。
 	/// Reperesents a comma-separated list expression like "1,2,3,4".
 	/// It could show up in a simultaneous assignment like "a, b = 1, 2"
+    /// Expression ',' Expression { ',' Expression } ;
     /// </summary>
+    /// <remarks>Note that this single node doesn't specify any semantics in Expresso.</remarks>
     public class SequenceExpression : Expression
     {
         /// <summary>
@@ -22,10 +24,6 @@ namespace Expresso.Ast
 		public int Count{
             get{return Items.Count;}
 		}
-
-        public override NodeType NodeType{
-            get{return NodeType.Expression;}
-        }
 
         public SequenceExpression(IEnumerable<Expression> items)
 		{

@@ -22,7 +22,7 @@ def makeList() -> vector<int>
 
 def makeDict() -> dictionary<string, int>
 {
-	return new dictionary{"あかり" : 13, "京子" : 14, "結衣" : 14, "ちなつ" : 13};
+	//return new {あかり : 13, 京子 : 14, 結衣 : 14, ちなつ : 13};
 }
 
 def makeTuple() -> (string, string, int)
@@ -46,6 +46,7 @@ def testSwitch<T>(input (- T)
 	    "abc" => print("Detects a string");
 	    "あかりちゃん" | "akarichan" => print("あかりんかわかわ");
 	    0..10 => print("The value is in the range of 0 to 10");
+        let (x, y) => print("tuple({}, {})", x, y);
         _ => print("unknown value!");
 	}
 }
@@ -56,7 +57,7 @@ def main()
 	x += 5;
 	let z = x * y - 1;
 	println("(x, y, z) = {}, {}, {}", x, y, z);
-	let w (- int;
+	var w (- int;
 	w, y = x, z;
 	let str = "This is a test. blah blah...", str2 = "これはテストです。あーあー";
 	let flag = true;
@@ -76,9 +77,10 @@ def main()
 	let dict_obj = makeDict();
 	let tuple_obj = makeTuple(), tuple_obj2 = ("あかりちゃん", "ちなつちゃん", 2424);
 	print("Print range object:");
-	for(let x in 1..5)
+	for(let x in 1..5:1)
 		print(x);
 	
+    let int_seq = foo.bar()..baz[2]:30+10*20;
 	/*for(let item in dict_obj)
 		print item;*/
 	
@@ -91,6 +93,7 @@ def main()
 	testSwitch(5);
 	testSwitch(tuple_obj2[0]);
 	testSwitch("akarichan");
+    let tes = [0, 2, 4, ...]
 	
 	let comp = [x for x in 0..100];
 	printList(comp, "Created using comprehension:");

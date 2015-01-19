@@ -1,6 +1,6 @@
 using System;
-using ICSharpCode.NRefactory.PatternMatching;
 using ICSharpCode.NRefactory;
+using ICSharpCode.NRefactory.PatternMatching;
 
 
 namespace Expresso.Ast
@@ -10,80 +10,6 @@ namespace Expresso.Ast
     /// </summary>
     public class VariableInitializer : AstNode
     {
-        #region Null
-        public static readonly VariableInitializer Null = new NullVariableInitializer();
-        sealed class NullVariableInitializer : VariableInitializer
-        {
-            public override NodeType NodeType{
-                get{
-                    return NodeType.Unknown;
-                }
-            }
-
-            public override void AcceptWalker(IAstWalker walker)
-            {
-                walker.VisitNullNode(this);
-            }
-
-            public override TResult AcceptWalker<TResult>(IAstWalker<TResult> walker)
-            {
-                return walker.VisitNullNode(this);
-            }
-
-            public override TResult AcceptWalker<TResult, TData>(IAstWalker<TData, TResult> walker, TData data)
-            {
-                return walker.VisitNullNode(this, data);
-            }
-
-            internal protected override bool DoMatch(AstNode other, ICSharpCode.NRefactory.PatternMatching.Match match)
-            {
-                return other == null || other.IsNull;
-            }
-        }
-        #endregion
-
-        #region PatternPlaceholder
-        public static implicit operator VariableInitializer(Pattern pattern)
-        {
-            return (pattern != null) ? new PatternPlaceholder(pattern) : null;
-        }
-
-        sealed class PatternPlaceholder : VariableInitializer, INode
-        {
-            readonly Pattern child;
-
-            public PatternPlaceholder(Pattern child)
-            {
-                this.child = child;
-            }
-
-            public override void AcceptWalker(IAstWalker walker)
-            {
-                walker.VisitPatternPlaceholder(this);
-            }
-
-            public override TResult AcceptWalker<TResult>(IAstWalker<TResult> walker)
-            {
-                return walker.VisitPatternPlaceholder(this);
-            }
-
-            public override TResult AcceptWalker<TResult, TData>(IAstWalker<TData, TResult> walker, TData data)
-            {
-                return walker.VisitPatternPlaceholder(this, data);
-            }
-
-            internal protected override bool DoMatch(AstNode other, Match match)
-            {
-                return child.DoMatch(other, match);
-            }
-
-            bool INode.DoMatchCollection(Role role, INode pos, Match match, BacktrackingInfo backtrackingInfo)
-            {
-                return child.DoMatchCollection(role, pos, match, backtrackingInfo);
-            }
-        }
-        #endregion
-
         public override NodeType NodeType{
             get{
                 return NodeType.Unknown;
@@ -96,6 +22,7 @@ namespace Expresso.Ast
 
         public Identifier NameToken{
             get{return GetChildByRole(Roles.Identifier);}
+            set{SetChildByRole(Roles.Identifier, value);}
         }
 
         public ExpressoTokenNode AssignToken{
@@ -104,12 +31,13 @@ namespace Expresso.Ast
 
         public Expression Initializer{
             get{return GetChildByRole(Roles.Expression);}
+            set{SetChildByRole(Roles.Expression, value);}
         }
 
         public VariableInitializer(Identifier name, Expression initializer = null)
         {
-            SetChildByRole(Roles.Identifier, name);
-            SetChildByRole(Roles.Expression, initializer ?? Expression.Null);
+            NameToken = name;
+            Initializer = initializer ?? Expression.Null;
         }
 
         public override void AcceptWalker(IAstWalker walker)
@@ -130,7 +58,7 @@ namespace Expresso.Ast
         internal protected override bool DoMatch(AstNode other, Match match)
         {
             var o = other as VariableInitializer;
-            return o != null && MatchString(Name, o.Name) && Initializer.DoMatch(o.Initializer);
+            return o != null && MatchString(Name, o.Name) && Initializer.DoMatch(o.Initializer, match);
         }
     }
 }

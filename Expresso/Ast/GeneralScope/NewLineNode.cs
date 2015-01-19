@@ -15,7 +15,7 @@ namespace Expresso.Ast
             }
         }
 
-        const uint NewLineMask = 0xfu << AstNodeFlagsUsedBits;
+        const uint NewLineMask = 0xfu << (int)AstNodeFlagsUsedBits;
         static readonly UnicodeNewline[] NewLineTypes = {
             UnicodeNewline.Unknown,
             UnicodeNewline.LF,
@@ -30,7 +30,7 @@ namespace Expresso.Ast
 
         public UnicodeNewline NewLineType{
             get{
-                return NewLineTypes[(flags & NewLineMask) >> AstNodeFlagsUsedBits];
+                return NewLineTypes[(flags & NewLineMask) >> (int)AstNodeFlagsUsedBits];
             }
 
             set{
@@ -40,14 +40,13 @@ namespace Expresso.Ast
                     pos = 0;
 
                 flags &= ~NewLineMask;  //clear old newline type
-                flags |= (uint)pos << AstNodeFlagsUsedBits;
+                flags |= (uint)pos << (int)AstNodeFlagsUsedBits;
             }
         }
 
         public NewLineNode(TextLocation location)
+            : base(location, new TextLocation(location.Line + 1, 1))
         {
-            start_loc = location;
-            end_loc = new TextLocation(location.Line + 1, 1);
         }
 
         public override void AcceptWalker(IAstWalker walker)

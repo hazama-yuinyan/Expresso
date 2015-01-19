@@ -61,17 +61,17 @@ namespace Expresso.Ast
 
             public override void AcceptWalker(IAstWalker walker)
             {
-                walker.VisitPatternPlaceholder(this);
+                walker.VisitPatternPlaceholder(this, child);
             }
 
             public override TResult AcceptWalker<TResult>(IAstWalker<TResult> walker)
             {
-                return walker.VisitPatternPlaceholder(this);
+                return walker.VisitPatternPlaceholder(this, child);
             }
 
             public override TResult AcceptWalker<TResult, TData>(IAstWalker<TData, TResult> walker, TData data)
             {
-                return walker.VisitPatternPlaceholder(this, data);
+                return walker.VisitPatternPlaceholder(this, child, data);
             }
 
             protected internal override bool DoMatch(AstNode other, Match match)

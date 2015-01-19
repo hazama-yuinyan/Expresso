@@ -50,13 +50,11 @@ namespace Expresso.Ast
         }
 
         public ExpressoTokenNode(TextLocation location, TokenRole role)
+            : base(location, new TextLocation(location.Line,
+                location.Column + TokenRole.TokenLengths[(int)role.TokenIndex]))
         {
-            start_loc = location;
             if(role != null)
-                flags |= role.TokenIndex << AstNodeFlagsUsedBits;
-
-            int token_length = TokenRole.TokenLengths[(int)(flags >> AstNodeFlagsUsedBits)];
-            end_loc = new TextLocation(location.Line, location.Column + token_length);
+                flags |= role.TokenIndex << (int)AstNodeFlagsUsedBits;
         }
 
         public override void AcceptWalker(IAstWalker walker)

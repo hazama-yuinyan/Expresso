@@ -1,22 +1,26 @@
-﻿using System.Collections.Generic;
-using System.Linq;
+﻿using System;
 
-using Expresso.Compiler;
+using ICSharpCode.NRefactory;
 
 namespace Expresso.Ast
 {
     /// <summary>
     /// 条件演算。
 	/// The conditional expression.
+    /// Expression '?' Expression ':' ConditionalExpression ;
     /// </summary>
     public class ConditionalExpression : Expression
     {
+        public static readonly Role<Expression> TrueExpressionRole = new Role<Expression>("TrueExpr");
+        public static readonly Role<Expression> FalseExpressionRole = new Role<Expression>("FalseExpr");
+
         /// <summary>
         /// 条件式。
 		/// The condition expression to be tested.
         /// </summary>
         public Expression Condition{
-            get{return (Expression)FirstChild;}
+            get{return GetChildByRole(Roles.TargetExpression);}
+            set{SetChildByRole(Roles.TargetExpression, value);}
 		}
 
         /// <summary>
@@ -24,7 +28,8 @@ namespace Expresso.Ast
 		/// The expression to be evaluated when the condition is true.
         /// </summary>
         public Expression TrueExpression{
-            get{return (Expression)FirstChild.NextSibling;}
+            get{return GetChildByRole(TrueExpressionRole);}
+            set{SetChildByRole(TrueExpressionRole, value);}
 		}
 
         /// <summary>
@@ -32,36 +37,16 @@ namespace Expresso.Ast
 		/// The expression to be evaluated when the condition is false.
         /// </summary>
         public Expression FalseExpression{
-            get{return (Expression)LastChild;}
+            get{return GetChildByRole(FalseExpressionRole);}
+            set{SetChildByRole(FalseExpressionRole, value);}
 		}
-
-        public override NodeType NodeType{
-            get{return NodeType.ConditionalExpression;}
-        }
 
 		public ConditionalExpression(Expression test, Expression trueExpr, Expression falseExpr)
 		{
-            AddChild(test);
-            AddChild(trueExpr);
-            AddChild(falseExpr);
+            Condition = test;
+            TrueExpression = trueExpr;
+            FalseExpression = falseExpr;
 		}
-
-        public override bool Equals(object obj)
-        {
-            var x = obj as ConditionalExpression;
-
-            if(x == null)
-                return false;
-
-            return this.Condition == x.Condition
-                && this.TrueExpression.Equals(x.TrueExpression)
-                && this.FalseExpression.Equals(x.FalseExpression);
-        }
-
-        public override int GetHashCode()
-        {
-            return this.Condition.GetHashCode() ^ this.TrueExpression.GetHashCode() ^ this.FalseExpression.GetHashCode();
-        }
 
         public override void AcceptWalker(IAstWalker walker)
 		{
@@ -78,14 +63,16 @@ namespace Expresso.Ast
             return walker.VisitConditionalExpression(this, data);
         }
 
-        public override string GetText()
-		{
-            return string.Format("{0} ? {1} : {2}", Condition, TrueExpression, FalseExpression);
-		}
+        #region implemented abstract members of AstNode
 
-        public override string ToString()
+        protected internal override bool DoMatch(AstNode other, ICSharpCode.NRefactory.PatternMatching.Match match)
         {
-            return GetText();
+            var o = other as ConditionalExpression;
+            return o != null && Condition.DoMatch(o.Condition, match)
+                && TrueExpression.DoMatch(o.TrueExpression, match)
+                && FalseExpression.DoMatch(o.FalseExpression, match);
         }
+
+        #endregion
     }
 }

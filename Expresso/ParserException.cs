@@ -1,7 +1,7 @@
 using System;
 
 
-namespace Expresso.Parsing
+namespace Expresso.Ast.Analysis
 {
     public class ParserException : Exception
     {

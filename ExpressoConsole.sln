@@ -5,8 +5,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExpressoConsole", "Expresso
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Expresso", "Expresso\Expresso.csproj", "{4E28200A-5808-419F-8A57-F504842991AF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SymbolicComputation", "SymbolicComputation\SymbolicComputation.csproj", "{F4F22C1D-3EAA-455B-9461-AEA206B44208}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExpressoTest", "ExpressoTest\ExpressoTest.csproj", "{20AC9F09-B706-428B-B0F9-E32E865D41EA}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExpressoRuntime", "Expresso\ExpressoRuntime\ExpressoRuntime.csproj", "{D60E49D6-6CBA-4D54-A009-6A0528181C88}"
@@ -61,14 +59,6 @@ Global
 		{D60E49D6-6CBA-4D54-A009-6A0528181C88}.net_4_5_Release|Any CPU.Build.0 = Debug|Any CPU
 		{D60E49D6-6CBA-4D54-A009-6A0528181C88}.Release|x86.ActiveCfg = Release|Any CPU
 		{D60E49D6-6CBA-4D54-A009-6A0528181C88}.Release|x86.Build.0 = Release|Any CPU
-		{F4F22C1D-3EAA-455B-9461-AEA206B44208}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{F4F22C1D-3EAA-455B-9461-AEA206B44208}.Debug|x86.Build.0 = Debug|Any CPU
-		{F4F22C1D-3EAA-455B-9461-AEA206B44208}.net_4_5_Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{F4F22C1D-3EAA-455B-9461-AEA206B44208}.net_4_5_Debug|Any CPU.Build.0 = Debug|Any CPU
-		{F4F22C1D-3EAA-455B-9461-AEA206B44208}.net_4_5_Release|Any CPU.ActiveCfg = Debug|Any CPU
-		{F4F22C1D-3EAA-455B-9461-AEA206B44208}.net_4_5_Release|Any CPU.Build.0 = Debug|Any CPU
-		{F4F22C1D-3EAA-455B-9461-AEA206B44208}.Release|x86.ActiveCfg = Release|Any CPU
-		{F4F22C1D-3EAA-455B-9461-AEA206B44208}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(MonoDevelopProperties) = preSolution
 		StartupItem = ExpressoConsole.csproj

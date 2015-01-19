@@ -20,7 +20,7 @@ namespace Expresso.Ast
         Virtual = 0x0020,
         Static = 0x0040,
         Override = 0x0080,
-        Const = 0x0100,
+        Immutable = 0x0100,
 
         VisibilityMask = Private | Protected | Public | Export,
 

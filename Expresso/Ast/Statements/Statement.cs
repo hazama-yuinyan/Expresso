@@ -9,6 +9,7 @@ namespace Expresso.Ast
 {
     /// <summary>
     /// 文の共通基底。
+    /// Base class for all the statements.
     /// </summary>
     public abstract class Statement : AstNode
     {
@@ -62,17 +63,17 @@ namespace Expresso.Ast
 
             public override void AcceptWalker(IAstWalker walker)
             {
-                walker.VisitPatternPlaceholder(this);
+                walker.VisitPatternPlaceholder(this, child);
             }
 
             public override TResult AcceptWalker<TResult>(IAstWalker<TResult> walker)
             {
-                return walker.VisitPatternPlaceholder(this);
+                return walker.VisitPatternPlaceholder(this, child);
             }
 
             public override TResult AcceptWalker<TResult, TData>(IAstWalker<TData, TResult> walker, TData data)
             {
-                return walker.VisitPatternPlaceholder(this, data);
+                return walker.VisitPatternPlaceholder(this, child, data);
             }
 
             protected internal override bool DoMatch(AstNode other, Match match)
@@ -93,6 +94,15 @@ namespace Expresso.Ast
             }
         }
 
+        protected Statement()
+        {
+        }
+
+        protected Statement(TextLocation start, TextLocation end)
+            : base(start, end)
+        {
+        }
+
         public new Statement Clone()
         {
             return (Statement)base.Clone();
@@ -107,30 +117,42 @@ namespace Expresso.Ast
         }
 
         #region Factory methods
-        static internal BreakStatement MakeBreakStmt(int count)
+        static internal ExpressionStatement MakeAssignment(SequenceExpression lhs, SequenceExpression rhs,
+            TextLocation start, TextLocation end)
         {
-            return new BreakStatement(count);
+            return new ExpressionStatement(new AssignmentExpression(lhs, rhs), start, end);
         }
 
-        static internal ContinueStatement MakeContinueStmt(int count)
+        static internal ExpressionStatement MakeAugumentedAssignment(SequenceExpression targets,
+            SequenceExpression rhs, OperatorType opType, TextLocation start, TextLocation end)
         {
-            return new ContinueStatement(count);
+            return new ExpressionStatement(new AssignmentExpression(targets, rhs, opType), start, end);
         }
 
-        static internal BlockStatement MakeBlock(IEnumerable<Statement> stmts)
+        static internal BreakStatement MakeBreakStmt(LiteralExpression count, TextLocation start, TextLocation end)
         {
-            return new BlockStatement(stmts);
+            return new BreakStatement(count, start, end);
+        }
+
+        static internal ContinueStatement MakeContinueStmt(LiteralExpression count, TextLocation start, TextLocation end)
+        {
+            return new ContinueStatement(count, start, end);
+        }
+
+        static internal BlockStatement MakeBlock(IEnumerable<Statement> stmts, TextLocation start, TextLocation end)
+        {
+            return new BlockStatement(stmts, start, end);
         }
 
         static internal VariableDeclarationStatement MakeVarDecl(IEnumerable<Identifier> lhs, IEnumerable<Expression> rhs,
-            Modifiers modifiers = Modifiers.None)
+            Modifiers modifiers, TextLocation start, TextLocation end)
         {
-            return new VariableDeclarationStatement(lhs, rhs, modifiers);
+            return new VariableDeclarationStatement(lhs, rhs, modifiers, start, end);
         }
 
-        static internal ExpressionStatement MakeExprStmt(Expression expr)
+        static internal ExpressionStatement MakeExprStmt(Expression expr, TextLocation start, TextLocation end)
         {
-            return new ExpressionStatement(expr);
+            return new ExpressionStatement(expr, start, end);
         }
 
         static internal ReturnStatement MakeReturnStmt(Expression expr)
@@ -138,57 +160,43 @@ namespace Expresso.Ast
             return new ReturnStatement(expr);
         }
 
-        static internal IfStatement MakeIfStmt(Expression condition, BlockStatement trueBlock, BlockStatement falseBlock)
+        static internal IfStatement MakeIfStmt(Expression condition, BlockStatement trueBlock,
+            BlockStatement falseBlock, TextLocation loc)
         {
-            return new IfStatement(condition, trueBlock, falseBlock);
+            return new IfStatement(condition, trueBlock, falseBlock, loc);
         }
 
-        static internal WhileStatement MakeWhileStmt(Expression condition, BlockStatement body)
+        static internal WhileStatement MakeWhileStmt(Expression condition, BlockStatement body,
+            TextLocation loc)
         {
-            return new WhileStatement(condition, body);
+            return new WhileStatement(condition, body, loc);
         }
 
-        static internal ForStatement MakeForStmt(PatternConstruct pattern, Expression rvalue, BlockStatement body)
+        static internal ForStatement MakeForStmt(PatternConstruct pattern, Expression rvalue,
+            BlockStatement body, TextLocation start)
         {
-            return new ForStatement(pattern, rvalue, body);
+            return new ForStatement(pattern, rvalue, body, start);
         }
 
-        static internal MatchStatement MakeSwitchStmt(Expression target, IEnumerable<MatchPatternClause> cases)
+        static internal EmptyStatement MakeEmptyStmt(TextLocation start)
         {
-            return new MatchStatement(target, cases);
+            return new EmptyStatement(start);
         }
 
-        static internal EmptyStatement MakeEmptyStmt()
+        static internal MatchStatement MakeMatchStmt(Expression target, IEnumerable<MatchPatternClause> clauses,
+            TextLocation start, TextLocation end)
         {
-            return new EmptyStatement();
+            return new MatchStatement(target, clauses, start, end);
         }
 
-        static internal MatchPatternClause MakeCaseClause(IEnumerable<Expression> labels, Statement body)
+        static internal MatchPatternClause MakeMatchClause(IEnumerable<PatternConstruct> patterns, Statement body)
         {
-            return new MatchPatternClause(labels, body);
+            return new MatchPatternClause(patterns, body);
         }
 
-        static internal TryStatement MakeTryStmt(BlockStatement body, IEnumerable<CatchClause> catches, BlockStatement finallyClause)
+        static internal YieldStatement MakeYieldStmt(Expression expr, TextLocation start, TextLocation end)
         {
-            if(finallyClause != null)
-                return new TryStatement(body, catches, new FinallyClause(finallyClause));
-            else
-                return new TryStatement(body, catches, null);
-        }
-
-        static internal CatchClause MakeCatchClause(BlockStatement body, Identifier ident)
-        {
-            return new CatchClause(ident, body);
-        }
-
-        static internal ThrowStatement MakeThrowStmt(Expression expr)
-        {
-            return new ThrowStatement(expr);
-        }
-
-        static internal YieldStatement MakeYieldStmt(Expression expr)
-        {
-            return new YieldStatement(expr);
+            return new YieldStatement(expr, start, end);
         }
         #endregion
     }

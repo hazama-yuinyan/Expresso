@@ -6,13 +6,13 @@ namespace Expresso.Ast
 {
     /// <summary>
     /// Represents the keyword "self" as expression.
+    /// "self" ;
     /// </summary>
     public class SelfReferenceExpression : Expression
     {
-        public SelfReferenceExpression(TextLocation start)
+        public SelfReferenceExpression(TextLocation loc)
+            : base(loc, new TextLocation(loc.Line, loc.Column + "self".Length))
         {
-            start_loc = start;
-            end_loc = new TextLocation(start.Line, start.Column + "self".Length);
         }
 
         #region implemented abstract members of AstNode

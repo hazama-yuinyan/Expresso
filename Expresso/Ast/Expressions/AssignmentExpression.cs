@@ -1,10 +1,8 @@
-﻿using System.Collections.Generic;
-using System.Text;
+﻿using System;
+using System.Collections.Generic;
 
-using Expresso.Compiler;
-using System.Linq;
 using ICSharpCode.NRefactory;
-using System;
+
 
 namespace Expresso.Ast
 {
@@ -93,7 +91,7 @@ namespace Expresso.Ast
 
         public override void AcceptWalker(IAstWalker walker)
 		{
-            walker.VisitAssignment(walker);
+            walker.VisitAssignment(this);
 		}
 
         public override TResult AcceptWalker<TResult>(IAstWalker<TResult> walker)

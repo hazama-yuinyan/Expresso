@@ -1,6 +1,5 @@
-using System.Collections.Generic;
+using System;
 
-using Expresso.Compiler;
 using ICSharpCode.NRefactory;
 
 namespace Expresso.Ast
@@ -8,13 +7,14 @@ namespace Expresso.Ast
 	/// <summary>
 	/// 整数の数列をあらわす式.
 	/// Represents an integer sequence.
-    /// [ integer_literal ] (".." | "...") integer_literal [ ':' integer_literal ]
+    /// [ BinaryExpression ] (".." | "...") BinaryExpression [ ':' BinaryExpression ] ;
+    /// where BinaryExpression = Expression '|' Expression
 	/// </summary>
     public class IntegerSequenceExpression : Expression
 	{
-        public static readonly Role<Expression> LowerRole = new Role<Expression>("Lower", Expression.Null);
-        public static readonly Role<Expression> UpperRole = new Role<Expression>("Upper", Expression.Null);
-        public static readonly Role<Expression> StepRole = new Role<Expression>("Step", Expression.Null);
+        public static readonly Role<Expression> LowerRole = new Role<Expression>("Lower");
+        public static readonly Role<Expression> UpperRole = new Role<Expression>("Upper");
+        public static readonly Role<Expression> StepRole = new Role<Expression>("Step");
 
 		/// <summary>
 		/// 整数列の下限.
@@ -58,10 +58,6 @@ namespace Expresso.Ast
             UpperInclusive = upperInclusive;
 		}
 		
-        public override NodeType NodeType{
-            get{return NodeType.Expression;}
-        }
-
         public override void AcceptWalker(IAstWalker walker)
 		{
             walker.VisitIntgerSequenceExpression(this);

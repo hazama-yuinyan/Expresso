@@ -5,7 +5,7 @@ namespace Expresso.Ast
 {
     /// <summary>
     /// Represents an identifier pattern.
-    /// Identifier [ "(-" Type ]
+    /// Identifier [ "(-" Type ] ;
     /// </summary>
     public class IdentifierPattern : PatternConstruct
     {

@@ -1,46 +1,15 @@
 using System;
+using ICSharpCode.NRefactory.TypeSystem;
 
 
 namespace Expresso.Ast
 {
     /// <summary>
-    /// Represents a parameter(which appear in function signatures).
+    /// 仮引数定義。
+    /// Represents a parameter(which appears in function signatures).
     /// </summary>
-    public class ParameterDeclaration : AstNode
+    public class ParameterDeclaration : EntityDeclaration
     {
-        public override NodeType NodeType{
-            get{
-                return NodeType.Unknown;
-            }
-        }
-
-        /// <summary>
-        /// この引数の型。
-        /// The type of the argument.
-        /// </summary>
-        public AstType Type{
-            get{return GetChildByRole(Roles.Type);}
-            set{SetChildByRole(Roles.Type, value);}
-        }
-
-        /// <summary>
-        /// この引数の名前。
-        /// The name of the argument.
-        /// </summary>
-        public string Name{
-            get{return GetChildByRole(Roles.Identifier).Name;}
-        }
-
-        /// <summary>
-        /// この引数の名前。
-        /// The name of the parameter.
-        /// </summary>
-        /// <value>The name token.</value>
-        public Identifier NameToken{
-            get{return GetChildByRole(Roles.Identifier);}
-            set{SetChildByRole(Roles.Identifier, value);}
-        }
-
         public ExpressoTokenNode AssignToken{
             get{return GetChildByRole(Roles.AssignToken);}
         }
@@ -54,10 +23,20 @@ namespace Expresso.Ast
             set{SetChildByRole(Roles.Expression, value);}
         }
 
+        #region implemented abstract members of EntityDeclaration
+
+        public override SymbolKind SymbolKind{
+            get{
+                return SymbolKind.Parameter;
+            }
+        }
+
+        #endregion
+
         public ParameterDeclaration(string name, AstType type, Expression option = null)
         {
-            NameToken = AstNode.MakeIdentifier(name);
-            ParamType = type;
+            AddChild(AstNode.MakeIdentifier(name), Roles.Identifier);
+            AddChild(type, Roles.Type);
             Option = option ?? Expression.Null;
         }
 
@@ -79,7 +58,7 @@ namespace Expresso.Ast
         internal protected override bool DoMatch(AstNode other, ICSharpCode.NRefactory.PatternMatching.Match match)
         {
             var o = other as ParameterDeclaration;
-            return o != null && Type.DoMatch(o.Type, match) && Name == o.Name
+            return o != null && ReturnType.DoMatch(o.ReturnType, match) && MatchString(Name, o.Name)
                 && Option.DoMatch(o.Option, match);
         }
     }

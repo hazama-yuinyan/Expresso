@@ -5,7 +5,7 @@ namespace Expresso.Ast
 {
     /// <summary>
     /// Represents a value binding pattern.
-    /// "let" | "var" PatternConstruct
+    /// ( "let" | "var" ) PatternConstruct ;
     /// </summary>
     public class ValueBindingPattern : PatternConstruct
     {

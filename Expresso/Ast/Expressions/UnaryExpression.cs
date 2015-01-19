@@ -1,18 +1,20 @@
-﻿using System.Collections.Generic;
+﻿using System;
 
-using Expresso.Runtime;
-using Expresso.Compiler;
 
 namespace Expresso.Ast
 {
 	/// <summary>
 	/// 単項演算。
 	/// Reperesents an unary expression.
+    /// UnaryOperator Expression ;
 	/// </summary>
-	public class UnaryExpression : Expression
+    public class UnaryExpression : Expression
 	{
-		readonly OperatorType ope;
-		readonly Expression operand;
+        public static readonly TokenRole NotRole = new TokenRole("!");
+        public static readonly TokenRole ReferenceRole = new TokenRole("&");
+        public static readonly TokenRole DereferenceRole = new TokenRole("*");
+
+        readonly OperatorType ope;
 
 		/// <summary>
 		/// 演算子のタイプ。
@@ -22,37 +24,23 @@ namespace Expresso.Ast
 			get{return ope;}
 		}
 
+        public ExpressoTokenNode OperatorToken{
+            get{return GetChildByRole(GetOperatorRole(ope));}
+        }
+
 		/// <summary>
 		/// オペランド。
 		/// The operand.
 		/// </summary>
 		public Expression Operand{
-			get{return operand;}
-		}
-
-		public override NodeType NodeType{
-			get{return NodeType.UnaryExpression;}
+            get{return GetChildByRole(Roles.TargetExpression);}
+            set{SetChildByRole(Roles.TargetExpression, value);}
 		}
 
 		public UnaryExpression(OperatorType opType, Expression target)
 		{
 			ope = opType;
-			operand = target;
-		}
-
-		public override bool Equals(object obj)
-		{
-			var x = obj as UnaryExpression;
-
-			if(x == null)
-				return false;
-
-			return ope == x.ope && operand.Equals(x.operand);
-		}
-
-		public override int GetHashCode()
-		{
-			return ope.GetHashCode() ^ operand.GetHashCode();
+            Operand = target;
 		}
 
         public override void AcceptWalker(IAstWalker walker)
@@ -70,27 +58,33 @@ namespace Expresso.Ast
             return walker.VisitUnaryExpression(this, data);
         }
 
-		public override string ToString()
-		{
-			string op;
-			switch(Operator){
+        #region implemented abstract members of AstNode
+
+        protected internal override bool DoMatch(AstNode other, ICSharpCode.NRefactory.PatternMatching.Match match)
+        {
+            var o = other as UnaryExpression;
+            return o != null && OperatorToken.DoMatch(o.OperatorToken, match)
+                && Operand.DoMatch(o.Operand, match);
+        }
+
+        #endregion
+
+        public static TokenRole GetOperatorRole(OperatorType op)
+        {
+            switch(op){
             case OperatorType.Plus:
-				op = "+";
-				break;
-
+                return Roles.PlusToken;
             case OperatorType.Minus:
-				op = "-";
-				break;
-
-			case OperatorType.Not:
-				op = "!";
-				break;
-
-			default:
-				op = "";
-				break;
-			}
-			return string.Format("{0}{1}", op, operand);
-		}
+                return Roles.MinusToken;
+            case OperatorType.Not:
+                return NotRole;
+            case OperatorType.Reference:
+                return ReferenceRole;
+            case OperatorType.Dereference:
+                return DereferenceRole;
+            default:
+                throw new NotSupportedException("Invalid value for UnaryOperatorType");
+            }
+        }
 	}
 }

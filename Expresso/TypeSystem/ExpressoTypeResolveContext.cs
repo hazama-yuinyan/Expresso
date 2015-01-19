@@ -35,12 +35,12 @@ namespace Expresso.TypeSystem
 
         #region ITypeResolveContext implementation
 
-        public ITypeResolveContext WithCurrentTypeDefinition(ITypeDefinition typeDefinition)
+        ITypeResolveContext ITypeResolveContext.WithCurrentTypeDefinition(ITypeDefinition typeDefinition)
         {
             return WithCurrentTypeDefinition(typeDefinition);
         }
 
-        public ITypeResolveContext WithCurrentMember(IMember member)
+        ITypeResolveContext ITypeResolveContext.WithCurrentMember(IMember member)
         {
             return WithCurrentMember(member);
         }

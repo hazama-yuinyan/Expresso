@@ -19,13 +19,10 @@ namespace Expresso.Ast
             get; private set;
         }
 
-
-
-        public WhitespaceNode(string whitespaceText, TextLocation location)
+        public WhitespaceNode(string whitespaceText, TextLocation loc)
+            : base(loc, new TextLocation(loc.Line, loc.Column + whitespaceText.Length))
         {
             WhitespaceText = whitespaceText;
-            start_loc = location;
-            end_loc = new TextLocation(location.Line, location.Column + whitespaceText.Length);
         }
 
         public override void AcceptWalker(IAstWalker walker)

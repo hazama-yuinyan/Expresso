@@ -1,9 +1,5 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
 
-using Expresso.Runtime;
-using Expresso.Compiler;
 using ICSharpCode.NRefactory;
 
 namespace Expresso.Ast
@@ -11,22 +7,18 @@ namespace Expresso.Ast
 	/// <summary>
 	/// If文。
 	/// The If statement.
-    /// "if" Expression Block [ "else" Statement ]
+    /// "if" Expression Block [ "else" Block ] ;
 	/// </summary>
 	public class IfStatement : Statement
 	{
         public static readonly TokenRole IfKeywordRole = new TokenRole("if");
-        public static readonly Role<Expression> ConditionRole = new Role<Expression>("Condition", Expression.Null);
-        public static readonly Role<Statement> TrueBlockRole = new Role<Statement>("TrueBlock", Statement.Null);
+        public static readonly Role<Expression> ConditionRole = new Role<Expression>("Condition");
+        public static readonly Role<Statement> TrueBlockRole = new Role<Statement>("TrueBlock");
         public static readonly TokenRole ElseKeywordRole = new TokenRole("else");
-        public static readonly Role<Statement> FalseBlockRole = new Role<Statement>("FalseBlock", Statement.Null);
+        public static readonly Role<Statement> FalseBlockRole = new Role<Statement>("FalseBlock");
 
         public ExpressoTokenNode IfToken{
-            get{GetChildByRole(IfKeywordRole);}
-        }
-
-        public ExpressoTokenNode LPar{
-            get{return GetChildByRole(Roles.LParenthesisToken);}
+            get{return GetChildByRole(IfKeywordRole);}
         }
 
 		/// <summary>
@@ -37,10 +29,6 @@ namespace Expresso.Ast
             get{return GetChildByRole(ConditionRole);}
             set{SetChildByRole(ConditionRole, value);}
 		}
-
-        public ExpressoTokenNode RPar{
-            get{return GetChildByRole(Roles.RParenthesisToken);}
-        }
 
         /// <summary>
         /// 条件が真の時に評価する文(郡)。
@@ -58,22 +46,15 @@ namespace Expresso.Ast
         /// <summary>
         /// 条件が偽の時に評価する文(郡)。
 		/// The statements to be operated when the condition is evaluated to false.
-		/// It can be null if the if statement has no else clause.
+        /// It can be a null node if the if statement has no else clause.
         /// </summary>
         public Statement FalseBlock{
             get{return GetChildByRole(FalseBlockRole);}
             set{SetChildByRole(FalseBlockRole, value);}
         }
 
-        public override NodeType NodeType{
-            get{return NodeType.Statement;}
-        }
-
-        public IfStatement()
-        {
-        }
-
-		public IfStatement(Expression test, Statement trueBlock, Statement falseBlock)
+        public IfStatement(Expression test, Statement trueBlock, Statement falseBlock, TextLocation loc)
+            : base(loc, (falseBlock == null) ? trueBlock.EndLocation : falseBlock.EndLocation)
 		{
             Condition = test;
             TrueBlock = trueBlock;

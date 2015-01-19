@@ -36,7 +36,7 @@ using Expresso.Compiler;
  *  00 .. may not be initialized
  */
 
-namespace Expresso.Ast
+namespace Expresso.Ast.Analysis
 {
     class FlowDefiner : IAstWalker
     {
@@ -114,22 +114,7 @@ namespace Expresso.Ast
             throw new NotImplementedException();
         }
 
-        public void VisitThrowStatement(ThrowStatement throwStmt)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void VisitTryStatement(TryStatement tryStmt)
-        {
-            throw new NotImplementedException();
-        }
-
         public void VisitWhileStatement(WhileStatement whileStmt)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void VisitWithStatement(WithStatement withStmt)
         {
             throw new NotImplementedException();
         }
@@ -184,11 +169,6 @@ namespace Expresso.Ast
             throw new NotImplementedException();
         }
 
-        public void VisitDefaultExpression(DefaultExpression defaultExpr)
-        {
-            throw new NotImplementedException();
-        }
-
         public void VisitIdentifier(Identifier ident)
         {
             throw new NotImplementedException();
@@ -224,16 +204,6 @@ namespace Expresso.Ast
             throw new NotImplementedException();
         }
 
-        public void VisitCatchClause(CatchClause catchClause)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void VisitFinallyClause(FinallyClause finallyClause)
-        {
-            throw new NotImplementedException();
-        }
-
         public void VisitUnaryExpression(UnaryExpression unaryExpr)
         {
             throw new NotImplementedException();
@@ -264,22 +234,7 @@ namespace Expresso.Ast
             throw new NotImplementedException();
         }
 
-        public void VisitConstructorDeclaration(ConstructorDeclaration constructor)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void VisitConstructorInitializer(ConstructorInitializer constructorInitializer)
-        {
-            throw new NotImplementedException();
-        }
-
         public void VisitFieldDeclaration(FieldDeclaration fieldDecl)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void VisitMethodDeclaration(MethodDeclaration methodDecl)
         {
             throw new NotImplementedException();
         }
@@ -351,7 +306,6 @@ namespace Expresso.Ast
 		Stack<BitArray> loops;
 		Dictionary<string, ExpressoVariable> variables;
 		
-		readonly ScopeStatement scope;
 		readonly FlowDefiner fdef;
 		
 		FlowChecker(ScopeStatement scopeStmt)
@@ -645,63 +599,6 @@ namespace Expresso.Ast
 			return false;
 		}
 		
-		public override void PostWalk(ReturnStatement node) { }
-		
-		// WithStmt
-		public override bool Walk(WithStatement withStmt)
-		{
-			// Walk the expression
-			/*node.ContextManager.Walk(this);
-			BitArray save = _bits;
-			_bits = new BitArray(_bits);
-			
-			// Define the Rhs
-			if (node.Variable != null)
-				node.Variable.Walk(_fdef);
-			
-			// Flow the body
-			node.Body.Walk(this);
-			
-			_bits = save;
-			return false;*/
-			return base.Walk(withStmt);
-		}
-		
-		// TryStmt
-		public override bool Walk(TryStatement tryStmt)
-		{
-			BitArray save = bits;
-			bits = new BitArray(bits);
-			
-			// Flow the body
-			tryStmt.Body.Walk(this);
-			
-			if(tryStmt.Catches != null){
-				foreach(var handler in tryStmt.Catches){
-					// Restore to saved state
-					bits.SetAll(false);
-					bits.Or(save);
-					
-					// Define the target
-					if(handler.Catcher != null){
-						handler.Catcher.Walk(fdef);
-					}
-					
-					// Flow the body
-					handler.Body.Walk(this);
-				}
-			}
-			
-			bits = save;
-			
-			if(tryStmt.FinallyClause != null){
-				// Flow finally - this executes no matter what
-				tryStmt.FinallyClause.Walk(this);
-			}
-			
-			return false;
-		}
-		
 		// WhileStmt
 		public override bool Walk(WhileStatement whileStmt)
 		{
@@ -722,8 +619,7 @@ namespace Expresso.Ast
 		// ExpressionStmt
 		public override bool Walk(ExpressionStatement exprStmt)
 		{
-			foreach(var expr in exprStmt.Expressions)
-				expr.Walk(this);
+            exprStmt.Expression.AcceptWalker(this);
 
 			return false;
 		}

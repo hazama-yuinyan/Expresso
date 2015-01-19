@@ -1,7 +1,10 @@
 using System;
 using Expresso.TypeSystem;
 using ICSharpCode.NRefactory;
+using ICSharpCode.NRefactory.TypeSystem;
+using Expresso.Ast.Analysis;
 
+using ExpressoTypeCode = Expresso.TypeSystem.KnownTypeCode;
 
 namespace Expresso.Ast
 {
@@ -17,14 +20,13 @@ namespace Expresso.Ast
             set{SetChildByRole(KeywordRole, value);}
         }
 
-        public KnownTypeCode KnownTypeCode{
-            get{return GetKnownTypeCodeForPrimitiveType(KeywordToken);}
+        public ExpressoTypeCode KnownTypeCode{
+            get{return GetKnownTypeCodeForPrimitiveType(TokenRole.Tokens[(int)KeywordToken.RoleIndex >> (int)AstNodeFlagsUsedBits]);}
         }
 
         public PrimitiveType(string keyword, TextLocation location)
+            : base(location, new TextLocation(location.Line, location.Column + keyword.Length))
         {
-            start_loc = location;
-            end_loc = new TextLocation(location.Line, location.Column + keyword.Length);
             KeywordToken = new ExpressoTokenNode(location, new TokenRole(keyword));
         }
 
@@ -49,29 +51,62 @@ namespace Expresso.Ast
             return o != null && o.KeywordToken == KeywordToken;
         }
 
-        public static KnownTypeCode GetKnownTypeCodeForPrimitiveType(string keyword)
+        #region implemented abstract members of AstType
+
+        public override ITypeReference ToTypeReference(NameLookupMode lookupMode, InterningProvider interningProvider = null)
+        {
+            throw new NotImplementedException();
+        }
+
+        #endregion
+
+        public static ExpressoTypeCode GetKnownTypeCodeForPrimitiveType(string keyword)
         {
             switch(keyword){
-            case "object":
-                return KnownTypeCode.Object;
+            case "array":
+                return ExpressoTypeCode.Array;
 
             case "bool":
-                return KnownTypeCode.Boolean;
+                return ExpressoTypeCode.Bool;
+
+            case "char":
+                return ExpressoTypeCode.Char;
 
             case "byte":
-                return KnownTypeCode.Byte;
+                return ExpressoTypeCode.Byte;
 
             case "int":
-                return KnownTypeCode.Int;
+                return ExpressoTypeCode.Int;
 
             case "float":
-                return KnownTypeCode.Float;
+                return ExpressoTypeCode.Float;
+            
+            case "double":
+                return ExpressoTypeCode.Double;
 
             case "bigint":
-                return KnownTypeCode.BigInteger;
+                return ExpressoTypeCode.BigInteger;
+
+            case "vector":
+                return ExpressoTypeCode.Vector;
+
+            case "dictionary":
+                return ExpressoTypeCode.Dictionary;
+
+            case "function":
+                return ExpressoTypeCode.Function;
+
+            case "tuple":
+                return ExpressoTypeCode.Tuple;
+
+            case "intseq":
+                return ExpressoTypeCode.IntSeq;
 
             case "void":
-                return KnownTypeCode.Void;
+                return ExpressoTypeCode.Void;
+
+            default:
+                throw new ParserException("{0} is an unknown primitive type!", keyword);
             }
         }
     }

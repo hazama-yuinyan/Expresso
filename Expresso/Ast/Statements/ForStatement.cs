@@ -1,24 +1,14 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
 
-using Expresso.Runtime;
-using Expresso.Compiler;
 using ICSharpCode.NRefactory;
 
 namespace Expresso.Ast
 {
-	/**
-	 * For文はインスタンス生成時に全てのメンバーが決定しないので、メンバーは全部変更可能にしておく。
-	 */
-
 	/// <summary>
 	/// For文。
 	/// The For statement.
-    /// "for" PatternConstruct "in" Expression Block
+    /// "for" PatternConstruct "in" Expression '{' Body '}' ;
 	/// </summary>
-	/// <seealso cref="BreakableStatement"/>
     public class ForStatement : Statement
 	{
         public static readonly Role<Expression> InitializerRole = new Role<Expression>("Initializer", Expression.Null);
@@ -68,7 +58,9 @@ namespace Expresso.Ast
             set{SetChildByRole(Roles.Body, value);}
         }
 
-        public ForStatement(PatternConstruct left, Expression iterable, BlockStatement body)
+        public ForStatement(PatternConstruct left, Expression iterable, BlockStatement body,
+            TextLocation loc)
+            : base(loc, body.EndLocation)
         {
             Left = left;
             Target = iterable;

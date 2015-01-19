@@ -82,9 +82,39 @@ namespace Expresso.Ast
             }
         }
 
-        public EntityDeclaration()
+        protected EntityDeclaration()
         {
         }
+
+        protected EntityDeclaration(TextLocation start, TextLocation end)
+            : base(start, end)
+        {
+        }
+
+        #region Factory methods
+        static internal FieldDeclaration MakeField(IEnumerable<Identifier> lhs, IEnumerable<Expression> rhs,
+            Modifiers modifiers, TextLocation start, TextLocation end)
+        {
+            return new FieldDeclaration(lhs, rhs, modifiers, start, end);
+        }
+
+        static internal ParameterDeclaration MakeParameter(string name, AstType type, Expression option = null)
+        {
+            return new ParameterDeclaration(name, type, option);
+        }
+
+        static internal FunctionDeclaration MakeFunc(string name, IEnumerable<ParameterDeclaration> parameters, BlockStatement body,
+            AstType returnType, Modifiers modifiers, TextLocation loc)
+        {
+            return new FunctionDeclaration(name, parameters, body, returnType, modifiers, loc);
+        }
+
+        /*static internal FunctionDeclaration MakeClosure(string name, IEnumerable<ParameterDeclaration> parameters, Block body,
+            TypeAnnotation returnType, Stack<object> environ)
+        {
+            return new FunctionDeclaration(name, parameters.ToArray(), body, returnType, Flags.None, environ);
+        }*/
+        #endregion
     }
 }
 

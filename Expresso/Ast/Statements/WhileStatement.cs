@@ -1,19 +1,14 @@
 using System;
-using System.Collections.Generic;
+using ICSharpCode.NRefactory;
+
 
 namespace Expresso.Ast
 {
-	/**
-	 * While文はインスタンス生成時に全てのメンバーが決定しないので、メンバーは全部変更可能にしておく。
-	 */
-
 	/// <summary>
 	/// While文.
 	/// The While statement.
-    /// "while" Expression Block
+    /// "while" Expression '{' Body '}' ;
 	/// </summary>
-	/// <seealso cref="Node"/>
-	/// <seealso cref="BreakableStatement"/>
     public class WhileStatement : Statement
 	{
 		/// <summary>
@@ -22,7 +17,7 @@ namespace Expresso.Ast
         /// </summary>
         public Expression Condition{
             get{return GetChildByRole(Roles.Expression);}
-            set{SetChildByRole(Roles.Expression);}
+            set{SetChildByRole(Roles.Expression, value);}
         }
 
         /// <summary>
@@ -34,11 +29,9 @@ namespace Expresso.Ast
             set{SetChildByRole(Roles.Body, value);}
         }
 
-        public override NodeType NodeType{
-            get{return NodeType.Statement;}
-        }
-
-        public WhileStatement(Expression condition, BlockStatement block)
+        public WhileStatement(Expression condition, BlockStatement block,
+            TextLocation start)
+            : base(start, block.EndLocation)
 		{
             Condition = condition;
             Body = block;

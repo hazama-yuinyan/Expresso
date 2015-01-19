@@ -73,6 +73,10 @@ namespace Expresso.Ast
             get{return NodeType.Unknown;}
         }
 
+        protected Identifier()
+        {
+        }
+
         public Identifier(string name)
 		{
             this.name = name;
@@ -104,7 +108,7 @@ namespace Expresso.Ast
         protected internal override bool DoMatch(AstNode other, ICSharpCode.NRefactory.PatternMatching.Match match)
         {
             var o = other as Identifier;
-            return o != null && Name == o.Name && Type.DoMatch(o.Type);
+            return o != null && MatchString(Name, o.Name) && Type.DoMatch(o.Type, match);
         }
 
         #endregion

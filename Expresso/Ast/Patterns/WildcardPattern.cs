@@ -5,7 +5,7 @@ namespace Expresso.Ast
 {
     /// <summary>
     /// Represents the wildcard pattern.
-    /// '_'
+    /// '_' ;
     /// </summary>
     public class WildcardPattern : PatternConstruct
     {

@@ -2,6 +2,7 @@
 using ICSharpCode.NRefactory;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Expresso.Ast
 {
@@ -67,17 +68,17 @@ namespace Expresso.Ast
 
             public override void AcceptWalker(IAstWalker walker)
             {
-                walker.VisitPatternPlaceholder(this);
+                walker.VisitPatternPlaceholder(this, child);
             }
 
             public override TResult AcceptWalker<TResult>(IAstWalker<TResult> walker)
             {
-                return walker.VisitPatternPlaceholder(this);
+                return walker.VisitPatternPlaceholder(this, child);
             }
 
             public override TResult AcceptWalker<TResult, TData>(IAstWalker<TData, TResult> walker, TData data)
             {
-                return walker.VisitPatternPlaceholder(this, data);
+                return walker.VisitPatternPlaceholder(this, child, data);
             }
 
             internal protected override bool DoMatch(AstNode other, Match match)
@@ -96,6 +97,15 @@ namespace Expresso.Ast
             get{
                 return NodeType.Expression;
             }
+        }
+
+        protected Expression()
+        {
+        }
+
+        protected Expression(TextLocation start, TextLocation end)
+            : base(start, end)
+        {
         }
 
         public new Expression Clone()
@@ -132,30 +142,26 @@ namespace Expresso.Ast
             return new BinaryExpression(lhs, rhs, op);
         }
 
-        static internal SequenceInitializer MakeSeqInitializer(AstType type, IEnumerable<Expression> initializeList)
+        static internal SequenceInitializer MakeSeqInitializer(string typeName, IEnumerable<Expression> initializeList)
         {
-            return new SequenceInitializer(initializeList, type);
+            return new SequenceInitializer(initializeList, new SimpleType(typeName, TextLocation.Empty));
         }
 
-        static internal AssignmentExpression MakeAssignment(IEnumerable<Expression> targets, SequenceExpression rhs)
-        {
-            return new AssignmentExpression(MakeSequence(targets), rhs);
-        }
-
-        static internal ObjectCreationExpression MakeObjectCreation(IEnumerable<Identifier> names,
+        static internal ObjectCreationExpression MakeObjectCreation(PathExpression path, IEnumerable<Identifier> names,
             IEnumerable<Expression> values)
         {
-            return new ObjectCreationExpression(names, values);
+            return new ObjectCreationExpression(path, names.Select((ident) => new PathExpression(ident)),
+                values);
         }
 
-        static internal AssignmentExpression MakeAugumentedAssignment(SequenceExpression targets, SequenceExpression rhs, OperatorType opType)
+        static internal KeyValueLikeExpression MakeKeyValuePair(Expression key, Expression value)
         {
-            return new AssignmentExpression(targets, rhs, opType);
+            return new KeyValueLikeExpression(key, value);
         }
 
-        static internal CastExpression MakeCastExpr(Expression target, Expression toExpr)
+        static internal CastExpression MakeCastExpr(Expression target, AstType toType)
         {
-            return new CastExpression(toExpr, target);
+            return new CastExpression(toType, target);
         }
 
         static internal ConditionalExpression MakeCondExpr(Expression test, Expression trueExpr, Expression falseExpr)
@@ -163,7 +169,8 @@ namespace Expresso.Ast
             return new ConditionalExpression(test, trueExpr, falseExpr);
         }
 
-        static internal ComprehensionExpression MakeComp(Expression yieldExpr, ComprehensionForClause body, AstType objType)
+        static internal ComprehensionExpression MakeComp(Expression yieldExpr, ComprehensionForClause body,
+            AstType objType)
         {
             return new ComprehensionExpression(yieldExpr, body, objType);
         }
@@ -178,9 +185,9 @@ namespace Expresso.Ast
             return new ComprehensionIfClause(condition, body);
         }
 
-        static internal LiteralExpression MakeConstant(AstType type, object val)
+        static internal LiteralExpression MakeConstant(string typeName, object val, TextLocation loc)
         {
-            return new LiteralExpression(val, type);
+            return new LiteralExpression(val, new PrimitiveType(typeName, TextLocation.Empty), loc);
         }
 
         static internal SelfReferenceExpression MakeSelfRef(TextLocation start)
@@ -193,9 +200,9 @@ namespace Expresso.Ast
             return new SuperReferenceExpression(start);
         }
 
-        static internal MemberReference MakeMemRef(Expression parent, Expression child)
+        static internal MemberReference MakeMemRef(Expression target, Identifier subscript)
         {
-            return new MemberReference(parent, child);
+            return new MemberReference(target, subscript);
         }
 
         static internal IntegerSequenceExpression MakeIntSeq(Expression start, Expression end, Expression step, bool upperInclusive)
@@ -207,40 +214,21 @@ namespace Expresso.Ast
         {
             return new NewExpression(creationExpr);
         }
-        #endregion
-    }
 
-    /// <summary>
-    /// 演算子のタイプ。
-    /// </summary>
-    public enum OperatorType
-    {
-		None,
-        Assign,
-        Plus,
-        Minus,
-        Times,
-        Divide,
-		Power,
-		Modulus,
-        LessThan,
-        GreaterThan,
-        LessThanOrEqual,
-        GreaterThanOrEqual,
-        Equality,
-        InEquality,
-		Not,
-        ConditionalAnd,
-        ConditionalOr,
-		BitwiseOr,
-		BitwiseAnd,
-		ExclusiveOr,
-		BitwiseShiftLeft,
-		BitwiseShiftRight,
-        As,
-        /// <summary>
-        /// Any operator(for pattern matching).
-        /// </summary>
-        Any
+        static internal PathExpression MakePath(IEnumerable<Identifier> paths)
+        {
+            return new PathExpression(paths);
+        }
+
+        static internal ParenthesizedExpression MakeParen(Expression expr)
+        {
+            return new ParenthesizedExpression(expr);
+        }
+
+        static internal IndexerExpression MakeIndexer(Expression target, IEnumerable<Expression> args)
+        {
+            return new IndexerExpression(target, args);
+        }
+        #endregion
     }
 }

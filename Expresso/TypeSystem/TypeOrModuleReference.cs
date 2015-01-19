@@ -16,7 +16,7 @@ namespace Expresso.TypeSystem
         /// Resolves the reference and returns a ResolveResult.
         /// </summary>
         /// <param name="context">Context to use for resolving this type reference.
-        /// Which kind of context is required depends on the which kind of type reference this is;
+        /// Which kind of context is required depends on which kind of type reference this is;
         /// please consult the documentation of the method that was used to create this type reference,
         /// or that of the class implementing this method.</param>
         /// <param name="resolver">Resolver.</param>

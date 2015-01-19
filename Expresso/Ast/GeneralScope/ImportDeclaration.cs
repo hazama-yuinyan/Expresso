@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-using Expresso.Compiler;
 using ICSharpCode.NRefactory;
 
 namespace Expresso.Ast
@@ -14,8 +13,8 @@ namespace Expresso.Ast
     /// A module import can be done in 2 phases.
     /// 1. Path resolving.
     /// 2. Name imports.
-    /// "import" ModuleName [ "as" AliasName ] {',' ModuleName [ "as" AliasName ] }
-    /// | 
+    /// "import" ModuleName [ "as" AliasName ] {',' ModuleName [ "as" AliasName ] } ';'
+    /// | "import" Identifier { ',' Identifier } "in" ModuleName ';' ;
     /// </summary>
     public class ImportDeclaration : AstNode
     {
@@ -30,9 +29,9 @@ namespace Expresso.Ast
         }
 
         /// <summary>
-        /// 対象となるモジュール名。
-        /// The target module names to be imported. It can contain a '.'(which can be used to point to a nested module)
-        /// or a '/'(which can be used to point to an external source file).
+        /// インポート対象となる名前。
+        /// The target names to be imported. 
+        /// They can be type names, module-level variable names or static field names.
         /// </summary>
         public IEnumerable<string> ModuleNames{
             get{
@@ -62,7 +61,7 @@ namespace Expresso.Ast
 		}
 
         public ExpressoTokenNode AsToken{
-            get{return GetChildByRole(AsToken);}
+            get{return GetChildByRole(AsKeyword);}
         }
 
         public AstNodeCollection<Identifier> AliasNameTokens{
@@ -70,7 +69,7 @@ namespace Expresso.Ast
         }
 
         public ExpressoTokenNode InToken{
-            get{return GetChildByRole(InToken);}
+            get{return GetChildByRole(Roles.InToken);}
         }
 
         public AstNodeCollection<Identifier> ImportedEntities{

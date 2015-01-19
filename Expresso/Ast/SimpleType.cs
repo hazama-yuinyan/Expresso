@@ -1,6 +1,8 @@
 using System;
 using System.Linq;
 using ICSharpCode.NRefactory.TypeSystem;
+using System.Collections.Generic;
+using ICSharpCode.NRefactory;
 
 
 namespace Expresso.Ast
@@ -23,7 +25,7 @@ namespace Expresso.Ast
 
             public override void AcceptWalker(IAstWalker walker)
             {
-                return walker.VisitNullNode(this);
+                walker.VisitNullNode(this);
             }
 
             public override TResult AcceptWalker<TResult>(IAstWalker<TResult> walker)
@@ -60,24 +62,48 @@ namespace Expresso.Ast
         /// </summary>
         public Identifier IdentifierToken{
             get{return GetChildByRole(Roles.Identifier);}
+            set{SetChildByRole(Roles.Identifier, value);}
         }
 
+        /// <summary>
+        /// Gets the type arguments.
+        /// </summary>
+        /// <value>The type arguments.</value>
         public AstNodeCollection<AstType> TypeArguments{
             get{return GetChildrenByRole(Roles.TypeArgument);}
         }
 
-        public SimpleType()
+        protected SimpleType()
         {
         }
 
-        public SimpleType(string identifier)
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Expresso.Ast.SimpleType"/> class
+        /// for a simple user-defined type.
+        /// </summary>
+        /// <param name="identifier">The name of the type.</param>
+        /// <param name="start">The start location this reference appears.</param>
+        /// <param name="end">The location this reference ends at.</param>
+        public SimpleType(string identifier, TextLocation start)
+            : base(start, new TextLocation(start.Line, start.Column + identifier.Length))
         {
-            AddChild(AstNode.MakeIdentifier(identifier), Roles.Identifier);
+            AddChild(AstNode.MakeIdentifier(identifier, this), Roles.Identifier);
         }
 
-        public SimpleType(Identifier identifier)
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Expresso.Ast.SimpleType"/> class
+        /// with several type arguments.
+        /// </summary>
+        /// <param name="identifier">The name of the type.</param>
+        /// <param name="typeArgs">Type arguments.</param>
+        /// <param name="start">The start location this reference appears.</param>
+        /// <param name="end">The location this reference ends at.</param>
+        public SimpleType(string identifier, IEnumerable<AstType> typeArgs, TextLocation start, TextLocation end)
+            : base(start, end)
         {
-            AddChild(identifier, Roles.Identifier);
+            IdentifierToken = AstNode.MakeIdentifier(identifier, this);
+            foreach(var type in typeArgs)
+                AddChild(type, Roles.TypeArgument);
         }
 
         public override void AcceptWalker(IAstWalker walker)
@@ -98,7 +124,8 @@ namespace Expresso.Ast
         internal protected override bool DoMatch(AstNode other, ICSharpCode.NRefactory.PatternMatching.Match match)
         {
             var o = other as SimpleType;
-            return o != null && MatchString(Identifier, o.Identifier) && TypeArguments.DoMatch(o.TypeArguments);
+            return o != null && MatchString(Identifier, o.Identifier)
+                && TypeArguments.DoMatch(o.TypeArguments, match);
         }
 
         public override ITypeReference ToTypeReference(NameLookupMode lookupMode, InterningProvider interningProvider)
@@ -116,7 +143,7 @@ namespace Expresso.Ast
                 return SpecialType.UnboundTypeArgument;
             }
 
-
+            return null; //TODO: implement it
         }
     }
 }

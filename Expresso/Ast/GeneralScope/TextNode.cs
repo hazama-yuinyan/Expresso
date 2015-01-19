@@ -24,7 +24,8 @@ namespace Expresso.Ast
         {
         }
 
-        public TextNode(string text, TextLocation startLoc, TextLocation endLoc) : base(startLoc, endLoc)
+        public TextNode(string text, TextLocation startLoc, TextLocation endLoc)
+            : base(startLoc, endLoc)
         {
             Text = text;
         }

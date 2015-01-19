@@ -6,7 +6,7 @@ module main;
  */
 class JsonData
 {
-private:
+    private
 	
 }
 
@@ -25,41 +25,41 @@ class JsonArray
  */
 export class Json
 {
-private:
-	
-
-public:
-	static parse(src (- string) -> JsonData
+    public static parse(src (- string) -> JsonData
 	{
 		let parsed (- JsonData = new JsonData();
-		let focused (- JsonElement = null, parent (- JsonElement = null;
+		let focused (- Option<JsonElement> = None, parent (- Option<JsonElement> = None;
 
-		for(let c in src){
-			switch(c){
-			case '{':
+		for let c in src {
+			match c {
+			'{' => {
 				parent = focused;
 				focused = new JsonElement();
-			case '}':
+            }
+			'}' => {
 				focused = parent;
 				parent = parent.parent;
-			case '[':
+            }
+			'[' => {
                 parent = focused;
                 focused = new JsonArray();
-			case ']':
+            }
+			']' => {
                 focused = parent;
                 parent = parent.parent;
-			case ':':
+            }
+			':' => {
                 break;
-			case '"':
-
-			default:
-
+            }
+			'"' => {
+            }
+			_ => break;
 			}
 		}
 	}
 }
 
-def main(args)
+def main()
 {
 	
 }

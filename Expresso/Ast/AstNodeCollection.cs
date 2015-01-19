@@ -101,7 +101,7 @@ namespace Expresso.Ast
         public IEnumerator<T> GetEnumerator()
         {
             uint role_index = role.Index;
-            return node.Children.Where(child => child.RoleIndex == role_index);
+            return node.Children.Where(child => child.RoleIndex == role_index).Cast<T>();
         }
         #endregion
 
