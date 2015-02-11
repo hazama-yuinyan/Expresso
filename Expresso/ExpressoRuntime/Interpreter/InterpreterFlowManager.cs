@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-using Expresso.Ast;
 using Expresso.Runtime.Operations;
 
 namespace Expresso.Interpreter

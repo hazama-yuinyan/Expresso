@@ -17,9 +17,9 @@ namespace Expresso.Ast.Analysis
             if(mem_ref != null){
                 return InferComplicatedType(mem_ref);
             }else{
-                var ident = inferenceTarget as Identifier;
-                if(ident != null)
-                    return ident.Type;
+                var path = inferenceTarget as PathExpression;
+                if(path != null)
+                    return path.AsIdentifier.Type;
 
                 var seq_initializer = inferenceTarget as SequenceInitializer;
                 if(seq_initializer != null)

@@ -27,7 +27,7 @@ Usage: expresso file_name");
 			try{
 				interp.Run(new List<object>(args));
 			}
-			catch(RuntimeException eval_ex){
+			catch(PanickedException eval_ex){
 				Console.WriteLine(eval_ex.Message);
 			}
 			catch(Exception e){

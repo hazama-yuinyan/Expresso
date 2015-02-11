@@ -1,28 +1,21 @@
 ﻿<Properties>
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug|x86" />
-  <MonoDevelop.Ide.Workbench ActiveDocument="Expresso/Analysis/InferenceHelper.cs">
+  <MonoDevelop.Ide.Workbench ActiveDocument="Expresso/Expresso.ATG">
     <Files>
-      <File FileName="Expresso/Expresso.ATG" Line="929" Column="2" />
-      <File FileName="Expresso/Analysis/ExpressoNameBinder.cs" Line="35" Column="37" />
-      <File FileName="Expresso/Documentation/ExpressoDesignMemo.txt" Line="18" Column="17" />
-      <File FileName="Expresso/Documentation/ExpressoLanguageSpecificationMemo.txt" Line="16" Column="16" />
-      <File FileName="Expresso/Parser.cs" Line="341" Column="25" />
-      <File FileName="Expresso/Ast/GeneralScope/ImportDeclaration.cs" Line="16" Column="88" />
-      <File FileName="Expresso/Analysis/InferenceHelper.cs" Line="26" Column="28" />
-      <File FileName="Expresso/Ast/Statements/Statement.cs" Line="199" Column="33" />
-      <File FileName="ExpressoTest/sources/test.exs" Line="96" Column="28" />
-      <File FileName="Expresso/Analysis/TypeInferenceRunner.cs" Line="117" Column="64" />
-      <File FileName="Expresso/Analysis/TypeChecker.cs" Line="148" Column="13" />
-      <File FileName="Expresso/Ast/Expressions/Expression.cs" Line="153" Column="103" />
-      <File FileName="Expresso/Ast/PrimitiveType.cs" Line="20" Column="53" />
-      <File FileName="Expresso/Ast/TokenRole.cs" Line="11" Column="39" />
-      <File FileName="Expresso/Ast/AstNode.cs" Line="293" Column="32" />
+      <File FileName="Expresso/Expresso.ATG" Line="745" Column="6" />
+      <File FileName="Expresso/Analysis/ExpressoNameBinder.cs" Line="1" Column="1" />
+      <File FileName="Expresso/Documentation/ExpressoDesignMemo.txt" Line="1" Column="1" />
+      <File FileName="Expresso/Analysis/TypeChecker.cs" Line="1" Column="1" />
+      <File FileName="Expresso/Ast/GeneralScope/TypeDeclaration.cs" Line="1" Column="1" />
+      <File FileName="Expresso/Analysis/FlowChecker.cs" Line="1" Column="1" />
+      <File FileName="Expresso/CodeGen/CSharpEmitter.cs" Line="830" Column="13" />
+      <File FileName="Expresso/CodeGen/CSharpEmitterContext.cs" Line="80" Column="1" />
+      <File FileName="Expresso/Ast/Patterns/DestructuringPattern.cs" Line="10" Column="50" />
+      <File FileName="Expresso/Ast/Patterns/PatternConstruct.cs" Line="105" Column="76" />
+      <File FileName="Expresso/Ast/Patterns/ValueBindingPattern.cs" Line="19" Column="1" />
+      <File FileName="Expresso/Ast/Patterns/CollectionPattern.cs" Line="25" Column="48" />
+      <File FileName="Expresso/Analysis/IAstWalker.cs" Line="234" Column="89" />
     </Files>
-    <Pads>
-      <Pad Id="MonoDevelop.NUnit.TestPad">
-        <State expanded="True" selected="True" />
-      </Pad>
-    </Pads>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>
     <BreakpointStore>

@@ -1,5 +1,7 @@
 using System;
+using System.Collections.Generic;
 
+using ICSharpCode.NRefactory;
 using ICSharpCode.NRefactory.TypeSystem;
 
 
@@ -8,7 +10,6 @@ namespace Expresso.Ast
     public enum ClassType
     {
         Class,
-        Struct,
         Interface,
         Enum
     }
@@ -17,13 +18,12 @@ namespace Expresso.Ast
     /// 型定義。
     /// Represents a type declaration.
     /// 
-    /// ("class" | "struct" | "interface" | "enum") TypeName [':' {BaseType}]
+    /// [ "export" ] ("class" | "interface" | "enum") Identifier [':' {PathExpression}]
     /// '{' {Decls} '}' ;
     /// </summary>
     public class TypeDeclaration : EntityDeclaration
     {
         public static readonly TokenRole ClassKeywordRole = new TokenRole("class");
-        public static readonly TokenRole StructKeywordRole = new TokenRole("struct");
         public static readonly TokenRole InterfaceKeywordRole = new TokenRole("interface");
         public static readonly TokenRole EnumKeywordRole = new TokenRole("enum");
 
@@ -44,9 +44,6 @@ namespace Expresso.Ast
                 switch(class_type){
                 case ClassType.Class:
                     return GetChildByRole(ClassKeywordRole);
-
-                case ClassType.Struct:
-                    return GetChildByRole(StructKeywordRole);
 
                 case ClassType.Interface:
                     return GetChildByRole(InterfaceKeywordRole);
@@ -73,10 +70,22 @@ namespace Expresso.Ast
             }
         }
 
+        public override string Name{
+            get{return NameToken.Name;}
+        }
+
+        public override Identifier NameToken{
+            get{return GetChildByRole(Roles.Identifier);}
+        }
+
         public ExpressoTokenNode ColonToken{
             get{return GetChildByRole(Roles.ColonToken);}
         }
 
+        /// <summary>
+        /// Gets all the base types.
+        /// </summary>
+        /// <value>The base types.</value>
         public AstNodeCollection<AstType> BaseTypes{
             get{return GetChildrenByRole(Roles.BaseType);}
         }
@@ -85,6 +94,10 @@ namespace Expresso.Ast
             get{return GetChildByRole(Roles.LBraceToken);}
         }
 
+        /// <summary>
+        /// Gets all the members defined in this declaration.
+        /// </summary>
+        /// <value>The members.</value>
         public AstNodeCollection<EntityDeclaration> Members{
             get{return GetChildrenByRole(Roles.TypeMember);}
         }
@@ -93,8 +106,19 @@ namespace Expresso.Ast
             get{return GetChildByRole(Roles.RBraceToken);}
         }
 
-        public TypeDeclaration()
+        public TypeDeclaration(string name, IEnumerable<AstType> supers,
+            IEnumerable<EntityDeclaration> decls, Modifiers modifiers, TextLocation start, TextLocation end)
+            : base(start, end)
         {
+            AddChild(AstNode.MakeIdentifier(name), Roles.Identifier);
+
+            foreach(var base_type in supers)
+                AddChild(base_type, Roles.Type);
+
+            foreach(var decl in decls)
+                AddChild(decl, Roles.TypeMember);
+
+            SetModifiers(this, modifiers);
         }
 
         #region implemented abstract members of AstNode

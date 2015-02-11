@@ -9,14 +9,22 @@ namespace Expresso.Ast
     /// </summary>
     public class ValueBindingPattern : PatternConstruct
     {
+        public bool IsConst{
+            get; set;
+        }
+
+        /// <summary>
+        /// Represents the inner pattern.
+        /// </summary>
         public PatternConstruct Pattern{
             get{return GetChildByRole(Roles.Pattern);}
             set{SetChildByRole(Roles.Pattern, value);}
         }
 
-        public ValueBindingPattern(PatternConstruct inner)
+        public ValueBindingPattern(PatternConstruct inner, bool isConst)
         {
             Pattern = inner;
+            IsConst = isConst;
         }
 
         #region implemented abstract members of AstNode

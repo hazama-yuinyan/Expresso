@@ -17,30 +17,31 @@ def printInt(n (- int) -> ()    //The void type is the synonym for the unit type
 
 def makeList() -> vector<int>
 {
-	return new vector{1,2,3,4,5,6};
+	return [1,2,3,4,5,6, ...];
 }
 
 def makeDict() -> dictionary<string, int>
 {
-	//return new {あかり : 13, 京子 : 14, 結衣 : 14, ちなつ : 13};
+	return {"あかり" : 13, "京子" : 14, "結衣" : 14, "ちなつ" : 13};
 }
 
 def makeTuple() -> (string, string, int)
 {
 	return "あかりちゃん", "かわいいよ、あかりちゃん", 130; //A return statement containing a list of expressions must yield a tuple.
 }
-
-def printList<T>(input (- T, header = "")
+    
+def printList<T>(input (- vector<T>, header = "") //You can omit type annotations on parameters only if the option is specified
 {
 	print(header);
 	print("リストの中身は");
-	for(tmp in input)
+	for let tmp in input {
 		print(tmp);
+    }
 	
 	print("です。");
 }
 
-def testSwitch<T>(input (- T)
+def testMatch<T>(input (- T)
 {
 	match input {
 	    "abc" => print("Detects a string");
@@ -77,8 +78,9 @@ def main()
 	let dict_obj = makeDict();
 	let tuple_obj = makeTuple(), tuple_obj2 = ("あかりちゃん", "ちなつちゃん", 2424);
 	print("Print range object:");
-	for(let x in 1..5:1)
+	for let x in 1..5:1 {
 		print(x);
+    }
 	
     let int_seq = foo.bar()..baz[2]:30+10*20;
 	/*for(let item in dict_obj)
@@ -89,11 +91,11 @@ def main()
 	printList(list_obj2, "Sliced list:");
 	println("Left shift:{}", w << 1);
 	println("x + 1 + 3 * 2 = {}", x + 1 + 3 * 2);
-	testSwitch("abc");
-	testSwitch(5);
-	testSwitch(tuple_obj2[0]);
-	testSwitch("akarichan");
-    let tes = [0, 2, 4, ...]
+	testMatch("abc");
+	testMatch(5);
+	testMatch(tuple_obj2[0]);
+	testMatch("akarichan");
+    let tes = [0, 2, 4, ...];   //trailing dots create a vector
 	
 	let comp = [x for x in 0..100];
 	printList(comp, "Created using comprehension:");

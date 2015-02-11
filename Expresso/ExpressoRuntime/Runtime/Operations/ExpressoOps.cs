@@ -6,12 +6,11 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.IO;
 
-using Expresso.Builtins;
+using Expresso.Runtime.Builtins;
 using Expresso.Runtime;
 using Expresso.Runtime.Exceptions;
 using Expresso.Runtime.Types;
-using Expresso.Ast;
-using Expresso.Builtins.Library;
+using Expresso.Runtime.Library;
 using Expresso.Compiler.Meta;
 
 namespace Expresso.Runtime.Operations
@@ -71,31 +70,15 @@ namespace Expresso.Runtime.Operations
 
 		public static Exception TypeErrorForTypeMismatch(string expectedTypeName, object instance)
 		{
-			return MakeInvalidTypeError("expected {0}, got {1}", expectedTypeName, ExpressoOps.GetExpressoTypeName(instance));
+            return MakeInvalidTypeError("expected {0}, got {1}", expectedTypeName, instance);
 		}
 		#endregion
 
 		#region Helpers for making sequences
-		public static ExpressoTuple MakeTuple(List<object> objs)
+        public static Dictionary<Key, Value> MakeDict<Key, Value>(List<Key> keys, List<Value> values)
 		{
-			if(objs == null)
-				throw new ArgumentNullException("objs");
-			
-			return new ExpressoTuple(objs);
-		}
-		
-		public static ExpressoTuple MakeTuple(object[] objs)
-		{
-			if(objs == null)
-				throw new ArgumentNullException("objs");
-			
-			return new ExpressoTuple(objs);
-		}
-		
-		public static Dictionary<object, object> MakeDict(List<object> keys, List<object> values)
-		{
-			var tmp = new Dictionary<object, object>(keys.Count);
-			for (int i = 0; i < keys.Count; ++i)
+            var tmp = new Dictionary<Key, Value>(keys.Count);
+			for(int i = 0; i < keys.Count; ++i)
 				tmp.Add(keys[i], values[i]);
 			
 			return tmp;
@@ -109,7 +92,7 @@ namespace Expresso.Runtime.Operations
 			return dict;
 		}
 		
-		public static List<object> MakeList(List<object> list)
+        public static List<T> MakeVector<T>(List<T> list)
 		{
 			if(list == null)
 				throw new ArgumentNullException("list");
@@ -179,34 +162,19 @@ namespace Expresso.Runtime.Operations
 		/// IntegerSequenceを使ってコンテナの一部の要素をコピーした新しいコンテナを生成する。
 		/// Do the "slice" operation on the container with an IntegerSequence.
 		/// </summary>
-		public static object Slice(object src, ExpressoIntegerSequence seq)
+        public static IList<T> Slice<T>(IList<T> src, ExpressoIntegerSequence seq)
 		{
-			object result;
+            List<T> result = new List<T>();
 			var enumerator = seq.GetEnumerator();
 			
-			if(src is List<object>){
-				int index;
-				var tmp = new List<object>();
-				var orig_list = (List<object>)src;
-				while(enumerator.MoveNext() && (index = (int)enumerator.Current) < orig_list.Count)
-					tmp.Add(orig_list[index]);
+			int index;
+			var orig_list = src;
+			while(enumerator.MoveNext() && (index = enumerator.Current) < orig_list.Count)
+                result.Add(orig_list[index]);
 				
-				result = tmp;
-			}else if(src is ExpressoTuple){
-				int index;
-				var orig_tuple = (ExpressoTuple)src;
-				var tmp = new List<object>();
-				while(enumerator.MoveNext() && (index = (int)enumerator.Current) < orig_tuple.Count)
-					tmp.Add(orig_tuple[index]);
-				
-				result = ExpressoOps.MakeTuple(tmp);
-			}else{
-				throw ExpressoOps.MakeInvalidTypeError("This object doesn't support slice operation!");
-			}
-			
-			return result;
-		}
-		
+            return result;
+        }
+
 		/// <summary>
 		/// Helper method for accessing a member on an Expresso's object.
 		/// </summary>
@@ -260,184 +228,27 @@ namespace Expresso.Runtime.Operations
 		}
 		
 		/// <summary>
-		/// Enumerates an Expresso's collection object.
+        /// Enumerates a dictionary into a tuple.
 		/// </summary>
-		/// <param name="enumerable">The object to enumerate on</param>
+        /// <param name="dict">A dictionary object to enumerate on</param>
 		/// <returns>An IEnumerator object</returns>
-		public static IEnumerator<object> Enumerate(object enumerable)
+        public static IEnumerator<Tuple<Key, Value>> Enumerate<Key, Value>(Dictionary<Key, Value> dict)
 		{
-			if(enumerable is IEnumerable<object>){
-				var enumerator = ((IEnumerable<object>)enumerable).GetEnumerator();
-				while(enumerator.MoveNext())
-					yield return enumerator.Current;
-			}else if(enumerable is Dictionary<object, object>){
-				var dict = (Dictionary<object, object>)enumerable;
-				foreach(var elem in dict)
-					yield return ExpressoOps.MakeTuple(new object[]{elem.Key, elem.Value});
-		    }else{
-				throw ExpressoOps.MakeRuntimeError("Unknown object type!");
-		    }
+            if(dict == null)
+                throw new ArgumentNullException("dict");
+
+			foreach(var elem in dict)
+                yield return new Tuple<Key, Value>(elem.Key, elem.Value);
 		}
 
-		#region Operations on types
-		public static ObjectTypes GetTypeInExpresso(Type t)
+		internal static string Replace(this string str, Regex regexp, string replacedWith)
 		{
-			switch(t.Name){
-			case "Int32":
-			case "Int64":
-				return ObjectTypes.Integer;
-				
-			case "Double":
-				return ObjectTypes.Float;
-				
-			case "String":
-				return ObjectTypes.String;
-				
-			case "Boolean":
-				return ObjectTypes.Bool;
-				
-			case "Object":
-				return ObjectTypes.Var;
-				
-			case "Void":
-				return ObjectTypes.Undef;
-				
-			case "ExpressoTuple":
-				return ObjectTypes.Tuple;
-				
-			case "ExpressoIntegerSequence":
-				return ObjectTypes.Seq;
-
-			case "ExpressoModule":
-				return ObjectTypes.TypeModule;
-				
-			default:
-				if(t.Name.StartsWith("List"))
-					return ObjectTypes.List;
-				else if(t.Name.StartsWith("Dictionary"))
-					return ObjectTypes.Dict;
-				else
-					throw ExpressoOps.MakeInvalidTypeError(string.Format("{0} is not a primitive type in Expresso.", t.FullName));
-			}
+			return regexp.Replace(str, replacedWith);
 		}
 		
-		public static TypeAnnotation GetTypeAnnotInExpresso(Type t)
+		internal static string Replace(this string str, Regex regexp, MatchEvaluator replacer)
 		{
-			return new TypeAnnotation(GetTypeInExpresso(t));
-		}
-		
-		public static object GetDefaultValueFor(ObjectTypes type)
-		{
-			switch(type){
-			case ObjectTypes.Integer:
-				return default(int);
-				
-			case ObjectTypes.Bool:
-				return default(bool);
-				
-			case ObjectTypes.Float:
-				return default(double);
-				
-			case ObjectTypes.String:
-				return default(string);
-				
-			case ObjectTypes.BigInt:
-				return new BigInteger();
-				
-			case ObjectTypes.Rational:
-				return new Fraction();
-				
-			case ObjectTypes.Instance:
-			case ObjectTypes.Function:
-			case ObjectTypes.Expression:
-			case ObjectTypes.ByteArray:
-			case ObjectTypes.Dict:
-			case ObjectTypes.List:
-			case ObjectTypes.Tuple:
-			case ObjectTypes.Var:
-			case ObjectTypes._INFERENCE:
-				return null;
-				
-			default:
-				throw ExpressoOps.MakeInvalidTypeError("Unknown object type");
-			}
-		}
-		
-		public static Type GetNativeType(ObjectTypes objType)
-		{
-			switch(objType){
-			case ObjectTypes.Integer:
-				return typeof(int);
-				
-			case ObjectTypes.Bool:
-				return typeof(bool);
-				
-			case ObjectTypes.Float:
-				return typeof(double);
-				
-			case ObjectTypes.BigInt:
-				return typeof(BigInteger);
-				
-			case ObjectTypes.Rational:
-				return typeof(Fraction);
-				
-			case ObjectTypes.List:
-				return typeof(List<>);
-				
-			case ObjectTypes.Tuple:
-				return typeof(ExpressoTuple);
-				
-			case ObjectTypes.Dict:
-				return typeof(Dictionary<,>);
-				
-			case ObjectTypes.Seq:
-				return typeof(ExpressoIntegerSequence);
-				
-			case ObjectTypes.String:
-				return typeof(string);
-				
-			case ObjectTypes.Undef:
-				return typeof(void);
-				
-			case ObjectTypes.Instance:
-			case ObjectTypes.TypeClass:
-			case ObjectTypes.TypeModule:
-				return typeof(ExpressoObj);
-				
-			default:
-				return null;
-			}
-		}
-
-		public static string GetExpressoTypeName(object obj)
-		{
-			Type type = obj.GetType();
-			return GetTypeInExpresso(type).ToString();
-		}
-		#endregion
-
-		public static Stack<object> MakeEvaluationStackFromContext(CodeContext context)
-		{
-			return context.EvaluationStack;
-		}
-
-		internal static string Replace(this string str, Regex reg, string replacedWith)
-		{
-			return reg.Replace(str, replacedWith);
-		}
-		
-		internal static string Replace(this string str, Regex reg, MatchEvaluator replacer)
-		{
-			return reg.Replace(str, replacer);
-		}
-
-		public static ExpressoAst ParseAndBind(string srcFileName)
-		{
-			var parser = new Parser(new Scanner(srcFileName));
-			parser.ParsingFileName = srcFileName;
-			parser.Parse();
-			ExpressoNameBinder.BindAst(parser.TopmostAst, parser);
-			return parser.TopmostAst;
+			return regexp.Replace(str, replacer);
 		}
 	}
 }

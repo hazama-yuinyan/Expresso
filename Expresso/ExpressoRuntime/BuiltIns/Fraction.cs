@@ -1,11 +1,9 @@
 ﻿using System;
 using System.Numerics;
 
-using Expresso.Runtime;
-using Expresso.Runtime.Operations;
 using Expresso.Utils;
 
-namespace Expresso.Builtins
+namespace Expresso.Runtime.Builtins
 {
 	/// <summary>
 	/// The built-in fraction class, which represents a fraction as it is.
@@ -16,17 +14,11 @@ namespace Expresso.Builtins
 		/// <summary>
 		/// Represents the dominator of the fraction.
 		/// </summary>
-		/// <value>
-		/// The denominator.
-		/// </value>
 		public BigInteger Denominator{get; internal set;}
 		
 		/// <summary>
 		/// Represents the numerator of the fraction.
 		/// </summary>
-		/// <value>
-		/// The numerator.
-		/// </value>
 		public BigInteger Numerator{get; internal set;}
 		
 		/// <summary>
@@ -175,20 +167,6 @@ namespace Expresso.Builtins
 			return Power(tmp_y);
 		}
 		
-		public Fraction Power(object y)
-		{
-			if(y is Fraction)
-				return Power((Fraction)y);
-			else if(y is BigInteger)
-				return Power((BigInteger)y);
-			else if(y is long)
-				return Power((long)y);
-			else if(y is double)
-				return Power((double)y);
-			else
-				throw ExpressoOps.MakeInvalidTypeError("The power operation cann't take that type of object as the right operand.");
-		}
-		
 		#region Arithmetic operators
 		public static Fraction operator+(Fraction lhs, Fraction rhs)
 		{
@@ -221,20 +199,6 @@ namespace Expresso.Builtins
 			return new_self;
 		}
 		
-		public static Fraction operator+(Fraction lhs, object rhs)
-		{
-			if(rhs is Fraction)
-				return lhs + (Fraction)rhs;
-			else if(rhs is BigInteger)
-				return lhs + (BigInteger)rhs;
-			else if(rhs is long)
-				return lhs + (long)rhs;
-			else if(rhs is double)
-				return lhs + (double)rhs;
-			else
-				throw ExpressoOps.MakeInvalidTypeError("Can not apply the + operator on that type of object.");
-		}
-		
 		/// <remarks>The unary operator minus.</remarks>
 		public static Fraction operator-(Fraction src)
 		{
@@ -261,20 +225,6 @@ namespace Expresso.Builtins
 			return lhs + (-rhs);
 		}
 		
-		public static Fraction operator-(Fraction lhs, object rhs)
-		{
-			if(rhs is Fraction)
-				return lhs - (Fraction)rhs;
-			else if(rhs is BigInteger)
-				return lhs - (BigInteger)rhs;
-			else if(rhs is long)
-				return lhs - (long)rhs;
-			else if(rhs is double)
-				return lhs - (double)rhs;
-			else
-				throw ExpressoOps.MakeInvalidTypeError("Can not apply the - operator on that type of object.");
-		}
-		
 		public static Fraction operator*(Fraction lhs, Fraction rhs)
 		{
 			return new Fraction(lhs.Numerator * rhs.Numerator, lhs.Denominator * rhs.Denominator);
@@ -294,20 +244,6 @@ namespace Expresso.Builtins
 		{
 			var other = new Fraction(rhs);
 			return lhs * other;
-		}
-		
-		public static Fraction operator*(Fraction lhs, object rhs)
-		{
-			if(rhs is Fraction)
-				return lhs * (Fraction)rhs;
-			else if(rhs is BigInteger)
-				return lhs * (BigInteger)rhs;
-			else if(rhs is long)
-				return lhs * (long)rhs;
-			else if(rhs is double)
-				return lhs * (double)rhs;
-			else
-				throw ExpressoOps.MakeInvalidTypeError("Can not apply the * operator on that type of object.");
 		}
 		
 		public static Fraction operator/(Fraction lhs, Fraction rhs)
@@ -332,20 +268,6 @@ namespace Expresso.Builtins
 		{
 			var rhs_inversed = new Fraction(rhs).GetInverse();
 			return lhs * rhs_inversed;
-		}
-		
-		public static Fraction operator/(Fraction lhs, object rhs)
-		{
-			if(rhs is Fraction)
-				return lhs / (Fraction)rhs;
-			else if(rhs is BigInteger)
-				return lhs / (BigInteger)rhs;
-			else if(rhs is long)
-				return lhs / (long)rhs;
-			else if(rhs is double)
-				return lhs / (double)rhs;
-			else
-				throw ExpressoOps.MakeInvalidTypeError("Can not apply the / operator on that type of object.");
 		}
 		
 		public static Fraction operator%(Fraction lhs, Fraction rhs)
@@ -376,20 +298,6 @@ namespace Expresso.Builtins
 		{
 			var rhs_fraction = new Fraction(rhs);
 			return lhs % rhs_fraction;
-		}
-		
-		public static Fraction operator%(Fraction lhs, object rhs)
-		{
-			if(rhs is Fraction)
-				return lhs % (Fraction)rhs;
-			else if(rhs is BigInteger)
-				return lhs % (BigInteger)rhs;
-			else if(rhs is long)
-				return lhs % (long)rhs;
-			else if(rhs is double)
-				return lhs % (double)rhs;
-			else
-				throw ExpressoOps.MakeInvalidTypeError("Can not apply the % operator on that type of object.");
 		}
 		#endregion
 		

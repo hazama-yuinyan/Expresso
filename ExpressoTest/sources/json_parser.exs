@@ -6,8 +6,7 @@ module main;
  */
 class JsonData
 {
-    private
-	
+    var 
 }
 
 class JsonElement
@@ -15,7 +14,12 @@ class JsonElement
 
 }
 
-class JsonArray
+class JsonArray : JsonElement
+{
+
+}
+
+class JsonDictionary : JsonElement
 {
 
 }
@@ -27,14 +31,14 @@ export class Json
 {
     public static parse(src (- string) -> JsonData
 	{
-		let parsed (- JsonData = new JsonData();
+		let parsed = new JsonData{};
 		let focused (- Option<JsonElement> = None, parent (- Option<JsonElement> = None;
 
 		for let c in src {
 			match c {
 			'{' => {
 				parent = focused;
-				focused = new JsonElement();
+				focused = JsonElement{};
             }
 			'}' => {
 				focused = parent;
@@ -42,7 +46,7 @@ export class Json
             }
 			'[' => {
                 parent = focused;
-                focused = new JsonArray();
+                focused = JsonArray{};
             }
 			']' => {
                 focused = parent;

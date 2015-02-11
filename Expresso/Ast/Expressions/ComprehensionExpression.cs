@@ -87,8 +87,6 @@ namespace Expresso.Ast
     /// </summary>
     public class ComprehensionForClause : ComprehensionIter
 	{
-        public static readonly Role<SequenceExpression> References = new Role<SequenceExpression>("References");
-
 		/// <summary>
         /// body内で操作対象となるオブジェクトを参照するのに使用する式。
         /// 評価結果はlvalueにならなければならない。
@@ -101,9 +99,9 @@ namespace Expresso.Ast
         /// the x and y captures the first and second element of the list at the first time,
         /// the third and forth the next time, and the fifth and sixth the last time.
         /// </summary>
-        public SequenceExpression Left{
-            get{return GetChildByRole(References);}
-            set{SetChildByRole(References, value);}
+        public PatternConstruct Left{
+            get{return GetChildByRole(Roles.Pattern);}
+            set{SetChildByRole(Roles.Pattern, value);}
 		}
 
         /// <summary>
@@ -124,7 +122,7 @@ namespace Expresso.Ast
             set{SetChildByRole(ComprehensionIter.CompBody, value);}
 		}
 
-		public ComprehensionForClause(SequenceExpression lhs, Expression targetExpr, ComprehensionIter bodyExpr)
+        public ComprehensionForClause(PatternConstruct lhs, Expression targetExpr, ComprehensionIter bodyExpr)
 		{
             Left = lhs;
             Target = targetExpr;
@@ -166,7 +164,7 @@ namespace Expresso.Ast
 	{
 		/// <summary>
         /// 実行対象の文。
-        /// The body that will be executed.
+        /// The condition to be tested in order to determine whether to execute the body expression.
         /// </summary>
         public Expression Condition{
             get{return GetChildByRole(Roles.Expression);}

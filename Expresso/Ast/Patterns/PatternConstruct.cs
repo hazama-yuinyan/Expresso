@@ -102,14 +102,27 @@ namespace Expresso.Ast
             return new WildcardPattern();
         }
 
-        static internal IdentifierPattern MakeIdentifierPattern(Identifier ident)
+        static internal IdentifierPattern MakeIdentifierPattern(string name, PatternConstruct inner)
         {
-            return new IdentifierPattern(ident);
+            var type = new PlaceholderType(TextLocation.Empty);
+            return new IdentifierPattern(AstNode.MakeIdentifier(name, type), inner);
         }
 
-        static internal ValueBindingPattern MakeValueBindingPattern(PatternConstruct inner)
+        static internal ValueBindingPattern MakeValueBindingPattern(PatternConstruct inner, bool isConst)
         {
-            return new ValueBindingPattern(inner);
+            return new ValueBindingPattern(inner, isConst);
+        }
+
+        static internal CollectionPattern MakeCollectionPattern(IEnumerable<PatternConstruct> items,
+            bool isVector)
+        {
+            return new CollectionPattern(items, isVector);
+        }
+
+        static internal DestructuringPattern MakeDestructuringPattern(PathExpression path,
+            IEnumerable<PatternConstruct> inners)
+        {
+            return new DestructuringPattern(path, inners);
         }
 
         static internal TuplePattern MakeTuplePattern(List<PatternConstruct> inners)

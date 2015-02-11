@@ -30,6 +30,7 @@ namespace Expresso.Ast
 
         /// <summary>
         /// 分岐先となるパターン(郡)。
+        /// Branches with patterns.
         /// </summary>
         public AstNodeCollection<MatchPatternClause> Clauses{
             get{return GetChildrenByRole(PatternClauseRole);}
@@ -77,11 +78,22 @@ namespace Expresso.Ast
 	public class MatchPatternClause : Expression
 	{
 		/// <summary>
-        /// 分岐先となるパターン(郡)。
+        /// 分岐条件となるパターン(郡)。
+        /// Patterns used to determine whether the flow takes the corresponding branch or not.
         /// </summary>
-        public AstNodeCollection<PatternConstruct> Labels{
+        public AstNodeCollection<PatternConstruct> Patterns{
             get{return GetChildrenByRole(Roles.Pattern);}
 		}
+
+        /// <summary>
+        /// ガード式。
+        /// The guard expression. A guard expression is the additional condition that have to be satisfied
+        /// so that the path will be taken.
+        /// </summary>
+        public Expression Guard{
+            get{return GetChildByRole(Roles.Expression);}
+            set{SetChildByRole(Roles.Expression, value);}
+        }
 
         /// <summary>
         /// 実行対象の文(ブロック)。
@@ -92,11 +104,12 @@ namespace Expresso.Ast
             set{SetChildByRole(Roles.EmbeddedStatement, value);}
 		}
 
-        public MatchPatternClause(IEnumerable<PatternConstruct> patternExprs, Statement bodyStmt)
+        public MatchPatternClause(IEnumerable<PatternConstruct> patternExprs, Expression guard, Statement bodyStmt)
 		{
             foreach(var pattern in patternExprs)
                 AddChild(pattern, Roles.Pattern);
 
+            Guard = guard;
             Body = bodyStmt;
 		}
 
@@ -118,7 +131,7 @@ namespace Expresso.Ast
         protected internal override bool DoMatch(AstNode other, ICSharpCode.NRefactory.PatternMatching.Match match)
         {
             var o = other as MatchPatternClause;
-            return o != null && Labels.DoMatch(o.Labels, match) && Body.DoMatch(o.Body, match);
+            return o != null && Patterns.DoMatch(o.Patterns, match) && Body.DoMatch(o.Body, match);
         }
 	}
 }

@@ -18,7 +18,8 @@ namespace Expresso.Ast
             this.writer = writer;
         }
 
-        void PrintList<TObject>(IEnumerable<TObject> list) where TObject : AstNode
+        void PrintList<TObject>(IEnumerable<TObject> list)
+            where TObject : AstNode
         {
             int length = list.Count();
             var enumerator = list.GetEnumerator();
@@ -31,14 +32,14 @@ namespace Expresso.Ast
             }
         }
 
-        void PrintPairList<TObject>(IEnumerable<Tuple<TObject, TObject>> list, Func<string> connector)
-            where TObject : AstNode
+        void PrintPairList<T>(IEnumerable<Tuple<T, T>> list, Func<string> connector)
+            where T : AstNode
         {
             int length = list.Count();
             var enumerator = list.GetEnumerator();
             for(int i = 0; i < length; ++i){
                 enumerator.MoveNext();
-                Tuple<TObject, TObject> pair = enumerator.Current;
+                Tuple<T, T> pair = enumerator.Current;
                 pair.Item1.AcceptWalker(this);
                 writer.Write(connector());
                 pair.Item2.AcceptWalker(this);
@@ -47,19 +48,14 @@ namespace Expresso.Ast
             }
         }
 
-        #region IAstWalker implementation
-
-        public void VisitArgument(ParameterDeclaration arg)
+        void PrintPairList<T, U>(IEnumerable<Tuple<T, U>> list, string delimiter)
+            where T : AstNode
+            where U : AstNode
         {
-            writer.Write(arg.Name);
-            writer.Write(" (- ");
-            arg.ReturnType.AcceptWalker(this);
-            if(arg.Option != null){
-                writer.Write("[= ");
-                arg.Option.AcceptWalker(this);
-                writer.Write("]");
-            }
+
         }
+
+        #region IAstWalker implementation
 
         public void VisitAssignment(AssignmentExpression assignment)
         {
@@ -133,14 +129,14 @@ namespace Expresso.Ast
         public void VisitBreakStatement(BreakStatement breakStmt)
         {
             writer.Write("<break upto ");
-            writer.Write(breakStmt.Count);
+            breakStmt.Count.AcceptWalker(this);
             writer.Write(">");
         }
 
         public void VisitContinueStatement(ContinueStatement continueStmt)
         {
             writer.Write("<continue upto ");
-            writer.Write(continueStmt.Count);
+            continueStmt.Count.AcceptWalker(this);
             writer.Write(">");
         }
 
@@ -181,11 +177,11 @@ namespace Expresso.Ast
         public void VisitIntSequence(IntegerSequenceExpression intSeq)
         {
             writer.Write("<IntegerSequence: ");
-            writer.Write(intSeq.Lower);
+            intSeq.Lower.AcceptWalker(this);
             writer.Write(" ");
-            writer.Write(intSeq.Upper);
+            intSeq.Upper.AcceptWalker(this);
             writer.Write(" ");
-            writer.Write(intSeq.Step);
+            intSeq.Step.AcceptWalker(this);
             writer.Write(">");
         }
 
@@ -215,12 +211,12 @@ namespace Expresso.Ast
         public void VisitImportStatement(ImportDeclaration importStmt)
         {
             writer.Write("<Import: ");
-            if(importStmt.AliasNames != null){
-                var pairs = importStmt.ModuleNameTokens.Zip(importStmt.AliasNameTokens,
-                    (module, alias) => new Tuple<Identifier, Identifier>(module, alias));
-                PrintPairList(pairs, () => " as ");
+            if(importStmt.AliasName != null){
+                writer.Write(importStmt.ModuleName);
+                writer.Write(" as ");
+                writer.Write(importStmt.AliasName);
             }else{
-                PrintList(importStmt.ModuleNameTokens);
+                writer.Write(importStmt.ModuleName);
             }
         }
 
@@ -244,7 +240,7 @@ namespace Expresso.Ast
 
         public void VisitMatchPatternClause(MatchPatternClause clause)
         {
-            foreach(var label in clause.Labels){
+            foreach(var label in clause.Patterns){
                 label.AcceptWalker(this);
                 writer.Write(":");
             }
@@ -255,11 +251,6 @@ namespace Expresso.Ast
         {
             PrintList(seqExpr.Items);
         }
-
-        /*public void VisitTypeDefinition(TypeDefinition typeDef)
-        {
-            throw new NotImplementedException();
-        }*/
 
         public void VisitUnaryExpression(UnaryExpression unaryExpr)
         {
@@ -279,11 +270,6 @@ namespace Expresso.Ast
         public void VisitYieldStatement(YieldStatement yieldStmt)
         {
             throw new NotImplementedException();
-        }
-
-        public void VisitAstType(AstType typeNode)
-        {
-            writer.Write(typeNode.ToString());
         }
 
         public void VisitNullNode(AstNode nullNode)
@@ -341,7 +327,13 @@ namespace Expresso.Ast
 
         public void VisitPathExpression(PathExpression pathExpr)
         {
-            throw new NotImplementedException();
+            bool first = true;
+            foreach(var item in pathExpr.Items){
+                if(!first)
+                    writer.Write("::");
+
+                item.AcceptWalker(this);
+            }
         }
 
         public void VisitParenthesizedExpression(ParenthesizedExpression parensExpr)
@@ -389,6 +381,26 @@ namespace Expresso.Ast
             throw new NotImplementedException();
         }
 
+        public void VisitReferenceType(ReferenceType referenceType)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void VisitMemberType(MemberType memberType)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void VisitPlaceholderType(PlaceholderType placeholderType)
+        {
+
+        }
+
+        public void VisitAliasDeclaration(AliasDeclaration aliasDecl)
+        {
+            throw new NotImplementedException();
+        }
+
         public void VisitImportDeclaration(ImportDeclaration importDecl)
         {
             throw new NotImplementedException();
@@ -432,6 +444,16 @@ namespace Expresso.Ast
         public void VisitValueBindingPattern(ValueBindingPattern valueBindingPattern)
         {
             throw new NotImplementedException();
+        }
+
+        public void VisitCollectionPattern(CollectionPattern collectionPattern)
+        {
+
+        }
+
+        public void VisitDestructuringPattern(DestructuringPattern destructuringPattern)
+        {
+
         }
 
         public void VisitTuplePattern(TuplePattern tuplePattern)

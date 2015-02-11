@@ -27,7 +27,7 @@ namespace Expresso.Ast
         }
 
         /// <summary>
-        /// Gets all the field names.
+        /// Gets all the key-value pairs.
         /// </summary>
         /// <value>The field names.</value>
         public AstNodeCollection<KeyValueLikeExpression> Items{

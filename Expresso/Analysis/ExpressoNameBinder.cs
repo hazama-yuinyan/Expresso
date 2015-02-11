@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 
-using Expresso.Compiler;
-using Expresso.Compiler.Meta;
 
 /*
  * The name binding and type resolving:
@@ -34,14 +32,15 @@ namespace Expresso.Ast.Analysis
 {
     class ExpressoNameBinder : IAstWalker
 	{
-		ExpressoAst global_scope;
+        static uint id = 1;
+		ExpressoAst root_scope;
         SymbolTable symbol_table;
 		Parser parser;
 		
 		ExpressoNameBinder(Parser parentParser)
 		{
 			parser = parentParser;
-            symbol_table = new SymbolTable();
+            symbol_table = parentParser.Symbols;
 		}
 		
 		#region Public surface
@@ -58,28 +57,13 @@ namespace Expresso.Ast.Analysis
 		{
             Debug.Assert(unboundAst != null);
 			
-			global_scope = unboundAst;
+            root_scope = unboundAst;
 			
 			// Find all scopes and variables
             unboundAst.AcceptWalker(this);
 			
-			// Bind
-			foreach(ScopeStatement scope in scopes)
-				scope.Bind(this);
-			
-			// Bind the globals
-			unboundAst.Bind(this);
-			
-			// Finish Binding w/ outer most scopes first.
-			for(int i = scopes.Count - 1; i >= 0; --i)
-				scopes[i].FinishBind(this);
-			
-			// Finish the globals
-			unboundAst.FinishBind(this);
-			
 			// Run flow checker
-			foreach(ScopeStatement scope in scopes)
-				FlowChecker.Check(scope);
+            //FlowChecker.Check(unboundAst);
 		}
 		
         void PushScope(AstNode node)
@@ -152,8 +136,8 @@ namespace Expresso.Ast.Analysis
 
         public void VisitImportStatement(ImportDeclaration importStmt)
         {
-            importStmt.ModuleNameTokens.AcceptWalker(this);
-            importStmt.AliasNameTokens.AcceptWalker(this);
+            importStmt.ModuleNameToken.AcceptWalker(this);
+            importStmt.AliasNameToken.AcceptWalker(this);
         }
 
         public void VisitReturnStatement(ReturnStatement returnStmt)
@@ -183,10 +167,6 @@ namespace Expresso.Ast.Analysis
             varDecl.Variables.AcceptWalker(this);
         }
 
-        public void VisitArgument(ParameterDeclaration arg)
-        {
-        }
-
         public void VisitAssignment(AssignmentExpression assignment)
         {
             assignment.Left.AcceptWalker(this);
@@ -214,9 +194,7 @@ namespace Expresso.Ast.Analysis
         public void VisitComprehensionExpression(ComprehensionExpression comp)
         {
             comp.Item.AcceptWalker(this);
-            comp.Body.Left.AcceptWalker(define);
-            comp.Body.Target.AcceptWalker(this);
-            comp.Body.Body.AcceptWalker(this);
+            comp.Body.AcceptWalker(this);
         }
 
         public void VisitComprehensionForClause(ComprehensionForClause compFor)
@@ -286,7 +264,7 @@ namespace Expresso.Ast.Analysis
 
         public void VisitCaseClause(MatchPatternClause caseClause)
         {
-            caseClause.Labels.AcceptWalker(this);
+            caseClause.Patterns.AcceptWalker(this);
             caseClause.Body.AcceptWalker(this);
         }
 
@@ -316,10 +294,6 @@ namespace Expresso.Ast.Analysis
         {
         }
 
-        public void VisitAstType(AstType typeNode)
-        {
-        }
-
         public void VisitSimpleType(SimpleType simpleType)
         {
         }
@@ -328,16 +302,44 @@ namespace Expresso.Ast.Analysis
         {
         }
 
+        public void VisitReferenceType(ReferenceType referenceType)
+        {
+
+        }
+
+        public void VisitMemberType(MemberType memberType)
+        {
+
+        }
+
+        public void VisitPlaceholderType(PlaceholderType placeholderType)
+        {
+
+        }
+
+        public void VisitAliasDeclaration(AliasDeclaration aliasDecl)
+        {
+
+        }
+
         public void VisitFunctionDeclaration(FunctionDeclaration funcDecl)
         {
+            DefineNewId(funcDecl.NameToken);
+            funcDecl.Parameters.AcceptWalker(this);
+            funcDecl.Body.AcceptWalker(this);
         }
 
         public void VisitFieldDeclaration(FieldDeclaration fieldDecl)
         {
+            foreach(var ident in fieldDecl.Initializers){
+                DefineNewId(ident.NameToken);
+                ident.Initializer.AcceptWalker(this);
+            }
         }
 
         public void VisitParameterDeclaration(ParameterDeclaration parameterDecl)
         {
+            DefineNewId(parameterDecl.NameToken);
         }
 
         public void VisitVariableInitializer(VariableInitializer initializer)
@@ -424,6 +426,16 @@ namespace Expresso.Ast.Analysis
             throw new NotImplementedException();
         }
 
+        public void VisitCollectionPattern(CollectionPattern collectionPattern)
+        {
+
+        }
+
+        public void VisitDestructuringPattern(DestructuringPattern destructuringPattern)
+        {
+
+        }
+
         public void VisitTuplePattern(TuplePattern tuplePattern)
         {
             throw new NotImplementedException();
@@ -434,6 +446,11 @@ namespace Expresso.Ast.Analysis
             throw new NotImplementedException();
         }
 		#endregion
+
+        void DefineNewId(Identifier ident)
+        {
+            ident.IdentifierId = id++;
+        }
 	}
 }
 

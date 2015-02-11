@@ -29,10 +29,10 @@ namespace Expresso.Ast
             set{SetChildByRole(Roles.Identifier, value);}
 		}
 
-        public MemberReference(Expression targetExpr, Identifier subscriptExpr)
+        public MemberReference(Expression targetExpr, Identifier subscript)
 		{
             Target = targetExpr;
-            Subscription = subscriptExpr;
+            Subscription = subscript;
 		}
 
         public override void AcceptWalker(IAstWalker walker)

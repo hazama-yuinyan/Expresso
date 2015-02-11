@@ -1,14 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Diagnostics;
-
-using Expresso.Compiler;
-using Expresso.Compiler.Meta;
-using ICSharpCode.NRefactory;
-using ICSharpCode.NRefactory.TypeSystem;
-using ICSharpCode.NRefactory.PatternMatching;
 using System.IO;
+using System.Linq;
+using ICSharpCode.NRefactory;
+using ICSharpCode.NRefactory.PatternMatching;
+using ICSharpCode.NRefactory.TypeSystem;
 using Expresso.Formatting;
 
 namespace Expresso.Ast
@@ -1262,26 +1259,21 @@ namespace Expresso.Ast
             return new Identifier(name, type);
         }
 
-        static internal Identifier MakeLocalVar(string name, AstType type)
-		{
-            return new Identifier(name, type);
-		}
-
-        /*static internal AstType MakeClassDef(string className, IEnumerable<Identifier> bases, IEnumerable<Statement> decls)
-		{
-            return new SimpleType(className, decls.ToArray(), Expresso.Ast.DeclType.Class, bases.ToArray());
-		}*/
-
         static internal ExpressoAst MakeModuleDef(string moduleName, IEnumerable<EntityDeclaration> decls, IEnumerable<ImportDeclaration> imports)
 		{
             return new ExpressoAst(decls, imports, moduleName);
 		}
 
-        static internal ImportDeclaration MakeImportDecl(IEnumerable<string> moduleNames, IEnumerable<string> aliasNames)
+        static internal ImportDeclaration MakeImportDecl(PathExpression moduleName, string aliasName)
 		{
-			return (aliasNames.Any((name) => name != null)) ? new ImportDeclaration(moduleNames, aliasNames) :
-                new ImportDeclaration(moduleNames);
+			return (aliasName != null) ? new ImportDeclaration(moduleName, aliasName) :
+                new ImportDeclaration(moduleName);
 		}
+
+        static internal ImportDeclaration MakeImportDecl(PathExpression moduleName, IEnumerable<PathExpression> importedEntities)
+        {
+            return new ImportDeclaration(moduleName, null, importedEntities);
+        }
 		#endregion
     }
 }

@@ -2,20 +2,19 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 
-using Expresso.Runtime;
 
-namespace Expresso.Builtins
+namespace Expresso.Runtime.Builtins
 {
 	/// <summary>
 	/// Expresso組み込みのIntSeqオブジェクト。
 	/// The IntSeq object, which represents a sequence of integers.
 	/// As such, it can be used like the "slice" operation in Python.
-	/// I mean, we have some sequence named <c>seq</c> and an expression like <c>seq[[1..5]]</c>
+	/// I mean, we have some sequence named <c>seq</c> and an expression like <c>seq[1..5]</c>
 	/// returns a new sequence which holds the elements from #1 to #5 of the original sequence
 	/// (<c>seq</c> this time).
 	/// </summary>
 	[ExpressoType("intseq")]
-	public class ExpressoIntegerSequence : IEnumerable<object>
+    public class ExpressoIntegerSequence : IEnumerable<int>
 	{
 		/// <summary>
 		/// 数列の開始点。
@@ -36,7 +35,7 @@ namespace Expresso.Builtins
 		/// </summary>
 		int step;
 		
-        public IEnumerator<object> Val{
+        public IEnumerator<int> Val{
 			get{
 				int i = this.lower;
 				while(true){
@@ -49,16 +48,16 @@ namespace Expresso.Builtins
 			}
 		}
 		
-		public ExpressoIntegerSequence(int start, int end, int inputStep)
+        public ExpressoIntegerSequence(int start, int end, int inputStep, bool includesUpper)
 		{
 			this.lower = start;
-			this.upper = end;
+            this.upper = includesUpper ? end + 1 : end;
 			this.step = inputStep;
 		}
 
-		internal static ExpressoIntegerSequence Make(int start, int end, int step = 1)
+        internal static ExpressoIntegerSequence Make(int start, int end, int step = 1, bool includesUpper = false)
 		{
-			return new ExpressoIntegerSequence(start, end, step);
+            return new ExpressoIntegerSequence(start, end, step, includesUpper);
 		}
 		
 		#region IEnumerable implementation
@@ -67,14 +66,14 @@ namespace Expresso.Builtins
 			return this.GetEnumerator();
 		}
 		
-		public IEnumerator<object> GetEnumerator()
+        public IEnumerator<int> GetEnumerator()
 		{
 			return new Enumerator(this);
 		}
 		#endregion
 		
 		#region The enumerator for IntegerSequence
-		public struct Enumerator : IEnumerator<object>, IEnumerator
+        public struct Enumerator : IEnumerator<int>, IEnumerator
 		{
 			ExpressoIntegerSequence seq;
 			int next;
@@ -86,7 +85,7 @@ namespace Expresso.Builtins
 				}
 			}
 			
-            public object Current{
+            public int Current{
                 get{
 					if(next == int.MinValue)
 						throw new InvalidOperationException();
@@ -130,11 +129,17 @@ namespace Expresso.Builtins
 		#endregion
 		
 		/// <summary>
-		/// Checks whether the integer sequence includes the specified n or not.
+        /// Checks whether `n` will be included in the generated integer sequence or not.
 		/// </summary>
 		/// <param name='n'>
 		/// <c>true</c>; if n is in the sequence; otherwise, <c>false</c>.
 		/// </param>
+        /// <remarks>
+        /// Note that it checks exact equality, not range inclusion.
+        /// In other words, this method will find the answer for the following equation.
+        /// n = k * x + a where n is an element of the resulting sequence,
+        /// k is the step and a is the lower bound.
+        /// </remarks>
 		public bool Includes(int n)
 		{
 			var remaining = n % this.step;

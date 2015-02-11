@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using ICSharpCode.NRefactory;
 using ICSharpCode.NRefactory.PatternMatching;
+using System.Collections;
+using System.Diagnostics;
 
 
 namespace Expresso.Ast
@@ -18,6 +20,14 @@ namespace Expresso.Ast
     {
         readonly AstNode node;
         readonly Role<T> role;
+
+        public bool IsEmpty{
+            get{return node.IsNull;}
+        }
+
+        public bool HasChildren{
+            get{return node.HasChildren;}
+        }
 
         public AstNodeCollection(AstNode node, Role<T> role)
         {
@@ -101,12 +111,20 @@ namespace Expresso.Ast
         public IEnumerator<T> GetEnumerator()
         {
             uint role_index = role.Index;
-            return node.Children.Where(child => child.RoleIndex == role_index).Cast<T>();
+            AstNode next;
+            for(var cur = node.FirstChild; cur != null; cur = next){
+                Debug.Assert(cur.Parent == node);
+                // store cur on next
+                // This allows removing/inserting nodes while iterating through the list
+                next = cur.NextSibling;
+                if(cur.RoleIndex == role_index)
+                    yield return (T)node;
+            }
         }
         #endregion
 
         #region IEnumerable implementation
-        System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
+        IEnumerator IEnumerable.GetEnumerator()
         {
             return GetEnumerator();
         }

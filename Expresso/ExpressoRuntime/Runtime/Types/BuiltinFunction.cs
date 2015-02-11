@@ -4,7 +4,6 @@ using System.Reflection;
 using System.Threading;
 using System.Collections.Generic;
 
-using Expresso.Builtins;
 using Expresso.Runtime;
 using Expresso.Runtime.Operations;
 using Expresso.Utils;
@@ -315,9 +314,9 @@ namespace Expresso.Runtime.Types
 		{
 		}
 		
-		public BuiltinFunction this[ExpressoTuple tuple] {
+        public BuiltinFunction this[Tuple tuple] {
 			get {
-				return this[tuple.Items];
+				return this[tuple];
 			}
 		}
 		

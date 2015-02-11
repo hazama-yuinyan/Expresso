@@ -144,7 +144,7 @@ namespace Expresso.Ast
 
         static internal SequenceInitializer MakeSeqInitializer(string typeName, IEnumerable<Expression> initializeList)
         {
-            return new SequenceInitializer(initializeList, new SimpleType(typeName, TextLocation.Empty));
+            return new SequenceInitializer(new SimpleType(typeName, TextLocation.Empty), initializeList);
         }
 
         static internal ObjectCreationExpression MakeObjectCreation(PathExpression path, IEnumerable<Identifier> names,
@@ -175,7 +175,7 @@ namespace Expresso.Ast
             return new ComprehensionExpression(yieldExpr, body, objType);
         }
 
-        static internal ComprehensionForClause MakeCompFor(SequenceExpression left, Expression target, ComprehensionIter body)
+        static internal ComprehensionForClause MakeCompFor(PatternConstruct left, Expression target, ComprehensionIter body)
         {
             return new ComprehensionForClause(left, target, body);
         }

@@ -6,24 +6,16 @@ module TestModule;
 
 export class Test
 {
-private:
-	x (- int, y (- int;
+	let x (- int, y (- int;
 	
-public:
-	constructor(x, y)
+	public def getX()
 	{
-		this.x = x;
-		this.y = y;
+		return self.x;
 	}
 	
-	def getX()
+	public def getY() -> int
 	{
-		return this.x;
-	}
-	
-	def getY() -> int
-	{
-		return this.y;
+		return self.y;
 	}
 }
 
@@ -31,5 +23,5 @@ export let pair = (200, 300);
 
 export def createTest(x (- int, y (- int) -> Test
 {
-	return new Test(x, y);
+	return new Test{x : x, y : y};
 }

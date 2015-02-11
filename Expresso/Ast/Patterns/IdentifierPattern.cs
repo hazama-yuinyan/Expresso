@@ -5,7 +5,7 @@ namespace Expresso.Ast
 {
     /// <summary>
     /// Represents an identifier pattern.
-    /// Identifier [ "(-" Type ] ;
+    /// Identifier [ '@' PatternConstruct ] ;
     /// </summary>
     public class IdentifierPattern : PatternConstruct
     {
@@ -14,9 +14,15 @@ namespace Expresso.Ast
             set{SetChildByRole(Roles.Identifier, value);}
         }
 
-        public IdentifierPattern(Identifier ident)
+        public PatternConstruct InnerPattern{
+            get{return GetChildByRole(Roles.Pattern);}
+            set{SetChildByRole(Roles.Pattern, value);}
+        }
+
+        public IdentifierPattern(Identifier ident, PatternConstruct inner)
         {
             Identifier = ident;
+            InnerPattern = inner;
         }
 
         #region implemented abstract members of AstNode
@@ -39,7 +45,8 @@ namespace Expresso.Ast
         protected internal override bool DoMatch(AstNode other, ICSharpCode.NRefactory.PatternMatching.Match match)
         {
             var o = other as IdentifierPattern;
-            return o != null && Identifier.DoMatch(o.Identifier, match);
+            return o != null && Identifier.DoMatch(o.Identifier, match)
+                && InnerPattern.DoMatch(o.InnerPattern, match);
         }
 
         #endregion

@@ -6,6 +6,8 @@ namespace Expresso.Ast.Analysis
 {
     /// <summary>
     /// A type checker is responsible for type validity check as well as type inference, if needed.
+    /// All <see cref="Expresso.Ast.PlaceholderType"/> nodes are replaced with real types
+    /// inferred from the context.
     /// </summary>
     class TypeChecker : IAstWalker
     {
@@ -18,9 +20,9 @@ namespace Expresso.Ast.Analysis
             table = parser.Symbols;
         }
 
-        void GoDownScope()
+        void GoDownScope(int index = 0)
         {
-            table = table.Child;
+            table = table.Children[index];
         }
 
         void GoUpScope()
@@ -233,11 +235,6 @@ namespace Expresso.Ast.Analysis
             throw new NotImplementedException();
         }
 
-        public void VisitAstType(AstType typeNode)
-        {
-            throw new NotImplementedException();
-        }
-
         public void VisitSimpleType(SimpleType simpleType)
         {
             throw new NotImplementedException();
@@ -246,6 +243,24 @@ namespace Expresso.Ast.Analysis
         public void VisitPrimitiveType(PrimitiveType primitiveType)
         {
             throw new NotImplementedException();
+        }
+
+        public void VisitReferenceType(ReferenceType referenceType)
+        {
+        }
+
+        public void VisitMemberType(MemberType memberType)
+        {
+        }
+
+        public void VisitPlaceholderType(PlaceholderType placeholderType)
+        {
+
+        }
+
+        public void VisitAliasDeclaration(AliasDeclaration aliasDecl)
+        {
+
         }
 
         public void VisitImportDeclaration(ImportDeclaration importDecl)
@@ -293,6 +308,16 @@ namespace Expresso.Ast.Analysis
             throw new NotImplementedException();
         }
 
+        public void VisitCollectionPattern(CollectionPattern collectionPattern)
+        {
+
+        }
+
+        public void VisitDestructuringPattern(DestructuringPattern destructuringPattern)
+        {
+
+        }
+
         public void VisitTuplePattern(TuplePattern tuplePattern)
         {
             throw new NotImplementedException();
@@ -305,27 +330,27 @@ namespace Expresso.Ast.Analysis
 
         public void VisitNullNode(AstNode nullNode)
         {
-            throw new NotImplementedException();
+            // no op
         }
 
         public void VisitNewLine(NewLineNode newlineNode)
         {
-            throw new NotImplementedException();
+            // no op
         }
 
         public void VisitWhitespace(WhitespaceNode whitespaceNode)
         {
-            throw new NotImplementedException();
+            // no op
         }
 
         public void VisitExpressoTokenNode(ExpressoTokenNode tokenNode)
         {
-            throw new NotImplementedException();
+            // no op
         }
 
         public void VisitPatternPlaceholder(AstNode placeholder, ICSharpCode.NRefactory.PatternMatching.Pattern child)
         {
-            throw new NotImplementedException();
+            // no op
         }
 
         #endregion

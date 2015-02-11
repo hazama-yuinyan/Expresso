@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using ICSharpCode.NRefactory.PatternMatching;
 
 
 namespace Expresso.Ast
@@ -26,11 +27,13 @@ namespace Expresso.Ast
             set{SetChildByRole(Roles.Type, value);}
 		}
 
-        public SequenceInitializer(IEnumerable<Expression> seqItems, AstType objType)
+        public SequenceInitializer(AstType objType, IEnumerable<Expression> seqItems)
 		{
             ObjectType = objType;
-            foreach(var item in seqItems)
-                AddChild(item, Roles.Expression);
+            if(seqItems != null){
+                foreach(var item in seqItems)
+                    AddChild(item, Roles.Expression);
+            }
 		}
 
         public override void AcceptWalker(IAstWalker walker)
@@ -50,7 +53,7 @@ namespace Expresso.Ast
 
         #region implemented abstract members of AstNode
 
-        protected internal override bool DoMatch(AstNode other, ICSharpCode.NRefactory.PatternMatching.Match match)
+        protected internal override bool DoMatch(AstNode other, Match match)
         {
             var o = other as SequenceInitializer;
             return o != null && ObjectType.DoMatch(o.ObjectType, match) && Items.DoMatch(o.Items, match);

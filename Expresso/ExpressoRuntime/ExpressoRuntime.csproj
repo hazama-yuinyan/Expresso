@@ -23,7 +23,6 @@
     <ConsolePause>false</ConsolePause>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType>full</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release</OutputPath>
     <ErrorReport>prompt</ErrorReport>
@@ -36,44 +35,18 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Runtime\Binding\ExpressoBinder.cs" />
-    <Compile Include="Runtime\Binding\ExpressoInvokeBinder.cs" />
-    <Compile Include="Runtime\CodeContext.cs" />
-    <Compile Include="Runtime\Converter.cs" />
     <Compile Include="Runtime\Exceptions\AssertionFailedException.cs" />
     <Compile Include="Runtime\Exceptions\ImportException.cs" />
     <Compile Include="Runtime\Exceptions\InvalidTypeException.cs" />
     <Compile Include="Runtime\Exceptions\InvalidValueException.cs" />
     <Compile Include="Runtime\Exceptions\ReferenceException.cs" />
-    <Compile Include="Runtime\Exceptions\RuntimeException.cs" />
     <Compile Include="Runtime\Exceptions\SystemException.cs" />
     <Compile Include="Runtime\Exceptions\TypeNotFoundException.cs" />
-    <Compile Include="Runtime\ExpressoContext.cs" />
-    <Compile Include="Runtime\ExpressoModule.cs" />
-    <Compile Include="Runtime\ExpressoObj.cs" />
-    <Compile Include="Runtime\FunctionCode.cs" />
-    <Compile Include="Runtime\ImplementationHelpers.cs" />
-    <Compile Include="Runtime\ModuleContext.cs" />
-    <Compile Include="Runtime\Operations\DelegateOps.cs" />
-    <Compile Include="Runtime\Operations\ExpressoOps.cs" />
-    <Compile Include="Runtime\Operations\ExpressoTypeOps.cs" />
-    <Compile Include="Runtime\Types\BuiltinFunction.cs" />
-    <Compile Include="Runtime\Types\DynamicHelpers.cs" />
-    <Compile Include="Runtime\Types\ExpressoType.cs" />
-    <Compile Include="Runtime\Types\InstanceCreator.cs" />
-    <Compile Include="Interpreter\ExpressoThrowException.cs" />
-    <Compile Include="Interpreter\Interpreter.cs" />
-    <Compile Include="Interpreter\InterpreterFlowManager.cs" />
     <Compile Include="BuiltIns\ExpressoIntegerSequence.cs" />
-    <Compile Include="BuiltIns\ExpressoTuple.cs" />
     <Compile Include="BuiltIns\Fraction.cs" />
     <Compile Include="BuiltIns\Functions.cs" />
     <Compile Include="BuiltIns\Library.cs" />
-    <Compile Include="BuiltIns\Primitives.cs" />
     <Compile Include="NativeDebugger\CollectionDebugView.cs" />
-    <Compile Include="NativeDebugger\ExpressoObjectDebugView.cs" />
-    <Compile Include="Meta\SystemTypeDefinition.cs" />
-    <Compile Include="Meta\TypeDefinition.cs" />
     <Compile Include="Micellaneous\ArgumentInfo.cs" />
     <Compile Include="Micellaneous\ArrayUtils.cs" />
     <Compile Include="Micellaneous\Assert.cs" />
@@ -84,15 +57,20 @@
     <Compile Include="Attributes\ExpressoHiddenAttribute.cs" />
     <Compile Include="Attributes\ExpressoModuleAttibute.cs" />
     <Compile Include="Attributes\ExpressoTypeAttribute.cs" />
+    <Compile Include="Attributes\ExpressoFunctionAttribute.cs" />
+    <Compile Include="Runtime\ExpressoRuntimeHelper.cs" />
+    <Compile Include="Runtime\TypeMapper.cs" />
+    <Compile Include="Runtime\Exceptions\PanickedException.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
-    <ProjectReference Include="..\Expresso.csproj">
-      <Project>{4E28200A-5808-419F-8A57-F504842991AF}</Project>
-      <Name>Expresso</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Micellaneous\SourceSpan.cs" />
+    <None Include="Interpreter\Interpreter.cs" />
+    <None Include="Interpreter\InterpreterFlowManager.cs" />
+    <None Include="Meta\TypeDefinition.cs" />
+    <None Include="Runtime\Types\BuiltinFunction.cs" />
+    <None Include="Runtime\Operations\ExpressoOps.cs" />
+    <None Include="Runtime\Operations\ExpressoTypeOps.cs" />
+    <None Include="Meta\SystemTypeDefinition.cs" />
   </ItemGroup>
 </Project>

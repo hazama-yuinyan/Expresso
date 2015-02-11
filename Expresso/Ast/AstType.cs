@@ -8,6 +8,7 @@ namespace Expresso.Ast
 {
     /// <summary>
     /// A type reference in Expresso AST.
+    /// An AstType is an ast node, while a TypeReference is an internal and public representation.
     /// </summary>
     public abstract class AstType : AstNode
     {
@@ -45,7 +46,7 @@ namespace Expresso.Ast
 
             public override ITypeReference ToTypeReference(NameLookupMode lookupMode, InterningProvider interningProvider = null)
             {
-                throw new NotImplementedException();
+                return null;
             }
 
             #endregion
@@ -95,9 +96,24 @@ namespace Expresso.Ast
 
             #region implemented abstract members of AstNode
 
+            public override void AcceptWalker(IAstWalker walker)
+            {
+                walker.VisitPatternPlaceholder(this, child);
+            }
+
+            public override TResult AcceptWalker<TResult>(IAstWalker<TResult> walker)
+            {
+                return walker.VisitPatternPlaceholder(this, child);
+            }
+
+            public override TResult AcceptWalker<TResult, TData>(IAstWalker<TData, TResult> walker, TData data)
+            {
+                return walker.VisitPatternPlaceholder(this, child, data);
+            }
+
             protected internal override bool DoMatch(AstNode other, Match match)
             {
-                throw new NotImplementedException();
+                return other is NullAstType;
             }
 
             #endregion
@@ -106,7 +122,7 @@ namespace Expresso.Ast
 
             public override ITypeReference ToTypeReference(NameLookupMode lookupMode, InterningProvider interningProvider = null)
             {
-                throw new NotImplementedException();
+                return null;
             }
 
             #endregion
@@ -133,23 +149,6 @@ namespace Expresso.Ast
             return (AstType)base.MemberwiseClone();
         }
 
-        #region implemented abstract members of AstNode
-        public override void AcceptWalker(IAstWalker walker)
-        {
-            walker.VisitAstType(this);
-        }
-
-        public override TResult AcceptWalker<TResult>(IAstWalker<TResult> walker)
-        {
-            return walker.VisitAstType(this);
-        }
-
-        public override TResult AcceptWalker<TResult, TData>(IAstWalker<TData, TResult> walker, TData data)
-        {
-            return walker.VisitAstType(this, data);
-        }
-        #endregion
-
         /// <summary>
         /// Create an ITypeReference for this AstType.
         /// Uses the context (ancestors of this node) to determine the correct <see cref="NameLookupMode"/>.
@@ -173,7 +172,7 @@ namespace Expresso.Ast
         /// The resulting type reference will read the context information from the
         /// <see cref="ITypeResolveContext"/>:
         /// For resolving type parameters, the CurrentTypeDefinition/CurrentMember is used.
-        /// For resolving simple names, the current namespace and usings from the CurrentUsingScope
+        /// For resolving simple names, the current namespace and imports from the CurrentUsingScope
         /// (on CSharpTypeResolveContext only) is used.
         /// </remarks>
         public abstract ITypeReference ToTypeReference(NameLookupMode lookupMode, InterningProvider interningProvider = null);

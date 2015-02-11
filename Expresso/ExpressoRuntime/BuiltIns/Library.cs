@@ -5,9 +5,8 @@ using System.IO;
 using System.Text;
 using System.Text.RegularExpressions;
 
-using Expresso.Ast;
 
-namespace Expresso.Builtins.Library
+namespace Expresso.Runtime.Library
 {
 	/// <summary>
 	/// Expressoのスタンダードインプット。
@@ -58,10 +57,10 @@ namespace Expresso.Builtins.Library
 	/// </summary>
 	public class FileObject : IDisposable, IClosable, IEnumerable<string>, IEnumerable
 	{
-		StreamReader _reader = null;
-		StreamWriter _writer = null;
-		BinaryReader _breader = null;
-		BinaryWriter _bwriter = null;
+        StreamReader reader = null;
+        StreamWriter writer = null;
+        BinaryReader breader = null;
+        BinaryWriter bwriter = null;
 		bool binary_mode;
 		
 		public FileObject(string path, bool binaryMode, FileMode mode, FileAccess access, Encoding encode)
@@ -71,25 +70,25 @@ namespace Expresso.Builtins.Library
 																								File.Open(path, mode, access);
 			if(access.HasFlag(FileAccess.Read)){
 				if(binaryMode)
-					_breader = new BinaryReader(file_stream);
+					breader = new BinaryReader(file_stream);
 				else
-					_reader = new StreamReader(file_stream, encode);
+					reader = new StreamReader(file_stream, encode);
 			}
 
 			if(access.HasFlag(FileAccess.Write)){
 				if(binaryMode)
-					_bwriter = new BinaryWriter(file_stream);
+					bwriter = new BinaryWriter(file_stream);
 				else
-					_writer = new StreamWriter(file_stream, encode);
+					writer = new StreamWriter(file_stream, encode);
 			}
 		}
 
 		public int Read()
 		{
 			if(binary_mode)
-				return _breader.Read();
+				return breader.Read();
 			else
-				return _reader.Read();
+				return reader.Read();
 		}
 
 		public string ReadLine()
@@ -97,7 +96,7 @@ namespace Expresso.Builtins.Library
 			if(binary_mode)
 				throw new NotSupportedException("Can not read a line while in binary mode!");
 
-			return _reader.ReadLine();
+			return reader.ReadLine();
 		}
 
 		public string ReadAll()
@@ -105,25 +104,25 @@ namespace Expresso.Builtins.Library
 			if(binary_mode)
 				throw new NotSupportedException("Can not read to the end of the stream while in binary mode!");
 
-			return _reader.ReadToEnd();
+			return reader.ReadToEnd();
 		}
 
 		public void Write(object val)
 		{
 			if(binary_mode){
 				if(val is int)
-					_bwriter.Write((int)val);
+					bwriter.Write((int)val);
 				else if(val is double)
-					_bwriter.Write((double)val);
+					bwriter.Write((double)val);
 				else if(val is string)
-					_bwriter.Write((string)val);
+					bwriter.Write((string)val);
 			}else{
 				if(val is int)
-					_writer.Write((int)val);
+					writer.Write((int)val);
 				else if(val is double)
-					_writer.Write((double)val);
+					writer.Write((double)val);
 				else if(val is string)
-					_writer.Write((string)val);
+					writer.Write((string)val);
 			}
 		}
 		
@@ -140,17 +139,17 @@ namespace Expresso.Builtins.Library
 		public void Dispose()
 		{
 			if(binary_mode){
-				if(_breader != null)
-					_breader.Dispose();
+				if(breader != null)
+					breader.Dispose();
 
-				if(_bwriter != null)
-					_bwriter.Dispose();
+				if(bwriter != null)
+					bwriter.Dispose();
 			}else{
-				if(_reader != null)
-					_reader.Dispose();
+				if(reader != null)
+					reader.Dispose();
 
-				if(_writer != null)
-					_writer.Dispose();
+				if(writer != null)
+					writer.Dispose();
 			}
 		}
 
@@ -161,7 +160,7 @@ namespace Expresso.Builtins.Library
 
 		public IEnumerator<string> GetEnumerator()
 		{
-			if(_reader == null)
+			if(reader == null)
 				throw new InvalidOperationException("Can not read lines from a null stream.");
 
 			while(true){

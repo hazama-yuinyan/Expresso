@@ -6,8 +6,8 @@ module main;
 
 def main()
 {
-	let a = [1, 2, 3];
- 	let b = {"a" : 1, "b" : 4, "y" : 10};
+	let a = new [1, 2, 3];
+ 	let b = new {"a" : 1, "b" : 4, "y" : 10};
  	let c = "akarichan";
  	let d = "chinatsu";
  	let x = 100;

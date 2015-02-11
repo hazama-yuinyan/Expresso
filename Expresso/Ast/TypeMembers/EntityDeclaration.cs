@@ -103,6 +103,12 @@ namespace Expresso.Ast
             return new ParameterDeclaration(name, type, option);
         }
 
+        static internal TypeDeclaration MakeClassDecl(string className, IEnumerable<AstType> bases,
+            IEnumerable<EntityDeclaration> decls, Modifiers modifiers, TextLocation start, TextLocation end)
+        {
+            return new TypeDeclaration(className, bases, decls, modifiers, start, end);
+        }
+
         static internal FunctionDeclaration MakeFunc(string name, IEnumerable<ParameterDeclaration> parameters, BlockStatement body,
             AstType returnType, Modifiers modifiers, TextLocation loc)
         {

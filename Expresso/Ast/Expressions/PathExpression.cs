@@ -8,7 +8,7 @@ namespace Expresso.Ast
     /// Represents a `path`.
     /// A path, like the one in the filesystem, denotes the structural hierarchy to a specific item.
     /// In Expresso, an item can only be either a static field or a type.
-    /// [ "::" ] Identifier { "::" Identifier } ;
+    /// Identifier { "::" Identifier } ;
     /// </summary>
     public class PathExpression : Expression
     {

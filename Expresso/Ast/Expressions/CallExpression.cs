@@ -14,8 +14,6 @@ namespace Expresso.Ast
         /// <summary>
         /// 呼び出す対象。
 		/// The target function to be called.
-        /// It can be null if it is a call to a method, since methods are implemented in the way of
-		/// objects having function objects and they are resolved at runtime.
         /// </summary>
         public Expression Target{
             get{return GetChildByRole(Roles.TargetExpression);}

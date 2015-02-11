@@ -1,10 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
-using Expresso.Compiler;
-using Expresso.Compiler.Meta;
 
 namespace Expresso.Ast
 {
@@ -14,6 +9,7 @@ namespace Expresso.Ast
     /// </summary>
     public class Identifier : AstNode
     {
+        #region Null
         public static new Identifier Null = new NullIdentifier();
         sealed class NullIdentifier : Identifier
         {
@@ -43,6 +39,7 @@ namespace Expresso.Ast
                 return other == null || other.IsNull;
             }
         }
+        #endregion
 
 		readonly string name;
 
@@ -60,6 +57,17 @@ namespace Expresso.Ast
             }
         }
 
+        /// <summary>
+        /// Gets or sets the identifier id. This id represents the identity or uniqueness of that node
+        /// within a whole program.
+        /// If some 2 Identifier nodes have the same id, it means that the 2 nodes refer to the same value.
+        /// This will get set during name binding.
+        /// </summary>
+        /// <remarks>0 is considered invalid for IdentifierId.</remarks>
+        public uint IdentifierId{
+            get; internal set;
+        }
+
 		/// <summary>
 		/// 変数の型。
 		/// The type of the variable.
@@ -75,17 +83,20 @@ namespace Expresso.Ast
 
         protected Identifier()
         {
+            IdentifierId = 0;
         }
 
         public Identifier(string name)
 		{
             this.name = name;
+            IdentifierId = 0;
 		}
 
         public Identifier(string name, AstType type)
         {
             this.name = name;
             Type = type;
+            IdentifierId = 0;
         }
 
         public override void AcceptWalker(IAstWalker walker)
@@ -112,13 +123,5 @@ namespace Expresso.Ast
         }
 
         #endregion
-
-        /*internal override void Assign(EvaluationFrame frame, object val)
-		{
-			if(Reference != null)
-				frame.Assign(this.Offset, val);
-			else
-				throw ExpressoOps.MakeRuntimeError("Unbound name: {0}", name);
-		}*/
     }
 }

@@ -41,7 +41,7 @@
     <DefineConstants>DEBUG;</DefineConstants>
     <CustomCommands>
       <CustomCommands>
-        <Command type="BeforeBuild" command="./Coco Expresso.ATG" workingdir="${ProjectDir}" />
+        <Command type="BeforeBuild" command="./Coco Expresso.ATG -trace GJSP" workingdir="${ProjectDir}" />
       </CustomCommands>
     </CustomCommands>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
@@ -60,6 +60,11 @@
     <FileAlignment>4096</FileAlignment>
     <BaseIntermediateOutputPath>obj\</BaseIntermediateOutputPath>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <CustomCommands>
+      <CustomCommands>
+        <Command type="BeforeBuild" command="./Coco Expresso.ATG -trace GJSP" workingdir="${ProjectDir}" />
+      </CustomCommands>
+    </CustomCommands>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <CheckForOverflowUnderflow>False</CheckForOverflowUnderflow>
@@ -83,7 +88,6 @@
     <Compile Include="Parser.cs" />
     <Compile Include="Scanner.cs" />
     <Compile Include="Ast\Identifier.cs" />
-    <Compile Include="Compiler\EmitterException.cs" />
     <Compile Include="Ast\ExpressoAst.cs" />
     <Compile Include="ParserException.cs" />
     <Compile Include="Ast\AstNode.cs" />
@@ -91,7 +95,6 @@
     <Compile Include="Ast\AstType.cs" />
     <Compile Include="Formatting\ExpressoFormattingOptions.cs" />
     <Compile Include="Formatting\FormattingOptionsFactory.cs" />
-    <Compile Include="Compiler\TypeAnnotation.cs" />
     <Compile Include="OutputVisitor\DebugOutputWalker.cs" />
     <Compile Include="Ast\Roles.cs" />
     <Compile Include="Ast\Statements\BlockStatement.cs" />
@@ -157,7 +160,6 @@
     <Compile Include="Ast\Expressions\SelfReferenceExpression.cs" />
     <Compile Include="Ast\Expressions\SuperReferenceExpression.cs" />
     <Compile Include="Ast\Expressions\ObjectCreationExpression.cs" />
-    <Compile Include="Analysis\InferenceHelper.cs" />
     <Compile Include="Analysis\SymbolTable.cs" />
     <Compile Include="Analysis\ExpressoNameBinder.cs" />
     <Compile Include="Analysis\IAstWalker.cs" />
@@ -165,9 +167,18 @@
     <Compile Include="Ast\Expressions\OperatorType.cs" />
     <Compile Include="Ast\Expressions\PathExpression.cs" />
     <Compile Include="Analysis\TypeChecker.cs" />
-    <Compile Include="Analysis\TypeInferenceRunner.cs" />
-    <Compile Include="Analysis\TypeContext.cs" />
     <Compile Include="Ast\Expressions\KeyValueLikeExpression.cs" />
+    <Compile Include="Analysis\TypeInferenceContext.cs" />
+    <Compile Include="Ast\MemberType.cs" />
+    <Compile Include="Ast\ReferenceType.cs" />
+    <Compile Include="CodeGen\EmitterException.cs" />
+    <Compile Include="CodeGen\CSharpEmitter.cs" />
+    <Compile Include="CodeGen\CSharpCompilerHelper.cs" />
+    <Compile Include="Ast\GeneralScope\AliasDeclaration.cs" />
+    <Compile Include="CodeGen\CSharpEmitterContext.cs" />
+    <Compile Include="CodeGen\ExpressoSymbol.cs" />
+    <Compile Include="Ast\Patterns\DestructuringPattern.cs" />
+    <Compile Include="Ast\Patterns\CollectionPattern.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -178,10 +189,8 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Expresso.ATG" />
-    <None Include="Compiler\CSharpEmitter.cs" />
     <None Include="Documentation\Bugs.txt" />
     <None Include="Documentation\ExpressoDesignMemo.txt" />
-    <None Include="Documentation\ExpressoTutorial.txt" />
     <None Include="Ast\HelperNodes\ExpressoVariable.cs" />
     <None Include="Ast\HelperNodes\ExpressoReference.cs" />
     <None Include="Ast\HelperNodes\IReferencible.cs" />
@@ -190,9 +199,13 @@
     <None Include="OutputVisitor\InsertRequiredSpacesDecorator.cs" />
     <None Include="OutputVisitor\ExpressoOutputWalker.cs" />
     <None Include="Analysis\FlowChecker.cs" />
+    <None Include="Analysis\InferenceHelper.cs" />
+    <None Include="Documentation\ExpressoReference.md" />
+    <None Include="Documentation\ExpressoTutorial.md" />
+    <None Include="Analysis\TypeInferenceRunner.cs" />
+    <None Include="CodeGen\ParameterCollector.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Compiler\" />
     <Folder Include="Ast\HelperNodes\" />
     <Folder Include="Formatting\" />
     <Folder Include="OutputVisitor\" />
@@ -205,6 +218,7 @@
     <Folder Include="Ast\Patterns\" />
     <Folder Include="Documentation\" />
     <Folder Include="Analysis\" />
+    <Folder Include="CodeGen\" />
   </ItemGroup>
   <ProjectExtensions>
     <MonoDevelop>
@@ -221,6 +235,10 @@
     <ProjectReference Include="..\Libraries\NRefactory\ICSharpCode.NRefactory\ICSharpCode.NRefactory.csproj">
       <Project>{3B2A5653-EC97-4001-BB9B-D90F1AF2C371}</Project>
       <Name>ICSharpCode.NRefactory</Name>
+    </ProjectReference>
+    <ProjectReference Include="ExpressoRuntime\ExpressoRuntime.csproj">
+      <Project>{D60E49D6-6CBA-4D54-A009-6A0528181C88}</Project>
+      <Name>ExpressoRuntime</Name>
     </ProjectReference>
   </ItemGroup>
 </Project>

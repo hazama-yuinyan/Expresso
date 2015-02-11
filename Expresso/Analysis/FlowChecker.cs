@@ -219,11 +219,6 @@ namespace Expresso.Ast.Analysis
             throw new NotImplementedException();
         }
 
-        public void VisitAstType(AstType typeNode)
-        {
-            throw new NotImplementedException();
-        }
-
         public void VisitSimpleType(SimpleType simpleType)
         {
             throw new NotImplementedException();
@@ -459,9 +454,8 @@ namespace Expresso.Ast.Analysis
 			}
 			return true;
 		}
-		public override void PostWalk(Identifier node) { }
-		
-		// AssignStmt
+
+        // AssignStmt
 		public override bool Walk(AssignmentExpression assignment)
 		{
 			assignment.Right.Walk(this);
@@ -470,7 +464,6 @@ namespace Expresso.Ast.Analysis
 
 			return false;
 		}
-		public override void PostWalk(AssignmentExpression node) { }
 		
 		// BreakStmt
 		public override bool Walk(BreakStatement breakStmt)
@@ -497,9 +490,6 @@ namespace Expresso.Ast.Analysis
 				return false;
 			}
 		}
-		
-		// ContinueStmt
-		public override bool Walk(ContinueStatement node) { return true; }
 		
 		// ForStmt
 		public override bool Walk(ForStatement fotStmt)

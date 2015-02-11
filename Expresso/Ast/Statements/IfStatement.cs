@@ -6,13 +6,15 @@ namespace Expresso.Ast
 {
 	/// <summary>
 	/// If文。
-	/// The If statement.
-    /// "if" Expression Block [ "else" Block ] ;
+    /// The If statement. In Expresso if statements can have 2 forms.
+    /// One is a simple condition statement and the other is 
+    /// "if" Pattern '{' { Statement } '}' [ "else" '{' { Statement } '}' ] ;
 	/// </summary>
 	public class IfStatement : Statement
 	{
         public static readonly TokenRole IfKeywordRole = new TokenRole("if");
-        public static readonly Role<Expression> ConditionRole = new Role<Expression>("Condition");
+        public static readonly Role<PatternConstruct> ConditionRole =
+            new Role<PatternConstruct>("Condition");
         public static readonly Role<Statement> TrueBlockRole = new Role<Statement>("TrueBlock");
         public static readonly TokenRole ElseKeywordRole = new TokenRole("else");
         public static readonly Role<Statement> FalseBlockRole = new Role<Statement>("FalseBlock");
@@ -23,9 +25,11 @@ namespace Expresso.Ast
 
 		/// <summary>
         /// 条件式。
-		/// The condition.
+        /// The condition pattern. Because it is a pattern, it can bind or declare a new variable
+        /// only alive for the inner blocks.
+        /// It is an Expresso idiom 
         /// </summary>
-        public Expression Condition{
+        public PatternConstruct Condition{
             get{return GetChildByRole(ConditionRole);}
             set{SetChildByRole(ConditionRole, value);}
 		}
@@ -53,7 +57,7 @@ namespace Expresso.Ast
             set{SetChildByRole(FalseBlockRole, value);}
         }
 
-        public IfStatement(Expression test, Statement trueBlock, Statement falseBlock, TextLocation loc)
+        public IfStatement(PatternConstruct test, Statement trueBlock, Statement falseBlock, TextLocation loc)
             : base(loc, (falseBlock == null) ? trueBlock.EndLocation : falseBlock.EndLocation)
 		{
             Condition = test;

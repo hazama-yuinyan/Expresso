@@ -1,0 +1,85 @@
+* The reference for Expresso
+
+** Basic concepts and terms
+First of all, I will define basic concepts and terms used throughout the reference.
+
+*** LValues, RValues
+Roughly speaking, a lvalue is a variable that can be assigned and referenced, while a rvalue is a value, meaning results of expressions.
+
+** Pattern matching
+Pattern matching, which maybe sounds unfamiliar to those who are from imperative languages, is a powerful tool considering its expressive-ness.
+
+** References
+Like the C or C++ language, Expresso has the pointer type. It is called a reference in Expresso, and its functionality and semantics are very close to that of references in C++. More precisely, a reference always refers to a valid memory location so Expresso has no null literal.
+
+** Built-in types
+Like most other programming languages, Expresso has a lot of useful built-in types. Among them are included primitive types like `int`, `bool`, etc. and complex types like `tuple`, `vector`, `dictionary` and types that need special care like `unit`, `string` etc. Most of them also exist in other major programming languages, so it's a good bet that you are already familiar with the concepts.
+
+*** Primitive types
+Expresso has several primitive types.
+*** Arrays
+
+*** Tuples, vectors and dictionaries
+Expresso supports 3 built-in data structures, tuples, vectors and dictionaries.
+Tuples are alike to arrays except that they can contain different types of objects in it.
+```Expresso
+    let some_tuple = (1, true, "We can conbine different types of things in one tuple");
+    println(some_tuple);    // print "(1,true,"We can conbine different types of things in one tuple")"
+```
+Vectors are also alike to arrays, but they can contain any number of elements in it if you desire and if your buddy allows, of course.(I mean, if you have enough memory. Don't take me wrong...)
+```Expresso
+    let some_vector = [1, 2, 3, 4, ...];
+    println(some_vector);   // print "vector[1,2,3,4]"
+```
+Unlike the previous 2 data structures, dictionaries introduce a bit different story because they should have 2 values for each of their elements.
+One is called "key" and the other "value". A key, like indexes in arrays or vectors, refers to a specific element. And the element referred to by the key is the value. In other words, we can say that arrays and vectors are the kind of dictionaries that use indexes as keys. Most of the times, however, we distinguish them because they are based on different concepts and are used in different situations.
+```Expresso
+    let some_dict = {
+        "akari" : "kawakawa",
+        "chinatsu" : "2424",
+        "kyoko" : "...",
+        "yui" : "..."
+    };
+    println(some_dict);     // print "{"akari" : "kawakawa", "chinatsu" : "2424", "kyoko" : "...", "yui" : "..."}"
+```
+Often tuples, vectors and dictionaries are called "containers" because they contain or store data in them and keep them inside for later computation.
+**** Tips
+Let's talk about those data structures more deeply. Imagine if you should create a new vector class of your own, what would you do? How would you design it? 
+In general, those data structures often consist of 2 layers. One is the "header" layer and the other is the "data" layer. Each layer corresponds to one class so a container type usually has two classes as its component. The header class stores metadata on the data it holds like the number of elements and where the real data reside(as a pointer). The data layer literally holds data(usually as a node). 
+
+*** Strings
+Strings are always a big concern. Maybe most of the programmers coming from the scripting language background don't really care about them but you should keep several points in mind when you are manipulating strings in Expresso.
+First, a string is essentialy an array of characters. So if you want to compare bare strings then the time taken to do it is linear to the number of elements (O(N) in mathematical term). If you are concerned about only the equivalence, not the equality, you should consider using reference comparison, that is, apply the equal operator on the `&string` type.
+
+*** The IntSeq type and the integer sequence operator
+One unique characteristic for Expresso is the built-in `IntSeq` type. As the name suggests, it produces a series of integers.
+The `IntSeq` type has 3 fields, `lower`, `upper` and `step`. `lower` represents the lower bound of the sequence, `upper` the upper bound and `step` the step by which an iteration proceeds at a time.
+The `IntSeq` type has the corresponding literal form and it is written as follows:
+`lower..upper[:step]`
+```Expresso
+    let seq = 1..10;    // `step` can be omitted and 1 is assumed if ommited
+    let series = seq.collect();
+    for elem in seq {  // print "123456789"
+        print(elem);
+    }
+    println(series); // print "vector[1,2,3,4,5,6,7,8,9]"
+```
+An integer sequence expression does not create a vector of integers by itself. Instead, it creates a new object that is ready to produce integers that are in the range specified in the expression.
+```Expresso
+    let negative_seq = -10..0;
+    let to_negative = 0..-10:-1;
+    println("Legend: (f(x) = x - 10, g(x) = -x)");
+    for let (n, to_n) in negative_seq.zip(to_negative) {
+        print("(f(x), g(x)) = ({}, {}),", n, to_n);  // print "(f(x), g(x)) = (-10, 0),(f(x), g(x)) = (-9, -1)" and so on
+        if n == to_n {      // and when it reaches (5, 5), it also prints "Crossed over!"
+            println("Crossed over!");
+        }
+    }
+```
+We call such objects iterators because they iterate through a sequence-like object and yields an element at a time. It's very useful and it's one of the reasons that gives Expresso the power of expressive-ness.
+An integer sequence expression can take negative values in any of its operands as long as they fit in the range of the built-in `int` type(which corresponds to [-2 ^ 31, 2 ^ 31 - 1]).
+You may notice that the integer sequence expression looks like something, say, the conditional operator. And yes, that's right! 
+In Expresso, we have 2 types of ternary operators. One is the conditional operator(often called "the ternary operator" since most programming languages does have only one ternary operator) and the other is the integer sequence operator we have just introduced.
+
+*** .NET specific Runtime environment
+Our primary goal of teaching beginners the basics of programming leads us to the .NET environment.

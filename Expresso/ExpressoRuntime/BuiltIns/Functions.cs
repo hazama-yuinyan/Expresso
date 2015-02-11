@@ -5,69 +5,43 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Linq;
 
-using Expresso.Ast;
-using Expresso.Builtins;
-using Expresso.Builtins.Library;
-using Expresso.Compiler.Meta;
-using Expresso.Interpreter;
-using Expresso.Runtime;
-using Expresso.Runtime.Operations;
+using Expresso.Runtime.Library;
+//using Expresso.Interpreter;
+using Expresso.Runtime.Exceptions;
 
 
-namespace Expresso.Builtins
+namespace Expresso.Runtime.Builtins
 {
-	using Helpers = Expresso.Runtime.ImplementationHelpers;
-
 	/// <summary>
 	/// Expressoの組み込み関数郡。
 	/// The built-in functions for Expresso.
 	/// </summary>
+    /// <remarks>
+    /// Note that this class only contains those that should be re-implemented.
+    /// Functions and methods that are just to be renamed are done so through
+    /// <see cref="Expresso.Runtime.TypeMapper"/>
+    /// </remarks>
 	public static class ExpressoFunctions
 	{
-		static Regex substitution_refs = new Regex(@"\$\{(\d+|[a-zA-Z_][a-zA-Z_0-9]+)\}");
+        static Regex FormatRefs = 
+            new Regex(@"\{(?<arg>\d*|[a-zA-Z_])(:((?<fill>[a-zA-Z_0-9 ']?)(?<align>[<>^]?))?(?<sign>[+\-])?(?<hash>[#])?(?<head>[0])?(?<width>[0-9]*)(?<precision>\.[0-9]+)?(?<type>[oxXpbeE\?]?))?\}");
 
-		static Regex format_refs = new Regex(@"%([0-9.]*)([boxXsdfcueEgG])");
+        static Regex formatRefs = new Regex(@"%([0-9.]*)([boxXsdfcueEgG])");
 
 		#region Expressoの組み込み関数郡
-		#region 数学関数郡
-		public static object Abs(object val)
-		{
-			if(val is int)
-				return Math.Abs((int)val);
-			else if(val is double)
-				return Math.Abs((double)val);
-			else if(val is BigInteger)
-				return BigInteger.Abs((BigInteger)val);
-			else
-				return null;
-		}
 
-		public static object Sqrt(object val)
+        /// <summary>
+        /// Given two iterators, it 
+        /// </summary>
+        /// <param name="iter">Iter.</param>
+        /// <param name="iter2">Iter2.</param>
+        /// <typeparam name="T1">The 1st type parameter.</typeparam>
+        /// <typeparam name="T2">The 2nd type parameter.</typeparam>
+        [ExpressoFunction("zip")]
+        public static IEnumerable<Tuple<T1, T2>> Zip<T1, T2>(IEnumerable<T1> iter, IEnumerable<T2> iter2)
 		{
-			double tmp = 1.0;
-			if(val is int)
-				tmp = (double)((int)val);
-			else if(val is double)
-				tmp = (double)val;
-
-			return Math.Sqrt(tmp);
-		}
-		#endregion
-
-		public static object ToInt(object val)
-		{
-			if(val is double)
-				return (int)((double)val);
-			else if(val is int)
-				return val;
-			else
-				return null;
-		}
-
-		public static ExpressoTuple Zip(params object[] objs)
-		{
-			var tmp = new List<object>(objs);
-			return new ExpressoTuple(tmp);
+            foreach(var item in iter.Zip(iter2, (a, b) => new Tuple<T1, T2>(a, b)))
+                yield return item;
 		}
 
 		/// <summary>
@@ -79,7 +53,7 @@ namespace Expresso.Builtins
 		/// <param name='vars'>
 		/// The objects to be substituted for.
 		/// </param>
-		public static string Substitute(string str, Dictionary<string, int> orderTable, params object[] vars)
+        /*public static string Substitute(string str, Dictionary<string, int> orderTable, params object[] vars)
 		{
 			if(str == null)
 				throw new ArgumentNullException("This function takes a string as the first parameter.");
@@ -96,7 +70,7 @@ namespace Expresso.Builtins
 			});
 
 			return tmp;
-		}
+		}*/
 
 		/// <summary>
 		/// Format the specified str in the way like the printf of the C language does.
@@ -114,10 +88,10 @@ namespace Expresso.Builtins
 
 			string tmp = str;
 			int i = 0;
-			tmp = tmp.Replace(format_refs, m => {
+            tmp = formatRefs.Replace(tmp, m => {
 				if(m.Groups[2].Value == "b"){
 					if(!(vars[i] is int))
-						throw ExpressoOps.MakeInvalidTypeError("Can not format objects in binary except an integer!");
+                        throw new PanickedException("Can not format objects in binary except an integer!");
 
 					var sb = new StringBuilder();
 				
@@ -137,18 +111,49 @@ namespace Expresso.Builtins
 			return string.Format(tmp, vars);
 		}
 
+        /// <summary>
+        /// Wrapper method for Console.Write.
+        /// </summary>
+        /// <param name="format">Format.</param>
+        /// <param name="args">Arguments.</param>
+        [ExpressoFunction("print")]
+        public static void Print(string format, params object[] args)
+        {
+            if(format == null)
+                throw new ArgumentNullException("format");
+
+            /*int i = 0;
+            string tmp = FormatRefs.Replace(format, m => {
+
+            });
+
+            Console.Write(tmp);*/
+        }
+
+        /// <summary>
+        /// Println the specified format and args.
+        /// </summary>
+        /// <param name="format">Format.</param>
+        /// <param name="args">Arguments.</param>
+        [ExpressoFunction("println")]
+        public static void Println(string format, params object[] args)
+        {
+            if(format == null)
+                throw new ArgumentNullException("format");
+        }
+
 		/// <summary>
 		/// Iterates over some sequence and returns a tuple containing an index and the corresponding element for each
 		/// element in the source sequence.
 		/// </summary>
-		public static IEnumerable<ExpressoTuple> Each(IEnumerable<object> src)
+        public static IEnumerable<Tuple<int, T>> Each<T>(IEnumerable<T> src)
 		{
 			var er = src.GetEnumerator();
 			if(!er.MoveNext())
 				throw new InvalidOperationException();
 
 			for(int i = 0; er.MoveNext(); ++i)
-				yield return new ExpressoTuple(new []{i, er.Current});
+                yield return new Tuple<int, T>(i, er.Current);
 		}
 		#endregion
 	}

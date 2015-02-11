@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
+using Expresso.Runtime.Exceptions;
 
 
 namespace Expresso.Utils
@@ -238,8 +239,10 @@ namespace Expresso.Utils
 		public static void RemoveLast<T>(this IList<T> list)
 		{
 			var len = list.Count;
-			if(len <= 0) throw ExpressoOps.MakeSystemError("Can not delete last element of a list with zero elements!");
-			list.RemoveAt(len - 1);
+			if(len <= 0)
+                throw new PanickedException("Can not delete last element of a vector with zero elements!");
+			
+            list.RemoveAt(len - 1);
 		}
 		
 		public static T[] RemoveAt<T>(IList<T> list, int indexToRemove)

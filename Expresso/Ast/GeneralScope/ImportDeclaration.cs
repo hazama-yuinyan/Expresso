@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
 using ICSharpCode.NRefactory;
 
@@ -13,66 +12,72 @@ namespace Expresso.Ast
     /// A module import can be done in 2 phases.
     /// 1. Path resolving.
     /// 2. Name imports.
-    /// "import" ModuleName [ "as" AliasName ] {',' ModuleName [ "as" AliasName ] } ';'
-    /// | "import" Identifier { ',' Identifier } "in" ModuleName ';' ;
+    /// Path resolving can be done as follows:
+    /// Above all, a path item can always be interpreted as a file name and since path items don't
+    /// have file extensions ".exs" is appended if the item is being interpreted as a file name.
+    /// If there is no files matching to the path item being recognized as a file name,
+    /// it will try to match directory names.
+    /// "import" PathExpression [ "as" ident ] ';'
+    /// | "import" Identifier { ',' Identifier } "in" PathExpression ';' ;
     /// </summary>
     public class ImportDeclaration : AstNode
     {
         public static readonly TokenRole ImportKeyword = new TokenRole("import");
-        public static readonly TokenRole AsKeyword = new TokenRole("as");
-        public static readonly Role<Identifier> ModuleNameRole = new Role<Identifier>("ModuleName", Identifier.Null);
-        public static readonly Role<Identifier> AliasNameRole = new Role<Identifier>("AliasName", Identifier.Null);
-        public static readonly Role<Identifier> ImportedEntityRole = new Role<Identifier>("ImportedEntity", Identifier.Null);
+        public static readonly Role<PathExpression> ModuleNameRole =
+            new Role<PathExpression>("ModuleName");
+        public static readonly Role<Identifier> AliasNameRole =
+            new Role<Identifier>("AliasName", Identifier.Null);
+        public static readonly Role<PathExpression> ImportedEntityRole =
+            new Role<PathExpression>("ImportedEntity");
 
         public ExpressoTokenNode ImportToken{
             get{return GetChildByRole(ImportKeyword);}
         }
 
         /// <summary>
-        /// インポート対象となる名前。
-        /// The target names to be imported. 
-        /// They can be type names, module-level variable names or static field names.
+        /// インポート対象となるモジュール名。
+        /// The target module name to import names from. 
         /// </summary>
-        public IEnumerable<string> ModuleNames{
-            get{
-                var names =
-                    from ident in GetChildrenByRole(ModuleNameRole)
-                    select ident.Name;
-                return names;
-            }
+        public string ModuleName{
+            get{return ModuleNameToken.ToString();}
 		}
 
-        public AstNodeCollection<Identifier> ModuleNameTokens{
-            get{return GetChildrenByRole(ModuleNameRole);}
+        public PathExpression ModuleNameToken{
+            get{return GetChildByRole(ModuleNameRole);}
+            set{SetChildByRole(ModuleNameRole, value);}
         }
 
 		/// <summary>
 		/// モジュールに対して与えるエイリアス名。
-        /// Alias names that can be used to refer to the modules within the scope.
-		/// It can be null if none is specified.
+        /// An alias name that can be used to refer to the module within the scope.
+        /// It can be empty if none is specified.
 		/// </summary>
-        public IEnumerable<string> AliasNames{
-			get{
-                var names =
-                    from ident in GetChildrenByRole(AliasNameRole)
-                    select ident.Name;
-                return names;
-            }
+        public string AliasName{
+            get{return AliasNameToken.Name;}
 		}
 
         public ExpressoTokenNode AsToken{
-            get{return GetChildByRole(AsKeyword);}
+            get{return GetChildByRole(Roles.AsToken);}
         }
 
-        public AstNodeCollection<Identifier> AliasNameTokens{
-            get{return GetChildrenByRole(AliasNameRole);}
+        /// <summary>
+        /// Gets alias name only valid within the current scope.
+        /// </summary>
+        public Identifier AliasNameToken{
+            get{return GetChildByRole(AliasNameRole);}
+            set{SetChildByRole(AliasNameRole, value);}
         }
 
         public ExpressoTokenNode InToken{
             get{return GetChildByRole(Roles.InToken);}
         }
 
-        public AstNodeCollection<Identifier> ImportedEntities{
+        /// <summary>
+        /// Gets imported entities.
+        /// An imported entity can be any static item.
+        /// It can return an empty collection if the node represents the module-names-aliases pair.
+        /// </summary>
+        public AstNodeCollection<PathExpression> ImportedEntities{
             get{return GetChildrenByRole(ImportedEntityRole);}
         }
 
@@ -84,14 +89,17 @@ namespace Expresso.Ast
             get{return NodeType.Statement;}
         }
 
-        public ImportDeclaration(IEnumerable<string> moduleNames, IEnumerable<string> aliasNames = null)
+        public ImportDeclaration(PathExpression moduleName, string aliasName = null,
+            IEnumerable<PathExpression> importedEntities = null)
 		{
-            foreach(var module_name in moduleNames)
-                AddChild(AstNode.MakeIdentifier(module_name), ModuleNameRole);
+            ModuleNameToken = moduleName;
 
-            if(aliasNames != null){
-                foreach(var alias_name in aliasNames)
-                    AddChild(AstNode.MakeIdentifier(alias_name), AliasNameRole);
+            if(aliasName != null)
+                AliasNameToken = AstNode.MakeIdentifier(aliasName);
+
+            if(importedEntities != null){
+                foreach(var entity in importedEntities)
+                    AddChild(entity, ImportedEntityRole);
             }
 		}
 
@@ -115,8 +123,9 @@ namespace Expresso.Ast
         protected internal override bool DoMatch(AstNode other, ICSharpCode.NRefactory.PatternMatching.Match match)
         {
             var o = other as ImportDeclaration;
-            return o != null && ModuleNameTokens.DoMatch(o.ModuleNameTokens, match)
-                && AliasNameTokens.DoMatch(o.AliasNameTokens, match);
+            return o != null && ModuleNameToken.DoMatch(o.ModuleNameToken, match)
+                && AliasNameToken.DoMatch(o.AliasNameToken, match)
+                && ImportedEntities.DoMatch(o.ImportedEntities, match);
         }
 
         #endregion

@@ -8,12 +8,7 @@ using System.Linq;
 using NUnit.Framework;
 
 using Expresso.Ast;
-using Expresso.Builtins;
-using Expresso.Compiler.Meta;
-using Expresso.Interpreter;
-using Expresso.Runtime;
-using Expresso.Runtime.Operations;
-using Expresso.Runtime.Exceptions;
+using ICSharpCode.NRefactory;
 
 namespace Expresso.Test
 {
@@ -82,9 +77,9 @@ namespace Expresso.Test
 	internal class FunctionAnnotation
 	{
 		public string Name{get; set;}
-		public TypeAnnotation ReturnType{get; set;}
+        public AstType ReturnType{get; set;}
 
-		public FunctionAnnotation(string name, TypeAnnotation returnType)
+        public FunctionAnnotation(string name, AstType returnType)
 		{
 			Name = name;
 			ReturnType = returnType;
@@ -100,8 +95,8 @@ namespace Expresso.Test
 			var parser = new Parser(new Scanner("../../sources/for_parser/simple_literals.exs"));
 			parser.ParsingFileName = "simple_literals";
 			parser.Parse();
-			var interp = new Expresso.Interpreter.Interpreter();
-			Expresso.Interpreter.Interpreter.MainModule = parser.TopmostAst;
+			var interp = new Interpreter();
+			Interpreter.MainModule = parser.TopmostAst;
             interp.Run(parser.TopmostAst, true);
 			var main_module = interp.GlobalContext.GetModule("simple_literals");
 
@@ -113,9 +108,9 @@ namespace Expresso.Test
 				0.001,	//c
 				.1e-2,	//f_c
 				new BigInteger(10000000),	//d
-				"This is a test",	//e
-				ExpressoOps.MakeList(new List<object>()),	//f
-				ExpressoOps.MakeDict(new List<object>(), new List<object>())	//g
+				"This is a test",	        //e
+				new List<object>(),	        //f
+                new Dictionary<string, string>()	//g
 			};
 
 			var names = new List<string>{
@@ -144,8 +139,8 @@ namespace Expresso.Test
 		{
 			var parser = new Parser(new Scanner("../../sources/for_interpreter/simple_arithmetic.exs"));
 			parser.Parse();
-			var interp = new Expresso.Interpreter.Interpreter();
-			Expresso.Interpreter.Interpreter.MainModule = parser.TopmostAst;
+			var interp = new Interpreter();
+			Interpreter.MainModule = parser.TopmostAst;
 			var results = interp.Run() as List<object>;
 			Assert.IsNotNull(results);
 
@@ -173,17 +168,21 @@ namespace Expresso.Test
 		{
 			var parser = new Parser(new Scanner("../../sources/for_interpreter/basic_operations.exs"));
 			parser.Parse();
-			var interp = new Expresso.Interpreter.Interpreter();
-			Expresso.Interpreter.Interpreter.MainModule = parser.TopmostAst;
+			var interp = new Interpreter();
+			Interpreter.MainModule = parser.TopmostAst;
 			var results = interp.Run() as List<object>;
 			Assert.IsNotNull(results);
 
-			var expected_a = new List<object>{1, 2, 3};
-			var expected_b = ExpressoOps.MakeDict(new List<object>{"a", "b", "y"}, new List<object>{1, 4, 10});
+            var expected_a = new List<int>{1, 2, 3};
+            var expected_b = new Dictionary<string, int>{
+                {"a", 1},
+                {"b", 4},
+                {"y", 10}
+            };
 			var expected_x = 100;
 
-			var expected_p = (int)expected_a[0] + (int)expected_a[1] + (int)expected_a[2];
-			var expected_q = (int)expected_b["a"] + (int)expected_b["b"] + (int)expected_b["y"];
+			var expected_p = expected_a[0] + expected_a[1] + expected_a[2];
+			var expected_q = expected_b["a"] + expected_b["b"] + expected_b["y"];
 			var expected_r = expected_x >> expected_p;
 			var expected_s = expected_x << 2;
 			var expected_t = expected_r & expected_s;
@@ -212,15 +211,15 @@ namespace Expresso.Test
 		{
 			var parser = new Parser(new Scanner("../../sources/for_interpreter/statements.exs"));
 			parser.Parse();
-			var interp = new Expresso.Interpreter.Interpreter();
-			Expresso.Interpreter.Interpreter.MainModule = parser.TopmostAst;
+			var interp = new Interpreter();
+			Interpreter.MainModule = parser.TopmostAst;
 			var results = interp.Run() as List<object>;
 			Assert.IsNotNull(results);
 
 			var expected_y = 200;
 			var expected_sum = Helpers.CalcSum(0, expected_y);
-			var expected_strs = ExpressoOps.MakeList(new List<object>{"akarichan", "chinatsu", "kyoko", "yui"});
-			var expected_fibs = new List<object>();
+            var expected_strs = new List<string>{"akarichan", "chinatsu", "kyoko", "yui"};
+            var expected_fibs = new List<int>();
 			for(int i = 0; ; ++i){
 				var fib = Helpers.Fib(i);
 				if(fib >= 1000) break;
@@ -232,7 +231,7 @@ namespace Expresso.Test
 				where i != 3 && i != 6
 				from j in Enumerable.Range(0, 10)
 				where j < 8
-				select ExpressoOps.MakeTuple(new object[]{i, j});
+                select Tuple.Create(i, j);
 
 			var expected = new object[]{
 				100,	//x
@@ -254,15 +253,19 @@ namespace Expresso.Test
 		{
 			var parser = new Parser(new Scanner("../../sources/for_interpreter/builtin_objects.exs"));
 			parser.Parse();
-			var interp = new Expresso.Interpreter.Interpreter();
-			Expresso.Interpreter.Interpreter.MainModule = parser.TopmostAst;
+			var interp = new Interpreter();
+			Interpreter.MainModule = parser.TopmostAst;
 			var results = interp.Run() as List<object>;
 			Assert.IsNotNull(results);
 
-			var expected_a = ExpressoOps.MakeList(new List<object>{1, 2, 3, 4, 5, 6, 7, 8});
-			var expected_b = ExpressoOps.MakeDict(new List<object>{"akari", "chinatsu", "kyoko", "yui"},
-				new List<object>{13, 13, 14, 14});
-			var expected_c = ExpressoOps.MakeTuple(new List<object>{"akarichan", "kawakawa", "chinatsuchan", 2424});
+            var expected_a = new List<int>{1, 2, 3, 4, 5, 6, 7, 8};
+            var expected_b = new Dictionary<string, int>{
+                {"akari", 13},
+                {"chinatsu", 13},
+                {"kyoko", 14},
+                {"yui", 14}
+            };
+            var expected_c = Tuple.Create("akarichan", "kawakawa", "chinatsuchan", 2424);
 
 			var tmp_seq = new ExpressoIntegerSequence(0, 3, 1);
 			var expected_d = ExpressoOps.Slice(expected_a, tmp_seq);
@@ -283,8 +286,8 @@ namespace Expresso.Test
 		{
 			var parser = new Parser(new Scanner("../../sources/for_interpreter/complex_expressions.exs"));
 			parser.Parse();
-			var interp = new Expresso.Interpreter.Interpreter();
-			Expresso.Interpreter.Interpreter.MainModule = parser.TopmostAst;
+			var interp = new Interpreter();
+			Interpreter.MainModule = parser.TopmostAst;
 			var results = interp.Run() as List<object>;
 			Assert.IsNotNull(results);
 
@@ -292,24 +295,24 @@ namespace Expresso.Test
 				from i in Enumerable.Range(0, 100)
 				select i;
 
-			var expected_x = new List<object>(tmp_x.Cast<object>());
+            var expected_x = tmp_x.ToList();
 
 			var tmp_y =
 				from j in Enumerable.Range(0, 100)
 				where j % 2 == 0
 				select j;
 
-			var expected_y = new List<object>(tmp_y.Cast<object>());
+            var expected_y = tmp_y.ToList();
 
 			var tmp_z =
 				from k in Enumerable.Range(0, 100)
 				where k % 2 == 0
 				from l in Enumerable.Range(0, 100)
-				select ExpressoOps.MakeTuple(new object[]{k, l});
+                select Tuple.Create(k, l);
 
 			var expected_z = new List<object>(tmp_z);
 
-			var expected_m = ExpressoOps.MakeTuple(new List<object>{1, 3});
+            var expected_m = Tuple.Create(1, 3);
 
 			var expected = new object[]{
 				expected_x,
@@ -329,8 +332,8 @@ namespace Expresso.Test
 		{
 			var parser = new Parser(new Scanner("../../sources/for_interpreter/class.exs"));
 			parser.Parse();
-			var interp = new Expresso.Interpreter.Interpreter();
-			Expresso.Interpreter.Interpreter.MainModule = parser.TopmostAst;
+            var interp = new Interpreter();
+			Interpreter.MainModule = parser.TopmostAst;
 			var results = interp.Run() as List<object>;
 			Assert.IsNotNull(results);
 
@@ -346,10 +349,9 @@ namespace Expresso.Test
 			};
 
 			var method_annots = new List<FunctionAnnotation>{
-				new FunctionAnnotation("constructor", TypeAnnotation.VoidType),
-				new FunctionAnnotation("getX", TypeAnnotation.VariantType),
-				new FunctionAnnotation("getY", new TypeAnnotation(ObjectTypes.Integer)),
-				new FunctionAnnotation("getXPlus", new TypeAnnotation(ObjectTypes.Integer))
+                new FunctionAnnotation("getX", new PrimitiveType("int", TextLocation.Empty)),
+                new FunctionAnnotation("getY", new PrimitiveType("int", TextLocation.Empty)),
+                new FunctionAnnotation("getXPlus", new PrimitiveType("int", TextLocation.Empty))
 			};
 
 			var a = results[0] as ExpressoObj;
@@ -371,9 +373,9 @@ namespace Expresso.Test
 		{
 			var parser = new Parser(new Scanner("../../sources/for_interpreter/module.exs"));
 			parser.Parse();
-			var interp = new Expresso.Interpreter.Interpreter();
+			var interp = new Interpreter();
 			interp.CurrentOpenedSourceFileName = "../../sources/for_interpreter/module.exs";
-			Expresso.Interpreter.Interpreter.MainModule = parser.TopmostAst;
+			Interpreter.MainModule = parser.TopmostAst;
 			var results = interp.Run() as List<object>;
 			Assert.IsNotNull(results);
 			
@@ -383,9 +385,8 @@ namespace Expresso.Test
 			};
 			
 			var method_annots = new List<FunctionAnnotation>{
-				new FunctionAnnotation("constructor", TypeAnnotation.VoidType),
-				new FunctionAnnotation("getX", TypeAnnotation.VariantType),
-				new FunctionAnnotation("getY", new TypeAnnotation(ObjectTypes.Integer)),
+                new FunctionAnnotation("getX", new PrimitiveType("int", TextLocation.Empty)),
+                new FunctionAnnotation("getY", new PrimitiveType("int", TextLocation.Empty)),
 			};
 
 			var a = results[0] as ExpressoObj;

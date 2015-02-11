@@ -9,7 +9,7 @@ namespace Expresso.Ast
 	/// <summary>
     /// 変数宣言文。
     /// The variable declaration statement.
-    /// ("let" | "var") Name ["(-" Type] {',' Name ["(-" Type]} ;
+    /// ("let" | "var") VariableInitializer { ',' VariableInitializer } ;
 	/// </summary>
     public class VariableDeclarationStatement : Statement
 	{

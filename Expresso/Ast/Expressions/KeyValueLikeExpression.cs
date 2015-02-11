@@ -7,6 +7,7 @@ namespace Expresso.Ast
     /// <summary>
     /// An <see ref="Expresso.Ast.KeyValueLikeExpression"> represents a key-value-pair-like expression.
     /// It is used for items in ObjectCreationExpressions, named arguments or dictionary literals.
+    /// ident ':' Expression ;
     /// </summary>
     public class KeyValueLikeExpression : Expression
     {

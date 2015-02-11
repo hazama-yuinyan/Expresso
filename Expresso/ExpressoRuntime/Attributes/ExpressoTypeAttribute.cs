@@ -4,17 +4,12 @@ namespace Expresso.Runtime
 {
 	/// <summary>
 	/// C#の型をExpressoの型として指定する属性。
+    /// この属性が指定された型は、Expresso内の文法に合わせてプロパティがメソッドに置き換えられたり、メソッド名のキャメルケース化
+    /// スライスオペレーションの定義などが行われる。
 	/// Marks a type as being an ExpressoType for purposes of member lookup, creating instances, etc...  
-	/// 
-	/// If defined a ExpressoType will use op_new / constructor when creating instances. This allows the
-	/// object to match the native Python behavior such as returning cached values from op_new or
-	/// supporting initialization to run multiple times via constructor.
-	///
-	/// The attribute also allows you to specify an alternate type name. This allows the .NET name to
-	/// be different from the Expresso name so they can follow .NET naming conventions.
-	/// 
-	/// Types defining this attribute also don't show CLR methods such as Equals, GetHashCode, etc... until
-	/// the user has done an import clr.
+    /// It also indicates that types marked with this attribute could be modified so that they suit
+    /// the Expresso world. For example, we don't have properties in Expresso so this attribute compells
+    /// marked types to get rid of properties and to define setters and getters as methods.
 	/// </summary>
 	[AttributeUsage(AttributeTargets.Class | AttributeTargets.Interface | AttributeTargets.Struct, Inherited = false)]
 	public sealed class ExpressoTypeAttribute : Attribute
@@ -25,6 +20,10 @@ namespace Expresso.Runtime
 		{
 		}
 		
+        /// <summary>
+        /// Creates a new <see cref="Expresso.Runtime.ExpressoTypeAttribute"/> class instance.
+        /// </summary>
+        /// <param name="name">The name by which the corresponding type is referred to in Expresso.</param>
 		public ExpressoTypeAttribute(string name)
 		{
 			type_name = name;

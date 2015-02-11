@@ -7,6 +7,7 @@ namespace Expresso.Ast
 {
     /// <summary>
     /// Represents a variable initialization.
+    /// Identifier ( [ "(-" Type ] [ '=' Expression ] ) ;
     /// </summary>
     public class VariableInitializer : AstNode
     {

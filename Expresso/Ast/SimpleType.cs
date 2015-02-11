@@ -90,6 +90,12 @@ namespace Expresso.Ast
             AddChild(AstNode.MakeIdentifier(identifier, this), Roles.Identifier);
         }
 
+        public SimpleType(Identifier identifier, TextLocation start)
+            : base(start, identifier.EndLocation)
+        {
+            IdentifierToken = identifier;
+        }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="Expresso.Ast.SimpleType"/> class
         /// with several type arguments.

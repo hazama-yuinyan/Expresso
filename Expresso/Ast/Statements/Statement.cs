@@ -160,7 +160,7 @@ namespace Expresso.Ast
             return new ReturnStatement(expr);
         }
 
-        static internal IfStatement MakeIfStmt(Expression condition, BlockStatement trueBlock,
+        static internal IfStatement MakeIfStmt(PatternConstruct condition, BlockStatement trueBlock,
             BlockStatement falseBlock, TextLocation loc)
         {
             return new IfStatement(condition, trueBlock, falseBlock, loc);
@@ -189,9 +189,10 @@ namespace Expresso.Ast
             return new MatchStatement(target, clauses, start, end);
         }
 
-        static internal MatchPatternClause MakeMatchClause(IEnumerable<PatternConstruct> patterns, Statement body)
+        static internal MatchPatternClause MakeMatchClause(IEnumerable<PatternConstruct> patterns,
+            Expression guard, Statement body)
         {
-            return new MatchPatternClause(patterns, body);
+            return new MatchPatternClause(patterns, guard, body);
         }
 
         static internal YieldStatement MakeYieldStmt(Expression expr, TextLocation start, TextLocation end)

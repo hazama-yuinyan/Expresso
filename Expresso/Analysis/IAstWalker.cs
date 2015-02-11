@@ -54,13 +54,16 @@ namespace Expresso.Ast
         void VisitCommentNode(CommentNode comment);
         void VisitTextNode(TextNode textNode);
 
-        void VisitAstType(AstType typeNode);
         void VisitSimpleType(SimpleType simpleType);
         void VisitPrimitiveType(PrimitiveType primitiveType);
+        void VisitReferenceType(ReferenceType referenceType);
+        void VisitMemberType(MemberType memberType);
+        void VisitPlaceholderType(PlaceholderType placeholderType);
 
         void VisitImportDeclaration(ImportDeclaration importDecl);
         void VisitFunctionDeclaration(FunctionDeclaration funcDecl);
         void VisitTypeDeclaration(TypeDeclaration typeDecl);
+        void VisitAliasDeclaration(AliasDeclaration aliasDecl);
 
         void VisitFieldDeclaration(FieldDeclaration fieldDecl);
         void VisitParameterDeclaration(ParameterDeclaration parameterDecl);
@@ -69,6 +72,8 @@ namespace Expresso.Ast
         void VisitWildcardPattern(WildcardPattern wildcardPattern);
         void VisitIdentifierPattern(IdentifierPattern identifierPattern);
         void VisitValueBindingPattern(ValueBindingPattern valueBindingPattern);
+        void VisitCollectionPattern(CollectionPattern collectionPattern);
+        void VisitDestructuringPattern(DestructuringPattern destructuringPattern);
         void VisitTuplePattern(TuplePattern tuplePattern);
         void VisitExpressionPattern(ExpressionPattern exprPattern);
 
@@ -96,7 +101,7 @@ namespace Expresso.Ast
         TResult VisitYieldStatement(YieldStatement yieldStmt);
         TResult VisitVariableDeclarationStatement(VariableDeclarationStatement varDecl);
 
-        TResult VisitAssinment(AssignmentExpression assignment);
+        TResult VisitAssignment(AssignmentExpression assignment);
         TResult VisitBinaryExpression(BinaryExpression binaryExpr);
         TResult VisitCallExpression(CallExpression call);
         TResult VisitCastExpression(CastExpression castExpr);
@@ -125,13 +130,16 @@ namespace Expresso.Ast
         TResult VisitCommentNode(CommentNode comment);
         TResult VisitTextNode(TextNode textNode);
 
-        TResult VisitAstType(AstType typeNode);
         TResult VisitSimpleType(SimpleType simpleType);
         TResult VisitPrimitiveType(PrimitiveType primitiveType);
+        TResult VisitReferenceType(ReferenceType referenceType);
+        TResult VisitMemberType(MemberType memberType);
+        TResult VisitPlaceholderType(PlaceholderType placeholderType);
 
         TResult VisitImportDeclaration(ImportDeclaration importDecl);
         TResult VisitFunctionDeclaration(FunctionDeclaration funcDecl);
         TResult VisitTypeDeclaration(TypeDeclaration typeDecl);
+        TResult VisitAliasDeclaration(AliasDeclaration aliasDecl);
 
         TResult VisitFieldDeclaration(FieldDeclaration fieldDecl);
         TResult VisitParameterDeclaration(ParameterDeclaration parameterDecl);
@@ -140,6 +148,8 @@ namespace Expresso.Ast
         TResult VisitWildcardPattern(WildcardPattern wildcardPattern);
         TResult VisitIdentifierPattern(IdentifierPattern identifierPattern);
         TResult VisitValueBindingPattern(ValueBindingPattern valueBindingPattern);
+        TResult VisitCollectionPattern(CollectionPattern collectionPattern);
+        TResult VisitDestructuringPattern(DestructuringPattern destructuringPattern);
         TResult VisitTuplePattern(TuplePattern tuplePattern);
         TResult VisitExpressionPattern(ExpressionPattern exprPattern);
 
@@ -150,6 +160,16 @@ namespace Expresso.Ast
         TResult VisitPatternPlaceholder(AstNode placeholder, Pattern child);
     }
 
+    /// <summary>
+    /// Expresso Walker interface.
+    /// An AST walker is a class that walks through all nodes.
+    /// </summary>
+    /// <typeparam>
+    /// TData
+    /// </typeparam>
+    /// <typeparam>
+    /// TResult
+    /// </typeparam>
     public interface IAstWalker<in TData, out TResult>
     {
         TResult VisitAst(ExpressoAst ast, TData data);
@@ -196,13 +216,16 @@ namespace Expresso.Ast
         TResult VisitCommentNode(CommentNode comment, TData data);
         TResult VisitTextNode(TextNode textNode, TData data);
 
-        TResult VisitAstType(AstType typeNode, TData data);
         TResult VisitSimpleType(SimpleType simpleType, TData data);
         TResult VisitPrimitiveType(PrimitiveType primitiveType, TData data);
+        TResult VisitReferenceType(ReferenceType referenceType, TData data);
+        TResult VisitMemberType(MemberType memberType, TData data);
+        TResult VisitPlaceholderType(PlaceholderType placeholderType, TData data);
 
         TResult VisitImportDeclaration(ImportDeclaration importDecl, TData data);
         TResult VisitFunctionDeclaration(FunctionDeclaration funcDecl, TData data);
         TResult VisitTypeDeclaration(TypeDeclaration typeDecl, TData data);
+        TResult VisitAliasDeclaration(AliasDeclaration aliasDecl, TData data);
 
         TResult VisitFieldDeclaration(FieldDeclaration fieldDecl, TData data);
         TResult VisitParameterDeclaration(ParameterDeclaration parameterDecl, TData data);
@@ -211,6 +234,8 @@ namespace Expresso.Ast
         TResult VisitWildcardPattern(WildcardPattern wildcardPattern, TData data);
         TResult VisitIdentifierPattern(IdentifierPattern identifierPattern, TData data);
         TResult VisitValueBindingPattern(ValueBindingPattern valueBindingPattern, TData data);
+        TResult VisitCollectionPattern(CollectionPattern collectionPattern, TData data);
+        TResult VisitDestructuringPattern(DestructuringPattern destructuringPattern, TData data);
         TResult VisitTuplePattern(TuplePattern tuplePattern, TData data);
         TResult VisitExpressionPattern(ExpressionPattern exprPattern, TData data);
 

@@ -96,7 +96,7 @@ namespace Expresso.Ast
 
         public override TResult AcceptWalker<TResult>(IAstWalker<TResult> walker)
         {
-            return walker.VisitAssinment(this);
+            return walker.VisitAssignment(this);
         }
 
         public override TResult AcceptWalker<TResult, TData>(IAstWalker<TData, TResult> walker, TData data)

@@ -1,6 +1,7 @@
 using System;
 
 using ICSharpCode.NRefactory;
+using ICSharpCode.NRefactory.PatternMatching;
 
 namespace Expresso.Ast
 {
@@ -41,7 +42,7 @@ namespace Expresso.Ast
 
         /// <summary>
         /// 走査する対象の式。
-        /// The target expression to be iterated over. It must yields a iterable object, otherwise a compile-time error
+        /// The target expression to be iterated over. It must yield an iterable object, otherwise a compile-time error
         /// (when compiling the code) or a runtime exception occurs(when in interpreter mode)
         /// </summary>
         public Expression Target{
@@ -84,7 +85,7 @@ namespace Expresso.Ast
 
         #region implemented abstract members of AstNode
 
-        protected internal override bool DoMatch(AstNode other, ICSharpCode.NRefactory.PatternMatching.Match match)
+        protected internal override bool DoMatch(AstNode other, Match match)
         {
             var o = other as ForStatement;
             return o != null && Left.DoMatch(o.Left, match)

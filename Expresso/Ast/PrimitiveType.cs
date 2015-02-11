@@ -9,7 +9,7 @@ using ExpressoTypeCode = Expresso.TypeSystem.KnownTypeCode;
 namespace Expresso.Ast
 {
     /// <summary>
-    /// Represents a primitive type.
+    /// Represents a primitive type reference node.
     /// </summary>
     public class PrimitiveType : AstType
     {

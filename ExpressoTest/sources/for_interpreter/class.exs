@@ -3,41 +3,31 @@
  */
 module main;
 
-//require a as b;
 
 class Test
 {
-private:
 	let x (- int, y (- int;
 
-public:
-	constructor(x, y)
+	public def getX()
 	{
-		this.x = x;
-		this.y = y;
+		return self.x;
 	}
 
-	def getX()
+	public def getY() -> int
 	{
-		return this.x;
+		return self.y;
 	}
 
-	def getY() -> int
+	public def getXPlus(n) -> int
 	{
-		return this.y;
-	}
-
-	def getXPlus(n) -> int
-	{
-		return this.x + n;
+		return self.x + n;
 	}
 }
 
 def main()
 {
-	let a = new Test(1, 3);
-	let b = a.getX();
-	let c = a.getY();
+	let a = new Test{x : 1, y : 3);
+	let (b, c) = (a.getX(), a.getY());
 	let d = a.getXPlus(100);
 	
 	print("(a.x, a.y) = {}, {}", b, c);

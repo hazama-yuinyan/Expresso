@@ -139,7 +139,7 @@ namespace Expresso.Interpreter
 
 			var mod_context = new ModuleContext(main_module, global_context);
 			var main_args = ExpressoOps.Slice(args, new ExpressoIntegerSequence(1, args.Count, 1));
-            var call = Expression.MakeCall(
+            var call = Expression.MakeCallExpr(
                 AstNode.MakeIdentifier(ObjectTypes.Function, main_func),
 				new Expression[]{
 					AstNode.MakeConstant(ObjectTypes.Instance, main_module),
@@ -336,8 +336,8 @@ namespace Expresso.Interpreter
 
 						switch(flow_manager.Top().StepCounter){
 						case 0:
-							if(flow_manager.Top().ChildCounter < case_clause.Labels.Length){
-								node = case_clause.Labels[flow_manager.Top().ChildCounter++];
+							if(flow_manager.Top().ChildCounter < case_clause.Patterns.Length){
+								node = case_clause.Patterns[flow_manager.Top().ChildCounter++];
 								goto MAIN_LOOP;
 							}else{
 								flow_manager.PushValue(false);

@@ -48,6 +48,7 @@ namespace Expresso.Ast
         public static readonly TokenRole IfToken = new TokenRole("if");
         public static readonly TokenRole ForToken = new TokenRole("for");
         public static readonly TokenRole InToken = new TokenRole("in");
+        public static readonly TokenRole AsToken = new TokenRole("as");
         public static readonly Role<CommentNode> CommentRole = new Role<CommentNode>("Comment");
 
     }

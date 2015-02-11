@@ -277,9 +277,9 @@ namespace Expresso.Ast
                 SpaceAfterTypecast = false,
 
                 AlignEmbeddedStatements = true,
-                SimplePropertyFormatting = PropertyFormatting.AllowOneLine,
-                AutoPropertyFormatting = PropertyFormatting.AllowOneLine,
-                EmptyLineFormatting = EmptyLineFormatting.DoNotIndent,
+                //SimplePropertyFormatting = PropertyFormatting.AllowOneLine,
+                //AutoPropertyFormatting = PropertyFormatting.AllowOneLine,
+                //EmptyLineFormatting = EmptyLineFormatting.DoNotIndent,
                 SpaceBeforeMethodDeclarationParameterComma = false,
                 SpaceAfterMethodDeclarationParameterComma = true,
                 SpaceAfterDelegateDeclarationParameterComma = true,
