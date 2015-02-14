@@ -12,7 +12,7 @@ namespace Expresso.Ast
     public class CollectionPattern : PatternConstruct
     {
         /// <summary>
-        /// Gets the items.
+        /// Gets all the items.
         /// </summary>
         public AstNodeCollection<PatternConstruct> Items{
             get{return GetChildrenByRole(Roles.Pattern);}

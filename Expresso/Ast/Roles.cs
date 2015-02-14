@@ -8,22 +8,34 @@ namespace Expresso.Ast
     {
         public static readonly Role<AstNode> Root = AstNode.RootRole;
 
-        public static readonly Role<Identifier> Identifier = new Role<Identifier>("Identifier");
-        public static readonly Role<PathExpression> Path = new Role<PathExpression>("Path");
-        public static readonly Role<BlockStatement> Body = new Role<BlockStatement>("Block");
-        public static readonly Role<ParameterDeclaration> Parameter = new Role<ParameterDeclaration>("Parameter");
-        public static readonly Role<Expression> Argument = new Role<Expression>("Argument", Expression.NullObject);
-        public static readonly Role<KeyValueLikeExpression> KeyValue = new Role<KeyValueLikeExpression>("KeyValue");
+        public static readonly Role<Identifier> Identifier =
+            new Role<Identifier>("Identifier", Expresso.Ast.Identifier.Null);
+        public static readonly Role<PathExpression> Path =
+            new Role<PathExpression>("Path", PathExpression.Null);
+        public static readonly Role<BlockStatement> Body =
+            new Role<BlockStatement>("Block", BlockStatement.Null);
+        public static readonly Role<ParameterDeclaration> Parameter =
+            new Role<ParameterDeclaration>("Parameter");
+        public static readonly Role<Expression> Argument =
+            new Role<Expression>("Argument", Expresso.Ast.Expression.Null);
+        public static readonly Role<KeyValueLikeExpression> KeyValue =
+            new Role<KeyValueLikeExpression>("KeyValue");
         public static readonly Role<AstType> Type = new Role<AstType>("Type", AstType.Null);
         public static readonly Role<AstType> BaseType = new Role<AstType>("BaseType", AstType.Null);
-        public static readonly Role<Expression> Expression = new Role<Expression>("Expression", Expression.NullObject);
-        public static readonly Role<Expression> TargetExpression = new Role<Expression>("Target", Expression.NullObject);
-        public static readonly Role<AstType> TypeArgument = new Role<AstType>("TypeArgument", AstType.Null);
-        //public static readonly Role<TypeParameterDeclaration> 
-        public static readonly Role<Statement> EmbeddedStatement = new Role<Statement>("EmbeddedStatement", Statement.Null);
-        public static readonly Role<EntityDeclaration> TypeMember = new Role<EntityDeclaration>("TypeMember");
-        public static readonly Role<VariableInitializer> Variable = new Role<VariableInitializer>("Variable");
-        public static readonly Role<PatternConstruct> Pattern = new Role<PatternConstruct>("Pattern", PatternConstruct.Null);
+        public static readonly Role<Expression> Expression =
+            new Role<Expression>("Expression", Expresso.Ast.Expression.Null);
+        public static readonly Role<Expression> TargetExpression =
+            new Role<Expression>("Target", Expresso.Ast.Expression.Null);
+        public static readonly Role<AstType> TypeArgument =
+            new Role<AstType>("TypeArgument", AstType.Null);
+        public static readonly Role<Statement> EmbeddedStatement =
+            new Role<Statement>("EmbeddedStatement", Statement.Null);
+        public static readonly Role<EntityDeclaration> TypeMember =
+            new Role<EntityDeclaration>("TypeMember");
+        public static readonly Role<VariableInitializer> Variable =
+            new Role<VariableInitializer>("Variable");
+        public static readonly Role<PatternConstruct> Pattern =
+            new Role<PatternConstruct>("Pattern", PatternConstruct.Null);
 
         // some pre-defined roles for most used punctuations
         public static readonly TokenRole LParenthesisToken = new TokenRole("(");

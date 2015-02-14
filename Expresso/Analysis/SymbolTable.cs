@@ -7,7 +7,7 @@ using System.Runtime.Serialization;
 namespace Expresso.Ast.Analysis
 {
     /// <summary>
-    /// Represents the symbol table. The symbol table is represented by a bi-directional linked list
+    /// Represents the symbol table. The symbol table is represented by a n-branched tree
     /// with each node representing one scope(one SymbolTable instance).
     /// In Expresso, there are 2 kinds of namespaces.
     /// One is for types, and the other is for local variables, parameters, function names and method names.
@@ -24,6 +24,9 @@ namespace Expresso.Ast.Analysis
             get; set;
         }
 
+        /// <summary>
+        /// Gets all the symbols as an enumerator.
+        /// </summary>
         public IEnumerable<Identifier> Symbols{
             get{
                 return table.Values;
@@ -34,6 +37,7 @@ namespace Expresso.Ast.Analysis
         {
             type_table = new Dictionary<string, Identifier>();
             table = new Dictionary<string, Identifier>();
+            Children = new List<SymbolTable>();
         }
 
         #region ISerializable implementation
@@ -105,6 +109,11 @@ namespace Expresso.Ast.Analysis
         public void AddSymbol(string name, AstType type)
         {
             table.Add(name, AstNode.MakeIdentifier(name, type));
+        }
+
+        public void AddSymbol(string name, Identifier ident)
+        {
+            table.Add(name, ident);
         }
 
         /// <summary>

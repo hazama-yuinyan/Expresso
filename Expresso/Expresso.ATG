@@ -14,9 +14,9 @@ using ICSharpCode.NRefactory;
 using ExpressoModifiers = Expresso.Ast.Modifiers;
 
 
+
 COMPILER Expresso
     internal SymbolTable Symbols{get; set;}
-    bool seen_let;
     public string ParsingFileName{get; set;}
 	public ExpressoAst TopmostAst{get; private set;}	//the top-level AST the parser is parsing
     public TextLocation CurrentLocation{
@@ -38,14 +38,6 @@ COMPILER Expresso
     ///</remarks>
 	Parser()
 	{
-		//Add built-in functions
-		/*FunctionDefinition[] native_funcs = {
-			new NativeLambdaUnary("abs", ImplementationHelpers.MakeArg(new Identifier("val", new TypeAnnotation(ObjectTypes.Var), null, 0)), ExpressoFunctions.Abs),
-			new NativeLambdaUnary("sqrt", ImplementationHelpers.MakeArg(new Identifier("val", new TypeAnnotation(ObjectTypes.Var), null, 0)), ExpressoFunctions.Sqrt),
-			new NativeLambdaUnary("toInt", ImplementationHelpers.MakeArg(new Identifier("val", new TypeAnnotation(ObjectTypes.Var), null, 0)), ExpressoFunctions.ToInt)
-		};
-		foreach(var tmp in native_funcs)
-			cur_scope.AddFunction(tmp);*/
         Symbols = new SymbolTable();
 	}
 	
@@ -95,57 +87,57 @@ COMPILER Expresso
         return type;
     }
 
-    LiteralExpression CreateLiteral(string value, string suffix, TextLocation loc)
+    LiteralExpression CreateLiteral(string value, TextLocation loc)
     {
         string type_name = "int";
         object obj = null;
-        if(suffix != null){
-            switch(suffix){
-            case "u":
-            case "U":
-            {
-                type_name = "uint";
-                uint u;
-                if(uint.TryParse(value, out u))
-                    obj = u;
-                else
-                    SemErr("Invalid uint representation!");
-                break;
-            }
+        string suffix = value.Substring(value.Length - 1);
+        switch(suffix){
+        case "u":
+        case "U":
+        {
+            type_name = "uint";
+            uint u;
+            if(uint.TryParse(value.Substring(0, value.Length - 1), out u))
+                obj = u;
+            else
+                SemErr("Invalid uint representation!");
+            break;
+        }
 
-            case "l":
-            case "L":
-                type_name = "bigint";
-                obj = BigInteger.Parse(value);
-                break;
+        case "l":
+        case "L":
+            type_name = "bigint";
+            obj = BigInteger.Parse(value.Substring(0, value.Length - 1));
+            break;
 
-            case "f":
-            case "F":
-            {
-                type_name = "float";
-                float f;
-                if(float.TryParse(value, out f))
-                    obj = f;
-                else
-                    SemErr("Invalid float representation!");
-                break; 
-            }
+        case "f":
+        case "F":
+        {
+            type_name = "float";
+            float f;
+            if(float.TryParse(value.Substring(0, value.Length - 1), out f))
+                obj = f;
+            else
+                SemErr("Invalid float representation!");
+            break; 
+        }
 
-            default:
-                throw new InvalidOperationException("Unreachable!");
-            }
-        }else{
+        default:
+        {
             double d;
             int i;
-            if(double.TryParse(value, out d)){
-                obj = d;
-                type_name = "double";
-            }else if(int.TryParse(value, out i)){
+            if(int.TryParse(value, out i)){
                 obj = i;
                 type_name = "int";
+            }else if(double.TryParse(value, out d)){
+                obj = d;
+                type_name = "double";
             }else{
                 SemErr("Unknown sequence for numeric literals! Make sure that you write a number!");
             }
+            break;
+        }
         }
 
         return Expression.MakeConstant(type_name, obj, loc);
@@ -237,7 +229,8 @@ CHARACTERS
   cr  = '\r'.
   lf  = '\n'.
   tab = '\t'.
-  quotedLetter = ANY - '"'.
+  quotedStringLetter = ANY - '"'.
+  quotedLetter = ANY - '\''.
   dot = '.'.
 
 TOKENS
@@ -254,14 +247,16 @@ TOKENS
   comma = ','.
   dot = '.'.
   ident  = (letter | '_') {'_' | letter | digit}.
-  integer = digit {digit}
+  integer = ( digit {digit} ['u' | 'U' | 'l' | 'L']
   			| digit {digit} CONTEXT("..")
-            | digit {digit} CONTEXT("...").
-  float = digit {digit} dot {digit} [('e' | 'E') ['+' | '-'] digit {digit}]
-  		  | [digit {digit}] dot digit {digit} [('e' | 'E') ['+' | '-'] digit {digit}].
+            | digit {digit} CONTEXT("...")
+            ).
+  float = ( digit {digit} dot {digit} [('e' | 'E') ['+' | '-'] digit {digit}]
+  		  | [digit {digit}] dot digit {digit} [('e' | 'E') ['+' | '-'] digit {digit}]
+          ) ['f' | 'F'].
   hex_digit = '0' ('x' | 'X') hex_letter {hex_letter}.
-  string_literal = '"' {quotedLetter} '"'.
-  keyword_in = "in".
+  character_literal = '\'' [quotedLetter] '\''.
+  string_literal = '"' {quotedStringLetter} '"'.
   keyword_for = "for".
   keyword_let = "let".
   keyword_var = "var".
@@ -284,6 +279,9 @@ Expresso                    		(. ExpressoAst module_decl = null; .)
                                         }
                                         catch(ParserException pe){
                                             SemanticError(pe.Message, pe.Objects);
+                                        }
+                                        catch(Exception e){
+                                            SemErr(e.Message);
                                         }
   										this.TopmostAst = module_decl;	//Currently there is not so much code out there, though...
   									.).
@@ -425,13 +423,13 @@ FieldDecl<out EntityDeclaration field, Modifiers modifiers>
   VarDef<out name, out type, out rhs> (.  ident = AstNode.MakeIdentifier(name, type);
                                           idents.Add(ident);
                                           exprs.Add(rhs);
-                                          Symbols.AddSymbol(name, type);
+                                          Symbols.AddSymbol(name, ident);
                                       .)  
   { ','					 		
     VarDef<out name, out type, out rhs> (. ident = AstNode.MakeIdentifier(name, type);
                                            idents.Add(ident);
                                            exprs.Add(rhs);
-                                           Symbols.AddSymbol(name, type);
+                                           Symbols.AddSymbol(name, ident);
                                         .)
   }								       (. field = EntityDeclaration.MakeField(idents, exprs, modifiers, start_loc, CurrentLocation); .).
 /*------------------------------------------------------------------------*/
@@ -480,6 +478,7 @@ SimpleStmt<out Statement stmt>		(. stmt = null; BlockStatement block = null; .)
 =	IF(la.kind == _lcurly)	/* For DictMaker and Block conflict. Since DictMaker should not be a statement, we always choose the first(Block).*/
     Block<out block>                (. stmt = block; .)
   | ExprStmt<out stmt>
+  | VarDeclStmt<out stmt>
   | ReturnStmt<out stmt>
   | BreakStmt<out stmt>
   | ContinueStmt<out stmt>
@@ -543,8 +542,7 @@ ExprStmt<out Statement stmt>			(.  SequenceExpression lhs = null, seq = null;
 											OperatorType op_type = OperatorType.None;
 										.)
 =
-  ( VarDeclStmt<out stmt>
-  | LValueList<out lhs>
+  LValueList<out lhs>
   { ( AugAssignOpe<ref op_type>
     | '='
     )
@@ -558,7 +556,6 @@ ExprStmt<out Statement stmt>			(.  SequenceExpression lhs = null, seq = null;
   											else
   												stmt = Statement.MakeAssignment(lhs, seq, start_loc, CurrentLocation);
   										.)
-  )
   SYNC ';' 								(.  if(stmt == null)
   												stmt = Statement.MakeExprStmt(lhs, start_loc, CurrentLocation);
   										.).
@@ -671,14 +668,14 @@ VarDeclStmt<out Statement stmt>         (.  string name; AstType type; Expressio
                                             idents.Add(ident);
   						 			        exprs.Add(rhs);
   						 			        rhs = null;
-                                            Symbols.AddSymbol(name, type);
+                                            Symbols.AddSymbol(name, ident);
   						 		        .)
   { WEAK ','
     VarDef<out name, out type, out rhs>(. ident = AstNode.MakeIdentifier(name, type);
                                           idents.Add(ident);
   									      exprs.Add(rhs);
   									      rhs = null;
-                                          Symbols.AddSymbol(name, type);
+                                          Symbols.AddSymbol(name, ident);
   								       .)
   }								       (. var modifiers = is_const ? ExpressoModifiers.Immutable : ExpressoModifiers.None;
                                           stmt = Statement.MakeVarDecl(idents, exprs, modifiers, start_loc, CurrentLocation);
@@ -757,7 +754,7 @@ ExpressionPattern<out PatternConstruct pattern> (. Expression expr, upper = null
                                                 .)
 =
   Literal<out expr>                                
-  [ RangeOperator<out upper_inclusive>          (. loc = CurrentLocation; .)
+  [ RangeOperator<ref upper_inclusive>          (. loc = CurrentLocation; .)
     integer                                     (. upper = Expression.MakeConstant("int", t.val, loc); .)
     [ ':'                                       (. loc = CurrentLocation; .)
       integer                                   (. step = Expression.MakeConstant("int", t.val, loc); .)
@@ -782,7 +779,9 @@ WildcardPattern<out PatternConstruct pattern>
 /*------------------------------------------------------------------------*/
 IdentifierPattern<out PatternConstruct pattern> (. PatternConstruct inner = null; string name; .)
 =
-  ident                             (. name = t.val; .)
+  ident                             (. name = t.val;
+                                       Symbols.AddSymbol(name, new PlaceholderType(TextLocation.Empty));
+                                    .)
   [ '@'
     LhsPattern<out inner>
   ]                                 (. pattern = PatternConstruct.MakeIdentifierPattern(name, inner); .).
@@ -813,7 +812,7 @@ DestructuringPattern<out PatternConstruct pattern>
   | '['
     [ PatternItem<out pattern>              (. patterns.Add(pattern); .)
     ]
-    { ','
+    { IF(NotFinalComma()) WEAK ','
       PatternItem<out pattern>              (. patterns.Add(pattern); .)
     }
     [ ','
@@ -866,19 +865,19 @@ IntSeqExpr<out Expression expr>     (. Expression start = null, end = null, step
                                        bool upper_inclusive = true;
                                     .)
 =
-  BitOr<out start>
-  [ RangeOperator<out upper_inclusive>
+  BitOr<out start>                  (. expr = start; .)
+  [ RangeOperator<ref upper_inclusive>
     BitOr<out end>
     [ ':'
       BitOr<out step>
-    ]
-  ]                                 (. if(step == null) step = Expression.MakeConstant("int", 1, TextLocation.Empty);
+    ]                               (. if(step == null) step = Expression.MakeConstant("int", 1, TextLocation.Empty);
                                        expr = Expression.MakeIntSeq(start, end, step, upper_inclusive);
-                                    .).
+                                    .)
+  ].
 /*------------------------------------------------------------------------*/
-RangeOperator<out bool upper_inclusive> (. upper_inclusive = false; .)
+RangeOperator<ref bool upper_inclusive>
 =
-  ( ".."
+  ( ".."                                (. upper_inclusive = false; .)
   | "..."                               (. upper_inclusive = true; .)
   ).
 /*------------------------------------------------------------------------*/
@@ -1028,7 +1027,7 @@ Atom<out Expression expr>			(. var exprs = new List<Expression>(); expr = null; 
   | '['
     [SequenceMaker<out expr>]
     SYNC ']'						(.  if(expr == null)
-    										expr = Expression.MakeSeqInitializer("array", new List<Expression>());
+    										expr = Expression.MakeSeqInitializer("array", null);
     								.)
   | '{'
     [DictMaker<out expr>]
@@ -1101,21 +1100,17 @@ CompIf<out ComprehensionIter expr>		(. Expression tmp; ComprehensionIter body = 
   OrTest<out tmp>
   [CompIter<out body>]					(. expr = Expression.MakeCompIf(tmp, body); .).
 /*------------------------------------------------------------------------*/
-Literal<out Expression expr>	(. expr = null; string tmp, suffix = null;
+Literal<out Expression expr>	(. expr = null; string tmp;
                                    var start_loc = CurrentLocation;
                                 .)
 = 
-  integer						(. tmp = t.val; .)
-  [ 'l'							(. suffix = t.val; .)
-  | 'L'							(. suffix = t.val; .)
-  | 'u'                         (. suffix = t.val; .)
-  | 'U'                         (. suffix = t.val; .)
-  ]								(. expr = CreateLiteral(tmp, suffix, start_loc); .)
+  integer						(. expr = CreateLiteral(t.val, start_loc); .)
   | hex_digit					(. expr = Expression.MakeConstant("int", Convert.ToInt32(t.val, 16), start_loc); .)
-  | float						(. tmp = t.val; .)
-  [ 'f'                         (. suffix = t.val; .)
-  | 'F'                         (. suffix = t.val; .)
-  ]                             (. expr = CreateLiteral(tmp, suffix, start_loc); .)
+  | float						(. expr = CreateLiteral(t.val, start_loc); .)
+  | character_literal           (. tmp = t.val;
+                                   tmp = tmp.Substring(1, tmp.Length - 2);
+                                   expr = Expression.MakeConstant("char", tmp, start_loc);
+                                .)
   | string_literal				(. tmp = t.val;
   								   tmp = tmp.Substring(1, tmp.Length - 2);
   								   expr = Expression.MakeConstant("string", tmp, start_loc);

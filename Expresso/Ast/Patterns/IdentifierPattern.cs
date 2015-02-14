@@ -9,11 +9,17 @@ namespace Expresso.Ast
     /// </summary>
     public class IdentifierPattern : PatternConstruct
     {
+        /// <summary>
+        /// The identifier.
+        /// </summary>
         public Identifier Identifier{
             get{return GetChildByRole(Roles.Identifier);}
             set{SetChildByRole(Roles.Identifier, value);}
         }
 
+        /// <summary>
+        /// With '@' mark followed, that identifier captures the immediately following pattern.
+        /// </summary>
         public PatternConstruct InnerPattern{
             get{return GetChildByRole(Roles.Pattern);}
             set{SetChildByRole(Roles.Pattern, value);}

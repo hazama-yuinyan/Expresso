@@ -84,9 +84,11 @@ namespace Expresso.CodeGen
         /// Additional temporary expressions.
         /// Used in expressions that need complicated transformation.
         /// Usually set to null. Not being null indicates that the child nodes should add their results
-        /// to this property.
+        /// to this property(usually parameters).
+        /// Its element type is object because some expression types aren't derived from
+        /// <see cref="System.Linq.Expressions.Expression"/>.
         /// </summary>
-        public List<System.Linq.Expressions.Expression> Additionals{
+        public List<object> Additionals{
             get; set;
         }
     }

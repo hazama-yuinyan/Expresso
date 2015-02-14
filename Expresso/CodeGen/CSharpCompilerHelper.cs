@@ -82,8 +82,35 @@ namespace Expresso.CodeGen
 
             var simple = astType as SimpleType;
             if(simple != null){
+                Type type = null;
+                foreach(var asm in AppDomain.CurrentDomain.GetAssemblies()){
+                    type = asm.GetType(simple.Identifier);
+                    if(type != null)
+                        break;
+                }
 
+                if(!simple.TypeArguments.IsEmpty){
+                    var type_args =
+                        from ta in simple.TypeArguments
+                        select GetNativeType(ta);
+
+                    var substituted = type.MakeGenericType(type_args.ToArray());
+                    if(substituted == null){
+                        throw new EmitterException("Type `{0}` is expected to have {1} type arguments, but it acutually has {2}",
+                            type, type_args.Count(), type.GenericTypeArguments.Length
+                        );
+                    }
+
+                    return substituted;
+                }
             }
+
+            var member = astType as MemberType;
+            if(member != null){
+                return null;
+            }
+
+            throw new EmitterException("Unknown AstType!");
         }
 
         public static string InterpolateString(string original)
@@ -91,6 +118,11 @@ namespace Expresso.CodeGen
             return InterpolateStringRegexp.Replace(original, m => {
                 return m.Groups[1].Value;
             });
+        }
+
+        public static string FormatString(string str, params object[] objs)
+        {
+            return "";
         }
 
         public static Type GuessTupleType(IEnumerable<Type> elementTypes)

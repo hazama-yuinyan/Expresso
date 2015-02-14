@@ -1,13 +1,20 @@
-﻿Expresso primarily aims to be an alternative PHP, or more precisely another Java.
-Even though it's a type-strict language, it looks rather in type-free way.
+﻿* The Expresso tutorial
+** Preface
+Expresso primarily aims to be a programming language for education, or in other words another Pascal. And therefore Expresso has two concepts. Expresso aims to be a "easy-to-write" and "expressive" programming language.
+Even though we heavily put focus on syntax and the grammar, its policy reads "Easy for beginners, elegant for intermediates" meaning that it's easy for beginners to read and write, and still it has lots of rich features that advanced programmers can take advantage of.
+Even though it's a type-strict language, it looks rather in type-free way thanks to the very powerful type inference system.
+
+** Hello, Expresso world!
+OK, enough with pre-words. By far, we are all armed enough with concepts, goals and something like that so let's get started.
 First of all, we starts from the traditional "hello world" program.
-You may expect it to be a one-liner program, but unfortunately it's two liners like the following:
+You may expect it to be a one-liner program considering the fact that I've mentioned Expresso looks rather like a scripting language, but unfortunately it's two liners like the following:
 ```expresso
 module main;
 def main(){
     println("Hello, world!");
 }
 ```
+This reads: Let's write an Expresso program where we're defining a module named "main" and a function also called "main". The program will start executing from the "main" function and in it we're outputing...
 Every Expresso program consists of at least one module and every module must be explicitly named.
 
 The main policy for Expresso is that "Programming languages must allow programmers to write what it does, not how it does something". In traditional C, we often end up writing something like the following:
@@ -36,7 +43,7 @@ By contrast, variable declarations introduce boxes that have certain shapes, and
 filled with anything at any time as long as the shapes match.
 
 ** Statements
-Like most curly-brace-and-semicolon-delimited languages, Expresso employs statements as its first language constructs.
+Like most curly-brace-and-semicolon-delimited languages, Expresso employs statements for its first language constructs.
 
 ** Expressions
 

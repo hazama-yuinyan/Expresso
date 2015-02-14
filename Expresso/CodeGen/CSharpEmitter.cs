@@ -43,6 +43,8 @@ namespace Expresso.CodeGen
         List<ExprTree.LabelTarget> break_targets = new List<ExprTree.LabelTarget>();
         List<ExprTree.LabelTarget> continue_targets = new List<ExprTree.LabelTarget>();
 
+        int sibling_count = 0;
+
         static IEnumerable<CSharpExpr> MakeIterableAssignments(IEnumerable<CSharpExpr> variables,
             ExprTree.MemberExpression property)
         {
@@ -53,6 +55,23 @@ namespace Expresso.CodeGen
             }
 
             return result;
+        }
+
+        void DescendScope()
+        {
+            symbol_table = symbol_table.Children[0];
+            sibling_count = 1;
+        }
+
+        void AscendScope()
+        {
+            symbol_table = symbol_table.Parent;
+            sibling_count = 0;
+        }
+
+        void ProceedToNextSibling()
+        {
+            symbol_table = symbol_table.Parent.Children[sibling_count++];
         }
 
         #region IAstWalker implementation
@@ -86,6 +105,7 @@ namespace Expresso.CodeGen
 
         public CSharpExpr VisitBlock(BlockStatement block, CSharpEmitterContext context)
         {
+            DescendScope();
             var contents = new List<CSharpExpr>();
             foreach(var stmt in block.Statements){
                 var tmp = stmt.AcceptWalker(this, context);
@@ -93,8 +113,8 @@ namespace Expresso.CodeGen
             }
 
             var variables = ConvertSymbolsToParameters();
-
-            return CSharpExpr.Block(variables, contents);
+            AscendScope();
+            return CSharpExpr.Block(contents.Last().Type, variables, contents);
         }
 
         public CSharpExpr VisitBreakStatement(BreakStatement breakStmt, CSharpEmitterContext context)
@@ -129,7 +149,8 @@ namespace Expresso.CodeGen
 
         public CSharpExpr VisitForStatement(ForStatement forStmt, CSharpEmitterContext context)
         {
-            var variables = forStmt.Left.AcceptWalker(this, context);
+            DescendScope();
+            forStmt.Left.AcceptWalker(this, context);
             var iterator = forStmt.Target.AcceptWalker(this, context);
 
             var guid = new Guid();
@@ -141,7 +162,7 @@ namespace Expresso.CodeGen
             // Here, `body` represents just the body block itself
             // In a for statement, we must move the iterator a step forward
             // and assign the result to inner-scope variables
-            var body = forStmt.Body.AcceptWalker(this, context);
+            var real_body = forStmt.Body.AcceptWalker(this, context);
 
             var iterator_type = typeof(IEnumerator<>).MakeGenericType(iterator.Type);
             var move_method = iterator_type.GetMethod("MoveNext");
@@ -149,25 +170,35 @@ namespace Expresso.CodeGen
             var check_failure = CSharpExpr.IfThen(CSharpExpr.IsFalse(move_call), CSharpExpr.Goto(break_target));
             var current_property = iterator_type.GetProperty("Current");
 
+            var variables = ConvertSymbolsToParameters();
             var assignments = MakeIterableAssignments(variables, CSharpExpr.Property(iterator, current_property));
             var parameters = ConvertSymbolsToParameters();
-            var block = CSharpExpr.Block(parameters, assignments);
-            var loop = CSharpExpr.Loop(block, break_target, continue_target);
+
+            var body_exprs = new List<CSharpExpr>{check_failure};
+            var body = CSharpExpr.Block(parameters,
+                body_exprs.Concat(assignments)
+                    .Concat(((ExprTree.BlockExpression)real_body).Expressions)
+                );
+            var loop = CSharpExpr.Loop(body, break_target, continue_target);
             break_targets.RemoveAt(break_targets.Count - 1);
             continue_targets.RemoveAt(continue_targets.Count - 1);
+            AscendScope();
 
             return loop;
         }
 
         public CSharpExpr VisitIfStatement(IfStatement ifStmt, CSharpEmitterContext context)
         {
+            DescendScope();
             var cond = ifStmt.Condition.AcceptWalker(this, context);
             var true_block = ifStmt.TrueBlock.AcceptWalker(this, context);
 
             if(ifStmt.FalseBlock.IsNull){
+                AscendScope();
                 return CSharpExpr.IfThen(cond, true_block);
             }else{
                 var false_block = ifStmt.FalseBlock.AcceptWalker(this, context);
+                AscendScope();
                 return CSharpExpr.IfThenElse(cond, true_block, false_block);
             }
         }
@@ -193,6 +224,8 @@ namespace Expresso.CodeGen
             var target_var = CSharpExpr.Parameter(target.Type);
             context.TemporaryVariable = target_var;
             context.ContextExpression = null;
+            DescendScope();
+
             foreach(var clause in matchStmt.Clauses){
                 var tmp = clause.AcceptWalker(this, context);
                 if(context.ContextExpression != null){
@@ -371,7 +404,14 @@ namespace Expresso.CodeGen
                 return value;
             }else{
                 // In a dictionary literal, the key can be any expression that is evaluated
-                // to a hasable object.
+                // to a hashable object.
+                var key_expr = keyValue.KeyExpression.AcceptWalker(this, context);
+                var value_expr = keyValue.Value.AcceptWalker(this, context);
+                if(context.TargetType == null)
+                    context.TargetType = typeof(Dictionary<,>).MakeGenericType(key_expr.Type, value_expr.Type);
+
+                var add_method = context.TargetType.GetMethod("Add");
+                context.Additionals.Add(CSharpExpr.ElementInit(add_method, key_expr, value_expr));
                 return null;
             }
         }
@@ -432,8 +472,8 @@ namespace Expresso.CodeGen
 
         public CSharpExpr VisitNewExpression(NewExpression newExpr, CSharpEmitterContext context)
         {
-            var args = newExpr.CreationExpression.AcceptWalker(this, context) as ExprTree.BlockExpression;
-            return CSharpExpr.New(context.Constructor, args.Expressions);
+            // On .NET environment, we have no means of creating object instances on the stack.
+            return newExpr.CreationExpression.AcceptWalker(this, context);
         }
 
         public CSharpExpr VisitPathExpression(PathExpression pathExpr, CSharpEmitterContext context)
@@ -464,16 +504,22 @@ namespace Expresso.CodeGen
                         throw new EmitterException("Module `{0}` isn't defined in Assembly `{1}`", ident.Name, context.Assembly.FullName);
                 }else if(context.TargetType == null){
                     var type = context.Assembly.GetType(ident.Name);
-                    if(type != null)
+                    if(type != null){
                         context.TargetType = type;
-                    else
+                        if(context.Constructor == null)
+                            context.Constructor = type.GetConstructors().Last();
+                    }else{
                         throw new EmitterException("Type `{0}` isn't defined in Assembly `{1}`", ident.Name, context.Assembly.FullName);
+                    }
                 }else{
                     var type = context.TargetType.GetNestedType(ident.Name);
-                    if(type != null)
+                    if(type != null){
                         context.TargetType = type;
-                    else
+                        if(context.Constructor == null)
+                            context.Constructor = type.GetConstructors().Last();
+                    }else{
                         throw new EmitterException("A nested type `{0}` isn't defined in Type `{1}`", ident.Name, context.TargetType.FullName);
+                    }
                 }
             }
 
@@ -490,7 +536,7 @@ namespace Expresso.CodeGen
         public CSharpExpr VisitObjectCreationExpression(ObjectCreationExpression creation,
             CSharpEmitterContext context)
         {
-            var args = new CSharpExpr[creation.Items.Count];
+            var args = new List<CSharpExpr>(creation.Items.Count);
             context.Constructor = null;
             creation.Path.AcceptWalker(this, context);
             if(context.Constructor != null)
@@ -498,10 +544,11 @@ namespace Expresso.CodeGen
 
             var formal_params = context.Constructor.GetParameters();
             foreach(var pair in creation.Items){
-                var key = ((PathExpression)pair.KeyExpression).AsIdentifier.Name;
-                var arg = pair.Value.AcceptWalker(this, context);
+                context.Field = null;
+                var value_expr = pair.AcceptWalker(this, context);
 
                 int index = 0;
+                var key = context.Field.Name;
                 if(!formal_params.Any(param => {
                     if(param.Name == key){
                         return true;
@@ -513,11 +560,10 @@ namespace Expresso.CodeGen
                     throw new EmitterException(@"Can not create an instance with constructor `{0}`
 because it doesn't have field named `{1}`", creation.Path, key);
                 }
-                args[index] = arg;
+                args[index] = value_expr;
             }
-            // Just wrap arg expressions in a block
-            // it isn't ideal...
-            return CSharpExpr.Block(args);
+
+            return CSharpExpr.New(context.Constructor, args);
         }
 
         public CSharpExpr VisitSequenceInitializer(SequenceInitializer seqInitializer,
@@ -525,6 +571,10 @@ because it doesn't have field named `{1}`", creation.Path, key);
         {
             var seq_type = CSharpCompilerHelper.GetContainerType(seqInitializer.ObjectType as PrimitiveType);
             var exprs = new List<CSharpExpr>();
+            // If this node represents a dictionary literal
+            // context.Constructor will get set the appropriate constructor method.
+            context.Constructor = null;
+            context.Additionals = new List<object>();
             foreach(var item in seqInitializer.Items){
                 var tmp = item.AcceptWalker(this, context);
                 exprs.Add(tmp);
@@ -537,7 +587,14 @@ because it doesn't have field named `{1}`", creation.Path, key);
                 var new_expr = CSharpExpr.New(constructor);
                 return CSharpExpr.ListInit(new_expr, exprs);
             }else if(seq_type == typeof(Dictionary<,>)){
-                var constructor = seq_type.MakeGenericType();
+                var elems = context.Additionals.Cast<ExprTree.ElementInit>();
+                var first_elem = elems.FirstOrDefault();
+                var key_arg = first_elem.Arguments[0];
+                var value_arg = first_elem.Arguments[1];
+                var dict_type = seq_type.MakeGenericType(key_arg.Type, value_arg.Type);
+                var constructor = dict_type.GetConstructor(new []{typeof(void)});
+                var new_expr = CSharpExpr.New(constructor);
+                return CSharpExpr.ListInit(new_expr, elems);
             }else if(seq_type == typeof(Tuple)){
                 var child_types = 
                     from e in exprs
@@ -593,6 +650,7 @@ because it doesn't have field named `{1}`", creation.Path, key);
             //       }else{
             //           Console.Write("else");
             //       }
+            DescendScope();
             IEnumerable<ExprTree.ParameterExpression> destructuring_exprs = null;
             CSharpExpr res = null;
             foreach(var pattern in matchClause.Patterns){
@@ -626,6 +684,7 @@ because it doesn't have field named `{1}`", creation.Path, key);
             if(destructuring_exprs != null)
                 body = CSharpExpr.Block(destructuring_exprs, body);
 
+            AscendScope();
             return res == null ? null : CSharpExpr.IfThen(res, body);
         }
 
@@ -751,7 +810,7 @@ because it doesn't have field named `{1}`", creation.Path, key);
         public CSharpExpr VisitFunctionDeclaration(FunctionDeclaration funcDecl,
             CSharpEmitterContext context)
         {
-            context.Additionals = new List<CSharpExpr>();
+            context.Additionals = new List<object>();
             var param_types = new List<Type>();
             foreach(var param in funcDecl.Parameters){
                 var tmp = param.AcceptWalker(this, context);
@@ -875,6 +934,16 @@ because it doesn't have field named `{1}`", creation.Path, key);
             if(context.Additionals != null)
                 context.Additionals.Add(ident);
 
+            if(context.Field == null){
+                var field = context.TargetType.GetField(identifierPattern.Identifier.Name);
+                if(field == null){
+                    throw new EmitterException("Type `{0}` doesn't have the field `{1}`",
+                        context.TargetType, identifierPattern.Identifier.Name
+                    );
+                }
+                context.Field = field;
+            }
+
             return ident;
         }
 
@@ -883,10 +952,7 @@ because it doesn't have field named `{1}`", creation.Path, key);
         {
             // ValueBindingPatterns can be complex because they introduce new variables into the scope
             // and they have nothing to do with the value being matched.
-            // NOTE: In theory and actually by the grammar, ValueBindingPatterns can arise in nested patterns
-            // but we ignore them other than the outermost one
-            // because nested binding patterns can easliy become quite complex.
-            context.Additionals = new List<CSharpExpr>();
+            context.Additionals = new List<object>();
             var pattern = valueBindingPattern.Pattern.AcceptWalker(this, context);
             var parameters = context.Additionals.Cast<ExprTree.ParameterExpression>();
             context.ContextExpression = CSharpExpr.Block(parameters, context.ContextExpression);
@@ -900,16 +966,24 @@ because it doesn't have field named `{1}`", creation.Path, key);
             var collection_type = CSharpCompilerHelper.GetContainerType(collectionPattern.CollectionType as PrimitiveType);
             CSharpExpr res = null;
             int i = 0;
+            var block = new List<CSharpExpr>();
             foreach(var pattern in collectionPattern.Items){
                 var tmp = pattern.AcceptWalker(this, context);
                 var index = CSharpExpr.Constant(i++);
                 var elem_access = CSharpExpr.ArrayIndex(context.TemporaryVariable, index);
+                var param = tmp as ExprTree.ParameterExpression;
+                if(param != null){
+                    var assignment = CSharpExpr.Assign(param, elem_access);
+                    block.Add(assignment);
+                }
+
                 if(res == null)
                     res = tmp;
                 else
                     res = CSharpExpr.AndAlso(res, elem_access);
             }
 
+            context.ContextExpression = CSharpExpr.Block(block);
             return CSharpExpr.TypeIs(context.TemporaryVariable, collection_type);
         }
 
@@ -922,15 +996,12 @@ because it doesn't have field named `{1}`", creation.Path, key);
 
             var parameters = new List<CSharpExpr>();
             foreach(var pattern in destructuringPattern.Items){
+                context.Field = null;
                 var param = pattern.AcceptWalker(this, context) as ExprTree.ParameterExpression;
-                var field = type.GetField(param.Name);
-                if(field == null)
-                    throw new EmitterException("Type `{0}` doesn't have field `{1}`.", type, param.Name);
-
-                parameters.Add(CSharpExpr.Assign(param, CSharpExpr.Field(context.TemporaryVariable, field)));
+                parameters.Add(CSharpExpr.Assign(param, CSharpExpr.Field(context.TemporaryVariable, context.Field)));
             }
 
-            context.Additionals = parameters;
+            context.ContextExpression = CSharpExpr.Block(parameters);
             return CSharpExpr.TypeIs(context.TemporaryVariable, type);
         }
 
@@ -945,15 +1016,15 @@ because it doesn't have field named `{1}`", creation.Path, key);
                 var param = tmp as ExprTree.ParameterExpression;
                 if(param != null){
                     var elem_name = "Item" + i.ToString();
-                    exprs.Add(CSharpExpr.Assign(param, CSharpExpr.Field(context.TemporaryVariable, elem_name)));
+                    exprs.Add(CSharpExpr.Assign(param, CSharpExpr.PropertyOrField(context.TemporaryVariable, elem_name)));
                 }
                 element_types.Add(tmp.Type);
                 ++i;
             }
 
             var tuple_type = CSharpCompilerHelper.GuessTupleType(element_types);
-            var context_expr = context.ContextExpression;
-
+            context.ContextExpression = CSharpExpr.Block(exprs);
+            return CSharpExpr.TypeIs(context.TemporaryVariable, tuple_type);
         }
 
         public CSharpExpr VisitExpressionPattern(ExpressionPattern exprPattern,
@@ -1119,6 +1190,7 @@ because it doesn't have field named `{1}`", creation.Path, key);
             // taking transformation into account.
 
             // See if the left-hand-side represents destructuring or not
+            return null;
         }
 
         IEnumerable<ExprTree.ParameterExpression> ConvertSymbolsToParameters()

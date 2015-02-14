@@ -144,10 +144,10 @@ namespace Expresso.Ast
                 select ta.ToTypeReference(lookupMode, interningProvider);
 
             string identifier = interningProvider.Intern(Identifier);
-            if(!type_args.Any() || string.IsNullOrEmpty(identifier)){
+            /*if(!type_args.Any() || string.IsNullOrEmpty(identifier)){
                 // empty SimpleType is used for typeof(List<>)
                 return SpecialType.UnboundTypeArgument;
-            }
+            }*/
 
             return null; //TODO: implement it
         }

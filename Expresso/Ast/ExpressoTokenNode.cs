@@ -18,7 +18,7 @@ namespace Expresso.Ast
                 }
             }
 
-            public NullExpressoTokenNode() : base(TextLocation.Empty, null)
+            public NullExpressoTokenNode() : base(TextLocation.Empty, TokenRole.NullToken)
             {
             }
 

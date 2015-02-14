@@ -12,13 +12,14 @@ namespace Expresso.Ast
     {
         internal static readonly List<string> Tokens = new List<string>();
         internal static readonly List<int> TokenLengths = new List<int>();
+        public static readonly TokenRole NullToken = new TokenRole("");
         internal readonly uint TokenIndex;
 
         static TokenRole()
         {
             // null token
-            Tokens.Add("");
-            TokenLengths.Add(0);
+            //Tokens.Add("");
+            //TokenLengths.Add(0);
         }
 
         /// <summary>
@@ -35,12 +36,12 @@ namespace Expresso.Ast
             get; private set;
         }
 
-        public TokenRole(string token) : base(token, ExpressoTokenNode.Null)
+        public TokenRole(string token) : base(token)
         {
             Token = token;
             Length = token.Length;
 
-            int index = Tokens.FindIndex((input) => input == token);
+            int index = Tokens.FindIndex(input => input == token);
             if(index < 0){
                 TokenIndex = (uint)Tokens.Count;
                 Tokens.Add(token);

@@ -326,7 +326,7 @@ namespace Expresso.Ast
                 throw new ArgumentException("Can not add a node to itself as a child", "child");
 
             if(child.parent != null)
-                throw new ArgumentException("Node is already used in another truee.", "child");
+                throw new ArgumentException("Node is already used in another tree.", "child");
 
             if(child.IsFrozen)
                 throw new ArgumentException("Can not add a frozen node.", "child");

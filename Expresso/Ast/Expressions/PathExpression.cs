@@ -12,6 +12,38 @@ namespace Expresso.Ast
     /// </summary>
     public class PathExpression : Expression
     {
+        #region Null
+        public static new PathExpression Null = new NullPathExpression();
+        sealed class NullPathExpression : PathExpression
+        {
+            public override bool IsNull{
+                get{
+                    return true;
+                }
+            }
+
+            public override void AcceptWalker(IAstWalker walker)
+            {
+                walker.VisitNullNode(this);
+            }
+
+            public override TResult AcceptWalker<TResult>(IAstWalker<TResult> walker)
+            {
+                return walker.VisitNullNode(this);
+            }
+
+            public override TResult AcceptWalker<TResult, TData>(IAstWalker<TData, TResult> walker, TData data)
+            {
+                return walker.VisitNullNode(this, data);
+            }
+
+            internal protected override bool DoMatch(AstNode other, ICSharpCode.NRefactory.PatternMatching.Match match)
+            {
+                return other == null || other.IsNull;
+            }
+        }
+        #endregion
+
         /// <summary>
         /// Gets the path items.
         /// </summary>
@@ -33,6 +65,10 @@ namespace Expresso.Ast
         /// </remarks>
         public Identifier AsIdentifier{
             get{return Items.FirstOrNullObject();}
+        }
+
+        protected PathExpression()
+        {
         }
 
         public PathExpression(Identifier ident)

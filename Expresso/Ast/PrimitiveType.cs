@@ -13,7 +13,8 @@ namespace Expresso.Ast
     /// </summary>
     public class PrimitiveType : AstType
     {
-        public static readonly TokenRole KeywordRole = new TokenRole("keyword");
+        public static readonly Role<ExpressoTokenNode> KeywordRole =
+            new Role<ExpressoTokenNode>("Keyword", ExpressoTokenNode.Null);
 
         public ExpressoTokenNode KeywordToken{
             get{return GetChildByRole(KeywordRole);}

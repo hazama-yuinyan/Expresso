@@ -1,9 +1,8 @@
 using System;
 using System.Collections.Generic;
 
-using Expresso.Interpreter;
+using Expresso.Ast;
 using Expresso.Runtime.Exceptions;
-using Expresso.Runtime.Operations;
 
 namespace Expresso.Terminal
 {
@@ -19,16 +18,11 @@ Usage: expresso file_name");
 			}
 			
 			var file_name = args[0];
-			var ast = ExpressoOps.ParseAndBind(file_name);
-			var interp = new Expresso.Interpreter.Interpreter();
 
-			Expresso.Interpreter.Interpreter.MainModule = ast;
-			interp.CurrentOpenedSourceFileName = file_name;
 			try{
-				interp.Run(new List<object>(args));
 			}
-			catch(PanickedException eval_ex){
-				Console.WriteLine(eval_ex.Message);
+            catch(PanickedException panicked){
+				Console.WriteLine(panicked.Message);
 			}
 			catch(Exception e){
 				Console.WriteLine(e.Message);

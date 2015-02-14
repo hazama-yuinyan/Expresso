@@ -10,6 +10,38 @@ namespace Expresso.Ast
     /// </summary>
     public class BlockStatement : Statement
     {
+        #region Null
+        public static new BlockStatement Null = new NullBlockStatement();
+        sealed class NullBlockStatement : BlockStatement
+        {
+            public override bool IsNull{
+                get{
+                    return true;
+                }
+            }
+
+            public override void AcceptWalker(IAstWalker walker)
+            {
+                walker.VisitNullNode(this);
+            }
+
+            public override TResult AcceptWalker<TResult>(IAstWalker<TResult> walker)
+            {
+                return walker.VisitNullNode(this);
+            }
+
+            public override TResult AcceptWalker<TResult, TData>(IAstWalker<TData, TResult> walker, TData data)
+            {
+                return walker.VisitNullNode(this, data);
+            }
+
+            internal protected override bool DoMatch(AstNode other, ICSharpCode.NRefactory.PatternMatching.Match match)
+            {
+                return other == null || other.IsNull;
+            }
+        }
+        #endregion
+
         /// <summary>
         /// ブロックの中身の文。
 		/// The body statements
@@ -17,6 +49,10 @@ namespace Expresso.Ast
         public AstNodeCollection<Statement> Statements{
             get{return GetChildrenByRole(Roles.EmbeddedStatement);}
 		}
+
+        protected BlockStatement()
+        {
+        }
 
         public BlockStatement(IEnumerable<Statement> stmts, TextLocation start, TextLocation end)
             : base(start, end)
