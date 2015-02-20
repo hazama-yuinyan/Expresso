@@ -28,7 +28,7 @@ namespace Expresso.Ast
         public PrimitiveType(string keyword, TextLocation location)
             : base(location, new TextLocation(location.Line, location.Column + keyword.Length))
         {
-            KeywordToken = new ExpressoTokenNode(location, new TokenRole(keyword));
+            KeywordToken = new ExpressoTokenNode(location, new TokenRole(keyword, ExpressoTokenNode.Null));
         }
 
         public override void AcceptWalker(IAstWalker walker)

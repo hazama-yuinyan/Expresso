@@ -46,15 +46,13 @@ def testMatch<T>(input (- T)
 	match input {
 	    "abc" => print("Detects a string");
 	    "あかりちゃん" | "akarichan" => print("あかりんかわかわ");
-	    0..10 => print("The value is in the range of 0 to 10");
-        let (x, y) => print("tuple({}, {})", x, y);
-        _ => print("unknown value!");
 	}
 }
 
 def main()
 {
-	let x = 0, y = 1;
+	var x = 0;
+    let y = 1;
 	x += 5;
 	let z = x * y - 1;
 	println("(x, y, z) = {}, {}, {}", x, y, z);

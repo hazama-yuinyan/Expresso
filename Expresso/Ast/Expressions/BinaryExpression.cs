@@ -12,35 +12,34 @@ namespace Expresso.Ast
     /// </summary>
     public class BinaryExpression : Expression
     {
-        public static readonly TokenRole BitwiseAndRole = new TokenRole("&");
-        public static readonly TokenRole BitwiseOrRole = new TokenRole("|");
-        public static readonly TokenRole ConditionalAndRole = new TokenRole("&&");
-        public static readonly TokenRole ConditionalOrRole = new TokenRole("||");
-        public static readonly TokenRole ExclusiveOrRole = new TokenRole("^");
-        public static readonly TokenRole GreaterThanRole = new TokenRole(">");
-        public static readonly TokenRole GreaterThanOrEqualRole = new TokenRole(">=");
-        public static readonly TokenRole EqualityRole = new TokenRole("==");
-        public static readonly TokenRole InEqualityRole = new TokenRole("!=");
-        public static readonly TokenRole LessThanRole = new TokenRole("<");
-        public static readonly TokenRole LessThanOrEqualRole = new TokenRole("<=");
-        public static readonly TokenRole MultiplyRole = new TokenRole("*");
-        public static readonly TokenRole DivideRole = new TokenRole("/");
-        public static readonly TokenRole ModulusRole = new TokenRole("%");
-        public static readonly TokenRole PowerRole = new TokenRole("**");
-        public static readonly TokenRole ShiftLeftRole = new TokenRole("<<");
-        public static readonly TokenRole ShiftRightRole = new TokenRole(">>");
+        public static readonly TokenRole BitwiseOrRole = new TokenRole("|", ExpressoTokenNode.Null);
+        public static readonly TokenRole ConditionalAndRole = new TokenRole("&&", ExpressoTokenNode.Null);
+        public static readonly TokenRole ConditionalOrRole = new TokenRole("||", ExpressoTokenNode.Null);
+        public static readonly TokenRole ExclusiveOrRole = new TokenRole("^", ExpressoTokenNode.Null);
+        public static readonly TokenRole GreaterThanRole = new TokenRole(">", ExpressoTokenNode.Null);
+        public static readonly TokenRole GreaterThanOrEqualRole = new TokenRole(">=", ExpressoTokenNode.Null);
+        public static readonly TokenRole EqualityRole = new TokenRole("==", ExpressoTokenNode.Null);
+        public static readonly TokenRole InEqualityRole = new TokenRole("!=", ExpressoTokenNode.Null);
+        public static readonly TokenRole LessThanRole = new TokenRole("<", ExpressoTokenNode.Null);
+        public static readonly TokenRole LessThanOrEqualRole = new TokenRole("<=", ExpressoTokenNode.Null);
+        public static readonly TokenRole MultiplyRole = new TokenRole("*", ExpressoTokenNode.Null);
+        public static readonly TokenRole DivideRole = new TokenRole("/", ExpressoTokenNode.Null);
+        public static readonly TokenRole ModulusRole = new TokenRole("%", ExpressoTokenNode.Null);
+        public static readonly TokenRole PowerRole = new TokenRole("**", ExpressoTokenNode.Null);
+        public static readonly TokenRole ShiftLeftRole = new TokenRole("<<", ExpressoTokenNode.Null);
+        public static readonly TokenRole ShiftRightRole = new TokenRole(">>", ExpressoTokenNode.Null);
 
         public static readonly Role<Expression> LhsRole = new Role<Expression>("Lhs", Expression.Null);
         public static readonly Role<Expression> RhsRole = new Role<Expression>("Rhs", Expression.Null);
 
-		readonly OperatorType ope;
+		readonly OperatorType op;
 
         /// <summary>
         /// 演算子のタイプ。
 		/// The type of the operator.
         /// </summary>
         public OperatorType Operator{
-			get{return ope;}
+			get{return op;}
 		}
 
         /// <summary>
@@ -53,7 +52,8 @@ namespace Expresso.Ast
 		}
 
         public ExpressoTokenNode OperatorToken{
-            get{return GetChildByRole(GetOperatorRole(ope));}
+            get{return GetChildByRole(GetOperatorRole(op));}
+            set{SetChildByRole(GetOperatorRole(op), value);}
         }
 
         /// <summary>
@@ -67,9 +67,8 @@ namespace Expresso.Ast
 
 		public BinaryExpression(Expression left, Expression right, OperatorType opType)
 		{
-			ope = opType;
-            var op_role = GetOperatorRole(opType);
-            SetChildByRole(op_role, new ExpressoTokenNode(TextLocation.Empty, op_role));
+			op = opType;
+            OperatorToken = new ExpressoTokenNode(TextLocation.Empty, GetOperatorRole(op));
             Left = left;
             Right = right;
 		}
@@ -104,7 +103,7 @@ namespace Expresso.Ast
         {
             switch(op){
             case OperatorType.BitwiseAnd:
-                return BitwiseAndRole;
+                return Roles.AmpersandToken;
             case OperatorType.BitwiseOr:
                 return BitwiseOrRole;
             case OperatorType.ConditionalAnd:

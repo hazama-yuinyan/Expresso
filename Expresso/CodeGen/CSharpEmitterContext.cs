@@ -12,18 +12,32 @@ namespace Expresso.CodeGen
     /// </summary>
     public class CSharpEmitterContext
     {
+        /// <summary>
+        /// Current assembly builder that we are using.
+        /// </summary>
         public AssemblyBuilder AssemblyBuilder{
             get; set;
         }
 
+        /// <summary>
+        /// Current module builder that we are using.
+        /// </summary>
         public ModuleBuilder ModuleBuilder{
             get; set;
         }
 
+        /// <summary>
+        /// Current type builder.
+        /// It will be null if we are not constructing a type declaration.
+        /// </summary>
         public TypeBuilder TypeBuilder{
             get; set;
         }
 
+        /// <summary>
+        /// Contains method info in which we have any interest.
+        /// Setting it null may tell child nodes to fill in this property.
+        /// </summary>
         public MethodInfo Method{
             get; set;
         }
@@ -32,6 +46,11 @@ namespace Expresso.CodeGen
             get; set;
         }
 
+        /// <summary>
+        /// Contains field info in which we have any interest.
+        /// Like the <see cref="Expresso.CodeGenCSharpEmitterContext.Method"/> property,
+        /// setting it null indicates that you want to know which field we should be looking at.
+        /// </summary>
         public FieldInfo Field{
             get; set;
         }
@@ -74,7 +93,7 @@ namespace Expresso.CodeGen
         }
 
         /// <summary>
-        /// It will be set a parameter expression that represents the temporary variable
+        /// It will be set a parameter expression that represents the temporary variable.
         /// </summary>
         public System.Linq.Expressions.ParameterExpression TemporaryVariable{
             get; set;

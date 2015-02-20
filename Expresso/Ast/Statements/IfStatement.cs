@@ -12,15 +12,14 @@ namespace Expresso.Ast
 	/// </summary>
 	public class IfStatement : Statement
 	{
-        public static readonly TokenRole IfKeywordRole = new TokenRole("if");
         public static readonly Role<PatternConstruct> ConditionRole =
             new Role<PatternConstruct>("Condition");
         public static readonly Role<Statement> TrueBlockRole = new Role<Statement>("TrueBlock");
-        public static readonly TokenRole ElseKeywordRole = new TokenRole("else");
+        public static readonly TokenRole ElseKeywordRole = new TokenRole("else", ExpressoTokenNode.Null);
         public static readonly Role<Statement> FalseBlockRole = new Role<Statement>("FalseBlock");
 
         public ExpressoTokenNode IfToken{
-            get{return GetChildByRole(IfKeywordRole);}
+            get{return GetChildByRole(Roles.IfToken);}
         }
 
 		/// <summary>

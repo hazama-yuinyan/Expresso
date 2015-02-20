@@ -15,7 +15,7 @@ namespace Expresso.Ast
             get{return GetChildrenByRole(Roles.Pattern);}
         }
 
-        public TuplePattern(List<PatternConstruct> patterns)
+        public TuplePattern(IEnumerable<PatternConstruct> patterns)
         {
             foreach(var pattern in patterns)
                 AddChild(pattern, Roles.Pattern);

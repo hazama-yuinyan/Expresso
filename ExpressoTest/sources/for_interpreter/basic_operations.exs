@@ -22,5 +22,5 @@ def main()
     let w = a[0] + a[1] * b["a"];
     let y = v * w;
 
- 	return [a, b, c, d, x, p, q, r, s, t, u, v, w, y];
+ 	return new [a, b, c, d, x, p, q, r, s, t, u, v, w, y];
  }

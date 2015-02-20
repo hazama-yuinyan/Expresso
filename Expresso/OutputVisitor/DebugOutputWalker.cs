@@ -89,37 +89,9 @@ namespace Expresso.Ast
 
         public void VisitCastExpression(CastExpression castExpr)
         {
-            writer.Write("(");
-            castExpr.ToExpression.AcceptWalker(this);
-            writer.Write(")");
             castExpr.Target.AcceptWalker(this);
-        }
-
-        public void VisitComprehensionFor(ComprehensionForClause compFor)
-        {
-            writer.Write("[");
-            compFor.Body.AcceptWalker(this);
-            writer.Write(" for ");
-            compFor.Left.AcceptWalker(this);
-            writer.Write(" in ");
-            compFor.Target.AcceptWalker(this);
-            writer.Write("]");
-        }
-
-        public void VisitComprehensionIf(ComprehensionIfClause compIf)
-        {
-            writer.Write("if ");
-            compIf.Condition.AcceptWalker(this);
-            compIf.Body.AcceptWalker(this);
-        }
-
-        public void VisitConditional(ConditionalExpression condExpr)
-        {
-            condExpr.Condition.AcceptWalker(this);
-            writer.Write(" ? ");
-            condExpr.TrueExpression.AcceptWalker(this);
-            writer.Write(" : ");
-            condExpr.FalseExpression.AcceptWalker(this);
+            writer.Write(" as ");
+            castExpr.ToExpression.AcceptWalker(this);
         }
 
         public void VisitConstant(LiteralExpression literal)
@@ -129,20 +101,19 @@ namespace Expresso.Ast
 
         public void VisitBreakStatement(BreakStatement breakStmt)
         {
-            writer.Write("<break upto ");
+            writer.Write("break upto ");
             breakStmt.Count.AcceptWalker(this);
-            writer.Write(">");
         }
 
         public void VisitContinueStatement(ContinueStatement continueStmt)
         {
-            writer.Write("<continue upto ");
+            writer.Write("continue upto ");
             continueStmt.Count.AcceptWalker(this);
-            writer.Write(">");
         }
 
         public void VisitEmptyStatement(EmptyStatement emptyStmt)
         {
+            writer.Write("<empty>");
         }
 
         public void VisitExpressionStatement(ExpressionStatement exprStmt)
@@ -152,46 +123,41 @@ namespace Expresso.Ast
 
         public void VisitForStatement(ForStatement forStmt)
         {
-            writer.Write("<for: ");
+            writer.Write("for ");
+            forStmt.Left.AcceptWalker(this);
             forStmt.Body.AcceptWalker(this);
-            writer.Write(">");
         }
 
         public void VisitIdentifier(Identifier ident)
         {
-            ident.Type.AcceptWalker(this);
-            writer.Write(" ");
             writer.Write(ident.Name);
+            writer.Write(" (- ");
+            ident.Type.AcceptWalker(this);
         }
 
         public void VisitIfStatement(IfStatement ifStmt)
         {
-            writer.Write("<if: ");
+            writer.Write("if ");
             ifStmt.Condition.AcceptWalker(this);
-            writer.Write(">");
-        }
-
-        public void VisitIntSequence(IntegerSequenceExpression intSeq)
-        {
-            writer.Write("<IntegerSequence: ");
-            intSeq.Lower.AcceptWalker(this);
-            writer.Write(" ");
-            intSeq.Upper.AcceptWalker(this);
-            writer.Write(" ");
-            intSeq.Step.AcceptWalker(this);
-            writer.Write(">");
+            writer.Write("{...}");
+            if(!ifStmt.FalseBlock.IsNull)
+                writer.Write("else{...}");
         }
 
         public void VisitMemberReference(MemberReference memRef)
         {
             memRef.Target.AcceptWalker(this);
+            writer.Write(".");
             memRef.Subscription.AcceptWalker(this);
         }
 
         public void VisitAst(ExpressoAst ast)
         {
-            foreach(var decl in ast.Body)
-                decl.AcceptWalker(this);
+            writer.Write(ast.IsModule ? "<module " : "<ast ");
+            writer.Write(ast.Name);
+            writer.Write(": ");
+            writer.Write(ast.Body.Count);
+            writer.Write(">");
         }
 
         public void VisitNewExpression(NewExpression newExpr)
@@ -202,18 +168,6 @@ namespace Expresso.Ast
 
         public void VisitSequenceInitializer(SequenceInitializer seqInitializer)
         {
-        }
-
-        public void VisitImportStatement(ImportDeclaration importStmt)
-        {
-            writer.Write("<Import: ");
-            if(importStmt.AliasName != null){
-                writer.Write(importStmt.ModuleName);
-                writer.Write(" as ");
-                writer.Write(importStmt.AliasName);
-            }else{
-                writer.Write(importStmt.ModuleName);
-            }
         }
 
         public void VisitReturnStatement(ReturnStatement returnStmt)
@@ -267,26 +221,55 @@ namespace Expresso.Ast
 
         public void VisitPatternPlaceholder(AstNode placeholder, ICSharpCode.NRefactory.PatternMatching.Pattern child)
         {
+            writer.Write("<placeholder for patterns>");
         }
 
         public void VisitVariableDeclarationStatement(VariableDeclarationStatement varDecl)
         {
+            if((varDecl.Modifiers & Modifiers.Immutable) != 0x00){
+                writer.Write("let ");
+            }else{
+                writer.Write("var ");
+            }
+
         }
 
         public void VisitComprehensionExpression(ComprehensionExpression comp)
         {
+            writer.Write("[");
+            comp.Item.AcceptWalker(this);
+            writer.Write(" ...]");
         }
 
         public void VisitComprehensionForClause(ComprehensionForClause compFor)
         {
+            writer.Write("<comprehension for ");
+            compFor.Left.AcceptWalker(this);
+            writer.Write(" in ");
+            compFor.Target.AcceptWalker(this);
+            if(!compFor.Body.IsNull)
+                writer.Write(" ...");
+
+            writer.Write(">");
         }
 
         public void VisitComprehensionIfClause(ComprehensionIfClause compIf)
         {
+            writer.Write("<comprehension if ");
+            compIf.Condition.AcceptWalker(this);
+            if(!compIf.Body.IsNull)
+                writer.Write(" ...");
+
+            writer.Write(">");
         }
 
         public void VisitConditionalExpression(ConditionalExpression condExpr)
         {
+            condExpr.Condition.AcceptWalker(this);
+            writer.Write(" ? ");
+            condExpr.TrueExpression.AcceptWalker(this);
+            writer.Write(" : ");
+            condExpr.FalseExpression.AcceptWalker(this);
         }
 
         public void VisitKeyValueLikeExpression(KeyValueLikeExpression keyValue)
@@ -300,10 +283,19 @@ namespace Expresso.Ast
 
         public void VisitIntgerSequenceExpression(IntegerSequenceExpression intSeq)
         {
+            intSeq.Lower.AcceptWalker(this);
+            writer.Write(intSeq.UpperInclusive ? "..." : "..");
+            intSeq.Upper.AcceptWalker(this);
+            writer.Write(":");
+            intSeq.Step.AcceptWalker(this);
         }
 
         public void VisitIndexerExpression(IndexerExpression indexExpr)
         {
+            indexExpr.Target.AcceptWalker(this);
+            writer.Write("[");
+            PrintList(indexExpr.Arguments);
+            writer.Write("]");
         }
 
         public void VisitPathExpression(PathExpression pathExpr)
@@ -378,7 +370,7 @@ namespace Expresso.Ast
 
         public void VisitPlaceholderType(PlaceholderType placeholderType)
         {
-            writer.Write("<null>");
+            writer.Write("<placeholder type>");
         }
 
         public void VisitAliasDeclaration(AliasDeclaration aliasDecl)
@@ -391,6 +383,14 @@ namespace Expresso.Ast
 
         public void VisitImportDeclaration(ImportDeclaration importDecl)
         {
+            writer.Write("import ");
+            if(!importDecl.AliasNameToken.IsNull){
+                writer.Write(importDecl.ModuleName);
+                writer.Write(" as ");
+                writer.Write(importDecl.AliasName);
+            }else{
+                writer.Write(importDecl.ModuleName);
+            }
         }
 
         public void VisitFunctionDeclaration(FunctionDeclaration funcDecl)

@@ -23,9 +23,9 @@ namespace Expresso.Ast
     /// </summary>
     public class TypeDeclaration : EntityDeclaration
     {
-        public static readonly TokenRole ClassKeywordRole = new TokenRole("class");
-        public static readonly TokenRole InterfaceKeywordRole = new TokenRole("interface");
-        public static readonly TokenRole EnumKeywordRole = new TokenRole("enum");
+        public static readonly TokenRole ClassKeywordRole = new TokenRole("class", ExpressoTokenNode.Null);
+        public static readonly TokenRole InterfaceKeywordRole = new TokenRole("interface", ExpressoTokenNode.Null);
+        public static readonly TokenRole EnumKeywordRole = new TokenRole("enum", ExpressoTokenNode.Null);
 
         public override NodeType NodeType{
             get{

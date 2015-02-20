@@ -11,12 +11,12 @@ def main()
 	let c = new ("akarichan", "kawakawa", "chinatsuchan", 2424);
 
 	let d = a[0..3];
-	var y = [];
+	var y = [...];
 	for let x in b {
 		print(x);
 		y.add(x);
 	}
 	let e = c[2];
 	
-	return [a, b, c, d, e, x, y];
+	return new [a, b, c, d, e, x, y];
 }

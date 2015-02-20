@@ -117,85 +117,106 @@ namespace Expresso.Ast
         }
 
         #region Factory methods
-        static internal ExpressionStatement MakeAssignment(SequenceExpression lhs, SequenceExpression rhs,
-            TextLocation start, TextLocation end)
+        public static ExpressionStatement MakeAssignment(SequenceExpression lhs, SequenceExpression rhs,
+            TextLocation start = default(TextLocation), TextLocation end = default(TextLocation))
         {
             return new ExpressionStatement(new AssignmentExpression(lhs, rhs), start, end);
         }
 
-        static internal ExpressionStatement MakeAugumentedAssignment(SequenceExpression targets,
-            SequenceExpression rhs, OperatorType opType, TextLocation start, TextLocation end)
+        public static ExpressionStatement MakeAugumentedAssignment(SequenceExpression targets,
+            SequenceExpression rhs, OperatorType opType, TextLocation start = default(TextLocation),
+            TextLocation end = default(TextLocation))
         {
             return new ExpressionStatement(new AssignmentExpression(targets, rhs, opType), start, end);
         }
 
-        static internal BreakStatement MakeBreakStmt(LiteralExpression count, TextLocation start, TextLocation end)
+        public static BreakStatement MakeBreakStmt(LiteralExpression count,
+            TextLocation start = default(TextLocation), TextLocation end = default(TextLocation))
         {
             return new BreakStatement(count, start, end);
         }
 
-        static internal ContinueStatement MakeContinueStmt(LiteralExpression count, TextLocation start, TextLocation end)
+        public static ContinueStatement MakeContinueStmt(LiteralExpression count,
+            TextLocation start = default(TextLocation), TextLocation end = default(TextLocation))
         {
             return new ContinueStatement(count, start, end);
         }
 
-        static internal BlockStatement MakeBlock(IEnumerable<Statement> stmts, TextLocation start, TextLocation end)
+        public static BlockStatement MakeBlock(IEnumerable<Statement> stmts,
+            TextLocation start = default(TextLocation), TextLocation end = default(TextLocation))
         {
             return new BlockStatement(stmts, start, end);
         }
 
-        static internal VariableDeclarationStatement MakeVarDecl(IEnumerable<Identifier> lhs, IEnumerable<Expression> rhs,
-            Modifiers modifiers, TextLocation start, TextLocation end)
+        public static BlockStatement MakeBlock(params Statement[] stmts)
+        {
+            return new BlockStatement(stmts, TextLocation.Empty, TextLocation.Empty);
+        }
+
+        public static VariableDeclarationStatement MakeVarDecl(IEnumerable<Identifier> lhs, IEnumerable<Expression> rhs,
+            Modifiers modifiers, TextLocation start = default(TextLocation), TextLocation end = default(TextLocation))
         {
             return new VariableDeclarationStatement(lhs, rhs, modifiers, start, end);
         }
 
-        static internal ExpressionStatement MakeExprStmt(Expression expr, TextLocation start, TextLocation end)
+        public static ExpressionStatement MakeExprStmt(Expression expr,
+            TextLocation start = default(TextLocation), TextLocation end = default(TextLocation))
         {
             return new ExpressionStatement(expr, start, end);
         }
 
-        static internal ReturnStatement MakeReturnStmt(Expression expr)
+        public static ReturnStatement MakeReturnStmt(Expression expr)
         {
             return new ReturnStatement(expr);
         }
 
-        static internal IfStatement MakeIfStmt(PatternConstruct condition, BlockStatement trueBlock,
-            BlockStatement falseBlock, TextLocation loc)
+        public static IfStatement MakeIfStmt(PatternConstruct condition, BlockStatement trueBlock,
+            BlockStatement falseBlock, TextLocation loc = default(TextLocation))
         {
             return new IfStatement(condition, trueBlock, falseBlock, loc);
         }
 
-        static internal WhileStatement MakeWhileStmt(Expression condition, BlockStatement body,
-            TextLocation loc)
+        public static WhileStatement MakeWhileStmt(Expression condition, BlockStatement body,
+            TextLocation loc = default(TextLocation))
         {
             return new WhileStatement(condition, body, loc);
         }
 
-        static internal ForStatement MakeForStmt(PatternConstruct pattern, Expression rvalue,
-            BlockStatement body, TextLocation start)
+        public static ForStatement MakeForStmt(PatternConstruct pattern, Expression rvalue,
+            BlockStatement body, TextLocation loc = default(TextLocation))
         {
-            return new ForStatement(pattern, rvalue, body, start);
+            return new ForStatement(pattern, rvalue, body, loc);
         }
 
-        static internal EmptyStatement MakeEmptyStmt(TextLocation start)
+        public static EmptyStatement MakeEmptyStmt(TextLocation loc = default(TextLocation))
         {
-            return new EmptyStatement(start);
+            return new EmptyStatement(loc);
         }
 
-        static internal MatchStatement MakeMatchStmt(Expression target, IEnumerable<MatchPatternClause> clauses,
-            TextLocation start, TextLocation end)
+        public static MatchStatement MakeMatchStmt(Expression target, IEnumerable<MatchPatternClause> clauses,
+            TextLocation start = default(TextLocation), TextLocation end = default(TextLocation))
         {
             return new MatchStatement(target, clauses, start, end);
         }
 
-        static internal MatchPatternClause MakeMatchClause(IEnumerable<PatternConstruct> patterns,
+        public static MatchStatement MakeMatchStmt(Expression target, params MatchPatternClause[] clauses)
+        {
+            return new MatchStatement(target, clauses, TextLocation.Empty, TextLocation.Empty);
+        }
+
+        public static MatchPatternClause MakeMatchClause(IEnumerable<PatternConstruct> patterns,
             Expression guard, Statement body)
         {
             return new MatchPatternClause(patterns, guard, body);
         }
 
-        static internal YieldStatement MakeYieldStmt(Expression expr, TextLocation start, TextLocation end)
+        public static MatchPatternClause MakeMatchClause(Expression guard, Statement body, params PatternConstruct[] patterns)
+        {
+            return new MatchPatternClause(patterns, guard, body);
+        }
+
+        public static YieldStatement MakeYieldStmt(Expression expr, TextLocation start = default(TextLocation), 
+            TextLocation end = default(TextLocation))
         {
             return new YieldStatement(expr, start, end);
         }

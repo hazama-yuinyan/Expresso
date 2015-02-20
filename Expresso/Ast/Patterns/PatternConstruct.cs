@@ -97,40 +97,56 @@ namespace Expresso.Ast
         #endregion
 
         #region Factory methods
-        static internal WildcardPattern MakeWildcardPattern()
+        public static WildcardPattern MakeWildcardPattern()
         {
             return new WildcardPattern();
         }
 
-        static internal IdentifierPattern MakeIdentifierPattern(string name, PatternConstruct inner)
+        public static IdentifierPattern MakeIdentifierPattern(string name, PatternConstruct inner)
         {
             var type = new PlaceholderType(TextLocation.Empty);
             return new IdentifierPattern(AstNode.MakeIdentifier(name, type), inner);
         }
 
-        static internal ValueBindingPattern MakeValueBindingPattern(PatternConstruct inner, bool isConst)
+        public static ValueBindingPattern MakeValueBindingPattern(PatternConstruct inner, bool isConst)
         {
             return new ValueBindingPattern(inner, isConst);
         }
 
-        static internal CollectionPattern MakeCollectionPattern(IEnumerable<PatternConstruct> items,
+        public static CollectionPattern MakeCollectionPattern(IEnumerable<PatternConstruct> items,
             bool isVector)
         {
             return new CollectionPattern(items, isVector);
         }
 
-        static internal DestructuringPattern MakeDestructuringPattern(PathExpression path,
+        public static CollectionPattern MakeCollectionPattern(bool isVector, params PatternConstruct[] items)
+        {
+            return new CollectionPattern(items, isVector);
+        }
+
+        public static DestructuringPattern MakeDestructuringPattern(PathExpression path,
             IEnumerable<PatternConstruct> inners)
         {
             return new DestructuringPattern(path, inners);
         }
 
-        static internal TuplePattern MakeTuplePattern(List<PatternConstruct> inners)
+        public static DestructuringPattern MakeDestructuringPattern(PathExpression path,
+            params PatternConstruct[] inners)
+        {
+            return new DestructuringPattern(path, inners);
+        }
+
+        public static TuplePattern MakeTuplePattern(IEnumerable<PatternConstruct> inners)
         {
             return new TuplePattern(inners);
         }
 
-        static internal ExpressionPattern MakeExpressionPattern(Expression inner)
+        public static TuplePattern MakeTuplePattern(params PatternConstruct[] inners)
+        {
+            return new TuplePattern(inners);
+        }
+
+        public static ExpressionPattern MakeExpressionPattern(Expression inner)
         {
             return new ExpressionPattern(inner);
         }

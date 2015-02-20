@@ -22,13 +22,13 @@ namespace Expresso.Ast
     /// </summary>
     public class ImportDeclaration : AstNode
     {
-        public static readonly TokenRole ImportKeyword = new TokenRole("import");
+        public static readonly TokenRole ImportKeyword = new TokenRole("import", ExpressoTokenNode.Null);
         public static readonly Role<PathExpression> ModuleNameRole =
-            new Role<PathExpression>("ModuleName");
+            new Role<PathExpression>("ModuleName", PathExpression.Null);
         public static readonly Role<Identifier> AliasNameRole =
             new Role<Identifier>("AliasName", Identifier.Null);
         public static readonly Role<PathExpression> ImportedEntityRole =
-            new Role<PathExpression>("ImportedEntity");
+            new Role<PathExpression>("ImportedEntity", PathExpression.Null);
 
         public ExpressoTokenNode ImportToken{
             get{return GetChildByRole(ImportKeyword);}

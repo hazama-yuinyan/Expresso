@@ -11,7 +11,7 @@ namespace Expresso.Ast
     /// </summary>
     public class BreakStatement : Statement
     {
-        public static readonly TokenRole BreakTokenRole = new TokenRole("break");
+        public static readonly TokenRole BreakTokenRole = new TokenRole("break", ExpressoTokenNode.Null);
         public static readonly Role<LiteralExpression> LiteralRole = new Role<LiteralExpression>("Literal");
 
         /// <summary>

@@ -24,7 +24,7 @@ for(int i = 0; i < sizeof(array); ++i){
     // do something on each element
 }
 ```
-Even though the for loop has long long history, I think that it doesn't express one's intension very clearly especially when you want to process an array. Instead, I recommend you to use functional style. So in Expresso, you can rewrite the above example like this:
+Even though the for loop has long long history, I think that it doesn't express one's intension very clearly especially when you want to process an array. Instead, I recommend you to use functional style. In functional programming languages, we define the work flow as a chain of functions. So in Expresso, you can rewrite the above example like this:
 ```expresso
 // construct some array
 // and assume the array is named "a"

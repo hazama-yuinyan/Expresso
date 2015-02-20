@@ -12,9 +12,9 @@ namespace Expresso.Ast
 	/// </summary>
     public class IntegerSequenceExpression : Expression
 	{
-        public static readonly Role<Expression> LowerRole = new Role<Expression>("Lower");
-        public static readonly Role<Expression> UpperRole = new Role<Expression>("Upper");
-        public static readonly Role<Expression> StepRole = new Role<Expression>("Step");
+        public static readonly Role<Expression> LowerRole = new Role<Expression>("Lower", Expression.Null);
+        public static readonly Role<Expression> UpperRole = new Role<Expression>("Upper", Expression.Null);
+        public static readonly Role<Expression> StepRole = new Role<Expression>("Step", Expression.Null);
 
 		/// <summary>
 		/// 整数列の下限.

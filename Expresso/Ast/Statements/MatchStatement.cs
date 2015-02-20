@@ -12,7 +12,7 @@ namespace Expresso.Ast
 	/// </summary>
     public class MatchStatement : Statement
 	{
-        public static readonly TokenRole MatchKeywordRole = new TokenRole("match");
+        public static readonly TokenRole MatchKeywordRole = new TokenRole("match", ExpressoTokenNode.Null);
         public static readonly Role<MatchPatternClause> PatternClauseRole = new Role<MatchPatternClause>("PatternClause");
 
         public ExpressoTokenNode MatchToken{

@@ -108,12 +108,17 @@ namespace Expresso.Ast.Analysis
         /// <param name="type">Type.</param>
         public void AddSymbol(string name, AstType type)
         {
-            table.Add(name, AstNode.MakeIdentifier(name, type));
+            AddSymbol(name, AstNode.MakeIdentifier(name, type));
         }
 
         public void AddSymbol(string name, Identifier ident)
         {
-            table.Add(name, ident);
+            try{
+                table.Add(name, ident);
+            }
+            catch(ArgumentException){
+                throw new ParserException("The name `{0}` is already defined in the current scope.", name);
+            }
         }
 
         /// <summary>

@@ -92,30 +92,31 @@ namespace Expresso.Ast
         }
 
         #region Factory methods
-        static internal FieldDeclaration MakeField(IEnumerable<Identifier> lhs, IEnumerable<Expression> rhs,
-            Modifiers modifiers, TextLocation start, TextLocation end)
+        public static FieldDeclaration MakeField(IEnumerable<Identifier> lhs, IEnumerable<Expression> rhs,
+            Modifiers modifiers, TextLocation start = default(TextLocation), TextLocation end = default(TextLocation))
         {
             return new FieldDeclaration(lhs, rhs, modifiers, start, end);
         }
 
-        static internal ParameterDeclaration MakeParameter(string name, AstType type, Expression option = null)
+        public static ParameterDeclaration MakeParameter(string name, AstType type, Expression option = null)
         {
             return new ParameterDeclaration(name, type, option);
         }
 
-        static internal TypeDeclaration MakeClassDecl(string className, IEnumerable<AstType> bases,
-            IEnumerable<EntityDeclaration> decls, Modifiers modifiers, TextLocation start, TextLocation end)
+        public static TypeDeclaration MakeClassDecl(string className, IEnumerable<AstType> bases,
+            IEnumerable<EntityDeclaration> decls, Modifiers modifiers,
+            TextLocation start = default(TextLocation), TextLocation end = default(TextLocation))
         {
             return new TypeDeclaration(className, bases, decls, modifiers, start, end);
         }
 
-        static internal FunctionDeclaration MakeFunc(string name, IEnumerable<ParameterDeclaration> parameters, BlockStatement body,
-            AstType returnType, Modifiers modifiers, TextLocation loc)
+        public static FunctionDeclaration MakeFunc(string name, IEnumerable<ParameterDeclaration> parameters, BlockStatement body,
+            AstType returnType, Modifiers modifiers, TextLocation loc = default(TextLocation))
         {
             return new FunctionDeclaration(name, parameters, body, returnType, modifiers, loc);
         }
 
-        /*static internal FunctionDeclaration MakeClosure(string name, IEnumerable<ParameterDeclaration> parameters, Block body,
+        /*public static FunctionDeclaration MakeClosure(string name, IEnumerable<ParameterDeclaration> parameters, Block body,
             TypeAnnotation returnType, Stack<object> environ)
         {
             return new FunctionDeclaration(name, parameters.ToArray(), body, returnType, Flags.None, environ);

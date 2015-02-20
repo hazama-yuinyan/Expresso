@@ -122,110 +122,136 @@ namespace Expresso.Ast
         }
 
         #region Factory methods
-        static internal CallExpression MakeCallExpr(Expression target, IEnumerable<Expression> args)
+        public static CallExpression MakeCallExpr(Expression target, IEnumerable<Expression> args)
         {
             return new CallExpression(target, args);
         }
 
-        static internal SequenceExpression MakeSequence(IEnumerable<Expression> items)
+        public static CallExpression MakeCallExpr(Expression target, params Expression[] args)
+        {
+            return new CallExpression(target, args);
+        }
+
+        public static SequenceExpression MakeSequence(IEnumerable<Expression> items)
         {
             return new SequenceExpression(items);
         }
 
-        static internal UnaryExpression MakeUnaryExpr(OperatorType op, Expression operand)
+        public static SequenceExpression MakeSequence(params Expression[] items)
+        {
+            return new SequenceExpression(items);
+        }
+
+        public static UnaryExpression MakeUnaryExpr(OperatorType op, Expression operand)
         {
             return new UnaryExpression(op, operand);
         }
 
-        static internal BinaryExpression MakeBinaryExpr(OperatorType op, Expression lhs, Expression rhs)
+        public static BinaryExpression MakeBinaryExpr(OperatorType op, Expression lhs, Expression rhs)
         {
             return new BinaryExpression(lhs, rhs, op);
         }
 
-        static internal SequenceInitializer MakeSeqInitializer(string typeName, IEnumerable<Expression> initializeList)
+        public static SequenceInitializer MakeSeqInitializer(AstType type, IEnumerable<Expression> initializeList)
         {
-            return new SequenceInitializer(new SimpleType(typeName, TextLocation.Empty), initializeList);
+            return new SequenceInitializer(type, initializeList);
         }
 
-        static internal ObjectCreationExpression MakeObjectCreation(PathExpression path, IEnumerable<Identifier> names,
+        public static SequenceInitializer MakeSeqInitializer(AstType type, params Expression[] initializers)
+        {
+            return new SequenceInitializer(type, initializers);
+        }
+
+        public static ObjectCreationExpression MakeObjectCreation(PathExpression path, IEnumerable<Identifier> names,
             IEnumerable<Expression> values)
         {
-            return new ObjectCreationExpression(path, names.Select((ident) => new PathExpression(ident)),
+            return new ObjectCreationExpression(path, names.Select(ident => new PathExpression(ident)),
                 values);
         }
 
-        static internal KeyValueLikeExpression MakeKeyValuePair(Expression key, Expression value)
+        public static KeyValueLikeExpression MakeKeyValuePair(Expression key, Expression value)
         {
             return new KeyValueLikeExpression(key, value);
         }
 
-        static internal CastExpression MakeCastExpr(Expression target, AstType toType)
+        public static CastExpression MakeCastExpr(Expression target, AstType toType)
         {
             return new CastExpression(toType, target);
         }
 
-        static internal ConditionalExpression MakeCondExpr(Expression test, Expression trueExpr, Expression falseExpr)
+        public static ConditionalExpression MakeCondExpr(Expression test, Expression trueExpr, Expression falseExpr)
         {
             return new ConditionalExpression(test, trueExpr, falseExpr);
         }
 
-        static internal ComprehensionExpression MakeComp(Expression yieldExpr, ComprehensionForClause body,
+        public static ComprehensionExpression MakeComp(Expression yieldExpr, ComprehensionForClause body,
             AstType objType)
         {
             return new ComprehensionExpression(yieldExpr, body, objType);
         }
 
-        static internal ComprehensionForClause MakeCompFor(PatternConstruct left, Expression target, ComprehensionIter body)
+        public static ComprehensionForClause MakeCompFor(PatternConstruct left, Expression target, ComprehensionIter body)
         {
             return new ComprehensionForClause(left, target, body);
         }
 
-        static internal ComprehensionIfClause MakeCompIf(Expression condition, ComprehensionIter body)
+        public static ComprehensionIfClause MakeCompIf(Expression condition, ComprehensionIter body)
         {
             return new ComprehensionIfClause(condition, body);
         }
 
-        static internal LiteralExpression MakeConstant(string typeName, object val, TextLocation loc)
+        public static LiteralExpression MakeConstant(string typeName, object val,
+            TextLocation loc = default(TextLocation))
         {
             return new LiteralExpression(val, new PrimitiveType(typeName, TextLocation.Empty), loc);
         }
 
-        static internal SelfReferenceExpression MakeSelfRef(TextLocation start)
+        public static SelfReferenceExpression MakeSelfRef(TextLocation start)
         {
             return new SelfReferenceExpression(start);
         }
 
-        static internal SuperReferenceExpression MakeSuperRef(TextLocation start)
+        public static SuperReferenceExpression MakeSuperRef(TextLocation start)
         {
             return new SuperReferenceExpression(start);
         }
 
-        static internal MemberReference MakeMemRef(Expression target, Identifier subscript)
+        public static MemberReference MakeMemRef(Expression target, Identifier subscript)
         {
             return new MemberReference(target, subscript);
         }
 
-        static internal IntegerSequenceExpression MakeIntSeq(Expression start, Expression end, Expression step, bool upperInclusive)
+        public static IntegerSequenceExpression MakeIntSeq(Expression start, Expression end, Expression step, bool upperInclusive)
         {
             return new IntegerSequenceExpression(start, end, step, upperInclusive);
         }
 
-        static internal NewExpression MakeNewExpr(ObjectCreationExpression creationExpr)
+        public static NewExpression MakeNewExpr(ObjectCreationExpression creationExpr)
         {
             return new NewExpression(creationExpr);
         }
 
-        static internal PathExpression MakePath(IEnumerable<Identifier> paths)
+        public static PathExpression MakePath(IEnumerable<Identifier> paths)
         {
             return new PathExpression(paths);
         }
 
-        static internal ParenthesizedExpression MakeParen(Expression expr)
+        public static PathExpression MakePath(params Identifier[] paths)
+        {
+            return new PathExpression(paths);
+        }
+
+        public static ParenthesizedExpression MakeParen(Expression expr)
         {
             return new ParenthesizedExpression(expr);
         }
 
-        static internal IndexerExpression MakeIndexer(Expression target, IEnumerable<Expression> args)
+        public static IndexerExpression MakeIndexer(Expression target, IEnumerable<Expression> args)
+        {
+            return new IndexerExpression(target, args);
+        }
+
+        public static IndexerExpression MakeIndexer(Expression target, params Expression[] args)
         {
             return new IndexerExpression(target, args);
         }

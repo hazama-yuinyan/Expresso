@@ -38,29 +38,30 @@ namespace Expresso.Ast
             new Role<PatternConstruct>("Pattern", PatternConstruct.Null);
 
         // some pre-defined roles for most used punctuations
-        public static readonly TokenRole LParenthesisToken = new TokenRole("(");
-        public static readonly TokenRole RParenthesisToken = new TokenRole(")");
-        public static readonly TokenRole LBracketToken = new TokenRole("[");
-        public static readonly TokenRole RBracketToken = new TokenRole("]");
-        public static readonly TokenRole LBraceToken = new TokenRole("{");
-        public static readonly TokenRole RBraceToken = new TokenRole("}");
-        public static readonly TokenRole LChevronToken = new TokenRole("<");
-        public static readonly TokenRole RChevronToken = new TokenRole(">");
-        public static readonly TokenRole CommaToken = new TokenRole(",");
-        public static readonly TokenRole DotToken = new TokenRole(".");
-        public static readonly TokenRole SemicolonToken = new TokenRole(";");
-        public static readonly TokenRole AssignToken = new TokenRole("=");
-        public static readonly TokenRole PlusToken = new TokenRole("+");
-        public static readonly TokenRole MinusToken = new TokenRole("-");
-        public static readonly TokenRole ColonToken = new TokenRole(":");
-        public static readonly TokenRole RangeToken = new TokenRole("..");
-        public static readonly TokenRole InclusiveRangeToken = new TokenRole("...");
-        public static readonly TokenRole IncludeToken = new TokenRole("(-");
-        public static readonly TokenRole ReturnToken = new TokenRole("->");
-        public static readonly TokenRole IfToken = new TokenRole("if");
-        public static readonly TokenRole ForToken = new TokenRole("for");
-        public static readonly TokenRole InToken = new TokenRole("in");
-        public static readonly TokenRole AsToken = new TokenRole("as");
+        public static readonly TokenRole LParenthesisToken = new TokenRole("(", ExpressoTokenNode.Null);
+        public static readonly TokenRole RParenthesisToken = new TokenRole(")", ExpressoTokenNode.Null);
+        public static readonly TokenRole LBracketToken = new TokenRole("[", ExpressoTokenNode.Null);
+        public static readonly TokenRole RBracketToken = new TokenRole("]", ExpressoTokenNode.Null);
+        public static readonly TokenRole LBraceToken = new TokenRole("{", ExpressoTokenNode.Null);
+        public static readonly TokenRole RBraceToken = new TokenRole("}", ExpressoTokenNode.Null);
+        public static readonly TokenRole LChevronToken = new TokenRole("<", ExpressoTokenNode.Null);
+        public static readonly TokenRole RChevronToken = new TokenRole(">", ExpressoTokenNode.Null);
+        public static readonly TokenRole CommaToken = new TokenRole(",", ExpressoTokenNode.Null);
+        public static readonly TokenRole DotToken = new TokenRole(".", ExpressoTokenNode.Null);
+        public static readonly TokenRole SemicolonToken = new TokenRole(";", ExpressoTokenNode.Null);
+        public static readonly TokenRole AmpersandToken = new TokenRole("&", ExpressoTokenNode.Null);
+        public static readonly TokenRole AssignToken = new TokenRole("=", ExpressoTokenNode.Null);
+        public static readonly TokenRole PlusToken = new TokenRole("+", ExpressoTokenNode.Null);
+        public static readonly TokenRole MinusToken = new TokenRole("-", ExpressoTokenNode.Null);
+        public static readonly TokenRole ColonToken = new TokenRole(":", ExpressoTokenNode.Null);
+        public static readonly TokenRole RangeToken = new TokenRole("..", ExpressoTokenNode.Null);
+        public static readonly TokenRole InclusiveRangeToken = new TokenRole("...", ExpressoTokenNode.Null);
+        public static readonly TokenRole IncludeToken = new TokenRole("(-", ExpressoTokenNode.Null);
+        public static readonly TokenRole ReturnToken = new TokenRole("->", ExpressoTokenNode.Null);
+        public static readonly TokenRole IfToken = new TokenRole("if", ExpressoTokenNode.Null);
+        public static readonly TokenRole ForToken = new TokenRole("for", ExpressoTokenNode.Null);
+        public static readonly TokenRole InToken = new TokenRole("in", ExpressoTokenNode.Null);
+        public static readonly TokenRole AsToken = new TokenRole("as", ExpressoTokenNode.Null);
         public static readonly Role<CommentNode> CommentRole = new Role<CommentNode>("Comment");
 
     }

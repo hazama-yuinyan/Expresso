@@ -11,7 +11,7 @@ namespace Expresso.Ast
     /// </summary>
     public class ContinueStatement : Statement
     {
-        public static readonly TokenRole ContinueTokenRole = new TokenRole("continue");
+        public static readonly TokenRole ContinueTokenRole = new TokenRole("continue", ExpressoTokenNode.Null);
 
         /// <summary>
         /// continueの際に何階層分ループ構造を遡るか。

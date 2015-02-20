@@ -13,8 +13,6 @@ namespace Expresso.Ast
     /// </summary>
     public class ReferenceType : AstType
     {
-        public static readonly TokenRole ReferenceRole = new TokenRole("&");
-
         public AstType BaseType{
             get{return GetChildByRole(Roles.Type);}
             set{SetChildByRole(Roles.Type, value);}

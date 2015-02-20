@@ -1,8 +1,8 @@
 using System;
-using System.Linq;
-using ICSharpCode.NRefactory.TypeSystem;
 using System.Collections.Generic;
+using System.Linq;
 using ICSharpCode.NRefactory;
+using ICSharpCode.NRefactory.TypeSystem;
 
 
 namespace Expresso.Ast
@@ -87,7 +87,7 @@ namespace Expresso.Ast
         public SimpleType(string identifier, TextLocation start)
             : base(start, new TextLocation(start.Line, start.Column + identifier.Length))
         {
-            AddChild(AstNode.MakeIdentifier(identifier, this), Roles.Identifier);
+            AddChild(AstNode.MakeIdentifier(identifier), Roles.Identifier);
         }
 
         public SimpleType(Identifier identifier, TextLocation start)
@@ -107,7 +107,7 @@ namespace Expresso.Ast
         public SimpleType(string identifier, IEnumerable<AstType> typeArgs, TextLocation start, TextLocation end)
             : base(start, end)
         {
-            IdentifierToken = AstNode.MakeIdentifier(identifier, this);
+            IdentifierToken = AstNode.MakeIdentifier(identifier);
             foreach(var type in typeArgs)
                 AddChild(type, Roles.TypeArgument);
         }

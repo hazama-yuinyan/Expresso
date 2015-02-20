@@ -156,6 +156,11 @@ COMPILER Expresso
         return type;
     }
 
+    AstType CreateTypeWithArgs(string typeName, params AstType[] typeArgs)
+    {
+        return new SimpleType(typeName, typeArgs, TextLocation.Empty, TextLocation.Empty);
+    }
+
     /// <summary>
     /// Creates a new <see ref="ICSharpCode.NRefactory.TextLocation">
     /// that points to the location n characters before the current.
@@ -212,7 +217,10 @@ COMPILER Expresso
 
     bool NotFinalComma()
     {
-        return la.kind != _rparen || la.kind != _triple_dots;
+        var t = la;
+        var tt = scanner.Peek();
+        scanner.ResetPeek();
+        return t.kind == _comma && tt.kind != _rparen && tt.kind != _rbracket && tt.kind != _triple_dots;
     }
 	
 	public void SemanticError(string format, params object[] args)
@@ -248,8 +256,7 @@ TOKENS
   dot = '.'.
   ident  = (letter | '_') {'_' | letter | digit}.
   integer = ( digit {digit} ['u' | 'U' | 'l' | 'L']
-  			| digit {digit} CONTEXT("..")
-            | digit {digit} CONTEXT("...")
+            | digit {digit} CONTEXT("..")   /*This context includes triple dots case*/
             ).
   float = ( digit {digit} dot {digit} [('e' | 'E') ['+' | '-'] digit {digit}]
   		  | [digit {digit}] dot digit {digit} [('e' | 'E') ['+' | '-'] digit {digit}]
@@ -276,9 +283,6 @@ Expresso                    		(. ExpressoAst module_decl = null; .)
                                         Debug.Assert(Symbols.Parent == null);
                                         try{
                                             ExpressoNameBinder.BindAst(module_decl, this); //Here's the start of post-parse processing
-                                        }
-                                        catch(ParserException pe){
-                                            SemanticError(pe.Message, pe.Objects);
                                         }
                                         catch(Exception e){
                                             SemErr(e.Message);
@@ -453,7 +457,10 @@ Type<out AstType type>              (. var start_loc = CurrentLocation; type = A
  | "void"							(. type = CreateType(t.val, start_loc, is_reference); .)
  | ident							(. type = CreateType(t.val, start_loc, is_reference); .)
  )                                  (. start_loc = CurrentLocation; .)
- { "[]"                             (. if(type.IsNull)
+ /* Split brackets into 2 tokens that represents the array type
+    because otherwise it conflicts with the array literal.
+ */
+ { '[' ']'                          (. if(type.IsNull)
                                            SemErr("Array of unknown type is specified. Unknown type is just unknown!");
                 
                                        type = new SimpleType("array", new []{type}, start_loc, CurrentLocation);
@@ -677,7 +684,8 @@ VarDeclStmt<out Statement stmt>         (.  string name; AstType type; Expressio
   									      rhs = null;
                                           Symbols.AddSymbol(name, ident);
   								       .)
-  }								       (. var modifiers = is_const ? ExpressoModifiers.Immutable : ExpressoModifiers.None;
+  }
+  SYNC ';'							   (. var modifiers = is_const ? ExpressoModifiers.Immutable : ExpressoModifiers.None;
                                           stmt = Statement.MakeVarDecl(idents, exprs, modifiers, start_loc, CurrentLocation);
                                        .).
 /*------------------------------------------------------------------------*/
@@ -834,21 +842,21 @@ OrTest<out Expression expr>			(. Expression rhs; .)
 =
   AndTest<out expr>
   [ "||"
-    AndTest<out rhs>                (. expr = Expression.MakeBinaryExpr(OperatorType.ConditionalOr, expr, rhs); .)
+    OrTest<out rhs>                 (. expr = Expression.MakeBinaryExpr(OperatorType.ConditionalOr, expr, rhs); .)
   ].
 /*------------------------------------------------------------------------*/
 AndTest<out Expression expr>		(. Expression rhs; .)
 =
   Comparison<out expr>
   [ "&&"
-    Comparison<out rhs>				(. expr = Expression.MakeBinaryExpr(OperatorType.ConditionalAnd, expr, rhs); .)
+    AndTest<out rhs>				(. expr = Expression.MakeBinaryExpr(OperatorType.ConditionalAnd, expr, rhs); .)
   ].
 /*------------------------------------------------------------------------*/
 Comparison<out Expression expr>	    (. Expression rhs; OperatorType type; .)
 =
   IntSeqExpr<out expr>				(. type = OperatorType.Equality; .)
   [ ComparisonOperator<out type>
-    IntSeqExpr<out rhs>			    (. expr = Expression.MakeBinaryExpr(type, expr, rhs); .)
+    Comparison<out rhs>			    (. expr = Expression.MakeBinaryExpr(type, expr, rhs); .)
   ].
 /*------------------------------------------------------------------------*/
 ComparisonOperator<out OperatorType opType> (. opType = OperatorType.None; .)
@@ -885,28 +893,28 @@ BitOr<out Expression expr>			(. Expression rhs; .)
 =
   BitXor<out expr>
   [ '|'
-    BitXor<out rhs>					(. expr = Expression.MakeBinaryExpr(OperatorType.BitwiseOr, expr, rhs); .)
+    BitOr<out rhs>					(. expr = Expression.MakeBinaryExpr(OperatorType.BitwiseOr, expr, rhs); .)
   ].
 /*------------------------------------------------------------------------*/
 BitXor<out Expression expr>			(. Expression rhs; .)
 =
   BitAnd<out expr>
   [ '^'
-    BitAnd<out rhs>					(. expr = Expression.MakeBinaryExpr(OperatorType.ExclusiveOr, expr, rhs); .)
+    BitXor<out rhs>					(. expr = Expression.MakeBinaryExpr(OperatorType.ExclusiveOr, expr, rhs); .)
   ].
 /*------------------------------------------------------------------------*/
 BitAnd<out Expression expr>			(. Expression rhs; .)
 =
   ShiftOp<out expr>
   [ '&'
-    ShiftOp<out rhs>			    (. expr = Expression.MakeBinaryExpr(OperatorType.BitwiseAnd, expr, rhs); .)
+    BitAnd<out rhs> 			    (. expr = Expression.MakeBinaryExpr(OperatorType.BitwiseAnd, expr, rhs); .)
   ].
 /*------------------------------------------------------------------------*/
 ShiftOp<out Expression expr>		(. Expression rhs; OperatorType type; .)
 =
   AddOp<out expr>
   [ ShiftOperator<out type>
-    AddOp<out rhs>				    (. expr = Expression.MakeBinaryExpr(type, expr, rhs); .)
+    ShiftOp<out rhs>				 (. expr = Expression.MakeBinaryExpr(type, expr, rhs); .)
   ].
 /*------------------------------------------------------------------------*/
 ShiftOperator<out OperatorType opType>  (. opType = OperatorType.None; .)
@@ -919,7 +927,7 @@ AddOp<out Expression expr>    		(. Expression rhs; OperatorType type; .)
 = 
   Term<out expr>
   [ AdditiveOperator<out type>
-    Term<out rhs>					(. expr = Expression.MakeBinaryExpr(type, expr, rhs); .)
+    AddOp<out rhs>					(. expr = Expression.MakeBinaryExpr(type, expr, rhs); .)
   ].
 /*------------------------------------------------------------------------*/
 AdditiveOperator<out OperatorType opType>   (. opType = OperatorType.None; .)
@@ -932,7 +940,7 @@ Term<out Expression expr>       (. Expression rhs; OperatorType type; .)
 = 
   PowerOp<out expr>
   [ MultiplicativeOperator<out type>
-    PowerOp<out rhs>		    (. expr = Expression.MakeBinaryExpr(type, expr, rhs); .)
+    Term<out rhs>		        (. expr = Expression.MakeBinaryExpr(type, expr, rhs); .)
   ].
 /*------------------------------------------------------------------------*/
 MultiplicativeOperator<out OperatorType opType>
@@ -986,7 +994,11 @@ ObjectCreation<PathExpression path, out Expression expr>
                                         .)
 =
   '{'
-  { ident                               (. fields.Add(AstNode.MakeIdentifier(t.val)); .)
+  ident                                 (. fields.Add(AstNode.MakeIdentifier(t.val)); .)
+  ':'
+  CondExpr<out expr>                    (. values.Add(expr); .)
+  { WEAK ','
+    ident                               (. fields.Add(AstNode.MakeIdentifier(t.val)); .)
     ':'
     CondExpr<out expr>                  (. values.Add(expr); .)
   }
@@ -1026,13 +1038,17 @@ Atom<out Expression expr>			(. var exprs = new List<Expression>(); expr = null; 
                                     .)
   | '['
     [SequenceMaker<out expr>]
-    SYNC ']'						(.  if(expr == null)
-    										expr = Expression.MakeSeqInitializer("array", null);
+    SYNC ']'						(.  if(expr == null){
+                                            var type = CreateTypeWithArgs("array", new PlaceholderType(TextLocation.Empty));
+    										expr = Expression.MakeSeqInitializer(type, Enumerable.Empty<Expression>());
+                                        }
     								.)
   | '{'
     [DictMaker<out expr>]
-    SYNC '}'                        (. if(expr == null)
-                                           expr = Expression.MakeSeqInitializer("dictionary", null);
+    SYNC '}'                        (. if(expr == null){
+                                           var type = CreateTypeWithArgs("dictionary", new PlaceholderType(TextLocation.Empty), new PlaceholderType(TextLocation.Empty));
+                                           expr = Expression.MakeSeqInitializer(type, Enumerable.Empty<Expression>());
+                                       }
                                     .).
 /*------------------------------------------------------------------------*/
 PathExpression<out PathExpression path> (. var paths = new List<Identifier>(); .)
@@ -1047,38 +1063,38 @@ SequenceMaker<out Expression expr>	(.  var exprs = new List<Expression>();
                                         string seq_type_name = "array";
 									.)
 =
-  "..."                                 (. expr = Expression.MakeSeqInitializer("vector", null); .)
+  "..."                                 (. expr = Expression.MakeSeqInitializer(CreateTypeWithArgs("vector", new PlaceholderType(TextLocation.Empty)), Enumerable.Empty<Expression>()); .)
   | CondExpr<out expr>                  (. exprs.Add(expr); .)
   ( { IF(NotFinalComma()) WEAK ','
       CondExpr<out expr>                (. exprs.Add(expr); .)
     }
     [ ','
       "..."                             (. seq_type_name = "vector"; .)
-    ]                                   (. expr = Expression.MakeSeqInitializer(seq_type_name, exprs); .)
-  | CompFor<out comp>                   (. var type = new SimpleType("vector", TextLocation.Empty);
+    ]                                   (. var type = CreateTypeWithArgs(seq_type_name, new PlaceholderType(TextLocation.Empty));
+                                           expr = Expression.MakeSeqInitializer(type, exprs); .)
+  | CompFor<out comp>                   (. var type = CreateTypeWithArgs("vector", new PlaceholderType(TextLocation.Empty));
                                            expr = Expression.MakeComp(expr, (ComprehensionForClause)comp, type);
                                         .)
   ).
 /*------------------------------------------------------------------------*/
 DictMaker<out Expression expr>			(. Expression key, val; var list = new List<KeyValueLikeExpression>();
                                            KeyValueLikeExpression pair; ComprehensionIter comp; expr = null;
+                                           var type = CreateTypeWithArgs("dictionary", new PlaceholderType(TextLocation.Empty), new PlaceholderType(TextLocation.Empty));
                                         .)
 =
-  CondExpr<out key>
+  BitOr<out key>
   ':'
   CondExpr<out val>                     (. pair = Expression.MakeKeyValuePair(key, val);
                                            list.Add(pair);
                                         .)
   ( { WEAK ','
-      CondExpr<out key>
+      BitOr<out key>
       ':'
       CondExpr<out val>                 (. pair = Expression.MakeKeyValuePair(key, val);
                                            list.Add(pair);
                                         .)
-    }                                   (. expr = Expression.MakeSeqInitializer("dictionary", list); .)
-  | CompFor<out comp>                   (. var type = new SimpleType("dictionary", TextLocation.Empty);
-                                           expr = Expression.MakeComp(pair, (ComprehensionForClause)comp, type);
-                                        .)
+    }                                   (. expr = Expression.MakeSeqInitializer(type, list); .)
+  | CompFor<out comp>                   (. expr = Expression.MakeComp(pair, (ComprehensionForClause)comp, type); .)
   ).
 /*------------------------------------------------------------------------*/
 CompIter<out ComprehensionIter expr>    (. expr = null; .)

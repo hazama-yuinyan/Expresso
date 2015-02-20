@@ -11,7 +11,7 @@ namespace Expresso.Ast
     /// </summary>
     public class KeyValueLikeExpression : Expression
     {
-        public static readonly Role<Expression> KeyRole = new Role<Expression>("Key");
+        public static readonly Role<Expression> KeyRole = new Role<Expression>("Key", Expression.Null);
 
         public Expression KeyExpression{
             get{return GetChildByRole(KeyRole);}

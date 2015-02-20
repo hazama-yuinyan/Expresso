@@ -13,7 +13,7 @@ namespace Expresso.Ast
     public class NewExpression : Expression
     {
         public static readonly Role<ObjectCreationExpression> ObjectCreationRole =
-            new Role<ObjectCreationExpression>("ObjectCreation");
+            new Role<ObjectCreationExpression>("ObjectCreation", ObjectCreationExpression.Null);
 
         /// <summary>
         /// オブジェクトを生成するクラスの定義を参照する式。

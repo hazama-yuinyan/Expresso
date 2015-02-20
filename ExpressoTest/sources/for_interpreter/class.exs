@@ -18,7 +18,7 @@ class Test
 		return self.y;
 	}
 
-	public def getXPlus(n) -> int
+	public def getXPlus(n (- int) -> int
 	{
 		return self.x + n;
 	}
@@ -32,5 +32,5 @@ def main()
 	
 	print("(a.x, a.y) = {}, {}", b, c);
 
-	return [a, b, c, d];
+	return new [a, b, c, d];
 }

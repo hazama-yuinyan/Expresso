@@ -3,10 +3,13 @@ using System;
 
 namespace Expresso.Ast.Analysis
 {
+    /// <summary>
+    /// Represents a fatal error in parsing phase.
+    /// Because throwing a ParserException causes the process to immediately halt
+    /// use it when you absolutely need to do so.
+    /// </summary>
     public class ParserException : Exception
     {
-        public object[] Objects{get; private set;}
-
         public ParserException()
         {
         }
@@ -15,9 +18,9 @@ namespace Expresso.Ast.Analysis
         {
         }
 
-        public ParserException(string formatMessage, params object[] values) : base(formatMessage)
+        public ParserException(string formatMessage, params object[] values)
+            : base(string.Format(formatMessage, values))
         {
-            Objects = values;
         }
 
         public ParserException(string message, Exception exception) : base(message, exception)

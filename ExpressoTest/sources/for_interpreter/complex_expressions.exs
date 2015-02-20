@@ -14,8 +14,8 @@ def main()
 
 	var a (- int, b (- int, c (- int;
 	a = b = c = 0;
-
+    a, b, c = 1, 2, 3;
 	let m = (1, 3);
 
-	return [x, y, z, right_triangles, a, b, c, m];
+	return new [x, y, z, right_triangles, a, b, c, m];
 }

@@ -1,5 +1,5 @@
 /***
- * Test program for simple arithmetic.
+ * Test program for simple arithmetic operations.
  */
 module main;
 
@@ -21,5 +21,5 @@ def main()
 	xmod %= 2;
 	xpower **= 2;
 
-	return [x, a, b, c, d, e, f, xp, xm, xt, xd, xmod, xpower];
+	return new [x, a, b, c, d, e, f, xp, xm, xt, xd, xmod, xpower];
 }

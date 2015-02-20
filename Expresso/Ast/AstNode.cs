@@ -1249,28 +1249,28 @@ namespace Expresso.Ast
 
 		#region AST node factory methods
 		
-		static internal Identifier MakeIdentifier(string name)
+		public static Identifier MakeIdentifier(string name)
 		{
 			return new Identifier(name, null);
 		}
 
-        static internal Identifier MakeIdentifier(string name, AstType type)
+        public static Identifier MakeIdentifier(string name, AstType type)
         {
             return new Identifier(name, type);
         }
 
-        static internal ExpressoAst MakeModuleDef(string moduleName, IEnumerable<EntityDeclaration> decls, IEnumerable<ImportDeclaration> imports)
+        public static ExpressoAst MakeModuleDef(string moduleName, IEnumerable<EntityDeclaration> decls, IEnumerable<ImportDeclaration> imports)
 		{
             return new ExpressoAst(decls, imports, moduleName);
 		}
 
-        static internal ImportDeclaration MakeImportDecl(PathExpression moduleName, string aliasName)
+        public static ImportDeclaration MakeImportDecl(PathExpression moduleName, string aliasName)
 		{
 			return (aliasName != null) ? new ImportDeclaration(moduleName, aliasName) :
                 new ImportDeclaration(moduleName);
 		}
 
-        static internal ImportDeclaration MakeImportDecl(PathExpression moduleName, IEnumerable<PathExpression> importedEntities)
+        public static ImportDeclaration MakeImportDecl(PathExpression moduleName, IEnumerable<PathExpression> importedEntities)
         {
             return new ImportDeclaration(moduleName, null, importedEntities);
         }

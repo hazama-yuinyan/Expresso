@@ -43,18 +43,18 @@ namespace Expresso.Ast
         public static readonly Role<Expression> LhsRole = BinaryExpression.LhsRole;
         public static readonly Role<Expression> RhsRole = BinaryExpression.RhsRole;
 
-        public static readonly TokenRole AssignRole = new TokenRole("=");
-        public static readonly TokenRole AddRole = new TokenRole("+=");
-        public static readonly TokenRole SubtractRole = new TokenRole("-=");
-        public static readonly TokenRole MultiplyRole = new TokenRole("*=");
-        public static readonly TokenRole DivideRole = new TokenRole("/=");
-        public static readonly TokenRole ModulusRole = new TokenRole("%=");
-        public static readonly TokenRole PowerRole = new TokenRole("**=");
-        public static readonly TokenRole ShiftLeftRole = new TokenRole("<<=");
-        public static readonly TokenRole ShiftRightRole = new TokenRole(">>=");
-        public static readonly TokenRole BitwiseAndRole = new TokenRole("&=");
-        public static readonly TokenRole BitwiseOrRole = new TokenRole("|=");
-        public static readonly TokenRole ExclusiveOrRole = new TokenRole("^=");
+        public static readonly TokenRole AssignRole = new TokenRole("=", ExpressoTokenNode.Null);
+        public static readonly TokenRole AddRole = new TokenRole("+=", ExpressoTokenNode.Null);
+        public static readonly TokenRole SubtractRole = new TokenRole("-=", ExpressoTokenNode.Null);
+        public static readonly TokenRole MultiplyRole = new TokenRole("*=", ExpressoTokenNode.Null);
+        public static readonly TokenRole DivideRole = new TokenRole("/=", ExpressoTokenNode.Null);
+        public static readonly TokenRole ModulusRole = new TokenRole("%=", ExpressoTokenNode.Null);
+        public static readonly TokenRole PowerRole = new TokenRole("**=", ExpressoTokenNode.Null);
+        public static readonly TokenRole ShiftLeftRole = new TokenRole("<<=", ExpressoTokenNode.Null);
+        public static readonly TokenRole ShiftRightRole = new TokenRole(">>=", ExpressoTokenNode.Null);
+        public static readonly TokenRole BitwiseAndRole = new TokenRole("&=", ExpressoTokenNode.Null);
+        public static readonly TokenRole BitwiseOrRole = new TokenRole("|=", ExpressoTokenNode.Null);
+        public static readonly TokenRole ExclusiveOrRole = new TokenRole("^=", ExpressoTokenNode.Null);
 
         /// <summary>
         /// 代入先の変数式。

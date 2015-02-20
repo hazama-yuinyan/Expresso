@@ -10,22 +10,22 @@ namespace Expresso.Ast
 	/// </summary>
     public class UnaryExpression : Expression
 	{
-        public static readonly TokenRole NotRole = new TokenRole("!");
-        public static readonly TokenRole ReferenceRole = new TokenRole("&");
-        public static readonly TokenRole DereferenceRole = new TokenRole("*");
+        public static readonly TokenRole NotRole = new TokenRole("!", ExpressoTokenNode.Null);
+        public static readonly TokenRole ReferenceRole = new TokenRole("&", ExpressoTokenNode.Null);
+        public static readonly TokenRole DereferenceRole = new TokenRole("*", ExpressoTokenNode.Null);
 
-        readonly OperatorType ope;
+        readonly OperatorType op;
 
 		/// <summary>
 		/// 演算子のタイプ。
 		/// The type of the operation.
 		/// </summary>
 		public OperatorType Operator{
-			get{return ope;}
+			get{return op;}
 		}
 
         public ExpressoTokenNode OperatorToken{
-            get{return GetChildByRole(GetOperatorRole(ope));}
+            get{return GetChildByRole(GetOperatorRole(op));}
         }
 
 		/// <summary>
@@ -39,7 +39,7 @@ namespace Expresso.Ast
 
 		public UnaryExpression(OperatorType opType, Expression target)
 		{
-			ope = opType;
+			op = opType;
             Operand = target;
 		}
 

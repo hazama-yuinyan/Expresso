@@ -6,8 +6,11 @@ First of all, I will define basic concepts and terms used throughout the referen
 *** LValues, RValues
 Roughly speaking, a lvalue is a variable that can be assigned and referenced, while a rvalue is a value, meaning results of expressions.
 
+*** Equality and equivalence
+Assume you would compare some objects to some other objects. How would you determine to say they are the same things? In the real world, we sometimes focus only on names or the kinds of things. 
+
 ** Pattern matching
-Pattern matching, which maybe sounds unfamiliar to those who are from imperative languages, is a powerful tool considering its expressive-ness.
+Pattern matching, which maybe sounds unfamiliar to those who are from imperative languages, is a powerful yet comprehensive tool considering its expressive-ness.
 
 ** References
 Like the C or C++ language, Expresso has the pointer type. It is called a reference in Expresso, and its functionality and semantics are very close to that of references in C++. More precisely, a reference always refers to a valid memory location so Expresso has no null literal.
