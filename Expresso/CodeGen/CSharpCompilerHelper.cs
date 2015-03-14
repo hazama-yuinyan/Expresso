@@ -45,6 +45,9 @@ namespace Expresso.CodeGen
             case KnownTypeCode.BigInteger:
                 return typeof(BigInteger);
 
+            case KnownTypeCode.String:
+                return typeof(string);
+
             default:
                 return typeof(object);
             }

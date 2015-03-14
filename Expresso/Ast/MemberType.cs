@@ -50,8 +50,7 @@ namespace Expresso.Ast
         {
             Target = target;
             MemberNameToken = member;
-            foreach(var type_arg in typeArgs)
-                AddChild(type_arg, Roles.TypeArgument);
+            TypeArguments.AddRange(typeArgs);
         }
 
         public MemberType(AstType target, Identifier member, params AstType[] typeArgs)

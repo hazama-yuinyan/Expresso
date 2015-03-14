@@ -8,7 +8,8 @@ using ICSharpCode.NRefactory.TypeSystem;
 namespace Expresso.Ast
 {
     /// <summary>
-    /// A simple type represents an identifier and type arguments.
+    /// A simple type represents a user-defined type or a generic type that is composed of
+    /// an identifier and type arguments.
     /// </summary>
     public class SimpleType : AstType
     {
@@ -87,7 +88,7 @@ namespace Expresso.Ast
         public SimpleType(string identifier, TextLocation start)
             : base(start, new TextLocation(start.Line, start.Column + identifier.Length))
         {
-            AddChild(AstNode.MakeIdentifier(identifier), Roles.Identifier);
+            IdentifierToken = AstNode.MakeIdentifier(identifier);
         }
 
         public SimpleType(Identifier identifier, TextLocation start)
@@ -108,8 +109,7 @@ namespace Expresso.Ast
             : base(start, end)
         {
             IdentifierToken = AstNode.MakeIdentifier(identifier);
-            foreach(var type in typeArgs)
-                AddChild(type, Roles.TypeArgument);
+            TypeArguments.AddRange(typeArgs);
         }
 
         public override void AcceptWalker(IAstWalker walker)

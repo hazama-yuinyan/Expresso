@@ -7,13 +7,14 @@ namespace Expresso.Ast
 	/// <summary>
 	/// While文.
 	/// The While statement.
+    /// The other loop construct in Expresso.
     /// "while" Expression '{' Body '}' ;
 	/// </summary>
     public class WhileStatement : Statement
 	{
 		/// <summary>
         /// 条件式。
-		/// The condition.
+		/// The condition which determines how long we'll continue executing the body statements.
         /// </summary>
         public Expression Condition{
             get{return GetChildByRole(Roles.Expression);}
@@ -22,7 +23,7 @@ namespace Expresso.Ast
 
         /// <summary>
         /// 条件が真の間評価し続けるブロック文。
-        /// The block to be processed while the condition is true.
+        /// The block to be processed while the condition is held true.
         /// </summary>
         public BlockStatement Body{
             get{return GetChildByRole(Roles.Body);}

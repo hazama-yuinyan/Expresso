@@ -7,11 +7,13 @@ namespace Expresso.Runtime.Builtins
 {
 	/// <summary>
 	/// Expresso組み込みのIntSeqオブジェクト。
-	/// The IntSeq object, which represents a sequence of integers.
+	/// The `intseq` type, which represents a sequence of integers.
 	/// As such, it can be used like the "slice" operation in Python.
 	/// I mean, we have some sequence named <c>seq</c> and an expression like <c>seq[1..5]</c>
 	/// returns a new sequence which holds the elements from #1 to #5 of the original sequence
 	/// (<c>seq</c> this time).
+    /// Note that an `intseq` object affecting on sequence types doesn't create a new copy
+    /// of the original sequence. It just returns an iterator that views into the original sequence.
 	/// </summary>
 	[ExpressoType("intseq")]
     public class ExpressoIntegerSequence : IEnumerable<int>
@@ -140,6 +142,7 @@ namespace Expresso.Runtime.Builtins
         /// n = k * x + a where n is an element of the resulting sequence,
         /// k is the step and a is the lower bound.
         /// </remarks>
+        [ExpressoFunction("includes")]
 		public bool Includes(int n)
 		{
 			var remaining = n % this.step;
@@ -152,6 +155,7 @@ namespace Expresso.Runtime.Builtins
 		/// <returns>
 		/// <c>true</c>; if the sequence is sequential, that is, the step is 1; otherwise, <c>false</c>.
 		/// </returns>
+        [ExpressoFunction("isSequential")]
 		public bool IsSequential()
 		{
 			return this.step == 1;

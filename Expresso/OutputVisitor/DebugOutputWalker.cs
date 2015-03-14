@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Collections.Generic;
 using System.Linq;
+using Expresso.CodeGen;
 
 
 namespace Expresso.Ast
@@ -24,27 +25,29 @@ namespace Expresso.Ast
             int length = list.Count();
             var enumerator = list.GetEnumerator();
             for(int i = 0; i < length; ++i){
+                if(i != 0)
+                    writer.Write(", ");
+
                 enumerator.MoveNext();
                 TObject obj = enumerator.Current;
                 obj.AcceptWalker(this);
-                if(i + 1 != length)
-                    writer.Write(", ");
             }
         }
 
-        void PrintPairList<T>(IEnumerable<Tuple<T, T>> list, Func<string> connector)
+        void PrintPairList<T>(IEnumerable<Tuple<T, T>> list, Func<T, T, string> connector)
             where T : AstNode
         {
             int length = list.Count();
             var enumerator = list.GetEnumerator();
             for(int i = 0; i < length; ++i){
+                if(i != 0)
+                    writer.Write(", ");
+
                 enumerator.MoveNext();
                 Tuple<T, T> pair = enumerator.Current;
                 pair.Item1.AcceptWalker(this);
-                writer.Write(connector());
+                writer.Write(connector(pair.Item1, pair.Item2));
                 pair.Item2.AcceptWalker(this);
-                if(i + 1 != length)
-                    writer.Write(", ");
             }
         }
 
@@ -73,18 +76,17 @@ namespace Expresso.Ast
 
         public void VisitBlock(BlockStatement block)
         {
-            writer.Write("{");
+            writer.Write("{count: ");
             writer.Write(block.Statements.Count);
             writer.Write("...}");
         }
 
         public void VisitCallExpression(CallExpression callExpr)
         {
-            writer.Write("<Call: ");
             callExpr.Target.AcceptWalker(this);
             writer.Write("(");
             PrintList(callExpr.Arguments);
-            writer.Write(")>");
+            writer.Write(")");
         }
 
         public void VisitCastExpression(CastExpression castExpr)
@@ -125,14 +127,25 @@ namespace Expresso.Ast
         {
             writer.Write("for ");
             forStmt.Left.AcceptWalker(this);
-            forStmt.Body.AcceptWalker(this);
+            writer.Write(" in ");
+            forStmt.Target.AcceptWalker(this);
+            writer.Write("{...}");
         }
 
         public void VisitIdentifier(Identifier ident)
         {
-            writer.Write(ident.Name);
-            writer.Write(" (- ");
-            ident.Type.AcceptWalker(this);
+            if(ident.Type.IsNull){
+                writer.Write(ident.Name);
+            }else{
+                writer.Write(ident.Name);
+                writer.Write(" (- ");
+                ident.Type.AcceptWalker(this);
+                writer.Write(" @ ");
+                if(ident.IdentifierId == 0)
+                    writer.Write("<invalid>");
+                else
+                    writer.Write("<id: {0}>", ident.IdentifierId);
+            }
         }
 
         public void VisitIfStatement(IfStatement ifStmt)
@@ -153,10 +166,10 @@ namespace Expresso.Ast
 
         public void VisitAst(ExpressoAst ast)
         {
-            writer.Write(ast.IsModule ? "<module " : "<ast ");
+            writer.Write("<module ");
             writer.Write(ast.Name);
-            writer.Write(": ");
-            writer.Write(ast.Body.Count);
+            writer.Write(" : ");
+            writer.Write(ast.Declarations.Count);
             writer.Write(">");
         }
 
@@ -168,33 +181,59 @@ namespace Expresso.Ast
 
         public void VisitSequenceInitializer(SequenceInitializer seqInitializer)
         {
+            var type = CSharpCompilerHelper.GetContainerType(seqInitializer.ObjectType as PrimitiveType);
+            var enclosures = type == typeof(List<>) ? new []{"[", "]"} :
+                type == typeof(Dictionary<,>) ? new []{"{", "}"} : null;
+            writer.Write(enclosures[0]);
+
+            int i = 0;
+            foreach(var item in seqInitializer.Items){
+                if(i >= 5){
+                    writer.Write(", ...");
+                    break;
+                }else if(i != 0){
+                    writer.Write(", ");
+                }
+
+                item.AcceptWalker(this);
+                ++i;
+            }
+
+            writer.Write(enclosures[1]);
         }
 
         public void VisitReturnStatement(ReturnStatement returnStmt)
         {
-            writer.Write("<Return: ");
-            returnStmt.Expression.AcceptWalker(this);
-            writer.Write(">");
+            writer.Write("return ");
+            if(!returnStmt.Expression.IsNull)
+                returnStmt.Expression.AcceptWalker(this);
+
+            writer.Write(";");
         }
 
         public void VisitMatchStatement(MatchStatement matchStmt)
         {
-            writer.Write("<match: (");
+            writer.Write("match ");
             matchStmt.Target.AcceptWalker(this);
-            writer.WriteLine("){");
-            foreach(var clause in matchStmt.Clauses)
-                clause.AcceptWalker(this);
-
-            writer.Write("}");
+            writer.Write("{");
+            writer.Write(matchStmt.Clauses.Count);
+            writer.Write("...}");
         }
 
         public void VisitMatchPatternClause(MatchPatternClause clause)
         {
-            foreach(var label in clause.Patterns){
-                label.AcceptWalker(this);
-                writer.Write(":");
+            bool first = true;
+            foreach(var pattern in clause.Patterns){
+                if(!first)
+                    writer.Write(" | ");
+                else
+                    first = false;
+
+                pattern.AcceptWalker(this);
             }
 
+            writer.Write(" => ");
+            clause.Body.AcceptWalker(this);
         }
 
         public void VisitSequence(SequenceExpression seqExpr)
@@ -204,19 +243,27 @@ namespace Expresso.Ast
 
         public void VisitUnaryExpression(UnaryExpression unaryExpr)
         {
+            unaryExpr.OperatorToken.AcceptWalker(this);
             unaryExpr.Operand.AcceptWalker(this);
         }
 
         public void VisitWhileStatement(WhileStatement whileStmt)
         {
+            writer.Write("while ");
+            whileStmt.Condition.AcceptWalker(this);
+            writer.Write("{...}");
         }
 
         public void VisitYieldStatement(YieldStatement yieldStmt)
         {
+            writer.Write("yield ");
+            yieldStmt.Expression.AcceptWalker(this);
+            writer.Write(";");
         }
 
         public void VisitNullNode(AstNode nullNode)
         {
+            writer.Write("<null>");
         }
 
         public void VisitPatternPlaceholder(AstNode placeholder, ICSharpCode.NRefactory.PatternMatching.Pattern child)
@@ -226,12 +273,21 @@ namespace Expresso.Ast
 
         public void VisitVariableDeclarationStatement(VariableDeclarationStatement varDecl)
         {
-            if((varDecl.Modifiers & Modifiers.Immutable) != 0x00){
+            if(varDecl.Modifiers.HasFlag(Modifiers.Immutable))
                 writer.Write("let ");
-            }else{
+            else
                 writer.Write("var ");
-            }
 
+            int i = 0;
+            foreach(var variable in varDecl.Variables){
+                if(i != 0){
+                    writer.Write(", ...;");
+                    break;
+                }
+
+                variable.AcceptWalker(this);
+                ++i;
+            }
         }
 
         public void VisitComprehensionExpression(ComprehensionExpression comp)
@@ -243,24 +299,20 @@ namespace Expresso.Ast
 
         public void VisitComprehensionForClause(ComprehensionForClause compFor)
         {
-            writer.Write("<comprehension for ");
+            writer.Write("... for ");
             compFor.Left.AcceptWalker(this);
             writer.Write(" in ");
             compFor.Target.AcceptWalker(this);
             if(!compFor.Body.IsNull)
                 writer.Write(" ...");
-
-            writer.Write(">");
         }
 
         public void VisitComprehensionIfClause(ComprehensionIfClause compIf)
         {
-            writer.Write("<comprehension if ");
+            writer.Write("... if ");
             compIf.Condition.AcceptWalker(this);
             if(!compIf.Body.IsNull)
                 writer.Write(" ...");
-
-            writer.Write(">");
         }
 
         public void VisitConditionalExpression(ConditionalExpression condExpr)
@@ -274,6 +326,9 @@ namespace Expresso.Ast
 
         public void VisitKeyValueLikeExpression(KeyValueLikeExpression keyValue)
         {
+            keyValue.KeyExpression.AcceptWalker(this);
+            writer.Write(" : ");
+            keyValue.Value.AcceptWalker(this);
         }
 
         public void VisitLiteralExpression(LiteralExpression literal)
@@ -304,6 +359,8 @@ namespace Expresso.Ast
             foreach(var item in pathExpr.Items){
                 if(!first)
                     writer.Write("::");
+                else
+                    first = false;
 
                 item.AcceptWalker(this);
             }
@@ -318,10 +375,39 @@ namespace Expresso.Ast
 
         public void VisitObjectCreationExpression(ObjectCreationExpression creation)
         {
+            creation.TypePath.AcceptWalker(this);
+            writer.Write("{");
+            int i = 0;
+            foreach(var item in creation.Items){
+                if(i > 5){
+                    writer.Write(", ...");
+                    break;
+                }else if(i != 0){
+                    writer.Write(", ");
+                }
+
+                item.AcceptWalker(this);
+                ++i;
+            }
+            writer.Write("}");
         }
 
         public void VisitMatchClause(MatchPatternClause matchClause)
         {
+            int i = 0;
+            foreach(var pattern in matchClause.Patterns){
+                if(i >= 3){
+                    writer.Write("...");
+                    break;
+                }else if(i != 0){
+                    writer.Write(" | ");
+                }
+
+                pattern.AcceptWalker(this);
+                ++i;
+            }
+
+            writer.Write(" => {...}");
         }
 
         public void VisitSelfReferenceExpression(SelfReferenceExpression selfRef)
@@ -336,10 +422,14 @@ namespace Expresso.Ast
 
         public void VisitCommentNode(CommentNode comment)
         {
+            writer.Write("//" + comment.Text);
         }
 
         public void VisitTextNode(TextNode textNode)
         {
+            writer.Write("<?");
+            writer.Write(textNode.Text);
+            writer.Write("?>");
         }
 
         public void VisitSimpleType(SimpleType simpleType)
@@ -354,6 +444,7 @@ namespace Expresso.Ast
 
         public void VisitPrimitiveType(PrimitiveType primitiveType)
         {
+            writer.Write(primitiveType.KnownTypeCode);
             //primitiveType.KeywordToken;
         }
 
@@ -406,7 +497,7 @@ namespace Expresso.Ast
 
         public void VisitTypeDeclaration(TypeDeclaration typeDecl)
         {
-            writer.Write(typeDecl.ClassType.ToString());
+            writer.Write("{0} ", typeDecl.ClassType.ToString());
             writer.Write(typeDecl.Name);
             if(typeDecl.BaseTypes.HasChildren){
                 writer.Write(" : ");
@@ -417,56 +508,134 @@ namespace Expresso.Ast
 
         public void VisitFieldDeclaration(FieldDeclaration fieldDecl)
         {
+            if(fieldDecl.HasModifier(Modifiers.Immutable))
+                writer.Write("let ");
+            else
+                writer.Write("var ");
+
+            int i = 0;
+            foreach(var init in fieldDecl.Initializers){
+                if(i != 0){
+                    writer.Write(", ...");
+                    break;
+                }
+
+                init.AcceptWalker(this);
+                ++i;
+            }
         }
 
         public void VisitParameterDeclaration(ParameterDeclaration parameterDecl)
         {
+            parameterDecl.NameToken.AcceptWalker(this);
+            parameterDecl.ReturnType.AcceptWalker(this);
+            if(!parameterDecl.Option.IsNull){
+                writer.Write(" = [");
+                parameterDecl.Option.AcceptWalker(this);
+                writer.Write("]");
+            }
         }
 
         public void VisitVariableInitializer(VariableInitializer initializer)
         {
+            initializer.NameToken.AcceptWalker(this);
+            writer.Write(" = ");
+            initializer.Initializer.AcceptWalker(this);
         }
 
         public void VisitWildcardPattern(WildcardPattern wildcardPattern)
         {
+            writer.Write("_");
         }
 
         public void VisitIdentifierPattern(IdentifierPattern identifierPattern)
         {
+            identifierPattern.Identifier.AcceptWalker(this);
+            if(!identifierPattern.InnerPattern.IsNull){
+                writer.Write(" @ ");
+                identifierPattern.InnerPattern.AcceptWalker(this);
+            }
         }
 
         public void VisitValueBindingPattern(ValueBindingPattern valueBindingPattern)
         {
+            if(valueBindingPattern.Modifiers.HasFlag(Modifiers.Immutable))
+                writer.Write("let ");
+            else
+                writer.Write("var ");
+
+            valueBindingPattern.Pattern.AcceptWalker(this);
         }
 
         public void VisitCollectionPattern(CollectionPattern collectionPattern)
         {
+            var type = CSharpCompilerHelper.GetNativeType(collectionPattern.CollectionType);
+            if(type == typeof(Dictionary<,>)){
+                writer.Write("{");
+                int i = 0;
+                foreach(var elem in collectionPattern.Items){
+                    if(i > 5){
+                        writer.Write(", ...");
+                        break;
+                    }else if(i != 0){
+                        writer.Write(", ");
+                    }
 
+                    elem.AcceptWalker(this);
+                    ++i;
+                }
+                writer.Write("}");
+            }else if(type == typeof(List<>) || type == typeof(Array)){
+                writer.Write("[");
+                int i = 0;
+                foreach(var elem in collectionPattern.Items){
+                    if(i > 5){
+                        writer.Write(", ...");
+                        break;
+                    }else if(i != 0){
+                        writer.Write(", ");
+                    }
+
+                    elem.AcceptWalker(this);
+                    ++i;
+                }
+                writer.Write("]");
+            }
         }
 
         public void VisitDestructuringPattern(DestructuringPattern destructuringPattern)
         {
-
+            destructuringPattern.TypePath.AcceptWalker(this);
+            writer.Write("{");
+            destructuringPattern.Items.AcceptWalker(this);
+            writer.Write("}");
         }
 
         public void VisitTuplePattern(TuplePattern tuplePattern)
         {
+            writer.Write("(");
+            tuplePattern.Patterns.AcceptWalker(this);
+            writer.Write(")");
         }
 
         public void VisitExpressionPattern(ExpressionPattern exprPattern)
         {
+            exprPattern.Expression.AcceptWalker(this);
         }
 
         public void VisitNewLine(NewLineNode newlineNode)
         {
+            writer.Write("\n");
         }
 
         public void VisitWhitespace(WhitespaceNode whitespaceNode)
         {
+            writer.Write(whitespaceNode.WhitespaceText);
         }
 
         public void VisitExpressoTokenNode(ExpressoTokenNode tokenNode)
         {
+            writer.Write(TokenRole.Tokens[(int)tokenNode.RoleIndex >> (TokenRole.RoleIndexBits + 1)]);
         }
 
         #endregion

@@ -7,6 +7,7 @@ using System.Linq;
 using Expresso.Ast;
 using Expresso.Ast.Analysis;
 using Expresso.Runtime.Builtins;
+using System.IO;
 
 namespace Expresso.CodeGen
 {
@@ -33,17 +34,31 @@ namespace Expresso.CodeGen
         //# that identifies the symbol uniqueness within the whole program.
         //###################################################
         static List<ExpressoSymbol> Symbols = new List<ExpressoSymbol>();
+        static int LoopCounter = 1;
 
 		ExprTree.LabelTarget return_target = null;
 		bool has_continue;
 
         SymbolTable symbol_table;
-        List<CSharpExpr> field_initializers = new List<CSharpExpr>();
+        ExpressoCompilerOptions options;
 
         List<ExprTree.LabelTarget> break_targets = new List<ExprTree.LabelTarget>();
         List<ExprTree.LabelTarget> continue_targets = new List<ExprTree.LabelTarget>();
 
         int sibling_count = 0;
+
+        /// <summary>
+        /// Gets the generated assembly.
+        /// </summary>
+        public AssemblyBuilder AssemblyBuilder{
+            get; private set;
+        }
+
+        public CSharpEmitter(Parser parser, ExpressoCompilerOptions options)
+        {
+            symbol_table = parser.Symbols;
+            this.options = options;
+        }
 
         static IEnumerable<CSharpExpr> MakeIterableAssignments(IEnumerable<CSharpExpr> variables,
             ExprTree.MemberExpression property)
@@ -59,14 +74,12 @@ namespace Expresso.CodeGen
 
         void DescendScope()
         {
-            symbol_table = symbol_table.Children[0];
-            sibling_count = 1;
+            symbol_table = symbol_table.Children[sibling_count];
         }
 
         void AscendScope()
         {
             symbol_table = symbol_table.Parent;
-            sibling_count = 0;
         }
 
         void ProceedToNextSibling()
@@ -83,7 +96,7 @@ namespace Expresso.CodeGen
 
             var name = new AssemblyName(ast.ModuleName);
 
-            var asm_builder = AppDomain.CurrentDomain.DefineDynamicAssembly(name, AssemblyBuilderAccess.Save);
+            var asm_builder = AppDomain.CurrentDomain.DefineDynamicAssembly(name, AssemblyBuilderAccess.RunAndSave);
             var mod_builder = asm_builder.DefineDynamicModule(ast.ModuleName);
 
             context.AssemblyBuilder = asm_builder;
@@ -92,19 +105,23 @@ namespace Expresso.CodeGen
             foreach(var import in ast.Imports)
                 import.AcceptWalker(this, context);
 
-            foreach(var decl in ast.Body)
+            foreach(var decl in ast.Declarations)
                 decl.AcceptWalker(this, context);
 
             mod_builder.CreateGlobalFunctions();
             var main_func = mod_builder.GetMethod("main");
             asm_builder.SetEntryPoint(main_func);
-            asm_builder.Save(ast.ModuleName);
+            asm_builder.Save(Path.Combine(options.OutputPath, ast.ModuleName));
+
+            AssemblyBuilder = asm_builder;
 
             return null;
         }
 
         public CSharpExpr VisitBlock(BlockStatement block, CSharpEmitterContext context)
         {
+            int tmp_counter = sibling_count;
+            sibling_count = 0;
             DescendScope();
             var contents = new List<CSharpExpr>();
             foreach(var stmt in block.Statements){
@@ -114,6 +131,7 @@ namespace Expresso.CodeGen
 
             var variables = ConvertSymbolsToParameters();
             AscendScope();
+            sibling_count = tmp_counter + 1;
             return CSharpExpr.Block(contents.Last().Type, variables, contents);
         }
 
@@ -149,13 +167,15 @@ namespace Expresso.CodeGen
 
         public CSharpExpr VisitForStatement(ForStatement forStmt, CSharpEmitterContext context)
         {
+            int tmp_counter = sibling_count;
+            sibling_count = 0;
             DescendScope();
             forStmt.Left.AcceptWalker(this, context);
             var iterator = forStmt.Target.AcceptWalker(this, context);
 
-            var guid = new Guid();
-            var break_target = CSharpExpr.Label("__EndFor" + guid.ToString());
-            var continue_target = CSharpExpr.Label("__StartFor" + guid.ToString());
+            var break_target = CSharpExpr.Label("__EndFor" + LoopCounter.ToString());
+            var continue_target = CSharpExpr.Label("__StartFor" + LoopCounter.ToString());
+            ++LoopCounter;
             break_targets.Add(break_target);
             continue_targets.Add(continue_target);
 
@@ -183,21 +203,27 @@ namespace Expresso.CodeGen
             break_targets.RemoveAt(break_targets.Count - 1);
             continue_targets.RemoveAt(continue_targets.Count - 1);
             AscendScope();
+            sibling_count = tmp_counter + 1;
 
             return loop;
         }
 
         public CSharpExpr VisitIfStatement(IfStatement ifStmt, CSharpEmitterContext context)
         {
+            int tmp_counter = sibling_count;
+            sibling_count = 0;
             DescendScope();
+
             var cond = ifStmt.Condition.AcceptWalker(this, context);
             var true_block = ifStmt.TrueBlock.AcceptWalker(this, context);
 
             if(ifStmt.FalseBlock.IsNull){
+                sibling_count = tmp_counter + 1;
                 AscendScope();
                 return CSharpExpr.IfThen(cond, true_block);
             }else{
                 var false_block = ifStmt.FalseBlock.AcceptWalker(this, context);
+                sibling_count = tmp_counter + 1;
                 AscendScope();
                 return CSharpExpr.IfThenElse(cond, true_block, false_block);
             }
@@ -224,6 +250,9 @@ namespace Expresso.CodeGen
             var target_var = CSharpExpr.Parameter(target.Type);
             context.TemporaryVariable = target_var;
             context.ContextExpression = null;
+
+            int tmp_counter = sibling_count;
+            sibling_count = 0;
             DescendScope();
 
             foreach(var clause in matchStmt.Clauses){
@@ -236,6 +265,9 @@ namespace Expresso.CodeGen
                     context.ContextExpression = tmp;
                 }
             }
+
+            sibling_count = tmp_counter + 1;
+            AscendScope();
 
             context.TemporaryVariable = null;
             return CSharpExpr.Block(new List<ExprTree.ParameterExpression>{
@@ -250,11 +282,15 @@ namespace Expresso.CodeGen
         {
             has_continue = false;
 
-            var guid = new Guid();
-            var end_loop = CSharpExpr.Label("__EndWhile" + guid.ToString());
-            var continue_loop = CSharpExpr.Label("__BeginWhile" + guid.ToString());
+            var end_loop = CSharpExpr.Label("__EndWhile" + LoopCounter.ToString());
+            var continue_loop = CSharpExpr.Label("__BeginWhile" + LoopCounter.ToString());
+            ++LoopCounter;
             break_targets.Add(end_loop);
             continue_targets.Add(continue_loop);
+
+            int tmp_counter = sibling_count;
+            sibling_count = 0;
+            DescendScope();
 
             var condition = CSharpExpr.IfThen(whileStmt.Condition.AcceptWalker(this, context),
                 CSharpExpr.Break(end_loop));
@@ -265,6 +301,8 @@ namespace Expresso.CodeGen
             break_targets.RemoveAt(break_targets.Count - 1);
             continue_targets.RemoveAt(continue_targets.Count - 1);
 
+            sibling_count = tmp_counter + 1;
+            AscendScope();
             return has_continue ? CSharpExpr.Loop(body, end_loop, continue_loop) :
                 CSharpExpr.Loop(body, end_loop);        //while(condition){body...}
         }
@@ -466,7 +504,7 @@ namespace Expresso.CodeGen
             var expr = memRef.Target.AcceptWalker(this, context);
             context.Member = null;
             context.Method = null;
-            var subscript = memRef.Subscription.AcceptWalker(this, context);
+            memRef.Subscription.AcceptWalker(this, context);
             return context.Method != null ? null : CSharpExpr.MakeMemberAccess(expr, context.Member);
         }
 
@@ -538,9 +576,9 @@ namespace Expresso.CodeGen
         {
             var args = new List<CSharpExpr>(creation.Items.Count);
             context.Constructor = null;
-            creation.Path.AcceptWalker(this, context);
+            creation.TypePath.AcceptWalker(this, context);
             if(context.Constructor != null)
-                throw new EmitterException("No constructor found for the path `{0}`", creation.Path);
+                throw new EmitterException("No constructor found for the path `{0}`", creation.TypePath);
 
             var formal_params = context.Constructor.GetParameters();
             foreach(var pair in creation.Items){
@@ -558,7 +596,7 @@ namespace Expresso.CodeGen
                     }
                 })){
                     throw new EmitterException(@"Can not create an instance with constructor `{0}`
-because it doesn't have field named `{1}`", creation.Path, key);
+because it doesn't have field named `{1}`", creation.TypePath, key);
                 }
                 args[index] = value_expr;
             }
@@ -991,7 +1029,7 @@ because it doesn't have field named `{1}`", creation.Path, key);
             CSharpEmitterContext context)
         {
             context.TargetType = null;
-            destructuringPattern.Path.AcceptWalker(this, context);
+            destructuringPattern.TypePath.AcceptWalker(this, context);
             var type = context.TargetType;
 
             var parameters = new List<CSharpExpr>();

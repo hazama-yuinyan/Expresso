@@ -51,12 +51,11 @@ namespace Expresso.Ast
         #endregion
 
         /// <summary>
-        /// The path expression to create an instance out of.
+        /// The type path to create an instance out of.
         /// </summary>
-        /// <value>The path.</value>
-        public PathExpression Path{
-            get{return GetChildByRole(Roles.Path);}
-            set{SetChildByRole(Roles.Path, value);}
+        public AstType TypePath{
+            get{return GetChildByRole(Roles.Type);}
+            set{SetChildByRole(Roles.Type, value);}
         }
 
         /// <summary>
@@ -71,11 +70,11 @@ namespace Expresso.Ast
         {
         }
 
-        public ObjectCreationExpression(PathExpression path, IEnumerable<PathExpression> fields, IEnumerable<Expression> values)
+        public ObjectCreationExpression(AstType path, IEnumerable<PathExpression> fields, IEnumerable<Expression> values)
         {
-            Path = path;
+            TypePath = path;
             foreach(var item in fields.Zip(values, (field, value) => new KeyValueLikeExpression(field, value)))
-                AddChild(item, Roles.KeyValue);
+                Items.Add(item);
         }
 
         #region implemented abstract members of AstNode
@@ -98,7 +97,7 @@ namespace Expresso.Ast
         protected internal override bool DoMatch(AstNode other, ICSharpCode.NRefactory.PatternMatching.Match match)
         {
             var o = other as ObjectCreationExpression;
-            return o != null && Items.DoMatch(o.Items, match);
+            return o != null && TypePath.DoMatch(o.TypePath, match) && Items.DoMatch(o.Items, match);
         }
 
         #endregion

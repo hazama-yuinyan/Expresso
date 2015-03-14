@@ -14,15 +14,16 @@ namespace Expresso.Ast
     /// 2. Name imports.
     /// Path resolving can be done as follows:
     /// Above all, a path item can always be interpreted as a file name and since path items don't
-    /// have file extensions ".exs" is appended if the item is being interpreted as a file name.
-    /// If there is no files matching to the path item being recognized as a file name,
+    /// have file extensions, ".exs" is appended if the item is being interpreted as a file name.
+    /// If there are no files matching to the path item being recognized as a file name,
     /// it will try to match directory names.
     /// "import" PathExpression [ "as" ident ] ';'
     /// | "import" Identifier { ',' Identifier } "in" PathExpression ';' ;
     /// </summary>
     public class ImportDeclaration : AstNode
     {
-        public static readonly TokenRole ImportKeyword = new TokenRole("import", ExpressoTokenNode.Null);
+        public static readonly TokenRole ImportKeyword =
+            new TokenRole("import", ExpressoTokenNode.Null);
         public static readonly Role<PathExpression> ModuleNameRole =
             new Role<PathExpression>("ModuleName", PathExpression.Null);
         public static readonly Role<Identifier> AliasNameRole =
@@ -97,10 +98,8 @@ namespace Expresso.Ast
             if(aliasName != null)
                 AliasNameToken = AstNode.MakeIdentifier(aliasName);
 
-            if(importedEntities != null){
-                foreach(var entity in importedEntities)
-                    AddChild(entity, ImportedEntityRole);
-            }
+            if(importedEntities != null)
+                ImportedEntities.AddRange(importedEntities);
 		}
 
         public override void AcceptWalker(IAstWalker walker)

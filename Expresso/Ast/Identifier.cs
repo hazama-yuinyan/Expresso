@@ -62,7 +62,7 @@ namespace Expresso.Ast
         /// <summary>
         /// Gets or sets the identifier id. This id represents the identity or uniqueness of that node
         /// within a whole program.
-        /// If some 2 Identifier nodes have the same id, it means that the 2 nodes refer to the same value.
+        /// If some 2 Identifier nodes have the same id, that means that the 2 nodes refer to the same value.
         /// This will get set during name binding.
         /// </summary>
         /// <remarks>0 is considered invalid for IdentifierId.</remarks>

@@ -16,6 +16,13 @@ namespace Expresso.Ast.Analysis
     {
         Dictionary<string, Identifier> type_table, table;
 
+        /// <summary>
+        /// The name for this symbol scope.
+        /// </summary>
+        public string Name{
+            get; set;
+        }
+
         public SymbolTable Parent{
             get; set;
         }
@@ -31,6 +38,13 @@ namespace Expresso.Ast.Analysis
             get{
                 return table.Values;
             }
+        }
+
+        /// <summary>
+        /// Gets the number of symbols.
+        /// </summary>
+        public int NumOfSymbols{
+            get{return Symbols.Count();}
         }
 
         public SymbolTable()
@@ -102,6 +116,17 @@ namespace Expresso.Ast.Analysis
         }
 
         /// <summary>
+        /// Adds a new name to the type namespace.
+        /// Use this overload when encountered with a new type declaration.
+        /// </summary>
+        /// <param name="name">Name.</param>
+        /// <param name="ident">Ident.</param>
+        public void AddTypeSymbol(string name, Identifier ident)
+        {
+            type_table.Add(name, ident);
+        }
+
+        /// <summary>
         /// Adds a new name to the symbol scope.
         /// </summary>
         /// <param name="name">Name.</param>
@@ -117,7 +142,7 @@ namespace Expresso.Ast.Analysis
                 table.Add(name, ident);
             }
             catch(ArgumentException){
-                throw new ParserException("The name `{0}` is already defined in the current scope.", name);
+                throw new ParserException("The name `{0}` is already defined in the current scope {1}.", name, Name);
             }
         }
 
@@ -129,12 +154,8 @@ namespace Expresso.Ast.Analysis
         public Identifier GetTypeSymbol(string name)
         {
             Identifier result;
-            if(!type_table.TryGetValue(name, out result)){
-                throw new ParserException(
-                    "Type '{0}' turns out not be declared in the current scope!\nSomething wrong is happening!",
-                    name
-                );
-            }
+            if(type_table.TryGetValue(name, out result))
+                return null;
 
             return result;
         }
@@ -147,12 +168,9 @@ namespace Expresso.Ast.Analysis
         public Identifier GetSymbol(string name)
         {
             Identifier result;
-            if(!table.TryGetValue(name, out result)){
-                throw new ParserException(
-                    "{0} turns out not to be declared in type check phase!\nSomething wrong is happening!",
-                    name
-                );
-            }
+            if(!table.TryGetValue(name, out result))
+                return null;
+
             return result;
         }
 
@@ -188,6 +206,11 @@ namespace Expresso.Ast.Analysis
             var child = new SymbolTable();
             child.Parent = this;
             Children.Add(child);
+        }
+
+        public override string ToString()
+        {
+            return string.Format("<SymbolTable`{0}: {1}>", Name, Symbols.Count());
         }
     }
 }

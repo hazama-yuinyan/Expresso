@@ -15,6 +15,7 @@ def printInt(n (- int) -> ()    //The void type is the synonym for the unit type
 	print(n);
 }
 
+// You can use generics as in most other programming languages
 def makeList() -> vector<int>
 {
 	return [1,2,3,4,5,6, ...];
@@ -43,7 +44,7 @@ def printList<T>(input (- vector<T>, header = "") //You can omit type annotation
 
 def testMatch<T>(input (- T)
 {
-	match input {
+	match input {   // All pattern expressions have to be exactly the same type
 	    "abc" => print("Detects a string");
 	    "あかりちゃん" | "akarichan" => print("あかりんかわかわ");
 	}
@@ -85,6 +86,9 @@ def main()
 		print item;*/
 	
 	printList(list_obj);
+    // Applying an intseq object on sequence types yields an iterator that views only on the elements
+    // that are interested in
+    // So you can use it without any worries of memory comsumption and performance deterioration
 	let list_obj2 = list_obj[0..2];
 	printList(list_obj2, "Sliced list:");
 	println("Left shift:{}", w << 1);

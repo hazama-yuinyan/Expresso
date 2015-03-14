@@ -3,6 +3,7 @@ using System.Linq;
 using ICSharpCode.NRefactory;
 using ICSharpCode.NRefactory.PatternMatching;
 using Expresso.TypeSystem;
+using System.Collections.Generic;
 
 
 namespace Expresso.Ast.Analysis
@@ -18,11 +19,13 @@ namespace Expresso.Ast.Analysis
     /// </remarks>
     public class TypeInferenceRunner : IAstWalker<AstType>
     {
+        Parser parser;
         SymbolTable symbols;
         TypeInferenceContext context;
 
-        public TypeInferenceRunner(SymbolTable table)
+        public TypeInferenceRunner(Parser parser, SymbolTable table)
         {
+            this.parser = parser;
             symbols = table;
             context = new TypeInferenceContext();
         }
@@ -99,7 +102,8 @@ namespace Expresso.Ast.Analysis
             // In an assignment, we want to know the type of the left-hand-side
             // So let's take a look at the right-hand-side
             context.Stack.Push(assignment.Left);
-            assignment.Right.AcceptWalker(this);
+            var right_type = assignment.Right.AcceptWalker(this);
+            return right_type;
         }
 
         public AstType VisitBinaryExpression(BinaryExpression binaryExpr)
@@ -152,19 +156,28 @@ namespace Expresso.Ast.Analysis
             return ident.Type;
         }
 
-        public AstType VisitIntgerSequenceExpression(IntegerSequenceExpression intSeq)
+        public AstType VisitIntegerSequenceExpression(IntegerSequenceExpression intSeq)
         {
             return new PrimitiveType("intseq", TextLocation.Empty);
         }
 
         public AstType VisitIndexerExpression(IndexerExpression indexExpr)
         {
-            return indexExpr.Target.AcceptWalker(this);
+            var target_type = indexExpr.Target.AcceptWalker(this);
+            var simple_type = target_type as SimpleType;
+            if(simple_type != null){
+                if(simple_type.Identifier != "array")
+                    throw new Exception("Can not apply the indexer expression on type `{0}`");
+
+                return simple_type.TypeArguments.FirstOrNullObject();
+            }
+
+            return target_type;
         }
 
         public AstType VisitMemberReference(MemberReference memRef)
         {
-
+            return null;
         }
 
         public AstType VisitNewExpression(NewExpression newExpr)
@@ -181,13 +194,13 @@ namespace Expresso.Ast.Analysis
                 AstType result = null;
                 foreach(var item in pathExpr.Items){
                     if(table.HasTypeSymbol(item.Name)){
-                        var tmp_type = table.GetSymbolType(item.Name);
-                        result = tmp_type;
-                        table = table.Child;
+                        var tmp_type = table.GetTypeSymbol(item.Name);
+                        result = tmp_type.Type;
+                        table = table.Children[0];
                     }else if(table.HasSymbol(item.Name)){
-                        var tmp = table.GetSymbolType(item.Name);
-                        result = tmp;
-                        table = table.Child;
+                        var tmp = table.GetTypeSymbol(item.Name);
+                        result = tmp.Type;
+                        table = table.Children[0];
                     }else{
                         throw new ParserException(
                             "Type or symbol name '{0}' is not declared",
@@ -207,7 +220,7 @@ namespace Expresso.Ast.Analysis
 
         public AstType VisitObjectCreationExpression(ObjectCreationExpression creation)
         {
-            return creation.Path.AcceptWalker(this);
+            return creation.TypePath.AcceptWalker(this);
         }
 
         public AstType VisitSequenceInitializer(SequenceInitializer seqInitializer)
@@ -217,12 +230,16 @@ namespace Expresso.Ast.Analysis
 
         public AstType VisitMatchClause(MatchPatternClause matchClause)
         {
-            throw new NotImplementedException();
+            return AstType.Null;
         }
 
         public AstType VisitSequence(SequenceExpression seqExpr)
         {
-            return seqExpr.Items.LastOrNullObject().AcceptWalker(this);
+            // The type of the element of a sequence can be seen as the most common type
+            // of the whole sequence.
+            var self = this;
+            var types = seqExpr.Items.Select(item => (AstType)item.AcceptWalker(self).Clone());
+            return new SimpleType("tuple", types, seqExpr.StartLocation, seqExpr.EndLocation);
         }
 
         public AstType VisitUnaryExpression(UnaryExpression unaryExpr)
@@ -230,10 +247,10 @@ namespace Expresso.Ast.Analysis
             var tmp = unaryExpr.Operand.AcceptWalker(this);
             switch(unaryExpr.Operator){
             case OperatorType.Dereference:
-                return;
+                return null;
 
             case OperatorType.Reference:
-                return;
+                return null;
 
             case OperatorType.Plus:
             case OperatorType.Minus:
@@ -251,7 +268,6 @@ namespace Expresso.Ast.Analysis
 
                     throw new ParserException("Can not apply operators '+' or '-' on that type of values.");
                 }
-                return;
 
             case OperatorType.Not:
                 return new PrimitiveType("bool", TextLocation.Empty);
@@ -293,19 +309,34 @@ namespace Expresso.Ast.Analysis
             throw new NotImplementedException("Can not work on that node!");
         }
 
-        public AstType VisitAstType(AstType typeNode)
-        {
-            throw new NotImplementedException("Can not work on that node!");
-        }
-
         public AstType VisitSimpleType(SimpleType simpleType)
         {
-            throw new NotImplementedException("Can not work on that node!");
+            return simpleType;
         }
 
         public AstType VisitPrimitiveType(PrimitiveType primitiveType)
         {
-            throw new NotImplementedException("Can not work on that node!");
+            return primitiveType;
+        }
+
+        public AstType VisitReferenceType(ReferenceType referenceType)
+        {
+            return referenceType.BaseType;
+        }
+
+        public AstType VisitMemberType(MemberType memberType)
+        {
+            return memberType.MemberNameToken.Type;
+        }
+
+        public AstType VisitPlaceholderType(PlaceholderType placeholderType)
+        {
+            return null;
+        }
+
+        public AstType VisitAliasDeclaration(AliasDeclaration aliasDecl)
+        {
+            return aliasDecl.Path.AcceptWalker(this);
         }
 
         public AstType VisitImportDeclaration(ImportDeclaration importDecl)
@@ -315,7 +346,7 @@ namespace Expresso.Ast.Analysis
 
         public AstType VisitFunctionDeclaration(FunctionDeclaration funcDecl)
         {
-            throw new NotImplementedException();
+            return funcDecl.ReturnType;
         }
 
         public AstType VisitTypeDeclaration(TypeDeclaration typeDecl)
@@ -340,27 +371,44 @@ namespace Expresso.Ast.Analysis
 
         public AstType VisitWildcardPattern(WildcardPattern wildcardPattern)
         {
-            throw new NotImplementedException();
+            return SimpleType.Null;
         }
 
         public AstType VisitIdentifierPattern(IdentifierPattern identifierPattern)
         {
-            throw new NotImplementedException();
+            if(identifierPattern.InnerPattern.IsNull)
+                return identifierPattern.Identifier.AcceptWalker(this);
+            else
+                return identifierPattern.InnerPattern.AcceptWalker(this);
         }
 
         public AstType VisitValueBindingPattern(ValueBindingPattern valueBindingPattern)
         {
-            throw new NotImplementedException();
+            return valueBindingPattern.Pattern.AcceptWalker(this);
         }
 
         public AstType VisitTuplePattern(TuplePattern tuplePattern)
+        {
+            var elem_types = new List<AstType>();
+            foreach(var elem in tuplePattern.Patterns)
+                elem_types.Add(elem.AcceptWalker(this));
+
+            return new SimpleType("tuple", elem_types, tuplePattern.StartLocation, tuplePattern.EndLocation);
+        }
+
+        public AstType VisitCollectionPattern(CollectionPattern collectionPattern)
+        {
+            throw new NotImplementedException();
+        }
+
+        public AstType VisitDestructuringPattern(DestructuringPattern destructuringPattern)
         {
             throw new NotImplementedException();
         }
 
         public AstType VisitExpressionPattern(ExpressionPattern exprPattern)
         {
-            throw new NotImplementedException();
+            return exprPattern.Expression.AcceptWalker(this);
         }
 
         public AstType VisitNullNode(AstNode nullNode)
@@ -390,11 +438,6 @@ namespace Expresso.Ast.Analysis
 
         #endregion
 
-        void ComplainAboutUsage()
-        {
-            throw new NotImplementedException("Can not work on that node!");
-        }
-
         /// <summary>
         /// Given 2 expressions, it tries to figure out the most common type.
         /// </summary>
@@ -420,13 +463,22 @@ namespace Expresso.Ast.Analysis
             var lhs_simple = lhs_type as SimpleType;
             var rhs_simple = rhs_type as SimpleType;
             if(lhs_simple != null && rhs_simple != null){
+                return null;
             }
+
+            parser.ReportWarning(
+                "Can not guess the common type between `{0}` and `{1}`.",
+                lhs,
+                lhs, rhs
+            );
+
+            return null;
         }
 
         static bool IsNumericalType(PrimitiveType type)
         {
             return (int)Expresso.TypeSystem.KnownTypeCode.Int <= (int)type.KnownTypeCode
-                && (int)type.KnownTypeCode <= Expresso.TypeSystem.KnownTypeCode.BigInteger;
+                && (int)type.KnownTypeCode <= (int)Expresso.TypeSystem.KnownTypeCode.BigInteger;
         }
     }
 }

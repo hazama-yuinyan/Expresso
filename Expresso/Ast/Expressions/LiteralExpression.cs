@@ -10,6 +10,39 @@ namespace Expresso.Ast
     /// </summary>
     public class LiteralExpression : Expression
     {
+        #region Null
+        public static new readonly LiteralExpression Null = new NullLiteralExpression();
+
+        sealed class NullLiteralExpression : LiteralExpression
+        {
+            public override bool IsNull{
+                get{
+                    return true;
+                }
+            }
+
+            public override void AcceptWalker(IAstWalker walker)
+            {
+                walker.VisitNullNode(this);
+            }
+
+            public override TResult AcceptWalker<TResult>(IAstWalker<TResult> walker)
+            {
+                return walker.VisitNullNode(this);
+            }
+
+            public override TResult AcceptWalker<TResult, TData>(IAstWalker<TData, TResult> walker, TData data)
+            {
+                return walker.VisitNullNode(this, data);
+            }
+
+            internal protected override bool DoMatch(AstNode other, ICSharpCode.NRefactory.PatternMatching.Match match)
+            {
+                return other == null || other.IsNull;
+            }
+        }
+        #endregion
+
         public static readonly object AnyValue = new object();
 
         object value;
@@ -41,11 +74,16 @@ namespace Expresso.Ast
             get{return literal_value ?? "";}
         }
 
+        protected LiteralExpression()
+        {
+        }
+
         public LiteralExpression(object value, AstType valType, TextLocation loc)
             : base(loc, new TextLocation(loc.Line, loc.Column + value.ToString().Length))
 		{
             Type = valType;
             Value = value;
+            literal_value = value.ToString();
 		}
 
         public void SetValue(object value, string literalValue)

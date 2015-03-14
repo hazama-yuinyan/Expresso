@@ -31,7 +31,7 @@ namespace Expresso.Runtime.Builtins
 		#region Expressoの組み込み関数郡
 
         /// <summary>
-        /// Given two iterators, it 
+        /// Given two iterators, it returns a tuple 
         /// </summary>
         /// <param name="iter">Iter.</param>
         /// <param name="iter2">Iter2.</param>

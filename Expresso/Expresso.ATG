@@ -1,8 +1,9 @@
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 using System.Numerics;
-using System.Text;
+using System.Text.RegularExpressions;
 
 using Expresso.Ast;
 using Expresso.Ast.Analysis;
@@ -14,14 +15,27 @@ using ICSharpCode.NRefactory;
 using ExpressoModifiers = Expresso.Ast.Modifiers;
 
 
-
 COMPILER Expresso
+
+$namespace=Expresso
+    static uint ScopeId = 1;
+    static Regex UnicodeEscapeFinder = new Regex(@"\\[uU]([\dA-Fa-f]{4}|[\dA-Fa-f]{6})", RegexOptions.Compiled);
     internal SymbolTable Symbols{get; set;}
-    public string ParsingFileName{get; set;}
+    /// <summary>
+    /// This flag determines whether we are doing post-parse processing including name binding,
+    /// type validity check, type inference and flow analisys.
+    /// </summary>
+    public bool DoPostParseProcessing{get; set;}
 	public ExpressoAst TopmostAst{get; private set;}	//the top-level AST the parser is parsing
     public TextLocation CurrentLocation{
         get{
             return new TextLocation(t.line, t.col);
+        }
+    }
+
+    public TextLocation NextLocation{
+        get{
+            return new TextLocation(la.line, la.col);
         }
     }
 
@@ -38,6 +52,7 @@ COMPILER Expresso
     ///</remarks>
 	Parser()
 	{
+        DoPostParseProcessing = false;
         Symbols = new SymbolTable();
 	}
 	
@@ -92,13 +107,14 @@ COMPILER Expresso
         string type_name = "int";
         object obj = null;
         string suffix = value.Substring(value.Length - 1);
+        string numerics = value.Replace("_", "");
         switch(suffix){
         case "u":
         case "U":
         {
             type_name = "uint";
             uint u;
-            if(uint.TryParse(value.Substring(0, value.Length - 1), out u))
+            if(uint.TryParse(numerics.Substring(0, numerics.Length - 1), out u))
                 obj = u;
             else
                 SemErr("Invalid uint representation!");
@@ -108,7 +124,7 @@ COMPILER Expresso
         case "l":
         case "L":
             type_name = "bigint";
-            obj = BigInteger.Parse(value.Substring(0, value.Length - 1));
+            obj = BigInteger.Parse(numerics.Substring(0, numerics.Length - 1));
             break;
 
         case "f":
@@ -116,7 +132,7 @@ COMPILER Expresso
         {
             type_name = "float";
             float f;
-            if(float.TryParse(value.Substring(0, value.Length - 1), out f))
+            if(float.TryParse(numerics.Substring(0, numerics.Length - 1), out f))
                 obj = f;
             else
                 SemErr("Invalid float representation!");
@@ -127,10 +143,10 @@ COMPILER Expresso
         {
             double d;
             int i;
-            if(int.TryParse(value, out i)){
+            if(int.TryParse(numerics, out i)){
                 obj = i;
                 type_name = "int";
-            }else if(double.TryParse(value, out d)){
+            }else if(double.TryParse(numerics, out d)){
                 obj = d;
                 type_name = "double";
             }else{
@@ -143,10 +159,28 @@ COMPILER Expresso
         return Expression.MakeConstant(type_name, obj, loc);
     }
 
+    LiteralExpression HandleEscapes(string typeName, string literal, TextLocation loc)
+    {
+        string tmp = literal.Replace("\\n", "\n").Replace("\\r", "\r").Replace("\\t", "\t")
+                            .Replace("\\v", "\v").Replace("\\f", "\f").Replace("\\0", "\0")
+                            .Replace("\\b", "\b");
+        tmp = UnicodeEscapeFinder.Replace(tmp, m => {
+            return ((char)int.Parse(m.Value.Substring(2), NumberStyles.HexNumber)).ToString();
+        });
+
+        if(typeName == "char")
+            return Expression.MakeConstant(typeName, Convert.ToChar(tmp), loc);
+        else if(typeName == "string")
+            return Expression.MakeConstant(typeName, tmp, loc);
+        else
+            throw new InvalidOperationException();
+    }
+
     AstType ConvertPathToType(PathExpression path)
     {
         AstType type = null;
         foreach(var item in path.Items){
+            item.Remove();
             if(type == null)
                 type = new SimpleType(item, TextLocation.Empty);
             else
@@ -173,9 +207,9 @@ COMPILER Expresso
         return new TextLocation(t.line, t.col - n);
     }
 
-    void GoDownScope(int index = 0)
+    void GoDownScope()
     {
-        Symbols = Symbols.Children[index];
+        Symbols = Symbols.Children[Symbols.Children.Count - 1];
     }
 
     void GoUpScope()
@@ -201,19 +235,12 @@ COMPILER Expresso
         return x.kind != _keyword_for;
 	}
 
-    /*bool IsObjectCreation()
+    bool IsIdentifierPattern()
     {
-        scanner.StartPeek();
-        Token x = la;
-        if(x.kind == 
+        Token x = scanner.Peek();
+        scanner.ResetPeek();
+        return x.kind != _double_colon && x.kind != _lcurly;
     }
-
-    bool IsIntegerSequenceExpression()
-    {
-        scanner.StartPeek();
-        var x = la;
-        while(x.kind != Tokens.)
-    }*/
 
     bool NotFinalComma()
     {
@@ -228,6 +255,33 @@ COMPILER Expresso
 		//Convenient method for printing a semantic error with a format string
 		SemErr(string.Format(format, args));
 	}
+
+    /// <summary>
+    /// Reports a warning message.
+    /// It is intended to be used from outside the Parser class.
+    /// </summary>
+    public void ReportWarning(string format, AstNode node, params object[] objects)
+    {
+        errors.Warning(string.Format(string.Format(format, objects), node.StartLocation));
+    }
+
+    /// <summary>
+    /// Reports a semantical error message.
+    /// It is intended to be used from outside the Parser class.
+    /// </summary>
+    public void ReportSemanticError(string format, AstNode node, params object[] objects)
+    {
+        errors.SemErr(string.Format(string.Format(format, objects), node.StartLocation));
+    }
+
+    /// <summary>
+    /// Reports a semantical error message 
+    /// </summary>
+    public void ReportSemanticErrorRegional(string format, AstNode start, AstNode end, params object[] objects)
+    {
+        var real_message = string.Format("{0} ~ {1}: {2}", start.StartLocation, end.EndLocation, string.Format(format, objects));
+        errors.SemErr(real_message);
+    }
 	
 /*--------------------------------------------------------------------------*/
 CHARACTERS
@@ -237,8 +291,11 @@ CHARACTERS
   cr  = '\r'.
   lf  = '\n'.
   tab = '\t'.
-  quotedStringLetter = ANY - '"'.
-  quotedLetter = ANY - '\''.
+  backslash = '\\'.
+  raw_prefix = 'r'.
+  rawQuotedStringLetter = ANY - '"'.
+  quotedStringLetter = ANY - '"' - '\\'.
+  quotedLetter = ANY - '\'' - '\\'.
   dot = '.'.
 
 TOKENS
@@ -246,6 +303,7 @@ TOKENS
   triple_dots = "...".
   rbracket = ']'.
   colon = ':'.
+  double_colon = "::".
   semicolon = ';'.
   lcurly = '{'.
   lparen = '('.
@@ -255,15 +313,31 @@ TOKENS
   comma = ','.
   dot = '.'.
   ident  = (letter | '_') {'_' | letter | digit}.
-  integer = ( digit {digit} ['u' | 'U' | 'l' | 'L']
-            | digit {digit} CONTEXT("..")   /*This context includes triple dots case*/
+  integer = ( digit {digit | '_'} ['u' | 'U' | 'l' | 'L']
+            | digit {digit | '_'} CONTEXT("..")   /*This context includes triple dots case*/
             ).
-  float = ( digit {digit} dot {digit} [('e' | 'E') ['+' | '-'] digit {digit}]
-  		  | [digit {digit}] dot digit {digit} [('e' | 'E') ['+' | '-'] digit {digit}]
+  float = ( digit {digit | '_'} dot [('e' | 'E') ['+' | '-'] digit {digit | '_'}]
+  		  | [digit {digit | '_'}] dot digit {digit | '_'} [('e' | 'E') ['+' | '-'] digit {digit | '_'}]
           ) ['f' | 'F'].
   hex_digit = '0' ('x' | 'X') hex_letter {hex_letter}.
-  character_literal = '\'' [quotedLetter] '\''.
-  string_literal = '"' {quotedStringLetter} '"'.
+  unicode_escape = backslash ('u' | 'U') hex_letter hex_letter hex_letter hex_letter [hex_letter hex_letter].
+  character_literal = '\''
+                      [ quotedLetter
+                      | backslash ( 'n' | 't' | 'r' | 'b' | 'f' | 'a' | backslash |
+                        ('u' | 'U') hex_letter hex_letter hex_letter hex_letter [hex_letter hex_letter]
+                        )
+                      ]
+                      '\''.
+  string_literal = '"'
+                   { quotedStringLetter
+                   | backslash ( 'n' | 't' | 'r' | 'b' | 'f' | 'a' | backslash |
+                     ('u' | 'U') hex_letter hex_letter hex_letter hex_letter [hex_letter hex_letter]
+                     )
+                   }
+                   '"'.
+  raw_string_literal = ( raw_prefix '"' {rawQuotedStringLetter} '"'
+                       | raw_prefix '#' {'#'} '"' {rawQuotedStringLetter | '"'} '"' '#' {'#'}
+                       ).
   keyword_for = "for".
   keyword_let = "let".
   keyword_var = "var".
@@ -281,11 +355,8 @@ Expresso                    		(. ExpressoAst module_decl = null; .)
 = 
   ModuleBody<out module_decl>		(.
                                         Debug.Assert(Symbols.Parent == null);
-                                        try{
+                                        if(DoPostParseProcessing){
                                             ExpressoNameBinder.BindAst(module_decl, this); //Here's the start of post-parse processing
-                                        }
-                                        catch(Exception e){
-                                            SemErr(e.Message);
                                         }
   										this.TopmostAst = module_decl;	//Currently there is not so much code out there, though...
   									.).
@@ -338,18 +409,20 @@ ImportDecl<out ImportDeclaration decl>
 				string alias = null; var entities = new List<PathExpression>();
 			.)
 =
+  /*****************************
+   * Do not add symbol names in external modules right here
+   * because we can't figure out all names in those modules' scopes.
+   *****************************/
   SYNC
   "import"
   PathExpression<out path>      (. entities.Add(path); .)
-  ( [ "as"
-      ident						(. alias = t.val; .)
-    ]
+  ( "as"
+    ident						(. alias = t.val; .)
   | { ','
       PathExpression<out path>  (. entities.Add(path); .)
     }
-    [ "in"                      (. has_in = true; .)
-      PathExpression<out path>
-    ]
+    "in"                        (. has_in = true; .)
+    PathExpression<out path>
   )
   SYNC ';'                      (. if(has_in)
                                        decl = AstNode.MakeImportDecl(path, entities);
@@ -358,54 +431,69 @@ ImportDecl<out ImportDeclaration decl>
                                 .).
 /*------------------------------------------------------------------------*/
 ClassDecl<out EntityDeclaration decl, Modifiers modifiers>   
-  (.  EntityDeclaration entity = null; var decls = new List<EntityDeclaration>(); PathExpression path;
+  (.  EntityDeclaration entity = null; var decls = new List<EntityDeclaration>(); AstType type_path;
       string name; var bases = new List<AstType>(); Modifiers cur_flag; var start_loc = CurrentLocation;
+      Identifier ident = null;
   .)
 =
   SYNC
   "class"                               (. Symbols.AddScope(); .)
   ident				    				(. name = t.val;
-                                           Symbols.AddTypeSymbol(name, new SimpleType(name, TextLocation.Empty));
+                                           ident = AstNode.MakeIdentifier(name);
+                                           Symbols.AddTypeSymbol(name, ident);
                                         .)
   [ ':'
-    PathExpression<out path>		    (. bases.Add(ConvertPathToType(path)); .)
+    TypePathExpression<out type_path>	(. bases.Add(type_path); .)
     { ','
-      PathExpression<out path>			(. bases.Add(ConvertPathToType(path)); .)
+      TypePathExpression<out type_path>	(. bases.Add(type_path); .)
     }
   ]
-  '{'                                   (. GoDownScope(); .)
-  { Modifiers<out cur_flag>
-    ( MethodDecl<out entity, cur_flag>  (. decls.Add(entity); .)
-    | FieldDecl<out entity, cur_flag>
-      ';'								(. decls.Add(entity); .)
+  '{'                                   (. GoDownScope();
+                                           Symbols.Name = "class " + name + "`" + ScopeId++;
+                                        .)
+  {                                     (. cur_flag = ExpressoModifiers.Private; .)
+    { Modifiers<ref cur_flag>
+    }                                   (. //var tmp = cur_flag ^ ExpressoModifiers.Static;
+                                           //tmp = tmp ^ ExpressoModifiers.VisibilityMask & ~ExpressoModifiers.Export;
+                                           //if(tmp
+                                        .)
+    ( FuncDecl<out entity, cur_flag>    (. decls.Add(entity); .)
+    | FieldDecl<out entity, cur_flag>	(. decls.Add(entity); .)
     | ClassDecl<out entity, cur_flag>   (. decls.Add(entity); .)
     )
   }
-  SYNC '}'							    (. decl = EntityDeclaration.MakeClassDecl(name, bases, decls, modifiers, start_loc, CurrentLocation);
+  SYNC '}'							    (. decl = EntityDeclaration.MakeClassDecl(ident, bases, decls, modifiers, start_loc, CurrentLocation);
                                            GoUpScope();
                                         .) .
 /*------------------------------------------------------------------------*/
-Modifiers<out Modifiers modifiers>  (. modifiers = ExpressoModifiers.Private; .)
+Modifiers<ref Modifiers modifiers>
 =
-  { "public"                (. modifiers |= ExpressoModifiers.Public; .)
-  | "protected"             (. modifiers |= ExpressoModifiers.Protected; .)
+  ( "public"                (. modifiers &= ~ExpressoModifiers.Private;
+                               modifiers |= ExpressoModifiers.Public;
+                            .)
+  | "protected"             (. modifiers &= ~ExpressoModifiers.Private;
+                               modifiers |= ExpressoModifiers.Protected;
+                            .)
   | "private"               (. modifiers |= ExpressoModifiers.Private; .)
   | "static"                (. modifiers |= ExpressoModifiers.Static; .)
-  }.
+  ).
 /*------------------------------------------------------------------------*/
-MethodDecl<out EntityDeclaration decl, Modifiers modifiers>
-                                (.
+FuncDecl<out EntityDeclaration decl, Modifiers modifiers>
+                                (.  Identifier ident = null;
 									string name; AstType type = null; BlockStatement block;
 									var @params = new List<ParameterDeclaration>();
-                                    var start_loc = CurrentLocation;
+                                    var start_loc = NextLocation;
 								.)
 =
   SYNC
   "def"                         (. Symbols.AddScope(); .)
   ident							(. name = t.val;
-                                   Symbols.AddSymbol(name, AstType.Null);
+                                   ident = AstNode.MakeIdentifier(name); 
+                                   Symbols.AddSymbol(name, ident);
                                 .)
-  '('
+  '('                           (. GoDownScope();
+                                   Symbols.Name = "func " + name + "`" + ScopeId++;
+                                .)
   [ParamList<out @params>]
   ')'
   [ "->"
@@ -413,12 +501,49 @@ MethodDecl<out EntityDeclaration decl, Modifiers modifiers>
   ]                             (. if(type == null)
                                        type = new PlaceholderType(TextLocation.Empty);
                                 .)
-  Block<out block> 				(. decl = EntityDeclaration.MakeFunc(name, @params, block, type, modifiers, start_loc); .).
+  Block<out block> 				(. decl = EntityDeclaration.MakeFunc(ident, @params, block, type, modifiers, start_loc);
+                                   GoUpScope();
+                                .).
+/*------------------------------------------------------------------------*/
+ParamList<. out List<ParameterDeclaration> @params .>   (. @params = new List<ParameterDeclaration>(); ParameterDeclaration param; bool seen_option = false; .)
+=
+  Parameter<out param>                                  (.
+                                                           if(param.Option != null)
+                                                               seen_option = true;
+
+                                                           @params.Add(param);
+                                                        .)
+  { WEAK ','
+    Parameter<out param>                                (.
+                                                           if(seen_option && param.Option == null)
+                                                               SemErr("You can't put optional parameters before non-optional parameters");
+                                                           else if(!seen_option && param.Option != null)
+                                                               seen_option = true;
+
+                                                           @params.Add(param);
+                                                        .)
+  }.
+/*------------------------------------------------------------------------*/
+Parameter<out ParameterDeclaration param>   (. string name; Expression option = null; AstType type = null; Identifier identifier; .)
+=
+  ident                                     (. name = t.val; .)
+  [ "(-"
+    Type<out type>
+  ]                                         (. identifier = AstNode.MakeIdentifier(name, type ?? new PlaceholderType(TextLocation.Empty));
+                                               Symbols.AddSymbol(name, identifier);
+                                            .)
+  [ '='
+    Literal<out option>
+  ]                                         (. if(type == null && option == null)
+                                                   SemErr("You can't omit both the type annotation and the default value!");
+
+                                               param = EntityDeclaration.MakeParameter(identifier, option);
+                                            .).
 /*------------------------------------------------------------------------*/
 FieldDecl<out EntityDeclaration field, Modifiers modifiers>
   (. string name; AstType type; Expression rhs; Identifier ident;
      var idents = new List<Identifier>(); var exprs = new List<Expression>();
-     var start_loc = CurrentLocation;
+     var start_loc = NextLocation;
   .)
 = 
   ( "let"
@@ -435,11 +560,13 @@ FieldDecl<out EntityDeclaration field, Modifiers modifiers>
                                            exprs.Add(rhs);
                                            Symbols.AddSymbol(name, ident);
                                         .)
-  }								       (. field = EntityDeclaration.MakeField(idents, exprs, modifiers, start_loc, CurrentLocation); .).
+  }
+  SYNC ';'								(. field = EntityDeclaration.MakeField(idents, exprs, modifiers, start_loc, CurrentLocation); .).
 /*------------------------------------------------------------------------*/
-Type<out AstType type>              (. var start_loc = CurrentLocation; type = AstType.Null; var is_reference = false; .)
+Type<out AstType type>              (. var start_loc = NextLocation; type = new PlaceholderType(NextLocation); var is_reference = false; .)
 =
- ['&']                              (. is_reference = true; .)
+ [ '&'                              (. is_reference = true; .)
+ ]
  ( "int"                			(. type = CreateType(t.val, start_loc, is_reference); .)
  | "uint"                           (. type = CreateType(t.val, start_loc, is_reference); .)
  | "bool"               			(. type = CreateType(t.val, start_loc, is_reference); .)
@@ -454,8 +581,8 @@ Type<out AstType type>              (. var start_loc = CurrentLocation; type = A
  | "dictionary"						(. type = CreateType(t.val, start_loc, is_reference); .)
  | "function"						(. type = CreateType(t.val, start_loc, is_reference); .)
  | "intseq"							(. type = CreateType(t.val, start_loc, is_reference); .)
- | "void"							(. type = CreateType(t.val, start_loc, is_reference); .)
- | ident							(. type = CreateType(t.val, start_loc, is_reference); .)
+ | "void"							(. type = new SimpleType("tuple", Enumerable.Empty<AstType>(), start_loc, CurrentLocation); .)
+ | TypePathExpression<out type>     (. if(is_reference) type = new ReferenceType(type, TextLocation.Empty); .)
  )                                  (. start_loc = CurrentLocation; .)
  /* Split brackets into 2 tokens that represents the array type
     because otherwise it conflicts with the array literal.
@@ -465,11 +592,9 @@ Type<out AstType type>              (. var start_loc = CurrentLocation; type = A
                 
                                        type = new SimpleType("array", new []{type}, start_loc, CurrentLocation);
                                     .)
- }                                  (. if(is_reference)
-                                           type = new ReferenceType(type, TextLocation.Empty);
-                                    .).
+ }.
 /*------------------------------------------------------------------------*/
-TupleTypeSignature<out AstType type> (. var inners = new List<AstType>(); var start_loc = CurrentLocation; .)
+TupleTypeSignature<out AstType type> (. var inners = new List<AstType>(); var start_loc = NextLocation; .)
 =
   '('
   { Type<out type>                  (. inners.Add(type); .)
@@ -482,8 +607,8 @@ Stmt<out Statement stmt>			(. stmt = null; .)
   | CompoundStmt<out stmt> .
 /*------------------------------------------------------------------------*/
 SimpleStmt<out Statement stmt>		(. stmt = null; BlockStatement block = null; .)
-=	IF(la.kind == _lcurly)	/* For DictMaker and Block conflict. Since DictMaker should not be a statement, we always choose the first(Block).*/
-    Block<out block>                (. stmt = block; .)
+=
+  Block<out block>                  (. stmt = block; .)
   | ExprStmt<out stmt>
   | VarDeclStmt<out stmt>
   | ReturnStmt<out stmt>
@@ -498,7 +623,7 @@ ReturnStmt<out Statement stmt>		(. SequenceExpression items = null; .)
   [RValueList<out items>]
   SYNC ';'							(. stmt = Statement.MakeReturnStmt(items); .).
 /*------------------------------------------------------------------------*/
-BreakStmt<out Statement stmt>		(. int count = 1; var start_loc = CurrentLocation; .)
+BreakStmt<out Statement stmt>		(. int count = 1; var start_loc = NextLocation; .)
 =
   "break"
   [ "upto"
@@ -509,7 +634,7 @@ BreakStmt<out Statement stmt>		(. int count = 1; var start_loc = CurrentLocation
                                        );
                                     .).
 /*------------------------------------------------------------------------*/
-ContinueStmt<out Statement stmt>	(. int count = 1; var start_loc = CurrentLocation; .)
+ContinueStmt<out Statement stmt>	(. int count = 1; var start_loc = NextLocation; .)
 = 
   "continue"
   [ "upto"
@@ -520,13 +645,13 @@ ContinueStmt<out Statement stmt>	(. int count = 1; var start_loc = CurrentLocati
                                        );
                                     .).
 /*------------------------------------------------------------------------*/
-YieldStmt<out Statement stmt>		(. Expression expr; var start_loc = CurrentLocation; .)
+YieldStmt<out Statement stmt>		(. Expression expr; var start_loc = NextLocation; .)
 =
   "yield"
   CondExpr<out expr>
   SYNC ';'							(. stmt = Statement.MakeYieldStmt(expr, start_loc, CurrentLocation); .).
 /*------------------------------------------------------------------------*/
-EmptyStmt<out Statement stmt>       (. var start_loc = CurrentLocation; .)
+EmptyStmt<out Statement stmt>       (. var start_loc = NextLocation; .)
 =
   SYNC ';'							(. stmt = Statement.MakeEmptyStmt(start_loc); .).
 /*------------------------------------------------------------------------*/
@@ -545,41 +670,44 @@ AugAssignOpe<ref OperatorType type>
   ).
 /*------------------------------------------------------------------------*/
 ExprStmt<out Statement stmt>			(.  SequenceExpression lhs = null, seq = null;
-											var start_loc = CurrentLocation; stmt = null;
+											var start_loc = NextLocation; stmt = null;
 											OperatorType op_type = OperatorType.None;
+                                            AssignmentExpression assign = null;
 										.)
 =
   LValueList<out lhs>
-  { ( AugAssignOpe<ref op_type>
-    | '='
-    )
-    RValueList<out seq>
-  }										(.
-  											if(lhs.Count != seq.Count)      //See if both sides have the same number of items
+  ( AugAssignOpe<ref op_type>
+    RValueList<out seq>                 (.  if(lhs.Count != seq.Count)  //See if both sides have the same number of items or not
                                                 SemErr("An augumented assignment must have both sides balanced.");
-  													
-  											if(op_type != OperatorType.None)
-  												stmt = Statement.MakeAugumentedAssignment(lhs, seq, op_type, start_loc, CurrentLocation);
-  											else
-  												stmt = Statement.MakeAssignment(lhs, seq, start_loc, CurrentLocation);
-  										.)
+
+                                            stmt = Statement.MakeAugumentedAssignment(lhs, seq, op_type, start_loc, CurrentLocation);
+                                        .)
+  | '='
+    RValueList<out seq>                 (. assign = Expression.MakeAssignment(lhs, seq); .)
+    { '='
+      RValueList<out seq>               (. assign = Expression.MakeMultipleAssignment(assign, seq); .)
+    }								    (. stmt = Statement.MakeExprStmt(assign, start_loc, CurrentLocation); .)
+  )
   SYNC ';' 								(.  if(stmt == null)
   												stmt = Statement.MakeExprStmt(lhs, start_loc, CurrentLocation);
   										.).
 /*------------------------------------------------------------------------*/
 LValueList<out SequenceExpression lhs>   (. var lvalues = new List<Expression>(); Expression tmp; .)
 =
-  Primary<out tmp>                              (. lvalues.Add(tmp); .)
-  { Primary<out tmp>                            (. lvalues.Add(tmp); .)
-  }                                             (. lhs = Expression.MakeSequence(lvalues); .).
+  LhsPrimary<out tmp>                    (. lvalues.Add(tmp); .)
+  { WEAK ','
+    LhsPrimary<out tmp>                  (. lvalues.Add(tmp); .)
+  }                                      (. lhs = Expression.MakeSequence(lvalues); .).
 /*------------------------------------------------------------------------*/
-Block<out BlockStatement block, int index = 0>
+Block<out BlockStatement block>
                 (. List<Statement> stmts = new List<Statement>();
-                   Statement stmt; var start_loc = CurrentLocation;
+                   Statement stmt; var start_loc = NextLocation;
                    Symbols.AddScope();
                 .)
 =
-  '{'                       (. GoDownScope(index); .)
+  '{'                       (. GoDownScope();
+                               Symbols.Name = "block`" + ScopeId++;
+                            .)
   Stmt<out stmt>			(. stmts.Add(stmt); .)
   { Stmt<out stmt>			(. stmts.Add(stmt); .)
   }
@@ -597,29 +725,40 @@ CompoundStmt<out Statement stmt>	(. stmt = null; .)
   /*| FuncDecl<out stmt>*/.
 /*------------------------------------------------------------------------*/
 IfStmt<out Statement stmt>			(. PatternConstruct pattern; BlockStatement true_block, false_block = null;
-                                       var start_loc = CurrentLocation;
+                                       var start_loc = NextLocation;
                                     .)
 =
-  "if"                              (. Symbols.AddScope(); GoDownScope(); .)
+  "if"                              (. Symbols.AddScope();
+                                       GoDownScope();
+                                       Symbols.Name = "if`" + ScopeId++;
+                                    .)
   LhsPattern<out pattern>
   Block<out true_block>
   [ "else"
-    Block<out false_block, 1>
+    Block<out false_block>
   ]                      			(. stmt = Statement.MakeIfStmt(pattern, true_block, false_block, start_loc);
                                        GoUpScope();
                                     .).
 /*------------------------------------------------------------------------*/
-WhileStmt<out Statement stmt>		(. Expression cond; BlockStatement body; var start_loc = CurrentLocation; .)
+WhileStmt<out Statement stmt>		(. Expression cond; BlockStatement body; var start_loc = NextLocation; .)
 =
-  "while"
+  "while"                           (. Symbols.AddScope();
+                                       GoDownScope();
+                                       Symbols.Name = "while`" + ScopeId++;
+                                    .)
   CondExpr<out cond>
-  Block<out body>                   (. stmt = Statement.MakeWhileStmt(cond, body, start_loc); .).
+  Block<out body>                   (. stmt = Statement.MakeWhileStmt(cond, body, start_loc);
+                                       GoUpScope();
+                                    .).
 /*------------------------------------------------------------------------*/
 ForStmt<out Statement stmt>			(.  PatternConstruct left; Expression rvalue; BlockStatement body;
-                                        var start_loc = CurrentLocation;
+                                        var start_loc = NextLocation;
 									.)
 =
-  "for"                             (. Symbols.AddScope(); GoDownScope(); .)
+  "for"                             (. Symbols.AddScope();
+                                       GoDownScope();
+                                       Symbols.Name = "for`" + ScopeId++;
+                                    .)
   LhsPattern<out left>
   "in"
   CondExpr<out rvalue>
@@ -628,12 +767,15 @@ ForStmt<out Statement stmt>			(.  PatternConstruct left; Expression rvalue; Bloc
                                     .).
 /*------------------------------------------------------------------------*/
 MatchStmt<out Statement stmt>		(. Expression target; List<MatchPatternClause> matches;
-                                       var start_loc = CurrentLocation;
+                                       var start_loc = NextLocation;
                                     .)
 =
   "match"
   CondExpr<out target>
-  '{'                               (. Symbols.AddScope(); GoDownScope(); .)
+  '{'                               (. Symbols.AddScope();
+                                       GoDownScope();
+                                       Symbols.Name = "match`" + ScopeId++;
+                                    .)
   MatchPatternList<out matches>
   '}'								(. stmt = Statement.MakeMatchStmt(target, matches, start_loc, CurrentLocation);
                                        GoUpScope();
@@ -665,7 +807,7 @@ PatternList<. out List<PatternConstruct> patterns, out Expression guard .>
 VarDeclStmt<out Statement stmt>         (.  string name; AstType type; Expression rhs = null;
 								        	Identifier ident;
 								          	var idents = new List<Identifier>(); var exprs = new List<Expression>();
-                                            bool is_const = false; var start_loc = CurrentLocation;
+                                            bool is_const = false; var start_loc = NextLocation;
 								        .)
 = 
   ( "let"                               (. is_const = true; .)
@@ -673,14 +815,14 @@ VarDeclStmt<out Statement stmt>         (.  string name; AstType type; Expressio
   )
   VarDef<out name, out type, out rhs>	(.  ident = AstNode.MakeIdentifier(name, type);
                                             idents.Add(ident);
-  						 			        exprs.Add(rhs);
+  						 			        exprs.Add(rhs ?? Expression.Null);
   						 			        rhs = null;
                                             Symbols.AddSymbol(name, ident);
   						 		        .)
   { WEAK ','
     VarDef<out name, out type, out rhs>(. ident = AstNode.MakeIdentifier(name, type);
                                           idents.Add(ident);
-  									      exprs.Add(rhs);
+  									      exprs.Add(rhs ?? Expression.Null);
   									      rhs = null;
                                           Symbols.AddSymbol(name, ident);
   								       .)
@@ -703,43 +845,6 @@ VarDef<out string name, out AstType type, out Expression option> (. type = null;
                                       SemanticError("Give me some context or I can't infer the type of {0}", name);
                                .).
 /*------------------------------------------------------------------------*/
-FuncDecl<out EntityDeclaration func, Modifiers modifiers>
-                                (.  string name; AstType type = null; BlockStatement block = null;
-									var @params = new List<ParameterDeclaration>();
-                                    var start_loc = CurrentLocation;
-								.)
-=
-  SYNC
-  "def"                         (. Symbols.AddScope(); .)
-  ident							(. name = t.val; .)
-  '('
-  [ParamList<out @params>]
-  ')'
-  [ "->"
-    Type<out type>
-  ]                             (. if(type == null)
-                                       type = new PlaceholderType(TextLocation.Empty);
-                                   
-                                   Symbols.AddSymbol(name, AstType.Null);
-                                .)
-  Block<out block> 				(. func = EntityDeclaration.MakeFunc(name, @params, block, type, modifiers, start_loc); .).
-/*------------------------------------------------------------------------*/
-ParamList<. out List<ParameterDeclaration> @params .>	(. @params = new List<ParameterDeclaration>(); ParameterDeclaration expr; .)
-=
-  Parameter<out expr>							        (. @params.Add(expr); .)
-  { WEAK ','
-    Parameter<out expr>							        (. @params.Add(expr); .)
-  }.
-/*------------------------------------------------------------------------*/
-Parameter<out ParameterDeclaration param>   (. string name; Expression option = null; AstType type; .)
-=
-  ident							            (. name = t.val; .)
-  "(-"
-  Type<out type>                            (. Symbols.Children[0].AddSymbol(name, type); .)
-  [ '='
-    Literal<out option>
-  ]								            (. param = EntityDeclaration.MakeParameter(name, type, option); .).
-/*------------------------------------------------------------------------*/
 RValueList<out SequenceExpression seq>		(. Expression tmp; var exprs = new List<Expression>(); .)
 =
   CondExpr<out tmp>							(. exprs.Add(tmp); .)
@@ -747,14 +852,14 @@ RValueList<out SequenceExpression seq>		(. Expression tmp; var exprs = new List<
     CondExpr<out tmp>						(. exprs.Add(tmp);	.)
   }											(. seq = Expression.MakeSequence(exprs); .).
 /*------------------------------------------------------------------------*/
-Pattern<out PatternConstruct pattern>   (. pattern = null; bool is_binding = false, is_const = false; .)
+Pattern<out PatternConstruct pattern>   (. pattern = null; bool is_binding = false; Modifiers modifier = ExpressoModifiers.None; .)
 =
-  [ "let"                               (. is_binding = true; is_const = true; .)
+  [ "let"                               (. is_binding = true; modifier = ExpressoModifiers.Immutable; .)
   | "var"                               (. is_binding = true; .)
   ]
   LhsPattern<out pattern>
   | ExpressionPattern<out pattern>      (. if(is_binding)
-                                               pattern = PatternConstruct.MakeValueBindingPattern(pattern, is_const);
+                                               pattern = PatternConstruct.MakeValueBindingPattern(pattern, modifier);
                                         .).
 /*------------------------------------------------------------------------*/
 ExpressionPattern<out PatternConstruct pattern> (. Expression expr, upper = null, step = null;
@@ -777,7 +882,8 @@ PatternItem<out PatternConstruct pattern>   (. pattern = PatternConstruct.Null; 
 LhsPattern<out PatternConstruct pattern>    (. pattern = PatternConstruct.Null; .)
 =
   WildcardPattern<out pattern>
-  | IdentifierPattern<out pattern>
+  | IF(IsIdentifierPattern())
+    IdentifierPattern<out pattern>
   | TuplePattern<out pattern>
   | DestructuringPattern<out pattern>.
 /*------------------------------------------------------------------------*/
@@ -805,18 +911,18 @@ TuplePattern<out PatternConstruct pattern>  (. var inners = new List<PatternCons
   ')'                                       (. pattern = PatternConstruct.MakeTuplePattern(inners); .).
 /*------------------------------------------------------------------------*/
 DestructuringPattern<out PatternConstruct pattern>  
-                (. pattern = PatternConstruct.Null; PathExpression path;
+                (. pattern = PatternConstruct.Null; AstType type_path;
                    var patterns = new List<PatternConstruct>(); bool is_vector = false;
                 .)
 =
-  ( PathExpression<out path>
+  ( TypePathExpression<out type_path>
     '{'
     [ PatternItem<out pattern>              (. patterns.Add(pattern); .)
     ]
     { ','
       PatternItem<out pattern>              (. patterns.Add(pattern); .)
     }
-    '}'                                     (. pattern = PatternConstruct.MakeDestructuringPattern(path, patterns); .)
+    '}'                                     (. pattern = PatternConstruct.MakeDestructuringPattern(type_path, patterns); .)
   | '['
     [ PatternItem<out pattern>              (. patterns.Add(pattern); .)
     ]
@@ -973,23 +1079,31 @@ UnaryOperator<out OperatorType opType>  (. opType = OperatorType.None; .)
   | '*'                             (. opType = OperatorType.Dereference; .)
   ).
 /*------------------------------------------------------------------------*/
-Primary<out Expression expr>		(. expr = null; PathExpression path; .)
+Primary<out Expression expr>		    (. expr = null; PathExpression path; AstType type_path = null; .)
 =
-  ( PathExpression<out path>        (. expr = path; .) /* It's possible that a PathExpression turns out to be just an Identifier */
-    [ObjectCreation<path, out expr>]
+  ( PathExpression<out path>            (. expr = path; .) /* It's possible that a PathExpression turns out to be just an Identifier */
+    [                                   (. type_path = ConvertPathToType(path); .)
+      ObjectCreation<type_path, out expr>
+    ]
   | Atom<out expr>
   | NewExpression<out expr>
   )
   { Trailer<ref expr>
   }.
 /*------------------------------------------------------------------------*/
-NewExpression<out Expression expr>      (. PathExpression path; .)
+LhsPrimary<out Expression expr>     (. expr = null; PathExpression path; .)
+=
+  PathExpression<out path>          (. expr = path; .)
+  { Trailer<ref expr>
+  }.
+/*------------------------------------------------------------------------*/
+NewExpression<out Expression expr>      (. AstType type_path; .)
 =
   "new"
-  PathExpression<out path>
-  ObjectCreation<path, out expr>        (. expr = Expression.MakeNewExpr((ObjectCreationExpression)expr); .).
+  TypePathExpression<out type_path>
+  ObjectCreation<type_path, out expr>   (. expr = Expression.MakeNewExpr((ObjectCreationExpression)expr); .).
 /*------------------------------------------------------------------------*/
-ObjectCreation<PathExpression path, out Expression expr>
+ObjectCreation<AstType typePath, out Expression expr>
                                         (. var fields = new List<Identifier>(); var values = new List<Expression>();
                                         .)
 =
@@ -1002,7 +1116,7 @@ ObjectCreation<PathExpression path, out Expression expr>
     ':'
     CondExpr<out expr>                  (. values.Add(expr); .)
   }
-  '}'                                   (. expr = Expression.MakeObjectCreation(path, fields, values); .).
+  '}'                                   (. expr = Expression.MakeObjectCreation(typePath, fields, values); .).
 /*------------------------------------------------------------------------*/
 Trailer<ref Expression expr>	(. var args = new List<Expression>(); .)
 =
@@ -1022,20 +1136,23 @@ ArgList<. out List<Expression> args .>		(. args = new List<Expression>(); Expres
     CondExpr<out expr>						(. args.Add(expr); .)
   }.
 /*------------------------------------------------------------------------*/
-Atom<out Expression expr>			(. var exprs = new List<Expression>(); expr = null; .)
+Atom<out Expression expr>			(. var exprs = new List<Expression>(); expr = null; bool seen_trailing_comma = false; .)
 =
   Literal<out expr>
   | '('
-    CondExpr<out expr>              (. exprs.Add(expr); .)
-    { IF(NotFinalComma()) WEAK ','
-      CondExpr<out expr>            (. exprs.Add(expr); .)
-    }
-    [',']
-    ')'                             (. if(exprs.Count == 1)
-                                           expr = Expression.MakeParen(exprs[0]);
+    ( ')'                           (. expr = Expression.MakeParen(Expression.MakeSequence(null)); .)
+    | CondExpr<out expr>           (. exprs.Add(expr); .)
+      { IF(NotFinalComma()) WEAK ','
+        CondExpr<out expr>          (. exprs.Add(expr); .)
+      }
+      [ ','                         (. seen_trailing_comma = true; .)
+      ]
+      ')'                           (. if(exprs.Count == 1)
+                                           expr = Expression.MakeParen(seen_trailing_comma ? Expression.MakeSequence(exprs[0]) : exprs[0]);
                                        else
                                            expr = Expression.MakeParen(Expression.MakeSequence(exprs));
                                     .)
+    )
   | '['
     [SequenceMaker<out expr>]
     SYNC ']'						(.  if(expr == null){
@@ -1051,12 +1168,23 @@ Atom<out Expression expr>			(. var exprs = new List<Expression>(); expr = null; 
                                        }
                                     .).
 /*------------------------------------------------------------------------*/
+TypePathExpression<out AstType type>
+=
+  ident                             (. type = new SimpleType(t.val, TextLocation.Empty); .)
+  { "::"
+    ident                           (. type = new MemberType(type, AstNode.MakeIdentifier(t.val)); .)
+  }.
+/*------------------------------------------------------------------------*/
 PathExpression<out PathExpression path> (. var paths = new List<Identifier>(); .)
 =
   ident                                 (. paths.Add(AstNode.MakeIdentifier(t.val)); .)
   { "::"
     ident                               (. paths.Add(AstNode.MakeIdentifier(t.val)); .)
-  }                                     (. path = Expression.MakePath(paths); .).
+  }                                     (. 
+                                           var last_ident = paths.Last();
+                                           last_ident.Type = new PlaceholderType(TextLocation.Empty);
+                                           path = Expression.MakePath(paths);
+                                        .).
 /*------------------------------------------------------------------------*/
 SequenceMaker<out Expression expr>	(.  var exprs = new List<Expression>();
 										expr = null; ComprehensionIter comp = null;
@@ -1071,9 +1199,14 @@ SequenceMaker<out Expression expr>	(.  var exprs = new List<Expression>();
     [ ','
       "..."                             (. seq_type_name = "vector"; .)
     ]                                   (. var type = CreateTypeWithArgs(seq_type_name, new PlaceholderType(TextLocation.Empty));
-                                           expr = Expression.MakeSeqInitializer(type, exprs); .)
-  | CompFor<out comp>                   (. var type = CreateTypeWithArgs("vector", new PlaceholderType(TextLocation.Empty));
+                                           expr = Expression.MakeSeqInitializer(type, exprs);
+                                        .)
+  | CompFor<out comp>                   (. Symbols.AddScope();
+                                           GoDownScope();
+
+                                           var type = CreateTypeWithArgs("vector", new PlaceholderType(TextLocation.Empty));
                                            expr = Expression.MakeComp(expr, (ComprehensionForClause)comp, type);
+                                           GoUpScope();
                                         .)
   ).
 /*------------------------------------------------------------------------*/
@@ -1117,20 +1250,36 @@ CompIf<out ComprehensionIter expr>		(. Expression tmp; ComprehensionIter body = 
   [CompIter<out body>]					(. expr = Expression.MakeCompIf(tmp, body); .).
 /*------------------------------------------------------------------------*/
 Literal<out Expression expr>	(. expr = null; string tmp;
-                                   var start_loc = CurrentLocation;
+                                   var start_loc = NextLocation;
                                 .)
 = 
   integer						(. expr = CreateLiteral(t.val, start_loc); .)
   | hex_digit					(. expr = Expression.MakeConstant("int", Convert.ToInt32(t.val, 16), start_loc); .)
   | float						(. expr = CreateLiteral(t.val, start_loc); .)
-  | character_literal           (. tmp = t.val;
+  | character_literal           (.
+                                   tmp = t.val;
                                    tmp = tmp.Substring(1, tmp.Length - 2);
-                                   expr = Expression.MakeConstant("char", tmp, start_loc);
+                                   expr = HandleEscapes("char", tmp, start_loc);
                                 .)
-  | string_literal				(. tmp = t.val;
+  | string_literal				(.
+                                   tmp = t.val;
   								   tmp = tmp.Substring(1, tmp.Length - 2);
-  								   expr = Expression.MakeConstant("string", tmp, start_loc);
+  								   expr = HandleEscapes("string", tmp, start_loc);
   								.)
+  | raw_string_literal          (.
+                                   tmp = t.val.Substring(1);
+                                   if(tmp.StartsWith("#")){
+                                       int index_double_quote = tmp.IndexOf('"');
+                                       int start_end_hashes = tmp.Length - index_double_quote - 1;
+                                       int index_end_double_quote = tmp.LastIndexOf('"');
+                                       if(start_end_hashes != index_end_double_quote + 1)
+                                           SemErr("The number of opening and closing hash symbols in a raw string must match!");
+
+                                       tmp = tmp.Substring(index_double_quote, tmp.Length - index_end_double_quote - index_double_quote);
+                                   }
+                                   tmp = tmp.Substring(1, tmp.Length - 2);
+                                   expr = Expression.MakeConstant("string", tmp, start_loc);
+                                .)
   | "true"                      (. expr = Expression.MakeConstant("bool", true, start_loc); .)		
   | "false"                     (. expr = Expression.MakeConstant("bool", false, start_loc); .)
   | "self"                      (. expr = Expression.MakeSelfRef(start_loc); .)

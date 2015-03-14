@@ -47,7 +47,6 @@ namespace Expresso.Ast
         /// <summary>
         /// Gets the path items.
         /// </summary>
-        /// <value>The items.</value>
         public AstNodeCollection<Identifier> Items{
             get{return GetChildrenByRole(Roles.Identifier);}
         }
@@ -73,13 +72,12 @@ namespace Expresso.Ast
 
         public PathExpression(Identifier ident)
         {
-            AddChild(ident, Roles.Identifier);
+            Items.Add(ident);
         }
 
         public PathExpression(IEnumerable<Identifier> paths)
         {
-            foreach(var item in paths)
-                AddChild(item, Roles.Identifier);
+            Items.AddRange(paths);
         }
 
         #region implemented abstract members of AstNode

@@ -51,7 +51,7 @@ namespace Expresso.Ast
 
         internal static Modifiers GetModifiers(AstNode node)
         {
-            Modifiers m = 0;
+            Modifiers m = Modifiers.None;
             foreach(ExpressoModifierToken t in node.GetChildrenByRole(ModifierRole))
                 m |= t.Modifier;
 
@@ -100,20 +100,38 @@ namespace Expresso.Ast
 
         public static ParameterDeclaration MakeParameter(string name, AstType type, Expression option = null)
         {
-            return new ParameterDeclaration(name, type, option);
+            return new ParameterDeclaration(AstNode.MakeIdentifier(name, type), option);
+        }
+
+        public static ParameterDeclaration MakeParameter(Identifier identifier, Expression option = null)
+        {
+            return new ParameterDeclaration(identifier, option);
         }
 
         public static TypeDeclaration MakeClassDecl(string className, IEnumerable<AstType> bases,
             IEnumerable<EntityDeclaration> decls, Modifiers modifiers,
             TextLocation start = default(TextLocation), TextLocation end = default(TextLocation))
         {
-            return new TypeDeclaration(className, bases, decls, modifiers, start, end);
+            return new TypeDeclaration(AstNode.MakeIdentifier(className), bases, decls, modifiers, start, end);
+        }
+
+        public static TypeDeclaration MakeClassDecl(Identifier ident, IEnumerable<AstType> bases,
+            IEnumerable<EntityDeclaration> decls, Modifiers modifiers,
+            TextLocation start = default(TextLocation), TextLocation end = default(TextLocation))
+        {
+            return new TypeDeclaration(ident, bases, decls, modifiers, start, end);
         }
 
         public static FunctionDeclaration MakeFunc(string name, IEnumerable<ParameterDeclaration> parameters, BlockStatement body,
             AstType returnType, Modifiers modifiers, TextLocation loc = default(TextLocation))
         {
-            return new FunctionDeclaration(name, parameters, body, returnType, modifiers, loc);
+            return MakeFunc(AstNode.MakeIdentifier(name), parameters, body, returnType, modifiers, loc);;
+        }
+
+        public static FunctionDeclaration MakeFunc(Identifier ident, IEnumerable<ParameterDeclaration> parameters,
+            BlockStatement body, AstType returnType, Modifiers modifiers, TextLocation loc = default(TextLocation))
+        {
+            return new FunctionDeclaration(ident, parameters, body, returnType, modifiers, loc);
         }
 
         /*public static FunctionDeclaration MakeClosure(string name, IEnumerable<ParameterDeclaration> parameters, Block body,

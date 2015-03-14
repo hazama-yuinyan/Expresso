@@ -4,6 +4,8 @@
 module main;
 
 
+import File;
+
 def main()
 {
  	let file = File.openFile("./test.txt", "r");

@@ -7,16 +7,21 @@ namespace Expresso.Ast
     /// <summary>
     /// break文。
     /// The break statement.
+    /// A break statement brings the flow out of loops certain times.
+    /// Note that break statements in Expresso have their effects only on loop statements.
     /// "break" [ "upto" LiteralExpression ] ';' ;
     /// </summary>
     public class BreakStatement : Statement
     {
         public static readonly TokenRole BreakTokenRole = new TokenRole("break", ExpressoTokenNode.Null);
-        public static readonly Role<LiteralExpression> LiteralRole = new Role<LiteralExpression>("Literal");
+        public static readonly Role<LiteralExpression> LiteralRole =
+            new Role<LiteralExpression>("Literal", LiteralExpression.Null);
 
         /// <summary>
         /// breakの際に何階層分ループ構造を遡るか。
         /// Indicates how many loops we will break out.
+        /// This expression has to be evaluated to a positive integer.
+        /// Otherwise a compilation error occurs.
         /// </summary>
         public LiteralExpression Count{
             get{return GetChildByRole(LiteralRole);}

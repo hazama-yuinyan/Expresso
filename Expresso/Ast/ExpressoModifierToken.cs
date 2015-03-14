@@ -45,6 +45,7 @@ namespace Expresso.Ast
         public ExpressoModifierToken(TextLocation loc, Modifiers modifier)
             : base(loc, new TokenRole(modifier.ToString().ToLower(), ExpressoTokenNode.Null))
         {
+            this.modifier = modifier;
         }
     }
 }

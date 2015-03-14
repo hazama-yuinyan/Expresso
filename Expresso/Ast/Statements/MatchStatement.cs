@@ -8,6 +8,8 @@ namespace Expresso.Ast
 	/// <summary>
     /// Match文。
     /// The Match statement.
+    /// A match statement pattern-match a value against several patterns
+    /// and if successful the flow takes the corresponding branch and continues execution on that path.
     /// "match" Expression '{' MatchPatternClause { MatchPatternClause } '}' ;
 	/// </summary>
     public class MatchStatement : Statement
@@ -41,8 +43,7 @@ namespace Expresso.Ast
             : base(start, end)
 		{
             Target = targetExpr;
-            foreach(var pattern_clause in patternClauses)
-                AddChild(pattern_clause, PatternClauseRole);
+            Clauses.AddRange(patternClauses);
 		}
 
         public override void AcceptWalker(IAstWalker walker)
@@ -106,9 +107,7 @@ namespace Expresso.Ast
 
         public MatchPatternClause(IEnumerable<PatternConstruct> patternExprs, Expression guard, Statement bodyStmt)
 		{
-            foreach(var pattern in patternExprs)
-                AddChild(pattern, Roles.Pattern);
-
+            Patterns.AddRange(patternExprs);
             Guard = guard;
             Body = bodyStmt;
 		}

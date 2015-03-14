@@ -9,10 +9,6 @@ namespace Expresso.Ast
     /// </summary>
     public class ValueBindingPattern : PatternConstruct
     {
-        public bool IsConst{
-            get; set;
-        }
-
         /// <summary>
         /// Represents the inner pattern.
         /// </summary>
@@ -21,10 +17,18 @@ namespace Expresso.Ast
             set{SetChildByRole(Roles.Pattern, value);}
         }
 
-        public ValueBindingPattern(PatternConstruct inner, bool isConst)
+        /// <summary>
+        /// Represents the modifiers that describe the properties of inner patterns.
+        /// </summary>
+        public Modifiers Modifiers{
+            get{return EntityDeclaration.GetModifiers(this);}
+            set{EntityDeclaration.SetModifiers(this, value);}
+        }
+
+        public ValueBindingPattern(PatternConstruct inner, Modifiers modifiers)
         {
             Pattern = inner;
-            IsConst = isConst;
+            Modifiers = modifiers;
         }
 
         #region implemented abstract members of AstNode
@@ -47,7 +51,8 @@ namespace Expresso.Ast
         protected internal override bool DoMatch(AstNode other, ICSharpCode.NRefactory.PatternMatching.Match match)
         {
             var o = other as ValueBindingPattern;
-            return o != null && Pattern.DoMatch(o.Pattern, match);
+            return o != null && Pattern.DoMatch(o.Pattern, match)
+                && Modifiers == o.Modifiers;
         }
 
         #endregion

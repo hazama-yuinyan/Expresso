@@ -6,6 +6,9 @@ namespace Expresso.Ast
     /// <summary>
     /// キャスト式。
 	/// The cast expression.
+    /// A cast expression casts a value to another type.
+    /// In Expresso, since there are no null values, any invalid type casts must and have to be
+    /// a compilation error.
     /// Expression "as" Type ;
     /// </summary>
     public class CastExpression : Expression

@@ -9,7 +9,7 @@ namespace Expresso.Ast
 {
     /// <summary>
     /// Represents a reference type.
-    /// A reference type is a reference type to some other type.
+    /// A reference type is a reference to some other type.
     /// </summary>
     public class ReferenceType : AstType
     {

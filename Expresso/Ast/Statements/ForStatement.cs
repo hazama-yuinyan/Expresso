@@ -8,11 +8,11 @@ namespace Expresso.Ast
 	/// <summary>
 	/// For文。
 	/// The For statement.
+    /// A for statement is used to iterate over sequence-like objects.
     /// "for" PatternConstruct "in" Expression '{' Body '}' ;
 	/// </summary>
     public class ForStatement : Statement
 	{
-        public static readonly Role<Expression> InitializerRole = new Role<Expression>("Initializer", Expression.Null);
         public static readonly Role<Expression> IterableRole = new Role<Expression>("Iterable", Expression.Null);
 
         public ExpressoTokenNode ForToken{

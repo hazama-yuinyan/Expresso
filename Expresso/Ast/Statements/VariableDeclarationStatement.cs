@@ -25,7 +25,6 @@ namespace Expresso.Ast
         /// <summary>
         /// Gets or sets the modifiers.
         /// </summary>
-        /// <value>The modifiers.</value>
         public Modifiers Modifiers{
             get{return EntityDeclaration.GetModifiers(this);}
             set{EntityDeclaration.SetModifiers(this, value);}
@@ -40,7 +39,7 @@ namespace Expresso.Ast
             : base(start, end)
         {
             foreach(var items in lhs.Zip(rhs, (left, right) => new Tuple<Identifier, Expression>(left, right)))
-                AddChild(new VariableInitializer(items.Item1, items.Item2), Roles.Variable);
+                Variables.Add(new VariableInitializer(items.Item1, items.Item2));
             
             Modifiers = modifiers;
         }

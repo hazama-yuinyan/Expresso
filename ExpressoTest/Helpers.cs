@@ -28,19 +28,16 @@ namespace Expresso.Test
                 return Fib(n - 1) + Fib(n - 2);
         }
 
-        public static void DoTest(ExpressoAst target, ExpressoAst expect)
+        public static void AstStructuralEqual(ExpressoAst target, ExpressoAst expect)
         {
             Assert.IsTrue(target.IsMatch(expect));
-            /*for(int i = 0; i < expects.Length; ++i){
-                var target = targets[i];
-                var expect = expects[i];
-                Type type_target = target.GetType(), type_expect = expect.GetType();
-                Assert.IsTrue(type_target.FullName == type_expect.FullName);
-                Assert.AreEqual(expect, target);
+            /*AstNode cur = target;
+            while(cur != null){
+                cur.Match
             }*/
         }
 
-        public static void DoTest(Module mainModule, List<string> names, object[] expects)
+        public static void AstStructuralEqual(Module mainModule, List<string> names, object[] expects)
         {
             var len = expects.Length;
             for(int i = 0; i < len; ++i){
@@ -76,6 +73,26 @@ namespace Expresso.Test
         public static Identifier MakeSomeIdent(string name)
         {
             return AstNode.MakeIdentifier(name, new PlaceholderType(TextLocation.Empty));
+        }
+
+        public static SimpleType MakeGenericType(string identifier, params AstType[] typeArgs)
+        {
+            return new SimpleType(identifier, typeArgs, TextLocation.Empty, TextLocation.Empty);
+        }
+
+        public static PrimitiveType MakePrimitiveType(string typeName)
+        {
+            return new PrimitiveType(typeName, TextLocation.Empty);
+        }
+
+        public static PlaceholderType MakePlaceholderType()
+        {
+            return new PlaceholderType(TextLocation.Empty);
+        }
+
+        public static ReturnStatement MakeReturnStatement(params Expression[] expressions)
+        {
+            return new ReturnStatement(Expression.MakeSequence(expressions));
         }
     }
 

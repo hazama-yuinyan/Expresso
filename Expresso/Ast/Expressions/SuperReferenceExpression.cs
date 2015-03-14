@@ -10,9 +10,18 @@ namespace Expresso.Ast
     /// </summary>
     public class SuperReferenceExpression : Expression
     {
+        /// <summary>
+        /// Gets the identifier that represents the "super" keyword.
+        /// </summary>
+        public Identifier SuperIdentifier{
+            get{return GetChildByRole(Roles.Identifier);}
+            private set{SetChildByRole(Roles.Identifier, value);}
+        }
+
         public SuperReferenceExpression(TextLocation loc)
             : base(loc, new TextLocation(loc.Line, loc.Column + "super".Length))
         {
+            SuperIdentifier = AstNode.MakeIdentifier("super");
         }
 
         #region implemented abstract members of AstNode

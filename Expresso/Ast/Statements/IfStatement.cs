@@ -6,17 +6,24 @@ namespace Expresso.Ast
 {
 	/// <summary>
 	/// If文。
+    /// Expressoのif文には2種類あり、1種類目は他の大多数の言語同様、通常の右辺式をとり、既知の変数などに対して
+    /// boolean演算を行うのに対し、2種類目はパターンマッチングを行うため、1行でOptional型の束縛から値の取り出しまでを行う
+    /// 簡潔なnull値チェック式を書くことができる。
     /// The If statement. In Expresso if statements can have 2 forms.
-    /// One is a simple condition statement and the other is 
+    /// One is a simple condition statement and the other tests against a pattern.
+    /// Patterns can let-bind or declare variables so it's a common idiom of using it as a handy
+    /// optional value extractor.
     /// "if" Pattern '{' { Statement } '}' [ "else" '{' { Statement } '}' ] ;
 	/// </summary>
 	public class IfStatement : Statement
 	{
         public static readonly Role<PatternConstruct> ConditionRole =
             new Role<PatternConstruct>("Condition");
-        public static readonly Role<Statement> TrueBlockRole = new Role<Statement>("TrueBlock");
+        public static readonly Role<BlockStatement> TrueBlockRole =
+            new Role<BlockStatement>("TrueBlock", BlockStatement.Null);
         public static readonly TokenRole ElseKeywordRole = new TokenRole("else", ExpressoTokenNode.Null);
-        public static readonly Role<Statement> FalseBlockRole = new Role<Statement>("FalseBlock");
+        public static readonly Role<BlockStatement> FalseBlockRole =
+            new Role<BlockStatement>("FalseBlock", BlockStatement.Null);
 
         public ExpressoTokenNode IfToken{
             get{return GetChildByRole(Roles.IfToken);}
@@ -26,7 +33,8 @@ namespace Expresso.Ast
         /// 条件式。
         /// The condition pattern. Because it is a pattern, it can bind or declare a new variable
         /// only alive for the inner blocks.
-        /// It is an Expresso idiom 
+        /// It is a common idiom in Expresso to use an if statement as a null-check-and-then-go
+        /// statement.
         /// </summary>
         public PatternConstruct Condition{
             get{return GetChildByRole(ConditionRole);}
@@ -34,10 +42,10 @@ namespace Expresso.Ast
 		}
 
         /// <summary>
-        /// 条件が真の時に評価する文(郡)。
-		/// The statements to be operated when the condition is evaluated to true.
+        /// 条件が真の時に評価するブロック文。
+		/// The block statement to be taken if the condition is evaluated to true.
         /// </summary>
-        public Statement TrueBlock{
+        public BlockStatement TrueBlock{
             get{return GetChildByRole(TrueBlockRole);}
             set{SetChildByRole(TrueBlockRole, value);}
 		}
@@ -47,16 +55,17 @@ namespace Expresso.Ast
         }
 
         /// <summary>
-        /// 条件が偽の時に評価する文(郡)。
-		/// The statements to be operated when the condition is evaluated to false.
-        /// It can be a null node if the if statement has no else clause.
+        /// 条件が偽の時に評価するブロック文。
+		/// The block statement to be taken if the condition is evaluated to false.
+        /// It can be a null node if the statement has no else clause.
         /// </summary>
-        public Statement FalseBlock{
+        public BlockStatement FalseBlock{
             get{return GetChildByRole(FalseBlockRole);}
             set{SetChildByRole(FalseBlockRole, value);}
         }
 
-        public IfStatement(PatternConstruct test, Statement trueBlock, Statement falseBlock, TextLocation loc)
+        public IfStatement(PatternConstruct test, BlockStatement trueBlock, BlockStatement falseBlock,
+            TextLocation loc)
             : base(loc, (falseBlock == null) ? trueBlock.EndLocation : falseBlock.EndLocation)
 		{
             Condition = test;

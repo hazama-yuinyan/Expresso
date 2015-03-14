@@ -13,6 +13,9 @@ namespace Expresso.Ast
     {
         public static readonly Role<Expression> KeyRole = new Role<Expression>("Key", Expression.Null);
 
+        /// <summary>
+        /// Represents the key.
+        /// </summary>
         public Expression KeyExpression{
             get{return GetChildByRole(KeyRole);}
             set{SetChildByRole(KeyRole, value);}
@@ -22,6 +25,9 @@ namespace Expresso.Ast
             get{return GetChildrenByRole(Roles.ColonToken);}
         }
 
+        /// <summary>
+        /// Represents the value.
+        /// </summary>
         public Expression Value{
             get{return GetChildByRole(Roles.Expression);}
             set{SetChildByRole(Roles.Expression, value);}

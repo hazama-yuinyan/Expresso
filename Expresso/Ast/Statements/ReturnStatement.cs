@@ -6,6 +6,7 @@ namespace Expresso.Ast
     /// <summary>
     /// リターン文。
 	/// The Return statement.
+    /// A return statement transfers control to the caller and additionaly gives a value to the caller.
     /// "return" Expression ;
     /// </summary>
     public class ReturnStatement : Statement

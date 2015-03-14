@@ -6,7 +6,7 @@ namespace Expresso.Ast
 {
     /// <summary>
     /// 関数呼び出し。
-	/// Reperesents a function call.
+	/// Represents a function call.
     /// Expression '(' [ Arguments ] ')' ;
     /// </summary>
     public class CallExpression : Expression
@@ -38,10 +38,8 @@ namespace Expresso.Ast
 
         public CallExpression(Expression targetExpr, IEnumerable<Expression> arguments)
         {
-            foreach(var arg in arguments)
-                AddChild(arg, Roles.Argument);
-
             Target = targetExpr;
+            Arguments.AddRange(arguments);
         }
 
         public override void AcceptWalker(IAstWalker walker)

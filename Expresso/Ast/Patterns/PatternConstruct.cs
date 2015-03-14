@@ -108,9 +108,9 @@ namespace Expresso.Ast
             return new IdentifierPattern(AstNode.MakeIdentifier(name, type), inner);
         }
 
-        public static ValueBindingPattern MakeValueBindingPattern(PatternConstruct inner, bool isConst)
+        public static ValueBindingPattern MakeValueBindingPattern(PatternConstruct inner, Modifiers modifiers)
         {
-            return new ValueBindingPattern(inner, isConst);
+            return new ValueBindingPattern(inner, modifiers);
         }
 
         public static CollectionPattern MakeCollectionPattern(IEnumerable<PatternConstruct> items,
@@ -124,16 +124,16 @@ namespace Expresso.Ast
             return new CollectionPattern(items, isVector);
         }
 
-        public static DestructuringPattern MakeDestructuringPattern(PathExpression path,
+        public static DestructuringPattern MakeDestructuringPattern(AstType typePath,
             IEnumerable<PatternConstruct> inners)
         {
-            return new DestructuringPattern(path, inners);
+            return new DestructuringPattern(typePath, inners);
         }
 
-        public static DestructuringPattern MakeDestructuringPattern(PathExpression path,
+        public static DestructuringPattern MakeDestructuringPattern(AstType typePath,
             params PatternConstruct[] inners)
         {
-            return new DestructuringPattern(path, inners);
+            return new DestructuringPattern(typePath, inners);
         }
 
         public static TuplePattern MakeTuplePattern(IEnumerable<PatternConstruct> inners)

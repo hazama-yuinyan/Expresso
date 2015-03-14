@@ -30,10 +30,8 @@ namespace Expresso.Ast
         public SequenceInitializer(AstType objType, IEnumerable<Expression> seqItems)
 		{
             ObjectType = objType;
-            if(seqItems != null){
-                foreach(var item in seqItems)
-                    AddChild(item, Roles.Expression);
-            }
+            if(seqItems != null)
+                Items.AddRange(seqItems);
 		}
 
         public override void AcceptWalker(IAstWalker walker)

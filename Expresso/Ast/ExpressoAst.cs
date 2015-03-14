@@ -7,16 +7,15 @@ using ICSharpCode.NRefactory;
 namespace Expresso.Ast
 {
 	/// <summary>
-	/// ExpressoのASTのトップレベルノード。ファイルから生成された場合はモジュールを表すが、evalによって作られた場合もある。
-	/// Top-level ast for all Expresso code. Typically represents a module but could also
-	/// be exec or eval code.
+	/// ExpressoのASTのトップレベルノード。ファイルから生成された場合はモジュールを表す。
+	/// Top-level ast for all Expresso code. Typically represents a module.
+    /// All module-level items can be considered as static because one module can import
+    /// another module once.
 	/// </summary>
     public class ExpressoAst : AstNode
 	{
         public static readonly Role<EntityDeclaration> MemberRole = new Role<EntityDeclaration>("Member");
         public static readonly Role<ImportDeclaration> ImportRole = new Role<ImportDeclaration>("Import");
-
-		readonly bool is_module;
 
         public Identifier NameToken{
             get{return GetChildByRole(Roles.Identifier);}
@@ -29,22 +28,14 @@ namespace Expresso.Ast
 		/// If the module contains the main function, it would be called the "main" module.
 		/// </summary>
 		public string Name{
-            get{return is_module ? string.Format("<module {0}>", NameToken.Name) : ModuleName;}
-		}
-
-		/// <summary>
-		/// Indicates whether the node represents a module.
-		/// </summary>
-		public bool IsModule{
-			get{return is_module;}
+            get{return NameToken.Name;}
 		}
 
         /// <summary>
-        /// インポート宣言
+        /// インポート宣言。
         /// Gets the import declarations.
-        /// If this node doesn't represent a module, it will be an empty collection.
+        /// It can be an empty collection if there is no import declarations.
         /// </summary>
-        /// <value>The imports.</value>
         public AstNodeCollection<ImportDeclaration> Imports{
             get{return GetChildrenByRole(ImportRole);}
         }
@@ -54,7 +45,7 @@ namespace Expresso.Ast
 		/// The body of this node. If this node represents a module, then the body includes
 		/// the definitions of the module.
 		/// </summary>
-        public AstNodeCollection<EntityDeclaration> Body{
+        public AstNodeCollection<EntityDeclaration> Declarations{
             get{return GetChildrenByRole(MemberRole);}
 		}
 
@@ -65,7 +56,7 @@ namespace Expresso.Ast
         /// <value>The name of the module.</value>
 		public string ModuleName{
 			get{
-                return is_module ? Name : "<not a module>";
+                return string.Format("<module {0}>", Name);
 			}
 		}
 
@@ -73,18 +64,14 @@ namespace Expresso.Ast
             get{return NodeType.Unknown;}
         }
 
-        public ExpressoAst(IEnumerable<EntityDeclaration> body, IEnumerable<ImportDeclaration> imports, string maybeModuleName = null)
+        public ExpressoAst(IEnumerable<EntityDeclaration> decls, IEnumerable<ImportDeclaration> imports, string maybeModuleName = null)
         {
             NameToken = AstNode.MakeIdentifier(maybeModuleName);
-			is_module = maybeModuleName != null;
 
-            if(imports != null){
-                foreach(var import in imports)
-                    AddChild(import, ImportRole);
-            }
+            if(imports != null)
+                Imports.AddRange(imports);
 
-            foreach(var decl in body)
-                AddChild(decl, MemberRole);
+            Declarations.AddRange(decls);
 		}
 
         public override void AcceptWalker(IAstWalker walker)
@@ -107,7 +94,7 @@ namespace Expresso.Ast
         protected internal override bool DoMatch(AstNode other, ICSharpCode.NRefactory.PatternMatching.Match match)
         {
             var o = other as ExpressoAst;
-            return o != null && Body.DoMatch(o.Body, match) && NameToken.DoMatch(o.NameToken, match);
+            return o != null && Declarations.DoMatch(o.Declarations, match) && NameToken.DoMatch(o.NameToken, match);
         }
 
         #endregion

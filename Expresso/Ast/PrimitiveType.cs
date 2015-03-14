@@ -22,7 +22,7 @@ namespace Expresso.Ast
         }
 
         public ExpressoTypeCode KnownTypeCode{
-            get{return GetKnownTypeCodeForPrimitiveType(TokenRole.Tokens[(int)KeywordToken.RoleIndex >> (int)AstNodeFlagsUsedBits]);}
+            get{return GetKnownTypeCodeForPrimitiveType(KeywordToken.Token);}
         }
 
         public PrimitiveType(string keyword, TextLocation location)
@@ -49,7 +49,7 @@ namespace Expresso.Ast
         internal protected override bool DoMatch(AstNode other, ICSharpCode.NRefactory.PatternMatching.Match match)
         {
             var o = other as PrimitiveType;
-            return o != null && o.KeywordToken == KeywordToken;
+            return o != null && KeywordToken.DoMatch(o.KeywordToken, match);
         }
 
         #region implemented abstract members of AstType
@@ -105,6 +105,9 @@ namespace Expresso.Ast
 
             case "void":
                 return ExpressoTypeCode.Void;
+
+            case "string":
+                return ExpressoTypeCode.String;
 
             default:
                 throw new ParserException("{0} is an unknown primitive type!", keyword);

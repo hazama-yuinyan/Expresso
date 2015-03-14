@@ -6,10 +6,30 @@
     "name" : "Expresso",
     "patterns" : [
         {
-            "include" : "#comments"
+            "patterns" : [
+                {
+                    "captures" : {
+                        "1" : {
+                            "name" : "punctuation.definition.multi.comment.source.exs"
+                        }
+                    },
+                    "begin" : "(/\\*)",
+                    "end" : "\\*/",
+                    "name" : "comment.block.exs"
+                },
+                {
+                    "captures" : {
+                        "1" : {
+                            "name" : "punctuation.definition.single.comment.source.exs"
+                        }
+                    },
+                    "match" : "(//).*\\n?$",
+                    "name" : "comment.line.exs"
+                }
+            ]
         },
         {
-            "begin" : "(?x)^\\s*((?:\\b(?:export|static)\\b\\s)*)(class)\\s+([A-Za-z_]\\w+)\\b",
+            "begin" : "(?x)^\\s*((?:\\b(export)\\b\\s)*)(class)\\s+([A-Za-z_]\\w+)\\b",
             "captures" : {
                 "1" : {
                     "name" : "storage.modifier.source.exs"
@@ -30,7 +50,7 @@
             ]
         },
         {
-            "match" : "\\b(true|false|null|this|base)\\b",
+            "match" : "\\b(true|false|self|super)\\b",
             "name" : "constant.language.source.exs"
         },
         {
@@ -38,15 +58,15 @@
             "name" : "constant.numeric.source.exs"
         },
         {
-            "match" : "\\b(if|else|for|while|return|continue|break|switch|case|default|goto|throw|try|catch|finally|yield)\\b",
+            "match" : "\\b(if|else|for|while|return|continue|break|match|yield)\\b",
             "name" : "keyword.control.source.exs"
         },
         {
-            "match" : "\\b(new|is|typeof|sizeof|override|in|out|ref|readonly|params|as)\\b",
+            "match" : "\\b(new|is|typeof|sizeof|override|in|readonly|params|as)\\b",
             "name" : "keyword.operator.source.exs"
         },
         {
-            "match" : "\\b(def|event|func|explicit|implicit|in|set|get)\\b",
+            "match" : "\\b(def|explicit|implicit|in)\\b",
             "name" : "keyword.other.source.exs"
         },
         {
@@ -54,13 +74,63 @@
             "name" : "storage.modifier.source.exs"
         },
         {
-            "include" : "#doubleQuotedStringLiteral"
+            "match" : "r\"([^\"]|\"\")*\"",
+            "captures" : {
+                "0" : {
+                    "name" : "punctuation.definition.string.begin.exs"
+                }
+            },
+            "name" : "string.quoted.string.literal.source.exs"
         },
         {
-            "include" : "#doubleQuotedString"
+            "begin" : "\"",
+            "beginCaptures" : {
+                "0" : {
+                    "name" : "punctuation.definition.string.begin.exs"
+                }
+            },
+            "end" : "\"",
+            "endCaptures" : {
+                "0" : {
+                    "name" : "punctuation.definition.string.end.exs"
+                }
+            },
+            "name" : "string.quoted.double.exs",
+            "patterns" : [
+                {
+                    "match" : "\\.",
+                    "name" : "constant.character.escape.source.exs"
+                },
+                {
+                    "match" : ".",
+                    "name" : "constant.character.source.exs"
+                }
+            ]
         },
         {
-            "include" : "#singleQuotedString"
+            "begin" : "'",
+            "beginCaptures" : {
+                "0" : {
+                    "name" : "punctuation.definition.string.begin.source.exs"
+                }
+            },
+            "end" : "'",
+            "endCaptures" : {
+                "0" : {
+                    "name" : "punctuation.definition.string.end.source.exs"
+                }
+            },
+            "name" : "string.quoted.single.source.exs",
+            "patterns" : [
+                {
+                    "match" : "\\.",
+                    "name" : "constant.character.escape.source.exs"
+                },
+                {
+                    "match" : ".",
+                    "name" : "constant.character.source.exs"
+                }
+            ]
         },
         {
             "captures" : {
@@ -112,23 +182,20 @@
                     "name" : "entity.name.type.source.exs"
                 }
             },
-            "match" : "^\\s*(export)?\\s*(let|var)\\s+(?:([^ ;]*)(?:\\s+(\\(-)\\s+([^ ;]+))?\\s*(?:,\\s*)?)+;$",
+            "match" : "^\\s*(export)?\\s*(let|var)\\s+(?:([^ ;]+)(?:\\s+(\\(-)\\s+([^ ;]+))?\\s*(?:,\\s*)?)+;$",
             "name" : "meta.keyword.variable.source.exs",
             "comment" : "Match on variable definition statements"
         },
         {
-            "include" : "#builtinTypes"
+            "patterns" : [
+                {
+                    "match" : "\\b(bool|byte|float|int|bigint|list|dict|rational|tuple|intseq|string|function|void|class|interface)\\b",
+                    "name" : "storage.type.source.exs"
+                }
+            ]
         },
         {
             "repository" : {
-                "builtinTypes" : {
-                    "patterns" : [
-                        {
-                            "match" : "\\b(bool|byte|float|int|bigint|list|dict|rational|tuple|intseq|string|function|void|class|struct|interface)\\b",
-                            "name" : "storage.type.source.exs"
-                        }
-                    ]
-                },
                 "classInheritance" : {
                     "patterns" : [
                         {
@@ -144,88 +211,6 @@
                                     "match" : "\\s*,?([A-Za-z_]\\w*)\\b"
                                 }
                             ]
-                        }
-                    ]
-                },
-                "comments" : {
-                    "patterns" : [
-                        {
-                            "captures" : {
-                                "1" : {
-                                    "name" : "punctuation.definition.multi.comment.source.exs"
-                                }
-                            },
-                            "begin" : "(/\\*)",
-                            "end" : "\\*/\\n?",
-                            "name" : "comment.block.source.exs"
-                        },
-                        {
-                            "captures" : {
-                                "1" : {
-                                    "name" : "punctuation.definition.single.comment.source.exs"
-                                }
-                            },
-                            "match" : "(//).*\\n?$",
-                            "name" : "comment.line.source.exs"
-                        }
-                    ]
-                },
-                "doubleQuotedString" : {
-                    "begin" : "\"",
-                    "beginCaptures" : {
-                        "0" : {
-                            "name" : "punctuation.definition.string.begin.source.exs"
-                        }
-                    },
-                    "end" : "\"",
-                    "endCaptures" : {
-                        "0" : {
-                            "name" : "punctuation.definition.string.end.source.exs"
-                        }
-                    },
-                    "name" : "string.quoted.double.source.exs",
-                    "patterns" : [
-                        {
-                            "match" : "\\.",
-                            "name" : "constant.character.escape.source.exs"
-                        },
-                        {
-                            "match" : ".",
-                            "name" : "constant.character.source.exs"
-                        }
-                    ]
-                },
-                "doubleQuotedStringLiteral" : {
-                    "captures" : {
-                        "0" : {
-                            "name" : "punctuation.definition.string.begin.source.exs"
-                        }
-                    },
-                    "match" : "@\"([^\"]|\"\")*\"",
-                    "name" : "string.quoted.string.literal.source.exs"
-                },
-                "singleQuotedString" : {
-                    "begin" : "'",
-                    "beginCaptures" : {
-                        "0" : {
-                            "name" : "punctuation.definition.string.begin.source.exs"
-                        }
-                    },
-                    "end" : "'",
-                    "endCaptures" : {
-                        "0" : {
-                            "name" : "punctuation.definition.string.end.source.exs"
-                        }
-                    },
-                    "name" : "string.quoted.single.source.exs",
-                    "patterns" : [
-                        {
-                            "match" : "\\.",
-                            "name" : "constant.character.escape.source.exs"
-                        },
-                        {
-                            "match" : ".",
-                            "name" : "constant.character.source.exs"
                         }
                     ]
                 },

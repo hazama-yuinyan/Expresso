@@ -106,18 +106,13 @@ namespace Expresso.Ast
             get{return GetChildByRole(Roles.RBraceToken);}
         }
 
-        public TypeDeclaration(string name, IEnumerable<AstType> supers,
+        public TypeDeclaration(Identifier ident, IEnumerable<AstType> supers,
             IEnumerable<EntityDeclaration> decls, Modifiers modifiers, TextLocation start, TextLocation end)
             : base(start, end)
         {
-            AddChild(AstNode.MakeIdentifier(name), Roles.Identifier);
-
-            foreach(var base_type in supers)
-                AddChild(base_type, Roles.Type);
-
-            foreach(var decl in decls)
-                AddChild(decl, Roles.TypeMember);
-
+            SetChildByRole(Roles.Identifier, ident);
+            BaseTypes.AddRange(supers);
+            Members.AddRange(decls);
             SetModifiers(this, modifiers);
         }
 

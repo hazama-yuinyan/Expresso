@@ -27,8 +27,8 @@ namespace Expresso.Ast
 
         public SequenceExpression(IEnumerable<Expression> items)
 		{
-            foreach(var item in items)
-                AddChild(item, Roles.Expression);
+            if(items != null)
+                Items.AddRange(items);
 		}
 
         public override void AcceptWalker(IAstWalker walker)

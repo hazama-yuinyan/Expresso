@@ -59,7 +59,8 @@ namespace Expresso.Ast
         internal protected override bool DoMatch(AstNode other, Match match)
         {
             var o = other as VariableInitializer;
-            return o != null && MatchString(Name, o.Name) && Initializer.DoMatch(o.Initializer, match);
+            return o != null && NameToken.DoMatch(o.NameToken, match)
+                && Initializer.DoMatch(o.Initializer, match);
         }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using ICSharpCode.NRefactory;
 
 
 namespace Expresso.Ast.Analysis
@@ -9,351 +10,552 @@ namespace Expresso.Ast.Analysis
     /// All <see cref="Expresso.Ast.PlaceholderType"/> nodes are replaced with real types
     /// inferred from the context.
     /// </summary>
-    class TypeChecker : IAstWalker
+    class TypeChecker : IAstWalker<AstType>
     {
+        int scope_counter;
         Parser parser;
         SymbolTable table;  //keep a SymbolTable reference in a private field for convenience
+        TypeInferenceRunner inference_runner;
 
         public TypeChecker(Parser parser)
         {
             this.parser = parser;
             table = parser.Symbols;
+            inference_runner = new TypeInferenceRunner(parser, table);
         }
 
-        void GoDownScope(int index = 0)
+        public static void Check(ExpressoAst ast, Parser parser)
         {
-            table = table.Children[index];
+            var checker = new TypeChecker(parser);
+            ast.AcceptWalker(checker);
         }
 
-        void GoUpScope()
+        void DescendScope()
+        {
+            table = table.Children[scope_counter];
+        }
+
+        void AscendScope()
         {
             table = table.Parent;
         }
 
         #region IAstWalker implementation
 
-        public void VisitAst(ExpressoAst ast)
+        public AstType VisitAst(ExpressoAst ast)
         {
-            ast.Body.AcceptWalker(this);
+            foreach(var decl in ast.Declarations)
+                decl.AcceptWalker(this);
+
+            return null;
         }
 
-        public void VisitBlock(BlockStatement block)
+        public AstType VisitBlock(BlockStatement block)
         {
-            GoDownScope();
-            block.Statements.AcceptWalker(this);
-            GoUpScope();
+            int tmp_counter = scope_counter;
+            scope_counter = 0;
+            DescendScope();
+            foreach(var stmt in block.Statements)
+                stmt.AcceptWalker(this);
+
+            AscendScope();
+            scope_counter = tmp_counter + 1;
+            return null;
         }
 
-        public void VisitBreakStatement(BreakStatement breakStmt)
+        public AstType VisitBreakStatement(BreakStatement breakStmt)
         {
-            // no op
+            if(breakStmt.Count.Value.GetType() != typeof(int) || (int)breakStmt.Count.Value < 0){
+                parser.ReportSemanticError(
+                    "`count` expression in a break statement has to be a positive integer",
+                    breakStmt
+                );
+            }
+
+            return null;
         }
 
-        public void VisitContinueStatement(ContinueStatement continueStmt)
+        public AstType VisitContinueStatement(ContinueStatement continueStmt)
         {
-            // no op
+            if(continueStmt.Count.Value.GetType() != typeof(int) || (int)continueStmt.Count.Value < 0){
+                parser.ReportSemanticError(
+                    "`count` expression in a continue statement has to be a positive integer",
+                    continueStmt
+                );
+            }
+
+            return null;
         }
 
-        public void VisitEmptyStatement(EmptyStatement emptyStmt)
+        public AstType VisitEmptyStatement(EmptyStatement emptyStmt)
         {
-            // no op
+            return AstType.Null;
         }
 
-        public void VisitExpressionStatement(ExpressionStatement exprStmt)
+        public AstType VisitExpressionStatement(ExpressionStatement exprStmt)
         {
             exprStmt.Expression.AcceptWalker(this);
+            return AstType.Null;
         }
 
-        public void VisitForStatement(ForStatement forStmt)
+        public AstType VisitForStatement(ForStatement forStmt)
         {
-            forStmt.Left.AcceptWalker(this);
-            forStmt.Target.AcceptWalker(this);
+            int tmp_counter = scope_counter;
+            scope_counter = 0;
+            DescendScope();
+
+            var left_type = forStmt.Left.AcceptWalker(this);
+            if(IsPlaceholderType(left_type)){
+                var inferred_type = forStmt.Target.AcceptWalker(inference_runner);
+                left_type.ReplaceWith(inferred_type.Clone());
+            }else{
+                forStmt.Target.AcceptWalker(this);
+            }
             forStmt.Body.AcceptWalker(this);
+
+            AscendScope();
+            scope_counter = tmp_counter + 1;
+            return null;
         }
 
-        public void VisitIfStatement(IfStatement ifStmt)
+        public AstType VisitIfStatement(IfStatement ifStmt)
         {
+            int tmp_counter = scope_counter;
+            scope_counter = 0;
+            DescendScope();
             ifStmt.Condition.AcceptWalker(this);
             ifStmt.TrueBlock.AcceptWalker(this);
             ifStmt.FalseBlock.AcceptWalker(this);
+            AscendScope();
+            scope_counter = tmp_counter + 1;
+            return null;
         }
 
-        public void VisitReturnStatement(ReturnStatement returnStmt)
+        public AstType VisitReturnStatement(ReturnStatement returnStmt)
         {
             returnStmt.Expression.AcceptWalker(this);
+            return null;
         }
 
-        public void VisitMatchStatement(MatchStatement matchStmt)
+        public AstType VisitMatchStatement(MatchStatement matchStmt)
         {
+            int tmp_counter = scope_counter;
+            scope_counter = 0;
+            DescendScope();
             matchStmt.Target.AcceptWalker(this);
-            matchStmt.Clauses.AcceptWalker(this);
+            foreach(var clause in matchStmt.Clauses)
+                clause.AcceptWalker(this);
+
+            AscendScope();
+            scope_counter = tmp_counter + 1;
+            return null;
         }
 
-        public void VisitWhileStatement(WhileStatement whileStmt)
+        public AstType VisitWhileStatement(WhileStatement whileStmt)
         {
+            int tmp_counter = scope_counter;
+            scope_counter = 0;
+            DescendScope();
             whileStmt.Condition.AcceptWalker(this);
             whileStmt.Body.AcceptWalker(this);
+            AscendScope();
+            scope_counter = tmp_counter + 1;
+            return null;
         }
 
-        public void VisitYieldStatement(YieldStatement yieldStmt)
+        public AstType VisitYieldStatement(YieldStatement yieldStmt)
         {
             yieldStmt.Expression.AcceptWalker(this);
+            return null;
         }
 
-        public void VisitVariableDeclarationStatement(VariableDeclarationStatement varDecl)
+        public AstType VisitVariableDeclarationStatement(VariableDeclarationStatement varDecl)
         {
-            varDecl.Variables.AcceptWalker(this);
+            foreach(var variable in varDecl.Variables)
+                variable.AcceptWalker(this);
+
+            return null;
         }
 
-        public void VisitAssignment(AssignmentExpression assignment)
+        public AstType VisitAssignment(AssignmentExpression assignment)
         {
-            assignment.Right.AcceptWalker(this);
+            var left_type = assignment.Left.AcceptWalker(this);
+            if(IsPlaceholderType(left_type)){
+                var inferred_type = assignment.Left.AcceptWalker(inference_runner);
+                left_type.ReplaceWith(inferred_type.Clone());
+                return inferred_type;
+            }else{
+                var right_type = assignment.Right.AcceptWalker(this);
+                if(IsCompatibleWith(left_type, right_type)){
+                    parser.ReportSemanticErrorRegional(
+                        "Type `{0}` on left-hand-side isn't compatible with type `{1}` on right-hand-side.",
+                        assignment.Left, assignment.Right,
+                        left_type, right_type
+                    );
+                }
+                return left_type;
+            }
         }
 
-        public void VisitBinaryExpression(BinaryExpression binaryExpr)
+        public AstType VisitBinaryExpression(BinaryExpression binaryExpr)
         {
-            throw new NotImplementedException();
+            var lhs_type = binaryExpr.Left.AcceptWalker(this);
+            var rhs_type = binaryExpr.Right.AcceptWalker(this);
+            return null;
         }
 
-        public void VisitCallExpression(CallExpression callExpr)
+        public AstType VisitCallExpression(CallExpression callExpr)
         {
-            throw new NotImplementedException();
+            var return_type = callExpr.Target.AcceptWalker(this);
+            return return_type;
         }
 
-        public void VisitCastExpression(CastExpression castExpr)
+        public AstType VisitCastExpression(CastExpression castExpr)
         {
-            throw new NotImplementedException();
+            var target_type = castExpr.ToExpression;
+            var expression_type = castExpr.Target.AcceptWalker(this);
+            if(!IsCastable(expression_type, target_type)){
+                parser.ReportSemanticErrorRegional(
+                    "Can not cast the type `{0}` to type `{1}`.",
+                    castExpr.Target, castExpr.ToExpression,
+                    expression_type, target_type
+                );
+            }
+
+            return target_type;
         }
 
-        public void VisitComprehensionExpression(ComprehensionExpression comp)
+        public AstType VisitComprehensionExpression(ComprehensionExpression comp)
         {
-            throw new NotImplementedException();
+            return comp.ObjectType;
         }
 
-        public void VisitComprehensionForClause(ComprehensionForClause compFor)
+        public AstType VisitComprehensionForClause(ComprehensionForClause compFor)
         {
-            throw new NotImplementedException();
+            return null;
         }
 
-        public void VisitComprehensionIfClause(ComprehensionIfClause compIf)
+        public AstType VisitComprehensionIfClause(ComprehensionIfClause compIf)
         {
-            throw new NotImplementedException();
+            return null;
         }
 
-        public void VisitConditionalExpression(ConditionalExpression condExpr)
+        public AstType VisitConditionalExpression(ConditionalExpression condExpr)
         {
-            throw new NotImplementedException();
+            var true_type = condExpr.TrueExpression.AcceptWalker(this);
+            var false_type = condExpr.FalseExpression.AcceptWalker(this);
+            if(!IsCompatibleWith(true_type, false_type)){
+                parser.ReportSemanticErrorRegional(
+                    "",
+                    condExpr.Condition, condExpr.FalseExpression
+                );
+            }
+
+            return true_type;
         }
 
-        public void VisitKeyValueLikeExpression(KeyValueLikeExpression keyValue)
+        public AstType VisitKeyValueLikeExpression(KeyValueLikeExpression keyValue)
         {
-
+            return null;
         }
 
-        public void VisitLiteralExpression(LiteralExpression literal)
+        public AstType VisitLiteralExpression(LiteralExpression literal)
         {
-            throw new NotImplementedException();
+            return literal.Type;
         }
 
-        public void VisitIdentifier(Identifier ident)
+        public AstType VisitIdentifier(Identifier ident)
         {
-            throw new NotImplementedException();
+            return ident.Type;
         }
 
-        public void VisitIntgerSequenceExpression(IntegerSequenceExpression intSeq)
+        public AstType VisitIntegerSequenceExpression(IntegerSequenceExpression intSeq)
         {
-            throw new NotImplementedException();
+            return new PrimitiveType("intseq", TextLocation.Empty);
         }
 
-        public void VisitIndexerExpression(IndexerExpression indexExpr)
+        public AstType VisitIndexerExpression(IndexerExpression indexExpr)
         {
-            throw new NotImplementedException();
+            return null;
         }
 
-        public void VisitMemberReference(MemberReference memRef)
+        public AstType VisitMemberReference(MemberReference memRef)
         {
-            throw new NotImplementedException();
+            return null;
         }
 
-        public void VisitNewExpression(NewExpression newExpr)
+        public AstType VisitNewExpression(NewExpression newExpr)
         {
-            throw new NotImplementedException();
+            return newExpr.CreationExpression.AcceptWalker(this);
         }
 
-        public void VisitPathExpression(PathExpression pathExpr)
+        public AstType VisitPathExpression(PathExpression pathExpr)
         {
-            throw new NotImplementedException();
+            return null;
         }
 
-        public void VisitParenthesizedExpression(ParenthesizedExpression parensExpr)
+        public AstType VisitParenthesizedExpression(ParenthesizedExpression parensExpr)
         {
-            throw new NotImplementedException();
+            return parensExpr.Expression.AcceptWalker(this);
         }
 
-        public void VisitObjectCreationExpression(ObjectCreationExpression creation)
+        public AstType VisitObjectCreationExpression(ObjectCreationExpression creation)
         {
-            throw new NotImplementedException();
+            return creation.TypePath;
         }
 
-        public void VisitSequenceInitializer(SequenceInitializer seqInitializer)
+        public AstType VisitSequenceInitializer(SequenceInitializer seqInitializer)
         {
-            throw new NotImplementedException();
+            return seqInitializer.ObjectType;
         }
 
-        public void VisitMatchClause(MatchPatternClause matchClause)
+        public AstType VisitMatchClause(MatchPatternClause matchClause)
         {
-            throw new NotImplementedException();
+            return AstType.Null;
         }
 
-        public void VisitSequence(SequenceExpression seqExpr)
+        public AstType VisitSequence(SequenceExpression seqExpr)
         {
-            throw new NotImplementedException();
+            return null;
         }
 
-        public void VisitUnaryExpression(UnaryExpression unaryExpr)
+        public AstType VisitUnaryExpression(UnaryExpression unaryExpr)
         {
-            throw new NotImplementedException();
+            switch(unaryExpr.Operator){
+            case OperatorType.Reference:
+                return null;
+
+            case OperatorType.Dereference:
+                return null;
+
+            case OperatorType.Plus:
+            case OperatorType.Minus:
+                return unaryExpr.Operand.AcceptWalker(this);
+
+            case OperatorType.Not:
+                var operand_type = unaryExpr.Operand.AcceptWalker(this);
+                if(!(operand_type is PrimitiveType) || ((PrimitiveType)operand_type).KnownTypeCode != Expresso.TypeSystem.KnownTypeCode.Bool){
+                    parser.ReportSemanticError(
+                        "Can not apply the '!' operator on type `{0}`!\nThe operand must be of type `bool`.",
+                        operand_type
+                    );
+                }
+                return operand_type;
+
+            default:
+                throw new FatalError("Unknown unary operator!");
+            }
         }
 
-        public void VisitSelfReferenceExpression(SelfReferenceExpression selfRef)
+        public AstType VisitSelfReferenceExpression(SelfReferenceExpression selfRef)
         {
-            throw new NotImplementedException();
+            return selfRef.SelfIdentifier.Type;
         }
 
-        public void VisitSuperReferenceExpression(SuperReferenceExpression superRef)
+        public AstType VisitSuperReferenceExpression(SuperReferenceExpression superRef)
         {
-            throw new NotImplementedException();
+            return superRef.SuperIdentifier.Type;
         }
 
-        public void VisitCommentNode(CommentNode comment)
+        public AstType VisitCommentNode(CommentNode comment)
         {
-            throw new NotImplementedException();
+            return null;
         }
 
-        public void VisitTextNode(TextNode textNode)
+        public AstType VisitTextNode(TextNode textNode)
         {
-            throw new NotImplementedException();
+            return null;
         }
 
-        public void VisitSimpleType(SimpleType simpleType)
+        public AstType VisitSimpleType(SimpleType simpleType)
         {
-            throw new NotImplementedException();
+            return simpleType;
         }
 
-        public void VisitPrimitiveType(PrimitiveType primitiveType)
+        public AstType VisitPrimitiveType(PrimitiveType primitiveType)
         {
-            throw new NotImplementedException();
+            return primitiveType;
         }
 
-        public void VisitReferenceType(ReferenceType referenceType)
+        public AstType VisitReferenceType(ReferenceType referenceType)
         {
+            return referenceType.BaseType;
         }
 
-        public void VisitMemberType(MemberType memberType)
+        public AstType VisitMemberType(MemberType memberType)
         {
+            return null;
         }
 
-        public void VisitPlaceholderType(PlaceholderType placeholderType)
+        public AstType VisitPlaceholderType(PlaceholderType placeholderType)
         {
-
+            return AstType.Null;
         }
 
-        public void VisitAliasDeclaration(AliasDeclaration aliasDecl)
+        public AstType VisitAliasDeclaration(AliasDeclaration aliasDecl)
         {
-
+            return null;
         }
 
-        public void VisitImportDeclaration(ImportDeclaration importDecl)
+        public AstType VisitImportDeclaration(ImportDeclaration importDecl)
         {
-            throw new NotImplementedException();
+            return null;
         }
 
-        public void VisitFunctionDeclaration(FunctionDeclaration funcDecl)
+        public AstType VisitFunctionDeclaration(FunctionDeclaration funcDecl)
         {
-            throw new NotImplementedException();
+            foreach(var param in funcDecl.Parameters){
+                var param_type = param.AcceptWalker(this);
+                if(IsPlaceholderType(param_type)){
+                    var inferred_type = inference_runner.VisitParameterDeclaration(param);
+                    param_type.ReplaceWith(inferred_type.Clone());
+                }else{
+                    if(!param.Option.IsNull){
+                        var option_type = param.Option.AcceptWalker(this);
+                        if(!IsCastable(option_type, param_type)){
+                            parser.ReportSemanticErrorRegional(
+                                "Type mismatch; `{0}` is not compatible with `{1}`.",
+                                param.NameToken, param.Option,
+                                option_type, param_type
+                            );
+                        }
+                    }
+                }
+            }
+
+            funcDecl.Body.AcceptWalker(this);
+
+            return null;
         }
 
-        public void VisitTypeDeclaration(TypeDeclaration typeDecl)
+        public AstType VisitTypeDeclaration(TypeDeclaration typeDecl)
         {
-            throw new NotImplementedException();
+            return null;
         }
 
-        public void VisitFieldDeclaration(FieldDeclaration fieldDecl)
+        public AstType VisitFieldDeclaration(FieldDeclaration fieldDecl)
         {
-            throw new NotImplementedException();
+            foreach(var field in fieldDecl.Initializers){
+                var field_type = field.AcceptWalker(this);
+                if(IsPlaceholderType(field_type)){
+                    var inferred_type = inference_runner.VisitVariableInitializer(field);
+                    field_type.ReplaceWith(inferred_type.Clone());
+                }else{
+                    if(!field.Initializer.IsNull){
+                        var init_type = field.Initializer.AcceptWalker(this);
+                        if(!IsCastable(init_type, field_type)){
+                            parser.ReportSemanticErrorRegional(
+                                "Can not implicitly cast type `{0}` to type `{1}`.",
+                                field.NameToken, field.Initializer,
+                                init_type, field_type
+                            );
+                        }
+                    }
+                }
+            }
+
+            return null;
         }
 
-        public void VisitParameterDeclaration(ParameterDeclaration parameterDecl)
+        public AstType VisitParameterDeclaration(ParameterDeclaration parameterDecl)
         {
-            throw new NotImplementedException();
+            // Don't check NameToken.Type is a placeholder type node.
+            // It is the parent's job to resolve and replace this node with an actual type node.
+            return parameterDecl.NameToken.Type;
         }
 
-        public void VisitVariableInitializer(VariableInitializer initializer)
+        public AstType VisitVariableInitializer(VariableInitializer initializer)
         {
-            throw new NotImplementedException();
+            var left_type = initializer.NameToken.AcceptWalker(this);
+            if(IsPlaceholderType(left_type)){
+                var inferred_type = initializer.Initializer.AcceptWalker(inference_runner);
+                left_type.ReplaceWith(inferred_type.Clone());
+                return inferred_type;
+            }else{
+                return left_type;
+            }
         }
 
-        public void VisitWildcardPattern(WildcardPattern wildcardPattern)
+        public AstType VisitWildcardPattern(WildcardPattern wildcardPattern)
         {
-            throw new NotImplementedException();
+            return SimpleType.Null;
         }
 
-        public void VisitIdentifierPattern(IdentifierPattern identifierPattern)
+        public AstType VisitIdentifierPattern(IdentifierPattern identifierPattern)
         {
-            throw new NotImplementedException();
+            return !identifierPattern.InnerPattern.IsNull ? identifierPattern.InnerPattern.AcceptWalker(this) : AstType.Null;
         }
 
-        public void VisitValueBindingPattern(ValueBindingPattern valueBindingPattern)
+        public AstType VisitValueBindingPattern(ValueBindingPattern valueBindingPattern)
         {
-            throw new NotImplementedException();
+            return valueBindingPattern.Pattern.AcceptWalker(this);
         }
 
-        public void VisitCollectionPattern(CollectionPattern collectionPattern)
+        public AstType VisitCollectionPattern(CollectionPattern collectionPattern)
         {
-
+            return null;
         }
 
-        public void VisitDestructuringPattern(DestructuringPattern destructuringPattern)
+        public AstType VisitDestructuringPattern(DestructuringPattern destructuringPattern)
         {
-
+            return null;
         }
 
-        public void VisitTuplePattern(TuplePattern tuplePattern)
+        public AstType VisitTuplePattern(TuplePattern tuplePattern)
         {
-            throw new NotImplementedException();
+            return null;
         }
 
-        public void VisitExpressionPattern(ExpressionPattern exprPattern)
+        public AstType VisitExpressionPattern(ExpressionPattern exprPattern)
         {
-            throw new NotImplementedException();
+            return null;
         }
 
-        public void VisitNullNode(AstNode nullNode)
+        public AstType VisitNullNode(AstNode nullNode)
         {
-            // no op
+            return null;
         }
 
-        public void VisitNewLine(NewLineNode newlineNode)
+        public AstType VisitNewLine(NewLineNode newlineNode)
         {
-            // no op
+            return null;
         }
 
-        public void VisitWhitespace(WhitespaceNode whitespaceNode)
+        public AstType VisitWhitespace(WhitespaceNode whitespaceNode)
         {
-            // no op
+            return null;
         }
 
-        public void VisitExpressoTokenNode(ExpressoTokenNode tokenNode)
+        public AstType VisitExpressoTokenNode(ExpressoTokenNode tokenNode)
         {
-            // no op
+            return null;
         }
 
-        public void VisitPatternPlaceholder(AstNode placeholder, ICSharpCode.NRefactory.PatternMatching.Pattern child)
+        public AstType VisitPatternPlaceholder(AstNode placeholder, ICSharpCode.NRefactory.PatternMatching.Pattern child)
         {
-            // no op
+            return null;
         }
 
         #endregion
+
+        /// <summary>
+        /// In Expresso, there are 3 valid cast cases.
+        /// </summary>
+        /// <returns><c>true</c> if <c>fromType</c> can be casted to <c>totype</c>; otherwise, <c>false</c>.</returns>
+        static bool IsCastable(AstType fromType, AstType toType)
+        {
+            return false;
+        }
+
+        static bool IsCompatibleWith(AstType first, AstType second)
+        {
+            return true;
+        }
+
+        static bool IsPlaceholderType(AstType type)
+        {
+            return type is PlaceholderType;
+        }
     }
 }
 

@@ -117,7 +117,7 @@ namespace Expresso.Ast
         }
 
         #region Factory methods
-        public static ExpressionStatement MakeAssignment(SequenceExpression lhs, SequenceExpression rhs,
+        public static ExpressionStatement MakeSingleAssignment(SequenceExpression lhs, SequenceExpression rhs,
             TextLocation start = default(TextLocation), TextLocation end = default(TextLocation))
         {
             return new ExpressionStatement(new AssignmentExpression(lhs, rhs), start, end);

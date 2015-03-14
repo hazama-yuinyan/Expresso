@@ -40,10 +40,8 @@ namespace Expresso.Ast
         public IndexerExpression(Expression target, IEnumerable<Expression> arguments)
         {
             Target = target;
-            if(arguments != null){
-                foreach(var argument in arguments)
-                    AddChild(argument, Roles.Argument);
-            }
+            if(arguments != null)
+                Arguments.AddRange(arguments);
         }
 
         public IndexerExpression(Expression target, params Expression[] arguments)

@@ -121,16 +121,24 @@ namespace Expresso.Ast
         /// <summary>
         /// Gets the start location.
         /// </summary>
+        /// <remarks>
+        /// Derived classes have opportunities to implement their own logics of determining
+        /// the start location within the nodes.
+        /// </remarks>
         /// <value>The start location in the source code.</value>
-        public TextLocation StartLocation{
+        public virtual TextLocation StartLocation{
             get{return start_loc;}
         }
 
         /// <summary>
         /// Gets the end location.
         /// </summary>
+        /// <remarks>
+        /// Derived classes have opportunities to implement their own logics of determining
+        /// the end location within the nodes.
+        /// </remarks>
         /// <value>The end location in the source code.</value>
-        public TextLocation EndLocation{
+        public virtual TextLocation EndLocation{
             get{return end_loc;}
         }
 
@@ -358,6 +366,8 @@ namespace Expresso.Ast
         internal void AddChildUnsafe(AstNode child, Role role)
         {
             child.parent = this;
+            child.SetRole(role);
+
             if(first_child == null){
                 last_child = first_child = child;
             }else{
@@ -394,7 +404,7 @@ namespace Expresso.Ast
             if(child.IsFrozen)
                 throw new ArgumentException("Can not add a frozen node", "child");
 
-            if(nextSibling.parent != null)
+            if(nextSibling.parent == null)
                 throw new ArgumentException("NextSibling is not a child of this node.", "nextSibling");
 
             // No need to test for "Can not add children to null nodes",
@@ -777,9 +787,9 @@ namespace Expresso.Ast
         /// <summary>
         /// Gets the children by role.
         /// </summary>
-        /// <returns>The children by role.</returns>
+        /// <returns>Child nodes having the specified role.</returns>
         /// <param name="role">Role.</param>
-        /// <typeparam name="T">The 1st type parameter.</typeparam>
+        /// <typeparam name="T">The type to which the target values will be casted.</typeparam>
         public AstNodeCollection<T> GetChildrenByRole<T>(Role<T> role)
             where T : AstNode
         {
@@ -1251,7 +1261,7 @@ namespace Expresso.Ast
 		
 		public static Identifier MakeIdentifier(string name)
 		{
-			return new Identifier(name, null);
+			return new Identifier(name);
 		}
 
         public static Identifier MakeIdentifier(string name, AstType type)
@@ -1259,7 +1269,8 @@ namespace Expresso.Ast
             return new Identifier(name, type);
         }
 
-        public static ExpressoAst MakeModuleDef(string moduleName, IEnumerable<EntityDeclaration> decls, IEnumerable<ImportDeclaration> imports)
+        public static ExpressoAst MakeModuleDef(string moduleName,
+            IEnumerable<EntityDeclaration> decls, IEnumerable<ImportDeclaration> imports = null)
 		{
             return new ExpressoAst(decls, imports, moduleName);
 		}

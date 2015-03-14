@@ -57,8 +57,7 @@ namespace Expresso.Ast
         public BlockStatement(IEnumerable<Statement> stmts, TextLocation start, TextLocation end)
             : base(start, end)
         {
-            foreach(var stmt in stmts)
-                AddChild(stmt, Roles.EmbeddedStatement);
+            Statements.AddRange(stmts);
         }
 
         public override void AcceptWalker(IAstWalker walker)

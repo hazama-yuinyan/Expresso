@@ -10,9 +10,18 @@ namespace Expresso.Ast
     /// </summary>
     public class SelfReferenceExpression : Expression
     {
+        /// <summary>
+        /// Gets the identifier that represents the "self" keyword.
+        /// </summary>
+        public Identifier SelfIdentifier{
+            get{return GetChildByRole(Roles.Identifier);}
+            private set{SetChildByRole(Roles.Identifier, value);}
+        }
+
         public SelfReferenceExpression(TextLocation loc)
             : base(loc, new TextLocation(loc.Line, loc.Column + "self".Length))
         {
+            SelfIdentifier = AstNode.MakeIdentifier("self");
         }
 
         #region implemented abstract members of AstNode

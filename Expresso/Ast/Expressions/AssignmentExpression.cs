@@ -15,28 +15,29 @@ namespace Expresso.Ast
     /// are represented as an assignment node that has an <see cref="Expresso.Ast.SequenceExpression"/>
     /// on both the left-hand-side and right-hand-side.
     /// So, for example, "x = y = z = 3" is represented as follows:
-    /// new AssignmentExpression{
-    ///     Left = new Identifier("x"),
-    ///     Right = new AssignmentExpression{
-    ///         Left = new Identifier("y"),
-    ///         Right = new AssignmentExpression{
-    ///             Left = new Identifier("z"),
-    ///             Right = new LiteralExpression("3")
+    /// AssignmentExpression{
+    ///     Left = PathExpression(Identifier("x")),
+    ///     Right = AssignmentExpression{
+    ///         Left = PathExpression(Identifier("y")),
+    ///         Right = AssignmentExpression{
+    ///             Left = PathExpression(Identifier("z")),
+    ///             Right = LiteralExpression("3")
     ///         }
     ///     }
     /// }
     /// 
     /// while "x, y = 1, 2" is represented as:
-    /// new AssignmentExpression{
-    ///     Left = new SequenceExpression{
-    ///         new Identifier("x"),
-    ///         new Identifier("y")
+    /// AssignmentExpression{
+    ///     Left = SequenceExpression{
+    ///         PathExpression(Identifier("x")),
+    ///         PathExpression(Identifier("y"))
     ///     },
-    ///     Right = new SequenceExpression{
-    ///         new LiteralExpression(1),
-    ///         new LiteralExpression(2)
+    ///     Right = SequenceExpression{
+    ///         LiteralExpression(1),
+    ///         LiteralExpression(2)
     ///     }
     /// }
+    /// NOTE: The above table shows the structure in pseudo C# expressions for brevity.
     /// </summary>
     public class AssignmentExpression : Expression
     {

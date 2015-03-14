@@ -19,7 +19,7 @@ Like the C or C++ language, Expresso has the pointer type. It is called a refere
 Like most other programming languages, Expresso has a lot of useful built-in types. Among them are included primitive types like `int`, `bool`, etc. and complex types like `tuple`, `vector`, `dictionary` and types that need special care like `unit`, `string` etc. Most of them also exist in other major programming languages, so it's a good bet that you are already familiar with the concepts.
 
 *** Primitive types
-Expresso has several primitive types.
+Expresso has several primitive types. Namely `bool` 
 *** Arrays
 
 *** Tuples, vectors and dictionaries
@@ -45,7 +45,7 @@ One is called "key" and the other "value". A key, like indexes in arrays or vect
     };
     println(some_dict);     // print "{"akari" : "kawakawa", "chinatsu" : "2424", "kyoko" : "...", "yui" : "..."}"
 ```
-Often tuples, vectors and dictionaries are called "containers" because they contain or store data in them and keep them inside for later computation.
+Often tuples, vectors and dictionaries are called "containers" because they contain or store data in them and keep them inside for later computation. In Expresso term, we also call those containers "sequence" in similarity to `intseq` type standing for integer sequence.
 **** Tips
 Let's talk about those data structures more deeply. Imagine if you should create a new vector class of your own, what would you do? How would you design it? 
 In general, those data structures often consist of 2 layers. One is the "header" layer and the other is the "data" layer. Each layer corresponds to one class so a container type usually has two classes as its component. The header class stores metadata on the data it holds like the number of elements and where the real data reside(as a pointer). The data layer literally holds data(usually as a node). 
@@ -58,9 +58,10 @@ First, a string is essentialy an array of characters. So if you want to compare 
 One unique characteristic for Expresso is the built-in `IntSeq` type. As the name suggests, it produces a series of integers.
 The `IntSeq` type has 3 fields, `lower`, `upper` and `step`. `lower` represents the lower bound of the sequence, `upper` the upper bound and `step` the step by which an iteration proceeds at a time.
 The `IntSeq` type has the corresponding literal form and it is written as follows:
-`lower..upper[:step]`
+`lower(..|...)upper[:step]`
 ```Expresso
-    let seq = 1..10;    // `step` can be omitted and 1 is assumed if ommited
+    let seq = 1..10;    // `step` can be omitted and 1 is assumed if ommited and double dots mean that the lower bound is
+                        // inclusive but the upper bound is exclusive
     let series = seq.collect();
     for elem in seq {  // print "123456789"
         print(elem);
@@ -84,5 +85,28 @@ An integer sequence expression can take negative values in any of its operands a
 You may notice that the integer sequence expression looks like something, say, the conditional operator. And yes, that's right! 
 In Expresso, we have 2 types of ternary operators. One is the conditional operator(often called "the ternary operator" since most programming languages does have only one ternary operator) and the other is the integer sequence operator we have just introduced.
 
+So far you may be sick of the tiring and boring explanations. But when combined with sequence types such as arrays or vectors, the `intseq` type reveals its funny yet powerful potential out to the public.
+```Expresso
+    let some_array = (0..10).collect();
+    let first_half = some_array[0..5];
+    let second_half = some_array[5..10];
+    for let (a, b) in first_half.zip(second_half) {
+        print("({}, {}),", a, b);   // print "(0, 5),(1, 6),(2, 7)" and so on
+    }
+```
+In the above example, it seems that the latter 2 intseq objects extracts elements from the same array object.
+You may be wondering that it is inefficient because it seems that we have 3 arrays in the end. Having 3 arrays means that Expresso first allocates 3 chunks of memory and fills the first chunk of memory with integers from 0 to 10. And then it copies the first half elements of the previous array to the second chunk of memory and the second half of elements to the last chunk of memory.
+But Expresso is smart enough to solve this problem. Instead of returning a new array, it returns iterators that goes through the first half of the elements and the second half of the elements respectively. To understand what iterators are, we should proceed to the next chapter!
+
+*** Iterators
+As I promised just a short period of time ago, let's take a closer look at iterators.
+As I've mentioned, `intseq` type itself is an iterator so take this as an example.
+
 *** .NET specific Runtime environment
 Our primary goal of teaching beginners the basics of programming leads us to the .NET environment.
+
+*** Some tips on general concepts
+
+**** --- Give things descriptive names ---
+For coders, source codes are another yourself. Once any part of source codes is available to the public, you will be valued at those. Having that said, names are important for humans in the real world and in the computer world. Humans make errors. But unfortunately the computers are smarter than us. They don't care if the names are long or short. But we do care. The more discriptive names we give things, the less likely we are to make errors. Names describe their properties, their . So give things descriptive names as much as possible. Names in source codes are much like letters you write on paper. The more descriptive they get, the more beautifuly you write letters. Lazy and old-fashioned C programmers prefer shorter names and abbriviations. Think source codes as publications of coders for coders and by coders. They will be read by other coders and when that happens what do they think if the publications look ugly. It doesn't only deterate readbility but their interests in your sorce codes, and which makes it harder to be maintained and therefore they will be replaced with other ones at some point in the future. Then your self is disappeared from that world. That's a sad story. Surely. Certainly. And I don't want to read those sad stories anymore.
+Another reason why you should use longer names is because names are fighters. Imagine if you wrote a very large program of, say, 10,000 LOC. Several weeks have passed and you were told that your program had some bugs in it and you should read it all back again and it would cost you precious time. I know programmers are lazy. Too lazy not to get up at early in the morning. But don't be lazy at giving longer, descriptive and hopefully distinct names. They will certainly revenge on you. I can tell.

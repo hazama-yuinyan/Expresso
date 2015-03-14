@@ -7,16 +7,21 @@ namespace Expresso.Ast
     /// <summary>
     /// 仮引数定義。
     /// Represents a parameter(which appears in function signatures).
+    /// ident [ "(-" Type ] [ "=" Expression ] ;
     /// </summary>
     public class ParameterDeclaration : EntityDeclaration
     {
+        public override AstType ReturnType{
+            get{return NameToken.Type;}
+        }
+
         public ExpressoTokenNode AssignToken{
             get{return GetChildByRole(Roles.AssignToken);}
         }
 
         /// <summary>
         /// この引数のデフォルト値。
-        /// The optional value for this argument. It would be null if none is specified.
+        /// The optional value for this argument. It would be a null node if none is specified.
         /// </summary>
         public Expression Option{
             get{return GetChildByRole(Roles.Expression);}
@@ -33,10 +38,9 @@ namespace Expresso.Ast
 
         #endregion
 
-        public ParameterDeclaration(string name, AstType type, Expression option = null)
+        public ParameterDeclaration(Identifier identifier, Expression option = null)
         {
-            AddChild(AstNode.MakeIdentifier(name), Roles.Identifier);
-            AddChild(type, Roles.Type);
+            SetChildByRole(Roles.Identifier, identifier);
             Option = option ?? Expression.Null;
         }
 

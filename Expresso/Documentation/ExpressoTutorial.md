@@ -1,7 +1,7 @@
 ﻿* The Expresso tutorial
 ** Preface
 Expresso primarily aims to be a programming language for education, or in other words another Pascal. And therefore Expresso has two concepts. Expresso aims to be a "easy-to-write" and "expressive" programming language.
-Even though we heavily put focus on syntax and the grammar, its policy reads "Easy for beginners, elegant for intermediates" meaning that it's easy for beginners to read and write, and still it has lots of rich features that advanced programmers can take advantage of.
+Even though we heavily put focus on syntax and the grammar, its policy reads "Easy for beginners, elegant for enthusisasts" meaning that it's easy for beginners to read and write, and still it has lots of rich features that advanced programmers can take advantage of.
 Even though it's a type-strict language, it looks rather in type-free way thanks to the very powerful type inference system.
 
 ** Hello, Expresso world!
@@ -34,6 +34,7 @@ let mapped = a.map(|elem| => /* do something on each element */);
 ** Main philosophies 
 Expresso has two philosophies. One is "What the compiler doesn't allow you to do is just what you can't", and the other is "Just do as the compiler says" or more hilariously, "Just lean on the compiler until the perpendicular becomes the parallel". The first one is somewhat obvious because otherwise, the compiler has some bugs.
 The latter tells you that if you just follow what the compiler says, then you can do right things naturally.
+
 ** Let bindings and variable declarations
 In Expresso, there are 2 forms of variable binding. 
 Variables are useful considering the ability to keep track of values they hold. But sometimes we just want to give values descriptive names because we need the same values several times or because it is tedious to change all the literal values over and over again when you try to guess the proper values for some programs. That's where constants come into play.

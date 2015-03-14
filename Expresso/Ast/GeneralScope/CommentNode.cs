@@ -4,7 +4,7 @@ using System;
 namespace Expresso.Ast
 {
     /// <summary>
-    /// コメント
+    /// コメント。
     /// A Comment node holds the content of comments.
     /// </summary>
     public class CommentNode : AstNode
@@ -12,7 +12,6 @@ namespace Expresso.Ast
         /// <summary>
         /// The plain string representing the content.
         /// </summary>
-        /// <value>The text.</value>
         public string Text{
             get; set;
         }
@@ -23,8 +22,9 @@ namespace Expresso.Ast
             }
         }
 
-        public CommentNode()
+        public CommentNode(string content)
         {
+            Text = content;
         }
 
         #region implemented abstract members of AstNode
@@ -47,7 +47,7 @@ namespace Expresso.Ast
         protected internal override bool DoMatch(AstNode other, ICSharpCode.NRefactory.PatternMatching.Match match)
         {
             var o = other as CommentNode;
-            return o != null && Text == o.Text;
+            return o != null && MatchString(Text, o.Text);
         }
         #endregion
     }

@@ -6,7 +6,7 @@ namespace Expresso.Ast
 {
 	/// <summary>
     /// Expresso Walker interface.
-    /// An AST walker is a class that walks through all nodes 
+    /// An AST walker is a class that walks through all nodes and processes each node.
 	/// </summary>
     public interface IAstWalker
 	{

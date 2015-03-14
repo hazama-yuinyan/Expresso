@@ -9,6 +9,9 @@ namespace Expresso.Ast
     /// </summary>
     public class ExpressionPattern : PatternConstruct
     {
+        /// <summary>
+        /// Represents the inner expression.
+        /// </summary>
         public Expression Expression{
             get{return GetChildByRole(Roles.Expression);}
             set{SetChildByRole(Roles.Expression, value);}

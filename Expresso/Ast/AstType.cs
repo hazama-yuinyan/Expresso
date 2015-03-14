@@ -9,6 +9,7 @@ namespace Expresso.Ast
     /// <summary>
     /// A type reference in Expresso AST.
     /// An AstType is an ast node, while a TypeReference is an internal and public representation.
+    /// The null AstType nodes can be used to represent the unit type.
     /// </summary>
     public abstract class AstType : AstNode
     {
@@ -144,7 +145,7 @@ namespace Expresso.Ast
         {
         }
 
-        public new AstType Clone()
+        public new AstType MemberwiseClone()
         {
             return (AstType)base.MemberwiseClone();
         }

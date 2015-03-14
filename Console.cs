@@ -13,13 +13,17 @@ namespace Expresso.Terminal
 			if(args.Length == 0){
 				Console.WriteLine(
 @"Welcome to the Expresso Console!
-Usage: expresso file_name");
+Usage: expresso file_name"
+                );
 				return;
 			}
 			
 			var file_name = args[0];
 
 			try{
+                var parser = new Parser(new Scanner(file_name));
+                parser.DoPostParseProcessing = true;
+                parser.Parse();
 			}
             catch(PanickedException panicked){
 				Console.WriteLine(panicked.Message);

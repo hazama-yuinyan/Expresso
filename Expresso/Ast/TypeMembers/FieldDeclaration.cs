@@ -45,7 +45,7 @@ namespace Expresso.Ast
             : base(start, end)
         {
             foreach(var variable in lhs.Zip(rhs, (ident, expr) => new Tuple<Identifier, Expression>(ident, expr)))
-                AddChild(new VariableInitializer(variable.Item1, variable.Item2), Roles.Variable);
+                Initializers.Add(new VariableInitializer(variable.Item1, variable.Item2));
 
             EntityDeclaration.SetModifiers(this, modifiers);
         }
@@ -68,7 +68,7 @@ namespace Expresso.Ast
         internal protected override bool DoMatch(AstNode other, ICSharpCode.NRefactory.PatternMatching.Match match)
         {
             var o = other as FieldDeclaration;
-            return o != null && ReturnType.DoMatch(o.ReturnType, match) && Initializers.DoMatch(o.Initializers, match);
+            return o != null && Initializers.DoMatch(o.Initializers, match) && Modifiers == o.Modifiers;
         }
     }
 }

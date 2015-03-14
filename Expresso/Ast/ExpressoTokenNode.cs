@@ -45,6 +45,20 @@ namespace Expresso.Ast
         }
         #endregion
 
+        /// <summary>
+        /// Gets the length.
+        /// </summary>
+        public int TokenLength{
+            get{return TokenRole.TokenLengths[(int)flags >> (int)AstNodeFlagsUsedBits];}
+        }
+
+        /// <summary>
+        /// Gets the token as a string.
+        /// </summary>
+        public string Token{
+            get{return TokenRole.Tokens[(int)flags >> (int)AstNodeFlagsUsedBits];}
+        }
+
         public override NodeType NodeType{
             get{
                 return NodeType.Token;

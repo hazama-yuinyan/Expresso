@@ -11,14 +11,16 @@ namespace Expresso.Ast
     /// </summary>
     public class TuplePattern : PatternConstruct
     {
+        /// <summary>
+        /// Gets all the child patterns.
+        /// </summary>
         public AstNodeCollection<PatternConstruct> Patterns{
             get{return GetChildrenByRole(Roles.Pattern);}
         }
 
         public TuplePattern(IEnumerable<PatternConstruct> patterns)
         {
-            foreach(var pattern in patterns)
-                AddChild(pattern, Roles.Pattern);
+            Patterns.AddRange(patterns);
         }
 
         #region implemented abstract members of AstNode

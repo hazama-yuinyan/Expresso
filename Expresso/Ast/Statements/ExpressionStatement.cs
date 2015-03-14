@@ -6,6 +6,9 @@ namespace Expresso.Ast
 	/// <summary>
 	/// 式文。
 	/// The expression statement.
+    /// An expression statement evaluates an expression.
+    /// Only those expressions that have side effects are considered to be meaningful
+    /// when wrapped in an expression statement.
     /// Expression ';' ;
 	/// </summary>
     public class ExpressionStatement : Statement

@@ -10,7 +10,7 @@ def main()
 	let b = new {"akari" : 13, "chinatsu" : 13, "kyoko" : 14, "yui" : 14};
 	let c = new ("akarichan", "kawakawa", "chinatsuchan", 2424);
 
-	let d = a[0..3];
+	let d = a[0..3].collect();
 	var y = [...];
 	for let x in b {
 		print(x);

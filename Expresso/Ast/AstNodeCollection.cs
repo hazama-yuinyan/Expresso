@@ -21,10 +21,17 @@ namespace Expresso.Ast
         readonly AstNode node;
         readonly Role<T> role;
 
+        /// <summary>
+        /// Indicates whether the node doesn't have any child node.
+        /// Just the inverse of HasChildren.
+        /// </summary>
         public bool IsEmpty{
-            get{return node.IsNull;}
+            get{return !node.HasChildren;}
         }
 
+        /// <summary>
+        /// Indicates whether the node has children.
+        /// </summary>
         public bool HasChildren{
             get{return node.HasChildren;}
         }
@@ -118,7 +125,7 @@ namespace Expresso.Ast
                 // This allows removing/inserting nodes while iterating through the list
                 next = cur.NextSibling;
                 if(cur.RoleIndex == role_index)
-                    yield return (T)node;
+                    yield return (T)cur;
             }
         }
         #endregion

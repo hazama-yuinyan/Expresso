@@ -3,22 +3,40 @@ using System;
 
 namespace Expresso.Formatting
 {
+    /// <summary>
+    /// Represents brace positioning style.
+    /// </summary>
     public enum BraceStyle
     {
+        /// <summary>
+        /// Indicates that no braces should be modified.
+        /// </summary>
         DoNotModify,
+
+        /// <summary>
+        /// Indicates that all braces should be placed at the end of the current line
+        /// with whitespace prepended.
+        /// </summary>
         EndOfLine,
+
+        /// <summary>
+        /// Indicates that all braces should be placed at the end of the current line
+        /// without any preceding whitespaces.
+        /// </summary>
         EndOfLineWithoutSpace,
+
+        /// <summary>
+        /// Indicates that all braces should be placed at the next line.
+        /// </summary>
         NextLine,
+
+        /// <summary>
+        /// Indicates that all braces should be placed at the next line
+        /// with one level down indented. 
+        /// </summary>
         NextLineShifted,
         NextLineShifted2,
         BannerStyle
-    }
-
-    public enum PropertyFormatting
-    {
-        AllowOneLine,
-        ForceOneLine,
-        ForceNewLine
     }
 
     public enum Wrapping
@@ -29,9 +47,19 @@ namespace Expresso.Formatting
         WrapIfTooLong
     }
 
+    /// <summary>
+    /// Represents the rule for whether to put line breaks before certain constructs.
+    /// </summary>
     public enum NewLinePlacement
     {
+        /// <summary>
+        /// Indicates that 
+        /// </summary>
         DoNotCare,
+
+        /// <summary>
+        /// Indicates that a new line 
+        /// </summary>
         NewLine,
         SameLine
     }
@@ -67,11 +95,6 @@ namespace Expresso.Formatting
             set;
         }
 
-        public bool IndentStructBody{
-            get;
-            set;
-        }
-
         public bool IndentInterfaceBody{
             get;
             set;
@@ -87,22 +110,17 @@ namespace Expresso.Formatting
             set;
         }
 
-        public bool IndentPropertyBody{
-            get;
-            set;
-        }
-
         public bool IndentBlocks{
             get;
             set;
         }
 
-        public bool IndentSwitchBody{
+        public bool IndentMatchBody{
             get;
             set;
         }
 
-        public bool IndentCaseBody{
+        public bool IndentMatchPatternBody{
             get;
             set;
         }
@@ -146,11 +164,6 @@ namespace Expresso.Formatting
             set;
         }
 
-        public BraceStyle StructBraceStyle{ // tested
-            get;
-            set;
-        }
-
         public BraceStyle EnumBraceStyle{ // tested
             get;
             set;
@@ -162,66 +175,6 @@ namespace Expresso.Formatting
         }
 
         public BraceStyle AnonymousMethodBraceStyle{
-            get;
-            set;
-        }
-
-        public BraceStyle ConstructorBraceStyle{  // tested
-            get;
-            set;
-        }
-
-        public BraceStyle DestructorBraceStyle{ // tested
-            get;
-            set;
-        }
-
-        public BraceStyle PropertyBraceStyle{ // tested
-            get;
-            set;
-        }
-
-        public BraceStyle PropertyGetBraceStyle{ // tested
-            get;
-            set;
-        }
-
-        public BraceStyle PropertySetBraceStyle{ // tested
-            get;
-            set;
-        }
-
-        public PropertyFormatting SimpleGetBlockFormatting{ // tested
-            get;
-            set;
-        }
-
-        public PropertyFormatting SimpleSetBlockFormatting{ // tested
-            get;
-            set;
-        }
-
-        public BraceStyle EventBraceStyle{ // tested
-            get;
-            set;
-        }
-
-        public BraceStyle EventAddBraceStyle{ // tested
-            get;
-            set;
-        }
-
-        public BraceStyle EventRemoveBraceStyle{ // tested
-            get;
-            set;
-        }
-
-        public bool AllowEventAddBlockInline{ // tested
-            get;
-            set;
-        }
-
-        public bool AllowEventRemoveBlockInline{ // tested
             get;
             set;
         }
@@ -257,16 +210,6 @@ namespace Expresso.Formatting
         }
 
         public NewLinePlacement ElseIfNewLinePlacement{ // tested
-            get;
-            set;
-        }
-
-        public NewLinePlacement CatchNewLinePlacement{ // tested
-            get;
-            set;
-        }
-
-        public NewLinePlacement FinallyNewLinePlacement{ // tested
             get;
             set;
         }

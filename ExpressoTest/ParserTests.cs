@@ -19,8 +19,7 @@ namespace Expresso.Test
 		[Test]
 		public void SimpleLiterals()
 		{
-			var parser = new Parser(new Scanner("../../sources/for_parser/simple_literals.exs"));
-			parser.ParsingFileName = "simple_literals";
+			var parser = new Parser(new Scanner("../../sources/for_unit_tests/simple_literals.exs"));
 			parser.Parse();
 
             var ast = parser.TopmostAst;
@@ -70,13 +69,23 @@ namespace Expresso.Test
                             Modifiers.Immutable
                         ),
                         Statement.MakeVarDecl(
+                            Helpers.MakeSeq(Helpers.MakeSomeIdent("f_c2")),
+                            Helpers.MakeSeq(Expression.MakeConstant("double", .0001)),
+                            Modifiers.Immutable
+                        ),
+                        Statement.MakeVarDecl(
                             Helpers.MakeSeq(Helpers.MakeSomeIdent("d")),
-                            Helpers.MakeSeq(Expression.MakeConstant("bigint", "10000000")),
+                            Helpers.MakeSeq(Expression.MakeConstant("bigint", BigInteger.Parse("10000000"))),
                             Modifiers.Immutable
                         ),
                         Statement.MakeVarDecl(
                             Helpers.MakeSeq(AstNode.MakeIdentifier("d_", new PrimitiveType("bigint", TextLocation.Empty))),
-                            Helpers.MakeSeq(Expression.MakeConstant("bigint", "10000000")),
+                            Helpers.MakeSeq(Expression.MakeConstant("bigint", BigInteger.Parse("10000000"))),
+                            Modifiers.Immutable
+                        ),
+                        Statement.MakeVarDecl(
+                            Helpers.MakeSeq(Helpers.MakeSomeIdent("d2")),
+                            Helpers.MakeSeq(Expression.MakeConstant("bigint", BigInteger.Parse("10000000"))),
                             Modifiers.Immutable
                         ),
                         Statement.MakeVarDecl(
@@ -106,14 +115,14 @@ namespace Expresso.Test
                         ),
                         Statement.MakeVarDecl(
                             Helpers.MakeSeq(Helpers.MakeSomeIdent("f")),
-                            Helpers.MakeSeq(Expression.MakeSeqInitializer(new PrimitiveType("array", TextLocation.Empty),
+                            Helpers.MakeSeq(Expression.MakeSeqInitializer(Helpers.MakeGenericType("array", Helpers.MakePlaceholderType()),
                                 Enumerable.Empty<Expression>()
                             )),
                             Modifiers.Immutable
                         ),
                         Statement.MakeVarDecl(
                             Helpers.MakeSeq(Helpers.MakeSomeIdent("f_")),
-                            Helpers.MakeSeq(Expression.MakeSeqInitializer(new PrimitiveType("array", TextLocation.Empty),
+                            Helpers.MakeSeq(Expression.MakeSeqInitializer(Helpers.MakeGenericType("array", Helpers.MakePlaceholderType()),
                                 Helpers.MakeSeq(
                                     Expression.MakeConstant("int", 1),
                                     Expression.MakeConstant("int", 2),
@@ -124,14 +133,14 @@ namespace Expresso.Test
                         ),
                         Statement.MakeVarDecl(
                             Helpers.MakeSeq(Helpers.MakeSomeIdent("f2")),
-                            Helpers.MakeSeq(Expression.MakeSeqInitializer(new PrimitiveType("vector", TextLocation.Empty),
+                            Helpers.MakeSeq(Expression.MakeSeqInitializer(Helpers.MakeGenericType("vector", Helpers.MakePlaceholderType()),
                                 Enumerable.Empty<Expression>()
                             )),
                             Modifiers.Immutable
                         ),
                         Statement.MakeVarDecl(
                             Helpers.MakeSeq(Helpers.MakeSomeIdent("f2_")),
-                            Helpers.MakeSeq(Expression.MakeSeqInitializer(new PrimitiveType("vector", TextLocation.Empty),
+                            Helpers.MakeSeq(Expression.MakeSeqInitializer(Helpers.MakeGenericType("vector", Helpers.MakePlaceholderType()),
                                 Helpers.MakeSeq(
                                     Expression.MakeConstant("int", 1),
                                     Expression.MakeConstant("int", 2),
@@ -142,27 +151,28 @@ namespace Expresso.Test
                         ),
                         Statement.MakeVarDecl(
                             Helpers.MakeSeq(Helpers.MakeSomeIdent("f3")),
-                            Helpers.MakeSeq(Expression.MakeSeqInitializer(new PrimitiveType("tuple", TextLocation.Empty), Enumerable.Empty<Expression>())),
+                            Helpers.MakeSeq(Expression.MakeParen(Expression.MakeSequence(null))),
                             Modifiers.Immutable
                         ),
                         Statement.MakeVarDecl(
                             Helpers.MakeSeq(Helpers.MakeSomeIdent("f3_")),
-                            Helpers.MakeSeq(Expression.MakeSeqInitializer(new PrimitiveType("tuple", TextLocation.Empty),
-                                Helpers.MakeSeq(
+                            Helpers.MakeSeq(Expression.MakeParen(
+                                Expression.MakeSequence(
                                     Expression.MakeConstant("int", 1),
-                                    Expression.MakeConstant("string", "abc")
+                                    Expression.MakeConstant("string", "abc"),
+                                    Expression.MakeConstant("bool", true)
                                 )
                             )),
                             Modifiers.Immutable
                         ),
                         Statement.MakeVarDecl(
                             Helpers.MakeSeq(Helpers.MakeSomeIdent("g")),
-                            Helpers.MakeSeq(Expression.MakeSeqInitializer(new PrimitiveType("dictionary", TextLocation.Empty), Enumerable.Empty<Expression>())),
+                            Helpers.MakeSeq(Expression.MakeSeqInitializer(Helpers.MakeGenericType("dictionary", Helpers.MakePlaceholderType(), Helpers.MakePlaceholderType()), Enumerable.Empty<Expression>())),
                             Modifiers.Immutable
                         ),
                         Statement.MakeVarDecl(
                             Helpers.MakeSeq(Helpers.MakeSomeIdent("g_")),
-                            Helpers.MakeSeq(Expression.MakeSeqInitializer(new PrimitiveType("dictionary", TextLocation.Empty),
+                            Helpers.MakeSeq(Expression.MakeSeqInitializer(Helpers.MakeGenericType("dictionary", Helpers.MakePlaceholderType(), Helpers.MakePlaceholderType()),
                                 Helpers.MakeSeq(
                                     Expression.MakeKeyValuePair(Expression.MakeConstant("string", "akari"), Expression.MakeConstant("int", 13)),
                                     Expression.MakeKeyValuePair(Expression.MakeConstant("string", "chinatsu"), Expression.MakeConstant("int", 13)),
@@ -203,6 +213,26 @@ namespace Expresso.Test
                             Modifiers.Immutable
                         ),
                         Statement.MakeVarDecl(
+                            Helpers.MakeSeq(Helpers.MakeSomeIdent("i4")),
+                            Helpers.MakeSeq(Expression.MakeConstant("string", "\u0041\u005a\u0061\u007A\u3042\u30A2")), //AZazあア
+                            Modifiers.Immutable
+                        ),
+                        Statement.MakeVarDecl(
+                            Helpers.MakeSeq(Helpers.MakeSomeIdent("i5")),
+                            Helpers.MakeSeq(Expression.MakeConstant("char", '\u0041')), //A
+                            Modifiers.Immutable
+                        ),
+                        Statement.MakeVarDecl(
+                            Helpers.MakeSeq(Helpers.MakeSomeIdent("i6")),
+                            Helpers.MakeSeq(Expression.MakeConstant("string", "This is a normal string.\n Seems 2 lines? Yes, you're right!")),
+                            Modifiers.Immutable
+                        ),
+                        Statement.MakeVarDecl(
+                            Helpers.MakeSeq(Helpers.MakeSomeIdent("i6_")),
+                            Helpers.MakeSeq(Expression.MakeConstant("string", @"This is a raw string.\n Seems 2 lines? Nah, indeed.")),
+                            Modifiers.Immutable
+                        ),
+                        Statement.MakeVarDecl(
                             Helpers.MakeSeq(Helpers.MakeSomeIdent("j")),
                             Helpers.MakeSeq(Expression.MakeIntSeq(Expression.MakeConstant("int", 1), Expression.MakeConstant("int", 10), Expression.MakeConstant("int", 1), false)),
                             Modifiers.Immutable
@@ -219,19 +249,118 @@ namespace Expresso.Test
                         ),
                         Statement.MakeVarDecl(
                             Helpers.MakeSeq(Helpers.MakeSomeIdent("j_2")),
-                            Helpers.MakeSeq(Expression.MakeIntSeq(Expression.MakeConstant("int", -5), Expression.MakeConstant("int", -10), Expression.MakeConstant("int", -1), false)),
+                            Helpers.MakeSeq(Expression.MakeIntSeq(Expression.MakeUnaryExpr(OperatorType.Minus, Expression.MakeConstant("int", 5)), Expression.MakeUnaryExpr(OperatorType.Minus, Expression.MakeConstant("int", 10)), Expression.MakeUnaryExpr(OperatorType.Minus, Expression.MakeConstant("int", 1)), false)),
                             Modifiers.Immutable
                         ),
                         Statement.MakeVarDecl(
                             Helpers.MakeSeq(Helpers.MakeSomeIdent("j_2_")),
-                            Helpers.MakeSeq(Expression.MakeIntSeq(Expression.MakeConstant("int", 0), Expression.MakeConstant("int", -10), Expression.MakeConstant("int", -1), true)),
+                            Helpers.MakeSeq(Expression.MakeIntSeq(Expression.MakeConstant("int", 0), Expression.MakeUnaryExpr(OperatorType.Minus, Expression.MakeConstant("int", 10)), Expression.MakeUnaryExpr(OperatorType.Minus, Expression.MakeConstant("int", 1)), true)),
+                            Modifiers.Immutable
+                        )
+                    }),
+                    new PlaceholderType(TextLocation.Empty),
+                    Modifiers.None
+                )
+            });
+
+            Assert.IsNotNull(ast);
+            Helpers.AstStructuralEqual(ast, expected_ast);
+		}
+
+        [Test]
+        public void GeneralExpressions()
+        {
+            var parser = new Parser(new Scanner("../../sources/for_unit_tests/general_expressions.exs"));
+            parser.Parse();
+
+            var ast = parser.TopmostAst;
+
+            var expected_ast = AstNode.MakeModuleDef("main", new List<EntityDeclaration>{
+                EntityDeclaration.MakeClassDecl("Test", Enumerable.Empty<AstType>(), Helpers.MakeSeq(
+                    EntityDeclaration.MakeField(
+                        Helpers.MakeSeq(
+                            AstNode.MakeIdentifier("x", Helpers.MakePrimitiveType("int"))
+                        ),
+                        Helpers.MakeSeq<Expression>(
+                            Expression.Null
+                        ),
+                        Modifiers.Public
+                    ),
+                    EntityDeclaration.MakeField(
+                        Helpers.MakeSeq(
+                            AstNode.MakeIdentifier("y", Helpers.MakePrimitiveType("int")),
+                            AstNode.MakeIdentifier("z", Helpers.MakePlaceholderType())
+                        ),
+                        Helpers.MakeSeq(
+                            Expression.Null,
+                            Expression.MakeConstant("int", 3)
+                        ),
+                        Modifiers.Private
+                    )),
+                    Modifiers.None
+                ),
+                EntityDeclaration.MakeFunc("createTest",
+                    Helpers.MakeSeq(
+                        EntityDeclaration.MakeParameter("x", Helpers.MakePrimitiveType("int")),
+                        EntityDeclaration.MakeParameter("y", Helpers.MakePlaceholderType(), Expression.MakeConstant("int", 2)),
+                        EntityDeclaration.MakeParameter("z", Helpers.MakePrimitiveType("int"), Expression.MakeConstant("int", 3))
+                    ),
+                    Statement.MakeBlock(
+                        Helpers.MakeSeq(
+                            Helpers.MakeReturnStatement(Expression.MakeNewExpr(Expression.MakeObjectCreation(
+                                Helpers.MakeGenericType("Test"),
+                                Helpers.MakeSeq(
+                                    AstNode.MakeIdentifier("x"),
+                                    AstNode.MakeIdentifier("y"),
+                                    AstNode.MakeIdentifier("z")
+                                ),
+                                Helpers.MakeSeq(
+                                    Expression.MakePath(Helpers.MakeSomeIdent("x")),
+                                    Expression.MakePath(Helpers.MakeSomeIdent("y")),
+                                    Expression.MakePath(Helpers.MakeSomeIdent("z"))
+                                )
+                            )))
+                        )
+                    ), 
+                    Helpers.MakeGenericType("Test"),
+                    Modifiers.Export
+                ),
+                EntityDeclaration.MakeFunc("main",
+                    Enumerable.Empty<ParameterDeclaration>(),
+                    Statement.MakeBlock(new List<Statement>{
+                        Statement.MakeVarDecl(
+                            Helpers.MakeSeq(Helpers.MakeSomeIdent("ary")),
+                            Helpers.MakeSeq(
+                                Expression.MakeSeqInitializer(
+                                    Helpers.MakeGenericType("array", Helpers.MakePlaceholderType()),
+                                    Helpers.MakeSeq(
+                                        Expression.MakeConstant("int", 1),
+                                        Expression.MakeConstant("int", 2),
+                                        Expression.MakeConstant("int", 3)
+                                    )
+                                )
+                            ),
+                            Modifiers.Immutable
+                        ),
+                        Statement.MakeVarDecl(
+                            Helpers.MakeSeq(Helpers.MakeSomeIdent("d")),
+                            Helpers.MakeSeq(
+                                Expression.MakeSeqInitializer(
+                                    Helpers.MakeGenericType("dictionary", Helpers.MakePlaceholderType(), Helpers.MakePlaceholderType()),
+                                    Helpers.MakeSeq(
+                                        Expression.MakeKeyValuePair(Expression.MakeConstant("string", "a"), Expression.MakeConstant("int", 14)),
+                                        Expression.MakeKeyValuePair(Expression.MakeConstant("string", "b"), Expression.MakeConstant("int", 13)),
+                                        Expression.MakeKeyValuePair(Expression.MakeConstant("string", "何か"), Expression.MakeConstant("int", 100))
+                                    )
+                                )
+                            ),
                             Modifiers.Immutable
                         ),
                         Statement.MakeVarDecl(
                             Helpers.MakeSeq(Helpers.MakeSomeIdent("k")),
                             Helpers.MakeSeq(Expression.MakeObjectCreation(
-                                Expression.MakePath(Helpers.MakeSeq(Helpers.MakeSomeIdent("Test"))),
-                                Helpers.MakeSeq(Helpers.MakeSomeIdent("x"), Helpers.MakeSomeIdent("y")),
+                                Helpers.MakeGenericType("Test"),
+                                Helpers.MakeSeq(AstNode.MakeIdentifier("x"), AstNode.MakeIdentifier("y")),
                                 Helpers.MakeSeq(Expression.MakeConstant("int", 1), Expression.MakeConstant("int", 2))
                             )),
                             Modifiers.Immutable
@@ -239,30 +368,33 @@ namespace Expresso.Test
                         Statement.MakeVarDecl(
                             Helpers.MakeSeq(Helpers.MakeSomeIdent("k2")),
                             Helpers.MakeSeq(Expression.MakeNewExpr(Expression.MakeObjectCreation(
-                                Expression.MakePath(Helpers.MakeSeq(Helpers.MakeSomeIdent("Test"))),
-                                Helpers.MakeSeq(Helpers.MakeSomeIdent("x"), Helpers.MakeSomeIdent("y")),
+                                Helpers.MakeGenericType("Test"),
+                                Helpers.MakeSeq(AstNode.MakeIdentifier("x"), AstNode.MakeIdentifier("y")),
                                 Helpers.MakeSeq(Expression.MakeConstant("int", 1), Expression.MakeConstant("int", 2))
                             ))),
                             Modifiers.Immutable
                         ),
                         Statement.MakeVarDecl(
                             Helpers.MakeSeq(Helpers.MakeSomeIdent("l")),
-                            Helpers.MakeSeq(Expression.MakeCallExpr(Expression.MakePath(Helpers.MakeSomeIdent("CreateTest")),
-                                Expression.MakeConstant("int", 1), Expression.MakeConstant("int", 2)
+                            Helpers.MakeSeq(Expression.MakeCallExpr(
+                                Expression.MakePath(Helpers.MakeSomeIdent("createTest")),
+                                Expression.MakeConstant("int", 1),
+                                Expression.MakeConstant("int", 2),
+                                Expression.MakeConstant("int", 4)
                             )),
                             Modifiers.Immutable
                         ),
                         Statement.MakeVarDecl(
                             Helpers.MakeSeq(Helpers.MakeSomeIdent("m")),
-                            Helpers.MakeSeq(Expression.MakeIndexer(Expression.MakePath(Helpers.MakeSomeIdent("f_")),
+                            Helpers.MakeSeq(Expression.MakeIndexer(Expression.MakePath(Helpers.MakeSomeIdent("ary")),
                                 Expression.MakeConstant("int", 0)
                             )),
                             Modifiers.Immutable
                         ),
                         Statement.MakeVarDecl(
                             Helpers.MakeSeq(Helpers.MakeSomeIdent("m2")),
-                            Helpers.MakeSeq(Expression.MakeIndexer(Expression.MakePath(Helpers.MakeSomeIdent("g_")),
-                                Expression.MakeConstant("string", "akari")
+                            Helpers.MakeSeq(Expression.MakeIndexer(Expression.MakePath(Helpers.MakeSomeIdent("d")),
+                                Expression.MakeConstant("string", "a")
                             )),
                             Modifiers.Immutable
                         ),
@@ -270,7 +402,7 @@ namespace Expresso.Test
                             Helpers.MakeSeq(Helpers.MakeSomeIdent("n")),
                             Helpers.MakeSeq(Expression.MakeMemRef(
                                 Expression.MakePath(Helpers.MakeSomeIdent("k")),
-                                Helpers.MakeSomeIdent("x"))
+                                AstNode.MakeIdentifier("x"))
                             ),
                             Modifiers.Immutable
                         ),
@@ -279,7 +411,7 @@ namespace Expresso.Test
                             Helpers.MakeSeq(
                                 Expression.MakeCallExpr(Expression.MakeMemRef(
                                     Expression.MakePath(Helpers.MakeSeq(Helpers.MakeSomeIdent("k"))),
-                                    Helpers.MakeSomeIdent("getY")
+                                    AstNode.MakeIdentifier("getY")
                                 ), Enumerable.Empty<Expression>())
                             ),
                             Modifiers.Immutable
@@ -292,14 +424,14 @@ namespace Expresso.Test
                         Statement.MakeVarDecl(
                             Helpers.MakeSeq(Helpers.MakeSomeIdent("p")),
                             Helpers.MakeSeq(Expression.MakeBinaryExpr(OperatorType.Plus,
-                                Expression.MakeIndexer(Expression.MakePath(Helpers.MakeSomeIdent("f_")),
+                                Expression.MakeIndexer(Expression.MakePath(Helpers.MakeSomeIdent("ary")),
                                     Expression.MakeConstant("int", 0)
                                 ),
                                 Expression.MakeBinaryExpr(OperatorType.Plus,
-                                    Expression.MakeIndexer(Expression.MakePath(Helpers.MakeSomeIdent("f_")),
+                                    Expression.MakeIndexer(Expression.MakePath(Helpers.MakeSomeIdent("ary")),
                                         Expression.MakeConstant("int", 1)
                                     ),
-                                    Expression.MakeIndexer(Expression.MakePath(Helpers.MakeSeq(Helpers.MakeSomeIdent("f_"))),
+                                    Expression.MakeIndexer(Expression.MakePath(Helpers.MakeSeq(Helpers.MakeSomeIdent("ary"))),
                                         Helpers.MakeSeq(Expression.MakeConstant("int", 2))
                                     )
                                 ))
@@ -309,15 +441,15 @@ namespace Expresso.Test
                         Statement.MakeVarDecl(
                             Helpers.MakeSeq(Helpers.MakeSomeIdent("q")),
                             Helpers.MakeSeq(Expression.MakeBinaryExpr(OperatorType.Plus,
-                                Expression.MakeIndexer(Expression.MakePath(Helpers.MakeSomeIdent("g_")),
-                                    Expression.MakeConstant("string", "akari")
+                                Expression.MakeIndexer(Expression.MakePath(Helpers.MakeSomeIdent("d")),
+                                    Expression.MakeConstant("string", "a")
                                 ),
                                 Expression.MakeBinaryExpr(OperatorType.Plus,
-                                    Expression.MakeIndexer(Expression.MakePath(Helpers.MakeSomeIdent("g_")),
-                                        Expression.MakeConstant("string", "chinatsu")
+                                    Expression.MakeIndexer(Expression.MakePath(Helpers.MakeSomeIdent("d")),
+                                        Expression.MakeConstant("string", "b")
                                     ),
-                                    Expression.MakeIndexer(Expression.MakePath(Helpers.MakeSomeIdent("g_")),
-                                        Expression.MakeConstant("string", "結衣")
+                                    Expression.MakeIndexer(Expression.MakePath(Helpers.MakeSomeIdent("d")),
+                                        Expression.MakeConstant("string", "何か")
                                     )
                                 ))
                             ),
@@ -348,7 +480,7 @@ namespace Expresso.Test
                             Modifiers.Immutable
                         ),
                         Statement.MakeVarDecl(
-                            Helpers.MakeSeq(Helpers.MakeSomeIdent("u")),
+                            Helpers.MakeSeq(Helpers.MakeSomeIdent("v")),
                             Helpers.MakeSeq(Expression.MakeBinaryExpr(OperatorType.BitwiseOr,
                                 Expression.MakePath(Helpers.MakeSomeIdent("x")),
                                 Expression.MakePath(Helpers.MakeSomeIdent("t"))
@@ -356,7 +488,7 @@ namespace Expresso.Test
                             Modifiers.Immutable
                         ),
                         Statement.MakeVarDecl(
-                            Helpers.MakeSeq(Helpers.MakeSomeIdent("v")),
+                            Helpers.MakeSeq(Helpers.MakeSomeIdent("w")),
                             Helpers.MakeSeq(Expression.MakeBinaryExpr(OperatorType.Plus,
                                 Expression.MakePath(Helpers.MakeSomeIdent("c")),
                                 Expression.MakePath(Helpers.MakeSomeIdent("d"))
@@ -364,39 +496,38 @@ namespace Expresso.Test
                             Modifiers.Immutable
                         ),
                         Statement.MakeVarDecl(
-                            Helpers.MakeSeq(Helpers.MakeSomeIdent("w")),
+                            Helpers.MakeSeq(Helpers.MakeSomeIdent("y")),
                             Helpers.MakeSeq(Expression.MakeBinaryExpr(OperatorType.Plus,
-                                Expression.MakeIndexer(Expression.MakePath(Helpers.MakeSomeIdent("f_")),
+                                Expression.MakeIndexer(Expression.MakePath(Helpers.MakeSomeIdent("ary")),
                                     Expression.MakeConstant("int", 0)
                                 ),
                                 Expression.MakeBinaryExpr(OperatorType.Plus,
-                                    Expression.MakeIndexer(Expression.MakePath(Helpers.MakeSomeIdent("f_")),
+                                    Expression.MakeIndexer(Expression.MakePath(Helpers.MakeSomeIdent("ary")),
                                         Expression.MakeConstant("int", 1)
                                     ),
-                                    Expression.MakeIndexer(Expression.MakePath(Helpers.MakeSeq(Helpers.MakeSomeIdent("g_"))),
-                                        Helpers.MakeSeq(Expression.MakeConstant("string", "akari"))
+                                    Expression.MakeIndexer(Expression.MakePath(Helpers.MakeSeq(Helpers.MakeSomeIdent("d"))),
+                                        Helpers.MakeSeq(Expression.MakeConstant("string", "a"))
                                     )
                                 ))
                             ),
                             Modifiers.Immutable
                         ),
                         Statement.MakeVarDecl(
-                            Helpers.MakeSeq(Helpers.MakeSomeIdent("y")),
+                            Helpers.MakeSeq(Helpers.MakeSomeIdent("z")),
                             Helpers.MakeSeq(Expression.MakeBinaryExpr(OperatorType.Times,
                                 Expression.MakePath(Helpers.MakeSomeIdent("v")),
                                 Expression.MakePath(Helpers.MakeSomeIdent("w"))
                             )),
                             Modifiers.Immutable
                         )
-                    }, TextLocation.Empty, TextLocation.Empty),
+                    }),
                     new PlaceholderType(TextLocation.Empty),
-                    Modifiers.Export,
-                    TextLocation.Empty
+                    Modifiers.None
                 )
-            }, Enumerable.Empty<ImportDeclaration>());
+            });
 
             Assert.IsNotNull(ast);
-            Helpers.DoTest(ast, expected_ast);
-		}
+            Helpers.AstStructuralEqual(ast, expected_ast);
+        }
 	}
 }

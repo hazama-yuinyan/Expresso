@@ -22,41 +22,23 @@ namespace Expresso.Ast
             return new ExpressoFormattingOptions{
                 IndentClassBody = true,
                 IndentInterfaceBody = true,
-                IndentStructBody = true,
                 IndentEnumBody = true,
                 IndentMethodBody = true,
-                IndentPropertyBody = true,
                 IndentBlocks = true,
-                IndentSwitchBody = false,
-                IndentCaseBody = true,
+                IndentMatchBody = false,
+                IndentMatchPatternBody = true,
                 IndentBreakStatements = true,
                 IndentBlocksInsideExpressions = false,
                 ClassBraceStyle = BraceStyle.NextLine,
                 InterfaceBraceStyle = BraceStyle.NextLine,
-                StructBraceStyle = BraceStyle.NextLine,
                 EnumBraceStyle = BraceStyle.NextLine,
                 MethodBraceStyle = BraceStyle.NextLine,
-                ConstructorBraceStyle = BraceStyle.NextLine,
-                DestructorBraceStyle = BraceStyle.NextLine,
                 AnonymousMethodBraceStyle = BraceStyle.EndOfLine,
 
-                PropertyBraceStyle = BraceStyle.EndOfLine,
-                PropertyGetBraceStyle = BraceStyle.EndOfLine,
-                PropertySetBraceStyle = BraceStyle.EndOfLine,
-                SimpleGetBlockFormatting = PropertyFormatting.AllowOneLine,
-                SimpleSetBlockFormatting = PropertyFormatting.AllowOneLine,
-
-                EventBraceStyle = BraceStyle.EndOfLine,
-                EventAddBraceStyle = BraceStyle.EndOfLine,
-                EventRemoveBraceStyle = BraceStyle.EndOfLine,
-                AllowEventAddBlockInline = true,
-                AllowEventRemoveBlockInline = true,
                 StatementBraceStyle = BraceStyle.EndOfLine,
 
                 ElseNewLinePlacement = NewLinePlacement.SameLine,
                 ElseIfNewLinePlacement = NewLinePlacement.SameLine,
-                CatchNewLinePlacement = NewLinePlacement.SameLine,
-                FinallyNewLinePlacement = NewLinePlacement.SameLine,
                 WhileNewLinePlacement = NewLinePlacement.SameLine,
                 ArrayInitializerWrapping = Wrapping.WrapIfTooLong,
                 ArrayInitializerBraceStyle = BraceStyle.EndOfLine,
@@ -175,39 +157,22 @@ namespace Expresso.Ast
             return new ExpressoFormattingOptions{
                 IndentClassBody = true,
                 IndentInterfaceBody = true,
-                IndentStructBody = true,
                 IndentEnumBody = true,
                 IndentMethodBody = true,
-                IndentPropertyBody = true,
                 IndentBlocks = true,
-                IndentSwitchBody = true,
-                IndentCaseBody = true,
+                IndentMatchBody = true,
+                IndentMatchPatternBody = true,
                 IndentBreakStatements = true,
                 ClassBraceStyle = BraceStyle.NextLine,
                 InterfaceBraceStyle = BraceStyle.NextLine,
-                StructBraceStyle = BraceStyle.NextLine,
                 EnumBraceStyle = BraceStyle.NextLine,
                 MethodBraceStyle = BraceStyle.NextLine,
-                ConstructorBraceStyle = BraceStyle.NextLine,
-                DestructorBraceStyle = BraceStyle.NextLine,
                 AnonymousMethodBraceStyle = BraceStyle.EndOfLine,
-                PropertyBraceStyle = BraceStyle.EndOfLine,
-                PropertyGetBraceStyle = BraceStyle.EndOfLine,
-                PropertySetBraceStyle = BraceStyle.EndOfLine,
-                SimpleGetBlockFormatting = PropertyFormatting.AllowOneLine,
-                SimpleSetBlockFormatting = PropertyFormatting.AllowOneLine,
 
-                EventBraceStyle = BraceStyle.EndOfLine,
-                EventAddBraceStyle = BraceStyle.EndOfLine,
-                EventRemoveBraceStyle = BraceStyle.EndOfLine,
-                AllowEventAddBlockInline = true,
-                AllowEventRemoveBlockInline = true,
                 StatementBraceStyle = BraceStyle.EndOfLine,
 
                 ElseNewLinePlacement = NewLinePlacement.SameLine,
                 ElseIfNewLinePlacement = NewLinePlacement.SameLine,
-                CatchNewLinePlacement = NewLinePlacement.SameLine,
-                FinallyNewLinePlacement = NewLinePlacement.SameLine,
                 WhileNewLinePlacement = NewLinePlacement.SameLine,
                 ArrayInitializerWrapping = Wrapping.WrapIfTooLong,
                 ArrayInitializerBraceStyle = BraceStyle.EndOfLine,
@@ -327,21 +292,13 @@ namespace Expresso.Ast
         {
             var base_options = CreateKRStyle();
             base_options.AnonymousMethodBraceStyle = BraceStyle.NextLine;
-            base_options.PropertyBraceStyle = BraceStyle.NextLine;
-            base_options.PropertyGetBraceStyle = BraceStyle.NextLine;
-            base_options.PropertySetBraceStyle = BraceStyle.NextLine;
 
-            base_options.EventBraceStyle = BraceStyle.NextLine;
-            base_options.EventAddBraceStyle = BraceStyle.NextLine;
-            base_options.EventRemoveBraceStyle = BraceStyle.NextLine;
             base_options.StatementBraceStyle = BraceStyle.NextLine;
             base_options.ArrayInitializerBraceStyle = BraceStyle.NextLine;
 
-            base_options.CatchNewLinePlacement = NewLinePlacement.NewLine;
             base_options.ElseNewLinePlacement = NewLinePlacement.NewLine;
             base_options.ElseIfNewLinePlacement = NewLinePlacement.SameLine;
 
-            base_options.FinallyNewLinePlacement = NewLinePlacement.NewLine;
             base_options.WhileNewLinePlacement = NewLinePlacement.DoNotCare;
             base_options.ArrayInitializerWrapping = Wrapping.DoNotModify;
             base_options.IndentBlocksInsideExpressions = true;
@@ -361,19 +318,10 @@ namespace Expresso.Ast
 
             base_options.ClassBraceStyle = BraceStyle.NextLineShifted;
             base_options.InterfaceBraceStyle = BraceStyle.NextLineShifted;
-            base_options.StructBraceStyle = BraceStyle.NextLineShifted;
             base_options.EnumBraceStyle = BraceStyle.NextLineShifted;
             base_options.MethodBraceStyle = BraceStyle.NextLineShifted;
-            base_options.ConstructorBraceStyle = BraceStyle.NextLineShifted;
-            base_options.DestructorBraceStyle = BraceStyle.NextLineShifted;
             base_options.AnonymousMethodBraceStyle = BraceStyle.NextLineShifted;
-            base_options.PropertyBraceStyle = BraceStyle.NextLineShifted;
-            base_options.PropertyGetBraceStyle = BraceStyle.NextLineShifted;
-            base_options.PropertySetBraceStyle = BraceStyle.NextLineShifted;
 
-            base_options.EventBraceStyle = BraceStyle.NextLineShifted;
-            base_options.EventAddBraceStyle = BraceStyle.NextLineShifted;
-            base_options.EventRemoveBraceStyle = BraceStyle.NextLineShifted;
             base_options.StatementBraceStyle = BraceStyle.NextLineShifted;
             base_options.IndentBlocksInsideExpressions = true;
             return base_options;

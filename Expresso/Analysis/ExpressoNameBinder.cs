@@ -30,10 +30,14 @@ using System.Linq;
 
 namespace Expresso.Ast.Analysis
 {
+    /// <summary>
+    /// The name binding and name resolving:
+    /// During name binding, we first define names 
+    /// </summary>
     class ExpressoNameBinder : IAstWalker
 	{
         static uint id = 1;
-		ExpressoAst root_scope;
+        int scope_counter;
         SymbolTable symbol_table;
 		Parser parser;
 		
@@ -44,12 +48,18 @@ namespace Expresso.Ast.Analysis
 		}
 		
 		#region Public surface
+        /// <summary>
+        /// The public surface of post-parse processing.
+        /// In this method, we are binding names, checking type validity and doing some flow analisys.
+        /// Note that we are NOT doing any AST-wide optimizations here.
+        /// </summary>
 		internal static void BindAst(ExpressoAst ast, Parser parser)
 		{
-            Debug.Assert(ast != null);
-			
 			ExpressoNameBinder binder = new ExpressoNameBinder(parser);
 			binder.Bind(ast);
+            #if DEBUG
+            Console.WriteLine("We have given ids on total of {0} identifiers.", id - 1);
+            #endif
 		}
 		#endregion
 		
@@ -57,52 +67,43 @@ namespace Expresso.Ast.Analysis
 		{
             Debug.Assert(unboundAst != null);
 			
-            root_scope = unboundAst;
-			
 			// Find all scopes and variables
             unboundAst.AcceptWalker(this);
 			
+            TypeChecker.Check(unboundAst, parser);
 			// Run flow checker
             //FlowChecker.Check(unboundAst);
 		}
 		
-        void PushScope(AstNode node)
+        void DecendScope()
 		{
-            //node.Parent = cur_scope;
-            //cur_scope = node;
+            symbol_table = symbol_table.Children[scope_counter];
 		}
 		
-		void PopScope()
+		void AscendScope()
 		{
-            //scopes.Add(cur_scope);
-            //cur_scope = cur_scope.Parent;
+            symbol_table = symbol_table.Parent;
 		}
 		
-        internal void ReportSyntaxWarning(string message, AstNode node)
-		{
-            if(parser != null){
-                var real_message = "{0} " + message;
-                parser.SemanticError(real_message, node.StartLocation);
-            }
-		}
-		
-		/*internal void ReportSyntaxError(string message, Node node)
-		{
-			_context.Errors.Add(_context.SourceUnit, message, node.Span, -1, Severity.FatalError);
-			throw new FatalError(message, _context.SourceUnit, node.Span, -1);
-		}*/
-		
-		#region AstBinder Overrides
+		#region IAstWalker implementation
 
         public void VisitAst(ExpressoAst ast)
         {
+            Debug.Assert(symbol_table.Parent == null);
+            scope_counter = 0;
             ast.Imports.AcceptWalker(this);
-            ast.Body.AcceptWalker(this);
+            ast.Declarations.AcceptWalker(this);
+            Debug.Assert(symbol_table.Parent == null);
         }
 
         public void VisitBlock(BlockStatement block)
         {
+            int tmp_counter = scope_counter;
+            DecendScope();
+            scope_counter = 0;
             block.Statements.AcceptWalker(this);
+            AscendScope();
+            scope_counter = tmp_counter + 1;
         }
 
         public void VisitBreakStatement(BreakStatement breakStmt)
@@ -122,22 +123,26 @@ namespace Expresso.Ast.Analysis
 
         public void VisitForStatement(ForStatement forStmt)
         {
+            int tmp_counter = scope_counter;
+            DecendScope();
+            scope_counter = 0;
             forStmt.Left.AcceptWalker(this);
             forStmt.Target.AcceptWalker(this);
             forStmt.Body.AcceptWalker(this);
+            AscendScope();
+            scope_counter = tmp_counter + 1;
         }
 
         public void VisitIfStatement(IfStatement ifStmt)
         {
+            int tmp_counter = scope_counter;
+            DecendScope();
+            scope_counter = 0;
             ifStmt.Condition.AcceptWalker(this);
             ifStmt.TrueBlock.AcceptWalker(this);
             ifStmt.FalseBlock.AcceptWalker(this);
-        }
-
-        public void VisitImportStatement(ImportDeclaration importStmt)
-        {
-            importStmt.ModuleNameToken.AcceptWalker(this);
-            importStmt.AliasNameToken.AcceptWalker(this);
+            AscendScope();
+            scope_counter = tmp_counter + 1;
         }
 
         public void VisitReturnStatement(ReturnStatement returnStmt)
@@ -147,14 +152,24 @@ namespace Expresso.Ast.Analysis
 
         public void VisitMatchStatement(MatchStatement matchStmt)
         {
+            int tmp_counter = scope_counter;
+            DecendScope();
+            scope_counter = 0;
             matchStmt.Target.AcceptWalker(this);
             matchStmt.Clauses.AcceptWalker(this);
+            AscendScope();
+            scope_counter = tmp_counter + 1;
         }
 
         public void VisitWhileStatement(WhileStatement whileStmt)
         {
+            int tmp_counter = scope_counter;
+            DecendScope();
+            scope_counter = 0;
             whileStmt.Condition.AcceptWalker(this);
             whileStmt.Body.AcceptWalker(this);
+            AscendScope();
+            scope_counter = tmp_counter + 1;
         }
 
         public void VisitYieldStatement(YieldStatement yieldStmt)
@@ -193,8 +208,11 @@ namespace Expresso.Ast.Analysis
 
         public void VisitComprehensionExpression(ComprehensionExpression comp)
         {
+            // Do not store scope counter because comprehensions contains only expressions.
+            DecendScope();
             comp.Item.AcceptWalker(this);
             comp.Body.AcceptWalker(this);
+            AscendScope();
         }
 
         public void VisitComprehensionForClause(ComprehensionForClause compFor)
@@ -224,8 +242,7 @@ namespace Expresso.Ast.Analysis
 
         public void VisitIdentifier(Identifier ident)
         {
-            if(!symbol_table.IsSymbol(ident.Name))
-                ReportSyntaxWarning(string.Format("Unknown identifier {0}", ident.Name), ident);
+            BindName(ident);
         }
 
         public void VisitIntgerSequenceExpression(IntegerSequenceExpression intSeq)
@@ -262,10 +279,10 @@ namespace Expresso.Ast.Analysis
             seqInitializer.Items.AcceptWalker(this);
         }
 
-        public void VisitCaseClause(MatchPatternClause caseClause)
+        public void VisitMatchClause(MatchPatternClause matchClause)
         {
-            caseClause.Patterns.AcceptWalker(this);
-            caseClause.Body.AcceptWalker(this);
+            matchClause.Patterns.AcceptWalker(this);
+            matchClause.Body.AcceptWalker(this);
         }
 
         public void VisitSequence(SequenceExpression seqExpr)
@@ -278,48 +295,63 @@ namespace Expresso.Ast.Analysis
             unaryExpr.Operand.AcceptWalker(this);
         }
 
-        public void VisitThisReferenceExpression(SelfReferenceExpression thisRef)
+        public void VisitSelfReferenceExpression(SelfReferenceExpression selfRef)
         {
+            BindName(selfRef.SelfIdentifier);
         }
 
-        public void VisitBaseReferenceExpression(SuperReferenceExpression baseRef)
+        public void VisitSuperReferenceExpression(SuperReferenceExpression superRef)
         {
+            BindName(superRef.SuperIdentifier);
         }
 
         public void VisitCommentNode(CommentNode comment)
         {
+            // no op
         }
 
         public void VisitTextNode(TextNode textNode)
         {
+            // no op
         }
 
         public void VisitSimpleType(SimpleType simpleType)
         {
+            BindTypeName(simpleType.IdentifierToken);
+            simpleType.TypeArguments.AcceptWalker(this);
         }
 
         public void VisitPrimitiveType(PrimitiveType primitiveType)
         {
+            // no op
         }
 
         public void VisitReferenceType(ReferenceType referenceType)
         {
-
+            referenceType.BaseType.AcceptWalker(this);
         }
 
         public void VisitMemberType(MemberType memberType)
         {
-
+            memberType.Target.AcceptWalker(this);
+            BindTypeName(memberType.MemberNameToken);
+            memberType.TypeArguments.AcceptWalker(this);
         }
 
         public void VisitPlaceholderType(PlaceholderType placeholderType)
         {
-
+            // no op
         }
 
         public void VisitAliasDeclaration(AliasDeclaration aliasDecl)
         {
-
+            // An alias name is another name for an item
+            // so define a new name first and then resolve the name.
+            DefineNewId(aliasDecl.AliasToken);
+            /*var table = symbol_table;
+            while(table != null){
+                var symbol = table.GetSymbol(aliasDecl);
+            }*/
         }
 
         public void VisitFunctionDeclaration(FunctionDeclaration funcDecl)
@@ -331,9 +363,9 @@ namespace Expresso.Ast.Analysis
 
         public void VisitFieldDeclaration(FieldDeclaration fieldDecl)
         {
-            foreach(var ident in fieldDecl.Initializers){
-                DefineNewId(ident.NameToken);
-                ident.Initializer.AcceptWalker(this);
+            foreach(var field in fieldDecl.Initializers){
+                DefineNewId(field.NameToken);
+                field.Initializer.AcceptWalker(this);
             }
         }
 
@@ -344,112 +376,158 @@ namespace Expresso.Ast.Analysis
 
         public void VisitVariableInitializer(VariableInitializer initializer)
         {
+            DefineNewId(initializer.NameToken);
+            initializer.Initializer.AcceptWalker(this);
         }
 
         public void VisitNullNode(AstNode nullNode)
         {
+            // no op
         }
 
         public void VisitNewLine(NewLineNode newlineNode)
         {
+            // no op
         }
 
         public void VisitWhitespace(WhitespaceNode whitespaceNode)
         {
+            // no op
         }
 
         public void VisitExpressoTokenNode(ExpressoTokenNode tokenNode)
         {
+            // no op
         }
 
         public void VisitPatternPlaceholder(AstNode placeholder, ICSharpCode.NRefactory.PatternMatching.Pattern child)
         {
+            // no op
         }
 
         public void VisitExpressionStatement(ExpressionStatement exprStmt)
         {
-            throw new NotImplementedException();
+            exprStmt.Expression.AcceptWalker(this);
         }
 
         public void VisitKeyValueLikeExpression(KeyValueLikeExpression keyValue)
         {
-            throw new NotImplementedException();
+            keyValue.Value.AcceptWalker(this);
         }
 
         public void VisitPathExpression(PathExpression pathExpr)
         {
-            throw new NotImplementedException();
+            foreach(var ident in pathExpr.Items){
+                ident.AcceptWalker(this);
+            }
         }
 
         public void VisitObjectCreationExpression(ObjectCreationExpression creation)
         {
-            throw new NotImplementedException();
-        }
-
-        public void VisitMatchClause(MatchPatternClause matchClause)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void VisitSelfReferenceExpression(SelfReferenceExpression selfRef)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void VisitSuperReferenceExpression(SuperReferenceExpression superRef)
-        {
-            throw new NotImplementedException();
+            creation.TypePath.AcceptWalker(this);
+            creation.Items.AcceptWalker(this);
         }
 
         public void VisitImportDeclaration(ImportDeclaration importDecl)
         {
-            throw new NotImplementedException();
+            // Here's the good place to import names from other files
+            importDecl.ModuleNameToken.AcceptWalker(this);
+            DefineNewId(importDecl.AliasNameToken);
         }
 
         public void VisitTypeDeclaration(TypeDeclaration typeDecl)
         {
-            throw new NotImplementedException();
+            DefineNewId(typeDecl.NameToken);
+            typeDecl.BaseTypes.AcceptWalker(this);
+
+            int tmp_counter = scope_counter;
+            scope_counter = 0;
+            DecendScope();
+            typeDecl.Members.AcceptWalker(this);
+            AscendScope();
+            scope_counter = tmp_counter + 1;
         }
 
         public void VisitWildcardPattern(WildcardPattern wildcardPattern)
         {
-            throw new NotImplementedException();
+            // no op
         }
 
         public void VisitIdentifierPattern(IdentifierPattern identifierPattern)
         {
-            throw new NotImplementedException();
+            DefineNewId(identifierPattern.Identifier);
+            identifierPattern.InnerPattern.AcceptWalker(this);
         }
 
         public void VisitValueBindingPattern(ValueBindingPattern valueBindingPattern)
         {
-            throw new NotImplementedException();
+            valueBindingPattern.Pattern.AcceptWalker(this);
         }
 
         public void VisitCollectionPattern(CollectionPattern collectionPattern)
         {
-
+            collectionPattern.Items.AcceptWalker(this);
         }
 
         public void VisitDestructuringPattern(DestructuringPattern destructuringPattern)
         {
-
+            destructuringPattern.Items.AcceptWalker(this);
         }
 
         public void VisitTuplePattern(TuplePattern tuplePattern)
         {
-            throw new NotImplementedException();
+            tuplePattern.Patterns.AcceptWalker(this);
         }
 
         public void VisitExpressionPattern(ExpressionPattern exprPattern)
         {
-            throw new NotImplementedException();
+            exprPattern.Expression.AcceptWalker(this);
         }
 		#endregion
 
         void DefineNewId(Identifier ident)
         {
             ident.IdentifierId = id++;
+        }
+
+        void BindName(Identifier ident)
+        {
+            var table = symbol_table;
+            while(table != null){
+                var referenced = table.GetSymbol(ident.Name);
+                if(referenced != null){
+                    ident.IdentifierId = referenced.IdentifierId;
+                    break;
+                }
+
+                table = table.Parent;
+            }
+
+            if(ident.IdentifierId == 0){
+                parser.ReportSemanticError("{0} turns out not to be declared or accessible in the current scope {1}!",
+                    ident, ident.Name, symbol_table.Name
+                );
+            }
+        }
+
+        void BindTypeName(Identifier ident)
+        {
+            var table = symbol_table;
+            while(table != null){
+                var referenced = table.GetTypeSymbol(ident.Name);
+                if(referenced != null){
+                    ident.IdentifierId = referenced.IdentifierId;
+                    break;
+                }
+
+                table = table.Parent;
+            }
+
+            if(ident.IdentifierId == 0){
+                parser.ReportSemanticError("Type name `{0}` turns out not to be declared in the current scope {1}!",
+                    ident, ident.Name, symbol_table.Name
+                );
+            }
         }
 	}
 }

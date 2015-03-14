@@ -29,14 +29,15 @@ namespace Expresso.Ast
 
         public CollectionPattern(IEnumerable<PatternConstruct> patterns, bool isVector)
         {
-            CollectionType =
-                isVector ? new PrimitiveType("vector", TextLocation.Empty) as AstType
-                         : new SimpleType("array", new List<AstType>{
-                               new PlaceholderType(TextLocation.Empty)
-                         }, TextLocation.Empty, TextLocation.Empty) as AstType;
+            if(isVector){
+                CollectionType = new PrimitiveType("vector", TextLocation.Empty);
+            }else{
+                CollectionType = new SimpleType("array", new List<AstType>{
+                    new PlaceholderType(TextLocation.Empty)
+                }, TextLocation.Empty, TextLocation.Empty);
+            }
 
-            foreach(var pattern in patterns)
-                AddChild(pattern, Roles.Pattern);
+            Items.AddRange(patterns);
         }
 
         #region implemented abstract members of AstNode

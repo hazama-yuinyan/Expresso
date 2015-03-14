@@ -122,6 +122,21 @@ namespace Expresso.Ast
         }
 
         #region Factory methods
+        public static AssignmentExpression MakeSingleAssignment(Expression lhs, Expression rhs)
+        {
+            return new AssignmentExpression(lhs, rhs);
+        }
+
+        public static AssignmentExpression MakeAssignment(SequenceExpression lhs, SequenceExpression rhs)
+        {
+            return new AssignmentExpression(lhs, rhs);
+        }
+
+        public static AssignmentExpression MakeMultipleAssignment(AssignmentExpression lhs, SequenceExpression rhs)
+        {
+            return new AssignmentExpression(lhs, rhs);
+        }
+
         public static CallExpression MakeCallExpr(Expression target, IEnumerable<Expression> args)
         {
             return new CallExpression(target, args);
@@ -162,7 +177,7 @@ namespace Expresso.Ast
             return new SequenceInitializer(type, initializers);
         }
 
-        public static ObjectCreationExpression MakeObjectCreation(PathExpression path, IEnumerable<Identifier> names,
+        public static ObjectCreationExpression MakeObjectCreation(AstType path, IEnumerable<Identifier> names,
             IEnumerable<Expression> values)
         {
             return new ObjectCreationExpression(path, names.Select(ident => new PathExpression(ident)),

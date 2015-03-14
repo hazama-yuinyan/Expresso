@@ -166,7 +166,6 @@
     <Compile Include="Ast\PlaceholderType.cs" />
     <Compile Include="Ast\Expressions\OperatorType.cs" />
     <Compile Include="Ast\Expressions\PathExpression.cs" />
-    <Compile Include="Analysis\TypeChecker.cs" />
     <Compile Include="Ast\Expressions\KeyValueLikeExpression.cs" />
     <Compile Include="Analysis\TypeInferenceContext.cs" />
     <Compile Include="Ast\MemberType.cs" />
@@ -179,6 +178,11 @@
     <Compile Include="CodeGen\ExpressoSymbol.cs" />
     <Compile Include="Ast\Patterns\DestructuringPattern.cs" />
     <Compile Include="Ast\Patterns\CollectionPattern.cs" />
+    <Compile Include="ExpressoCompilerService.cs" />
+    <Compile Include="Analysis\FlowChecker.cs" />
+    <Compile Include="CodeGen\ExpressoCompilerOptions.cs" />
+    <Compile Include="Analysis\TypeChecker.cs" />
+    <Compile Include="Analysis\TypeInferenceRunner.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -198,11 +202,9 @@
     <None Include="OutputVisitor\TokenWriter.cs" />
     <None Include="OutputVisitor\InsertRequiredSpacesDecorator.cs" />
     <None Include="OutputVisitor\ExpressoOutputWalker.cs" />
-    <None Include="Analysis\FlowChecker.cs" />
     <None Include="Analysis\InferenceHelper.cs" />
     <None Include="Documentation\ExpressoReference.md" />
     <None Include="Documentation\ExpressoTutorial.md" />
-    <None Include="Analysis\TypeInferenceRunner.cs" />
     <None Include="CodeGen\ParameterCollector.cs" />
   </ItemGroup>
   <ItemGroup>
