@@ -90,17 +90,17 @@ namespace Expresso.Ast
             get{return NodeType.Statement;}
         }
 
-        public ImportDeclaration(PathExpression moduleName, string aliasName = null,
+        public ImportDeclaration(PathExpression moduleName, Identifier alias = null,
             IEnumerable<PathExpression> importedEntities = null)
-		{
+        {
             ModuleNameToken = moduleName;
 
-            if(aliasName != null)
-                AliasNameToken = AstNode.MakeIdentifier(aliasName);
+            if(alias != null)
+                AliasNameToken = alias;
 
             if(importedEntities != null)
                 ImportedEntities.AddRange(importedEntities);
-		}
+        }
 
         public override void AcceptWalker(IAstWalker walker)
 		{

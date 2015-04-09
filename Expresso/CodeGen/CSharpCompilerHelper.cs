@@ -53,22 +53,22 @@ namespace Expresso.CodeGen
             }
         }
 
-        public static Type GetContainerType(PrimitiveType containerType)
+        public static Type GetContainerType(SimpleType containerType)
         {
             if(containerType == null)
                 throw new ArgumentNullException("containerType");
 
-            switch(containerType.KnownTypeCode){
-            case KnownTypeCode.Dictionary:
+            switch(containerType.Name){
+            case "dictionary":
                 return typeof(Dictionary<,>);
 
-            case KnownTypeCode.Array:
+            case "array":
                 return typeof(Array);
 
-            case KnownTypeCode.Tuple:
+            case "tuple":
                 return typeof(Tuple);
 
-            case KnownTypeCode.Vector:
+            case "vector":
                 return typeof(List<>);
 
             default:
@@ -79,9 +79,8 @@ namespace Expresso.CodeGen
         public static Type GetNativeType(AstType astType)
         {
             var primitive = astType as PrimitiveType;
-            if(primitive != null){
+            if(primitive != null)
                 return GetPrimitiveType(primitive);
-            }
 
             var simple = astType as SimpleType;
             if(simple != null){
@@ -91,6 +90,9 @@ namespace Expresso.CodeGen
                     if(type != null)
                         break;
                 }
+
+                if(type == null)
+                    throw new EmitterException("Type `{0}` is not found!", simple.Identifier);
 
                 if(!simple.TypeArguments.IsEmpty){
                     var type_args =

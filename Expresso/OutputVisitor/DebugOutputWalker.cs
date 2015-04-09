@@ -98,7 +98,23 @@ namespace Expresso.Ast
 
         public void VisitConstant(LiteralExpression literal)
         {
-            writer.Write(literal.Value);
+            var value_type = literal.Value.GetType();
+            string enclosure = null;
+            switch(value_type.Name.ToLower()){
+            case "string":
+                enclosure = "\"";
+                break;
+
+            case "char":
+                enclosure = "'";
+                break;
+
+            default:
+                enclosure = "";
+                break;
+            }
+
+            writer.Write("{0}{1}{2}", enclosure, literal.Value, enclosure);
         }
 
         public void VisitBreakStatement(BreakStatement breakStmt)
@@ -161,7 +177,7 @@ namespace Expresso.Ast
         {
             memRef.Target.AcceptWalker(this);
             writer.Write(".");
-            memRef.Subscription.AcceptWalker(this);
+            memRef.Member.AcceptWalker(this);
         }
 
         public void VisitAst(ExpressoAst ast)
@@ -181,7 +197,7 @@ namespace Expresso.Ast
 
         public void VisitSequenceInitializer(SequenceInitializer seqInitializer)
         {
-            var type = CSharpCompilerHelper.GetContainerType(seqInitializer.ObjectType as PrimitiveType);
+            var type = CSharpCompilerHelper.GetContainerType(seqInitializer.ObjectType);
             var enclosures = type == typeof(List<>) ? new []{"[", "]"} :
                 type == typeof(Dictionary<,>) ? new []{"{", "}"} : null;
             writer.Write(enclosures[0]);
@@ -215,7 +231,7 @@ namespace Expresso.Ast
         {
             writer.Write("match ");
             matchStmt.Target.AcceptWalker(this);
-            writer.Write("{");
+            writer.Write(" {");
             writer.Write(matchStmt.Clauses.Count);
             writer.Write("...}");
         }
@@ -294,7 +310,8 @@ namespace Expresso.Ast
         {
             writer.Write("[");
             comp.Item.AcceptWalker(this);
-            writer.Write(" ...]");
+            comp.Body.AcceptWalker(this);
+            writer.Write("]");
         }
 
         public void VisitComprehensionForClause(ComprehensionForClause compFor)
@@ -328,7 +345,7 @@ namespace Expresso.Ast
         {
             keyValue.KeyExpression.AcceptWalker(this);
             writer.Write(" : ");
-            keyValue.Value.AcceptWalker(this);
+            keyValue.ValueExpression.AcceptWalker(this);
         }
 
         public void VisitLiteralExpression(LiteralExpression literal)
@@ -434,7 +451,7 @@ namespace Expresso.Ast
 
         public void VisitSimpleType(SimpleType simpleType)
         {
-            writer.Write(simpleType.Identifier);
+            writer.Write(simpleType.IdentifierNode);
             if(simpleType.TypeArguments.HasChildren){
                 writer.Write("<");
                 PrintList(simpleType.TypeArguments);
@@ -457,6 +474,14 @@ namespace Expresso.Ast
             memberType.Target.AcceptWalker(this);
             writer.Write("::");
             writer.Write(memberType.MemberName);
+        }
+
+        public void VisitFunctionType(FunctionType funcType)
+        {
+            writer.Write("|");
+            PrintList(funcType.Parameters);
+            writer.Write("| -> ");
+            funcType.ReturnType.AcceptWalker(this);
         }
 
         public void VisitPlaceholderType(PlaceholderType placeholderType)
@@ -528,11 +553,9 @@ namespace Expresso.Ast
         public void VisitParameterDeclaration(ParameterDeclaration parameterDecl)
         {
             parameterDecl.NameToken.AcceptWalker(this);
-            parameterDecl.ReturnType.AcceptWalker(this);
             if(!parameterDecl.Option.IsNull){
-                writer.Write(" = [");
+                writer.Write(" = ");
                 parameterDecl.Option.AcceptWalker(this);
-                writer.Write("]");
             }
         }
 

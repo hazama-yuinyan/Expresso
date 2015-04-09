@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using ICSharpCode.NRefactory;
+using Expresso.TypeSystem;
 
 
 namespace Expresso.Ast.Analysis
@@ -10,18 +12,19 @@ namespace Expresso.Ast.Analysis
     /// All <see cref="Expresso.Ast.PlaceholderType"/> nodes are replaced with real types
     /// inferred from the context.
     /// </summary>
-    class TypeChecker : IAstWalker<AstType>
+    partial class TypeChecker : IAstWalker<AstType>
     {
+        static PlaceholderType PlaceholderTypeNode = new PlaceholderType(TextLocation.Empty);
         int scope_counter;
         Parser parser;
-        SymbolTable table;  //keep a SymbolTable reference in a private field for convenience
+        SymbolTable symbols;  //keep a SymbolTable reference in a private field for convenience
         TypeInferenceRunner inference_runner;
 
         public TypeChecker(Parser parser)
         {
             this.parser = parser;
-            table = parser.Symbols;
-            inference_runner = new TypeInferenceRunner(parser, table);
+            symbols = parser.Symbols;
+            inference_runner = new TypeInferenceRunner(parser, this);
         }
 
         public static void Check(ExpressoAst ast, Parser parser)
@@ -32,12 +35,12 @@ namespace Expresso.Ast.Analysis
 
         void DescendScope()
         {
-            table = table.Children[scope_counter];
+            symbols = symbols.Children[scope_counter];
         }
 
         void AscendScope()
         {
-            table = table.Parent;
+            symbols = symbols.Parent;
         }
 
         #region IAstWalker implementation
@@ -95,7 +98,7 @@ namespace Expresso.Ast.Analysis
         public AstType VisitExpressionStatement(ExpressionStatement exprStmt)
         {
             exprStmt.Expression.AcceptWalker(this);
-            return AstType.Null;
+            return SimpleType.Null;
         }
 
         public AstType VisitForStatement(ForStatement forStmt)
@@ -107,7 +110,7 @@ namespace Expresso.Ast.Analysis
             var left_type = forStmt.Left.AcceptWalker(this);
             if(IsPlaceholderType(left_type)){
                 var inferred_type = forStmt.Target.AcceptWalker(inference_runner);
-                left_type.ReplaceWith(inferred_type.Clone());
+                left_type.ReplaceWith(inferred_type);
             }else{
                 forStmt.Target.AcceptWalker(this);
             }
@@ -182,11 +185,11 @@ namespace Expresso.Ast.Analysis
             var left_type = assignment.Left.AcceptWalker(this);
             if(IsPlaceholderType(left_type)){
                 var inferred_type = assignment.Left.AcceptWalker(inference_runner);
-                left_type.ReplaceWith(inferred_type.Clone());
+                left_type.ReplaceWith(inferred_type);
                 return inferred_type;
             }else{
                 var right_type = assignment.Right.AcceptWalker(this);
-                if(IsCompatibleWith(left_type, right_type)){
+                if(!IsCompatibleWith(left_type, right_type)){
                     parser.ReportSemanticErrorRegional(
                         "Type `{0}` on left-hand-side isn't compatible with type `{1}` on right-hand-side.",
                         assignment.Left, assignment.Right,
@@ -201,13 +204,25 @@ namespace Expresso.Ast.Analysis
         {
             var lhs_type = binaryExpr.Left.AcceptWalker(this);
             var rhs_type = binaryExpr.Right.AcceptWalker(this);
+            if(!IsCompatibleWith(lhs_type, rhs_type)){
+                parser.ReportSemanticErrorRegional(
+                    "Can not apply the operator {0} on `{1}` and `{2}`.",
+                    binaryExpr.Left, binaryExpr.Right,
+                    binaryExpr.OperatorToken, lhs_type, rhs_type
+                );
+            }
             return null;
         }
 
         public AstType VisitCallExpression(CallExpression callExpr)
         {
-            var return_type = callExpr.Target.AcceptWalker(this);
-            return return_type;
+            var func_type = callExpr.Target.AcceptWalker(this);
+            if(IsPlaceholderType(func_type)){
+                var inferred = inference_runner.VisitCallExpression(callExpr);
+                func_type.ReplaceWith(inferred);
+                return ((FunctionType)inferred).ReturnType;
+            }
+            return ((FunctionType)func_type).ReturnType;
         }
 
         public AstType VisitCastExpression(CastExpression castExpr)
@@ -246,8 +261,9 @@ namespace Expresso.Ast.Analysis
             var false_type = condExpr.FalseExpression.AcceptWalker(this);
             if(!IsCompatibleWith(true_type, false_type)){
                 parser.ReportSemanticErrorRegional(
-                    "",
-                    condExpr.Condition, condExpr.FalseExpression
+                    "`{0}` is not compatible with `{1}`.",
+                    condExpr.Condition, condExpr.FalseExpression,
+                    true_type, false_type
                 );
             }
 
@@ -276,11 +292,47 @@ namespace Expresso.Ast.Analysis
 
         public AstType VisitIndexerExpression(IndexerExpression indexExpr)
         {
+            var type = indexExpr.Target.AcceptWalker(this);
+            if(type is PlaceholderType)
+                inference_runner.VisitIndexerExpression(indexExpr);
+
+            var simple_type = type as SimpleType;
+            if(simple_type != null){
+                if(simple_type.Name != "array" && simple_type.Name != "vector"){
+                    parser.ReportSemanticError(
+                        "Can not apply the indexer operator on type `{0}`",
+                        indexExpr,
+                        simple_type
+                    );
+                }
+
+                return simple_type;
+            }
             return null;
         }
 
         public AstType VisitMemberReference(MemberReference memRef)
         {
+            var type = memRef.Target.AcceptWalker(this);
+            if(type is PlaceholderType)
+                inference_runner.VisitMemberReference(memRef);
+
+            var type_table = symbols.GetTypeTable(type.Name);
+            if(type_table != null){
+                var symbol = type_table.GetSymbol(memRef.Member.Name);
+                if(symbol == null){
+                    parser.ReportSemanticError(
+                        "Type `{0}` doesn't have a field named {1}.",
+                        memRef,
+                        type.Name, memRef.Member.Name
+                    );
+                }else{
+                    // Bind the name of the member here
+                    memRef.Member.IdentifierId = symbol.IdentifierId;
+                    return symbol.Type;
+                }
+            }
+
             return null;
         }
 
@@ -291,7 +343,20 @@ namespace Expresso.Ast.Analysis
 
         public AstType VisitPathExpression(PathExpression pathExpr)
         {
-            return null;
+            if(pathExpr.Items.Count == 1){
+                return VisitIdentifier(pathExpr.AsIdentifier);
+            }else{
+                while(symbols.Parent != null)
+                    symbols = symbols.Parent;
+
+                AstType result = null;
+                foreach(var item in pathExpr.Items){
+                    result = VisitIdentifier(item);
+                    symbols = symbols.GetTypeTable(item.Name);
+                }
+
+                return result;
+            }
         }
 
         public AstType VisitParenthesizedExpression(ParenthesizedExpression parensExpr)
@@ -301,17 +366,54 @@ namespace Expresso.Ast.Analysis
 
         public AstType VisitObjectCreationExpression(ObjectCreationExpression creation)
         {
+            var type_table = symbols.GetTypeTable(creation.TypePath.IdentifierNode.Name);
+            if(type_table == null){
+                parser.ReportSemanticError(
+                    "Type `{0}` isn't found or accessible from the scope {1}.",
+                    creation,
+                    creation.TypePath, symbols.Name
+                );
+            }
+
+            foreach(var key_value in creation.Items){
+                var key_path = key_value.KeyExpression as PathExpression;
+                if(key_path == null)
+                    throw new InvalidOperationException();
+
+                var key = type_table.GetSymbol(key_path.AsIdentifier.Name);
+                if(key == null){
+                    parser.ReportSemanticError(
+                        "Type `{0}` doesn't have a field {1}.",
+                        key_value.KeyExpression,
+                        creation.TypePath, key_path.AsIdentifier.Name
+                    );
+                }else{
+                    var value_type = key_value.ValueExpression.AcceptWalker(this);
+                    if(!IsCastable(value_type, key.Type)){
+                        parser.ReportSemanticErrorRegional(
+                            "The field {0} expects the value to be of type `{1}`, but it actually is `{2}`.",
+                            key_value.KeyExpression, key_value.ValueExpression,
+                            key_path.AsIdentifier.Name, key.Type, value_type
+                        );
+                    }
+                }
+            }
             return creation.TypePath;
         }
 
         public AstType VisitSequenceInitializer(SequenceInitializer seqInitializer)
         {
-            return seqInitializer.ObjectType;
+            return null;
         }
 
         public AstType VisitMatchClause(MatchPatternClause matchClause)
         {
-            return AstType.Null;
+            AstType result = null;
+            foreach(var pattern in matchClause.Patterns){
+                var tmp = pattern.AcceptWalker(this);
+                result = inference_runner.FigureOutCommonType(result, tmp);
+            }
+            return result;
         }
 
         public AstType VisitSequence(SequenceExpression seqExpr)
@@ -330,7 +432,26 @@ namespace Expresso.Ast.Analysis
 
             case OperatorType.Plus:
             case OperatorType.Minus:
-                return unaryExpr.Operand.AcceptWalker(this);
+                {
+                    var tmp = unaryExpr.Operand.AcceptWalker(this);
+                    if(IsPlaceholderType(tmp)){
+                        var inferred_type = inference_runner.VisitUnaryExpression(unaryExpr);
+                        if(inferred_type.IsNull)
+                            return inferred_type;
+
+                        tmp.ReplaceWith(inferred_type);
+                    }
+
+                    var primitive_type = tmp as PrimitiveType;
+                    if(primitive_type == null || tmp.IsNull || primitive_type.KnownTypeCode == KnownTypeCode.Char){
+                        parser.ReportSemanticError(
+                            "Can not apply the operator {0} on type `{1}`.",
+                            unaryExpr,
+                            unaryExpr.OperatorToken, tmp.Name
+                        );
+                    }
+                    return tmp;
+                }
 
             case OperatorType.Not:
                 var operand_type = unaryExpr.Operand.AcceptWalker(this);
@@ -369,7 +490,13 @@ namespace Expresso.Ast.Analysis
 
         public AstType VisitSimpleType(SimpleType simpleType)
         {
-            return simpleType;
+            BindTypeName(simpleType.IdentifierToken);
+            // If the type arguments contain any unsubstituted arguments(placeholder nodes)
+            // return the statically defined placeholder type node to indicate that it needs to be inferenced
+            if(simpleType.TypeArguments.HasChildren && IsPlaceholderType(simpleType.TypeArguments.FirstOrNullObject()))
+                return PlaceholderTypeNode;
+            else
+                return simpleType;
         }
 
         public AstType VisitPrimitiveType(PrimitiveType primitiveType)
@@ -387,6 +514,11 @@ namespace Expresso.Ast.Analysis
             return null;
         }
 
+        public AstType VisitFunctionType(FunctionType funcType)
+        {
+            return funcType.ReturnType;
+        }
+
         public AstType VisitPlaceholderType(PlaceholderType placeholderType)
         {
             return AstType.Null;
@@ -394,21 +526,30 @@ namespace Expresso.Ast.Analysis
 
         public AstType VisitAliasDeclaration(AliasDeclaration aliasDecl)
         {
+            var original_type = aliasDecl.Path.AcceptWalker(this);
+            aliasDecl.AliasToken.IdentifierId = original_type.IdentifierNode.IdentifierId;
             return null;
         }
 
         public AstType VisitImportDeclaration(ImportDeclaration importDecl)
         {
+            if(!importDecl.AliasNameToken.IsNull){
+                var module_type = importDecl.ModuleNameToken.AcceptWalker(this);
+                importDecl.AliasNameToken.IdentifierId = module_type.IdentifierNode.IdentifierId;
+            }
             return null;
         }
 
         public AstType VisitFunctionDeclaration(FunctionDeclaration funcDecl)
         {
+            int tmp_counter = scope_counter;
+            DescendScope();
+            scope_counter = 0;
+
             foreach(var param in funcDecl.Parameters){
                 var param_type = param.AcceptWalker(this);
                 if(IsPlaceholderType(param_type)){
-                    var inferred_type = inference_runner.VisitParameterDeclaration(param);
-                    param_type.ReplaceWith(inferred_type.Clone());
+                    param.AcceptWalker(inference_runner);
                 }else{
                     if(!param.Option.IsNull){
                         var option_type = param.Option.AcceptWalker(this);
@@ -424,12 +565,40 @@ namespace Expresso.Ast.Analysis
             }
 
             funcDecl.Body.AcceptWalker(this);
+            if(IsPlaceholderType(funcDecl.ReturnType)){
+                var return_type = inference_runner.VisitFunctionDeclaration(funcDecl);
+                funcDecl.ReturnType.ReplaceWith(return_type);
+            }
 
+            if(IsPlaceholderType(funcDecl.NameToken.Type)){
+                var param_types =
+                    from param in funcDecl.Parameters
+                    select param.ReturnType.Clone();
+
+                var return_type = funcDecl.ReturnType.Clone();
+                var func_type = AstType.MakeFunctionType(funcDecl.Name, return_type, param_types);
+                funcDecl.NameToken.Type.ReplaceWith(func_type);
+            }
+
+            AscendScope();
+            scope_counter = tmp_counter + 1;
             return null;
         }
 
         public AstType VisitTypeDeclaration(TypeDeclaration typeDecl)
         {
+            int tmp_counter = scope_counter;
+            DescendScope();
+            scope_counter = 0;
+
+            foreach(var super_type in typeDecl.BaseTypes)
+                super_type.AcceptWalker(this);
+
+            foreach(var member in typeDecl.Members)
+                member.AcceptWalker(this);
+
+            AscendScope();
+            scope_counter = tmp_counter + 1;
             return null;
         }
 
@@ -439,7 +608,7 @@ namespace Expresso.Ast.Analysis
                 var field_type = field.AcceptWalker(this);
                 if(IsPlaceholderType(field_type)){
                     var inferred_type = inference_runner.VisitVariableInitializer(field);
-                    field_type.ReplaceWith(inferred_type.Clone());
+                    field_type.ReplaceWith(inferred_type);
                 }else{
                     if(!field.Initializer.IsNull){
                         var init_type = field.Initializer.AcceptWalker(this);
@@ -469,9 +638,18 @@ namespace Expresso.Ast.Analysis
             var left_type = initializer.NameToken.AcceptWalker(this);
             if(IsPlaceholderType(left_type)){
                 var inferred_type = initializer.Initializer.AcceptWalker(inference_runner);
-                left_type.ReplaceWith(inferred_type.Clone());
+                left_type.ReplaceWith(inferred_type);
                 return inferred_type;
             }else{
+                var rhs_type = initializer.Initializer.AcceptWalker(this);
+                if(!IsCompatibleWith(left_type, rhs_type)){
+                    parser.ReportSemanticErrorRegional(
+                        "Type `{0}` on the left-hand-side is not compatible with `{1}` on the right-hand-side.",
+                        initializer.NameToken,
+                        initializer.Initializer,
+                        left_type, rhs_type
+                    );
+                }
                 return left_type;
             }
         }
@@ -540,21 +718,46 @@ namespace Expresso.Ast.Analysis
 
         /// <summary>
         /// In Expresso, there are 3 valid cast cases.
+        /// The first is the identity cast.
         /// </summary>
         /// <returns><c>true</c> if <c>fromType</c> can be casted to <c>totype</c>; otherwise, <c>false</c>.</returns>
         static bool IsCastable(AstType fromType, AstType toType)
         {
+            // TODO: implement it
             return false;
         }
 
         static bool IsCompatibleWith(AstType first, AstType second)
         {
+            // TODO: implement it
             return true;
         }
 
         static bool IsPlaceholderType(AstType type)
         {
             return type is PlaceholderType;
+        }
+
+        void BindTypeName(Identifier ident)
+        {
+            var table = symbols;
+            while(table != null){
+                var referenced = table.GetTypeSymbol(ident.Name);
+                if(referenced != null){
+                    ident.IdentifierId = referenced.IdentifierId;
+                    return;
+                }
+
+                table = table.Parent;
+            }
+
+            if(ident.IdentifierId == 0){
+                parser.ReportSemanticError(
+                    "Type name `{0}` turns out not to be declared in the current scope {1}!",
+                    ident,
+                    ident.Name, table.Name
+                );
+            }
         }
     }
 }

@@ -14,7 +14,8 @@ namespace Expresso.Ast
 	/// </summary>
     public class ComprehensionExpression : Expression
 	{
-        public static readonly Role<ComprehensionForClause> CompBodyRole = new Role<ComprehensionForClause>("Body");
+        public static readonly Role<ComprehensionForClause> CompBodyRole =
+            new Role<ComprehensionForClause>("Body");
 
         /// <summary>
         /// The expression that yields an item at a time.
@@ -28,7 +29,6 @@ namespace Expresso.Ast
         /// <summary>
         /// The root for clause.
         /// </summary>
-        /// <value>The body.</value>
 		public ComprehensionForClause Body{
             get{return GetChildByRole(CompBodyRole);}
             set{SetChildByRole(CompBodyRole, value);}
@@ -37,13 +37,12 @@ namespace Expresso.Ast
         /// <summary>
         /// The type of the object to be produced.
         /// </summary>
-        /// <value>The type of the object.</value>
-        public AstType ObjectType{
-            get{return GetChildByRole(Roles.Type);}
-            set{SetChildByRole(Roles.Type, value);}
+        public SimpleType ObjectType{
+            get{return GetChildByRole(Roles.GenericType);}
+            set{SetChildByRole(Roles.GenericType, value);}
 		}
 
-        public ComprehensionExpression(Expression itemExpr, ComprehensionForClause bodyExpr, AstType objType)
+        public ComprehensionExpression(Expression itemExpr, ComprehensionForClause bodyExpr, SimpleType objType)
 		{
             ObjectType = objType;
             Item = itemExpr;

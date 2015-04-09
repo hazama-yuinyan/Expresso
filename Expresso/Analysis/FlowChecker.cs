@@ -433,6 +433,11 @@ namespace Expresso.Ast.Analysis
             throw new NotImplementedException();
         }
 
+        public void VisitFunctionType(FunctionType funcType)
+        {
+            throw new NotImplementedException();
+        }
+
         public void VisitPlaceholderType(PlaceholderType placeholderType)
         {
             throw new NotImplementedException();

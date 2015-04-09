@@ -10,7 +10,7 @@ namespace Expresso.Ast
 	/// ExpressoのASTのトップレベルノード。ファイルから生成された場合はモジュールを表す。
 	/// Top-level ast for all Expresso code. Typically represents a module.
     /// All module-level items can be considered as static because one module can import
-    /// another module once.
+    /// another module only once.
 	/// </summary>
     public class ExpressoAst : AstNode
 	{

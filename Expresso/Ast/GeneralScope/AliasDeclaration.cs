@@ -5,7 +5,7 @@ namespace Expresso.Ast
 {
     /// <summary>
     /// Represents an alias declaration.
-    /// An alias declaration, as the name implies, introduces a new name corresponding to
+    /// An alias declaration, as the name implies, introduces a new name that corresponds to
     /// an existing type, a module-level variable or a module itself.
     /// "alias" PathExpression Identifier ';' ;
     /// </summary>

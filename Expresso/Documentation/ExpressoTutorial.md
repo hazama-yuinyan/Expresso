@@ -37,7 +37,7 @@ The latter tells you that if you just follow what the compiler says, then you ca
 
 ** Let bindings and variable declarations
 In Expresso, there are 2 forms of variable binding. 
-Variables are useful considering the ability to keep track of values they hold. But sometimes we just want to give values descriptive names because we need the same values several times or because it is tedious to change all the literal values over and over again when you try to guess the proper values for some programs. That's where constants come into play.
+Variables are useful considering the ability to keep track of values they hold. But sometimes we just want to give values descriptive names because we need the same values several times or because it is tedious to change all the literal values over and over when you try to guess the proper values for some programs. That's where constants come into play.
 As a general term, a constant is a constant value meaning that values that are bound to variables will never be changed during program execution.
 Let bindings introduce tags, and tags are names which you use in order to refer to values later on.
 By contrast, variable declarations introduce boxes that have certain shapes, and those boxes can be

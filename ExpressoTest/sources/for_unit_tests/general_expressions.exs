@@ -7,6 +7,11 @@ class Test
 {
     public let x (- int;
     let y (- int, z = 3;
+
+    public def getY() -> int
+    {
+        return self.y;
+    }
 }
 
 export def createTest(x (- int, y = 2, z (- int = 3) -> Test
@@ -33,7 +38,7 @@ def main()
     let s = x << 2;
     let t = r & s;
     let v = x | t;
-    let w = c + d;
+    let w = r + s;
     let y = ary[0] + ary[1] * d["a"];
     let z = v * w;
 }

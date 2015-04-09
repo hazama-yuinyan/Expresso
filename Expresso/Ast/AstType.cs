@@ -2,6 +2,7 @@ using System;
 using ICSharpCode.NRefactory;
 using ICSharpCode.NRefactory.PatternMatching;
 using ICSharpCode.NRefactory.TypeSystem;
+using System.Collections.Generic;
 
 
 namespace Expresso.Ast
@@ -9,7 +10,7 @@ namespace Expresso.Ast
     /// <summary>
     /// A type reference in Expresso AST.
     /// An AstType is an ast node, while a TypeReference is an internal and public representation.
-    /// The null AstType nodes can be used to represent the unit type.
+    /// The AstType.Null property can be used to represent the unit type.
     /// </summary>
     public abstract class AstType : AstNode
     {
@@ -20,6 +21,18 @@ namespace Expresso.Ast
             public override bool IsNull{
                 get{
                     return true;
+                }
+            }
+
+            public override string Name{
+                get{
+                    return null;
+                }
+            }
+
+            public override Identifier IdentifierNode{
+                get{
+                    return Identifier.Null;
                 }
             }
 
@@ -72,6 +85,18 @@ namespace Expresso.Ast
             public override NodeType NodeType{
                 get{
                     return NodeType.Pattern;
+                }
+            }
+
+            public override string Name{
+                get{
+                    return null;
+                }
+            }
+
+            public override Identifier IdentifierNode{
+                get{
+                    return Identifier.Null;
                 }
             }
 
@@ -136,6 +161,20 @@ namespace Expresso.Ast
             }
         }
 
+        /// <summary>
+        /// Gets the name of the type.
+        /// </summary>
+        public abstract string Name{
+            get;
+        }
+
+        /// <summary>
+        /// Gets the type name as an identifier.
+        /// </summary>
+        public abstract Identifier IdentifierNode{
+            get;
+        }
+
         protected AstType()
         {
         }
@@ -143,6 +182,11 @@ namespace Expresso.Ast
         protected AstType(TextLocation start, TextLocation end)
             : base(start, end)
         {
+        }
+
+        public new AstType Clone()
+        {
+            return (AstType)base.Clone();
         }
 
         public new AstType MemberwiseClone()
@@ -173,8 +217,8 @@ namespace Expresso.Ast
         /// The resulting type reference will read the context information from the
         /// <see cref="ITypeResolveContext"/>:
         /// For resolving type parameters, the CurrentTypeDefinition/CurrentMember is used.
-        /// For resolving simple names, the current namespace and imports from the CurrentUsingScope
-        /// (on CSharpTypeResolveContext only) is used.
+        /// For resolving simple names, the current module and imports from the CurrentModuleScope
+        /// (on ExpressoTypeResolveContext only) is used.
         /// </remarks>
         public abstract ITypeReference ToTypeReference(NameLookupMode lookupMode, InterningProvider interningProvider = null);
 
@@ -197,6 +241,52 @@ namespace Expresso.Ast
             }
             return NameLookupMode.Type;
         }
+
+        #region Factory methods
+        public static PrimitiveType MakePrimitiveType(string name, TextLocation loc)
+        {
+            return new PrimitiveType(name, loc);
+        }
+
+        public static SimpleType MakeSimpleType(string name, TextLocation loc)
+        {
+            return new SimpleType(name, loc);
+        }
+
+        public static SimpleType MakeSimpleType(Identifier identifier, TextLocation loc)
+        {
+            return new SimpleType(identifier, loc);
+        }
+
+        public static SimpleType MakeSimpleType(string name, IEnumerable<AstType> typeArgs,
+            TextLocation startLoc, TextLocation endLoc)
+        {
+            return new SimpleType(name, typeArgs, startLoc, endLoc);
+        }
+
+        public static ReferenceType MakeReferenceType(AstType baseType, TextLocation startLoc)
+        {
+            return new ReferenceType(baseType, startLoc);
+        }
+
+        public static MemberType MakeMemberType(AstType superType, SimpleType childType,
+            TextLocation endLoc)
+        {
+            return new MemberType(superType, childType, endLoc);
+        }
+
+        public static FunctionType MakeFunctionType(string name, AstType returnType,
+            IEnumerable<AstType> parameters)
+        {
+            return new FunctionType(AstNode.MakeIdentifier(name), returnType, parameters);
+        }
+
+        public static FunctionType MakeFunctionType(string name, AstType returnType,
+            params AstType[] parameters)
+        {
+            return new FunctionType(AstNode.MakeIdentifier(name), returnType, parameters);
+        }
+        #endregion
     }
 }
 

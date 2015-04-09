@@ -11,6 +11,14 @@ namespace Expresso.Ast
     /// </summary>
     public class PlaceholderType : AstType
     {
+        public override string Name{
+            get{return null;}
+        }
+
+        public override Identifier IdentifierNode{
+            get{return Identifier.Null;}
+        }
+
         public PlaceholderType(TextLocation start)
             : base(start, TextLocation.Empty)
         {

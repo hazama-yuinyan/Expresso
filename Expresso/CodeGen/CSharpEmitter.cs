@@ -433,18 +433,20 @@ namespace Expresso.CodeGen
 
                 var field = context.TargetType.GetField(ident.AsIdentifier.Name);
                 if(field == null){
-                    throw new EmitterException("Type `{0}` does not have the field `{1}`.",
-                        context.TargetType, ident.AsIdentifier.Name);
+                    throw new EmitterException(
+                        "Type `{0}` does not have the field `{1}`.",
+                        context.TargetType, ident.AsIdentifier.Name
+                    );
                 }
                 context.Field = field;
 
-                var value = keyValue.Value.AcceptWalker(this, context);
+                var value = keyValue.ValueExpression.AcceptWalker(this, context);
                 return value;
             }else{
                 // In a dictionary literal, the key can be any expression that is evaluated
                 // to a hashable object.
                 var key_expr = keyValue.KeyExpression.AcceptWalker(this, context);
-                var value_expr = keyValue.Value.AcceptWalker(this, context);
+                var value_expr = keyValue.ValueExpression.AcceptWalker(this, context);
                 if(context.TargetType == null)
                     context.TargetType = typeof(Dictionary<,>).MakeGenericType(key_expr.Type, value_expr.Type);
 
@@ -504,7 +506,7 @@ namespace Expresso.CodeGen
             var expr = memRef.Target.AcceptWalker(this, context);
             context.Member = null;
             context.Method = null;
-            memRef.Subscription.AcceptWalker(this, context);
+            memRef.Member.AcceptWalker(this, context);
             return context.Method != null ? null : CSharpExpr.MakeMemberAccess(expr, context.Member);
         }
 
@@ -595,8 +597,11 @@ namespace Expresso.CodeGen
                         return false;
                     }
                 })){
-                    throw new EmitterException(@"Can not create an instance with constructor `{0}`
-because it doesn't have field named `{1}`", creation.TypePath, key);
+                    throw new EmitterException(
+                        @"Can not create an instance with constructor `{0}`
+because it doesn't have field named `{1}`",
+                        creation.TypePath, key
+                    );
                 }
                 args[index] = value_expr;
             }
@@ -607,7 +612,8 @@ because it doesn't have field named `{1}`", creation.TypePath, key);
         public CSharpExpr VisitSequenceInitializer(SequenceInitializer seqInitializer,
             CSharpEmitterContext context)
         {
-            var seq_type = CSharpCompilerHelper.GetContainerType(seqInitializer.ObjectType as PrimitiveType);
+            var obj_type = seqInitializer.ObjectType;
+            var seq_type = CSharpCompilerHelper.GetContainerType(obj_type);
             var exprs = new List<CSharpExpr>();
             // If this node represents a dictionary literal
             // context.Constructor will get set the appropriate constructor method.
@@ -619,17 +625,18 @@ because it doesn't have field named `{1}`", creation.TypePath, key);
             }
 
             if(seq_type == typeof(Array)){
-                return CSharpExpr.NewArrayInit(exprs[0].Type, exprs);
+                var elem_type = CSharpCompilerHelper.GetNativeType(obj_type.TypeArguments.FirstOrNullObject());
+                return CSharpExpr.NewArrayInit(elem_type, exprs);
             }else if(seq_type == typeof(List<>)){
-                var constructor = seq_type.MakeGenericType(exprs[0].Type).GetConstructor(new []{typeof(void)});
+                var elem_type = CSharpCompilerHelper.GetNativeType(obj_type.TypeArguments.FirstOrNullObject());
+                var constructor = seq_type.MakeGenericType(elem_type).GetConstructor(new []{typeof(void)});
                 var new_expr = CSharpExpr.New(constructor);
                 return CSharpExpr.ListInit(new_expr, exprs);
             }else if(seq_type == typeof(Dictionary<,>)){
+                var key_type = CSharpCompilerHelper.GetNativeType(obj_type.TypeArguments.FirstOrNullObject());
+                var value_type = CSharpCompilerHelper.GetNativeType(obj_type.TypeArguments.LastOrNullObject());
                 var elems = context.Additionals.Cast<ExprTree.ElementInit>();
-                var first_elem = elems.FirstOrDefault();
-                var key_arg = first_elem.Arguments[0];
-                var value_arg = first_elem.Arguments[1];
-                var dict_type = seq_type.MakeGenericType(key_arg.Type, value_arg.Type);
+                var dict_type = seq_type.MakeGenericType(key_type, value_type);
                 var constructor = dict_type.GetConstructor(new []{typeof(void)});
                 var new_expr = CSharpExpr.New(constructor);
                 return CSharpExpr.ListInit(new_expr, elems);
@@ -702,16 +709,17 @@ because it doesn't have field named `{1}`", creation.TypePath, key);
                         destructuring_exprs = context.Additionals.Cast<ExprTree.ParameterExpression>();
                     }else if(destructuring_exprs.Count() != context.Additionals.Count()){
                         // The number of destructured variables must match in every pattern
-                        throw new EmitterException("Expected the pattern contains {0} variables, but it contains only {1}!",
-                            destructuring_exprs.Count(), context.Additionals.Count());
+                        throw new EmitterException(
+                            "Expected the pattern contains {0} variables, but it contains only {1}!",
+                            destructuring_exprs.Count(), context.Additionals.Count()
+                        );
                     }
                 }
 
-                if(res == null){
+                if(res == null)
                     res = pattern_cond;
-                }else{
+                else
                     res = CSharpExpr.OrElse(res, pattern_cond);
-                }
             }
 
             var guard = matchClause.Guard.AcceptWalker(this, context);
@@ -791,6 +799,11 @@ because it doesn't have field named `{1}`", creation.TypePath, key);
         }
 
         public CSharpExpr VisitMemberType(MemberType memberType, CSharpEmitterContext context)
+        {
+            return null;
+        }
+
+        public CSharpExpr VisitFunctionType(FunctionType funcType, CSharpEmitterContext context)
         {
             return null;
         }
@@ -960,7 +973,7 @@ because it doesn't have field named `{1}`", creation.TypePath, key);
             CSharpEmitterContext context)
         {
             // A wildcard pattern is translated to the else clause
-            // just return null to indicate that.
+            // so just return null to indicate that.
             return null;
         }
 
@@ -975,7 +988,8 @@ because it doesn't have field named `{1}`", creation.TypePath, key);
             if(context.Field == null){
                 var field = context.TargetType.GetField(identifierPattern.Identifier.Name);
                 if(field == null){
-                    throw new EmitterException("Type `{0}` doesn't have the field `{1}`",
+                    throw new EmitterException(
+                        "Type `{0}` doesn't have the field `{1}`",
                         context.TargetType, identifierPattern.Identifier.Name
                     );
                 }
@@ -988,7 +1002,7 @@ because it doesn't have field named `{1}`", creation.TypePath, key);
         public CSharpExpr VisitValueBindingPattern(ValueBindingPattern valueBindingPattern,
             CSharpEmitterContext context)
         {
-            // ValueBindingPatterns can be complex because they introduce new variables into the scope
+            // ValueBindingPatterns can be complex because they introduce new variables into the surrounding scope
             // and they have nothing to do with the value being matched.
             context.Additionals = new List<object>();
             var pattern = valueBindingPattern.Pattern.AcceptWalker(this, context);
@@ -1001,7 +1015,7 @@ because it doesn't have field named `{1}`", creation.TypePath, key);
             CSharpEmitterContext context)
         {
             // First, make type validation expression
-            var collection_type = CSharpCompilerHelper.GetContainerType(collectionPattern.CollectionType as PrimitiveType);
+            var collection_type = CSharpCompilerHelper.GetContainerType(collectionPattern.CollectionType);
             CSharpExpr res = null;
             int i = 0;
             var block = new List<CSharpExpr>();
@@ -1069,9 +1083,9 @@ because it doesn't have field named `{1}`", creation.TypePath, key);
             CSharpEmitterContext context)
         {
             // Common scinario in an expression pattern:
-            // An integer sequence expression or a collection literal.
-            // In the former case we should test an integer against an IntSeq type object
-            // while in the latter case we should check the collection given has a certain sequence
+            // An integer sequence expression or a literal expression.
+            // In the former case we should test an integer against an IntSeq type object using an IntSeq's method
+            // while in the latter case we should just test the value against the literal
             context.Method = null;
             var expr = exprPattern.Expression.AcceptWalker(this, context);
             return context.Method != null ? CSharpExpr.Call(context.Method, expr) as CSharpExpr
@@ -1119,7 +1133,7 @@ because it doesn't have field named `{1}`", creation.TypePath, key);
 			if(target == null)
 				throw new ArgumentNullException("target", "Can not iterate over a null object.");
 			if(body == null)
-				throw new ArgumentNullException("body", "I can't understand what job do you ask me for in that loop!");
+				throw new ArgumentNullException("body", "I can't understand what job you ask me for in that loop!");
 
 			has_continue = false;
 

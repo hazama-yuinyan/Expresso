@@ -63,7 +63,7 @@ The `IntSeq` type has the corresponding literal form and it is written as follow
     let seq = 1..10;    // `step` can be omitted and 1 is assumed if ommited and double dots mean that the lower bound is
                         // inclusive but the upper bound is exclusive
     let series = seq.collect();
-    for elem in seq {  // print "123456789"
+    for let elem in seq {  // print "123456789"
         print(elem);
     }
     println(series); // print "vector[1,2,3,4,5,6,7,8,9]"

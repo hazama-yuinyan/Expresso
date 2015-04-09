@@ -22,13 +22,13 @@ def main()
     let u_ = 1000U;
     let f_a = 1.0e4f;
     let f_a_ (- float = 1.0e4f;
-    let f = [];
+    let f (- int[] = [];
     let f_ = [1, 2, 3];
-    let f2 = [...];
+    let f2 (- vector<int> = [...];
     let f2_ = [1, 2, 3, ...];
     let f3 = ();
     let f3_ = (1, "abc", true);
-    let g = {};
+    let g (- dictionary<string, int> = {};
     let g_ = {"akari" : 13, "chinatsu" : 13, "京子" : 14, "結衣" : 14};
     var h = "私変わっちゃうの・・？";
     var h2 = "Yes, you can!";

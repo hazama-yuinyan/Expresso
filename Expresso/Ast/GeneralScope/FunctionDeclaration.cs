@@ -73,36 +73,6 @@ namespace Expresso.Ast
             SetModifiers(this, modifiers);
 		}
 
-        /// <summary>
-        /// 関数＋引数名、
-        /// f(x, y) -> some_type {x + y;} の f(x, y) -> some_type の部分を文字列として返す。
-		/// Returns the function signature.
-        /// </summary>
-        /// <returns>関数シグニチャ</returns>
-        public string Signature()
-        {
-            StringBuilder sb = new StringBuilder();
-
-            sb.Append(this.Name);
-            sb.Append("(");
-
-            bool first = true;
-
-            foreach (var param in this.Parameters){
-                if(first)
-                    first = false;
-                else
-                    sb.Append(", ");
-
-                sb.Append(param.ToString());
-            }
-
-            sb.Append(") => ");
-			sb.Append(this.ReturnType);
-
-            return sb.ToString();
-        }
-
         public override void AcceptWalker(IAstWalker walker)
 		{
             walker.VisitFunctionDeclaration(this);

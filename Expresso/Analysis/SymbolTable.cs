@@ -23,10 +23,18 @@ namespace Expresso.Ast.Analysis
             get; set;
         }
 
+        /// <summary>
+        /// The parent symbol scope.
+        /// </summary>
         public SymbolTable Parent{
             get; set;
         }
 
+        /// <summary>
+        /// The child symbol scopes.
+        /// Even though it is defined as an array, it acts most of the times as if it were defined as
+        /// bi-directional linked list.
+        /// </summary>
         public List<SymbolTable> Children{
             get; set;
         }
@@ -41,7 +49,7 @@ namespace Expresso.Ast.Analysis
         }
 
         /// <summary>
-        /// Gets the number of symbols.
+        /// Gets the number of symbols within this scope.
         /// </summary>
         public int NumOfSymbols{
             get{return Symbols.Count();}
@@ -58,14 +66,38 @@ namespace Expresso.Ast.Analysis
 
         public void GetObjectData(SerializationInfo info, StreamingContext context)
         {
-            foreach(var entry in type_table)
-                info.AddValue(entry.Key, entry.Value.Type, typeof(AstType));
+            foreach(var entry in type_table){
+                var ast_type = entry.Value.Type;
+                info.AddValue(entry.Key, ast_type, ast_type.GetType());
+            }
 
-            foreach(var entry2 in table)
-                info.AddValue(entry2.Key, entry2.Value.Type, typeof(AstType));
+            foreach(var entry2 in table){
+                var ast_type = entry2.Value.Type;
+                info.AddValue(entry2.Key, ast_type, ast_type.GetType());
+            }
         }
 
         #endregion
+
+        public SymbolTable GetTypeTable(string name)
+        {
+            var table = this;
+            var class_name = "class " + name;
+            int child_counter = 0;
+            while(table != null){
+                if(table.Name.StartsWith(class_name))
+                    return table;
+
+                if(child_counter >= table.Parent.Children.Count){
+                    child_counter = 0;
+                    table = table.Parent;
+                }else{
+                    table = table.Parent.Children[child_counter++];
+                }
+            }
+
+            return null;
+        }
 
         /// <summary>
         /// Determines whether `name` is a type symbol.
@@ -149,12 +181,10 @@ namespace Expresso.Ast.Analysis
         /// <summary>
         /// Gets the corresponding <see cref="Expresso.Ast.Identifier"/> node to type `name`.
         /// </summary>
-        /// <returns>The type symbol.</returns>
-        /// <param name="name">Name.</param>
         public Identifier GetTypeSymbol(string name)
         {
             Identifier result;
-            if(type_table.TryGetValue(name, out result))
+            if(!type_table.TryGetValue(name, out result))
                 return null;
 
             return result;
@@ -163,13 +193,27 @@ namespace Expresso.Ast.Analysis
         /// <summary>
         /// Gets the corresponding <see cref="Expresso.Ast.Identifier"/> node to `name`.
         /// </summary>
-        /// <returns>The symbol.</returns>
-        /// <param name="name">Name.</param>
         public Identifier GetSymbol(string name)
         {
             Identifier result;
             if(!table.TryGetValue(name, out result))
                 return null;
+
+            return result;
+        }
+
+        /// <summary>
+        /// Gets the corresponding <see cref="Expresso.Ast.Identifier"/> node to `name` in any parent scopes.
+        /// </summary>
+        public Identifier GetSymbolInAnyScope(string name)
+        {
+            Identifier result;
+            if(!table.TryGetValue(name, out result)){
+                if(Parent != null)
+                    return Parent.GetSymbolInAnyScope(name);
+                else
+                    return null;
+            }
 
             return result;
         }

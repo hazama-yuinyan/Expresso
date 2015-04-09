@@ -226,17 +226,22 @@ static uint ScopeId = 1;
         foreach(var item in path.Items){
             item.Remove();
             if(type == null)
-                type = new SimpleType(item, TextLocation.Empty);
+                type = AstType.MakeSimpleType(item, TextLocation.Empty);
             else
-                type = new MemberType(type, item);
+                type = AstType.MakeMemberType(type, AstType.MakeSimpleType(item, TextLocation.Empty), TextLocation.Empty);
         }
 
         return type;
     }
 
-    AstType CreateTypeWithArgs(string typeName, params AstType[] typeArgs)
+    SimpleType CreateTypeWithArgs(string typeName, params AstType[] typeArgs)
     {
         return new SimpleType(typeName, typeArgs, TextLocation.Empty, TextLocation.Empty);
+    }
+
+    bool IsPrimitiveGenericType(string name)
+    {
+        return name != null && (name == "dictionary" || name == "vector");
     }
 
     /// <summary>
@@ -306,7 +311,7 @@ static uint ScopeId = 1;
     /// </summary>
     public void ReportWarning(string format, AstNode node, params object[] objects)
     {
-        errors.Warning(string.Format(string.Format(format, objects), node.StartLocation));
+        errors.Warning(string.Format("{0}: {1}", node.StartLocation, string.Format(format, objects)));
     }
 
     /// <summary>
@@ -315,7 +320,7 @@ static uint ScopeId = 1;
     /// </summary>
     public void ReportSemanticError(string format, AstNode node, params object[] objects)
     {
-        errors.SemErr(string.Format(string.Format(format, objects), node.StartLocation));
+        errors.SemErr(string.Format("{0}: {1}", node.StartLocation, string.Format(format, objects)));
     }
 
     /// <summary>
@@ -472,7 +477,7 @@ static uint ScopeId = 1;
 		Symbols.AddScope(); 
 		Expect(14);
 		name = t.val;
-		                 ident = AstNode.MakeIdentifier(name); 
+		                 ident = AstNode.MakeIdentifier(name, new PlaceholderType(TextLocation.Empty), CurrentLocation); 
 		                 Symbols.AddSymbol(name, ident);
 		              
 		Expect(8);
@@ -498,7 +503,7 @@ static uint ScopeId = 1;
 
 	void ClassDecl(out EntityDeclaration decl, Modifiers modifiers) {
 		EntityDeclaration entity = null; var decls = new List<EntityDeclaration>(); AstType type_path;
-		string name; var bases = new List<AstType>(); Modifiers cur_flag; var start_loc = CurrentLocation;
+		string name; var bases = new List<AstType>(); Modifiers cur_flag; var start_loc = NextLocation;
 		Identifier ident = null;
 		
 		while (!(la.kind == 0 || la.kind == 30)) {SynErr(106); Get();}
@@ -506,16 +511,16 @@ static uint ScopeId = 1;
 		Symbols.AddScope(); 
 		Expect(14);
 		name = t.val;
-		                    ident = AstNode.MakeIdentifier(name);
+		                    ident = AstNode.MakeIdentifier(name, CurrentLocation);
 		                    Symbols.AddTypeSymbol(name, ident);
 		                 
 		if (la.kind == 4) {
 			Get();
-			TypePathExpression(out type_path);
+			Type(out type_path);
 			bases.Add(type_path); 
 			while (la.kind == 12) {
 				Get();
-				TypePathExpression(out type_path);
+				Type(out type_path);
 				bases.Add(type_path); 
 			}
 		}
@@ -549,7 +554,7 @@ static uint ScopeId = 1;
 
 	void ImportDecl(out ImportDeclaration decl) {
 		decl = null; var has_in = false; PathExpression path;
-		string alias = null; var entities = new List<PathExpression>();
+		Identifier alias = null; var entities = new List<PathExpression>();
 		
 		while (!(la.kind == 0 || la.kind == 27)) {SynErr(109); Get();}
 		Expect(27);
@@ -558,10 +563,9 @@ static uint ScopeId = 1;
 		if (la.kind == 28) {
 			Get();
 			Expect(14);
-			alias = t.val; 
+			alias = AstNode.MakeIdentifier(t.val, CurrentLocation); 
 		} else if (la.kind == 12 || la.kind == 29) {
-			while (la.kind == 12) {
-				Get();
+			while (WeakSeparator(12,3,4) ) {
 				PathExpression(out path);
 				entities.Add(path); 
 			}
@@ -581,11 +585,11 @@ static uint ScopeId = 1;
 	void PathExpression(out PathExpression path) {
 		var paths = new List<Identifier>(); 
 		Expect(14);
-		paths.Add(AstNode.MakeIdentifier(t.val)); 
+		paths.Add(AstNode.MakeIdentifier(t.val, CurrentLocation)); 
 		while (la.kind == 5) {
 			Get();
 			Expect(14);
-			paths.Add(AstNode.MakeIdentifier(t.val)); 
+			paths.Add(AstNode.MakeIdentifier(t.val, CurrentLocation)); 
 		}
 		var last_ident = paths.Last();
 		last_ident.Type = new PlaceholderType(TextLocation.Empty);
@@ -593,88 +597,10 @@ static uint ScopeId = 1;
 		
 	}
 
-	void TypePathExpression(out AstType type) {
-		Expect(14);
-		type = new SimpleType(t.val, TextLocation.Empty); 
-		while (la.kind == 5) {
-			Get();
-			Expect(14);
-			type = new MemberType(type, AstNode.MakeIdentifier(t.val)); 
-		}
-	}
-
-	void Modifiers(ref Modifiers modifiers) {
-		if (la.kind == 31) {
-			Get();
-			modifiers &= ~ExpressoModifiers.Private;
-			modifiers |= ExpressoModifiers.Public;
-			
-		} else if (la.kind == 32) {
-			Get();
-			modifiers &= ~ExpressoModifiers.Private;
-			modifiers |= ExpressoModifiers.Protected;
-			
-		} else if (la.kind == 33) {
-			Get();
-			modifiers |= ExpressoModifiers.Private; 
-		} else if (la.kind == 34) {
-			Get();
-			modifiers |= ExpressoModifiers.Static; 
-		} else SynErr(112);
-	}
-
-	void FieldDecl(out EntityDeclaration field, Modifiers modifiers) {
-		string name; AstType type; Expression rhs; Identifier ident;
-		var idents = new List<Identifier>(); var exprs = new List<Expression>();
-		var start_loc = NextLocation;
-		
-		if (la.kind == 23) {
-			Get();
-		} else if (la.kind == 24) {
-			Get();
-		} else SynErr(113);
-		VarDef(out name, out type, out rhs);
-		ident = AstNode.MakeIdentifier(name, type);
-		idents.Add(ident);
-		exprs.Add(rhs);
-		Symbols.AddSymbol(name, ident);
-		
-		while (la.kind == 12) {
-			Get();
-			VarDef(out name, out type, out rhs);
-			ident = AstNode.MakeIdentifier(name, type);
-			idents.Add(ident);
-			exprs.Add(rhs);
-			Symbols.AddSymbol(name, ident);
-			
-		}
-		while (!(la.kind == 0 || la.kind == 6)) {SynErr(114); Get();}
-		Expect(6);
-		field = EntityDeclaration.MakeField(idents, exprs, modifiers, start_loc, CurrentLocation); 
-	}
-
-	void ParamList(out List<ParameterDeclaration> @params ) {
-		@params = new List<ParameterDeclaration>(); ParameterDeclaration param; bool seen_option = false; 
-		Parameter(out param);
-		if(param.Option != null)
-		   seen_option = true;
-		
-		@params.Add(param);
-		
-		while (WeakSeparator(12,3,4) ) {
-			Parameter(out param);
-			if(seen_option && param.Option == null)
-			   SemErr("You can't put optional parameters before non-optional parameters");
-			else if(!seen_option && param.Option != null)
-			   seen_option = true;
-			
-			@params.Add(param);
-			
-		}
-	}
-
 	void Type(out AstType type) {
-		var start_loc = NextLocation; type = new PlaceholderType(NextLocation); var is_reference = false; 
+		var start_loc = NextLocation; type = new PlaceholderType(NextLocation);
+		var is_reference = false; string name = null;
+		
 		if (la.kind == 39) {
 			Get();
 			is_reference = true; 
@@ -731,12 +657,12 @@ static uint ScopeId = 1;
 		}
 		case 49: {
 			Get();
-			type = CreateType(t.val, start_loc, is_reference); 
+			name = t.val; 
 			break;
 		}
 		case 50: {
 			Get();
-			type = CreateType(t.val, start_loc, is_reference); 
+			name = t.val; 
 			break;
 		}
 		case 51: {
@@ -751,24 +677,127 @@ static uint ScopeId = 1;
 		}
 		case 53: {
 			Get();
-			type = new SimpleType("tuple", Enumerable.Empty<AstType>(), start_loc, CurrentLocation); 
+			type = AstType.MakeSimpleType("tuple", Enumerable.Empty<AstType>(), start_loc, CurrentLocation); 
 			break;
 		}
 		case 14: {
 			TypePathExpression(out type);
-			if(is_reference) type = new ReferenceType(type, TextLocation.Empty); 
+			if(is_reference) type = AstType.MakeReferenceType(type, TextLocation.Empty); 
 			break;
 		}
-		default: SynErr(115); break;
+		default: SynErr(112); break;
 		}
-		start_loc = CurrentLocation; 
+		start_loc = NextLocation; 
+		if (la.kind == 54) {
+			Get();
+			if(!IsPrimitiveGenericType(name)){
+			   SemErr("`{0}` is not a generic type!");
+			   return;
+			}
+			var type_args = new List<AstType>(); AstType child_type;
+			
+			Type(out child_type);
+			type_args.Add(child_type); 
+			while (la.kind == 12) {
+				Get();
+				Type(out child_type);
+				type_args.Add(child_type); 
+			}
+			Expect(55);
+			type = AstType.MakeSimpleType(name, type_args, start_loc, CurrentLocation);
+			if(is_reference)
+			   type = AstType.MakeReferenceType(type, CurrentLocation);
+			
+		}
 		while (la.kind == 9) {
 			Get();
 			Expect(3);
 			if(type.IsNull)
 			   SemErr("Array of unknown type is specified. Unknown type is just unknown!");
 			
-			type = new SimpleType("array", new []{type}, start_loc, CurrentLocation);
+			type = AstType.MakeSimpleType("array", new []{type}, start_loc, CurrentLocation);
+			
+		}
+	}
+
+	void Modifiers(ref Modifiers modifiers) {
+		if (la.kind == 31) {
+			Get();
+			modifiers &= ~ExpressoModifiers.Private;
+			modifiers |= ExpressoModifiers.Public;
+			
+		} else if (la.kind == 32) {
+			Get();
+			modifiers &= ~ExpressoModifiers.Private;
+			modifiers |= ExpressoModifiers.Protected;
+			
+		} else if (la.kind == 33) {
+			Get();
+			modifiers |= ExpressoModifiers.Private; 
+		} else if (la.kind == 34) {
+			Get();
+			modifiers |= ExpressoModifiers.Static; 
+		} else SynErr(113);
+	}
+
+	void FieldDecl(out EntityDeclaration field, Modifiers modifiers) {
+		Expression rhs; Identifier ident; var start_loc = NextLocation;
+		var idents = new List<Identifier>(); var exprs = new List<Expression>();
+		
+		if (la.kind == 23) {
+			Get();
+			modifiers |= ExpressoModifiers.Immutable; 
+		} else if (la.kind == 24) {
+			Get();
+		} else SynErr(114);
+		VarDef(out ident, out rhs);
+		idents.Add(ident);
+		exprs.Add(rhs);
+		
+		while (la.kind == 12) {
+			Get();
+			VarDef(out ident, out rhs);
+			idents.Add(ident);
+			exprs.Add(rhs);
+			
+		}
+		while (!(la.kind == 0 || la.kind == 6)) {SynErr(115); Get();}
+		Expect(6);
+		field = EntityDeclaration.MakeField(idents, exprs, modifiers, start_loc, CurrentLocation); 
+	}
+
+	void ParamList(out List<ParameterDeclaration> @params ) {
+		@params = new List<ParameterDeclaration>(); ParameterDeclaration param; bool seen_option = false; 
+		Parameter(out param);
+		if(param.Option != null)
+		   seen_option = true;
+		
+		@params.Add(param);
+		
+		while (WeakSeparator(12,3,5) ) {
+			Parameter(out param);
+			if(seen_option && param.Option == null)
+			   SemErr("You can't put optional parameters before non-optional parameters");
+			else if(!seen_option && param.Option != null)
+			   seen_option = true;
+			
+			@params.Add(param);
+			
+		}
+		if (la.kind == 14) {
+			Get();
+			string name = t.val; AstType type = null; var loc = CurrentLocation; 
+			Expect(2);
+			if (la.kind == 37) {
+				Get();
+				Type(out type);
+			}
+			if(type == null || !(type is SimpleType) || ((SimpleType)type).Name != "array")
+			   SemErr("The variadic parameter must be an array!");
+			
+			var identifier = AstNode.MakeIdentifier(name, type, loc);
+			param = EntityDeclaration.MakeParameter(identifier, null);
+			@params.Add(param);
 			
 		}
 	}
@@ -784,7 +813,7 @@ static uint ScopeId = 1;
 		
 		Stmt(out stmt);
 		stmts.Add(stmt); 
-		while (StartOf(5)) {
+		while (StartOf(6)) {
 			Stmt(out stmt);
 			stmts.Add(stmt); 
 		}
@@ -795,24 +824,29 @@ static uint ScopeId = 1;
 	}
 
 	void Parameter(out ParameterDeclaration param) {
-		string name; Expression option = null; AstType type = null; Identifier identifier; 
-		Expect(14);
-		name = t.val; 
-		if (la.kind == 37) {
-			Get();
-			Type(out type);
-		}
-		identifier = AstNode.MakeIdentifier(name, type ?? new PlaceholderType(TextLocation.Empty));
-		Symbols.AddSymbol(name, identifier);
-		
+		Identifier identifier; Expression option = null; 
+		Identifier(out identifier);
 		if (la.kind == 38) {
 			Get();
 			Literal(out option);
 		}
-		if(type == null && option == null)
+		if(identifier.Type is PlaceholderType && option == null)
 		   SemErr("You can't omit both the type annotation and the default value!");
 		
 		param = EntityDeclaration.MakeParameter(identifier, option);
+		
+	}
+
+	void Identifier(out Identifier ident) {
+		string name; AstType type = new PlaceholderType(TextLocation.Empty); 
+		Expect(14);
+		name = t.val; var loc = CurrentLocation; 
+		if (la.kind == 37) {
+			Get();
+			Type(out type);
+		}
+		ident = AstNode.MakeIdentifier(name, type, loc);
+		Symbols.AddSymbol(name, ident);
 		
 	}
 
@@ -893,42 +927,45 @@ static uint ScopeId = 1;
 		}
 	}
 
-	void VarDef(out string name, out AstType type, out Expression option) {
-		type = null; option = null; 
-		Expect(14);
-		name = t.val; 
-		if (la.kind == 37) {
-			Get();
-			Type(out type);
-		}
-		if(type == null)
-		   type = new PlaceholderType(TextLocation.Empty);
-		
+	void VarDef(out Identifier ident, out Expression option) {
+		option = null; 
+		Identifier(out ident);
 		if (la.kind == 38) {
 			Get();
 			CondExpr(out option);
 		}
-		if(type == null && option == null)
-		   SemanticError("Give me some context or I can't infer the type of {0}", name);
+		if(ident.Type is PlaceholderType && option == null)
+		   SemanticError("Give me some context or I can't infer the type of {0}", ident.Name);
 		
 	}
 
 	void TupleTypeSignature(out AstType type) {
 		var inners = new List<AstType>(); var start_loc = NextLocation; 
 		Expect(8);
-		while (StartOf(6)) {
+		while (StartOf(7)) {
 			Type(out type);
 			inners.Add(type); 
 		}
 		Expect(10);
-		type = new SimpleType("tuple", inners, start_loc, CurrentLocation); 
+		type = AstType.MakeSimpleType("tuple", inners, start_loc, CurrentLocation); 
+	}
+
+	void TypePathExpression(out AstType type) {
+		Expect(14);
+		type = AstType.MakeSimpleType(t.val, CurrentLocation); 
+		while (la.kind == 5) {
+			Get();
+			Expect(14);
+			type = AstType.MakeMemberType(type, AstType.MakeSimpleType(t.val, CurrentLocation), NextLocation);
+			
+		}
 	}
 
 	void Stmt(out Statement stmt) {
 		stmt = null; 
-		if (StartOf(7)) {
+		if (StartOf(8)) {
 			SimpleStmt(out stmt);
-		} else if (StartOf(8)) {
+		} else if (StartOf(9)) {
 			CompoundStmt(out stmt);
 		} else SynErr(117);
 	}
@@ -949,19 +986,19 @@ static uint ScopeId = 1;
 			VarDeclStmt(out stmt);
 			break;
 		}
-		case 54: {
+		case 56: {
 			ReturnStmt(out stmt);
 			break;
 		}
-		case 55: {
+		case 57: {
 			BreakStmt(out stmt);
 			break;
 		}
-		case 57: {
+		case 59: {
 			ContinueStmt(out stmt);
 			break;
 		}
-		case 58: {
+		case 60: {
 			YieldStmt(out stmt);
 			break;
 		}
@@ -975,14 +1012,14 @@ static uint ScopeId = 1;
 
 	void CompoundStmt(out Statement stmt) {
 		stmt = null; 
-		if (la.kind == 69) {
-			while (!(la.kind == 0 || la.kind == 69)) {SynErr(119); Get();}
+		if (la.kind == 71) {
+			while (!(la.kind == 0 || la.kind == 71)) {SynErr(119); Get();}
 			IfStmt(out stmt);
-		} else if (la.kind == 71) {
+		} else if (la.kind == 73) {
 			WhileStmt(out stmt);
 		} else if (la.kind == 22) {
 			ForStmt(out stmt);
-		} else if (la.kind == 72) {
+		} else if (la.kind == 74) {
 			MatchStmt(out stmt);
 		} else SynErr(120);
 	}
@@ -994,7 +1031,7 @@ static uint ScopeId = 1;
 		        AssignmentExpression assign = null;
 		
 		LValueList(out lhs);
-		if (StartOf(9)) {
+		if (StartOf(10)) {
 			AugAssignOpe(ref op_type);
 			RValueList(out seq);
 			if(lhs.Count != seq.Count)  //See if both sides have the same number of items or not
@@ -1021,7 +1058,7 @@ static uint ScopeId = 1;
 	}
 
 	void VarDeclStmt(out Statement stmt) {
-		string name; AstType type; Expression rhs = null;
+		Expression rhs = null;
 		Identifier ident;
 		var idents = new List<Identifier>(); var exprs = new List<Expression>();
 		bool is_const = false; var start_loc = NextLocation;
@@ -1032,20 +1069,16 @@ static uint ScopeId = 1;
 		} else if (la.kind == 24) {
 			Get();
 		} else SynErr(123);
-		VarDef(out name, out type, out rhs);
-		ident = AstNode.MakeIdentifier(name, type);
-		 idents.Add(ident);
+		VarDef(out ident, out rhs);
+		idents.Add(ident);
 		exprs.Add(rhs ?? Expression.Null);
 		rhs = null;
-		 Symbols.AddSymbol(name, ident);
 		
-		while (WeakSeparator(12,3,10) ) {
-			VarDef(out name, out type, out rhs);
-			ident = AstNode.MakeIdentifier(name, type);
+		while (WeakSeparator(12,3,11) ) {
+			VarDef(out ident, out rhs);
 			idents.Add(ident);
 			exprs.Add(rhs ?? Expression.Null);
 			rhs = null;
-			Symbols.AddSymbol(name, ident);
 			
 		}
 		while (!(la.kind == 0 || la.kind == 6)) {SynErr(124); Get();}
@@ -1057,8 +1090,8 @@ static uint ScopeId = 1;
 
 	void ReturnStmt(out Statement stmt) {
 		SequenceExpression items = null; 
-		Expect(54);
-		if (StartOf(11)) {
+		Expect(56);
+		if (StartOf(12)) {
 			RValueList(out items);
 		}
 		while (!(la.kind == 0 || la.kind == 6)) {SynErr(125); Get();}
@@ -1068,8 +1101,8 @@ static uint ScopeId = 1;
 
 	void BreakStmt(out Statement stmt) {
 		int count = 1; var start_loc = NextLocation; 
-		Expect(55);
-		if (la.kind == 56) {
+		Expect(57);
+		if (la.kind == 58) {
 			Get();
 			Expect(15);
 			count = Convert.ToInt32(t.val); 
@@ -1084,8 +1117,8 @@ static uint ScopeId = 1;
 
 	void ContinueStmt(out Statement stmt) {
 		int count = 1; var start_loc = NextLocation; 
-		Expect(57);
-		if (la.kind == 56) {
+		Expect(59);
+		if (la.kind == 58) {
 			Get();
 			Expect(15);
 			count = Convert.ToInt32(t.val); 
@@ -1100,7 +1133,7 @@ static uint ScopeId = 1;
 
 	void YieldStmt(out Statement stmt) {
 		Expression expr; var start_loc = NextLocation; 
-		Expect(58);
+		Expect(60);
 		CondExpr(out expr);
 		while (!(la.kind == 0 || la.kind == 6)) {SynErr(128); Get();}
 		Expect(6);
@@ -1118,7 +1151,7 @@ static uint ScopeId = 1;
 		Expression tmp; var exprs = new List<Expression>(); 
 		CondExpr(out tmp);
 		exprs.Add(tmp); 
-		while (WeakSeparator(12,11,12) ) {
+		while (WeakSeparator(12,12,13) ) {
 			CondExpr(out tmp);
 			exprs.Add(tmp);	
 		}
@@ -1128,7 +1161,7 @@ static uint ScopeId = 1;
 	void CondExpr(out Expression expr) {
 		Expression true_expr, false_expr; 
 		OrTest(out expr);
-		if (la.kind == 77) {
+		if (la.kind == 79) {
 			Get();
 			OrTest(out true_expr);
 			Expect(4);
@@ -1139,52 +1172,52 @@ static uint ScopeId = 1;
 
 	void AugAssignOpe(ref OperatorType type) {
 		switch (la.kind) {
-		case 59: {
+		case 61: {
 			Get();
 			type = OperatorType.Plus; 
 			break;
 		}
-		case 60: {
+		case 62: {
 			Get();
 			type = OperatorType.Minus; 
 			break;
 		}
-		case 61: {
+		case 63: {
 			Get();
 			type = OperatorType.Times; 
 			break;
 		}
-		case 62: {
+		case 64: {
 			Get();
 			type = OperatorType.Divide; 
 			break;
 		}
-		case 63: {
+		case 65: {
 			Get();
 			type = OperatorType.Power; 
 			break;
 		}
-		case 64: {
+		case 66: {
 			Get();
 			type = OperatorType.Modulus; 
 			break;
 		}
-		case 65: {
+		case 67: {
 			Get();
 			type = OperatorType.BitwiseAnd; 
 			break;
 		}
-		case 66: {
+		case 68: {
 			Get();
 			type = OperatorType.BitwiseOr; 
 			break;
 		}
-		case 67: {
+		case 69: {
 			Get();
 			type = OperatorType.BitwiseShiftLeft; 
 			break;
 		}
-		case 68: {
+		case 70: {
 			Get();
 			type = OperatorType.BitwiseShiftRight; 
 			break;
@@ -1197,7 +1230,7 @@ static uint ScopeId = 1;
 		var lvalues = new List<Expression>(); Expression tmp; 
 		LhsPrimary(out tmp);
 		lvalues.Add(tmp); 
-		while (WeakSeparator(12,3,13) ) {
+		while (WeakSeparator(12,3,14) ) {
 			LhsPrimary(out tmp);
 			lvalues.Add(tmp); 
 		}
@@ -1217,14 +1250,14 @@ static uint ScopeId = 1;
 		PatternConstruct pattern; BlockStatement true_block, false_block = null;
 		      var start_loc = NextLocation;
 		   
-		Expect(69);
+		Expect(71);
 		Symbols.AddScope();
 		GoDownScope();
 		Symbols.Name = "if`" + ScopeId++;
 		
 		LhsPattern(out pattern);
 		Block(out true_block);
-		if (la.kind == 70) {
+		if (la.kind == 72) {
 			Get();
 			Block(out false_block);
 		}
@@ -1235,7 +1268,7 @@ static uint ScopeId = 1;
 
 	void WhileStmt(out Statement stmt) {
 		Expression cond; BlockStatement body; var start_loc = NextLocation; 
-		Expect(71);
+		Expect(73);
 		Symbols.AddScope();
 		GoDownScope();
 		Symbols.Name = "while`" + ScopeId++;
@@ -1269,7 +1302,7 @@ static uint ScopeId = 1;
 		Expression target; List<MatchPatternClause> matches;
 		    var start_loc = NextLocation;
 		 
-		Expect(72);
+		Expect(74);
 		CondExpr(out target);
 		Expect(7);
 		Symbols.AddScope();
@@ -1285,13 +1318,13 @@ static uint ScopeId = 1;
 
 	void LhsPattern(out PatternConstruct pattern) {
 		pattern = PatternConstruct.Null; 
-		if (la.kind == 75) {
+		if (la.kind == 77) {
 			WildcardPattern(out pattern);
 		} else if (IsIdentifierPattern()) {
 			IdentifierPattern(out pattern);
 		} else if (la.kind == 8) {
 			TuplePattern(out pattern);
-		} else if (la.kind == 9 || la.kind == 14) {
+		} else if (StartOf(15)) {
 			DestructuringPattern(out pattern);
 		} else SynErr(131);
 	}
@@ -1303,7 +1336,7 @@ static uint ScopeId = 1;
 		PatternList(out pattern_list, out guard);
 		Stmt(out inner);
 		clauses.Add(Statement.MakeMatchClause(pattern_list, guard, inner)); 
-		while (StartOf(14)) {
+		while (StartOf(16)) {
 			PatternList(out pattern_list, out guard);
 			Stmt(out inner);
 			clauses.Add(Statement.MakeMatchClause(pattern_list, guard, inner)); 
@@ -1314,22 +1347,22 @@ static uint ScopeId = 1;
 		patterns = new List<PatternConstruct>(); PatternConstruct tmp; guard = null; 
 		Pattern(out tmp);
 		patterns.Add(tmp); 
-		while (la.kind == 73) {
-			while (!(la.kind == 0 || la.kind == 73)) {SynErr(132); Get();}
+		while (la.kind == 75) {
+			while (!(la.kind == 0 || la.kind == 75)) {SynErr(132); Get();}
 			Get();
 			Pattern(out tmp);
 			patterns.Add(tmp); 
 		}
-		if (la.kind == 69) {
+		if (la.kind == 71) {
 			Get();
 			CondExpr(out guard);
 		}
-		Expect(74);
+		Expect(76);
 	}
 
 	void Pattern(out PatternConstruct pattern) {
 		pattern = null; bool is_binding = false; Modifiers modifier = ExpressoModifiers.None; 
-		if (StartOf(15)) {
+		if (StartOf(17)) {
 			if (la.kind == 23 || la.kind == 24) {
 				if (la.kind == 23) {
 					Get();
@@ -1340,7 +1373,7 @@ static uint ScopeId = 1;
 				}
 			}
 			LhsPattern(out pattern);
-		} else if (StartOf(16)) {
+		} else if (StartOf(18)) {
 			ExpressionPattern(out pattern);
 			if(is_binding)
 			   pattern = PatternConstruct.MakeValueBindingPattern(pattern, modifier);
@@ -1350,19 +1383,17 @@ static uint ScopeId = 1;
 
 	void ExpressionPattern(out PatternConstruct pattern) {
 		Expression expr, upper = null, step = null;
-		TextLocation loc; bool upper_inclusive = false;
+		bool upper_inclusive = false;
 		
 		Literal(out expr);
 		if (la.kind == 1 || la.kind == 2) {
 			RangeOperator(ref upper_inclusive);
-			loc = CurrentLocation; 
 			Expect(15);
-			upper = Expression.MakeConstant("int", t.val, loc); 
+			upper = Expression.MakeConstant("int", t.val, CurrentLocation); 
 			if (la.kind == 4) {
 				Get();
-				loc = CurrentLocation; 
 				Expect(15);
-				step = Expression.MakeConstant("int", t.val, loc); 
+				step = Expression.MakeConstant("int", t.val, CurrentLocation); 
 			}
 			expr = Expression.MakeIntSeq(expr, upper, step, upper_inclusive); 
 		}
@@ -1381,7 +1412,7 @@ static uint ScopeId = 1;
 
 	void PatternItem(out PatternConstruct pattern) {
 		pattern = PatternConstruct.Null; 
-		if (StartOf(16)) {
+		if (StartOf(18)) {
 			ExpressionPattern(out pattern);
 		} else if (la.kind == 14) {
 			IdentifierPattern(out pattern);
@@ -1389,28 +1420,29 @@ static uint ScopeId = 1;
 	}
 
 	void IdentifierPattern(out PatternConstruct pattern) {
-		PatternConstruct inner = null; string name; 
+		PatternConstruct inner = null; string name; AstType type = new PlaceholderType(TextLocation.Empty); 
 		Expect(14);
 		name = t.val;
-		Symbols.AddSymbol(name, new PlaceholderType(TextLocation.Empty));
+		var ident = AstNode.MakeIdentifier(name, type, CurrentLocation);
+		Symbols.AddSymbol(name, ident);
 		
-		if (la.kind == 76) {
+		if (la.kind == 78) {
 			Get();
 			LhsPattern(out inner);
 		}
-		pattern = PatternConstruct.MakeIdentifierPattern(name, inner); 
+		pattern = PatternConstruct.MakeIdentifierPattern(ident, inner); 
 	}
 
 	void WildcardPattern(out PatternConstruct pattern) {
-		Expect(75);
+		Expect(77);
 		pattern = PatternConstruct.MakeWildcardPattern(); 
 	}
 
 	void TuplePattern(out PatternConstruct pattern) {
 		var inners = new List<PatternConstruct>(); 
 		Expect(8);
-		while (StartOf(17)) {
-			if (StartOf(18)) {
+		while (StartOf(19)) {
+			if (StartOf(20)) {
 				LhsPattern(out pattern);
 			} else {
 				ExpressionPattern(out pattern);
@@ -1426,10 +1458,10 @@ static uint ScopeId = 1;
 		pattern = PatternConstruct.Null; AstType type_path;
 		var patterns = new List<PatternConstruct>(); bool is_vector = false;
 		
-		if (la.kind == 14) {
-			TypePathExpression(out type_path);
+		if (StartOf(7)) {
+			Type(out type_path);
 			Expect(7);
-			if (StartOf(19)) {
+			if (StartOf(21)) {
 				PatternItem(out pattern);
 				patterns.Add(pattern); 
 			}
@@ -1442,12 +1474,12 @@ static uint ScopeId = 1;
 			pattern = PatternConstruct.MakeDestructuringPattern(type_path, patterns); 
 		} else if (la.kind == 9) {
 			Get();
-			if (StartOf(19)) {
+			if (StartOf(21)) {
 				PatternItem(out pattern);
 				patterns.Add(pattern); 
 			}
 			while (NotFinalComma()) {
-				ExpectWeak(12, 20);
+				ExpectWeak(12, 22);
 				PatternItem(out pattern);
 				patterns.Add(pattern); 
 			}
@@ -1464,7 +1496,7 @@ static uint ScopeId = 1;
 	void OrTest(out Expression expr) {
 		Expression rhs; 
 		AndTest(out expr);
-		if (la.kind == 78) {
+		if (la.kind == 80) {
 			Get();
 			OrTest(out rhs);
 			expr = Expression.MakeBinaryExpr(OperatorType.ConditionalOr, expr, rhs); 
@@ -1474,7 +1506,7 @@ static uint ScopeId = 1;
 	void AndTest(out Expression expr) {
 		Expression rhs; 
 		Comparison(out expr);
-		if (la.kind == 79) {
+		if (la.kind == 81) {
 			Get();
 			AndTest(out rhs);
 			expr = Expression.MakeBinaryExpr(OperatorType.ConditionalAnd, expr, rhs); 
@@ -1485,7 +1517,7 @@ static uint ScopeId = 1;
 		Expression rhs; OperatorType type; 
 		IntSeqExpr(out expr);
 		type = OperatorType.Equality; 
-		if (StartOf(21)) {
+		if (StartOf(23)) {
 			ComparisonOperator(out type);
 			Comparison(out rhs);
 			expr = Expression.MakeBinaryExpr(type, expr, rhs); 
@@ -1514,22 +1546,22 @@ static uint ScopeId = 1;
 	void ComparisonOperator(out OperatorType opType) {
 		opType = OperatorType.None; 
 		switch (la.kind) {
-		case 80: {
+		case 82: {
 			Get();
 			opType = OperatorType.Equality; 
 			break;
 		}
-		case 81: {
+		case 83: {
 			Get();
 			opType = OperatorType.InEquality; 
 			break;
 		}
-		case 82: {
+		case 54: {
 			Get();
 			opType = OperatorType.LessThan; 
 			break;
 		}
-		case 83: {
+		case 55: {
 			Get();
 			opType = OperatorType.GreaterThan; 
 			break;
@@ -1551,7 +1583,7 @@ static uint ScopeId = 1;
 	void BitOr(out Expression expr) {
 		Expression rhs; 
 		BitXor(out expr);
-		if (la.kind == 73) {
+		if (la.kind == 75) {
 			Get();
 			BitOr(out rhs);
 			expr = Expression.MakeBinaryExpr(OperatorType.BitwiseOr, expr, rhs); 
@@ -1656,9 +1688,9 @@ static uint ScopeId = 1;
 
 	void Factor(out Expression expr) {
 		OperatorType type; Expression factor; expr = null; 
-		if (StartOf(22)) {
+		if (StartOf(24)) {
 			Primary(out expr);
-		} else if (StartOf(23)) {
+		} else if (StartOf(25)) {
 			UnaryOperator(out type);
 			Factor(out factor);
 			expr = Expression.MakeUnaryExpr(type, factor); 
@@ -1674,7 +1706,7 @@ static uint ScopeId = 1;
 				type_path = ConvertPathToType(path); 
 				ObjectCreation(type_path, out expr);
 			}
-		} else if (StartOf(24)) {
+		} else if (StartOf(26)) {
 			Atom(out expr);
 		} else if (la.kind == 96) {
 			NewExpression(out expr);
@@ -1701,17 +1733,16 @@ static uint ScopeId = 1;
 	}
 
 	void ObjectCreation(AstType typePath, out Expression expr) {
-		var fields = new List<Identifier>(); var values = new List<Expression>();
-		
+		var fields = new List<Identifier>(); var values = new List<Expression>(); 
 		Expect(7);
 		Expect(14);
-		fields.Add(AstNode.MakeIdentifier(t.val)); 
+		fields.Add(AstNode.MakeIdentifier(t.val, CurrentLocation)); 
 		Expect(4);
 		CondExpr(out expr);
 		values.Add(expr); 
-		while (WeakSeparator(12,3,25) ) {
+		while (WeakSeparator(12,3,27) ) {
 			Expect(14);
-			fields.Add(AstNode.MakeIdentifier(t.val)); 
+			fields.Add(AstNode.MakeIdentifier(t.val, CurrentLocation)); 
 			Expect(4);
 			CondExpr(out expr);
 			values.Add(expr); 
@@ -1722,18 +1753,18 @@ static uint ScopeId = 1;
 
 	void Atom(out Expression expr) {
 		var exprs = new List<Expression>(); expr = null; bool seen_trailing_comma = false; 
-		if (StartOf(16)) {
+		if (StartOf(18)) {
 			Literal(out expr);
 		} else if (la.kind == 8) {
 			Get();
 			if (la.kind == 10) {
 				Get();
 				expr = Expression.MakeParen(Expression.MakeSequence(null)); 
-			} else if (StartOf(11)) {
+			} else if (StartOf(12)) {
 				CondExpr(out expr);
 				exprs.Add(expr); 
 				while (NotFinalComma()) {
-					ExpectWeak(12, 26);
+					ExpectWeak(12, 28);
 					CondExpr(out expr);
 					exprs.Add(expr); 
 				}
@@ -1750,7 +1781,7 @@ static uint ScopeId = 1;
 			} else SynErr(144);
 		} else if (la.kind == 9) {
 			Get();
-			if (StartOf(27)) {
+			if (StartOf(29)) {
 				SequenceMaker(out expr);
 			}
 			while (!(la.kind == 0 || la.kind == 3)) {SynErr(145); Get();}
@@ -1762,7 +1793,7 @@ static uint ScopeId = 1;
 			
 		} else if (la.kind == 7) {
 			Get();
-			if (StartOf(11)) {
+			if (StartOf(12)) {
 				DictMaker(out expr);
 			}
 			while (!(la.kind == 0 || la.kind == 11)) {SynErr(146); Get();}
@@ -1778,7 +1809,7 @@ static uint ScopeId = 1;
 	void NewExpression(out Expression expr) {
 		AstType type_path; 
 		Expect(96);
-		TypePathExpression(out type_path);
+		Type(out type_path);
 		ObjectCreation(type_path, out expr);
 		expr = Expression.MakeNewExpr((ObjectCreationExpression)expr); 
 	}
@@ -1787,7 +1818,7 @@ static uint ScopeId = 1;
 		var args = new List<Expression>(); 
 		if (la.kind == 8) {
 			Get();
-			if (StartOf(11)) {
+			if (StartOf(12)) {
 				ArgList(out args);
 			}
 			Expect(10);
@@ -1800,7 +1831,7 @@ static uint ScopeId = 1;
 		} else if (la.kind == 13) {
 			Get();
 			Expect(14);
-			expr = Expression.MakeMemRef(expr, AstNode.MakeIdentifier(t.val)); 
+			expr = Expression.MakeMemRef(expr, AstNode.MakeIdentifier(t.val, CurrentLocation)); 
 		} else SynErr(148);
 	}
 
@@ -1808,7 +1839,7 @@ static uint ScopeId = 1;
 		args = new List<Expression>(); Expression expr; 
 		CondExpr(out expr);
 		args.Add(expr); 
-		while (WeakSeparator(12,11,28) ) {
+		while (WeakSeparator(12,12,30) ) {
 			CondExpr(out expr);
 			args.Add(expr); 
 		}
@@ -1822,12 +1853,12 @@ static uint ScopeId = 1;
 		if (la.kind == 2) {
 			Get();
 			expr = Expression.MakeSeqInitializer(CreateTypeWithArgs("vector", new PlaceholderType(TextLocation.Empty)), Enumerable.Empty<Expression>()); 
-		} else if (StartOf(11)) {
+		} else if (StartOf(12)) {
 			CondExpr(out expr);
 			exprs.Add(expr); 
 			if (la.kind == 3 || la.kind == 12) {
 				while (NotFinalComma()) {
-					ExpectWeak(12, 26);
+					ExpectWeak(12, 28);
 					CondExpr(out expr);
 					exprs.Add(expr); 
 				}
@@ -1864,7 +1895,7 @@ static uint ScopeId = 1;
 		list.Add(pair);
 		
 		if (la.kind == 11 || la.kind == 12) {
-			while (WeakSeparator(12,11,25) ) {
+			while (WeakSeparator(12,12,27) ) {
 				BitOr(out key);
 				Expect(4);
 				CondExpr(out val);
@@ -1885,7 +1916,7 @@ static uint ScopeId = 1;
 		LhsPattern(out target);
 		Expect(29);
 		CondExpr(out rvalue);
-		if (la.kind == 22 || la.kind == 69) {
+		if (la.kind == 22 || la.kind == 71) {
 			CompIter(out body);
 		}
 		expr = Expression.MakeCompFor(target, rvalue, body); 
@@ -1895,16 +1926,16 @@ static uint ScopeId = 1;
 		expr = null; 
 		if (la.kind == 22) {
 			CompFor(out expr);
-		} else if (la.kind == 69) {
+		} else if (la.kind == 71) {
 			CompIf(out expr);
 		} else SynErr(152);
 	}
 
 	void CompIf(out ComprehensionIter expr) {
 		Expression tmp; ComprehensionIter body = null; 
-		Expect(69);
+		Expect(71);
 		OrTest(out tmp);
-		if (la.kind == 22 || la.kind == 69) {
+		if (la.kind == 22 || la.kind == 71) {
 			CompIter(out body);
 		}
 		expr = Expression.MakeCompIf(tmp, body); 
@@ -1922,33 +1953,35 @@ static uint ScopeId = 1;
 	}
 	
 	static readonly bool[,] set = {
-		{T,x,x,T, x,x,T,x, x,x,x,T, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,T, x,x,T,x, x,x,x,T, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,T,x,x, x,T,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x},
+		{T,x,x,T, x,x,T,x, x,x,x,T, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,T, x,x,T,x, x,x,x,T, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,T, x,x,x,T, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x},
 		{x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,T, T,x,x,x, x,x,T,T, T,T,T,T, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x},
 		{x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,T, T,T,T,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x},
 		{x,x,x,x, x,x,x,x, x,x,x,x, x,x,T,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x},
-		{x,x,x,x, x,x,x,x, x,x,T,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x},
-		{x,x,x,x, x,x,T,T, x,x,x,x, x,x,T,x, x,x,x,x, x,x,T,T, T,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,T,T, x,T,T,x, x,x,x,x, x,x,x,x, x,T,x,T, T,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x},
+		{x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,T,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x},
+		{x,x,x,x, x,x,x,x, x,x,T,x, x,x,T,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x},
+		{x,x,x,x, x,x,T,T, x,x,x,x, x,x,T,x, x,x,x,x, x,x,T,T, T,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, T,T,x,T, T,x,x,x, x,x,x,x, x,x,x,T, x,T,T,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x},
 		{x,x,x,x, x,x,x,x, T,x,x,x, x,x,T,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,T, T,T,T,T, T,T,T,T, T,T,T,T, T,T,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x},
-		{x,x,x,x, x,x,T,T, x,x,x,x, x,x,T,x, x,x,x,x, x,x,x,T, T,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,T,T, x,T,T,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x},
-		{x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,T,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,T,x,T, T,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x},
-		{x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,T, T,T,T,T, T,T,T,T, T,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x},
+		{x,x,x,x, x,x,T,T, x,x,x,x, x,x,T,x, x,x,x,x, x,x,x,T, T,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, T,T,x,T, T,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x},
+		{x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,T,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,T, x,T,T,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x},
+		{x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,T,T,T, T,T,T,T, T,T,T,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x},
 		{x,x,x,x, x,x,T,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x},
 		{x,x,x,x, x,x,x,T, T,T,x,x, x,x,T,T, T,T,x,T, T,T,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,T, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,T,T,T, x,x,x,T, T,T,T,T, T,x,x},
 		{x,x,x,x, x,x,T,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,T,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x},
-		{x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,T,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,T, T,T,T,T, T,T,T,T, T,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x},
-		{x,x,x,x, x,x,x,x, T,T,x,x, x,x,T,T, T,T,x,T, T,T,x,T, T,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,T, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,T,T,T, T,x,x},
-		{x,x,x,x, x,x,x,x, T,T,x,x, x,x,T,x, x,x,x,x, x,x,x,T, T,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,T, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x},
+		{x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,T,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,T,T,T, T,T,T,T, T,T,T,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x},
+		{x,x,x,x, x,x,x,x, T,T,x,x, x,x,T,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,T, T,T,T,T, T,T,T,T, T,T,T,T, T,T,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x},
+		{x,x,x,x, x,x,x,x, T,T,x,x, x,x,T,T, T,T,x,T, T,T,x,T, T,x,x,x, x,x,x,x, x,x,x,x, x,x,x,T, T,T,T,T, T,T,T,T, T,T,T,T, T,T,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,T,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,T,T,T, T,x,x},
+		{x,x,x,x, x,x,x,x, T,T,x,x, x,x,T,x, x,x,x,x, x,x,x,T, T,x,x,x, x,x,x,x, x,x,x,x, x,x,x,T, T,T,T,T, T,T,T,T, T,T,T,T, T,T,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,T,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x},
 		{x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,T, T,T,x,T, T,T,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,T,T,T, T,x,x},
-		{x,x,x,x, x,x,x,x, T,T,x,x, x,x,T,T, T,T,x,T, T,T,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,T, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,T,T,T, T,x,x},
-		{x,x,x,x, x,x,x,x, T,T,x,x, x,x,T,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,T, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x},
+		{x,x,x,x, x,x,x,x, T,T,x,x, x,x,T,T, T,T,x,T, T,T,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,T, T,T,T,T, T,T,T,T, T,T,T,T, T,T,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,T,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,T,T,T, T,x,x},
+		{x,x,x,x, x,x,x,x, T,T,x,x, x,x,T,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,T, T,T,T,T, T,T,T,T, T,T,T,T, T,T,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,T,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x},
 		{x,x,x,x, x,x,x,x, x,x,x,x, x,x,T,T, T,T,x,T, T,T,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,T,T,T, T,x,x},
-		{T,x,x,T, x,x,T,x, x,x,x,T, x,x,T,T, T,T,x,T, T,T,x,x, x,x,x,T, x,x,T,x, x,x,x,T, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,T,x,x, x,T,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,T,T,T, T,x,x},
-		{x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, T,T,T,T, T,T,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x},
+		{T,x,x,T, x,x,T,x, x,x,x,T, x,x,T,T, T,T,x,T, T,T,x,x, x,x,x,T, x,x,T,x, x,x,x,T, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,T, x,x,x,T, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,T,T,T, T,x,x},
+		{x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,T,T, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,T,T, T,T,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x},
 		{x,x,x,x, x,x,x,T, T,T,x,x, x,x,T,T, T,T,x,T, T,T,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, T,T,T,T, T,x,x},
 		{x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,T, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,T,T,T, x,x,x,T, x,x,x,x, x,x,x},
 		{x,x,x,x, x,x,x,T, T,T,x,x, x,x,x,T, T,T,x,T, T,T,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,T,T,T, T,x,x},
 		{x,x,x,x, x,x,x,x, x,x,x,T, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x},
-		{T,x,x,T, x,x,T,T, T,T,x,T, x,x,T,T, T,T,x,T, T,T,x,x, x,x,x,T, x,x,T,x, x,x,x,T, x,x,x,T, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,T,x,x, x,T,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,T,T,T, x,x,x,T, T,T,T,T, T,x,x},
+		{T,x,x,T, x,x,T,T, T,T,x,T, x,x,T,T, T,T,x,T, T,T,x,x, x,x,x,T, x,x,T,x, x,x,x,T, x,x,x,T, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,T, x,x,x,T, x,x,x,x, x,x,x,x, x,x,x,x, x,T,T,T, x,x,x,T, T,T,T,T, T,x,x},
 		{x,x,T,x, x,x,x,T, T,T,x,x, x,x,T,T, T,T,x,T, T,T,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,T, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,T,T,T, x,x,x,T, T,T,T,T, T,x,x},
 		{x,x,x,T, x,x,x,x, x,x,T,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x}
 
@@ -2018,36 +2051,36 @@ public class Errors {
 			case 51: s = "\"function\" expected"; break;
 			case 52: s = "\"intseq\" expected"; break;
 			case 53: s = "\"void\" expected"; break;
-			case 54: s = "\"return\" expected"; break;
-			case 55: s = "\"break\" expected"; break;
-			case 56: s = "\"upto\" expected"; break;
-			case 57: s = "\"continue\" expected"; break;
-			case 58: s = "\"yield\" expected"; break;
-			case 59: s = "\"+=\" expected"; break;
-			case 60: s = "\"-=\" expected"; break;
-			case 61: s = "\"*=\" expected"; break;
-			case 62: s = "\"/=\" expected"; break;
-			case 63: s = "\"**=\" expected"; break;
-			case 64: s = "\"%=\" expected"; break;
-			case 65: s = "\"&=\" expected"; break;
-			case 66: s = "\"|=\" expected"; break;
-			case 67: s = "\"<<=\" expected"; break;
-			case 68: s = "\">>=\" expected"; break;
-			case 69: s = "\"if\" expected"; break;
-			case 70: s = "\"else\" expected"; break;
-			case 71: s = "\"while\" expected"; break;
-			case 72: s = "\"match\" expected"; break;
-			case 73: s = "\"|\" expected"; break;
-			case 74: s = "\"=>\" expected"; break;
-			case 75: s = "\"_\" expected"; break;
-			case 76: s = "\"@\" expected"; break;
-			case 77: s = "\"?\" expected"; break;
-			case 78: s = "\"||\" expected"; break;
-			case 79: s = "\"&&\" expected"; break;
-			case 80: s = "\"==\" expected"; break;
-			case 81: s = "\"!=\" expected"; break;
-			case 82: s = "\"<\" expected"; break;
-			case 83: s = "\">\" expected"; break;
+			case 54: s = "\"<\" expected"; break;
+			case 55: s = "\">\" expected"; break;
+			case 56: s = "\"return\" expected"; break;
+			case 57: s = "\"break\" expected"; break;
+			case 58: s = "\"upto\" expected"; break;
+			case 59: s = "\"continue\" expected"; break;
+			case 60: s = "\"yield\" expected"; break;
+			case 61: s = "\"+=\" expected"; break;
+			case 62: s = "\"-=\" expected"; break;
+			case 63: s = "\"*=\" expected"; break;
+			case 64: s = "\"/=\" expected"; break;
+			case 65: s = "\"**=\" expected"; break;
+			case 66: s = "\"%=\" expected"; break;
+			case 67: s = "\"&=\" expected"; break;
+			case 68: s = "\"|=\" expected"; break;
+			case 69: s = "\"<<=\" expected"; break;
+			case 70: s = "\">>=\" expected"; break;
+			case 71: s = "\"if\" expected"; break;
+			case 72: s = "\"else\" expected"; break;
+			case 73: s = "\"while\" expected"; break;
+			case 74: s = "\"match\" expected"; break;
+			case 75: s = "\"|\" expected"; break;
+			case 76: s = "\"=>\" expected"; break;
+			case 77: s = "\"_\" expected"; break;
+			case 78: s = "\"@\" expected"; break;
+			case 79: s = "\"?\" expected"; break;
+			case 80: s = "\"||\" expected"; break;
+			case 81: s = "\"&&\" expected"; break;
+			case 82: s = "\"==\" expected"; break;
+			case 83: s = "\"!=\" expected"; break;
 			case 84: s = "\"<=\" expected"; break;
 			case 85: s = "\">=\" expected"; break;
 			case 86: s = "\"^\" expected"; break;
@@ -2076,10 +2109,10 @@ public class Errors {
 			case 109: s = "this symbol not expected in ImportDecl"; break;
 			case 110: s = "invalid ImportDecl"; break;
 			case 111: s = "this symbol not expected in ImportDecl"; break;
-			case 112: s = "invalid Modifiers"; break;
-			case 113: s = "invalid FieldDecl"; break;
-			case 114: s = "this symbol not expected in FieldDecl"; break;
-			case 115: s = "invalid Type"; break;
+			case 112: s = "invalid Type"; break;
+			case 113: s = "invalid Modifiers"; break;
+			case 114: s = "invalid FieldDecl"; break;
+			case 115: s = "this symbol not expected in FieldDecl"; break;
 			case 116: s = "invalid Literal"; break;
 			case 117: s = "invalid Stmt"; break;
 			case 118: s = "invalid SimpleStmt"; break;

@@ -25,10 +25,19 @@ namespace Expresso.Ast
             get{return GetKnownTypeCodeForPrimitiveType(KeywordToken.Token);}
         }
 
+        public override string Name{
+            get{return KeywordToken.Token;}
+        }
+
+        public override Identifier IdentifierNode{
+            get{return GetChildByRole(Roles.Identifier);}
+        }
+
         public PrimitiveType(string keyword, TextLocation location)
             : base(location, new TextLocation(location.Line, location.Column + keyword.Length))
         {
             KeywordToken = new ExpressoTokenNode(location, new TokenRole(keyword, ExpressoTokenNode.Null));
+            SetChildByRole(Roles.Identifier, AstNode.MakeIdentifier(keyword));
         }
 
         public override void AcceptWalker(IAstWalker walker)
@@ -78,6 +87,9 @@ namespace Expresso.Ast
 
             case "int":
                 return ExpressoTypeCode.Int;
+
+            case "uint":
+                return ExpressoTypeCode.UInt;
 
             case "float":
                 return ExpressoTypeCode.Float;

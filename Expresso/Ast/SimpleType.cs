@@ -14,6 +14,9 @@ namespace Expresso.Ast
     public class SimpleType : AstType
     {
         #region Null
+        /// <summary>
+        /// Simple.Null property can be used to indicate that there is some type.
+        /// </summary>
         public new static readonly SimpleType Null = new NullSimpleType();
 
         sealed class NullSimpleType : SimpleType
@@ -51,6 +54,10 @@ namespace Expresso.Ast
         }
         #endregion
 
+        public override string Name{
+            get{return Identifier;}
+        }
+
         /// <summary>
         /// Gets the identifier as string.
         /// </summary>
@@ -64,6 +71,10 @@ namespace Expresso.Ast
         public Identifier IdentifierToken{
             get{return GetChildByRole(Roles.Identifier);}
             set{SetChildByRole(Roles.Identifier, value);}
+        }
+
+        public override Identifier IdentifierNode{
+            get{return IdentifierToken;}
         }
 
         /// <summary>
@@ -136,7 +147,7 @@ namespace Expresso.Ast
 
         public override ITypeReference ToTypeReference(NameLookupMode lookupMode, InterningProvider interningProvider)
         {
-            if(interningProvider == null)
+            /*if(interningProvider == null)
                 interningProvider = InterningProvider.Dummy;
 
             var type_args = 
@@ -144,7 +155,7 @@ namespace Expresso.Ast
                 select ta.ToTypeReference(lookupMode, interningProvider);
 
             string identifier = interningProvider.Intern(Identifier);
-            /*if(!type_args.Any() || string.IsNullOrEmpty(identifier)){
+            if(!type_args.Any() || string.IsNullOrEmpty(identifier)){
                 // empty SimpleType is used for typeof(List<>)
                 return SpecialType.UnboundTypeArgument;
             }*/

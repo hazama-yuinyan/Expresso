@@ -187,7 +187,7 @@ namespace Expresso.Ast
         /// </summary>
         /// <value><c>true</c> if this node has children; otherwise, <c>false</c>.</value>
         public bool HasChildren{
-            get{return first_child != null;}
+            get{return first_child != null && !first_child.IsNull;}
         }
 
         public DomRegion Region{
@@ -1259,14 +1259,14 @@ namespace Expresso.Ast
 
 		#region AST node factory methods
 		
-		public static Identifier MakeIdentifier(string name)
+        public static Identifier MakeIdentifier(string name, TextLocation loc = default(TextLocation))
 		{
-			return new Identifier(name);
+            return new Identifier(name, loc);
 		}
 
-        public static Identifier MakeIdentifier(string name, AstType type)
+        public static Identifier MakeIdentifier(string name, AstType type, TextLocation loc = default(TextLocation))
         {
-            return new Identifier(name, type);
+            return new Identifier(name, type, loc);
         }
 
         public static ExpressoAst MakeModuleDef(string moduleName,
@@ -1277,9 +1277,14 @@ namespace Expresso.Ast
 
         public static ImportDeclaration MakeImportDecl(PathExpression moduleName, string aliasName)
 		{
-			return (aliasName != null) ? new ImportDeclaration(moduleName, aliasName) :
+            return (aliasName != null) ? new ImportDeclaration(moduleName, AstNode.MakeIdentifier(aliasName)) :
                 new ImportDeclaration(moduleName);
 		}
+
+        public static ImportDeclaration MakeImportDecl(PathExpression moduleName, Identifier alias)
+        {
+            return (alias != null) ? new ImportDeclaration(moduleName, alias) : new ImportDeclaration(moduleName);
+        }
 
         public static ImportDeclaration MakeImportDecl(PathExpression moduleName, IEnumerable<PathExpression> importedEntities)
         {

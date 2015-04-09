@@ -102,10 +102,15 @@ namespace Expresso.Ast
             return new WildcardPattern();
         }
 
-        public static IdentifierPattern MakeIdentifierPattern(string name, PatternConstruct inner)
+        public static IdentifierPattern MakeIdentifierPattern(string name, AstType type,
+            PatternConstruct inner, TextLocation loc = default(TextLocation))
         {
-            var type = new PlaceholderType(TextLocation.Empty);
-            return new IdentifierPattern(AstNode.MakeIdentifier(name, type), inner);
+            return new IdentifierPattern(AstNode.MakeIdentifier(name, type, loc), inner);
+        }
+
+        public static IdentifierPattern MakeIdentifierPattern(Identifier ident, PatternConstruct inner)
+        {
+            return new IdentifierPattern(ident, inner);
         }
 
         public static ValueBindingPattern MakeValueBindingPattern(PatternConstruct inner, Modifiers modifiers)

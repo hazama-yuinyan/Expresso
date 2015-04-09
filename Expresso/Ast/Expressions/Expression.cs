@@ -167,12 +167,12 @@ namespace Expresso.Ast
             return new BinaryExpression(lhs, rhs, op);
         }
 
-        public static SequenceInitializer MakeSeqInitializer(AstType type, IEnumerable<Expression> initializeList)
+        public static SequenceInitializer MakeSeqInitializer(SimpleType type, IEnumerable<Expression> initializeList)
         {
             return new SequenceInitializer(type, initializeList);
         }
 
-        public static SequenceInitializer MakeSeqInitializer(AstType type, params Expression[] initializers)
+        public static SequenceInitializer MakeSeqInitializer(SimpleType type, params Expression[] initializers)
         {
             return new SequenceInitializer(type, initializers);
         }
@@ -200,7 +200,7 @@ namespace Expresso.Ast
         }
 
         public static ComprehensionExpression MakeComp(Expression yieldExpr, ComprehensionForClause body,
-            AstType objType)
+            SimpleType objType)
         {
             return new ComprehensionExpression(yieldExpr, body, objType);
         }

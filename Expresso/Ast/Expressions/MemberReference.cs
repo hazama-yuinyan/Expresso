@@ -22,17 +22,17 @@ namespace Expresso.Ast
         }
 
 		/// <summary>
-		/// The subscript expression.
+		/// The member expression.
 		/// </summary>
-        public Identifier Subscription{
+        public Identifier Member{
             get{return GetChildByRole(Roles.Identifier);}
             set{SetChildByRole(Roles.Identifier, value);}
 		}
 
-        public MemberReference(Expression targetExpr, Identifier subscript)
+        public MemberReference(Expression targetExpr, Identifier member)
 		{
             Target = targetExpr;
-            Subscription = subscript;
+            Member = member;
 		}
 
         public override void AcceptWalker(IAstWalker walker)
@@ -55,29 +55,10 @@ namespace Expresso.Ast
         protected internal override bool DoMatch(AstNode other, ICSharpCode.NRefactory.PatternMatching.Match match)
         {
             var o = other as MemberReference;
-            return o != null && Target.DoMatch(o.Target, match) && Subscription.DoMatch(o.Subscription, match);
+            return o != null && Target.DoMatch(o.Target, match) && Member.DoMatch(o.Member, match);
         }
 
         #endregion
-
-        /*internal override void Assign( frame, object val)
-        //{
-			/*var obj = Parent.Run(varStore);
-			if(obj == null)
-				throw ExpressoOps.InvalidTypeError("Can not evaluate the name to a valid Expresso object");
-
-			var subscript = Subscription.Run(varStore);
-			if(obj is ExpressoObj){
-				if(subscript is Identifier){
-					var ident = (Identifier)subscript;
-					((ExpressoObj)obj).Assign(ident, val, obj == varStore.Get(0, 0));
-				}else{
-					throw ExpressoOps.RuntimeError("Invalid assignment!");
-				}
-			}else{
-				ExpressoOps.AssignToCollection(obj, subscript, val);
-			}
-        }*/
 	}
 }
 

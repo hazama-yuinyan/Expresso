@@ -183,6 +183,8 @@
     <Compile Include="CodeGen\ExpressoCompilerOptions.cs" />
     <Compile Include="Analysis\TypeChecker.cs" />
     <Compile Include="Analysis\TypeInferenceRunner.cs" />
+    <Compile Include="Analysis\UniqueIdGenerator.cs" />
+    <Compile Include="Ast\FunctionType.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System" />

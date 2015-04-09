@@ -182,17 +182,22 @@ $namespace=Expresso
         foreach(var item in path.Items){
             item.Remove();
             if(type == null)
-                type = new SimpleType(item, TextLocation.Empty);
+                type = AstType.MakeSimpleType(item, TextLocation.Empty);
             else
-                type = new MemberType(type, item);
+                type = AstType.MakeMemberType(type, AstType.MakeSimpleType(item, TextLocation.Empty), TextLocation.Empty);
         }
 
         return type;
     }
 
-    AstType CreateTypeWithArgs(string typeName, params AstType[] typeArgs)
+    SimpleType CreateTypeWithArgs(string typeName, params AstType[] typeArgs)
     {
         return new SimpleType(typeName, typeArgs, TextLocation.Empty, TextLocation.Empty);
+    }
+
+    bool IsPrimitiveGenericType(string name)
+    {
+        return name != null && (name == "dictionary" || name == "vector");
     }
 
     /// <summary>
@@ -262,7 +267,7 @@ $namespace=Expresso
     /// </summary>
     public void ReportWarning(string format, AstNode node, params object[] objects)
     {
-        errors.Warning(string.Format(string.Format(format, objects), node.StartLocation));
+        errors.Warning(string.Format("{0}: {1}", node.StartLocation, string.Format(format, objects)));
     }
 
     /// <summary>
@@ -271,7 +276,7 @@ $namespace=Expresso
     /// </summary>
     public void ReportSemanticError(string format, AstNode node, params object[] objects)
     {
-        errors.SemErr(string.Format(string.Format(format, objects), node.StartLocation));
+        errors.SemErr(string.Format("{0}: {1}", node.StartLocation, string.Format(format, objects)));
     }
 
     /// <summary>
@@ -406,7 +411,7 @@ ProgramDefinition<. out List<ImportDeclaration> imports .>	(. imports = new List
 /*------------------------------------------------------------------------*/
 ImportDecl<out ImportDeclaration decl>
             (.  decl = null; var has_in = false; PathExpression path;
-				string alias = null; var entities = new List<PathExpression>();
+				Identifier alias = null; var entities = new List<PathExpression>();
 			.)
 =
   /*****************************
@@ -417,8 +422,8 @@ ImportDecl<out ImportDeclaration decl>
   "import"
   PathExpression<out path>      (. entities.Add(path); .)
   ( "as"
-    ident						(. alias = t.val; .)
-  | { ','
+    ident						(. alias = AstNode.MakeIdentifier(t.val, CurrentLocation); .)
+  | { WEAK ','
       PathExpression<out path>  (. entities.Add(path); .)
     }
     "in"                        (. has_in = true; .)
@@ -432,20 +437,20 @@ ImportDecl<out ImportDeclaration decl>
 /*------------------------------------------------------------------------*/
 ClassDecl<out EntityDeclaration decl, Modifiers modifiers>   
   (.  EntityDeclaration entity = null; var decls = new List<EntityDeclaration>(); AstType type_path;
-      string name; var bases = new List<AstType>(); Modifiers cur_flag; var start_loc = CurrentLocation;
+      string name; var bases = new List<AstType>(); Modifiers cur_flag; var start_loc = NextLocation;
       Identifier ident = null;
   .)
 =
   SYNC
   "class"                               (. Symbols.AddScope(); .)
   ident				    				(. name = t.val;
-                                           ident = AstNode.MakeIdentifier(name);
+                                           ident = AstNode.MakeIdentifier(name, CurrentLocation);
                                            Symbols.AddTypeSymbol(name, ident);
                                         .)
   [ ':'
-    TypePathExpression<out type_path>	(. bases.Add(type_path); .)
+    Type<out type_path>	                (. bases.Add(type_path); .)
     { ','
-      TypePathExpression<out type_path>	(. bases.Add(type_path); .)
+      Type<out type_path>	            (. bases.Add(type_path); .)
     }
   ]
   '{'                                   (. GoDownScope();
@@ -488,7 +493,7 @@ FuncDecl<out EntityDeclaration decl, Modifiers modifiers>
   SYNC
   "def"                         (. Symbols.AddScope(); .)
   ident							(. name = t.val;
-                                   ident = AstNode.MakeIdentifier(name); 
+                                   ident = AstNode.MakeIdentifier(name, new PlaceholderType(TextLocation.Empty), CurrentLocation); 
                                    Symbols.AddSymbol(name, ident);
                                 .)
   '('                           (. GoDownScope();
@@ -505,65 +510,74 @@ FuncDecl<out EntityDeclaration decl, Modifiers modifiers>
                                    GoUpScope();
                                 .).
 /*------------------------------------------------------------------------*/
-ParamList<. out List<ParameterDeclaration> @params .>   (. @params = new List<ParameterDeclaration>(); ParameterDeclaration param; bool seen_option = false; .)
+ParamList<. out List<ParameterDeclaration> @params .>
+                                (. @params = new List<ParameterDeclaration>(); ParameterDeclaration param; bool seen_option = false; .)
 =
-  Parameter<out param>                                  (.
-                                                           if(param.Option != null)
-                                                               seen_option = true;
+  Parameter<out param>          (.
+                                   if(param.Option != null)
+                                       seen_option = true;
 
-                                                           @params.Add(param);
-                                                        .)
+                                   @params.Add(param);
+                                .)
   { WEAK ','
-    Parameter<out param>                                (.
-                                                           if(seen_option && param.Option == null)
-                                                               SemErr("You can't put optional parameters before non-optional parameters");
-                                                           else if(!seen_option && param.Option != null)
-                                                               seen_option = true;
+    Parameter<out param>        (.
+                                   if(seen_option && param.Option == null)
+                                       SemErr("You can't put optional parameters before non-optional parameters");
+                                   else if(!seen_option && param.Option != null)
+                                       seen_option = true;
 
-                                                           @params.Add(param);
-                                                        .)
-  }.
+                                   @params.Add(param);
+                                .)
+  }
+  [ ident                       (. string name = t.val; AstType type = null; var loc = CurrentLocation; .)
+    "..."
+    [ "(-"
+      Type<out type>
+    ]                           (.
+                                   if(type == null || !(type is SimpleType) || ((SimpleType)type).Name != "array")
+                                       SemErr("The variadic parameter must be an array!");
+
+                                   var identifier = AstNode.MakeIdentifier(name, type, loc);
+                                   param = EntityDeclaration.MakeParameter(identifier, null);
+                                   @params.Add(param);
+                               .)
+  ].
 /*------------------------------------------------------------------------*/
-Parameter<out ParameterDeclaration param>   (. string name; Expression option = null; AstType type = null; Identifier identifier; .)
+Parameter<out ParameterDeclaration param>   (. Identifier identifier; Expression option = null; .)
 =
-  ident                                     (. name = t.val; .)
-  [ "(-"
-    Type<out type>
-  ]                                         (. identifier = AstNode.MakeIdentifier(name, type ?? new PlaceholderType(TextLocation.Empty));
-                                               Symbols.AddSymbol(name, identifier);
-                                            .)
+  Identifier<out identifier>
   [ '='
     Literal<out option>
-  ]                                         (. if(type == null && option == null)
+  ]                                         (. if(identifier.Type is PlaceholderType && option == null)
                                                    SemErr("You can't omit both the type annotation and the default value!");
 
                                                param = EntityDeclaration.MakeParameter(identifier, option);
                                             .).
 /*------------------------------------------------------------------------*/
 FieldDecl<out EntityDeclaration field, Modifiers modifiers>
-  (. string name; AstType type; Expression rhs; Identifier ident;
+  (. Expression rhs; Identifier ident; var start_loc = NextLocation;
      var idents = new List<Identifier>(); var exprs = new List<Expression>();
-     var start_loc = NextLocation;
   .)
 = 
-  ( "let"
+  ( "let"                           (. modifiers |= ExpressoModifiers.Immutable; .)
   | "var"
   )
-  VarDef<out name, out type, out rhs> (.  ident = AstNode.MakeIdentifier(name, type);
-                                          idents.Add(ident);
-                                          exprs.Add(rhs);
-                                          Symbols.AddSymbol(name, ident);
-                                      .)  
-  { ','					 		
-    VarDef<out name, out type, out rhs> (. ident = AstNode.MakeIdentifier(name, type);
-                                           idents.Add(ident);
-                                           exprs.Add(rhs);
-                                           Symbols.AddSymbol(name, ident);
-                                        .)
+  VarDef<out ident, out rhs>        (.  
+                                       idents.Add(ident);
+                                       exprs.Add(rhs);
+                                    .)  
+  { ','
+    VarDef<out ident, out rhs>      (.
+                                       idents.Add(ident);
+                                       exprs.Add(rhs);
+                                    .)
   }
-  SYNC ';'								(. field = EntityDeclaration.MakeField(idents, exprs, modifiers, start_loc, CurrentLocation); .).
+  SYNC ';'							(. field = EntityDeclaration.MakeField(idents, exprs, modifiers, start_loc, CurrentLocation); .).
 /*------------------------------------------------------------------------*/
-Type<out AstType type>              (. var start_loc = NextLocation; type = new PlaceholderType(NextLocation); var is_reference = false; .)
+Type<out AstType type>
+    (. var start_loc = NextLocation; type = new PlaceholderType(NextLocation);
+       var is_reference = false; string name = null;
+    .)
 =
  [ '&'                              (. is_reference = true; .)
  ]
@@ -577,20 +591,37 @@ Type<out AstType type>              (. var start_loc = NextLocation; type = new 
  | "byte"						    (. type = CreateType(t.val, start_loc, is_reference); .)
  | "char"                           (. type = CreateType(t.val, start_loc, is_reference); .)
  | TupleTypeSignature<out type>
- | "vector"							(. type = CreateType(t.val, start_loc, is_reference); .)
- | "dictionary"						(. type = CreateType(t.val, start_loc, is_reference); .)
+ | "vector"							(. name = t.val; .)
+ | "dictionary"						(. name = t.val; .)
  | "function"						(. type = CreateType(t.val, start_loc, is_reference); .)
  | "intseq"							(. type = CreateType(t.val, start_loc, is_reference); .)
- | "void"							(. type = new SimpleType("tuple", Enumerable.Empty<AstType>(), start_loc, CurrentLocation); .)
- | TypePathExpression<out type>     (. if(is_reference) type = new ReferenceType(type, TextLocation.Empty); .)
- )                                  (. start_loc = CurrentLocation; .)
+ | "void"							(. type = AstType.MakeSimpleType("tuple", Enumerable.Empty<AstType>(), start_loc, CurrentLocation); .)
+ | TypePathExpression<out type>     (. if(is_reference) type = AstType.MakeReferenceType(type, TextLocation.Empty); .)
+ )                                  (. start_loc = NextLocation; .)
+ [ '<'                              (.
+                                       if(!IsPrimitiveGenericType(name)){
+                                           SemErr("`{0}` is not a generic type!");
+                                           return;
+                                       }
+                                       var type_args = new List<AstType>(); AstType child_type;
+                                    .)
+   Type<out child_type>             (. type_args.Add(child_type); .)
+   { ','
+     Type<out child_type>           (. type_args.Add(child_type); .)
+   }
+   '>'                              (.
+                                       type = AstType.MakeSimpleType(name, type_args, start_loc, CurrentLocation);
+                                       if(is_reference)
+                                           type = AstType.MakeReferenceType(type, CurrentLocation);
+                                    .)
+ ]
  /* Split brackets into 2 tokens that represents the array type
     because otherwise it conflicts with the array literal.
  */
  { '[' ']'                          (. if(type.IsNull)
                                            SemErr("Array of unknown type is specified. Unknown type is just unknown!");
                 
-                                       type = new SimpleType("array", new []{type}, start_loc, CurrentLocation);
+                                       type = AstType.MakeSimpleType("array", new []{type}, start_loc, CurrentLocation);
                                     .)
  }.
 /*------------------------------------------------------------------------*/
@@ -599,7 +630,7 @@ TupleTypeSignature<out AstType type> (. var inners = new List<AstType>(); var st
   '('
   { Type<out type>                  (. inners.Add(type); .)
   }
-  ')'                               (. type = new SimpleType("tuple", inners, start_loc, CurrentLocation); .).
+  ')'                               (. type = AstType.MakeSimpleType("tuple", inners, start_loc, CurrentLocation); .).
 /*------------------------------------------------------------------------*/
 Stmt<out Statement stmt>			(. stmt = null; .)
 =
@@ -804,7 +835,7 @@ PatternList<. out List<PatternConstruct> patterns, out Expression guard .>
   ]
   "=>".
 /*------------------------------------------------------------------------*/
-VarDeclStmt<out Statement stmt>         (.  string name; AstType type; Expression rhs = null;
+VarDeclStmt<out Statement stmt>         (.  Expression rhs = null;
 								        	Identifier ident;
 								          	var idents = new List<Identifier>(); var exprs = new List<Expression>();
                                             bool is_const = false; var start_loc = NextLocation;
@@ -813,36 +844,27 @@ VarDeclStmt<out Statement stmt>         (.  string name; AstType type; Expressio
   ( "let"                               (. is_const = true; .)
   | "var"
   )
-  VarDef<out name, out type, out rhs>	(.  ident = AstNode.MakeIdentifier(name, type);
-                                            idents.Add(ident);
+  VarDef<out ident, out rhs>	        (.  idents.Add(ident);
   						 			        exprs.Add(rhs ?? Expression.Null);
   						 			        rhs = null;
-                                            Symbols.AddSymbol(name, ident);
   						 		        .)
   { WEAK ','
-    VarDef<out name, out type, out rhs>(. ident = AstNode.MakeIdentifier(name, type);
-                                          idents.Add(ident);
+    VarDef<out ident, out rhs>         (. idents.Add(ident);
   									      exprs.Add(rhs ?? Expression.Null);
   									      rhs = null;
-                                          Symbols.AddSymbol(name, ident);
   								       .)
   }
   SYNC ';'							   (. var modifiers = is_const ? ExpressoModifiers.Immutable : ExpressoModifiers.None;
                                           stmt = Statement.MakeVarDecl(idents, exprs, modifiers, start_loc, CurrentLocation);
                                        .).
 /*------------------------------------------------------------------------*/
-VarDef<out string name, out AstType type, out Expression option> (. type = null; option = null; .)
+VarDef<out Identifier ident, out Expression option> (. option = null; .)
 =
-  ident                        (. name = t.val; .)
-  [ "(-"
-    Type<out type>
-  ]                            (. if(type == null)
-                                      type = new PlaceholderType(TextLocation.Empty);
-                               .)
+  Identifier<out ident>
   [ '='
     CondExpr<out option>
-  ]                            (. if(type == null && option == null)
-                                      SemanticError("Give me some context or I can't infer the type of {0}", name);
+  ]                            (. if(ident.Type is PlaceholderType && option == null)
+                                      SemanticError("Give me some context or I can't infer the type of {0}", ident.Name);
                                .).
 /*------------------------------------------------------------------------*/
 RValueList<out SequenceExpression seq>		(. Expression tmp; var exprs = new List<Expression>(); .)
@@ -863,14 +885,14 @@ Pattern<out PatternConstruct pattern>   (. pattern = null; bool is_binding = fal
                                         .).
 /*------------------------------------------------------------------------*/
 ExpressionPattern<out PatternConstruct pattern> (. Expression expr, upper = null, step = null;
-                                                   TextLocation loc; bool upper_inclusive = false;
+                                                   bool upper_inclusive = false;
                                                 .)
 =
   Literal<out expr>                                
-  [ RangeOperator<ref upper_inclusive>          (. loc = CurrentLocation; .)
-    integer                                     (. upper = Expression.MakeConstant("int", t.val, loc); .)
-    [ ':'                                       (. loc = CurrentLocation; .)
-      integer                                   (. step = Expression.MakeConstant("int", t.val, loc); .)
+  [ RangeOperator<ref upper_inclusive>
+    integer                                     (. upper = Expression.MakeConstant("int", t.val, CurrentLocation); .)
+    [ ':'
+      integer                                   (. step = Expression.MakeConstant("int", t.val, CurrentLocation); .)
     ]                                           (. expr = Expression.MakeIntSeq(expr, upper, step, upper_inclusive); .)
   ]                                             (. pattern = PatternConstruct.MakeExpressionPattern(expr); .).
 /*------------------------------------------------------------------------*/
@@ -891,14 +913,16 @@ WildcardPattern<out PatternConstruct pattern>
 =
   '_'                               (. pattern = PatternConstruct.MakeWildcardPattern(); .).
 /*------------------------------------------------------------------------*/
-IdentifierPattern<out PatternConstruct pattern> (. PatternConstruct inner = null; string name; .)
+IdentifierPattern<out PatternConstruct pattern> (. PatternConstruct inner = null; string name; AstType type = new PlaceholderType(TextLocation.Empty); .)
 =
-  ident                             (. name = t.val;
-                                       Symbols.AddSymbol(name, new PlaceholderType(TextLocation.Empty));
+  ident                             (.
+                                       name = t.val;
+                                       var ident = AstNode.MakeIdentifier(name, type, CurrentLocation);
+                                       Symbols.AddSymbol(name, ident);
                                     .)
   [ '@'
     LhsPattern<out inner>
-  ]                                 (. pattern = PatternConstruct.MakeIdentifierPattern(name, inner); .).
+  ]                                 (. pattern = PatternConstruct.MakeIdentifierPattern(ident, inner); .).
 /*------------------------------------------------------------------------*/
 TuplePattern<out PatternConstruct pattern>  (. var inners = new List<PatternConstruct>(); .)
 =
@@ -915,7 +939,7 @@ DestructuringPattern<out PatternConstruct pattern>
                    var patterns = new List<PatternConstruct>(); bool is_vector = false;
                 .)
 =
-  ( TypePathExpression<out type_path>
+  ( Type<out type_path>
     '{'
     [ PatternItem<out pattern>              (. patterns.Add(pattern); .)
     ]
@@ -1100,19 +1124,18 @@ LhsPrimary<out Expression expr>     (. expr = null; PathExpression path; .)
 NewExpression<out Expression expr>      (. AstType type_path; .)
 =
   "new"
-  TypePathExpression<out type_path>
+  Type<out type_path>
   ObjectCreation<type_path, out expr>   (. expr = Expression.MakeNewExpr((ObjectCreationExpression)expr); .).
 /*------------------------------------------------------------------------*/
 ObjectCreation<AstType typePath, out Expression expr>
-                                        (. var fields = new List<Identifier>(); var values = new List<Expression>();
-                                        .)
+                                        (. var fields = new List<Identifier>(); var values = new List<Expression>(); .)
 =
   '{'
-  ident                                 (. fields.Add(AstNode.MakeIdentifier(t.val)); .)
+  ident                                 (. fields.Add(AstNode.MakeIdentifier(t.val, CurrentLocation)); .)
   ':'
   CondExpr<out expr>                    (. values.Add(expr); .)
   { WEAK ','
-    ident                               (. fields.Add(AstNode.MakeIdentifier(t.val)); .)
+    ident                               (. fields.Add(AstNode.MakeIdentifier(t.val, CurrentLocation)); .)
     ':'
     CondExpr<out expr>                  (. values.Add(expr); .)
   }
@@ -1127,7 +1150,7 @@ Trailer<ref Expression expr>	(. var args = new List<Expression>(); .)
     ArgList<out args>
     ']'							(. expr = Expression.MakeIndexer(expr, args); .)
   | '.'
-    ident						(. expr = Expression.MakeMemRef(expr, AstNode.MakeIdentifier(t.val)); .).
+    ident						(. expr = Expression.MakeMemRef(expr, AstNode.MakeIdentifier(t.val, CurrentLocation)); .).
 /*------------------------------------------------------------------------*/
 ArgList<. out List<Expression> args .>		(. args = new List<Expression>(); Expression expr; .)
 =
@@ -1141,7 +1164,7 @@ Atom<out Expression expr>			(. var exprs = new List<Expression>(); expr = null; 
   Literal<out expr>
   | '('
     ( ')'                           (. expr = Expression.MakeParen(Expression.MakeSequence(null)); .)
-    | CondExpr<out expr>           (. exprs.Add(expr); .)
+    | CondExpr<out expr>            (. exprs.Add(expr); .)
       { IF(NotFinalComma()) WEAK ','
         CondExpr<out expr>          (. exprs.Add(expr); .)
       }
@@ -1170,16 +1193,18 @@ Atom<out Expression expr>			(. var exprs = new List<Expression>(); expr = null; 
 /*------------------------------------------------------------------------*/
 TypePathExpression<out AstType type>
 =
-  ident                             (. type = new SimpleType(t.val, TextLocation.Empty); .)
+  ident        (. type = AstType.MakeSimpleType(t.val, CurrentLocation); .)
   { "::"
-    ident                           (. type = new MemberType(type, AstNode.MakeIdentifier(t.val)); .)
+    ident      (.
+                  type = AstType.MakeMemberType(type, AstType.MakeSimpleType(t.val, CurrentLocation), NextLocation);
+               .)
   }.
 /*------------------------------------------------------------------------*/
 PathExpression<out PathExpression path> (. var paths = new List<Identifier>(); .)
 =
-  ident                                 (. paths.Add(AstNode.MakeIdentifier(t.val)); .)
+  ident                                 (. paths.Add(AstNode.MakeIdentifier(t.val, CurrentLocation)); .)
   { "::"
-    ident                               (. paths.Add(AstNode.MakeIdentifier(t.val)); .)
+    ident                               (. paths.Add(AstNode.MakeIdentifier(t.val, CurrentLocation)); .)
   }                                     (. 
                                            var last_ident = paths.Last();
                                            last_ident.Type = new PlaceholderType(TextLocation.Empty);
@@ -1248,6 +1273,16 @@ CompIf<out ComprehensionIter expr>		(. Expression tmp; ComprehensionIter body = 
   "if"
   OrTest<out tmp>
   [CompIter<out body>]					(. expr = Expression.MakeCompIf(tmp, body); .).
+/*------------------------------------------------------------------------*/
+Identifier<out Identifier ident>    (. string name; AstType type = new PlaceholderType(TextLocation.Empty); .)
+=
+  ident                             (. name = t.val; var loc = CurrentLocation; .)
+  [ "(-"
+    Type<out type>
+  ]                                 (.
+                                       ident = AstNode.MakeIdentifier(name, type, loc);
+                                       Symbols.AddSymbol(name, ident);
+                                    .).
 /*------------------------------------------------------------------------*/
 Literal<out Expression expr>	(. expr = null; string tmp;
                                    var start_loc = NextLocation;

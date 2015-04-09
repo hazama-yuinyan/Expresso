@@ -11,7 +11,7 @@ namespace Expresso.Ast
     ///         Expression...
     ///     }
     /// }
-    /// '(' Expression [ [','] Expression { ',' Expression } ')' ;
+    /// '(' SequenceExpression ')' ;
     /// </summary>
     /// <remarks>
     /// Note that this single node doesn't specify any semantics in Expresso.

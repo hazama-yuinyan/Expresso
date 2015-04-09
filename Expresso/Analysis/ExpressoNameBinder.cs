@@ -32,11 +32,14 @@ namespace Expresso.Ast.Analysis
 {
     /// <summary>
     /// The name binding and name resolving:
-    /// During name binding, we first define names 
+    /// During name binding, we first define names on variables, fields, methods and types.
+    /// And then bind names on those items except for types.
+    /// For types we'll bind them during type validity check.
+    /// By name binding, I mean that we give the same id defined on the name definition phase.
+    /// That means that it is not guaranteed that the type of the target object is resolved.
     /// </summary>
     class ExpressoNameBinder : IAstWalker
 	{
-        static uint id = 1;
         int scope_counter;
         SymbolTable symbol_table;
 		Parser parser;
@@ -58,7 +61,7 @@ namespace Expresso.Ast.Analysis
 			ExpressoNameBinder binder = new ExpressoNameBinder(parser);
 			binder.Bind(ast);
             #if DEBUG
-            Console.WriteLine("We have given ids on total of {0} identifiers.", id - 1);
+            Console.WriteLine("We have given ids on total of {0} identifiers.", UniqueIdGenerator.CurrentId - 1);
             #endif
 		}
 		#endregion
@@ -208,7 +211,7 @@ namespace Expresso.Ast.Analysis
 
         public void VisitComprehensionExpression(ComprehensionExpression comp)
         {
-            // Do not store scope counter because comprehensions contains only expressions.
+            // Do not store scope counter because comprehensions contain only expressions.
             DecendScope();
             comp.Item.AcceptWalker(this);
             comp.Body.AcceptWalker(this);
@@ -260,8 +263,10 @@ namespace Expresso.Ast.Analysis
 
         public void VisitMemberReference(MemberReference memRef)
         {
+            // At this point we can't figure out which scope to use for the member expression
+            // because we don't know anything about the type of the target expression.
+            // So for now bind only the target expression.
             memRef.Target.AcceptWalker(this);
-            memRef.Subscription.AcceptWalker(this);
         }
 
         public void VisitNewExpression(NewExpression newExpr)
@@ -317,8 +322,7 @@ namespace Expresso.Ast.Analysis
 
         public void VisitSimpleType(SimpleType simpleType)
         {
-            BindTypeName(simpleType.IdentifierToken);
-            simpleType.TypeArguments.AcceptWalker(this);
+            // no op
         }
 
         public void VisitPrimitiveType(PrimitiveType primitiveType)
@@ -328,14 +332,17 @@ namespace Expresso.Ast.Analysis
 
         public void VisitReferenceType(ReferenceType referenceType)
         {
-            referenceType.BaseType.AcceptWalker(this);
+            // no op
         }
 
         public void VisitMemberType(MemberType memberType)
         {
-            memberType.Target.AcceptWalker(this);
-            BindTypeName(memberType.MemberNameToken);
-            memberType.TypeArguments.AcceptWalker(this);
+            // no op
+        }
+
+        public void VisitFunctionType(FunctionType funcType)
+        {
+            // no op
         }
 
         public void VisitPlaceholderType(PlaceholderType placeholderType)
@@ -346,37 +353,38 @@ namespace Expresso.Ast.Analysis
         public void VisitAliasDeclaration(AliasDeclaration aliasDecl)
         {
             // An alias name is another name for an item
-            // so define a new name first and then resolve the name.
-            DefineNewId(aliasDecl.AliasToken);
-            /*var table = symbol_table;
-            while(table != null){
-                var symbol = table.GetSymbol(aliasDecl);
-            }*/
+            // so resolve the target name first and then bind the name to the alias.
+            aliasDecl.Path.AcceptWalker(this);
+            aliasDecl.AliasToken.IdentifierId = aliasDecl.Path.Items.Last().IdentifierId;
         }
 
         public void VisitFunctionDeclaration(FunctionDeclaration funcDecl)
         {
-            DefineNewId(funcDecl.NameToken);
+            UniqueIdGenerator.DefineNewId(funcDecl.NameToken);
+            int tmp_counter = scope_counter;
+            DecendScope();
+            scope_counter = 0;
+
             funcDecl.Parameters.AcceptWalker(this);
             funcDecl.Body.AcceptWalker(this);
+
+            AscendScope();
+            scope_counter = tmp_counter + 1;
         }
 
         public void VisitFieldDeclaration(FieldDeclaration fieldDecl)
         {
-            foreach(var field in fieldDecl.Initializers){
-                DefineNewId(field.NameToken);
-                field.Initializer.AcceptWalker(this);
-            }
+            fieldDecl.Initializers.AcceptWalker(this);
         }
 
         public void VisitParameterDeclaration(ParameterDeclaration parameterDecl)
         {
-            DefineNewId(parameterDecl.NameToken);
+            UniqueIdGenerator.DefineNewId(parameterDecl.NameToken);
         }
 
         public void VisitVariableInitializer(VariableInitializer initializer)
         {
-            DefineNewId(initializer.NameToken);
+            UniqueIdGenerator.DefineNewId(initializer.NameToken);
             initializer.Initializer.AcceptWalker(this);
         }
 
@@ -412,37 +420,56 @@ namespace Expresso.Ast.Analysis
 
         public void VisitKeyValueLikeExpression(KeyValueLikeExpression keyValue)
         {
-            keyValue.Value.AcceptWalker(this);
+            keyValue.ValueExpression.AcceptWalker(this);
         }
 
         public void VisitPathExpression(PathExpression pathExpr)
         {
-            foreach(var ident in pathExpr.Items){
-                ident.AcceptWalker(this);
+            // Side effect: After exiting this method, the symbol_table field will be set to
+            // the type table corresponding to the most descendant type the path represents.
+            if(pathExpr.Items.Count == 1){
+                pathExpr.AsIdentifier.AcceptWalker(this);
+            }else{
+                while(symbol_table.Parent != null)
+                    symbol_table = symbol_table.Parent;
+
+                foreach(var ident in pathExpr.Items){
+                    ident.AcceptWalker(this);
+                    symbol_table = symbol_table.GetTypeTable(ident.Name);
+                }
             }
         }
 
         public void VisitObjectCreationExpression(ObjectCreationExpression creation)
         {
-            creation.TypePath.AcceptWalker(this);
             creation.Items.AcceptWalker(this);
         }
 
         public void VisitImportDeclaration(ImportDeclaration importDecl)
         {
             // Here's the good place to import names from other files
-            importDecl.ModuleNameToken.AcceptWalker(this);
-            DefineNewId(importDecl.AliasNameToken);
+            // All external names will be imported into the module scope we are currently compiling
+            if(importDecl.AliasNameToken.IsNull){
+                importDecl.ModuleNameToken.AcceptWalker(this);
+                foreach(var ie in importDecl.ImportedEntities)
+                    UniqueIdGenerator.DefineNewId(ie.AsIdentifier);
+            }else{
+                importDecl.ModuleNameToken.AcceptWalker(this);
+                UniqueIdGenerator.DefineNewId(importDecl.AliasNameToken);
+            }
         }
 
         public void VisitTypeDeclaration(TypeDeclaration typeDecl)
         {
-            DefineNewId(typeDecl.NameToken);
-            typeDecl.BaseTypes.AcceptWalker(this);
+            UniqueIdGenerator.DefineNewId(typeDecl.NameToken);
 
             int tmp_counter = scope_counter;
             scope_counter = 0;
             DecendScope();
+            // Add self symbol to the scope of the class
+            var self_ident = AstNode.MakeIdentifier("self");
+            symbol_table.AddSymbol("self", self_ident);
+            UniqueIdGenerator.DefineNewId(self_ident);
             typeDecl.Members.AcceptWalker(this);
             AscendScope();
             scope_counter = tmp_counter + 1;
@@ -455,7 +482,7 @@ namespace Expresso.Ast.Analysis
 
         public void VisitIdentifierPattern(IdentifierPattern identifierPattern)
         {
-            DefineNewId(identifierPattern.Identifier);
+            UniqueIdGenerator.DefineNewId(identifierPattern.Identifier);
             identifierPattern.InnerPattern.AcceptWalker(this);
         }
 
@@ -485,11 +512,6 @@ namespace Expresso.Ast.Analysis
         }
 		#endregion
 
-        void DefineNewId(Identifier ident)
-        {
-            ident.IdentifierId = id++;
-        }
-
         void BindName(Identifier ident)
         {
             var table = symbol_table;
@@ -504,28 +526,10 @@ namespace Expresso.Ast.Analysis
             }
 
             if(ident.IdentifierId == 0){
-                parser.ReportSemanticError("{0} turns out not to be declared or accessible in the current scope {1}!",
-                    ident, ident.Name, symbol_table.Name
-                );
-            }
-        }
-
-        void BindTypeName(Identifier ident)
-        {
-            var table = symbol_table;
-            while(table != null){
-                var referenced = table.GetTypeSymbol(ident.Name);
-                if(referenced != null){
-                    ident.IdentifierId = referenced.IdentifierId;
-                    break;
-                }
-
-                table = table.Parent;
-            }
-
-            if(ident.IdentifierId == 0){
-                parser.ReportSemanticError("Type name `{0}` turns out not to be declared in the current scope {1}!",
-                    ident, ident.Name, symbol_table.Name
+                parser.ReportSemanticError(
+                    "'{0}' turns out not to be declared or accessible in the current scope {1}!",
+                    ident,
+                    ident.Name, symbol_table.Name
                 );
             }
         }

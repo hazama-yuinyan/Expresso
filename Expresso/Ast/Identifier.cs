@@ -1,4 +1,5 @@
 ﻿using System;
+using ICSharpCode.NRefactory;
 
 
 namespace Expresso.Ast
@@ -63,7 +64,7 @@ namespace Expresso.Ast
         /// Gets or sets the identifier id. This id represents the identity or uniqueness of that node
         /// within a whole program.
         /// If some 2 Identifier nodes have the same id, that means that the 2 nodes refer to the same value.
-        /// This will get set during name binding.
+        /// This will get set during name binding and type validity check.
         /// </summary>
         /// <remarks>0 is considered invalid for IdentifierId.</remarks>
         public uint IdentifierId{
@@ -88,13 +89,15 @@ namespace Expresso.Ast
             IdentifierId = 0;
         }
 
-        public Identifier(string name)
+        public Identifier(string name, TextLocation loc)
+            : base(loc, new TextLocation(loc.Line, loc.Column + name.Length))
 		{
             this.name = name;
             IdentifierId = 0;
 		}
 
-        public Identifier(string name, AstType type)
+        public Identifier(string name, AstType type, TextLocation loc)
+            : base(loc, new TextLocation(loc.Line, loc.Column + name.Length))
         {
             this.name = name;
             Type = type;

@@ -22,20 +22,16 @@ namespace Expresso.Ast
         /// Represents the collection type.
         /// Note that it doesn't contain any information about the element type.
         /// </summary>
-        public AstType CollectionType{
-            get{return GetChildByRole(Roles.Type);}
-            set{SetChildByRole(Roles.Type, value);}
+        public SimpleType CollectionType{
+            get{return GetChildByRole(Roles.GenericType);}
+            set{SetChildByRole(Roles.GenericType, value);}
         }
 
         public CollectionPattern(IEnumerable<PatternConstruct> patterns, bool isVector)
         {
-            if(isVector){
-                CollectionType = new PrimitiveType("vector", TextLocation.Empty);
-            }else{
-                CollectionType = new SimpleType("array", new List<AstType>{
-                    new PlaceholderType(TextLocation.Empty)
-                }, TextLocation.Empty, TextLocation.Empty);
-            }
+            CollectionType = new SimpleType(isVector ? "vector" : "array", new List<AstType>{
+                new PlaceholderType(TextLocation.Empty)
+            }, TextLocation.Empty, TextLocation.Empty);
 
             Items.AddRange(patterns);
         }

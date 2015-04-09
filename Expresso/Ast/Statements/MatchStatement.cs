@@ -88,7 +88,7 @@ namespace Expresso.Ast
 
         /// <summary>
         /// ガード式。
-        /// The guard expression. A guard expression is the additional condition that have to be satisfied
+        /// The guard expression. A guard expression is the additional condition that has to be satisfied
         /// so that the path will be taken.
         /// </summary>
         public Expression Guard{

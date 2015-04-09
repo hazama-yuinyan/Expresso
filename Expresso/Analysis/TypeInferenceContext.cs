@@ -10,25 +10,16 @@ namespace Expresso.Ast.Analysis
     public class TypeInferenceContext
     {
         /// <summary>
-        /// Gets or sets the stack.
-        /// </summary>
-        /// <value>The stack.</value>
-        public Stack<AstNode> Stack{
-            get; private set;
-        }
-
-        /// <summary>
         /// A symbol table that maps names to symbols located in external files.
         /// </summary>
         /// <value>The symbol map.</value>
-        public Dictionary<string, SymbolTable> SymbolMap{
+        public SymbolTable Symbols{
             get; set;
         }
 
         public TypeInferenceContext()
         {
-            Stack = new Stack<AstNode>();
-            SymbolMap = new Dictionary<string, SymbolTable>();
+            Symbols = null;
         }
     }
 }

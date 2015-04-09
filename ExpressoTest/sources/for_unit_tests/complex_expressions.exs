@@ -3,6 +3,10 @@
  */
 module main;
 
+def createList<T>(a (- T, b (- T, rest... (- T[]) -> vector<T>
+{
+    return new [a, b, ...].join(rest);
+}
 
 def main()
 {

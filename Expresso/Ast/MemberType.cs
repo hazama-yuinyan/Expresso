@@ -13,6 +13,7 @@ namespace Expresso.Ast
     public class MemberType : AstType
     {
         public static readonly Role<AstType> TargetRole = new Role<AstType>("Target", AstType.Null);
+        public static readonly Role<SimpleType> ChildRole = new Role<SimpleType>("Child", SimpleType.Null);
 
         /// <summary>
         /// Gets or sets the target type.
@@ -26,36 +27,28 @@ namespace Expresso.Ast
         /// <summary>
         /// Gets the name of the member.
         /// </summary>
-        /// <value>The name of the member.</value>
         public string MemberName{
-            get{return MemberNameToken.Name;}
+            get{return ChildType.Name;}
         }
 
-        public Identifier MemberNameToken{
-            get{return GetChildByRole(Roles.Identifier);}
-            set{SetChildByRole(Roles.Identifier, value);}
+        public override string Name{
+            get{return MemberName;}
         }
 
-        public AstNodeCollection<AstType> TypeArguments{
-            get{return GetChildrenByRole(Roles.TypeArgument);}
+        public override Identifier IdentifierNode{
+            get{return ChildType.IdentifierNode;}
         }
 
-        public MemberType(AstType target, Identifier member)
+        public SimpleType ChildType{
+            get{return GetChildByRole(ChildRole);}
+            set{SetChildByRole(ChildRole, value);}
+        }
+
+        public MemberType(AstType target, SimpleType childType, TextLocation loc)
+            : base(target.StartLocation, loc)
         {
             Target = target;
-            MemberNameToken = member;
-        }
-
-        public MemberType(AstType target, Identifier member, IEnumerable<AstType> typeArgs)
-        {
-            Target = target;
-            MemberNameToken = member;
-            TypeArguments.AddRange(typeArgs);
-        }
-
-        public MemberType(AstType target, Identifier member, params AstType[] typeArgs)
-            : this(target, member, (IEnumerable<AstType>)typeArgs)
-        {
+            ChildType = childType;
         }
 
         #region implemented abstract members of AstNode
@@ -78,8 +71,8 @@ namespace Expresso.Ast
         protected internal override bool DoMatch(AstNode other, Match match)
         {
             var o = other as MemberType;
-            return o != null && Target.DoMatch(o.Target, match) && MatchString(MemberName, o.MemberName)
-                && TypeArguments.DoMatch(o.TypeArguments, match);
+            return o != null && Target.DoMatch(o.Target, match)
+                && ChildType.DoMatch(o.ChildType, match);
         }
 
         #endregion

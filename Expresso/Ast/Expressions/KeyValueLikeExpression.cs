@@ -7,7 +7,7 @@ namespace Expresso.Ast
     /// <summary>
     /// An <see ref="Expresso.Ast.KeyValueLikeExpression"> represents a key-value-pair-like expression.
     /// It is used for items in ObjectCreationExpressions, named arguments or dictionary literals.
-    /// ident ':' Expression ;
+    /// Expression ':' Expression ;
     /// </summary>
     public class KeyValueLikeExpression : Expression
     {
@@ -28,7 +28,7 @@ namespace Expresso.Ast
         /// <summary>
         /// Represents the value.
         /// </summary>
-        public Expression Value{
+        public Expression ValueExpression{
             get{return GetChildByRole(Roles.Expression);}
             set{SetChildByRole(Roles.Expression, value);}
         }
@@ -36,7 +36,7 @@ namespace Expresso.Ast
         public KeyValueLikeExpression(Expression key, Expression value)
         {
             KeyExpression = key;
-            Value = value;
+            ValueExpression = value;
         }
 
         #region implemented abstract members of AstNode
@@ -60,7 +60,7 @@ namespace Expresso.Ast
         {
             var o = other as KeyValueLikeExpression;
             return o != null && KeyExpression.DoMatch(o.KeyExpression, match)
-                && Value.DoMatch(o.Value, match);
+                && ValueExpression.DoMatch(o.ValueExpression, match);
         }
 
         #endregion

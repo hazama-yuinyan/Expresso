@@ -39,7 +39,7 @@ namespace Expresso.Test
                             Modifiers.Immutable
                         ),
                         Statement.MakeVarDecl(
-                            Helpers.MakeSeq(AstNode.MakeIdentifier("h_a_", new PrimitiveType("int", TextLocation.Empty))),
+                            Helpers.MakeSeq(AstNode.MakeIdentifier("h_a_", Helpers.MakePrimitiveType("int"))),
                             Helpers.MakeSeq(Expression.MakeConstant("int", 0xff)),
                             Modifiers.Immutable
                         ),
@@ -54,7 +54,7 @@ namespace Expresso.Test
                             Modifiers.Immutable
                         ),
                         Statement.MakeVarDecl(
-                            Helpers.MakeSeq(AstNode.MakeIdentifier("f_b_", new PrimitiveType("double", TextLocation.Empty))),
+                            Helpers.MakeSeq(AstNode.MakeIdentifier("f_b_", Helpers.MakePrimitiveType("double"))),
                             Helpers.MakeSeq(Expression.MakeConstant("double", 1.0e4)),
                             Modifiers.Immutable
                         ),
@@ -79,7 +79,7 @@ namespace Expresso.Test
                             Modifiers.Immutable
                         ),
                         Statement.MakeVarDecl(
-                            Helpers.MakeSeq(AstNode.MakeIdentifier("d_", new PrimitiveType("bigint", TextLocation.Empty))),
+                            Helpers.MakeSeq(AstNode.MakeIdentifier("d_", Helpers.MakePrimitiveType("bigint"))),
                             Helpers.MakeSeq(Expression.MakeConstant("bigint", BigInteger.Parse("10000000"))),
                             Modifiers.Immutable
                         ),
@@ -109,12 +109,12 @@ namespace Expresso.Test
                             Modifiers.Immutable
                         ),
                         Statement.MakeVarDecl(
-                            Helpers.MakeSeq(AstNode.MakeIdentifier("f_a_", new PrimitiveType("float", TextLocation.Empty))),
+                            Helpers.MakeSeq(AstNode.MakeIdentifier("f_a_", Helpers.MakePrimitiveType("float"))),
                             Helpers.MakeSeq(Expression.MakeConstant("float", 1.0e4f)),
                             Modifiers.Immutable
                         ),
                         Statement.MakeVarDecl(
-                            Helpers.MakeSeq(Helpers.MakeSomeIdent("f")),
+                            Helpers.MakeSeq(AstNode.MakeIdentifier("f", Helpers.MakeGenericType("array", Helpers.MakePrimitiveType("int")))),
                             Helpers.MakeSeq(Expression.MakeSeqInitializer(Helpers.MakeGenericType("array", Helpers.MakePlaceholderType()),
                                 Enumerable.Empty<Expression>()
                             )),
@@ -132,7 +132,7 @@ namespace Expresso.Test
                             Modifiers.Immutable
                         ),
                         Statement.MakeVarDecl(
-                            Helpers.MakeSeq(Helpers.MakeSomeIdent("f2")),
+                            Helpers.MakeSeq(AstNode.MakeIdentifier("f2", Helpers.MakeGenericType("vector", Helpers.MakePrimitiveType("int")))),
                             Helpers.MakeSeq(Expression.MakeSeqInitializer(Helpers.MakeGenericType("vector", Helpers.MakePlaceholderType()),
                                 Enumerable.Empty<Expression>()
                             )),
@@ -166,8 +166,13 @@ namespace Expresso.Test
                             Modifiers.Immutable
                         ),
                         Statement.MakeVarDecl(
-                            Helpers.MakeSeq(Helpers.MakeSomeIdent("g")),
-                            Helpers.MakeSeq(Expression.MakeSeqInitializer(Helpers.MakeGenericType("dictionary", Helpers.MakePlaceholderType(), Helpers.MakePlaceholderType()), Enumerable.Empty<Expression>())),
+                            Helpers.MakeSeq(AstNode.MakeIdentifier("g",
+                                Helpers.MakeGenericType("dictionary", Helpers.MakePrimitiveType("string"), Helpers.MakePrimitiveType("int")))
+                            ),
+                            Helpers.MakeSeq(Expression.MakeSeqInitializer(
+                                Helpers.MakeGenericType("dictionary", Helpers.MakePlaceholderType(), Helpers.MakePlaceholderType()),
+                                Enumerable.Empty<Expression>()
+                            )),
                             Modifiers.Immutable
                         ),
                         Statement.MakeVarDecl(
@@ -243,7 +248,7 @@ namespace Expresso.Test
                             Modifiers.Immutable
                         ),
                         Statement.MakeVarDecl(
-                            Helpers.MakeSeq(AstNode.MakeIdentifier("j3", new PrimitiveType("intseq", TextLocation.Empty))),
+                            Helpers.MakeSeq(AstNode.MakeIdentifier("j3", Helpers.MakePrimitiveType("intseq"))),
                             Helpers.MakeSeq(Expression.MakeIntSeq(Expression.MakeConstant("int", 1), Expression.MakeConstant("int", 10), Expression.MakeConstant("int", 1), false)),
                             Modifiers.Immutable
                         ),
@@ -258,7 +263,7 @@ namespace Expresso.Test
                             Modifiers.Immutable
                         )
                     }),
-                    new PlaceholderType(TextLocation.Empty),
+                    Helpers.MakePlaceholderType(),
                     Modifiers.None
                 )
             });
@@ -276,7 +281,7 @@ namespace Expresso.Test
             var ast = parser.TopmostAst;
 
             var expected_ast = AstNode.MakeModuleDef("main", new List<EntityDeclaration>{
-                EntityDeclaration.MakeClassDecl("Test", Enumerable.Empty<AstType>(), Helpers.MakeSeq(
+                EntityDeclaration.MakeClassDecl("Test", Enumerable.Empty<AstType>(), Helpers.MakeSeq<EntityDeclaration>(
                     EntityDeclaration.MakeField(
                         Helpers.MakeSeq(
                             AstNode.MakeIdentifier("x", Helpers.MakePrimitiveType("int"))
@@ -296,6 +301,20 @@ namespace Expresso.Test
                             Expression.MakeConstant("int", 3)
                         ),
                         Modifiers.Private
+                    ),
+                    EntityDeclaration.MakeFunc(
+                        "getY",
+                        Enumerable.Empty<ParameterDeclaration>(),
+                        Statement.MakeBlock(
+                            Helpers.MakeSeq(
+                                Statement.MakeReturnStmt(Expression.MakeSequence(Expression.MakeMemRef(
+                                    Expression.MakeSelfRef(TextLocation.Empty),
+                                    AstNode.MakeIdentifier("y")
+                                )))
+                            )
+                        ),
+                        Helpers.MakePrimitiveType("int"),
+                        Modifiers.Public
                     )),
                     Modifiers.None
                 ),
@@ -490,8 +509,8 @@ namespace Expresso.Test
                         Statement.MakeVarDecl(
                             Helpers.MakeSeq(Helpers.MakeSomeIdent("w")),
                             Helpers.MakeSeq(Expression.MakeBinaryExpr(OperatorType.Plus,
-                                Expression.MakePath(Helpers.MakeSomeIdent("c")),
-                                Expression.MakePath(Helpers.MakeSomeIdent("d"))
+                                Expression.MakePath(Helpers.MakeSomeIdent("r")),
+                                Expression.MakePath(Helpers.MakeSomeIdent("s"))
                             )),
                             Modifiers.Immutable
                         ),
@@ -521,7 +540,7 @@ namespace Expresso.Test
                             Modifiers.Immutable
                         )
                     }),
-                    new PlaceholderType(TextLocation.Empty),
+                    Helpers.MakePlaceholderType(),
                     Modifiers.None
                 )
             });
