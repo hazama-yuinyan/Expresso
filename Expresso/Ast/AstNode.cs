@@ -1290,6 +1290,11 @@ namespace Expresso.Ast
         {
             return new ImportDeclaration(moduleName, null, importedEntities);
         }
+
+        public static VariableInitializer MakeVariableInitializer(Identifier ident, Expression expr)
+        {
+            return new VariableInitializer(ident, expr);
+        }
 		#endregion
     }
 }

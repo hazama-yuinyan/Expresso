@@ -5,7 +5,7 @@ module main;
 
 def createList<T>(a (- T, b (- T, rest... (- T[]) -> vector<T>
 {
-    return new [a, b, ...].join(rest);
+    return [a, b, ...].join(rest);
 }
 
 def main()
@@ -20,5 +20,5 @@ def main()
 	a = b = c = 0;
     a, b, c = 1, 2, 3;
 
-	return new [x, y, z, specific_triangles, a, b, c];
+	return [x, y, z, specific_triangles, a, b, c];
 }

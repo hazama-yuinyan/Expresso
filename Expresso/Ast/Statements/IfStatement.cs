@@ -18,7 +18,7 @@ namespace Expresso.Ast
 	public class IfStatement : Statement
 	{
         public static readonly Role<PatternConstruct> ConditionRole =
-            new Role<PatternConstruct>("Condition");
+            new Role<PatternConstruct>("Condition", PatternConstruct.Null);
         public static readonly Role<BlockStatement> TrueBlockRole =
             new Role<BlockStatement>("TrueBlock", BlockStatement.Null);
         public static readonly TokenRole ElseKeywordRole = new TokenRole("else", ExpressoTokenNode.Null);

@@ -38,7 +38,7 @@ namespace Expresso.Ast
             Modifiers modifiers, TextLocation start, TextLocation end)
             : base(start, end)
         {
-            foreach(var items in lhs.Zip(rhs, (left, right) => new Tuple<Identifier, Expression>(left, right)))
+            foreach(var items in lhs.Zip(rhs, (l, r) => new Tuple<Identifier, Expression>(l, r)))
                 Variables.Add(new VariableInitializer(items.Item1, items.Item2));
             
             Modifiers = modifiers;

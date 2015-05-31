@@ -113,9 +113,10 @@ namespace Expresso.Ast
             return new IdentifierPattern(ident, inner);
         }
 
-        public static ValueBindingPattern MakeValueBindingPattern(PatternConstruct inner, Modifiers modifiers)
+        public static ValueBindingPattern MakeValueBindingPattern(IEnumerable<VariableInitializer> inits,
+            Modifiers modifiers)
         {
-            return new ValueBindingPattern(inner, modifiers);
+            return new ValueBindingPattern(inits, modifiers);
         }
 
         public static CollectionPattern MakeCollectionPattern(IEnumerable<PatternConstruct> items,

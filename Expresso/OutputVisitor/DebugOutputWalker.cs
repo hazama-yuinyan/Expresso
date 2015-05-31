@@ -587,7 +587,7 @@ namespace Expresso.Ast
             else
                 writer.Write("var ");
 
-            valueBindingPattern.Pattern.AcceptWalker(this);
+            valueBindingPattern.Variables.AcceptWalker(this);
         }
 
         public void VisitCollectionPattern(CollectionPattern collectionPattern)
