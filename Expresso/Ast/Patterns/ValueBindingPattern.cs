@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 
 
 namespace Expresso.Ast
@@ -12,9 +14,8 @@ namespace Expresso.Ast
         /// <summary>
         /// Represents the inner pattern.
         /// </summary>
-        public PatternConstruct Pattern{
-            get{return GetChildByRole(Roles.Pattern);}
-            set{SetChildByRole(Roles.Pattern, value);}
+        public AstNodeCollection<VariableInitializer> Variables{
+            get{return GetChildrenByRole(Roles.Variable);}
         }
 
         /// <summary>
@@ -25,10 +26,11 @@ namespace Expresso.Ast
             set{EntityDeclaration.SetModifiers(this, value);}
         }
 
-        public ValueBindingPattern(PatternConstruct inner, Modifiers modifiers)
+        public ValueBindingPattern(IEnumerable<VariableInitializer> inits, Modifiers modifiers)
         {
-            Pattern = inner;
             Modifiers = modifiers;
+            foreach(var init in inits)
+                Variables.Add(init);
         }
 
         #region implemented abstract members of AstNode
@@ -51,7 +53,7 @@ namespace Expresso.Ast
         protected internal override bool DoMatch(AstNode other, ICSharpCode.NRefactory.PatternMatching.Match match)
         {
             var o = other as ValueBindingPattern;
-            return o != null && Pattern.DoMatch(o.Pattern, match)
+            return o != null && Variables.DoMatch(o.Variables, match)
                 && Modifiers == o.Modifiers;
         }
 

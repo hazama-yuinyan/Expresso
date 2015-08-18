@@ -4,11 +4,11 @@
 module main;
 
 
-import File;
+import file;
 
 def main()
 {
- 	let file = File.openFile("./test.txt", "r");
+ 	let file = file.openFile("./test.txt", "r");
  	let content = file.readAll();
  	//file.write("This is a test blah blah...");
  	print(content);

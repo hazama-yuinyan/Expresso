@@ -6,7 +6,7 @@ module main;
 
 def main()
 {
-	let x = 100, y = 200, z = 300, w = 400;
+	let x = 100, y = 50, z = 300, w = 400;
 	var flag (- bool;
 
 	print("(x, y, z, w) = ({}, {}, {}, {})", x, y, z, w);
@@ -48,5 +48,5 @@ def main()
 		}
 	}
 
-	return new [x, y, z, w, flag, sum, strs, fibs, vector];
+	return [x, y, z, w, flag, sum, strs, fibs, vector];
 }

@@ -548,5 +548,283 @@ namespace Expresso.Test
             Assert.IsNotNull(ast);
             Helpers.AstStructuralEqual(ast, expected_ast);
         }
+
+        [Test]
+        public void Statements()
+        {
+            var parser = new Parser(new Scanner("../../sources/for_unit_tests/statements.exs"));
+            parser.Parse();
+
+            var ast = parser.TopmostAst;
+
+            var expected_ast = AstNode.MakeModuleDef("main", new List<EntityDeclaration>{
+                EntityDeclaration.MakeFunc("main",
+                    Enumerable.Empty<ParameterDeclaration>(),
+                    Statement.MakeBlock(
+                        Statement.MakeVarDecl(
+                            Helpers.MakeSeq(
+                                Helpers.MakeSomeIdent("x"),
+                                Helpers.MakeSomeIdent("y"),
+                                Helpers.MakeSomeIdent("z"),
+                                Helpers.MakeSomeIdent("w")
+                            ),
+                            Helpers.MakeSeq(
+                                Expression.MakeConstant("int", 100),
+                                Expression.MakeConstant("int", 50),
+                                Expression.MakeConstant("int", 300),
+                                Expression.MakeConstant("int", 400)
+                            ),
+                            Modifiers.Immutable
+                        ),
+                        Statement.MakeVarDecl(
+                            Helpers.MakeSeq(AstNode.MakeIdentifier("flag", Helpers.MakePrimitiveType("bool"))),
+                            Helpers.MakeSeq(Expression.Null),
+                            Modifiers.None
+                        ),
+                        Statement.MakeExprStmt(
+                            Expression.MakeCallExpr(
+                                Expression.MakePath(Helpers.MakeSomeIdent("print")),
+                                Expression.MakeConstant("string", "(x, y, z, w) = ({}, {}, {}, {})"),
+                                Expression.MakePath(Helpers.MakeSomeIdent("x")),
+                                Expression.MakePath(Helpers.MakeSomeIdent("y")),
+                                Expression.MakePath(Helpers.MakeSomeIdent("z")),
+                                Expression.MakePath(Helpers.MakeSomeIdent("w"))
+                            )
+                        ),
+                        Statement.MakeIfStmt(
+                            PatternConstruct.MakeExpressionPattern(
+                                Expression.MakeBinaryExpr(OperatorType.Equality,
+                                    Expression.MakePath(Helpers.MakeSomeIdent("x")),
+                                    Expression.MakeConstant("int", 100)
+                                )
+                            ),
+                            Statement.MakeBlock(
+                                Helpers.MakeSeq(
+                                    Statement.MakeExprStmt(Helpers.MakeAssignment(
+                                        Helpers.MakeSeq(Expression.MakePath(Helpers.MakeSomeIdent("flag"))),
+                                        Helpers.MakeSeq(Expression.MakeConstant("bool", true))
+                                    ))
+                                )
+                            ),
+                            Statement.MakeBlock(
+                                Helpers.MakeSeq(
+                                    Statement.MakeExprStmt(Helpers.MakeAssignment(
+                                        Helpers.MakeSeq(Expression.MakePath(Helpers.MakeSomeIdent("flag"))),
+                                        Helpers.MakeSeq(Expression.MakeConstant("bool", false))
+                                    ))
+                                )
+                            )
+                        ),
+                        Statement.MakeVarDecl(
+                            Helpers.MakeSeq(Helpers.MakeSomeIdent("sum")),
+                            Helpers.MakeSeq(Expression.MakeConstant("int", 0)),
+                            Modifiers.None
+                        ),
+                        Statement.MakeForStmt(
+                            PatternConstruct.MakeValueBindingPattern(
+                                PatternConstruct.MakeIdentifierPattern(Helpers.MakeSomeIdent("p"), null),
+                                Modifiers.Immutable
+                            ),
+                            Expression.MakeIntSeq(
+                                Expression.MakeConstant("int", 0),
+                                Expression.MakePath(Helpers.MakeSomeIdent("y")),
+                                null,
+                                false
+                            ),
+                            Statement.MakeBlock(
+                                Helpers.MakeSeq(
+                                    Helpers.MakeAugmentedAssignment(OperatorType.Plus,
+                                        Helpers.MakeSeq(Expression.MakePath(Helpers.MakeSomeIdent("sum"))),
+                                        Helpers.MakeSeq(Expression.MakePath(Helpers.MakeSomeIdent("p")))
+                                    ),
+                                    Statement.MakeExprStmt(Expression.MakeCallExpr(
+                                        Expression.MakePath(Helpers.MakeSomeIdent("println")),
+                                        Expression.MakeConstant("string", "{}, {}"),
+                                        Expression.MakePath(Helpers.MakeSomeIdent("p")),
+                                        Expression.MakePath(Helpers.MakeSomeIdent("sum"))
+                                    ))
+                                )
+                            )
+                        ),
+                        Statement.MakeVarDecl(
+                            Helpers.MakeSeq(Helpers.MakeSomeIdent("strs")),
+                            Helpers.MakeSeq(Expression.MakeSeqInitializer(
+                                Helpers.MakeGenericType("array", Helpers.MakePlaceholderType()),
+                                Expression.MakeConstant("string", "akarichan"),
+                                Expression.MakeConstant("string", "chinatsu"),
+                                Expression.MakeConstant("string", "kyoko"),
+                                Expression.MakeConstant("string", "yui")
+                            )),
+                            Modifiers.Immutable
+                        ),
+                        Statement.MakeForStmt(
+                            PatternConstruct.MakeIdentifierPattern(Helpers.MakeSomeIdent("tmp"), null),
+                            Expression.MakePath(Helpers.MakeSomeIdent("strs")),
+                            Statement.MakeBlock(
+                                Statement.MakeMatchStmt(Expression.MakePath(Helpers.MakeSomeIdent("tmp")),
+                                    Statement.MakeMatchClause(null,
+                                        Statement.MakeExprStmt(Expression.MakeCallExpr(
+                                            Expression.MakePath(Helpers.MakeSomeIdent("print")),
+                                            Expression.MakeConstant("string", "kawakawa")
+                                        )),
+                                        PatternConstruct.MakeExpressionPattern(Expression.MakeConstant("string", "akarichan"))
+                                    ),
+                                    Statement.MakeMatchClause(null,
+                                        Statement.MakeExprStmt(Expression.MakeCallExpr(
+                                            Expression.MakePath(Helpers.MakeSomeIdent("print")),
+                                            Expression.MakeConstant("string", "ankokuthunder!")
+                                        )),
+                                        PatternConstruct.MakeExpressionPattern(Expression.MakeConstant("string", "chinatsu"))
+                                    ),
+                                    Statement.MakeMatchClause(null,
+                                        Statement.MakeExprStmt(Expression.MakeCallExpr(
+                                            Expression.MakePath(Helpers.MakeSomeIdent("print")),
+                                            Expression.MakeConstant("string", "gaichiban!")
+                                        )),
+                                        PatternConstruct.MakeExpressionPattern(Expression.MakeConstant("string", "kyoko"))
+                                    ),
+                                    Statement.MakeMatchClause(null,
+                                        Statement.MakeExprStmt(Expression.MakeCallExpr(
+                                            Expression.MakePath(Helpers.MakeSomeIdent("print")),
+                                            Expression.MakeConstant("string", "doyaxtu!")
+                                        )),
+                                        PatternConstruct.MakeExpressionPattern(Expression.MakeConstant("string", "yui"))
+                                    )
+                                )
+                            )
+                        ),
+                        Statement.MakeVarDecl(
+                            Helpers.MakeSeq(Helpers.MakeSomeIdent("fibs"), Helpers.MakeSomeIdent("a"), Helpers.MakeSomeIdent("b")),
+                            Helpers.MakeSeq<Expression>(
+                                Expression.MakeSeqInitializer(
+                                    Helpers.MakeGenericType("vector", Helpers.MakePlaceholderType())
+                                ),
+                                Expression.MakeConstant("int", 0),
+                                Expression.MakeConstant("int", 1)
+                            ),
+                            Modifiers.None
+                        ),
+                        Statement.MakeWhileStmt(
+                            Expression.MakeBinaryExpr(OperatorType.LessThan,
+                                Expression.MakePath(Helpers.MakeSomeIdent("b")),
+                                Expression.MakeConstant("int", 1000)
+                            ),
+                            Statement.MakeBlock(
+                                Statement.MakeExprStmt(
+                                    Expression.MakeCallExpr(Expression.MakeMemRef(
+                                        Expression.MakePath(Helpers.MakeSomeIdent("fibs")),
+                                        Helpers.MakeSomeIdent("add")
+                                    ),
+                                        Expression.MakePath(Helpers.MakeSomeIdent("b"))
+                                    )
+                                ),
+                                Statement.MakeExprStmt(
+                                    Helpers.MakeAssignment(
+                                        Helpers.MakeSeq(
+                                            Expression.MakePath(Helpers.MakeSomeIdent("a")),
+                                            Expression.MakePath(Helpers.MakeSomeIdent("b"))
+                                        ),
+                                        Helpers.MakeSeq<Expression>(
+                                            Expression.MakePath(Helpers.MakeSomeIdent("b")),
+                                            Expression.MakeBinaryExpr(OperatorType.Plus,
+                                                Expression.MakePath(Helpers.MakeSomeIdent("a")),
+                                                Expression.MakePath(Helpers.MakeSomeIdent("b"))
+                                            )
+                                        )
+                                    )
+                                )
+                            )
+                        ),
+                        Statement.MakeVarDecl(
+                            Helpers.MakeSeq(Helpers.MakeSomeIdent("vector")),
+                            Helpers.MakeSeq(Expression.MakeSeqInitializer(
+                                Helpers.MakeGenericType("vector", Helpers.MakePlaceholderType())
+                            )),
+                            Modifiers.Immutable
+                        ),
+                        Statement.MakeForStmt(
+                            PatternConstruct.MakeIdentifierPattern(Helpers.MakeSomeIdent("i"), null),
+                            Expression.MakeIntSeq(
+                                Expression.MakeConstant("int", 0),
+                                Expression.MakeConstant("int", 10),
+                                Expression.MakeConstant("int", 1),
+                                false
+                            ),
+                            Statement.MakeBlock(
+                                Statement.MakeForStmt(
+                                    PatternConstruct.MakeIdentifierPattern(Helpers.MakeSomeIdent("j"), null),
+                                    Expression.MakeIntSeq(
+                                        Expression.MakeConstant("int", 0),
+                                        Expression.MakeConstant("int", 10),
+                                        Expression.MakeConstant("int", 1),
+                                        false
+                                    ),
+                                    Statement.MakeBlock(
+                                        Statement.MakeIfStmt(
+                                            PatternConstruct.MakeExpressionPattern(
+                                                Expression.MakeBinaryExpr(OperatorType.ConditionalAnd,
+                                                    Expression.MakeBinaryExpr(OperatorType.Equality,
+                                                        Expression.MakePath(Helpers.MakeSomeIdent("i")),
+                                                        Expression.MakeConstant("int", 3)
+                                                    ),
+                                                    Expression.MakeBinaryExpr(OperatorType.Equality,
+                                                        Expression.MakePath(Helpers.MakeSomeIdent("i")),
+                                                        Expression.MakeConstant("int", 6)
+                                                    )
+                                                )
+                                            ),
+                                            Statement.MakeBlock(
+                                                Statement.MakeBreakStmt(Expression.MakeConstant("int", 1))
+                                            ),
+                                            null
+                                        ),
+                                        Statement.MakeIfStmt(
+                                            PatternConstruct.MakeExpressionPattern(
+                                                Expression.MakeBinaryExpr(OperatorType.Equality,
+                                                    Expression.MakePath(Helpers.MakeSomeIdent("j")),
+                                                    Expression.MakeConstant("int", 8)
+                                                )
+                                            ),
+                                            Statement.MakeBlock(
+                                                Statement.MakeContinueStmt(Expression.MakeConstant("int", 2))
+                                            ),
+                                            null
+                                        ),
+                                        Statement.MakeExprStmt(Expression.MakeCallExpr(
+                                            Expression.MakeMemRef(
+                                                Expression.MakePath(Helpers.MakeSomeIdent("vector")),
+                                                Helpers.MakeSomeIdent("add")
+                                            ),
+                                            Expression.MakeParen(Expression.MakeSequence(
+                                                Expression.MakePath(Helpers.MakeSomeIdent("i")),
+                                                Expression.MakePath(Helpers.MakeSomeIdent("j"))
+                                            ))
+                                        ))
+                                    )
+                                )
+                            )
+                        ),
+                        Statement.MakeReturnStmt(
+                            Expression.MakeSeqInitializer(Helpers.MakeGenericType("array", Helpers.MakePlaceholderType()),
+                                Expression.MakePath(Helpers.MakeSomeIdent("x")),
+                                Expression.MakePath(Helpers.MakeSomeIdent("y")),
+                                Expression.MakePath(Helpers.MakeSomeIdent("z")),
+                                Expression.MakePath(Helpers.MakeSomeIdent("w")),
+                                Expression.MakePath(Helpers.MakeSomeIdent("flag")),
+                                Expression.MakePath(Helpers.MakeSomeIdent("sum")),
+                                Expression.MakePath(Helpers.MakeSomeIdent("strs")),
+                                Expression.MakePath(Helpers.MakeSomeIdent("sum")),
+                                Expression.MakePath(Helpers.MakeSomeIdent("vecctor"))
+                            )
+                        )
+                    ),
+                    Helpers.MakePlaceholderType(),
+                    Modifiers.None
+                )
+            });
+
+            Assert.IsNotNull(ast);
+            Helpers.AstStructuralEqual(ast, expected_ast);
+        }
 	}
 }

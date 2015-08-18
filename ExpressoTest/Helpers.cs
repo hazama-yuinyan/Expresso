@@ -94,6 +94,17 @@ namespace Expresso.Test
         {
             return new ReturnStatement(Expression.MakeSequence(expressions));
         }
+
+        public static AssignmentExpression MakeAssignment(IEnumerable<Expression> lhs, IEnumerable<Expression> rhs)
+        {
+            return Expression.MakeAssignment(Expression.MakeSequence(lhs), Expression.MakeSequence(rhs));
+        }
+
+        public static ExpressionStatement MakeAugmentedAssignment(OperatorType opType,
+            IEnumerable<Expression> lhs, IEnumerable<Expression> rhs)
+        {
+            return Statement.MakeAugumentedAssignment(Expression.MakeSequence(lhs), Expression.MakeSequence(rhs), opType);
+        }
     }
 
     internal class FunctionAnnotation

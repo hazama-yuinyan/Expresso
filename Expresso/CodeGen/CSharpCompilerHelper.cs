@@ -86,7 +86,7 @@ namespace Expresso.CodeGen
             if(simple != null){
                 Type type = null;
                 foreach(var asm in AppDomain.CurrentDomain.GetAssemblies()){
-                    type = asm.GetType(simple.Identifier);
+                    type = asm.GetType(simple.Identifier, false, true);
                     if(type != null)
                         break;
                 }

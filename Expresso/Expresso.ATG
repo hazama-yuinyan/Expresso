@@ -707,18 +707,20 @@ ExprStmt<out Statement stmt>			(.  SequenceExpression lhs = null, seq = null;
 										.)
 =
   LValueList<out lhs>
-  ( AugAssignOpe<ref op_type>
-    RValueList<out seq>                 (.  if(lhs.Count != seq.Count)  //See if both sides have the same number of items or not
+  [ ( AugAssignOpe<ref op_type>
+      RValueList<out seq>                 
+    )                                   (.  if(lhs.Count != seq.Count)  //See if both sides have the same number of items or not
                                                 SemErr("An augumented assignment must have both sides balanced.");
 
                                             stmt = Statement.MakeAugumentedAssignment(lhs, seq, op_type, start_loc, CurrentLocation);
                                         .)
-  | '='
-    RValueList<out seq>                 (. assign = Expression.MakeAssignment(lhs, seq); .)
-    { '='
-      RValueList<out seq>               (. assign = Expression.MakeMultipleAssignment(assign, seq); .)
-    }								    (. stmt = Statement.MakeExprStmt(assign, start_loc, CurrentLocation); .)
-  )
+  | ( '='
+      RValueList<out seq>               (. assign = Expression.MakeAssignment(lhs, seq); .)
+      { '='
+        RValueList<out seq>             (. assign = Expression.MakeMultipleAssignment(assign, seq); .)
+      }								    (. stmt = Statement.MakeExprStmt(assign, start_loc, CurrentLocation); .)
+    )
+  ]
   SYNC ';' 								(.  if(stmt == null)
   												stmt = Statement.MakeExprStmt(lhs, start_loc, CurrentLocation);
   										.).
@@ -748,14 +750,13 @@ Block<out BlockStatement block>
 /*------------------------------------------------------------------------*/
 CompoundStmt<out Statement stmt>	(. stmt = null; .)
 =
-  SYNC
     IfStmt<out stmt>					
   | WhileStmt<out stmt>
   | ForStmt<out stmt>
   | MatchStmt<out stmt>
   /*| FuncDecl<out stmt>*/.
 /*------------------------------------------------------------------------*/
-IfStmt<out Statement stmt>			(. PatternConstruct pattern; BlockStatement true_block, false_block = null;
+IfStmt<out Statement stmt>			(. PatternConstruct pattern = null; BlockStatement true_block, false_block = null;
                                        var start_loc = NextLocation;
                                     .)
 =
@@ -763,7 +764,9 @@ IfStmt<out Statement stmt>			(. PatternConstruct pattern; BlockStatement true_bl
                                        GoDownScope();
                                        Symbols.Name = "if`" + ScopeId++;
                                     .)
-  LhsPattern<out pattern>
+  ( ExpressionPattern<out pattern>
+  | ValueBindingPattern<out pattern>
+  )
   Block<out true_block>
   [ "else"
     Block<out false_block>
@@ -835,13 +838,12 @@ PatternList<. out List<PatternConstruct> patterns, out Expression guard .>
   ]
   "=>".
 /*------------------------------------------------------------------------*/
-VarDeclStmt<out Statement stmt>         (.  Expression rhs = null;
-								        	Identifier ident;
+VarDeclStmt<out Statement stmt>         (.  Expression rhs = null; var start_loc = NextLocation;
+								        	Identifier ident; var modifiers = ExpressoModifiers.None;
 								          	var idents = new List<Identifier>(); var exprs = new List<Expression>();
-                                            bool is_const = false; var start_loc = NextLocation;
 								        .)
 = 
-  ( "let"                               (. is_const = true; .)
+  ( "let"                               (. modifiers = ExpressoModifiers.Immutable; .)
   | "var"
   )
   VarDef<out ident, out rhs>	        (.  idents.Add(ident);
@@ -854,9 +856,7 @@ VarDeclStmt<out Statement stmt>         (.  Expression rhs = null;
   									      rhs = null;
   								       .)
   }
-  SYNC ';'							   (. var modifiers = is_const ? ExpressoModifiers.Immutable : ExpressoModifiers.None;
-                                          stmt = Statement.MakeVarDecl(idents, exprs, modifiers, start_loc, CurrentLocation);
-                                       .).
+  SYNC ';'							   (. stmt = Statement.MakeVarDecl(idents, exprs, modifiers, start_loc, CurrentLocation); .).
 /*------------------------------------------------------------------------*/
 VarDef<out Identifier ident, out Expression option> (. option = null; .)
 =
@@ -867,6 +867,12 @@ VarDef<out Identifier ident, out Expression option> (. option = null; .)
                                       SemanticError("Give me some context or I can't infer the type of {0}", ident.Name);
                                .).
 /*------------------------------------------------------------------------*/
+PatternVarDef<out VariableInitializer init> (. Identifier ident; Expression expr; .)
+=
+  Identifier<out ident>
+  '='
+  PatternOrTest<out expr>                   (. init = AstNode.MakeVariableInitializer(ident, expr); .).
+/*------------------------------------------------------------------------*/
 RValueList<out SequenceExpression seq>		(. Expression tmp; var exprs = new List<Expression>(); .)
 =
   CondExpr<out tmp>							(. exprs.Add(tmp); .)
@@ -874,27 +880,27 @@ RValueList<out SequenceExpression seq>		(. Expression tmp; var exprs = new List<
     CondExpr<out tmp>						(. exprs.Add(tmp);	.)
   }											(. seq = Expression.MakeSequence(exprs); .).
 /*------------------------------------------------------------------------*/
-Pattern<out PatternConstruct pattern>   (. pattern = null; bool is_binding = false; Modifiers modifier = ExpressoModifiers.None; .)
+Pattern<out PatternConstruct pattern>       (. pattern = null; .)
 =
-  [ "let"                               (. is_binding = true; modifier = ExpressoModifiers.Immutable; .)
-  | "var"                               (. is_binding = true; .)
-  ]
-  LhsPattern<out pattern>
-  | ExpressionPattern<out pattern>      (. if(is_binding)
-                                               pattern = PatternConstruct.MakeValueBindingPattern(pattern, modifier);
-                                        .).
+  WildcardPattern<out pattern>
+  | TuplePattern<out pattern>
+  | DestructuringPattern<out pattern>
+  | ExpressionPattern<out pattern>.
 /*------------------------------------------------------------------------*/
-ExpressionPattern<out PatternConstruct pattern> (. Expression expr, upper = null, step = null;
-                                                   bool upper_inclusive = false;
-                                                .)
+ValueBindingPattern<out PatternConstruct pattern>
+                                (. VariableInitializer init; var modifier = ExpressoModifiers.None; .)
 =
-  Literal<out expr>                                
-  [ RangeOperator<ref upper_inclusive>
-    integer                                     (. upper = Expression.MakeConstant("int", t.val, CurrentLocation); .)
-    [ ':'
-      integer                                   (. step = Expression.MakeConstant("int", t.val, CurrentLocation); .)
-    ]                                           (. expr = Expression.MakeIntSeq(expr, upper, step, upper_inclusive); .)
-  ]                                             (. pattern = PatternConstruct.MakeExpressionPattern(expr); .).
+  ( "let"                       (. modifier = ExpressoModifiers.Immutable; .)
+  | "var"
+  )                             (. var inits = new List<VariableInitializer>(); .)
+  PatternVarDef<out init>       (. inits.Add(init); .)
+  { WEAK ','
+    PatternVarDef<out init>     (. inits.Add(init); .)
+  }                             (. pattern = PatternConstruct.MakeValueBindingPattern(inits, modifier); .).
+/*------------------------------------------------------------------------*/
+ExpressionPattern<out PatternConstruct pattern> (. Expression expr; .)
+=
+  PatternOrTest<out expr>                       (. pattern = PatternConstruct.MakeExpressionPattern(expr); .).
 /*------------------------------------------------------------------------*/
 PatternItem<out PatternConstruct pattern>   (. pattern = PatternConstruct.Null; .)
 =
@@ -939,7 +945,7 @@ DestructuringPattern<out PatternConstruct pattern>
                    var patterns = new List<PatternConstruct>(); bool is_vector = false;
                 .)
 =
-  ( Type<out type_path>
+  ( TypePathExpression<out type_path>
     '{'
     [ PatternItem<out pattern>              (. patterns.Add(pattern); .)
     ]
@@ -1090,10 +1096,10 @@ PowerOp<out Expression expr>   (. Expression rhs; .)
 /*------------------------------------------------------------------------*/
 Factor<out Expression expr> (. OperatorType type; Expression factor; expr = null; .)
 =
-  Primary<out expr>
-  |
-  UnaryOperator<out type>
-  Factor<out factor>        (. expr = Expression.MakeUnaryExpr(type, factor); .).
+  ( Primary<out expr>
+  | UnaryOperator<out type>
+    Factor<out factor>        (. expr = Expression.MakeUnaryExpr(type, factor); .)
+  ).
 /*------------------------------------------------------------------------*/
 UnaryOperator<out OperatorType opType>  (. opType = OperatorType.None; .)
 =
@@ -1111,6 +1117,105 @@ Primary<out Expression expr>		    (. expr = null; PathExpression path; AstType t
     ]
   | Atom<out expr>
   | NewExpression<out expr>
+  )
+  { Trailer<ref expr>
+  }.
+/*------------------------------------------------------------------------*/
+PatternOrTest<out Expression expr>    (. Expression rhs; .)
+=
+  PatternAndTest<out expr>
+  [ "||"
+    PatternOrTest<out rhs>            (. expr = Expression.MakeBinaryExpr(OperatorType.ConditionalOr, expr, rhs); .)
+  ].
+/*------------------------------------------------------------------------*/
+PatternAndTest<out Expression expr>   (. Expression rhs; .)
+=
+  PatternComparison<out expr>
+  [ "&&"
+    PatternAndTest<out rhs>           (. expr = Expression.MakeBinaryExpr(OperatorType.ConditionalAnd, expr, rhs); .)
+  ].
+/*------------------------------------------------------------------------*/
+PatternComparison<out Expression expr>     (. Expression rhs; OperatorType type = OperatorType.None; .)
+=
+  PatternIntSeqExpr<out expr>
+  [ ComparisonOperator<out type>
+    PatternComparison<out rhs>             (. expr = Expression.MakeBinaryExpr(type, expr, rhs); .)
+  ].
+/*------------------------------------------------------------------------*/
+PatternIntSeqExpr<out Expression expr> (. Expression start = null, end = null, step = null;
+                                          bool upper_inclusive = true;
+                                       .)
+=
+  PatternBitOr<out start>              (. expr = start; .)
+  [ RangeOperator<ref upper_inclusive>
+    PatternBitOr<out end>
+    [ ':'
+      PatternBitOr<out step>
+    ]                                  (. if(step == null) step = Expression.MakeConstant("int", 1, TextLocation.Empty);
+                                          expr = Expression.MakeIntSeq(start, end, step, upper_inclusive);
+                                       .)
+  ].
+/*------------------------------------------------------------------------*/
+PatternBitOr<out Expression expr>   (. Expression rhs; .)
+=
+  PatternBitXor<out expr>
+  [ '|'
+    PatternBitOr<out rhs>           (. expr = Expression.MakeBinaryExpr(OperatorType.BitwiseOr, expr, rhs); .)
+  ].
+/*------------------------------------------------------------------------*/
+PatternBitXor<out Expression expr>  (. Expression rhs; .)
+=
+  PatternBitAnd<out expr>
+  [ '^'
+    PatternBitXor<out rhs>          (. expr = Expression.MakeBinaryExpr(OperatorType.ExclusiveOr, expr, rhs); .)
+  ].
+/*------------------------------------------------------------------------*/
+PatternBitAnd<out Expression expr>  (. Expression rhs; .)
+=
+  PatternShiftOp<out expr>
+  [ '&'
+    PatternBitAnd<out rhs>          (. expr = Expression.MakeBinaryExpr(OperatorType.BitwiseAnd, expr, rhs); .)
+  ].
+/*------------------------------------------------------------------------*/
+PatternShiftOp<out Expression expr> (. Expression rhs; OperatorType type; .)
+=
+  PatternAddOp<out expr>
+  [ ShiftOperator<out type>
+    PatternShiftOp<out rhs>         (. expr = Expression.MakeBinaryExpr(type, expr, rhs); .)
+  ].
+/*------------------------------------------------------------------------*/
+PatternAddOp<out Expression expr>   (. Expression rhs; OperatorType type; .)
+= 
+  PatternTerm<out expr>
+  [ AdditiveOperator<out type>
+    PatternAddOp<out rhs>           (. expr = Expression.MakeBinaryExpr(type, expr, rhs); .)
+  ].
+/*------------------------------------------------------------------------*/
+PatternTerm<out Expression expr>    (. Expression rhs; OperatorType type; .)
+= 
+  PatternPowerOp<out expr>
+  [ MultiplicativeOperator<out type>
+    PatternTerm<out rhs>            (. expr = Expression.MakeBinaryExpr(type, expr, rhs); .)
+  ].
+/*------------------------------------------------------------------------*/
+PatternPowerOp<out Expression expr> (. Expression rhs; .)
+= 
+  PatternFactor<out expr>
+  [ "**"
+    PatternFactor<out rhs>          (. expr = Expression.MakeBinaryExpr(OperatorType.Power, expr, rhs); .)
+  ].
+/*------------------------------------------------------------------------*/
+PatternFactor<out Expression expr>  (. OperatorType type; Expression factor; expr = null; .)
+=
+  ( PatternPrimary<out expr>
+  | UnaryOperator<out type>
+    PatternFactor<out factor>       (. expr = Expression.MakeUnaryExpr(type, factor); .)
+  ).
+/*------------------------------------------------------------------------*/
+PatternPrimary<out Expression expr>     (. expr = null; PathExpression path; .)
+=
+  ( PathExpression<out path>            (. expr = path; .) /* It's possible that a PathExpression turns out to be just an Identifier */
+  | Literal<out expr>
   )
   { Trailer<ref expr>
   }.

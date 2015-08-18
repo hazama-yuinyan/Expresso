@@ -23,7 +23,7 @@ Expresso has several primitive types. Namely `bool`
 *** Arrays
 
 *** Tuples, vectors and dictionaries
-Expresso supports 3 built-in data structures, tuples, vectors and dictionaries.
+Expresso supports 3 built-in data structures; tuples, vectors and dictionaries.
 Tuples are alike to arrays except that they can contain different types of objects in it.
 ```Expresso
     let some_tuple = (1, true, "We can conbine different types of things in one tuple");
