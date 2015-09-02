@@ -10,6 +10,7 @@ namespace Expresso.Ast
     /// <summary>
     /// 関数定義。
     /// Represents a function declaration.
+    /// A function declaration declares a new function into function namespace.
     /// [ Modifiers ] "def" Name '(' [ Arguments ] ')' [ "->" ReturnType ] '{' Body '}' ;
     /// </summary>
     public class FunctionDeclaration : EntityDeclaration

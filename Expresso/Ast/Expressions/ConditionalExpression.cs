@@ -7,6 +7,7 @@ namespace Expresso.Ast
     /// <summary>
     /// 条件演算。
 	/// The conditional expression.
+    /// A conditional expression evaluates to either a value between question mark and colon or a value followed by colon.
     /// Expression '?' Expression ':' ConditionalExpression ;
     /// </summary>
     public class ConditionalExpression : Expression

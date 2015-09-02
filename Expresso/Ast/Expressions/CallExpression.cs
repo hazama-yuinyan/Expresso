@@ -6,7 +6,8 @@ namespace Expresso.Ast
 {
     /// <summary>
     /// 関数呼び出し。
-	/// Represents a function call.
+	/// Represents a function or method call. It binds an object when it references to a method
+    /// otherwise it binds nothing.
     /// Expression '(' [ Arguments ] ')' ;
     /// </summary>
     public class CallExpression : Expression

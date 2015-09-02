@@ -10,6 +10,23 @@ namespace Expresso.Ast
 {
     /// <summary>
     /// Represents a primitive type reference node.
+    /// In Expresso, primitive types are listed as follows:
+    /// * int
+    /// * uint
+    /// * bool
+    /// * byte
+    /// * float
+    /// * double
+    /// * bigint
+    /// * string
+    /// * char
+    /// * tuple
+    /// * vector
+    /// * dictionary
+    /// * function
+    /// * intseq
+    /// * void
+    /// * array of the above types
     /// </summary>
     public class PrimitiveType : AstType
     {

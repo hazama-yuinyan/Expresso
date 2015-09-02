@@ -16,7 +16,7 @@ namespace Expresso.Test
 
             var ast = parser.TopmostAst;
             var options = new ExpressoCompilerOptions{
-                Path = "",
+                LibraryPaths = "",
                 OutputPath = "../../test_executables",
                 BuildType = BuildType.Debug
             };

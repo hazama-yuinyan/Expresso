@@ -9,7 +9,7 @@ namespace Expresso.Ast
     /// Expressoのif文には2種類あり、1種類目は他の大多数の言語同様、通常の右辺式をとり、既知の変数などに対して
     /// boolean演算を行うのに対し、2種類目はパターンマッチングを行うため、1行でOptional型の束縛から値の取り出しまでを行う
     /// 簡潔なnull値チェック式を書くことができる。
-    /// The If statement. In Expresso if statements can have 2 forms.
+    /// The If statement. In Expresso, if statements can have 2 forms.
     /// One is a simple condition statement and the other tests against a pattern.
     /// Patterns can let-bind or declare variables so it's a common idiom of using it as a handy
     /// optional value extractor.

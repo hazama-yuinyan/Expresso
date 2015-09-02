@@ -1,8 +1,12 @@
 ﻿using System;
+using System.Collections.Generic;
 
 
 namespace Expresso.CodeGen
 {
+    /// <summary>
+    /// Represents build target mode.
+    /// </summary>
     public enum BuildType
     {
         Debug,
@@ -17,7 +21,7 @@ namespace Expresso.CodeGen
         /// <summary>
         /// Specifies the path to the libraries directory.
         /// </summary>
-        public string Path{
+        public List<string> LibraryPaths{
             get; set;
         }
 

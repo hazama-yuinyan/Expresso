@@ -330,7 +330,7 @@ namespace Expresso.CodeGen
             if(lhs != null){    // see if `assignment` is a simultaneous assignment
                 // expected form: a, b, ... = 1, 2, ...
                 // evaluation order: evaluate expressions from left to right on the right-hand-side
-                // then assign the results on the left-hand-side
+                // and then assign the results on the left-hand-side
                 var rhs = assignment.Right as SequenceExpression;
                 if(rhs == null)
                     throw new EmitterException("Expected a sequence expression!");

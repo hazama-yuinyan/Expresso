@@ -8,7 +8,7 @@ namespace Expresso.Ast
 	/// <summary>
 	/// For文。
 	/// The For statement.
-    /// A for statement is used to iterate over sequence-like objects.
+    /// A for statement is used for iterating over sequence-like objects.
     /// "for" PatternConstruct "in" Expression '{' Body '}' ;
 	/// </summary>
     public class ForStatement : Statement

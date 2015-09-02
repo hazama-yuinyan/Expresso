@@ -74,6 +74,8 @@ namespace Expresso.Ast
 
 	/// <summary>
     /// Represents a pattern clause in match statements.
+    /// A pattern clause represents a clause that patterns that should be matched and the corresponding code
+    /// that will be exceuted if the patterns match the value.
     /// PatternConstruct { '|' PatternConstruct } "=>" Statement
 	/// </summary>
 	public class MatchPatternClause : Expression

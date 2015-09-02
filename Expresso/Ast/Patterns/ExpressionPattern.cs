@@ -5,6 +5,7 @@ namespace Expresso.Ast
 {
     /// <summary>
     /// Represents an expression pattern.
+    /// An expression pattern matches an expression.
     /// Expression ;
     /// </summary>
     public class ExpressionPattern : PatternConstruct

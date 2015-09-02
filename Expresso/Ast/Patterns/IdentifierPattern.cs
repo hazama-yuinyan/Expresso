@@ -5,6 +5,7 @@ namespace Expresso.Ast
 {
     /// <summary>
     /// Represents an identifier pattern.
+    /// An identifier pattern matches any identifier and optionally captures its value into a new variable.
     /// Identifier [ '@' PatternConstruct ] ;
     /// </summary>
     public class IdentifierPattern : PatternConstruct

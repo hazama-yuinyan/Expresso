@@ -7,6 +7,8 @@ namespace Expresso.Ast
     /// <summary>
     /// continue文。
     /// The continue statement.
+    /// A continue statement brings the flow out of loops certain times and then continue execution
+    /// on that loop.
     /// "continue" [ "upto" Expression ] ';' ;
     /// </summary>
     public class ContinueStatement : Statement

@@ -17,7 +17,7 @@ namespace Expresso.Ast
     /// <summary>
     /// 型定義。
     /// Represents a type declaration.
-    /// 
+    /// A type declaration introduces a new type into the current scope.
     /// [ "export" ] ("class" | "interface" | "enum") Identifier [':' {PathExpression}]
     /// '{' {Decls} '}' ;
     /// </summary>

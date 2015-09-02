@@ -7,7 +7,7 @@ namespace Expresso.Ast
     /// <summary>
     /// Represents a destructuring pattern.
     /// A destructuring pattern tests the value against a type and if matched
-    /// it decompose the fields into child patterns.
+    /// it decomposes the fields into child patterns.
     /// As with usual field access, the fields being decomposed must be accessible from the scope
     /// that the pattern resides.
     /// </summary>

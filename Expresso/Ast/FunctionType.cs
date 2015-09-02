@@ -7,7 +7,7 @@ namespace Expresso.Ast
 {
     /// <summary>
     /// Represents the function type as AST.
-    /// In practice it just represents the function signature,
+    /// In practice it just represents the function signature, so 
     /// </summary>
     public class FunctionType : AstType
     {
