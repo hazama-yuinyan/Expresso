@@ -8,6 +8,7 @@ using Expresso.Ast;
 using Expresso.Ast.Analysis;
 using Expresso.Runtime.Builtins;
 using System.IO;
+using System.Runtime.InteropServices;
 
 namespace Expresso.CodeGen
 {
@@ -1005,10 +1006,12 @@ because it doesn't have field named `{1}`",
             // ValueBindingPatterns can be complex because they introduce new variables into the surrounding scope
             // and they have nothing to do with the value being matched.
             context.Additionals = new List<object>();
-            var pattern = valueBindingPattern.Variables.AcceptWalker(this, context);
+            var pattern = valueBindingPattern.Variables.Select(variable => variable.AcceptWalker(this, context));
             var parameters = context.Additionals.Cast<ExprTree.ParameterExpression>();
             context.ContextExpression = CSharpExpr.Block(parameters, context.ContextExpression);
-            return pattern;
+            var result = CSharpExpr.Block(parameters, pattern);
+
+            return result;
         }
 
         public CSharpExpr VisitCollectionPattern(CollectionPattern collectionPattern,

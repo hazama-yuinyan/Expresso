@@ -598,23 +598,12 @@ Type<out AstType type>
  | "void"							(. type = AstType.MakeSimpleType("tuple", Enumerable.Empty<AstType>(), start_loc, CurrentLocation); .)
  | TypePathExpression<out type>     (. if(is_reference) type = AstType.MakeReferenceType(type, TextLocation.Empty); .)
  )                                  (. start_loc = NextLocation; .)
- [ '<'                              (.
-                                       if(!IsPrimitiveGenericType(name)){
-                                           SemErr("`{0}` is not a generic type!");
-                                           return;
-                                       }
-                                       var type_args = new List<AstType>(); AstType child_type;
-                                    .)
-   Type<out child_type>             (. type_args.Add(child_type); .)
-   { ','
-     Type<out child_type>           (. type_args.Add(child_type); .)
-   }
-   '>'                              (.
-                                       type = AstType.MakeSimpleType(name, type_args, start_loc, CurrentLocation);
-                                       if(is_reference)
-                                           type = AstType.MakeReferenceType(type, CurrentLocation);
-                                    .)
- ]
+ [ GenericTypeSignature<name, is_reference, start_loc, out type> ] (.
+                                                      if(!IsPrimitiveGenericType(name)){
+                                                          SemErr("`{0}` is not a generic type!");
+                                                          return;
+                                                      }
+                                                  .)
  /* Split brackets into 2 tokens that represents the array type
     because otherwise it conflicts with the array literal.
  */
@@ -631,6 +620,20 @@ TupleTypeSignature<out AstType type> (. var inners = new List<AstType>(); var st
   { Type<out type>                  (. inners.Add(type); .)
   }
   ')'                               (. type = AstType.MakeSimpleType("tuple", inners, start_loc, CurrentLocation); .).
+/*------------------------------------------------------------------------*/
+GenericTypeSignature<string name, bool isReference, TextLocation startLoc, out AstType genericType> 
+                                             (. var type_args = new List<AstType>(); AstType child_type; .)
+=
+  '<'
+  Type<out child_type>                       (. type_args.Add(child_type); .)
+  { ','
+    Type<out child_type>                     (. type_args.Add(child_type); .)
+  }
+  '>'                                          (.
+                                                  genericType = AstType.MakeSimpleType(name, type_args, startLoc, CurrentLocation);
+                                                  if(isReference)
+                                                      genericType = AstType.MakeReferenceType(genericType, CurrentLocation);
+                                               .).
 /*------------------------------------------------------------------------*/
 Stmt<out Statement stmt>			(. stmt = null; .)
 =

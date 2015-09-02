@@ -622,7 +622,7 @@ namespace Expresso.Test
                         ),
                         Statement.MakeForStmt(
                             PatternConstruct.MakeValueBindingPattern(
-                                PatternConstruct.MakeIdentifierPattern(Helpers.MakeSomeIdent("p"), null),
+                                Helpers.MakeArray(VariableInitializer.MakeVariableInitializer(Helpers.MakeSomeIdent("p"), null)),
                                 Modifiers.Immutable
                             ),
                             Expression.MakeIntSeq(
@@ -658,32 +658,32 @@ namespace Expresso.Test
                             Modifiers.Immutable
                         ),
                         Statement.MakeForStmt(
-                            PatternConstruct.MakeIdentifierPattern(Helpers.MakeSomeIdent("tmp"), null),
+                            PatternConstruct.MakeIdentifierPattern(Helpers.MakeSomeIdent("tmp"), PatternConstruct.Null),
                             Expression.MakePath(Helpers.MakeSomeIdent("strs")),
                             Statement.MakeBlock(
                                 Statement.MakeMatchStmt(Expression.MakePath(Helpers.MakeSomeIdent("tmp")),
-                                    Statement.MakeMatchClause(null,
+                                    Statement.MakeMatchClause(Expression.Null,
                                         Statement.MakeExprStmt(Expression.MakeCallExpr(
                                             Expression.MakePath(Helpers.MakeSomeIdent("print")),
                                             Expression.MakeConstant("string", "kawakawa")
                                         )),
                                         PatternConstruct.MakeExpressionPattern(Expression.MakeConstant("string", "akarichan"))
                                     ),
-                                    Statement.MakeMatchClause(null,
+                                    Statement.MakeMatchClause(Expression.Null,
                                         Statement.MakeExprStmt(Expression.MakeCallExpr(
                                             Expression.MakePath(Helpers.MakeSomeIdent("print")),
                                             Expression.MakeConstant("string", "ankokuthunder!")
                                         )),
                                         PatternConstruct.MakeExpressionPattern(Expression.MakeConstant("string", "chinatsu"))
                                     ),
-                                    Statement.MakeMatchClause(null,
+                                    Statement.MakeMatchClause(Expression.Null,
                                         Statement.MakeExprStmt(Expression.MakeCallExpr(
                                             Expression.MakePath(Helpers.MakeSomeIdent("print")),
                                             Expression.MakeConstant("string", "gaichiban!")
                                         )),
                                         PatternConstruct.MakeExpressionPattern(Expression.MakeConstant("string", "kyoko"))
                                     ),
-                                    Statement.MakeMatchClause(null,
+                                    Statement.MakeMatchClause(Expression.Null,
                                         Statement.MakeExprStmt(Expression.MakeCallExpr(
                                             Expression.MakePath(Helpers.MakeSomeIdent("print")),
                                             Expression.MakeConstant("string", "doyaxtu!")

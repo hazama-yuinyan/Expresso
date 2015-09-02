@@ -10,7 +10,7 @@ namespace Expresso.Ast.Analysis
     public class TypeInferenceContext
     {
         /// <summary>
-        /// A symbol table that maps names to symbols located in external files.
+        /// A symbol table that maps names to symbols that are located in external files.
         /// </summary>
         /// <value>The symbol map.</value>
         public SymbolTable Symbols{

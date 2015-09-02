@@ -6,6 +6,7 @@ using Expresso.Ast;
 using ICSharpCode.NRefactory;
 using NUnit.Framework;
 using ICSharpCode.NRefactory.PatternMatching;
+using System.Threading;
 
 namespace Expresso.Test
 {
@@ -63,6 +64,16 @@ namespace Expresso.Test
                 Assert.AreEqual(method_annot.Name, method.Name);
                 Assert.AreEqual(method_annot.ReturnType, method.ReturnType);
             }*/
+        }
+
+        public static T[] MakeArray<T>(params T[] objs)
+        {
+            return objs;
+        }
+
+        public static List<T> MakeList<T>(params T[] objs)
+        {
+            return new List<T>(objs);
         }
 
         public static IEnumerable<T> MakeSeq<T>(params T[] objs)

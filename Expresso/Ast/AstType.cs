@@ -3,6 +3,7 @@ using ICSharpCode.NRefactory;
 using ICSharpCode.NRefactory.PatternMatching;
 using ICSharpCode.NRefactory.TypeSystem;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 
 namespace Expresso.Ast
@@ -53,6 +54,9 @@ namespace Expresso.Ast
 
             internal protected override bool DoMatch(AstNode other, Match match)
             {
+                #if DEBUG
+                Debug.Write("<Null type>");
+                #endif
                 return other == null || other.IsNull;
             }
 

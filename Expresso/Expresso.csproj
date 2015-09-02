@@ -41,7 +41,7 @@
     <DefineConstants>DEBUG;</DefineConstants>
     <CustomCommands>
       <CustomCommands>
-        <Command type="BeforeBuild" command="./Coco Expresso.ATG -trace GJSP" workingdir="${ProjectDir}" />
+        <Command type="BeforeBuild" command="mono ./Coco Expresso.ATG -trace GJSP" workingdir="${ProjectDir}" />
       </CustomCommands>
     </CustomCommands>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
@@ -62,7 +62,7 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <CustomCommands>
       <CustomCommands>
-        <Command type="BeforeBuild" command="./Coco Expresso.ATG -trace GJSP" workingdir="${ProjectDir}" />
+        <Command type="BeforeBuild" command="mono ./Coco Expresso.ATG -trace GJSP" workingdir="${ProjectDir}" />
       </CustomCommands>
     </CustomCommands>
   </PropertyGroup>
