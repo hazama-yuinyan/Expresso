@@ -61,7 +61,6 @@ Global
 		{D60E49D6-6CBA-4D54-A009-6A0528181C88}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(MonoDevelopProperties) = preSolution
-		StartupItem = ExpressoConsole.csproj
 		Policies = $0
 		$0.DotNetNamingPolicy = $1
 		$1.DirectoryNamespaceAssociation = None

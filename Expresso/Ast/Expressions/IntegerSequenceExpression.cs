@@ -7,6 +7,7 @@ namespace Expresso.Ast
 	/// <summary>
 	/// 整数の数列をあらわす式.
 	/// Represents an integer sequence.
+    /// <see cref="Expresso.Runtime.Builtins.ExpressoIntegerSequence"/>
     /// BinaryExpression (".." | "...") BinaryExpression [ ':' BinaryExpression ] ;
     /// where BinaryExpression = Expression '|' Expression
 	/// </summary>

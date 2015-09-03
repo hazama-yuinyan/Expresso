@@ -59,6 +59,10 @@ namespace Expresso.CodeGen
             get; set;
         }
 
+        /// <summary>
+        /// The constructor builder that we are currently constructing.
+        /// </summary>
+        /// <value>The constructor builder.</value>
         public ConstructorBuilder ConstructorBuilder{
             get; set;
         }
@@ -70,10 +74,18 @@ namespace Expresso.CodeGen
             get; set;
         }
 
+        /// <summary>
+        /// The assembly object that we are currently constructing.
+        /// </summary>
+        /// <value>The assembly.</value>
         public Assembly Assembly{
             get; set;
         }
 
+        /// <summary>
+        /// The module object that we are targeting at.
+        /// </summary>
+        /// <value>The module.</value>
         public Module Module{
             get; set;
         }

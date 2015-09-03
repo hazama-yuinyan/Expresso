@@ -6,6 +6,7 @@ namespace Expresso.Ast
 {
     /// <summary>
     /// Represents the keyword "self" as expression.
+    /// The self keyword references the class object or the module object that are in scope.
     /// "self" ;
     /// </summary>
     public class SelfReferenceExpression : Expression

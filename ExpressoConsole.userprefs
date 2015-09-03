@@ -1,19 +1,18 @@
 ﻿<Properties StartupItem="ExpressoConsole.csproj">
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug|x86" />
-  <MonoDevelop.Ide.Workbench ActiveDocument="Expresso/Analysis/TypeChecker.cs">
+  <MonoDevelop.Ide.Workbench ActiveDocument="ExpressoTest/ParserTests.cs">
     <Files>
       <File FileName="Expresso/Analysis/ExpressoNameBinder.cs" Line="1" Column="1" />
-      <File FileName="Expresso/Expresso.ATG" Line="1215" Column="77" />
-      <File FileName="ExpressoTest/ParserTests.cs" Line="1" Column="1" />
+      <File FileName="Expresso/Expresso.ATG" Line="1" Column="1" />
+      <File FileName="ExpressoTest/ParserTests.cs" Line="25" Column="41" />
       <File FileName="ExpressoTest/AnalyzerTests.cs" Line="1" Column="1" />
-      <File FileName="Expresso/CodeGen/CSharpEmitter.cs" Line="1008" Column="57" />
+      <File FileName="Expresso/CodeGen/CSharpEmitter.cs" Line="1" Column="1" />
       <File FileName="Expresso/Analysis/TypeInferenceRunner.cs" Line="1" Column="1" />
-      <File FileName="Expresso/Analysis/TypeChecker.cs" Line="669" Column="50" />
+      <File FileName="Expresso/Analysis/TypeChecker.cs" Line="662" Column="14" />
       <File FileName="ExpressoTest/sources/for_unit_tests/general_expressions.exs" Line="1" Column="1" />
       <File FileName="Libraries/NRefactory/ICSharpCode.NRefactory/PatternMatching/Pattern.cs" Line="1" Column="1" />
       <File FileName="ExpressoTest/sources/for_unit_tests/statements.exs" Line="1" Column="1" />
       <File FileName="ExpressoTest/sources/for_unit_tests/complex_expressions.exs" Line="1" Column="1" />
-      <File FileName="Expresso/Parser.cs" Line="1975" Column="44" />
     </Files>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>

@@ -5,14 +5,11 @@ namespace Expresso.Ast
 {
     /// <summary>
     /// Represents the wildcard pattern.
+    /// A wildcard pattern matches any value.
     /// '_' ;
     /// </summary>
     public class WildcardPattern : PatternConstruct
     {
-        public WildcardPattern()
-        {
-        }
-
         #region implemented abstract members of AstNode
 
         public override void AcceptWalker(IAstWalker walker)

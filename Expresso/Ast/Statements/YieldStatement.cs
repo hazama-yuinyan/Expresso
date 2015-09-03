@@ -6,6 +6,8 @@ namespace Expresso.Ast
     /// <summary>
     /// yield文。
 	/// The yield statement.
+    /// A yield statement transfers control to the caller expression and continues excecution until the program needs
+    /// the code to execute next code.
     /// "yield" Expression ';' ;
     /// </summary>
     public class YieldStatement : Statement

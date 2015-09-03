@@ -10,6 +10,7 @@ namespace Expresso.Ast
 {
     /// <summary>
     /// Represents a field declaration.
+    /// A field declaration introduces a new field into the current scope.
     /// Modifiers ("let" | "var") ident [ "(-" Type ] { ',' ident [ "(-" Type ] } ';' ;
     /// </summary>
     public class FieldDeclaration : EntityDeclaration

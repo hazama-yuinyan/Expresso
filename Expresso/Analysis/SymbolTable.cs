@@ -168,6 +168,11 @@ namespace Expresso.Ast.Analysis
             AddSymbol(name, AstNode.MakeIdentifier(name, type));
         }
 
+        /// <summary>
+        /// Adds a new name with a certain identifier.
+        /// </summary>
+        /// <param name="name">Name.</param>
+        /// <param name="ident">Ident.</param>
         public void AddSymbol(string name, Identifier ident)
         {
             try{
@@ -232,6 +237,10 @@ namespace Expresso.Ast.Analysis
             }
         }
 
+        /// <summary>
+        /// Counts up identifiers that satisfy the specified predicate function.
+        /// </summary>
+        /// <param name="pred">Pred.</param>
         public int Count(Func<Identifier, bool> pred)
         {
             if(pred != null)

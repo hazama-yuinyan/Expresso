@@ -7,6 +7,8 @@ namespace Expresso.Ast
 	/// <summary>
 	/// While文.
 	/// The While statement.
+    /// A while statement evaluates the expression and continues or drops the code afterward depending on
+    /// whether the expression is evaluated to true or false.
     /// The other loop construct in Expresso.
     /// "while" Expression '{' Body '}' ;
 	/// </summary>

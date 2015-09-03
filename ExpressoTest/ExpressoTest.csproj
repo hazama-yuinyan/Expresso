@@ -61,7 +61,6 @@
   <ItemGroup>
     <Reference Include="nunit.framework">
       <HintPath>..\packages\NUnit.2.6.3\lib\nunit.framework.dll</HintPath>
-      <Package>nunit</Package>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Numerics" />

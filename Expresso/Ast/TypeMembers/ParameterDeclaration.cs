@@ -7,6 +7,8 @@ namespace Expresso.Ast
     /// <summary>
     /// 仮引数定義。
     /// Represents a parameter(which appears in function signatures).
+    /// A ParameterDeclaration represents a parameter of a function or a method.
+    /// Note that it doesn't represent a real argument.
     /// ident [ "(-" Type ] [ "=" Expression ] ;
     /// </summary>
     public class ParameterDeclaration : EntityDeclaration

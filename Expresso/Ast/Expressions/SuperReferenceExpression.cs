@@ -6,6 +6,7 @@ namespace Expresso.Ast
 {
     /// <summary>
     /// Represents the keyword "super" as expression.
+    /// The super keyword references the parent object that is currently in scope.
     /// "super" ;
     /// </summary>
     public class SuperReferenceExpression : Expression

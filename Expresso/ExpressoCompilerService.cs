@@ -24,6 +24,12 @@ namespace Expresso
             return parser.TopmostAst;
         }
 
+        /// <summary>
+        /// Compiles and assemble into an assembly object.
+        /// </summary>
+        /// <returns>An assembly object.</returns>
+        /// <param name="filePath">Path to the file which will be compiled.</param>
+        /// <param name="options">Compiler options to use for the compilation.</param>
         public static Assembly CompileToAssembly(string filePath, ExpressoCompilerOptions options)
         {
             var parser = new Parser(new Scanner(filePath));
@@ -32,7 +38,7 @@ namespace Expresso
             var ast = parser.TopmostAst;
             var emitter = new CSharpEmitter(parser, options);
             ast.AcceptWalker(emitter, new CSharpEmitterContext());
-            return null;
+            return emitter.AssemblyBuilder;
         }
     }
 }

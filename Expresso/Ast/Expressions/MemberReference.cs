@@ -5,6 +5,7 @@ namespace Expresso.Ast
 {
 	/// <summary>
 	/// Represents a member reference.
+    /// A member reference expression references a member or method of an object.
     /// Expression '.' Identifier ;
 	/// </summary>
     public class MemberReference : Expression

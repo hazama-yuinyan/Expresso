@@ -7,6 +7,7 @@ namespace Expresso.Ast
     /// <summary>
     /// 定数。
     /// Represents a literal expression.
+    /// A literal value is evaluated to written words or numbers.
     /// </summary>
     public class LiteralExpression : Expression
     {

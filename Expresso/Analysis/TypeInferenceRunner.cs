@@ -516,7 +516,8 @@ namespace Expresso.Ast.Analysis
 
             public AstType VisitValueBindingPattern(ValueBindingPattern valueBindingPattern)
             {
-                return valueBindingPattern.Variables.AcceptWalker(this);
+                var types = valueBindingPattern.Variables.Select(variable => variable.AcceptWalker(this));
+                return AstType.MakeSimpleType("tuple", types, valueBindingPattern.StartLocation, valueBindingPattern.EndLocation);
             }
 
             public AstType VisitTuplePattern(TuplePattern tuplePattern)

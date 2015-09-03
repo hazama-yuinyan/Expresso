@@ -7,6 +7,7 @@ namespace Expresso.Ast
     /// <summary>
     /// インデクサ式
     /// Represents an indexer expression.
+    /// An indexer expression peeks at a value which sits on a certain position in an array.
     /// Target '[' { Expression } ']' ;
     /// </summary>
     public class IndexerExpression : Expression
