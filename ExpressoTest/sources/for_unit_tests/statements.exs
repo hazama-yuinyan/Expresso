@@ -39,14 +39,14 @@ def main()
 		a, b = b, a + b;
 	}
 
-	var vector = [...];
-	for i in 0..10 {
-		for j in 0..10 {
+	var vec = [...];
+	for let i in 0..10 {
+		for let j in 0..10 {
 			if i == 3 || i == 6 {break;}
 			if j == 8 {continue upto 2;}
-			vector.add((i, j));
+			vec.add((i, j));
 		}
 	}
 
-	return [x, y, z, w, flag, sum, strs, fibs, vector];
+	return [x, y, z, w, flag, sum, strs, fibs, vec];
 }

@@ -66,36 +66,74 @@ namespace Expresso.Test
             }*/
         }
 
+        /// <summary>
+        /// Makes an array from some objects.
+        /// </summary>
+        /// <returns>An array.</returns>
+        /// <param name="objs">Objects.</param>
+        /// <typeparam name="T">The type of the objects.</typeparam>
         public static T[] MakeArray<T>(params T[] objs)
         {
             return objs;
         }
 
+        /// <summary>
+        /// Makes a list from a sequence of some objects.
+        /// </summary>
+        /// <returns>A <see cref="System.Generics.Collections.List"/> instance.</returns>
+        /// <param name="objs">Objects.</param>
+        /// <typeparam name="T">The type of the objects.</typeparam>
         public static List<T> MakeList<T>(params T[] objs)
         {
             return new List<T>(objs);
         }
 
+        /// <summary>
+        /// Makes an IEnumerable instance from a sequence of some objects.
+        /// </summary>
+        /// <returns>An IEnumerable instance.</returns>
+        /// <param name="objs">Objects.</param>
+        /// <typeparam name="T">The type of the objects.</typeparam>
         public static IEnumerable<T> MakeSeq<T>(params T[] objs)
         {
             return objs.ToList();
         }
 
+        /// <summary>
+        /// Makes an identifier instance.
+        /// </summary>
+        /// <returns>An Identifier instance. The type is set to PlaceholderType.</returns>
+        /// <param name="name">The name of the identifier.</param>
         public static Identifier MakeSomeIdent(string name)
         {
             return AstNode.MakeIdentifier(name, new PlaceholderType(TextLocation.Empty));
         }
 
+        /// <summary>
+        /// Makes an AstType with the specified identifier and optional type arguments.
+        /// </summary>
+        /// <returns>A generic type.</returns>
+        /// <param name="identifier">Type identifier.</param>
+        /// <param name="typeArgs">Type arguments.</param>
         public static SimpleType MakeGenericType(string identifier, params AstType[] typeArgs)
         {
             return new SimpleType(identifier, typeArgs, TextLocation.Empty, TextLocation.Empty);
         }
 
+        /// <summary>
+        /// Makes a primitive type.
+        /// </summary>
+        /// <returns>The primitive type.</returns>
+        /// <param name="typeName">Type name.</param>
         public static PrimitiveType MakePrimitiveType(string typeName)
         {
             return new PrimitiveType(typeName, TextLocation.Empty);
         }
 
+        /// <summary>
+        /// Makes a placeholder type.
+        /// </summary>
+        /// <returns>The placeholder type.</returns>
         public static PlaceholderType MakePlaceholderType()
         {
             return new PlaceholderType(TextLocation.Empty);
@@ -106,11 +144,24 @@ namespace Expresso.Test
             return new ReturnStatement(Expression.MakeSequence(expressions));
         }
 
+        /// <summary>
+        /// Makes an assignment expression.
+        /// </summary>
+        /// <returns>An assignment.</returns>
+        /// <param name="lhs">The left hand side expressions.</param>
+        /// <param name="rhs">The right hand side expressions.</param>
         public static AssignmentExpression MakeAssignment(IEnumerable<Expression> lhs, IEnumerable<Expression> rhs)
         {
             return Expression.MakeAssignment(Expression.MakeSequence(lhs), Expression.MakeSequence(rhs));
         }
 
+        /// <summary>
+        /// Makes an augmented assignment expression.
+        /// </summary>
+        /// <returns>An augmented assignment.</returns>
+        /// <param name="opType">The operator type.</param>
+        /// <param name="lhs">The left hand side expressions.</param>
+        /// <param name="rhs">The right hand side expressions.</param>
         public static ExpressionStatement MakeAugmentedAssignment(OperatorType opType,
             IEnumerable<Expression> lhs, IEnumerable<Expression> rhs)
         {

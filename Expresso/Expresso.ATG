@@ -254,7 +254,38 @@ $namespace=Expresso
         scanner.ResetPeek();
         return t.kind == _comma && tt.kind != _rparen && tt.kind != _rbracket && tt.kind != _triple_dots;
     }
-	
+
+    bool IsObjectCreation()
+    {
+        var t = la;
+        if(t.kind != _lcurly && t.kind != _double_colon)
+            return false;
+
+        var x = scanner.Peek();
+        while(x.kind == _ident || x.kind == _double_colon)
+            x = scanner.Peek();
+
+        if(x.kind != _lcurly){
+            scanner.ResetPeek();
+            return false;
+        }
+
+        var key = scanner.Peek();
+        var tt = scanner.Peek();
+        scanner.ResetPeek();
+        return key.kind == _ident && tt.kind == _colon;
+    }
+
+    bool CheckKeyword(string name)
+    {
+        if(KnownTypeReference.Keywords.Contains(name)){
+            SemanticError("Error E0005: {0} is reserverd for a keyword.");
+            return true;
+        }
+
+        return false;
+    }
+
 	public void SemanticError(string format, params object[] args)
 	{
 		//Convenient method for printing a semantic error with a format string
@@ -267,7 +298,7 @@ $namespace=Expresso
     /// </summary>
     public void ReportWarning(string format, AstNode node, params object[] objects)
     {
-        errors.Warning(string.Format("{0}: {1}", node.StartLocation, string.Format(format, objects)));
+        errors.Warning(string.Format("{0} -- {1}", node.StartLocation, string.Format(format, objects)));
     }
 
     /// <summary>
@@ -276,7 +307,7 @@ $namespace=Expresso
     /// </summary>
     public void ReportSemanticError(string format, AstNode node, params object[] objects)
     {
-        errors.SemErr(string.Format("{0}: {1}", node.StartLocation, string.Format(format, objects)));
+        errors.SemErr(string.Format("{0} -- {1}", node.StartLocation, string.Format(format, objects)));
     }
 
     /// <summary>
@@ -284,7 +315,7 @@ $namespace=Expresso
     /// </summary>
     public void ReportSemanticErrorRegional(string format, AstNode start, AstNode end, params object[] objects)
     {
-        var real_message = string.Format("{0} ~ {1}: {2}", start.StartLocation, end.EndLocation, string.Format(format, objects));
+        var real_message = string.Format("{0} ~ {1} -- {2}", start.StartLocation, end.EndLocation, string.Format(format, objects));
         errors.SemErr(real_message);
     }
 	
@@ -422,7 +453,15 @@ ImportDecl<out ImportDeclaration decl>
   "import"
   PathExpression<out path>      (. entities.Add(path); .)
   ( "as"
-    ident						(. alias = AstNode.MakeIdentifier(t.val, CurrentLocation); .)
+    ident						(.
+                                   if(!CheckKeyword(t.val)){
+                                       alias = AstNode.MakeIdentifier(t.val, CurrentLocation);
+                                       Symbols.AddSymbol(t.val, alias);
+                                   }else{
+                                       // Failed to parse an alias name.
+                                       // Leave the parser to recover its state.
+                                   }
+                                .)
   | { WEAK ','
       PathExpression<out path>  (. entities.Add(path); .)
     }
@@ -444,8 +483,13 @@ ClassDecl<out EntityDeclaration decl, Modifiers modifiers>
   SYNC
   "class"                               (. Symbols.AddScope(); .)
   ident				    				(. name = t.val;
-                                           ident = AstNode.MakeIdentifier(name, CurrentLocation);
-                                           Symbols.AddTypeSymbol(name, ident);
+                                           if(!CheckKeyword(name)){
+                                               ident = AstNode.MakeIdentifier(name, CurrentLocation);
+                                               Symbols.AddTypeSymbol(name, ident);
+                                           }else{
+                                               // Failed to parse an identifier.
+                                               // Leave the parser to recover its state.
+                                           }
                                         .)
   [ ':'
     Type<out type_path>	                (. bases.Add(type_path); .)
@@ -492,9 +536,15 @@ FuncDecl<out EntityDeclaration decl, Modifiers modifiers>
 =
   SYNC
   "def"                         (. Symbols.AddScope(); .)
-  ident							(. name = t.val;
-                                   ident = AstNode.MakeIdentifier(name, new PlaceholderType(TextLocation.Empty), CurrentLocation); 
-                                   Symbols.AddSymbol(name, ident);
+  ident							(.
+                                   name = t.val;
+                                   if(!CheckKeyword(name)){
+                                       ident = AstNode.MakeIdentifier(name, new PlaceholderType(TextLocation.Empty), CurrentLocation); 
+                                       Symbols.AddSymbol(name, ident);
+                                   }else{
+                                       // The name is unsuitable for a method or a function name.
+                                       // Leave the parser to recover its state.
+                                   }
                                 .)
   '('                           (. GoDownScope();
                                    Symbols.Name = "func " + name + "`" + ScopeId++;
@@ -549,7 +599,7 @@ Parameter<out ParameterDeclaration param>   (. Identifier identifier; Expression
   [ '='
     Literal<out option>
   ]                                         (. if(identifier.Type is PlaceholderType && option == null)
-                                                   SemErr("You can't omit both the type annotation and the default value!");
+                                                   SemanticError("You can't omit both the type annotation and the default value!");
 
                                                param = EntityDeclaration.MakeParameter(identifier, option);
                                             .).
@@ -598,12 +648,14 @@ Type<out AstType type>
  | "void"							(. type = AstType.MakeSimpleType("tuple", Enumerable.Empty<AstType>(), start_loc, CurrentLocation); .)
  | TypePathExpression<out type>     (. if(is_reference) type = AstType.MakeReferenceType(type, TextLocation.Empty); .)
  )                                  (. start_loc = NextLocation; .)
- [ GenericTypeSignature<name, is_reference, start_loc, out type> ] (.
-                                                      if(!IsPrimitiveGenericType(name)){
-                                                          SemErr("`{0}` is not a generic type!");
-                                                          return;
-                                                      }
-                                                  .)
+ [ GenericTypeSignature<name, is_reference, start_loc, out type>
+                                    (.
+                                        if(!IsPrimitiveGenericType(name)){
+                                            SemErr("`{0}` is not a generic type!");
+                                            return;
+                                        }
+                                    .)
+ ]
  /* Split brackets into 2 tokens that represents the array type
     because otherwise it conflicts with the array literal.
  */
@@ -747,7 +799,7 @@ Block<out BlockStatement block>
   Stmt<out stmt>			(. stmts.Add(stmt); .)
   { Stmt<out stmt>			(. stmts.Add(stmt); .)
   }
-  '}' 						(. block = Statement.MakeBlock(stmts, start_loc, CurrentLocation);
+  SYNC '}' 				    (. block = Statement.MakeBlock(stmts, start_loc, CurrentLocation);
                                GoUpScope();
                             .).
 /*------------------------------------------------------------------------*/
@@ -870,11 +922,12 @@ VarDef<out Identifier ident, out Expression option> (. option = null; .)
                                       SemanticError("Give me some context or I can't infer the type of {0}", ident.Name);
                                .).
 /*------------------------------------------------------------------------*/
-PatternVarDef<out VariableInitializer init> (. Identifier ident; Expression expr; .)
+PatternVarDef<out VariableInitializer init> (. Identifier ident; Expression expr = null; .)
 =
   Identifier<out ident>
-  '='
-  PatternOrTest<out expr>                   (. init = AstNode.MakeVariableInitializer(ident, expr); .).
+  [ '='
+    PatternOrTest<out expr>
+  ]                                         (. init = AstNode.MakeVariableInitializer(ident, expr); .).
 /*------------------------------------------------------------------------*/
 RValueList<out SequenceExpression seq>		(. Expression tmp; var exprs = new List<Expression>(); .)
 =
@@ -913,6 +966,7 @@ PatternItem<out PatternConstruct pattern>   (. pattern = PatternConstruct.Null; 
 LhsPattern<out PatternConstruct pattern>    (. pattern = PatternConstruct.Null; .)
 =
   WildcardPattern<out pattern>
+  | ValueBindingPattern<out pattern>
   | IF(IsIdentifierPattern())
     IdentifierPattern<out pattern>
   | TuplePattern<out pattern>
@@ -1114,8 +1168,8 @@ UnaryOperator<out OperatorType opType>  (. opType = OperatorType.None; .)
 /*------------------------------------------------------------------------*/
 Primary<out Expression expr>		    (. expr = null; PathExpression path; AstType type_path = null; .)
 =
-  ( PathExpression<out path>            (. expr = path; .) /* It's possible that a PathExpression turns out to be just an Identifier */
-    [                                   (. type_path = ConvertPathToType(path); .)
+  ( PathExpression<out path>            (. expr = path; .) /* It's possible that a PathExpression turns out to be just an identifier */
+    [ IF(IsObjectCreation())            (. type_path = ConvertPathToType(path); .)
       ObjectCreation<type_path, out expr>
     ]
   | Atom<out expr>
@@ -1217,7 +1271,7 @@ PatternFactor<out Expression expr>  (. OperatorType type; Expression factor; exp
 /*------------------------------------------------------------------------*/
 PatternPrimary<out Expression expr>     (. expr = null; PathExpression path; .)
 =
-  ( PathExpression<out path>            (. expr = path; .) /* It's possible that a PathExpression turns out to be just an Identifier */
+  ( PathExpression<out path>            (. expr = path; .) /* It's possible that a PathExpression turns out to be just an identifier */
   | Literal<out expr>
   )
   { Trailer<ref expr>
@@ -1240,14 +1294,14 @@ ObjectCreation<AstType typePath, out Expression expr>
 =
   '{'
   ident                                 (. fields.Add(AstNode.MakeIdentifier(t.val, CurrentLocation)); .)
-  ':'
+  SYNC ':'
   CondExpr<out expr>                    (. values.Add(expr); .)
   { WEAK ','
     ident                               (. fields.Add(AstNode.MakeIdentifier(t.val, CurrentLocation)); .)
-    ':'
+    SYNC ':'
     CondExpr<out expr>                  (. values.Add(expr); .)
   }
-  '}'                                   (. expr = Expression.MakeObjectCreation(typePath, fields, values); .).
+  SYNC '}'                              (. expr = Expression.MakeObjectCreation(typePath, fields, values); .).
 /*------------------------------------------------------------------------*/
 Trailer<ref Expression expr>	(. var args = new List<Expression>(); .)
 =
@@ -1288,14 +1342,14 @@ Atom<out Expression expr>			(. var exprs = new List<Expression>(); expr = null; 
     [SequenceMaker<out expr>]
     SYNC ']'						(.  if(expr == null){
                                             var type = CreateTypeWithArgs("array", new PlaceholderType(TextLocation.Empty));
-    										expr = Expression.MakeSeqInitializer(type, Enumerable.Empty<Expression>());
+    										expr = Expression.MakeSequenceInitializer(type, Enumerable.Empty<Expression>());
                                         }
     								.)
   | '{'
     [DictMaker<out expr>]
     SYNC '}'                        (. if(expr == null){
                                            var type = CreateTypeWithArgs("dictionary", new PlaceholderType(TextLocation.Empty), new PlaceholderType(TextLocation.Empty));
-                                           expr = Expression.MakeSeqInitializer(type, Enumerable.Empty<Expression>());
+                                           expr = Expression.MakeSequenceInitializer(type, Enumerable.Empty<Expression>());
                                        }
                                     .).
 /*------------------------------------------------------------------------*/
@@ -1324,7 +1378,7 @@ SequenceMaker<out Expression expr>	(.  var exprs = new List<Expression>();
                                         string seq_type_name = "array";
 									.)
 =
-  "..."                                 (. expr = Expression.MakeSeqInitializer(CreateTypeWithArgs("vector", new PlaceholderType(TextLocation.Empty)), Enumerable.Empty<Expression>()); .)
+  "..."                                 (. expr = Expression.MakeSequenceInitializer(CreateTypeWithArgs("vector", new PlaceholderType(TextLocation.Empty)), Enumerable.Empty<Expression>()); .)
   | CondExpr<out expr>                  (. exprs.Add(expr); .)
   ( { IF(NotFinalComma()) WEAK ','
       CondExpr<out expr>                (. exprs.Add(expr); .)
@@ -1332,7 +1386,7 @@ SequenceMaker<out Expression expr>	(.  var exprs = new List<Expression>();
     [ ','
       "..."                             (. seq_type_name = "vector"; .)
     ]                                   (. var type = CreateTypeWithArgs(seq_type_name, new PlaceholderType(TextLocation.Empty));
-                                           expr = Expression.MakeSeqInitializer(type, exprs);
+                                           expr = Expression.MakeSequenceInitializer(type, exprs);
                                         .)
   | CompFor<out comp>                   (. Symbols.AddScope();
                                            GoDownScope();
@@ -1359,7 +1413,7 @@ DictMaker<out Expression expr>			(. Expression key, val; var list = new List<Key
       CondExpr<out val>                 (. pair = Expression.MakeKeyValuePair(key, val);
                                            list.Add(pair);
                                         .)
-    }                                   (. expr = Expression.MakeSeqInitializer(type, list); .)
+    }                                   (. expr = Expression.MakeSequenceInitializer(type, list); .)
   | CompFor<out comp>                   (. expr = Expression.MakeComp(pair, (ComprehensionForClause)comp, type); .)
   ).
 /*------------------------------------------------------------------------*/
@@ -1384,7 +1438,13 @@ CompIf<out ComprehensionIter expr>		(. Expression tmp; ComprehensionIter body = 
 /*------------------------------------------------------------------------*/
 Identifier<out Identifier ident>    (. string name; AstType type = new PlaceholderType(TextLocation.Empty); .)
 =
-  ident                             (. name = t.val; var loc = CurrentLocation; .)
+  ident                             (.
+                                        name = t.val; var loc = CurrentLocation; 
+                                        if(CheckKeyword(t.val)){
+                                            ident = null;
+                                            return;
+                                        }
+                                    .)
   [ "(-"
     Type<out type>
   ]                                 (.

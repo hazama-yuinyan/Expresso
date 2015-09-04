@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 
 namespace Expresso.TypeSystem
@@ -56,6 +57,15 @@ namespace Expresso.TypeSystem
 
     public class KnownTypeReference
     {
+        static HashSet<string> _Keywords = new HashSet<string>{
+            "int", "uint", "bool", "float", "double", "bigint", "tuple", "vector", "dictionary",
+            "byte", "char", "string", "function", "intseq"
+        };
+
+        public static HashSet<string> Keywords{
+            get{return _Keywords;}
+        }
+
         public KnownTypeReference()
         {
         }
