@@ -130,7 +130,7 @@ static uint ScopeId = 1;
 			break;
 
 		default:
-			SemErr("Unknown object type");
+			SemanticError("Error E0030: Unknown object type");
 			break;
 		}
 		
@@ -161,7 +161,7 @@ static uint ScopeId = 1;
             if(uint.TryParse(numerics.Substring(0, numerics.Length - 1), out u))
                 obj = u;
             else
-                SemErr("Invalid uint representation!");
+                SemanticError("Error E0040: Invalid uint representation!");
             break;
         }
 
@@ -179,7 +179,7 @@ static uint ScopeId = 1;
             if(float.TryParse(numerics.Substring(0, numerics.Length - 1), out f))
                 obj = f;
             else
-                SemErr("Invalid float representation!");
+                SemanticError("Error E0050: Invalid float representation!");
             break; 
         }
 
@@ -194,7 +194,7 @@ static uint ScopeId = 1;
                 obj = d;
                 type_name = "double";
             }else{
-                SemErr("Unknown sequence for numeric literals! Make sure that you write a number!");
+                SemanticError("Error E0051: Unknown sequence for numeric literals! Make sure that you write a number!");
             }
             break;
         }
@@ -330,6 +330,10 @@ static uint ScopeId = 1;
         return false;
     }
 
+    /// <summary>
+    /// Reports a semantical error message.
+    /// It is intended to be used inside the Parser class.
+    /// </summary>
 	public void SemanticError(string format, params object[] args)
 	{
 		//Convenient method for printing a semantic error with a format string
@@ -739,7 +743,7 @@ static uint ScopeId = 1;
 		if (la.kind == 54) {
 			GenericTypeSignature(name, is_reference, start_loc, out type);
 			if(!IsPrimitiveGenericType(name)){
-			   SemErr("`{0}` is not a generic type!");
+			   SemanticError("Error E0006: `{0}` is not a generic type!");
 			   return;
 			}
 			
@@ -748,7 +752,7 @@ static uint ScopeId = 1;
 			Get();
 			Expect(3);
 			if(type.IsNull)
-			   SemErr("Array of unknown type is specified. Unknown type is just unknown!");
+			   SemanticError("Error E0007: Array of unknown type is specified. Unknown type is just unknown!");
 			
 			type = AstType.MakeSimpleType("array", new []{type}, start_loc, CurrentLocation);
 			
@@ -812,7 +816,7 @@ static uint ScopeId = 1;
 		while (WeakSeparator(12,3,5) ) {
 			Parameter(out param);
 			if(seen_option && param.Option == null)
-			   SemErr("You can't put optional parameters before non-optional parameters");
+			   SemanticError("Error E0002: You can't put optional parameters before non-optional parameters");
 			else if(!seen_option && param.Option != null)
 			   seen_option = true;
 			
@@ -828,7 +832,7 @@ static uint ScopeId = 1;
 				Type(out type);
 			}
 			if(type == null || !(type is SimpleType) || ((SimpleType)type).Name != "array")
-			   SemErr("The variadic parameter must be an array!");
+			   SemanticError("Error E0001: The variadic parameter must be an array!");
 			
 			var identifier = AstNode.MakeIdentifier(name, type, loc);
 			param = EntityDeclaration.MakeParameter(identifier, null);
@@ -867,7 +871,7 @@ static uint ScopeId = 1;
 			Literal(out option);
 		}
 		if(identifier.Type is PlaceholderType && option == null)
-		   SemanticError("You can't omit both the type annotation and the default value!");
+		   SemanticError("Error E0004: You can't omit both the type annotation and the default value!");
 		
 		param = EntityDeclaration.MakeParameter(identifier, option);
 		
@@ -935,7 +939,7 @@ static uint ScopeId = 1;
 			   int start_end_hashes = tmp.Length - index_double_quote - 1;
 			   int index_end_double_quote = tmp.LastIndexOf('"');
 			   if(start_end_hashes != index_end_double_quote + 1)
-			       SemErr("The number of opening and closing hash symbols in a raw string must match!");
+			       SemanticError("Error E0008: The number of opening and closing hash symbols in a raw string must match!");
 			
 			   tmp = tmp.Substring(index_double_quote, tmp.Length - index_end_double_quote - index_double_quote);
 			}
@@ -976,7 +980,7 @@ static uint ScopeId = 1;
 			CondExpr(out option);
 		}
 		if(ident.Type is PlaceholderType && option == null)
-		   SemanticError("Give me some context or I can't infer the type of {0}", ident.Name);
+		   SemanticError("Error E0003: Give me some context or I can't infer the type of {0}", ident.Name);
 		
 	}
 
@@ -1093,7 +1097,7 @@ static uint ScopeId = 1;
 				AugAssignOpe(ref op_type);
 				RValueList(out seq);
 				if(lhs.Count != seq.Count)  //See if both sides have the same number of items or not
-				   SemErr("An augumented assignment must have both sides balanced.");
+				   SemanticError("Error E0007: An augumented assignment must have both sides balanced.");
 				
 				stmt = Statement.MakeAugumentedAssignment(lhs, seq, op_type, start_loc, CurrentLocation);
 				
