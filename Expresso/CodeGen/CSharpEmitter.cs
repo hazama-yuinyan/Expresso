@@ -320,6 +320,8 @@ namespace Expresso.CodeGen
             foreach(var variable in varDecl.Variables){
                 var tmp = variable.AcceptWalker(this, context);
                 decls.Add(tmp);
+                if(context.Additionals != null)
+                    context.Additionals.Add(tmp);
             }
             return CSharpExpr.Block(decls);
         }

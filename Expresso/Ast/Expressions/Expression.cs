@@ -291,11 +291,21 @@ namespace Expresso.Ast
             return new NewExpression(creationExpr);
         }
 
+        /// <summary>
+        /// Makes a path expression from a sequence of identifiers.
+        /// </summary>
+        /// <returns>A path expression.</returns>
+        /// <param name="paths">Path items.</param>
         public static PathExpression MakePath(IEnumerable<Identifier> paths)
         {
             return new PathExpression(paths);
         }
 
+        /// <summary>
+        /// Makes a path expression from a sequence of identifiers.(handy params version)
+        /// </summary>
+        /// <returns>A path expression.</returns>
+        /// <param name="paths">Path items.</param>
         public static PathExpression MakePath(params Identifier[] paths)
         {
             return new PathExpression(paths);

@@ -62,7 +62,6 @@ namespace Expresso.CodeGen
         /// <summary>
         /// The constructor builder that we are currently constructing.
         /// </summary>
-        /// <value>The constructor builder.</value>
         public ConstructorBuilder ConstructorBuilder{
             get; set;
         }
@@ -77,7 +76,6 @@ namespace Expresso.CodeGen
         /// <summary>
         /// The assembly object that we are currently constructing.
         /// </summary>
-        /// <value>The assembly.</value>
         public Assembly Assembly{
             get; set;
         }
@@ -85,7 +83,6 @@ namespace Expresso.CodeGen
         /// <summary>
         /// The module object that we are targeting at.
         /// </summary>
-        /// <value>The module.</value>
         public Module Module{
             get; set;
         }
@@ -105,7 +102,7 @@ namespace Expresso.CodeGen
         }
 
         /// <summary>
-        /// It will be set a parameter expression that represents the temporary variable.
+        /// It will be set to a parameter expression that represents the temporary variable.
         /// </summary>
         public System.Linq.Expressions.ParameterExpression TemporaryVariable{
             get; set;

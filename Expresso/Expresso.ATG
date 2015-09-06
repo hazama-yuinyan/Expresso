@@ -261,7 +261,7 @@ $namespace=Expresso
         if(t.kind != _lcurly && t.kind != _double_colon)
             return false;
 
-        var x = scanner.Peek();
+        var x = t;
         while(x.kind == _ident || x.kind == _double_colon)
             x = scanner.Peek();
 
@@ -391,12 +391,18 @@ IGNORE cr + lf + tab
 
 PRODUCTIONS
 /*------------------------------------------------------------------------*/
-Expresso                    		(. ExpressoAst module_decl = null; .)
+Expresso                    		(. ExpressoAst module_decl = null;
+                                       try{
+                                    .)
 = 
   ModuleBody<out module_decl>		(.
-                                        Debug.Assert(Symbols.Parent == null);
-                                        if(DoPostParseProcessing){
-                                            ExpressoNameBinder.BindAst(module_decl, this); //Here's the start of post-parse processing
+                                            Debug.Assert(Symbols.Parent == null);
+                                            if(DoPostParseProcessing){
+                                                ExpressoNameBinder.BindAst(module_decl, this); //Here's the start of post-parse processing
+                                            }
+                                        }
+                                        catch(ParserException e){
+                                            ReportSemanticError(e.Message, null);
                                         }
   										this.TopmostAst = module_decl;	//Currently there is not so much code out there, though...
   									.).
@@ -731,7 +737,7 @@ ContinueStmt<out Statement stmt>	(. int count = 1; var start_loc = NextLocation;
     integer							(. count = Convert.ToInt32(t.val); .)
   ]
   SYNC ';' 							(. stmt = Statement.MakeContinueStmt(
-                                            Expression.MakeConstant("int", count, start_loc), start_loc, CurrentLocation
+                                           Expression.MakeConstant("int", count, start_loc), start_loc, CurrentLocation
                                        );
                                     .).
 /*------------------------------------------------------------------------*/
@@ -812,8 +818,7 @@ CompoundStmt<out Statement stmt>	(. stmt = null; .)
     IfStmt<out stmt>					
   | WhileStmt<out stmt>
   | ForStmt<out stmt>
-  | MatchStmt<out stmt>
-  /*| FuncDecl<out stmt>*/.
+  | MatchStmt<out stmt>.
 /*------------------------------------------------------------------------*/
 IfStmt<out Statement stmt>			(. PatternConstruct pattern = null; BlockStatement true_block, false_block = null;
                                        var start_loc = NextLocation;
@@ -835,17 +840,19 @@ IfStmt<out Statement stmt>			(. PatternConstruct pattern = null; BlockStatement 
 /*------------------------------------------------------------------------*/
 WhileStmt<out Statement stmt>		(. Expression cond; BlockStatement body; var start_loc = NextLocation; .)
 =
-  "while"                           (. Symbols.AddScope();
+  "while"                           (.
+                                       Symbols.AddScope();
                                        GoDownScope();
                                        Symbols.Name = "while`" + ScopeId++;
                                     .)
   CondExpr<out cond>
-  Block<out body>                   (. stmt = Statement.MakeWhileStmt(cond, body, start_loc);
+  Block<out body>                   (.
+                                       stmt = Statement.MakeWhileStmt(cond, body, start_loc);
                                        GoUpScope();
                                     .).
 /*------------------------------------------------------------------------*/
-ForStmt<out Statement stmt>			(.  PatternConstruct left; Expression rvalue; BlockStatement body;
-                                        var start_loc = NextLocation;
+ForStmt<out Statement stmt>			(. PatternConstruct left; Expression rvalue; BlockStatement body;
+                                       var start_loc = NextLocation;
 									.)
 =
   "for"                             (. Symbols.AddScope();
@@ -897,18 +904,18 @@ PatternList<. out List<PatternConstruct> patterns, out Expression guard .>
   ]
   "=>".
 /*------------------------------------------------------------------------*/
-VarDeclStmt<out Statement stmt>         (.  Expression rhs = null; var start_loc = NextLocation;
-								        	Identifier ident; var modifiers = ExpressoModifiers.None;
-								          	var idents = new List<Identifier>(); var exprs = new List<Expression>();
-								        .)
+VarDeclStmt<out Statement stmt>        (. Expression rhs = null; var start_loc = NextLocation;
+								          Identifier ident; var modifiers = ExpressoModifiers.None;
+								          var idents = new List<Identifier>(); var exprs = new List<Expression>();
+								       .)
 = 
-  ( "let"                               (. modifiers = ExpressoModifiers.Immutable; .)
+  ( "let"                              (. modifiers = ExpressoModifiers.Immutable; .)
   | "var"
   )
-  VarDef<out ident, out rhs>	        (.  idents.Add(ident);
-  						 			        exprs.Add(rhs ?? Expression.Null);
-  						 			        rhs = null;
-  						 		        .)
+  VarDef<out ident, out rhs>	       (. idents.Add(ident);
+  						 			      exprs.Add(rhs ?? Expression.Null);
+  						 			      rhs = null;
+  						 		       .)
   { WEAK ','
     VarDef<out ident, out rhs>         (. idents.Add(ident);
   									      exprs.Add(rhs ?? Expression.Null);
@@ -1294,18 +1301,25 @@ NewExpression<out Expression expr>      (. AstType type_path; .)
   ObjectCreation<type_path, out expr>   (. expr = Expression.MakeNewExpr((ObjectCreationExpression)expr); .).
 /*------------------------------------------------------------------------*/
 ObjectCreation<AstType typePath, out Expression expr>
-                                        (. var fields = new List<Identifier>(); var values = new List<Expression>(); .)
+                                        (.
+                                           var fields = new List<Identifier>(); var values = new List<Expression>();
+                                           Symbols.AddScope();
+                                           GoDownScope();
+                                        .)
 =
   '{'
   ident                                 (. fields.Add(AstNode.MakeIdentifier(t.val, CurrentLocation)); .)
-  SYNC ':'
+  ':'
   CondExpr<out expr>                    (. values.Add(expr); .)
   { WEAK ','
     ident                               (. fields.Add(AstNode.MakeIdentifier(t.val, CurrentLocation)); .)
-    SYNC ':'
+    ':'
     CondExpr<out expr>                  (. values.Add(expr); .)
   }
-  SYNC '}'                              (. expr = Expression.MakeObjectCreation(typePath, fields, values); .).
+  SYNC '}'                              (.
+                                           expr = Expression.MakeObjectCreation(typePath, fields, values);
+                                           GoUpScope();
+                                        .).
 /*------------------------------------------------------------------------*/
 Trailer<ref Expression expr>	(. var args = new List<Expression>(); .)
 =
