@@ -67,6 +67,11 @@ namespace Expresso.Ast.Analysis
                 throw new NotImplementedException("Can not work on that node!");
             }
 
+            public AstType VisitValueBindingForStatement(ValueBindingForStatement valueBindingForStatment)
+            {
+                throw new NotImplementedException("Can not work on that node!");
+            }
+
             public AstType VisitIfStatement(IfStatement ifStmt)
             {
                 throw new NotImplementedException("Can not work on that node!");

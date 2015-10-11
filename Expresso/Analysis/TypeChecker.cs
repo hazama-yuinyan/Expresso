@@ -121,6 +121,27 @@ namespace Expresso.Ast.Analysis
             return null;
         }
 
+        public AstType VisitValueBindingForStatement(ValueBindingForStatement valueBindingForStatment)
+        {
+            int tmp_counter = scope_counter;
+            scope_counter = 0;
+            DescendScope();
+
+            // TODO: implement it in a more formal way
+            var left_type = valueBindingForStatment.Variables.First().NameToken.AcceptWalker(this);
+            if(IsPlaceholderType(left_type)){
+                var inferred_type = valueBindingForStatment.Variables.First().Initializer.AcceptWalker(inference_runner);
+                left_type.ReplaceWith(inferred_type);
+            }else{
+                valueBindingForStatment.Variables.First().Initializer.AcceptWalker(this);
+            }
+            valueBindingForStatment.Body.AcceptWalker(this);
+
+            AscendScope();
+            scope_counter = tmp_counter + 1;
+            return null;
+        }
+
         public AstType VisitIfStatement(IfStatement ifStmt)
         {
             int tmp_counter = scope_counter;

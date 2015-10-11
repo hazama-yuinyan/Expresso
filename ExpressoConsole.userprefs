@@ -1,13 +1,46 @@
-﻿<Properties StartupItem="ExpressoConsole.csproj">
+﻿<Properties StartupItem="ExpressoConsole.csproj" RefactoringSettings.EnableRefactorings="True">
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug|x86" />
-  <MonoDevelop.Ide.Workbench ActiveDocument="Expresso/Expresso.ATG">
+  <MonoDevelop.Ide.Workbench ActiveDocument="Expresso/Analysis/SymbolTable.cs">
     <Files>
-      <File FileName="Expresso/Expresso.ATG" Line="644" Column="2" />
+      <File FileName="Expresso/Expresso.ATG" Line="320" Column="50" />
       <File FileName="Expresso/Documentation/ExpressoDesignMemo.txt" Line="1" Column="1" />
+      <File FileName="Expresso/CodeGen/CSharpEmitter.cs" Line="1" Column="1" />
+      <File FileName="ExpressoTest/EmitterTests.cs" Line="1" Column="1" />
+      <File FileName="ExpressoTest/Helpers.cs" Line="1" Column="1" />
+      <File FileName="ExpressoTest/ParserTests.cs" Line="1" Column="1" />
+      <File FileName="ExpressoTest/sources/for_unit_tests/simple_literals.exs" Line="1" Column="1" />
+      <File FileName="ExpressoTest/sources/for_unit_tests/general_expressions.exs" Line="1" Column="1" />
+      <File FileName="ExpressoTest/sources/for_unit_tests/statements.exs" Line="1" Column="1" />
+      <File FileName="Expresso/Analysis/SymbolTable.cs" Line="1" Column="1" />
+      <File FileName="Expresso/Parser.cs" Line="1" Column="1" />
+      <File FileName="Expresso/Documentation/ExpressoLanguageSpecificationMemo.txt" Line="1" Column="1" />
+      <File FileName="Libraries/NRefactory/ICSharpCode.NRefactory/PatternMatching/Pattern.cs" Line="1" Column="1" />
     </Files>
+    <Pads>
+      <Pad Id="MonoDevelop.NUnit.TestPad">
+        <State name="__root__">
+          <Node name="ExpressoConsole" expanded="True">
+            <Node name="ExpressoTest" expanded="True">
+              <Node name="Expresso" expanded="True">
+                <Node name="Test" expanded="True">
+                  <Node name="ParserTests" expanded="True">
+                    <Node name="Statements" selected="True" />
+                  </Node>
+                </Node>
+              </Node>
+            </Node>
+          </Node>
+        </State>
+      </Pad>
+    </Pads>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>
-    <BreakpointStore />
+    <BreakpointStore>
+      <Breakpoint file="/Users/ozaki/Documents/MonodevelopSolutions/Expresso/Expresso/Analysis/SymbolTable.cs" line="182" column="1" />
+      <Breakpoint conditionExpression="success == false" file="/Users/ozaki/Documents/MonodevelopSolutions/Expresso/Libraries/NRefactory/ICSharpCode.NRefactory/PatternMatching/Pattern.cs" line="98" column="1" />
+      <Breakpoint enabled="false" conditionExpression="cur1.GetType().Name == &quot;MatchPatternClause&quot;" file="/Users/ozaki/Documents/MonodevelopSolutions/Expresso/Libraries/NRefactory/ICSharpCode.NRefactory/PatternMatching/Pattern.cs" line="97" column="1" />
+      <Breakpoint file="/Users/ozaki/Documents/MonodevelopSolutions/Expresso/Expresso/Parser.cs" line="1052" column="1" />
+    </BreakpointStore>
   </MonoDevelop.Ide.DebuggingService.Breakpoints>
   <MonoDevelop.Ide.DebuggingService.PinnedWatches />
 </Properties>

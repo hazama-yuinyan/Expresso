@@ -1,6 +1,8 @@
 ﻿using System;
-using NUnit.Framework;
+using System.Collections.Generic;
 using Expresso.CodeGen;
+using NUnit.Framework;
+using NUnit.Framework.SyntaxHelpers;
 
 namespace Expresso.Test
 {
@@ -16,7 +18,7 @@ namespace Expresso.Test
 
             var ast = parser.TopmostAst;
             var options = new ExpressoCompilerOptions{
-                LibraryPaths = "",
+                LibraryPaths = new List<string>{""},
                 OutputPath = "../../test_executables",
                 BuildType = BuildType.Debug
             };

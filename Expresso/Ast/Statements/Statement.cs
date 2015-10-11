@@ -188,6 +188,17 @@ namespace Expresso.Ast
             return new ForStatement(pattern, rvalue, body, loc);
         }
 
+        public static ValueBindingForStatement MakeValueBindingForStmt(Modifiers modifiers, IEnumerable<VariableInitializer> initializers,
+            BlockStatement body, TextLocation loc = default(TextLocation))
+        {
+            return new ValueBindingForStatement(modifiers, initializers, body, loc);
+        }
+
+        public static ValueBindingForStatement MakeValueBindingForStmt(Modifiers modifiers,BlockStatement body, params VariableInitializer[] initializers)
+        {
+            return new ValueBindingForStatement(modifiers, initializers, body, TextLocation.Empty);
+        }
+
         public static EmptyStatement MakeEmptyStmt(TextLocation loc = default(TextLocation))
         {
             return new EmptyStatement(loc);

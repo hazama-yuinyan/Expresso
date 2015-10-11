@@ -83,7 +83,7 @@ namespace Expresso.Ast
             get{return GetChildByRole(GetOperatorRole(Operator));}
         }
 
-        public AssignmentExpression(Expression lhsExpr, Expression rhsExpr, OperatorType opType = OperatorType.None)
+        public AssignmentExpression(Expression lhsExpr, Expression rhsExpr, OperatorType opType = OperatorType.Equality)
 		{
             Left = lhsExpr;
             Right = rhsExpr;
@@ -109,7 +109,7 @@ namespace Expresso.Ast
         {
             AssignmentExpression o = other as AssignmentExpression;
             return o != null && (o.Operator == OperatorType.Any || Operator == o.Operator)
-                && Left.DoMatch(other, match) && Right.DoMatch(other, match);
+                && Left.DoMatch(o.Left, match) && Right.DoMatch(o.Right, match);
         }
 
         public static TokenRole GetOperatorRole(OperatorType op)
