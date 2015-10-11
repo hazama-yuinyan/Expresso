@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using Expresso.CodeGen;
 using NUnit.Framework;
-using NUnit.Framework.SyntaxHelpers;
 
 namespace Expresso.Test
 {

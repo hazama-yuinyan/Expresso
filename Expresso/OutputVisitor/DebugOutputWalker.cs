@@ -12,6 +12,13 @@ namespace Expresso.Ast
     /// </summary>
     public class DebugOutputWalker : IAstWalker
     {
+        static Dictionary<Type, string[]> Enclosures = new Dictionary<Type, string[]>{
+            {typeof(List<>), new []{"[", "]"}},
+            {typeof(Array), new []{"[", "]"}},
+            {typeof(Dictionary<,>), new []{"{", "}"}},
+            {typeof(Tuple), new []{"(", ")"}}
+        };
+
         readonly TextWriter writer;
 
         public DebugOutputWalker(TextWriter writer)
@@ -70,7 +77,9 @@ namespace Expresso.Ast
         public void VisitBinaryExpression(BinaryExpression binaryExpr)
         {
             binaryExpr.Left.AcceptWalker(this);
+            writer.Write(' ');
             binaryExpr.OperatorToken.AcceptWalker(this);
+            writer.Write(' ');
             binaryExpr.Right.AcceptWalker(this);
         }
 
@@ -210,14 +219,13 @@ namespace Expresso.Ast
         public void VisitSequenceInitializer(SequenceInitializer seqInitializer)
         {
             var type = CSharpCompilerHelper.GetContainerType(seqInitializer.ObjectType);
-            var enclosures = type == typeof(List<>) ? new []{"[", "]"} :
-                type == typeof(Dictionary<,>) ? new []{"{", "}"} : null;
+            var enclosures = Enclosures[type];
             writer.Write(enclosures[0]);
 
             int i = 0;
             foreach(var item in seqInitializer.Items){
                 if(i >= 5){
-                    writer.Write(", ...");
+                    writer.Write(", ~~");
                     break;
                 }else if(i != 0){
                     writer.Write(", ");
@@ -226,6 +234,9 @@ namespace Expresso.Ast
                 item.AcceptWalker(this);
                 ++i;
             }
+
+            if(seqInitializer.ObjectType.Identifier == "vector")
+                writer.Write("...");
 
             writer.Write(enclosures[1]);
         }
@@ -670,7 +681,7 @@ namespace Expresso.Ast
 
         public void VisitExpressoTokenNode(ExpressoTokenNode tokenNode)
         {
-            writer.Write(TokenRole.Tokens[(int)tokenNode.RoleIndex >> (TokenRole.RoleIndexBits + 1)]);
+            writer.Write(tokenNode.Token);
         }
 
         #endregion

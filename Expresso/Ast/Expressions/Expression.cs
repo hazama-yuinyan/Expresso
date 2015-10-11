@@ -122,26 +122,56 @@ namespace Expresso.Ast
         }
 
         #region Factory methods
+        /// <summary>
+        /// Makes a simple assignment expression.
+        /// </summary>
+        /// <returns>An assignment expression.</returns>
+        /// <param name="lhs">The left hand side expression(single item)</param>
+        /// <param name="rhs">The right hand side expression(single item)</param>
         public static AssignmentExpression MakeSingleAssignment(Expression lhs, Expression rhs)
         {
             return new AssignmentExpression(lhs, rhs);
         }
 
+        /// <summary>
+        /// Makes a simuletanous assignment expression.
+        /// </summary>
+        /// <returns>An assignment.</returns>
+        /// <param name="lhs">The left hand side expressions(multiple items).</param>
+        /// <param name="rhs">The right hand side expressions(multiple items).</param>
         public static AssignmentExpression MakeAssignment(SequenceExpression lhs, SequenceExpression rhs)
         {
             return new AssignmentExpression(lhs, rhs);
         }
 
+        /// <summary>
+        /// Makes a complex assignment expression.
+        /// </summary>
+        /// <returns>An assignment.</returns>
+        /// <param name="lhs">The left hand side expression(can be an assignment expression).</param>
+        /// <param name="rhs">The right hand side expression(single item).</param>
         public static AssignmentExpression MakeMultipleAssignment(AssignmentExpression lhs, SequenceExpression rhs)
         {
             return new AssignmentExpression(lhs, rhs);
         }
 
+        /// <summary>
+        /// Makes a call expression.
+        /// </summary>
+        /// <returns>A call expression.</returns>
+        /// <param name="target">The target expression to call. It has to be a callable object.</param>
+        /// <param name="args">Arguments.</param>
         public static CallExpression MakeCallExpr(Expression target, IEnumerable<Expression> args)
         {
             return new CallExpression(target, args);
         }
 
+        /// <summary>
+        /// Makes a call expression.(handy params version)
+        /// </summary>
+        /// <returns>A call expression.</returns>
+        /// <param name="target">The target expression to call. It has to be a callable object.</param>
+        /// <param name="args">Arguments.</param>
         public static CallExpression MakeCallExpr(Expression target, params Expression[] args)
         {
             return new CallExpression(target, args);
@@ -157,22 +187,37 @@ namespace Expresso.Ast
             return new SequenceExpression(items);
         }
 
+        /// <summary>
+        /// Makes a unary expression.
+        /// </summary>
+        /// <returns>An expression.</returns>
+        /// <param name="op">The operator type.</param>
+        /// <param name="operand">The operand.</param>
         public static UnaryExpression MakeUnaryExpr(OperatorType op, Expression operand)
         {
             return new UnaryExpression(op, operand);
         }
 
+        /// <summary>
+        /// Makes a binary expression.
+        /// </summary>
+        /// <returns>The binary expr.</returns>
+        /// <param name="op">The operator type.</param>
+        /// <param name="lhs">The left hand side expression.</param>
+        /// <param name="rhs">The right hand side expression.</param>
         public static BinaryExpression MakeBinaryExpr(OperatorType op, Expression lhs, Expression rhs)
         {
             return new BinaryExpression(lhs, rhs, op);
         }
 
-        public static SequenceInitializer MakeSeqInitializer(SimpleType type, IEnumerable<Expression> initializeList)
+        public static SequenceInitializer MakeSequenceInitializer(SimpleType type,
+            IEnumerable<Expression> initializeList)
         {
             return new SequenceInitializer(type, initializeList);
         }
 
-        public static SequenceInitializer MakeSeqInitializer(SimpleType type, params Expression[] initializers)
+        public static SequenceInitializer MakeSequenceInitializer(SimpleType type,
+            params Expression[] initializers)
         {
             return new SequenceInitializer(type, initializers);
         }
@@ -246,11 +291,21 @@ namespace Expresso.Ast
             return new NewExpression(creationExpr);
         }
 
+        /// <summary>
+        /// Makes a path expression from a sequence of identifiers.
+        /// </summary>
+        /// <returns>A path expression.</returns>
+        /// <param name="paths">Path items.</param>
         public static PathExpression MakePath(IEnumerable<Identifier> paths)
         {
             return new PathExpression(paths);
         }
 
+        /// <summary>
+        /// Makes a path expression from a sequence of identifiers.(handy params version)
+        /// </summary>
+        /// <returns>A path expression.</returns>
+        /// <param name="paths">Path items.</param>
         public static PathExpression MakePath(params Identifier[] paths)
         {
             return new PathExpression(paths);

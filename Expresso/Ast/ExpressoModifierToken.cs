@@ -1,6 +1,7 @@
 using System;
 using ICSharpCode.NRefactory;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 
 namespace Expresso.Ast
@@ -26,7 +27,9 @@ namespace Expresso.Ast
         internal protected override bool DoMatch(AstNode other, ICSharpCode.NRefactory.PatternMatching.Match match)
         {
             ExpressoModifierToken o = other as ExpressoModifierToken;
-            return o != null && modifier == o.modifier;
+            bool res = o != null && modifier == o.modifier;
+            Debug.WriteIf(!res, modifier);
+            return res;
         }
 
         // Not worth using a dictionary for such few elements.

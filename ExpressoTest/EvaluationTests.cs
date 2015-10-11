@@ -14,7 +14,8 @@ namespace Expresso.Test
         [Test]
         public void SimpleArithmetic()
         {
-            var parser = new Parser(new Scanner("../../sources/for_interpreter/simple_arithmetic.exs"));
+            var parser = new Parser(new Scanner("../../sources/for_unit_tests/simple_arithmetic.exs"));
+            parser.DoPostParseProcessing = true;
             parser.Parse();
 
             var expected = new object[]{
@@ -37,9 +38,10 @@ namespace Expresso.Test
         }
 
         [Test]
-        public void BasicOperations()
+        public void GeneralOperations()
         {
-            var parser = new Parser(new Scanner("../../sources/for_interpreter/basic_operations.exs"));
+            var parser = new Parser(new Scanner("../../sources/for_unit_tests/general_operations.exs"));
+            parser.DoPostParseProcessing = true;
             parser.Parse();
 
             var expected_a = new List<int>{1, 2, 3};
@@ -78,10 +80,14 @@ namespace Expresso.Test
         [Test]
         public void Statements()
         {
-            var parser = new Parser(new Scanner("../../sources/for_interpreter/statements.exs"));
+            var parser = new Parser(new Scanner("../../sources/for_unit_tests/statements.exs"));
+            parser.DoPostParseProcessing = true;
             parser.Parse();
 
+            var expected_x = 100;
             var expected_y = 200;
+            var expected_z = 300;
+            var expected_w = 400;
             var expected_sum = Helpers.CalcSum(0, expected_y);
             var expected_strs = new List<string>{"akarichan", "chinatsu", "kyoko", "yui"};
             var expected_fibs = new List<int>();
@@ -99,10 +105,10 @@ namespace Expresso.Test
                 select Tuple.Create(i, j);
 
             var expected = new object[]{
-                100,    //x
+                expected_x,
                 expected_y,
-                300,    //z
-                400,    //w
+                expected_z,
+                expected_w,
                 true,   //flag
                 expected_sum,
                 expected_strs,
@@ -116,7 +122,8 @@ namespace Expresso.Test
         [Test]
         public void BuiltinObjects()
         {
-            var parser = new Parser(new Scanner("../../sources/for_interpreter/builtin_objects.exs"));
+            var parser = new Parser(new Scanner("../../sources/for_unit_tests/builtin_objects.exs"));
+            parser.DoPostParseProcessing = true;
             parser.Parse();
 
             var expected_a = new List<int>{1, 2, 3, 4, 5, 6, 7, 8};
@@ -128,14 +135,13 @@ namespace Expresso.Test
             };
             var expected_c = Tuple.Create("akarichan", "kawakawa", "chinatsuchan", 2424);
 
-            var tmp_seq = new ExpressoIntegerSequence(0, 3, 1, false);
-            //var expected_d = ExpressoOps.Slice(expected_a, tmp_seq);
+            var expected_d = expected_a.Select((x, i) => i < 3);
 
             var expected = new object[]{
                 expected_a,
                 expected_b,
                 expected_c,
-                //expected_d,
+                expected_d,
                 expected_c.Item3    //e
             };
 
@@ -145,7 +151,7 @@ namespace Expresso.Test
         [Test]
         public void ComplexExpressions()
         {
-            var parser = new Parser(new Scanner("../../sources/for_interpreter/complex_expressions.exs"));
+            var parser = new Parser(new Scanner("../../sources/for_unit_tests/complex_expressions.exs"));
             parser.Parse();
 
             var tmp_x =
@@ -187,7 +193,7 @@ namespace Expresso.Test
         [Test]
         public void Class()
         {
-            var parser = new Parser(new Scanner("../../sources/for_interpreter/class.exs"));
+            var parser = new Parser(new Scanner("../../sources/for_unit_tests/class.exs"));
             parser.Parse();
 
             var expected = new object[]{
@@ -224,7 +230,7 @@ namespace Expresso.Test
         [Test]
         public void Module()
         {
-            var parser = new Parser(new Scanner("../../sources/for_interpreter/module.exs"));
+            var parser = new Parser(new Scanner("../../sources/for_unit_tests/module.exs"));
             parser.Parse();
 
             var private_names = new List<string>{

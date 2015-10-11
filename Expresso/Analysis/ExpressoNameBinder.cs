@@ -27,6 +27,8 @@ using System.Linq;
  *    ImportDeclaration,
  *    Comprehension(ComprehensionForClause expression)
  */
+using Expresso.TypeSystem;
+using Expresso.CodeGen;
 
 namespace Expresso.Ast.Analysis
 {
@@ -48,6 +50,11 @@ namespace Expresso.Ast.Analysis
 		{
 			parser = parentParser;
             symbol_table = parentParser.Symbols;
+
+            foreach(var pair in ExpressoSymbol.Identifiers){
+                if(pair.Value.IdentifierId == 0)
+                    UniqueIdGenerator.DefineNewId(pair.Value);
+            }
 		}
 		
 		#region Public surface
@@ -453,7 +460,8 @@ namespace Expresso.Ast.Analysis
 
         public void VisitObjectCreationExpression(ObjectCreationExpression creation)
         {
-            creation.Items.AcceptWalker(this);
+            foreach(var keyvalue in creation.Items)
+                keyvalue.ValueExpression.AcceptWalker(this);
         }
 
         public void VisitImportDeclaration(ImportDeclaration importDecl)

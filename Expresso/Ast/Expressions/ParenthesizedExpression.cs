@@ -22,6 +22,9 @@ namespace Expresso.Ast
             get{return GetChildByRole(Roles.LParenthesisToken);}
         }
 
+        /// <summary>
+        /// The inner expression.
+        /// </summary>
         public Expression Expression{
             get{return GetChildByRole(Roles.Expression);}
             set{SetChildByRole(Roles.Expression, value);}

@@ -150,7 +150,7 @@ namespace Expresso.Ast
 
         public static BlockStatement MakeBlock(params Statement[] stmts)
         {
-            return new BlockStatement(stmts, TextLocation.Empty, TextLocation.Empty);
+            return new BlockStatement(stmts, stmts[0].StartLocation, stmts[stmts.Length - 1].EndLocation);
         }
 
         public static VariableDeclarationStatement MakeVarDecl(IEnumerable<Identifier> lhs, IEnumerable<Expression> rhs,
@@ -162,7 +162,13 @@ namespace Expresso.Ast
         public static ExpressionStatement MakeExprStmt(Expression expr,
             TextLocation start = default(TextLocation), TextLocation end = default(TextLocation))
         {
-            return new ExpressionStatement(expr, start, end);
+            return new ExpressionStatement(Expression.MakeSequence(expr), start, end);
+        }
+
+        public static ExpressionStatement MakeExprStmt(SequenceExpression seqExpr,
+            TextLocation start = default(TextLocation), TextLocation end = default(TextLocation))
+        {
+            return new ExpressionStatement(seqExpr, start, end);
         }
 
         public static ReturnStatement MakeReturnStmt(Expression expr)

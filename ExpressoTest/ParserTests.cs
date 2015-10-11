@@ -115,14 +115,14 @@ namespace Expresso.Test
                         ),
                         Statement.MakeVarDecl(
                             Helpers.MakeSeq(AstNode.MakeIdentifier("f", Helpers.MakeGenericType("array", Helpers.MakePrimitiveType("int")))),
-                            Helpers.MakeSeq(Expression.MakeSeqInitializer(Helpers.MakeGenericType("array", Helpers.MakePlaceholderType()),
+                            Helpers.MakeSeq(Expression.MakeSequenceInitializer(Helpers.MakeGenericType("array", Helpers.MakePlaceholderType()),
                                 Enumerable.Empty<Expression>()
                             )),
                             Modifiers.Immutable
                         ),
                         Statement.MakeVarDecl(
                             Helpers.MakeSeq(Helpers.MakeSomeIdent("f_")),
-                            Helpers.MakeSeq(Expression.MakeSeqInitializer(Helpers.MakeGenericType("array", Helpers.MakePlaceholderType()),
+                            Helpers.MakeSeq(Expression.MakeSequenceInitializer(Helpers.MakeGenericType("array", Helpers.MakePlaceholderType()),
                                 Helpers.MakeSeq(
                                     Expression.MakeConstant("int", 1),
                                     Expression.MakeConstant("int", 2),
@@ -133,14 +133,14 @@ namespace Expresso.Test
                         ),
                         Statement.MakeVarDecl(
                             Helpers.MakeSeq(AstNode.MakeIdentifier("f2", Helpers.MakeGenericType("vector", Helpers.MakePrimitiveType("int")))),
-                            Helpers.MakeSeq(Expression.MakeSeqInitializer(Helpers.MakeGenericType("vector", Helpers.MakePlaceholderType()),
+                            Helpers.MakeSeq(Expression.MakeSequenceInitializer(Helpers.MakeGenericType("vector", Helpers.MakePlaceholderType()),
                                 Enumerable.Empty<Expression>()
                             )),
                             Modifiers.Immutable
                         ),
                         Statement.MakeVarDecl(
                             Helpers.MakeSeq(Helpers.MakeSomeIdent("f2_")),
-                            Helpers.MakeSeq(Expression.MakeSeqInitializer(Helpers.MakeGenericType("vector", Helpers.MakePlaceholderType()),
+                            Helpers.MakeSeq(Expression.MakeSequenceInitializer(Helpers.MakeGenericType("vector", Helpers.MakePlaceholderType()),
                                 Helpers.MakeSeq(
                                     Expression.MakeConstant("int", 1),
                                     Expression.MakeConstant("int", 2),
@@ -169,7 +169,7 @@ namespace Expresso.Test
                             Helpers.MakeSeq(AstNode.MakeIdentifier("g",
                                 Helpers.MakeGenericType("dictionary", Helpers.MakePrimitiveType("string"), Helpers.MakePrimitiveType("int")))
                             ),
-                            Helpers.MakeSeq(Expression.MakeSeqInitializer(
+                            Helpers.MakeSeq(Expression.MakeSequenceInitializer(
                                 Helpers.MakeGenericType("dictionary", Helpers.MakePlaceholderType(), Helpers.MakePlaceholderType()),
                                 Enumerable.Empty<Expression>()
                             )),
@@ -177,7 +177,7 @@ namespace Expresso.Test
                         ),
                         Statement.MakeVarDecl(
                             Helpers.MakeSeq(Helpers.MakeSomeIdent("g_")),
-                            Helpers.MakeSeq(Expression.MakeSeqInitializer(Helpers.MakeGenericType("dictionary", Helpers.MakePlaceholderType(), Helpers.MakePlaceholderType()),
+                            Helpers.MakeSeq(Expression.MakeSequenceInitializer(Helpers.MakeGenericType("dictionary", Helpers.MakePlaceholderType(), Helpers.MakePlaceholderType()),
                                 Helpers.MakeSeq(
                                     Expression.MakeKeyValuePair(Expression.MakeConstant("string", "akari"), Expression.MakeConstant("int", 13)),
                                     Expression.MakeKeyValuePair(Expression.MakeConstant("string", "chinatsu"), Expression.MakeConstant("int", 13)),
@@ -269,6 +269,8 @@ namespace Expresso.Test
             });
 
             Assert.IsNotNull(ast);
+            var debug_output = new DebugOutputWalker(Console.Out);
+            ast.AcceptWalker(debug_output);
             Helpers.AstStructuralEqual(ast, expected_ast);
 		}
 
@@ -350,7 +352,7 @@ namespace Expresso.Test
                         Statement.MakeVarDecl(
                             Helpers.MakeSeq(Helpers.MakeSomeIdent("ary")),
                             Helpers.MakeSeq(
-                                Expression.MakeSeqInitializer(
+                                Expression.MakeSequenceInitializer(
                                     Helpers.MakeGenericType("array", Helpers.MakePlaceholderType()),
                                     Helpers.MakeSeq(
                                         Expression.MakeConstant("int", 1),
@@ -364,7 +366,7 @@ namespace Expresso.Test
                         Statement.MakeVarDecl(
                             Helpers.MakeSeq(Helpers.MakeSomeIdent("d")),
                             Helpers.MakeSeq(
-                                Expression.MakeSeqInitializer(
+                                Expression.MakeSequenceInitializer(
                                     Helpers.MakeGenericType("dictionary", Helpers.MakePlaceholderType(), Helpers.MakePlaceholderType()),
                                     Helpers.MakeSeq(
                                         Expression.MakeKeyValuePair(Expression.MakeConstant("string", "a"), Expression.MakeConstant("int", 14)),
@@ -654,7 +656,7 @@ namespace Expresso.Test
                         ),
                         Statement.MakeVarDecl(
                             Helpers.MakeSeq(Helpers.MakeSomeIdent("strs")),
-                            Helpers.MakeSeq(Expression.MakeSeqInitializer(
+                            Helpers.MakeSeq(Expression.MakeSequenceInitializer(
                                 Helpers.MakeGenericType("array", Helpers.MakePlaceholderType()),
                                 Expression.MakeConstant("string", "akarichan"),
                                 Expression.MakeConstant("string", "chinatsu"),
@@ -713,7 +715,7 @@ namespace Expresso.Test
                         Statement.MakeVarDecl(
                             Helpers.MakeSeq(Helpers.MakeSomeIdent("fibs"), Helpers.MakeSomeIdent("a"), Helpers.MakeSomeIdent("b")),
                             Helpers.MakeSeq<Expression>(
-                                Expression.MakeSeqInitializer(
+                                Expression.MakeSequenceInitializer(
                                     Helpers.MakeGenericType("vector", Helpers.MakePlaceholderType())
                                 ),
                                 Expression.MakeConstant("int", 0),
@@ -756,11 +758,11 @@ namespace Expresso.Test
                             )
                         ),
                         Statement.MakeVarDecl(
-                            Helpers.MakeSeq(Helpers.MakeSomeIdent("vector")),
-                            Helpers.MakeSeq(Expression.MakeSeqInitializer(
+                            Helpers.MakeSeq(Helpers.MakeSomeIdent("vec")),
+                            Helpers.MakeSeq(Expression.MakeSequenceInitializer(
                                 Helpers.MakeGenericType("vector", Helpers.MakePlaceholderType())
                             )),
-                            Modifiers.Immutable
+                            Modifiers.None
                         ),
                         Statement.MakeValueBindingForStmt(
                             Modifiers.Immutable,
@@ -800,8 +802,8 @@ namespace Expresso.Test
                                         ),
                                         Statement.MakeExprStmt(Expression.MakeCallExpr(
                                             Expression.MakeMemRef(
-                                                Expression.MakePath(Helpers.MakeSomeIdent("vector")),
-                                                Helpers.MakeSomeIdent("add")
+                                                Expression.MakePath(Helpers.MakeSomeIdent("vec")),
+                                                AstNode.MakeIdentifier("add")
                                             ),
                                             Expression.MakeParen(Expression.MakeSequence(
                                                 Expression.MakePath(Helpers.MakeSomeIdent("i")),
@@ -830,8 +832,8 @@ namespace Expresso.Test
                                 )
                             )
                         ),
-                        Statement.MakeReturnStmt(
-                            Expression.MakeSeqInitializer(Helpers.MakeGenericType("array", Helpers.MakePlaceholderType()),
+                        Statement.MakeReturnStmt(Expression.MakeSequence(
+                            Expression.MakeSequenceInitializer(Helpers.MakeGenericType("array", Helpers.MakePlaceholderType()),
                                 Expression.MakePath(Helpers.MakeSomeIdent("x")),
                                 Expression.MakePath(Helpers.MakeSomeIdent("y")),
                                 Expression.MakePath(Helpers.MakeSomeIdent("z")),
@@ -839,10 +841,10 @@ namespace Expresso.Test
                                 Expression.MakePath(Helpers.MakeSomeIdent("flag")),
                                 Expression.MakePath(Helpers.MakeSomeIdent("sum")),
                                 Expression.MakePath(Helpers.MakeSomeIdent("strs")),
-                                Expression.MakePath(Helpers.MakeSomeIdent("sum")),
-                                Expression.MakePath(Helpers.MakeSomeIdent("vecctor"))
+                                Expression.MakePath(Helpers.MakeSomeIdent("fibs")),
+                                Expression.MakePath(Helpers.MakeSomeIdent("vec"))
                             )
-                        )
+                        ))
                     ),
                     Helpers.MakePlaceholderType(),
                     Modifiers.None

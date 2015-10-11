@@ -73,6 +73,7 @@
     <Compile Include="AnalyzerTests.cs" />
     <Compile Include="EmitterTests.cs" />
     <Compile Include="EvaluationTests.cs" />
+    <Compile Include="ErroneouesTests.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
@@ -92,6 +93,7 @@
   <ItemGroup>
     <Folder Include="sources\" />
     <Folder Include="sources\for_unit_tests\" />
+    <Folder Include="sources\for_unit_tests\erroneous\" />
   </ItemGroup>
   <ItemGroup>
     <None Include="sources\calc_prime_nums.exs" />
