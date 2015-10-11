@@ -18,6 +18,7 @@ namespace Expresso.Ast
         void VisitEmptyStatement(EmptyStatement emptyStmt);
         void VisitExpressionStatement(ExpressionStatement exprStmt);
         void VisitForStatement(ForStatement forStmt);
+        void VisitValueBindingForStatement(ValueBindingForStatement valueBindingForStmt);
         void VisitIfStatement(IfStatement ifStmt);
         void VisitReturnStatement(ReturnStatement returnStmt);
         void VisitMatchStatement(MatchStatement matchStmt);
@@ -95,6 +96,7 @@ namespace Expresso.Ast
         TResult VisitEmptyStatement(EmptyStatement emptyStmt);
         TResult VisitExpressionStatement(ExpressionStatement exprStmt);
         TResult VisitForStatement(ForStatement forStmt);
+        TResult VisitValueBindingForStatement(ValueBindingForStatement valueBindingForStatment);
         TResult VisitIfStatement(IfStatement ifStmt);
         TResult VisitReturnStatement(ReturnStatement returnStmt);
         TResult VisitMatchStatement(MatchStatement matchStmt);
@@ -182,6 +184,7 @@ namespace Expresso.Ast
         TResult VisitEmptyStatement(EmptyStatement emptyStmt, TData data);
         TResult VisitExpressionStatement(ExpressionStatement exprStmt, TData data);
         TResult VisitForStatement(ForStatement forStmt, TData data);
+        TResult VisitValueBindingForStatement(ValueBindingForStatement valueBindingForStatement, TData data);
         TResult VisitIfStatement(IfStatement ifStmt, TData data);
         TResult VisitReturnStatement(ReturnStatement returnStmt, TData data);
         TResult VisitMatchStatement(MatchStatement matchStmt, TData data);

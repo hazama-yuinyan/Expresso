@@ -584,13 +584,15 @@ namespace Expresso.Test
                             Modifiers.None
                         ),
                         Statement.MakeExprStmt(
-                            Expression.MakeCallExpr(
-                                Expression.MakePath(Helpers.MakeSomeIdent("print")),
-                                Expression.MakeConstant("string", "(x, y, z, w) = ({}, {}, {}, {})"),
-                                Expression.MakePath(Helpers.MakeSomeIdent("x")),
-                                Expression.MakePath(Helpers.MakeSomeIdent("y")),
-                                Expression.MakePath(Helpers.MakeSomeIdent("z")),
-                                Expression.MakePath(Helpers.MakeSomeIdent("w"))
+                            Expression.MakeSequence(
+                                Expression.MakeCallExpr(
+                                    Expression.MakePath(Helpers.MakeSomeIdent("print")),
+                                    Expression.MakeConstant("string", "(x, y, z, w) = ({}, {}, {}, {})"),
+                                    Expression.MakePath(Helpers.MakeSomeIdent("x")),
+                                    Expression.MakePath(Helpers.MakeSomeIdent("y")),
+                                    Expression.MakePath(Helpers.MakeSomeIdent("z")),
+                                    Expression.MakePath(Helpers.MakeSomeIdent("w"))
+                                )
                             )
                         ),
                         Statement.MakeIfStmt(
@@ -622,28 +624,34 @@ namespace Expresso.Test
                             Helpers.MakeSeq(Expression.MakeConstant("int", 0)),
                             Modifiers.None
                         ),
-                        Statement.MakeForStmt(
-                            PatternConstruct.MakeValueBindingPattern(
-                                Helpers.MakeArray(VariableInitializer.MakeVariableInitializer(Helpers.MakeSomeIdent("p"), null)),
-                                Modifiers.Immutable
-                            ),
-                            Expression.MakeIntSeq(
-                                Expression.MakeConstant("int", 0),
-                                Expression.MakePath(Helpers.MakeSomeIdent("y")),
-                                Expression.MakeConstant("int", 1),
-                                false
-                            ),
+                        Statement.MakeValueBindingForStmt(
+                            Modifiers.Immutable,
                             Statement.MakeBlock(
-                                Helpers.MakeAugmentedAssignment(OperatorType.Plus,
-                                    Helpers.MakeSeq(Expression.MakePath(Helpers.MakeSomeIdent("sum"))),
-                                    Helpers.MakeSeq(Expression.MakePath(Helpers.MakeSomeIdent("p")))
-                                ),
-                                Statement.MakeExprStmt(Expression.MakeCallExpr(
-                                    Expression.MakePath(Helpers.MakeSomeIdent("println")),
-                                    Expression.MakeConstant("string", "{}, {}"),
-                                    Expression.MakePath(Helpers.MakeSomeIdent("p")),
-                                    Expression.MakePath(Helpers.MakeSomeIdent("sum"))
-                                ))
+                                Helpers.MakeSeq(
+                                    Helpers.MakeAugmentedAssignment(OperatorType.Plus,
+                                        Helpers.MakeSeq(Expression.MakePath(Helpers.MakeSomeIdent("sum"))),
+                                        Helpers.MakeSeq(Expression.MakePath(Helpers.MakeSomeIdent("p")))
+                                    ),
+                                    Statement.MakeExprStmt(
+                                        Expression.MakeSequence(
+                                            Expression.MakeCallExpr(
+                                                Expression.MakePath(Helpers.MakeSomeIdent("println")),
+                                                Expression.MakeConstant("string", "{}, {}"),
+                                                Expression.MakePath(Helpers.MakeSomeIdent("p")),
+                                                Expression.MakePath(Helpers.MakeSomeIdent("sum"))
+                                            )
+                                        )
+                                    )
+                                )
+                            ),
+                            AstNode.MakeVariableInitializer(
+                                Helpers.MakeSomeIdent("p"),
+                                Expression.MakeIntSeq(
+                                    Expression.MakeConstant("int", 0),
+                                    Expression.MakePath(Helpers.MakeSomeIdent("y")),
+                                    Expression.MakeConstant("int", 1),
+                                    false
+                                )
                             )
                         ),
                         Statement.MakeVarDecl(
@@ -657,43 +665,51 @@ namespace Expresso.Test
                             )),
                             Modifiers.Immutable
                         ),
-                        Statement.MakeForStmt(
-                            PatternConstruct.MakeValueBindingPattern(
-                                Helpers.MakeSeq(Expression.MakeVariableInitializer(Helpers.MakeSomeIdent("tmp"), null)),
-                                Modifiers.Immutable
-                            ),
-                            Expression.MakePath(Helpers.MakeSomeIdent("strs")),
+                        Statement.MakeValueBindingForStmt(
+                            Modifiers.Immutable,
                             Statement.MakeBlock(
                                 Statement.MakeMatchStmt(Expression.MakePath(Helpers.MakeSomeIdent("tmp")),
-                                    Statement.MakeMatchClause(Expression.Null,
-                                        Statement.MakeExprStmt(Expression.MakeCallExpr(
-                                            Expression.MakePath(Helpers.MakeSomeIdent("print")),
-                                            Expression.MakeConstant("string", "kawakawa")
-                                        )),
+                                    Statement.MakeMatchClause(null,
+                                        Statement.MakeExprStmt(Expression.MakeSequence(
+                                            Expression.MakeCallExpr(
+                                                Expression.MakePath(Helpers.MakeSomeIdent("print")),
+                                                Expression.MakeConstant("string", "kawakawa")
+                                            ))
+                                        ),
                                         PatternConstruct.MakeExpressionPattern(Expression.MakeConstant("string", "akarichan"))
                                     ),
-                                    Statement.MakeMatchClause(Expression.Null,
-                                        Statement.MakeExprStmt(Expression.MakeCallExpr(
-                                            Expression.MakePath(Helpers.MakeSomeIdent("print")),
-                                            Expression.MakeConstant("string", "ankokuthunder!")
-                                        )),
+                                    Statement.MakeMatchClause(null,
+                                        Statement.MakeExprStmt(Expression.MakeSequence(
+                                            Expression.MakeCallExpr(
+                                                Expression.MakePath(Helpers.MakeSomeIdent("print")),
+                                                Expression.MakeConstant("string", "ankokuthunder!")
+                                            ))
+                                        ),
                                         PatternConstruct.MakeExpressionPattern(Expression.MakeConstant("string", "chinatsu"))
                                     ),
-                                    Statement.MakeMatchClause(Expression.Null,
-                                        Statement.MakeExprStmt(Expression.MakeCallExpr(
-                                            Expression.MakePath(Helpers.MakeSomeIdent("print")),
-                                            Expression.MakeConstant("string", "gaichiban!")
-                                        )),
+                                    Statement.MakeMatchClause(null,
+                                        Statement.MakeExprStmt(Expression.MakeSequence(
+                                            Expression.MakeCallExpr(
+                                                Expression.MakePath(Helpers.MakeSomeIdent("print")),
+                                                Expression.MakeConstant("string", "gaichiban!")
+                                            ))
+                                        ),
                                         PatternConstruct.MakeExpressionPattern(Expression.MakeConstant("string", "kyoko"))
                                     ),
-                                    Statement.MakeMatchClause(Expression.Null,
-                                        Statement.MakeExprStmt(Expression.MakeCallExpr(
-                                            Expression.MakePath(Helpers.MakeSomeIdent("print")),
-                                            Expression.MakeConstant("string", "doyaxtu!")
-                                        )),
+                                    Statement.MakeMatchClause(null,
+                                        Statement.MakeExprStmt(Expression.MakeSequence(
+                                            Expression.MakeCallExpr(
+                                                Expression.MakePath(Helpers.MakeSomeIdent("print")),
+                                                Expression.MakeConstant("string", "doyaxtu!")
+                                            ))
+                                        ),
                                         PatternConstruct.MakeExpressionPattern(Expression.MakeConstant("string", "yui"))
                                     )
                                 )
+                            ),
+                            AstNode.MakeVariableInitializer(
+                                Helpers.MakeSomeIdent("tmp"),
+                                Expression.MakePath(Helpers.MakeSomeIdent("strs"))
                             )
                         ),
                         Statement.MakeVarDecl(
@@ -714,12 +730,14 @@ namespace Expresso.Test
                             ),
                             Statement.MakeBlock(
                                 Statement.MakeExprStmt(
-                                    Expression.MakeCallExpr(
-                                        Expression.MakeMemRef(
-                                            Expression.MakePath(Helpers.MakeSomeIdent("fibs")),
-                                            AstNode.MakeIdentifier("add")
-                                        ),
-                                        Expression.MakePath(Helpers.MakeSomeIdent("b"))
+                                    Expression.MakeSequence(
+                                        Expression.MakeCallExpr(
+                                            Expression.MakeMemRef(
+                                                Expression.MakePath(Helpers.MakeSomeIdent("fibs")),
+                                                AstNode.MakeIdentifier("add")
+                                            ),
+                                            Expression.MakePath(Helpers.MakeSomeIdent("b"))
+                                        )
                                     )
                                 ),
                                 Statement.MakeExprStmt(
@@ -746,29 +764,11 @@ namespace Expresso.Test
                             )),
                             Modifiers.None
                         ),
-                        Statement.MakeForStmt(
-                            PatternConstruct.MakeValueBindingPattern(
-                                Helpers.MakeSeq(Expression.MakeVariableInitializer(Helpers.MakeSomeIdent("i"), null)),
-                                Modifiers.Immutable
-                            ),
-                            Expression.MakeIntSeq(
-                                Expression.MakeConstant("int", 0),
-                                Expression.MakeConstant("int", 10),
-                                Expression.MakeConstant("int", 1),
-                                false
-                            ),
+                        Statement.MakeValueBindingForStmt(
+                            Modifiers.Immutable,
                             Statement.MakeBlock(
-                                Statement.MakeForStmt(
-                                    PatternConstruct.MakeValueBindingPattern(
-                                        Helpers.MakeSeq(Expression.MakeVariableInitializer(Helpers.MakeSomeIdent("j"), null)),
-                                        Modifiers.Immutable
-                                    ),
-                                    Expression.MakeIntSeq(
-                                        Expression.MakeConstant("int", 0),
-                                        Expression.MakeConstant("int", 10),
-                                        Expression.MakeConstant("int", 1),
-                                        false
-                                    ),
+                                Statement.MakeValueBindingForStmt(
+                                    Modifiers.Immutable,
                                     Statement.MakeBlock(
                                         Statement.MakeIfStmt(
                                             PatternConstruct.MakeExpressionPattern(
@@ -810,7 +810,25 @@ namespace Expresso.Test
                                                 Expression.MakePath(Helpers.MakeSomeIdent("j"))
                                             ))
                                         ))
+                                    ),
+                                    AstNode.MakeVariableInitializer(
+                                        Helpers.MakeSomeIdent("j"),
+                                        Expression.MakeIntSeq(
+                                            Expression.MakeConstant("int", 0),
+                                            Expression.MakeConstant("int", 10),
+                                            Expression.MakeConstant("int", 1),
+                                            false
+                                        )
                                     )
+                                )
+                            ),
+                            AstNode.MakeVariableInitializer(
+                                Helpers.MakeSomeIdent("i"),
+                                Expression.MakeIntSeq(
+                                    Expression.MakeConstant("int", 0),
+                                    Expression.MakeConstant("int", 10),
+                                    Expression.MakeConstant("int", 1),
+                                    false
                                 )
                             )
                         ),

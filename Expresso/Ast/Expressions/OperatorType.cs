@@ -5,7 +5,7 @@ namespace Expresso.Ast
 {
     /// <summary>
     /// 演算子のタイプ。
-    /// The kind of an operator.
+    /// Represents the kind of an operator.
     /// </summary>
     public enum OperatorType
     {

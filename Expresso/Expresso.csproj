@@ -41,7 +41,7 @@
     <DefineConstants>DEBUG;</DefineConstants>
     <CustomCommands>
       <CustomCommands>
-        <Command type="BeforeBuild" command="mono ./Coco Expresso.ATG -trace GJSP" workingdir="${ProjectDir}" />
+        <Command type="BeforeBuild" command="./parserCompile.sh" workingdir="" />
       </CustomCommands>
     </CustomCommands>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
@@ -62,7 +62,7 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <CustomCommands>
       <CustomCommands>
-        <Command type="BeforeBuild" command="mono ./Coco Expresso.ATG -trace GJSP" workingdir="${ProjectDir}" />
+        <Command type="BeforeBuild" command="./parserCompile.sh" workingdir="" />
       </CustomCommands>
     </CustomCommands>
   </PropertyGroup>
@@ -185,6 +185,7 @@
     <Compile Include="Analysis\TypeInferenceRunner.cs" />
     <Compile Include="Analysis\UniqueIdGenerator.cs" />
     <Compile Include="Ast\FunctionType.cs" />
+    <Compile Include="Ast\Statements\ValueBindingForStatement.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System" />

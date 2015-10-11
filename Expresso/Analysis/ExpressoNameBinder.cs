@@ -143,6 +143,17 @@ namespace Expresso.Ast.Analysis
             scope_counter = tmp_counter + 1;
         }
 
+        public void VisitValueBindingForStatement(ValueBindingForStatement valueBindingForStmt)
+        {
+            int tmp_counter = scope_counter;
+            DecendScope();
+            scope_counter = 0;
+            valueBindingForStmt.Variables.AcceptWalker(this);
+            valueBindingForStmt.Body.AcceptWalker(this);
+            AscendScope();
+            scope_counter = tmp_counter + 1;
+        }
+
         public void VisitIfStatement(IfStatement ifStmt)
         {
             int tmp_counter = scope_counter;

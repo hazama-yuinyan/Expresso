@@ -157,6 +157,18 @@ namespace Expresso.Ast
             writer.Write("{...}");
         }
 
+        public void VisitValueBindingForStatement(ValueBindingForStatement valueBindingForStmt)
+        {
+            writer.Write("for ");
+            writer.Write(valueBindingForStmt.Modifiers);
+            writer.Write(' ');
+            foreach(var initializer in valueBindingForStmt.Variables){
+                writer.Write(initializer.Name);
+                writer.Write(" in ");
+                initializer.Initializer.AcceptWalker(this);
+            }
+        }
+
         public void VisitIdentifier(Identifier ident)
         {
             if(ident.Type.IsNull){

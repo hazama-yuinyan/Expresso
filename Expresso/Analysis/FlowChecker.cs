@@ -199,6 +199,28 @@ namespace Expresso.Ast.Analysis
             bits.And(opte);
         }
 
+        public void VisitValueBindingForStatement(ValueBindingForStatement valueBindingForStmt)
+        {
+            // Walk the expression
+            valueBindingForStmt.Variables.FirstOrNullObject().NameToken.AcceptWalker(this);
+
+            BitArray opte = new BitArray(bits);
+            BitArray exit = new BitArray(bits.Length, true);
+            PushLoop(exit);
+
+            valueBindingForStmt.Variables.FirstOrNullObject().Initializer.AcceptWalker(this);
+
+            // Walk the body
+            valueBindingForStmt.Body.AcceptWalker(this);
+
+            PopLoop();
+
+            bits.And(exit);
+
+            // Intersect
+            bits.And(opte);
+        }
+
         public void VisitIfStatement(IfStatement ifStmt)
         {
             //BitArray result = new BitArray(bits.Length, true);

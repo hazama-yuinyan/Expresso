@@ -209,6 +209,50 @@ namespace Expresso.CodeGen
             return loop;
         }
 
+        public CSharpExpr VisitValueBindingForStatement(ValueBindingForStatement valueBindingForStatement, CSharpEmitterContext context)
+        {
+            int tmp_counter = sibling_count;
+            sibling_count = 0;
+            DescendScope();
+            // TODO: Implement it in a more formal way
+            valueBindingForStatement.Variables.First().NameToken.AcceptWalker(this, context);
+            var iterator = valueBindingForStatement.Variables.First().Initializer.AcceptWalker(this, context);
+
+            var break_target = CSharpExpr.Label("__EndFor" + LoopCounter.ToString());
+            var continue_target = CSharpExpr.Label("__StartFor" + LoopCounter.ToString());
+            ++LoopCounter;
+            break_targets.Add(break_target);
+            continue_targets.Add(continue_target);
+
+            // Here, `body` represents just the body block itself
+            // In a for statement, we must move the iterator a step forward
+            // and assign the result to inner-scope variables
+            var real_body = valueBindingForStatement.Body.AcceptWalker(this, context);
+
+            var iterator_type = typeof(IEnumerator<>).MakeGenericType(iterator.Type);
+            var move_method = iterator_type.GetMethod("MoveNext");
+            var move_call = CSharpExpr.Call(iterator, move_method);
+            var check_failure = CSharpExpr.IfThen(CSharpExpr.IsFalse(move_call), CSharpExpr.Goto(break_target));
+            var current_property = iterator_type.GetProperty("Current");
+
+            var variables = ConvertSymbolsToParameters();
+            var assignments = MakeIterableAssignments(variables, CSharpExpr.Property(iterator, current_property));
+            var parameters = ConvertSymbolsToParameters();
+
+            var body_exprs = new List<CSharpExpr>{check_failure};
+            var body = CSharpExpr.Block(parameters,
+                body_exprs.Concat(assignments)
+                .Concat(((ExprTree.BlockExpression)real_body).Expressions)
+            );
+            var loop = CSharpExpr.Loop(body, break_target, continue_target);
+            break_targets.RemoveAt(break_targets.Count - 1);
+            continue_targets.RemoveAt(continue_targets.Count - 1);
+            AscendScope();
+            sibling_count = tmp_counter + 1;
+
+            return loop;
+        }
+
         public CSharpExpr VisitIfStatement(IfStatement ifStmt, CSharpEmitterContext context)
         {
             int tmp_counter = sibling_count;
