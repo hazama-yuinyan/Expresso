@@ -111,5 +111,6 @@
     <None Include="sources\for_unit_tests\statements.exs" />
     <None Include="sources\for_unit_tests\test_module.exs" />
     <None Include="sources\for_unit_tests\general_expressions.exs" />
+    <None Include="sources\for_unit_tests\erroneous\literals.exs" />
   </ItemGroup>
 </Project>

@@ -15,6 +15,33 @@ namespace Expresso.CodeGen
         public static Regex InterpolateStringRegexp =
             new Regex(@"%([a-zA-Z_][a-zA-Z_0-9]*)");
 
+        static List<string> _AssemblyNames =
+            new List<string>{"System", "System.Core", "System.Numerics", "mscorlib"};
+
+        static Dictionary<string, string> SpecialNamesMap = new Dictionary<string, string>{
+            {"intseq", "ExpressoIntegerSequence"},
+            {"function", "Func"},
+            {"bool", "Boolean"},
+            {"int", "Int32"},
+            {"uint", "UInt32"},     //
+            {"char", "UInt32"},     // In Expresso, char is encoded in UTF-8.
+            {"string", "UTF8String"},
+            {"", ""}
+        };
+
+        /// <summary>
+        /// Gets the assembly name list.
+        /// </summary>
+        /// <value>The assembly names.</value>
+        public static List<string> AssemblyNames{
+            get{return _AssemblyNames;}
+        }
+
+        /// <summary>
+        /// Helper method to convert a PrimitiveType to C#'s type.
+        /// </summary>
+        /// <returns>A <see cref="System.Type"/> object.</returns>
+        /// <param name="type">Type.</param>
         public static Type GetPrimitiveType(PrimitiveType type)
         {
             if(type == null)
@@ -53,6 +80,11 @@ namespace Expresso.CodeGen
             }
         }
 
+        /// <summary>
+        /// Helper method to convert a SimpleType to a C#'s type.
+        /// </summary>
+        /// <returns>A <see cref="System.Type"/> object.</returns>
+        /// <param name="containerType">Container type.</param>
         public static Type GetContainerType(SimpleType containerType)
         {
             if(containerType == null)
@@ -86,7 +118,7 @@ namespace Expresso.CodeGen
             if(simple != null){
                 Type type = null;
                 foreach(var asm in AppDomain.CurrentDomain.GetAssemblies()){
-                    type = asm.GetType(simple.Identifier, false, true);
+                    type = asm.GetType(ConvertToDotNetTypeName(simple.Identifier), false, true);
                     if(type != null)
                         break;
                 }
@@ -157,6 +189,20 @@ namespace Expresso.CodeGen
             }
 
             return module;
+        }
+
+        public static string ConvertToDotNetTypeName(string originalName)
+        {
+            if(SpecialNamesMap.ContainsKey(originalName))
+                return SpecialNamesMap[originalName];
+            else
+                throw new EmitterException("Error ES9001: Unknown dot net type");
+        }
+
+        public static void Prepare()
+        {
+            foreach(var name in _AssemblyNames)
+                AppDomain.CurrentDomain.Load(name);
         }
     }
 }

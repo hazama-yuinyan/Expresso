@@ -7,6 +7,7 @@ using System.Text.RegularExpressions;
 
 using Expresso.Ast;
 using Expresso.Ast.Analysis;
+using Expresso.CodeGen;
 using Expresso.TypeSystem;
 
 using ICSharpCode.NRefactory;
@@ -434,6 +435,7 @@ static uint ScopeId = 1;
 		ModuleBody(out module_decl);
 		Debug.Assert(Symbols.Parent == null);
 		if(DoPostParseProcessing){
+		   CSharpCompilerHelper.Prepare();
 		   ExpressoNameBinder.BindAst(module_decl, this); //Here's the start of post-parse processing
 		}
 		}
