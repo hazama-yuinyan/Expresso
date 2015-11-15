@@ -30,11 +30,11 @@ namespace Expresso.CodeGen
 	{
         //###################################################
         //# Symbols defined in the whole program.
-        //# It is represented as a linear list rather than a symbol table
+        //# It is represented as a hash table rather than a symbol table
         //# because we have defined a symbol id on all the identifier nodes
         //# that identifies the symbol uniqueness within the whole program.
         //###################################################
-        static List<ExpressoSymbol> Symbols = new List<ExpressoSymbol>();
+        static Dictionary<uint, ExpressoSymbol> Symbols = new Dictionary<uint, ExpressoSymbol>();
         static int LoopCounter = 1;
 
 		ExprTree.LabelTarget return_target = null;
@@ -88,6 +88,21 @@ namespace Expresso.CodeGen
             symbol_table = symbol_table.Parent.Children[sibling_count++];
         }
 
+        static bool CanReturn(ReturnStatement returnStmt)
+        {
+            return returnStmt.Parent is BlockStatement && returnStmt.Parent.Parent is FunctionDeclaration && ((FunctionDeclaration)returnStmt.Parent.Parent).Name != "main";
+        }
+
+        ExprTree.ParameterExpression GetNativeParameter(Identifier ident)
+        {
+            return Symbols[ident.IdentifierId].Parameter;
+        }
+
+        string GetModuleName(ExpressoAst ast)
+        {
+            return options.BuildType.HasFlag(BuildType.Assembly) ? ast.Name + ".dll" : ast.Name + ".exe";
+        }
+
         #region IAstWalker implementation
 
         public CSharpExpr VisitAst(ExpressoAst ast, CSharpEmitterContext context)
@@ -97,8 +112,8 @@ namespace Expresso.CodeGen
 
             var name = new AssemblyName(ast.ModuleName);
 
-            var asm_builder = AppDomain.CurrentDomain.DefineDynamicAssembly(name, AssemblyBuilderAccess.RunAndSave);
-            var mod_builder = asm_builder.DefineDynamicModule(ast.ModuleName);
+            var asm_builder = AppDomain.CurrentDomain.DefineDynamicAssembly(name, AssemblyBuilderAccess.RunAndSave, options.OutputPath);
+            var mod_builder = asm_builder.DefineDynamicModule(ast.Name);
 
             context.AssemblyBuilder = asm_builder;
             context.ModuleBuilder = mod_builder;
@@ -112,7 +127,7 @@ namespace Expresso.CodeGen
             mod_builder.CreateGlobalFunctions();
             var main_func = mod_builder.GetMethod("main");
             asm_builder.SetEntryPoint(main_func);
-            asm_builder.Save(Path.Combine(options.OutputPath, ast.ModuleName));
+            asm_builder.Save(GetModuleName(ast));
 
             AssemblyBuilder = asm_builder;
 
@@ -125,12 +140,18 @@ namespace Expresso.CodeGen
             sibling_count = 0;
             DescendScope();
             var contents = new List<CSharpExpr>();
+            context.ContextAst = block;
             foreach(var stmt in block.Statements){
                 var tmp = stmt.AcceptWalker(this, context);
-                contents.Add(tmp);
+                if(tmp == null){
+                    contents.AddRange(context.Additionals.Cast<ExprTree.Expression>());
+                    context.Additionals.Clear();
+                }else{
+                    contents.Add(tmp);
+                }
             }
 
-            var variables = ConvertSymbolsToParameters();
+            var variables = ConvertSymbolsToParameters().ToList();
             AscendScope();
             sibling_count = tmp_counter + 1;
             return CSharpExpr.Block(contents.Last().Type, variables, contents);
@@ -180,7 +201,7 @@ namespace Expresso.CodeGen
             break_targets.Add(break_target);
             continue_targets.Add(continue_target);
 
-            // Here, `body` represents just the body block itself
+            // Here, `Body` represents just the body block itself
             // In a for statement, we must move the iterator a step forward
             // and assign the result to inner-scope variables
             var real_body = forStmt.Body.AcceptWalker(this, context);
@@ -214,7 +235,7 @@ namespace Expresso.CodeGen
             int tmp_counter = sibling_count;
             sibling_count = 0;
             DescendScope();
-            // TODO: Implement it in a more formal way
+            // TODO: Implement it in a more formal way(take multiple items into account)
             valueBindingForStatement.Variables.First().NameToken.AcceptWalker(this, context);
             var iterator = valueBindingForStatement.Variables.First().Initializer.AcceptWalker(this, context);
 
@@ -276,7 +297,10 @@ namespace Expresso.CodeGen
 
         public CSharpExpr VisitReturnStatement(ReturnStatement returnStmt, CSharpEmitterContext context)
         {
-            if(return_target == null)
+            // If we are in the main function, then make return statements do nothing
+            if(!CanReturn(returnStmt))
+                return CSharpExpr.Empty();
+            else if(return_target == null)
                 throw new EmitterException("Can not guess the return target!");
 
             var expr = returnStmt.Expression.AcceptWalker(this, context);
@@ -361,13 +385,15 @@ namespace Expresso.CodeGen
             CSharpEmitterContext context)
         {
             var decls = new List<CSharpExpr>();
+            context.ContextAst = varDecl;
             foreach(var variable in varDecl.Variables){
                 var tmp = variable.AcceptWalker(this, context);
                 decls.Add(tmp);
-                if(context.Additionals != null)
-                    context.Additionals.Add(tmp);
             }
-            return CSharpExpr.Block(decls);
+            context.ContextAst = null;
+            context.Additionals.AddRange(decls);
+            // A variable declaration statement may contain multiple declarations
+            return null;
         }
 
         public CSharpExpr VisitAssignment(AssignmentExpression assignment, CSharpEmitterContext context)
@@ -381,24 +407,88 @@ namespace Expresso.CodeGen
                 if(rhs == null)
                     throw new EmitterException("Expected a sequence expression!");
 
-                var assignments = new List<CSharpExpr>();
-                var tmp_variables = new List<ExprTree.ParameterExpression>();
-                foreach(var right in rhs.Items){
-                    //make temporary variables to keep the rhs's results aside
-                    //scope: until they are assigned
-                    var rhs_result = right.AcceptWalker(this, context);
-                    var param = CSharpExpr.Parameter(rhs_result.Type);
-                    tmp_variables.Add(param);
-                    assignments.Add(CSharpExpr.Assign(param, rhs_result));
-                }
+                if(rhs.Items.Count == 1 && assignment.Operator != OperatorType.Power){
+                    // if there is just one item on each side
+                    // skip making temporary variables
+                    switch(assignment.Operator){
+                    case OperatorType.Assign:
+                        return CSharpExpr.Assign(lhs.Items.First().AcceptWalker(this, context), rhs.Items.First().AcceptWalker(this, context));
 
-                foreach(var pair in lhs.Items.Zip(tmp_variables,
-                    (l, t) => new Tuple<Expression, ExprTree.Expression>(l, t))){
-                    var lhs_expr = pair.Item1.AcceptWalker(this, context);
-                    assignments.Add(CSharpExpr.Assign(lhs_expr, pair.Item2));
-                }
+                    case OperatorType.Plus:
+                        return CSharpExpr.AddAssign(lhs.Items.First().AcceptWalker(this, context), rhs.Items.First().AcceptWalker(this, context));
 
-                return CSharpExpr.Block(tmp_variables, assignments);
+                    case OperatorType.Minus:
+                        return CSharpExpr.SubtractAssign(lhs.Items.First().AcceptWalker(this, context), rhs.Items.First().AcceptWalker(this, context));
+
+                    case OperatorType.Times:
+                        return CSharpExpr.MultiplyAssign(lhs.Items.First().AcceptWalker(this, context), rhs.Items.First().AcceptWalker(this, context));
+
+                    case OperatorType.Divide:
+                        return CSharpExpr.DivideAssign(lhs.Items.First().AcceptWalker(this, context), rhs.Items.First().AcceptWalker(this, context));
+
+                    case OperatorType.Modulus:
+                        return CSharpExpr.ModuloAssign(lhs.Items.First().AcceptWalker(this, context), rhs.Items.First().AcceptWalker(this, context));
+
+                    case OperatorType.Power:
+                        return CSharpExpr.PowerAssign(lhs.Items.First().AcceptWalker(this, context), rhs.Items.First().AcceptWalker(this, context));
+
+                    default:
+                        return null;
+                    }
+                }else{
+                    var assignments = new List<CSharpExpr>();
+                    var tmp_variables = new List<ExprTree.ParameterExpression>();
+                    foreach(var pair in lhs.Items.Zip(rhs.Items,
+                        (l, r) => new Tuple<Expression, Expression>(l, r))){
+                        //make temporary variables to keep the rhs's results aside
+                        //scope: until they are assigned
+                        var lhs_result = pair.Item1.AcceptWalker(this, context);
+                        var rhs_result = pair.Item2.AcceptWalker(this, context);
+                        var param = CSharpExpr.Parameter(rhs_result.Type);
+                        tmp_variables.Add(param);
+
+                        switch(assignment.Operator){
+                        case OperatorType.Assign:
+                            assignments.Add(CSharpExpr.Assign(param, rhs_result));
+                            break;
+
+                        case OperatorType.Plus:
+                            assignments.Add(CSharpExpr.Assign(param, CSharpExpr.Add(lhs_result, rhs_result)));
+                            break;
+
+                        case OperatorType.Minus:
+                            assignments.Add(CSharpExpr.Assign(param, CSharpExpr.Subtract(lhs_result, rhs_result)));
+                            break;
+
+                        case OperatorType.Times:
+                            assignments.Add(CSharpExpr.Assign(param, CSharpExpr.Multiply(lhs_result, rhs_result)));
+                            break;
+
+                        case OperatorType.Divide:
+                            assignments.Add(CSharpExpr.Assign(param, CSharpExpr.Divide(lhs_result, rhs_result)));
+                            break;
+
+                        case OperatorType.Modulus:
+                            assignments.Add(CSharpExpr.Assign(param, CSharpExpr.Modulo(lhs_result, rhs_result)));
+                            break;
+
+                        case OperatorType.Power:
+                            var prev_type = rhs_result.Type;
+                            lhs_result = CSharpExpr.Convert(lhs_result, typeof(double));
+                            rhs_result = CSharpExpr.Convert(rhs_result, typeof(double));
+                            assignments.Add(CSharpExpr.Assign(param, CSharpExpr.Convert(CSharpExpr.Power(lhs_result, rhs_result), prev_type)));
+                            break;
+                        }
+                    }
+
+                    foreach(var pair2 in lhs.Items.Zip(tmp_variables,
+                        (l, t) => new Tuple<Expression, ExprTree.Expression>(l, t))){
+                        var lhs_expr = pair2.Item1.AcceptWalker(this, context);
+                        assignments.Add(CSharpExpr.Assign(lhs_expr, pair2.Item2));
+                    }
+
+                    return CSharpExpr.Block(tmp_variables, assignments);
+                }
             }else{
                 // falls into composition branch
                 // expected form: a = b = ...
@@ -512,14 +602,13 @@ namespace Expresso.CodeGen
 
         public CSharpExpr VisitIdentifier(Identifier ident, CSharpEmitterContext context)
         {
-            var type = CSharpCompilerHelper.GetNativeType(ident.Type);
-            return CSharpExpr.Parameter(type, ident.Name);
+            return GetNativeParameter(ident);
         }
 
         public CSharpExpr VisitIntegerSequenceExpression(IntegerSequenceExpression intSeq,
             CSharpEmitterContext context)
         {
-            var intseq_ctor = typeof(ExpressoIntegerSequence).GetConstructor(new Type[]{typeof(int), typeof(int), typeof(int)});
+            var intseq_ctor = typeof(ExpressoIntegerSequence).GetConstructor(new []{typeof(int), typeof(int), typeof(int)});
             var args = new List<CSharpExpr>{
                 intSeq.Lower.AcceptWalker(this, context),
                 intSeq.Upper.AcceptWalker(this, context),
@@ -565,6 +654,9 @@ namespace Expresso.CodeGen
 
         public CSharpExpr VisitPathExpression(PathExpression pathExpr, CSharpEmitterContext context)
         {
+            if(pathExpr.AsIdentifier != null)
+                return pathExpr.AsIdentifier.AcceptWalker(this, context);
+
             // On .NET environment, a path item is mapped to
             // Assembly::[Module]::{Class}
             // In reverse, an Expresso item can be mapped to the .NET type system as
@@ -580,7 +672,7 @@ namespace Expresso.CodeGen
                         }
                     }
                     if(asm == null)
-                        throw new EmitterException("Assembly `{0}` not found!");
+                        throw new EmitterException("Assembly `{0}` not found!", ident.Name);
 
                     context.Assembly = asm;
                 }else if(context.Module == null){
@@ -645,8 +737,7 @@ namespace Expresso.CodeGen
                     }
                 })){
                     throw new EmitterException(
-                        @"Can not create an instance with constructor `{0}`
-because it doesn't have field named `{1}`",
+                        "Can not create an instance with constructor `{0}` because it doesn't have field named `{1}`",
                         creation.TypePath, key
                     );
                 }
@@ -671,12 +762,16 @@ because it doesn't have field named `{1}`",
                 exprs.Add(tmp);
             }
 
+            if(exprs.Count == 0)
+                return null;
+
             if(seq_type == typeof(Array)){
                 var elem_type = CSharpCompilerHelper.GetNativeType(obj_type.TypeArguments.FirstOrNullObject());
                 return CSharpExpr.NewArrayInit(elem_type, exprs);
             }else if(seq_type == typeof(List<>)){
                 var elem_type = CSharpCompilerHelper.GetNativeType(obj_type.TypeArguments.FirstOrNullObject());
-                var constructor = seq_type.MakeGenericType(elem_type).GetConstructor(new []{typeof(void)});
+                var list_type = seq_type.MakeGenericType(elem_type);
+                var constructor = list_type.GetConstructor(new Type[]{});
                 var new_expr = CSharpExpr.New(constructor);
                 return CSharpExpr.ListInit(new_expr, exprs);
             }else if(seq_type == typeof(Dictionary<,>)){
@@ -684,7 +779,7 @@ because it doesn't have field named `{1}`",
                 var value_type = CSharpCompilerHelper.GetNativeType(obj_type.TypeArguments.LastOrNullObject());
                 var elems = context.Additionals.Cast<ExprTree.ElementInit>();
                 var dict_type = seq_type.MakeGenericType(key_type, value_type);
-                var constructor = dict_type.GetConstructor(new []{typeof(void)});
+                var constructor = dict_type.GetConstructor(new Type[]{});
                 var new_expr = CSharpExpr.New(constructor);
                 return CSharpExpr.ListInit(new_expr, elems);
             }else if(seq_type == typeof(Tuple)){
@@ -792,8 +887,8 @@ because it doesn't have field named `{1}`",
                 exprs.Add(tmp);
             }
 
-            var tuple_type = CSharpCompilerHelper.GuessTupleType(types);
-            var ctor_method = tuple_type.GetMethod("Create", types.ToArray());
+            var ctor_method = typeof(Tuple).GetGenericMethod("Create", BindingFlags.Public | BindingFlags.Static, types.ToArray());
+
             return CSharpExpr.Call(ctor_method, exprs);
         }
 
@@ -869,10 +964,10 @@ because it doesn't have field named `{1}`",
             if(context.Method == null && context.TargetType == null)
                 throw new EmitterException("`{0}` could not be resolved to an entity name!", aliasDecl.Path);
 
-            Symbols[(int)aliasDecl.AliasToken.IdentifierId] = new ExpressoSymbol{
+            Symbols.Add(aliasDecl.AliasToken.IdentifierId, new ExpressoSymbol{
                 Type = context.TargetType,
                 Method = context.Method
-            };
+            });
             return null;
         }
 
@@ -885,11 +980,11 @@ because it doesn't have field named `{1}`",
                 importDecl.ModuleNameToken.AcceptWalker(this, context);
                 if(importDecl.AliasName != null){
                     var type_symbol = symbol_table.GetTypeSymbol(importDecl.AliasName);
-                    Symbols[(int)type_symbol.IdentifierId] = new ExpressoSymbol{
+                    Symbols.Add(type_symbol.IdentifierId, new ExpressoSymbol{
                         Type = context.TargetType,
                         Field = context.Field,
                         Method = context.Method
-                    };
+                    });
                 }
             }else{
                 foreach(var entity in importDecl.ImportedEntities){
@@ -897,7 +992,7 @@ because it doesn't have field named `{1}`",
                     context.Method = null;
                     context.Member = null;
 
-                    // Walking through the path items registers the symbol in question
+                    // Walking through the path items registers the symbols in question
                     entity.AcceptWalker(this, context);
                 }
             }
@@ -909,13 +1004,15 @@ because it doesn't have field named `{1}`",
             CSharpEmitterContext context)
         {
             context.Additionals = new List<object>();
+            DescendScope();
             var param_types = new List<Type>();
+            var parameters = new List<ExprTree.ParameterExpression>();
             foreach(var param in funcDecl.Parameters){
                 var tmp = param.AcceptWalker(this, context);
                 param_types.Add(tmp.Type);
+                parameters.Add((ExprTree.ParameterExpression)tmp);
             }
             var body = funcDecl.Body.AcceptWalker(this, context);
-            var parameters = context.Additionals.Cast<ExprTree.ParameterExpression>();
             context.Additionals = null;
             var lambda = CSharpExpr.Lambda(body, parameters);
 
@@ -926,6 +1023,8 @@ because it doesn't have field named `{1}`",
             var return_type = CSharpCompilerHelper.GetNativeType(funcDecl.ReturnType);
             var func_builder = context.ModuleBuilder.DefineGlobalMethod(funcDecl.Name, attr, return_type, param_types.ToArray());
             lambda.CompileToMethod(func_builder);
+
+            AscendScope();
 
             return null;
         }
@@ -938,9 +1037,8 @@ because it doesn't have field named `{1}`",
             context.TypeBuilder = parent_type.DefineNestedType(typeDecl.Name, attr);
 
             try{
-                foreach(var member in typeDecl.Members){
+                foreach(var member in typeDecl.Members)
                     member.AcceptWalker(this, context);
-                }
             }
             finally{
                 context.TypeBuilder = parent_type;
@@ -991,6 +1089,7 @@ because it doesn't have field named `{1}`",
         {
             var return_type = CSharpCompilerHelper.GetNativeType(parameterDecl.ReturnType);
             var tmp = CSharpExpr.Parameter(return_type, parameterDecl.Name);
+            Symbols.Add(parameterDecl.NameToken.IdentifierId, new ExpressoSymbol{Parameter = tmp});
             if(context.Additionals != null)
                 context.Additionals.Add(tmp);
 
@@ -1000,8 +1099,14 @@ because it doesn't have field named `{1}`",
         public CSharpExpr VisitVariableInitializer(VariableInitializer initializer,
             CSharpEmitterContext context)
         {
-            var variable = initializer.NameToken.AcceptWalker(this, context);
+            CSharpExpr variable = CSharpExpr.Variable(CSharpCompilerHelper.GetNativeType(initializer.NameToken.Type), initializer.Name);
             var init = initializer.Initializer.AcceptWalker(this, context);
+            if(context.ContextAst != null && context.ContextAst is VariableDeclarationStatement)
+                Symbols.Add(initializer.NameToken.IdentifierId, new ExpressoSymbol{Parameter = (ExprTree.ParameterExpression)variable});
+
+            if(context.Additionals != null)
+                context.Additionals.Add(CSharpExpr.Assign(variable, init));
+            
             return (init == null) ? variable : CSharpExpr.Assign(variable, init);
         }
 
@@ -1251,7 +1356,10 @@ because it doesn't have field named `{1}`",
 				return CSharpExpr.MakeBinary(ExprTree.ExpressionType.Add, lhs, rhs);
 
 			case OperatorType.Power:
-				return CSharpExpr.MakeBinary(ExprTree.ExpressionType.Power, lhs, rhs);
+                var prev_type = lhs.Type;
+                lhs = CSharpExpr.Convert(lhs, typeof(double));
+                rhs = CSharpExpr.Convert(rhs, typeof(double));
+                return CSharpExpr.Convert(CSharpExpr.MakeBinary(ExprTree.ExpressionType.Power, lhs, rhs), prev_type);
 
 			case OperatorType.Times:
 				return CSharpExpr.MakeBinary(ExprTree.ExpressionType.Multiply, lhs, rhs);
@@ -1301,7 +1409,7 @@ because it doesn't have field named `{1}`",
                 where symbol.IdentifierId != 0
                 group symbol by symbol.IdentifierId into same_values
                 from unique_symbol in same_values
-                let param = Symbols[(int)unique_symbol.IdentifierId]
+                let param = Symbols[unique_symbol.IdentifierId]
                 select param.Parameter;
 
             return parameters;

@@ -33,12 +33,12 @@ namespace Expresso.Ast.Analysis
             ast.AcceptWalker(checker);
         }
 
-        void DescendScope()
+        internal void DescendScope()
         {
             symbols = symbols.Children[scope_counter];
         }
 
-        void AscendScope()
+        internal void AscendScope()
         {
             symbols = symbols.Parent;
         }
@@ -205,7 +205,7 @@ namespace Expresso.Ast.Analysis
         {
             var left_type = assignment.Left.AcceptWalker(this);
             if(IsPlaceholderType(left_type)){
-                var inferred_type = assignment.Left.AcceptWalker(inference_runner);
+                var inferred_type = assignment.Right.AcceptWalker(inference_runner);
                 left_type.ReplaceWith(inferred_type);
                 return inferred_type;
             }else{
@@ -314,7 +314,7 @@ namespace Expresso.Ast.Analysis
         public AstType VisitIndexerExpression(IndexerExpression indexExpr)
         {
             var type = indexExpr.Target.AcceptWalker(this);
-            if(type is PlaceholderType)
+            if(IsPlaceholderType(type))
                 inference_runner.VisitIndexerExpression(indexExpr);
 
             var simple_type = type as SimpleType;
@@ -335,7 +335,7 @@ namespace Expresso.Ast.Analysis
         public AstType VisitMemberReference(MemberReference memRef)
         {
             var type = memRef.Target.AcceptWalker(this);
-            if(type is PlaceholderType)
+            if(IsPlaceholderType(type))
                 inference_runner.VisitMemberReference(memRef);
 
             var type_table = symbols.GetTypeTable(type.Name);
@@ -424,7 +424,20 @@ namespace Expresso.Ast.Analysis
 
         public AstType VisitSequenceInitializer(SequenceInitializer seqInitializer)
         {
-            return null;
+            if(seqInitializer.ObjectType.TypeArguments.First() is PlaceholderType)
+                seqInitializer.AcceptWalker(inference_runner);
+
+            // Accepts each item as it replaces placeholder nodes with real type nodes
+            // We don't validate the type of each item because inference phase do that
+            AstType type = null;
+            foreach(var item in seqInitializer.Items){
+                if(type == null)
+                    type = item.AcceptWalker(this);
+                else
+                    item.AcceptWalker(this);
+            }
+
+            return type;
         }
 
         public AstType VisitMatchClause(MatchPatternClause matchClause)
@@ -439,7 +452,14 @@ namespace Expresso.Ast.Analysis
 
         public AstType VisitSequence(SequenceExpression seqExpr)
         {
-            return null;
+            AstType type = null;
+            foreach(var item in seqExpr.Items){
+                if(type == null)
+                    type = item.AcceptWalker(this);
+                else
+                    item.AcceptWalker(this);
+            }
+            return type;
         }
 
         public AstType VisitUnaryExpression(UnaryExpression unaryExpr)
@@ -587,8 +607,14 @@ namespace Expresso.Ast.Analysis
 
             funcDecl.Body.AcceptWalker(this);
             if(IsPlaceholderType(funcDecl.ReturnType)){
+                // Descend scopes 2 times because a function name has its own scope
+                int tmp_counter2 = scope_counter;
+                scope_counter = 0;
+                DescendScope();
                 var return_type = inference_runner.VisitFunctionDeclaration(funcDecl);
                 funcDecl.ReturnType.ReplaceWith(return_type);
+                AscendScope();
+                scope_counter = tmp_counter2;
             }
 
             if(IsPlaceholderType(funcDecl.NameToken.Type)){

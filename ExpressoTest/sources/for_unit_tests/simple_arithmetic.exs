@@ -21,5 +21,5 @@ def main()
 	xmod %= 2;
 	xpower **= 2;
 
-	return new [x, a, b, c, d, e, f, xp, xm, xt, xd, xmod, xpower];
+	return [x, a, b, c, d, e, f, xp, xm, xt, xd, xmod, xpower];
 }

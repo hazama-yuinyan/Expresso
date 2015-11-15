@@ -102,6 +102,20 @@ namespace Expresso.CodeGen
         }
 
         /// <summary>
+        /// Represents the current context block.
+        /// </summary>
+        public System.Linq.Expressions.BlockExpression ContextBlock{
+            get; set;
+        }
+
+        /// <summary>
+        /// Current context ast node.
+        /// </summary>
+        public AstNode ContextAst{
+            get; set;
+        }
+
+        /// <summary>
         /// It will be set to a parameter expression that represents the temporary variable.
         /// </summary>
         public System.Linq.Expressions.ParameterExpression TemporaryVariable{

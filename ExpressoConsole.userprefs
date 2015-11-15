@@ -1,85 +1,49 @@
-﻿<Properties StartupItem="ExpressoConsole.csproj">
+﻿<Properties StartupItem="ExpressoConsole.csproj" RefactoringSettings.EnableRefactorings="True">
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug|x86" />
-  <MonoDevelop.Ide.Workbench ActiveDocument="Expresso/Expresso.ATG">
+  <MonoDevelop.Ide.Workbench ActiveDocument="Expresso/CodeGen/CSharpEmitter.cs">
     <Files>
-      <File FileName="Expresso/Expresso.ATG" Line="1524" Column="55" />
-      <File FileName="Expresso/Analysis/ExpressoNameBinder.cs" Line="1" Column="1" />
+      <File FileName="Expresso/Expresso.ATG" Line="1" Column="1" />
+      <File FileName="Expresso/Documentation/ExpressoDesignMemo.txt" Line="1" Column="1" />
+      <File FileName="Expresso/CodeGen/CSharpEmitter.cs" Line="384" Column="48" />
+      <File FileName="ExpressoTest/EmitterTests.cs" Line="1" Column="1" />
       <File FileName="ExpressoTest/ParserTests.cs" Line="1" Column="1" />
-      <File FileName="ExpressoTest/AnalyzerTests.cs" Line="1" Column="1" />
-      <File FileName="Expresso/CodeGen/CSharpEmitter.cs" Line="1" Column="1" />
+      <File FileName="ExpressoTest/sources/for_unit_tests/simple_literals.exs" Line="1" Column="1" />
+      <File FileName="Expresso/Parser.cs" Line="1" Column="1" />
+      <File FileName="Expresso/Documentation/ExpressoLanguageSpecificationMemo.txt" Line="1" Column="1" />
+      <File FileName="ExpressoTest/ErroneouesTests.cs" Line="1" Column="1" />
       <File FileName="Expresso/Analysis/TypeInferenceRunner.cs" Line="1" Column="1" />
       <File FileName="Expresso/Analysis/TypeChecker.cs" Line="1" Column="1" />
-      <File FileName="Expresso/Parser.cs" Line="1" Column="1" />
-      <File FileName="ExpressoTest/sources/for_unit_tests/general_expressions.exs" Line="1" Column="1" />
-      <File FileName="Expresso/Ast/Expressions/ObjectCreationExpression.cs" Line="1" Column="1" />
-      <File FileName="ExpressoTest/sources/for_unit_tests/erroneous/literals.exs" Line="1" Column="1" />
-      <File FileName="Expresso/CodeGen/CSharpCompilerHelper.cs" Line="194" Column="54" />
-      <File FileName="ExpressoTest/ErroneouesTests.cs" Line="1" Column="1" />
-      <File FileName="Expresso/Ast/PrimitiveType.cs" Line="1" Column="1" />
+      <File FileName="Expresso/CodeGen/CSharpCompilerHelper.cs" Line="1" Column="1" />
+      <File FileName="Expresso/Ast/GeneralScope/FunctionDeclaration.cs" Line="1" Column="1" />
+      <File FileName="Expresso/Ast/ExpressoAst.cs" Line="1" Column="1" />
+      <File FileName="Expresso/Analysis/ExpressoNameBinder.cs" Line="1" Column="1" />
+      <File FileName="ExpressoTest/sources/for_unit_tests/simple_arithmetic.exs" Line="1" Column="1" />
+      <File FileName="Expresso/CodeGen/CSharpEmitterContext.cs" Line="1" Column="1" />
     </Files>
-    <Pads>
-      <Pad Id="MonoDevelop.NUnit.TestPad">
-        <State name="__root__">
-          <Node name="ExpressoConsole" expanded="True" />
-        </State>
-      </Pad>
-    </Pads>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>
     <BreakpointStore>
-      <Breakpoint enabled="false" file="/home/ryouta/ドキュメント/MonoDevelopSolutions/ExpressoConsole/Expresso/BuiltIns/Functions.cs" line="133" column="1" />
-      <Breakpoint enabled="false" file="/home/ryouta/ドキュメント/MonoDevelopSolutions/ExpressoConsole/Expresso/Ast/ClassDeclaration.cs" line="62" column="1" />
-      <Breakpoint enabled="false" file="/home/ryouta/ドキュメント/MonoDevelopSolutions/ExpressoConsole/Expresso/Ast/Comprehension.cs" line="68" column="1" />
-      <Breakpoint enabled="false" file="/home/ryouta/ドキュメント/MonoDevelopSolutions/ExpressoConsole/Expresso/Ast/Function.cs" line="197" column="1" />
-      <Breakpoint enabled="false" file="/home/ryouta/ドキュメント/MonoDevelopSolutions/ExpressoConsole/Expresso/Ast/BinaryExpression.cs" line="80" column="1" />
-      <Breakpoint enabled="false" file="/home/ryouta/ドキュメント/MonoDevelopSolutions/ExpressoConsole/Expresso/Ast/TryStatement.cs" line="92" column="1" />
-      <Breakpoint enabled="false" file="/home/ryouta/ドキュメント/MonoDevelopSolutions/ExpressoConsole/Expresso/Ast/Function.cs" line="289" column="1" />
-      <Breakpoint enabled="false" file="/home/ryouta/ドキュメント/MonoDevelopSolutions/ExpressoConsole/Expresso/Ast/Comprehension.cs" line="210" column="1" />
-      <Breakpoint enabled="false" file="/home/ryouta/ドキュメント/MonoDevelopSolutions/ExpressoConsole/Expresso/Ast/NewExpression.cs" line="67" column="1" />
-      <Breakpoint file="/home/ryouta/ドキュメント/MonoDevelopSolutions/ExpressoConsole/ExpressoTest/Test.cs" line="97" column="1" />
-      <Breakpoint enabled="false" file="/home/ryouta/ドキュメント/MonoDevelopSolutions/ExpressoConsole/Expresso/Ast/RequireExpression.cs" line="55" column="1" />
-      <Breakpoint enabled="false" file="/home/ryouta/ドキュメント/MonoDevelopSolutions/ExpressoConsole/Expresso/Interpreter/Interpreter.cs" line="173" column="1" />
-      <Breakpoint enabled="false" file="/home/ryouta/ドキュメント/MonoDevelopSolutions/ExpressoConsole/Expresso/Interpreter/Interpreter.cs" line="123" column="1" />
-      <Breakpoint enabled="false" file="/home/ryouta/ドキュメント/MonoDevelopSolutions/ExpressoConsole/Expresso/Interpreter/Interpreter.cs" line="133" column="1" />
-      <Breakpoint enabled="false" file="/home/ryouta/ドキュメント/MonoDevelopSolutions/ExpressoConsole/Expresso/Interpreter/Interpreter.cs" line="548" column="1" />
-      <Breakpoint enabled="false" file="/home/ryouta/ドキュメント/MonoDevelopSolutions/ExpressoConsole/Expresso/Interpreter/Interpreter.cs" line="199" column="1" />
-      <Breakpoint enabled="false" file="/home/ryouta/ドキュメント/MonoDevelopSolutions/ExpressoConsole/Expresso/Interpreter/Interpreter.cs" line="1014" column="1" />
-      <Breakpoint file="/home/ryouta/ドキュメント/MonoDevelopSolutions/ExpressoConsole/Expresso/Interpreter/Interpreter.cs" line="662" column="1" />
-      <Breakpoint file="/home/ryouta/ドキュメント/MonoDevelopSolutions/ExpressoConsole/Expresso/Interpreter/Interpreter.cs" line="1067" column="1" />
-      <Breakpoint file="/home/ryouta/ドキュメント/MonoDevelopSolutions/ExpressoConsole/Expresso/Interpreter/Interpreter.cs" line="796" column="1" />
-      <Breakpoint file="/home/ryouta/ドキュメント/MonoDevelopSolutions/ExpressoConsole/Expresso/Interpreter/Interpreter.cs" line="592" column="1" />
-      <Breakpoint file="/home/ryouta/ドキュメント/MonoDevelopSolutions/ExpressoConsole/Expresso/Interpreter/Interpreter.cs" line="309" column="1" />
-      <Breakpoint conditionExpression="node == null" file="/home/hazama/Documents/MonoDevelopSolutions/Expresso/Expresso/Interpreter/Interpreter.cs" line="180" column="1" />
-      <Breakpoint enabled="false" file="/home/hazama/Documents/MonoDevelopSolutions/Expresso/Expresso/Interpreter/Interpreter.cs" line="178" column="1" />
-      <Breakpoint file="/home/hazama/Documents/MonoDevelopSolutions/Expresso/Expresso/Ast/Walkers/ExpressoNameBinder.cs" line="231" column="1" />
-      <Breakpoint file="/home/hazama/Documents/MonoDevelopSolutions/Expresso/Expresso/Interpreter/Interpreter.cs" line="1187" column="1" />
-      <Breakpoint file="/home/hazama/Documents/MonoDevelopSolutions/Expresso/Expresso/Interpreter/Interpreter.cs" line="832" column="1" />
-      <Breakpoint file="/home/hazama/Documents/MonodevelopSolutions/Expresso/Expresso/Interpreter/Interpreter.cs" line="680" column="1" />
-      <Breakpoint file="/home/hazama/Documents/MonodevelopSolutions/Expresso/Expresso/Ast/Walkers/ExpressoNameBinder.cs" line="963" column="1" />
-      <Breakpoint file="/home/hazama/Documents/MonodevelopSolutions/Expresso/ExpressoTest/Test.cs" line="95" column="1" />
-      <Breakpoint file="/home/hazama/Documents/MonodevelopSolutions/Expresso/ExpressoTest/Test.cs" line="97" column="1" />
-      <Breakpoint enabled="false" file="/home/hazama/Documents/MonodevelopSolutions/Expresso/Expresso/Ast/Expressions/Expression.cs" line="235" column="1" />
-      <Breakpoint enabled="false" file="/home/hazama/Documents/MonodevelopSolutions/Expresso/Expresso/Ast/Expressions/LiteralExpression.cs" line="47" column="1" />
-      <Breakpoint enabled="false" conditionExpression="typeof(T) == Identifier" file="/home/hazama/Documents/MonodevelopSolutions/Expresso/Expresso/Ast/AstNode.cs" line="571" column="1" />
-      <Breakpoint file="/home/hazama/Documents/MonodevelopSolutions/Expresso/Libraries/NRefactory/ICSharpCode.NRefactory/PatternMatching/Pattern.cs" line="111" column="1" />
-      <Breakpoint file="/home/hazama/Documents/MonodevelopSolutions/Expresso/Expresso/CodeGen/CSharpEmitter.cs" line="152" column="1" />
-      <Breakpoint file="/home/hazama/Documents/MonodevelopSolutions/Expresso/ExpressoTest/EmitterTests.cs" line="26" column="1" />
-      <Breakpoint file="/home/hazama/Documents/MonodevelopSolutions/Expresso/Expresso/Analysis/TypeChecker.cs" line="337" column="1" />
-      <Breakpoint file="/home/hazama/Documents/MonodevelopSolutions/Expresso/Expresso/Analysis/ExpressoNameBinder.cs" line="447" column="1" />
-      <Breakpoint file="/home/hazama/Documents/MonodevelopSolutions/Expresso/Expresso/Analysis/TypeInferenceRunner.cs" line="606" column="1" />
-      <Breakpoint file="/home/hazama/Documents/MonodevelopSolutions/Expresso/Expresso/Analysis/TypeChecker.cs" line="630" column="1" />
-      <Breakpoint file="/home/hazama/Documents/MonodevelopSolutions/Expresso/Expresso/Analysis/TypeInferenceRunner.cs" line="315" column="1" />
-      <Breakpoint file="/home/hazama/Documents/MonodevelopSolutions/Expresso/Expresso/Analysis/ExpressoNameBinder.cs" line="375" column="1" />
-      <Breakpoint file="/home/hazama/Documents/MonodevelopSolutions/Expresso/Expresso/Analysis/TypeChecker.cs" line="240" column="1" />
-      <Breakpoint file="/home/hazama/Documents/MonodevelopSolutions/Expresso/Expresso/Analysis/TypeInferenceRunner.cs" line="120" column="1" />
-      <Breakpoint enabled="false" file="/home/hazama/Documents/MonodevelopSolutions/Expresso/Expresso/Analysis/TypeChecker.cs" line="661" column="1" />
-      <Breakpoint conditionExpression="success == false" file="/home/hazama/Documents/MonodevelopSolutions/Expresso/Libraries/NRefactory/ICSharpCode.NRefactory/PatternMatching/Pattern.cs" line="98" column="1" />
-      <Breakpoint enabled="false" file="/home/hazama/Documents/MonodevelopSolutions/Expresso/Libraries/NRefactory/ICSharpCode.NRefactory/PatternMatching/Pattern.cs" line="87" column="1" />
-      <Breakpoint file="/home/hazama/Documents/MonodevelopSolutions/Expresso/Expresso/Parser.cs" line="1204" column="1" />
-      <Breakpoint enabled="false" file="/home/hazama/Documents/MonodevelopSolutions/Expresso/Expresso/Parser.cs" line="1819" column="1" />
-      <Breakpoint file="/home/hazama/Documents/MonodevelopSolutions/Expresso/Expresso/Analysis/ExpressoNameBinder.cs" line="117" column="1" />
-      <Breakpoint file="/home/hazama/Documents/MonodevelopSolutions/Expresso/Expresso/Analysis/ExpressoNameBinder.cs" line="463" column="28" />
-      <Breakpoint file="/home/hazama/Documents/MonodevelopSolutions/Expresso/Expresso/CodeGen/CSharpEmitter.cs" line="177" column="1" />
+      <Breakpoint file="/Users/ozaki/Documents/MonodevelopSolutions/Expresso/Expresso/Analysis/SymbolTable.cs" line="182" column="1" />
+      <Breakpoint conditionExpression="success == false" file="/Users/ozaki/Documents/MonodevelopSolutions/Expresso/Libraries/NRefactory/ICSharpCode.NRefactory/PatternMatching/Pattern.cs" line="98" column="1" />
+      <Breakpoint enabled="false" conditionExpression="cur1.GetType().Name == &quot;MatchPatternClause&quot;" file="/Users/ozaki/Documents/MonodevelopSolutions/Expresso/Libraries/NRefactory/ICSharpCode.NRefactory/PatternMatching/Pattern.cs" line="97" column="1" />
+      <Breakpoint file="/Users/ozaki/Documents/MonodevelopSolutions/Expresso/Expresso/Parser.cs" line="1127" column="1" />
+      <Breakpoint file="/Users/ozaki/Documents/MonodevelopSolutions/Expresso/ExpressoTest/EmitterTests.cs" line="48" column="1" />
+      <Breakpoint enabled="false" file="/Users/ozaki/Documents/MonodevelopSolutions/Expresso/Expresso/Parser.cs" line="992" column="1" />
+      <Breakpoint file="/Users/ozaki/Documents/MonodevelopSolutions/Expresso/Expresso/Analysis/TypeInferenceRunner.cs" line="178" column="1" />
+      <Breakpoint file="/Users/ozaki/Documents/MonodevelopSolutions/Expresso/Expresso/CodeGen/CSharpCompilerHelper.cs" line="192" column="1" />
+      <Breakpoint file="/Users/ozaki/Documents/MonodevelopSolutions/Expresso/Expresso/CodeGen/CSharpCompilerHelper.cs" line="136" column="1" />
+      <Breakpoint file="/Users/ozaki/Documents/MonodevelopSolutions/Expresso/Expresso/CodeGen/CSharpCompilerHelper.cs" line="146" column="1" />
+      <Breakpoint file="/Users/ozaki/Documents/MonodevelopSolutions/Expresso/Expresso/CodeGen/CSharpEmitter.cs" line="695" column="1" />
+      <Breakpoint file="/Users/ozaki/Documents/MonodevelopSolutions/Expresso/Expresso/Analysis/TypeInferenceRunner.cs" line="463" column="1" />
+      <Breakpoint file="/Users/ozaki/Documents/MonodevelopSolutions/Expresso/Expresso/Analysis/TypeChecker.cs" line="613" column="1" />
+      <Breakpoint file="/Users/ozaki/Documents/MonodevelopSolutions/Expresso/Expresso/CodeGen/CSharpEmitter.cs" line="596" column="1" />
+      <Breakpoint enabled="false" file="/Users/ozaki/Documents/MonodevelopSolutions/Expresso/Expresso/Analysis/TypeChecker.cs" line="367" column="1" />
+      <Breakpoint file="/Users/ozaki/Documents/MonodevelopSolutions/Expresso/Expresso/Analysis/TypeChecker.cs" line="206" column="1" />
+      <Breakpoint enabled="false" file="/Users/ozaki/Documents/MonodevelopSolutions/Expresso/Expresso/Analysis/TypeInferenceRunner.cs" line="249" column="1" />
+      <Breakpoint enabled="false" file="/Users/ozaki/Documents/MonodevelopSolutions/Expresso/Expresso/CodeGen/CSharpEmitter.cs" line="579" column="1" />
+      <Breakpoint file="/Users/ozaki/Documents/MonodevelopSolutions/Expresso/Expresso/CodeGen/CSharpEmitter.cs" line="291" column="1" />
+      <Breakpoint file="/Users/ozaki/Documents/MonodevelopSolutions/Expresso/Expresso/CodeGen/CSharpEmitter.cs" line="144" column="1" />
+      <Breakpoint file="/Users/ozaki/Documents/MonodevelopSolutions/Expresso/Expresso/CodeGen/CSharpEmitter.cs" line="952" column="10" />
     </BreakpointStore>
   </MonoDevelop.Ide.DebuggingService.Breakpoints>
   <MonoDevelop.Ide.DebuggingService.PinnedWatches />

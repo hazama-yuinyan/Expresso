@@ -6,6 +6,7 @@ using System.Reflection;
 using System.Text.RegularExpressions;
 using Expresso.Ast;
 using Expresso.TypeSystem;
+using Expresso.Runtime.Builtins;
 
 
 namespace Expresso.CodeGen
@@ -26,7 +27,10 @@ namespace Expresso.CodeGen
             {"uint", "UInt32"},     //
             {"char", "UInt32"},     // In Expresso, char is encoded in UTF-8.
             {"string", "UTF8String"},
-            {"", ""}
+            {"array", "Array"},
+            {"vector", "List"},
+            {"tuple", "Tuple"},
+            {"dictionary", "Dictionary"}
         };
 
         /// <summary>
@@ -75,6 +79,18 @@ namespace Expresso.CodeGen
             case KnownTypeCode.String:
                 return typeof(string);
 
+            case KnownTypeCode.Vector:
+                return typeof(List<>);
+
+            case KnownTypeCode.Tuple:
+                return typeof(Tuple);
+
+            case KnownTypeCode.Dictionary:
+                return typeof(Dictionary<,>);
+
+            case KnownTypeCode.IntSeq:
+                return typeof(ExpressoIntegerSequence);
+
             default:
                 return typeof(object);
             }
@@ -116,17 +132,48 @@ namespace Expresso.CodeGen
 
             var simple = astType as SimpleType;
             if(simple != null){
+                var name = ConvertToDotNetTypeName(simple.Identifier);
                 Type type = null;
                 foreach(var asm in AppDomain.CurrentDomain.GetAssemblies()){
-                    type = asm.GetType(ConvertToDotNetTypeName(simple.Identifier), false, true);
+                    var types = asm.GetExportedTypes();
+                    type = types.Where(t => t.Name == name)
+                        .FirstOrDefault();
+
                     if(type != null)
                         break;
                 }
 
-                if(type == null)
+                if(simple.Identifier == "array"){
+                    var type_arg = simple.TypeArguments
+                        .Select(ta => GetNativeType(ta))
+                        .First();
+
+                    var array = System.Array.CreateInstance(type_arg, 1);
+                    return array.GetType();
+                }else if(simple.Identifier == "dictionary" || simple.Identifier == "vector" || simple.Identifier == "tuple"){
+                    var generic_type = GetContainerType(simple);
+                    var type_args =
+                        from ta in simple.TypeArguments
+                        select GetNativeType(ta);
+
+                    var substituted = generic_type.MakeGenericType(type_args.ToArray());
+                    if(substituted == null){
+                        throw new EmitterException("Type `{0}` is expected to have {1} type arguments, but it actually has {2}",
+                            type, type_args.Count(), type.GenericTypeArguments.Length
+                        );
+                    }
+                    return substituted;
+                }else if(type == null){
                     throw new EmitterException("Type `{0}` is not found!", simple.Identifier);
+                }
 
                 if(!simple.TypeArguments.IsEmpty){
+                    if(!type.IsGenericType){
+                        throw new EmitterException("Type `{0}` is used as a generic type but native type `{1}` is not",
+                            simple.Identifier, type.Name
+                        );
+                    }
+
                     var type_args =
                         from ta in simple.TypeArguments
                         select GetNativeType(ta);
@@ -164,8 +211,35 @@ namespace Expresso.CodeGen
 
         public static Type GuessTupleType(IEnumerable<Type> elementTypes)
         {
-            var tuple_type = typeof(Tuple);
-            return tuple_type.MakeGenericType(elementTypes.ToArray());
+            var types = elementTypes.ToArray();
+            switch(types.Length){
+            case 1:
+                return typeof(Tuple<>).MakeGenericType(types);
+
+            case 2:
+                return typeof(Tuple<,>).MakeGenericType(types);
+
+            case 3:
+                return typeof(Tuple<,,>).MakeGenericType(types);
+
+            case 4:
+                return typeof(Tuple<,,,>).MakeGenericType(types);
+
+            case 5:
+                return typeof(Tuple<,,,,>).MakeGenericType(types);
+
+            case 6:
+                return typeof(Tuple<,,,,,>).MakeGenericType(types);
+
+            case 7:
+                return typeof(Tuple<,,,,,,>).MakeGenericType(types);
+
+            case 8:
+                return typeof(Tuple<,,,,,,,>).MakeGenericType(types);
+            
+            default:
+                throw new EmitterException("Expresso in .NET doesn't support that many tuple elements");
+            }
         }
 
         public static Assembly GetAssembly(AssemblyName name)
@@ -189,6 +263,31 @@ namespace Expresso.CodeGen
             }
 
             return module;
+        }
+
+        public static MethodInfo GetGenericMethod(this Type type, string methodName, params Type[] parameterTypes)
+        {
+            return type.GetGenericMethod(methodName, BindingFlags.Public, parameterTypes);
+        }
+
+        public static MethodInfo GetGenericMethod(this Type type, string methodName, BindingFlags flags, params Type[] parameterTypes)
+        {
+            var generic_methods = 
+                from m in type.GetMethods()
+                    where m.Name == methodName && m.ContainsGenericParameters && m.GetParameters().Length == parameterTypes.Length
+                select m;
+
+            var results =
+                from m in generic_methods
+                    where flags.HasFlag(BindingFlags.Public) && m.IsPublic || flags.HasFlag(BindingFlags.Static) && m.IsStatic || flags.HasFlag(BindingFlags.Default)
+                select m;
+
+            if(results.Count() > 1)
+                throw new Exception("Ambiguous methods! Multiple candidates found!");
+            else if(!results.Any())
+                throw new Exception("There is no candidate methods '" + methodName + "'");
+
+            return results.First().MakeGenericMethod(parameterTypes);
         }
 
         public static string ConvertToDotNetTypeName(string originalName)

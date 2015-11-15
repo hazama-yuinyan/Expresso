@@ -10,4 +10,7 @@ def main()
 
 dev test()
 {
+	var m = かきくけこ;
+	let a = 100
+
 }

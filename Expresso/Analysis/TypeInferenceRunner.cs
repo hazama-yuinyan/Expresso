@@ -247,7 +247,11 @@ namespace Expresso.Ast.Analysis
             public AstType VisitPathExpression(PathExpression pathExpr)
             {
                 if(pathExpr.Items.Count == 1){
-                    return VisitIdentifier(pathExpr.AsIdentifier);
+                    var type = VisitIdentifier(pathExpr.AsIdentifier);
+                    if(pathExpr.AsIdentifier.Type is PlaceholderType)
+                        pathExpr.AsIdentifier.Type.ReplaceWith(type.Clone());
+
+                    return type;
                 }else{
                     var table = checker.symbols;
                     AstType result = null;
@@ -334,7 +338,7 @@ namespace Expresso.Ast.Analysis
                     from item in seqExpr.Items
                     select item.AcceptWalker(this).Clone();
 
-                return new SimpleType("tuple", types, seqExpr.StartLocation, seqExpr.EndLocation);
+                return (seqExpr.Items.Count == 1) ? types.First() : new SimpleType("tuple", types, seqExpr.StartLocation, seqExpr.EndLocation);
             }
 
             public AstType VisitUnaryExpression(UnaryExpression unaryExpr)
@@ -456,12 +460,8 @@ namespace Expresso.Ast.Analysis
                 // all code paths return
                 AstType type = AstType.Null;
                 var last = funcDecl.Body.Statements.Last() as ReturnStatement;
-                if(last != null){
-                    if(last.Expression.IsNull)
-                        return new SimpleType("tuple", TextLocation.Empty);
-                    else
-                        return last.Expression.AcceptWalker(this);
-                }
+                if(last != null)
+                    type = last.Expression.IsNull ? new SimpleType("tuple", TextLocation.Empty) : last.Expression.AcceptWalker(this);
 
                 return type;
             }

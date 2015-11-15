@@ -50,8 +50,8 @@ namespace Expresso.Ast
 		}
 
         /// <summary>
-        /// モジュール名
-        /// Gets the name of the module.
+        /// モジュール名(デバッグ用)
+        /// Gets the name of the module as pretty string.
         /// </summary>
         /// <value>The name of the module.</value>
 		public string ModuleName{
