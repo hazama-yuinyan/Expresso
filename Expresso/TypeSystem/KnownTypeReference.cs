@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using Expresso.Ast;
+using ICSharpCode.NRefactory;
 
 
 namespace Expresso.TypeSystem

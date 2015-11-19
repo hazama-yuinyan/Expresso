@@ -475,7 +475,7 @@ namespace Expresso.Ast
         public void VisitSimpleType(SimpleType simpleType)
         {
             writer.Write(simpleType.IdentifierNode);
-            if(simpleType.TypeArguments.HasChildren){
+            if(simpleType.TypeArguments.Count > 0){
                 writer.Write("<");
                 PrintList(simpleType.TypeArguments);
                 writer.Write(">");

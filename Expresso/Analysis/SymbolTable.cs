@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
+using ICSharpCode.NRefactory;
+using Expresso.TypeSystem;
 
 
 namespace Expresso.Ast.Analysis
@@ -14,6 +16,7 @@ namespace Expresso.Ast.Analysis
     /// </summary>
     public class SymbolTable : ISerializable
     {
+        static Dictionary<string, Identifier> NativeMapping;
         Dictionary<string, Identifier> type_table, table;
 
         /// <summary>
@@ -51,8 +54,24 @@ namespace Expresso.Ast.Analysis
         /// <summary>
         /// Gets the number of symbols within this scope.
         /// </summary>
-        public int NumOfSymbols{
+        public int NumberOfSymbols{
             get{return Symbols.Count();}
+        }
+
+        static SymbolTable()
+        {
+            NativeMapping = new Dictionary<string, Identifier>();
+            var print_ident = new Identifier("Write", new FunctionType(AstNode.MakeIdentifier("print"), AstType.MakeSimpleType("void", TextLocation.Empty), new []{
+                AstType.MakeSimpleType("string", TextLocation.Empty)
+            }), TextLocation.Empty);
+            print_ident.IdentifierId = 1000000000u;
+            NativeMapping.Add("print", print_ident);
+
+            var println_ident = new Identifier("WriteLine", new FunctionType(AstNode.MakeIdentifier("println"), AstType.MakeSimpleType("void", TextLocation.Empty), new []{
+                AstType.MakeSimpleType("string", TextLocation.Empty)
+            }), TextLocation.Empty);
+            println_ident.IdentifierId = 1000000001u;
+            NativeMapping.Add("println", println_ident);
         }
 
         public SymbolTable()
@@ -60,6 +79,15 @@ namespace Expresso.Ast.Analysis
             type_table = new Dictionary<string, Identifier>();
             table = new Dictionary<string, Identifier>();
             Children = new List<SymbolTable>();
+        }
+
+        public static Identifier GetNativeSymbol(string name)
+        {
+            Identifier result;
+            if(NativeMapping.TryGetValue(name, out result))
+                return result;
+            else
+                return null;
         }
 
         #region ISerializable implementation
@@ -214,10 +242,14 @@ namespace Expresso.Ast.Analysis
         {
             Identifier result;
             if(!table.TryGetValue(name, out result)){
-                if(Parent != null)
+                if(Parent != null){
                     return Parent.GetSymbolInAnyScope(name);
-                else
-                    return null;
+                }else{
+                    if(NativeMapping.TryGetValue(name, out result))
+                        return result;
+                    else
+                        return null;
+                }
             }
 
             return result;

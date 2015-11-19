@@ -7,7 +7,7 @@ namespace Expresso.Runtime
     /// この属性が指定された型は、Expresso内の文法に合わせてプロパティがメソッドに置き換えられたり、メソッド名のキャメルケース化
     /// スライスオペレーションの定義などが行われる。
 	/// Marks a type as being an ExpressoType for purposes of member lookup, creating instances, etc...  
-    /// It also indicates that types marked with this attribute could be modified so that they suit
+    /// It also indicates that types marked with this attribute could be modified so that they suit to
     /// the Expresso world. For example, we don't have properties in Expresso so this attribute compells
     /// marked types to get rid of properties and to define setters and getters as methods.
 	/// </summary>

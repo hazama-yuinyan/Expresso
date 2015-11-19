@@ -112,37 +112,6 @@ namespace Expresso.Runtime.Builtins
 			return string.Format(tmp, vars);
 		}
 
-        /// <summary>
-        /// Wrapper method for Console.Write.
-        /// </summary>
-        /// <param name="format">Format.</param>
-        /// <param name="args">Arguments.</param>
-        [ExpressoFunction("print")]
-        public static void Print(string format, params object[] args)
-        {
-            if(format == null)
-                throw new ArgumentNullException("format");
-
-            /*int i = 0;
-            string tmp = FormatRefs.Replace(format, m => {
-
-            });
-
-            Console.Write(tmp);*/
-        }
-
-        /// <summary>
-        /// Wrapper method for Console.WriteLine.
-        /// </summary>
-        /// <param name="format">Format.</param>
-        /// <param name="args">Arguments.</param>
-        [ExpressoFunction("println")]
-        public static void Println(string format, params object[] args)
-        {
-            if(format == null)
-                throw new ArgumentNullException("format");
-        }
-
 		/// <summary>
 		/// Iterates over some sequence and returns a tuple containing an index and the corresponding element for each
 		/// element in the source sequence.

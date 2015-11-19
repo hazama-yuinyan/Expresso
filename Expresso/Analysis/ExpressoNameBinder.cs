@@ -545,11 +545,16 @@ namespace Expresso.Ast.Analysis
             }
 
             if(ident.IdentifierId == 0){
-                parser.ReportSemanticError(
-                    "'{0}' turns out not to be declared or accessible in the current scope {1}!",
-                    ident,
-                    ident.Name, symbol_table.Name
-                );
+                var native = SymbolTable.GetNativeSymbol(ident.Name);
+                if(native == null){
+                    parser.ReportSemanticError(
+                        "ES0100: '{0}' turns out not to be declared or accessible in the current scope {1}!",
+                        ident,
+                        ident.Name, symbol_table.Name
+                    );
+                }else{
+                    ident.IdentifierId = native.IdentifierId;
+                }
             }
         }
 	}

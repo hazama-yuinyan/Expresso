@@ -30,7 +30,8 @@ namespace Expresso.CodeGen
             {"array", "Array"},
             {"vector", "List"},
             {"tuple", "Tuple"},
-            {"dictionary", "Dictionary"}
+            {"dictionary", "Dictionary"},
+            {"void", "Void"}
         };
 
         /// <summary>
@@ -167,7 +168,7 @@ namespace Expresso.CodeGen
                     throw new EmitterException("Type `{0}` is not found!", simple.Identifier);
                 }
 
-                if(!simple.TypeArguments.IsEmpty){
+                if(simple.TypeArguments.Count > 0){
                     if(!type.IsGenericType){
                         throw new EmitterException("Type `{0}` is used as a generic type but native type `{1}` is not",
                             simple.Identifier, type.Name
@@ -187,11 +188,18 @@ namespace Expresso.CodeGen
 
                     return substituted;
                 }
+
+                return type;
             }
 
             var member = astType as MemberType;
             if(member != null){
                 return null;
+            }
+
+            var placeholder = astType as PlaceholderType;
+            if(placeholder != null){
+                throw new EmitterException("Unknown placeholder!");
             }
 
             throw new EmitterException("Unknown AstType!");

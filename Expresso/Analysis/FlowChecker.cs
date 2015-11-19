@@ -50,7 +50,7 @@ namespace Expresso.Ast.Analysis
 		
         FlowChecker(Parser parser, ExpressoAst decl)
 		{
-            bits = new BitArray(symbols.NumOfSymbols * 2);
+            bits = new BitArray(symbols.NumberOfSymbols * 2);
             this.parser = parser;
 		}
 		

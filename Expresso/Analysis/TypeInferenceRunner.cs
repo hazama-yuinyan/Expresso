@@ -176,7 +176,7 @@ namespace Expresso.Ast.Analysis
                     var symbol = checker.symbols.GetSymbolInAnyScope(ident.Name);
                     if(symbol == null){
                         parser.ReportSemanticError(
-                            "The symbol '{0}' is not defined in the current scope {1}.",
+                            "ES1000: The symbol '{0}' is not defined in the current scope {1}.",
                             ident,
                             ident.Name, checker.symbols.Name
                         );
@@ -220,7 +220,7 @@ namespace Expresso.Ast.Analysis
                 var type_table = checker.symbols.GetTypeTable(target_type.Name);
                 if(type_table == null){
                     parser.ReportSemanticError(
-                        "Although the expression {0} is evaluated to the type `{1}`, there isn't any type with that name.",
+                        "ES2000: Although the expression {0} is evaluated to the type `{1}`, there isn't any type with that name.",
                         memRef.Target,
                         memRef.Target, target_type.Name
                     );
@@ -228,7 +228,7 @@ namespace Expresso.Ast.Analysis
                     var symbol = type_table.GetSymbol(memRef.Member.Name);
                     if(symbol == null){
                         parser.ReportSemanticError(
-                            "Type `{0}` doesn't have a field {1}!",
+                            "ES2001: Type `{0}` doesn't have a field {1}!",
                             memRef.Member,
                             target_type.Name, memRef.Member.Name
                         );
@@ -461,7 +461,9 @@ namespace Expresso.Ast.Analysis
                 AstType type = AstType.Null;
                 var last = funcDecl.Body.Statements.Last() as ReturnStatement;
                 if(last != null)
-                    type = last.Expression.IsNull ? new SimpleType("tuple", TextLocation.Empty) : last.Expression.AcceptWalker(this);
+                    type = last.Expression.IsNull ? new SimpleType("void", TextLocation.Empty) : last.Expression.AcceptWalker(this);
+                else
+                    type = new SimpleType("void", TextLocation.Empty);
 
                 return type;
             }

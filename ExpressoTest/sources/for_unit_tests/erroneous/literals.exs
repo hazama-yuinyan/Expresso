@@ -6,6 +6,7 @@ def main()
     let n = 20;
     var vector;
     let k ~ 20;
+    l = 100;
 }
 
 dev test()

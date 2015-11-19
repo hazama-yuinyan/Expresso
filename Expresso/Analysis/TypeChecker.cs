@@ -97,8 +97,7 @@ namespace Expresso.Ast.Analysis
 
         public AstType VisitExpressionStatement(ExpressionStatement exprStmt)
         {
-            exprStmt.Expression.AcceptWalker(this);
-            return SimpleType.Null;
+            return exprStmt.Expression.AcceptWalker(this);
         }
 
         public AstType VisitForStatement(ForStatement forStmt)
@@ -212,7 +211,7 @@ namespace Expresso.Ast.Analysis
                 var right_type = assignment.Right.AcceptWalker(this);
                 if(!IsCompatibleWith(left_type, right_type)){
                     parser.ReportSemanticErrorRegional(
-                        "Type `{0}` on left-hand-side isn't compatible with type `{1}` on right-hand-side.",
+                        "Error ES1002: Type `{0}` on left-hand-side isn't compatible with type `{1}` on right-hand-side.",
                         assignment.Left, assignment.Right,
                         left_type, right_type
                     );
@@ -227,7 +226,7 @@ namespace Expresso.Ast.Analysis
             var rhs_type = binaryExpr.Right.AcceptWalker(this);
             if(!IsCompatibleWith(lhs_type, rhs_type)){
                 parser.ReportSemanticErrorRegional(
-                    "Can not apply the operator {0} on `{1}` and `{2}`.",
+                    "Error ES1003: Can not apply the operator {0} on `{1}` and `{2}`.",
                     binaryExpr.Left, binaryExpr.Right,
                     binaryExpr.OperatorToken, lhs_type, rhs_type
                 );
@@ -240,8 +239,9 @@ namespace Expresso.Ast.Analysis
             var func_type = callExpr.Target.AcceptWalker(this);
             if(IsPlaceholderType(func_type)){
                 var inferred = inference_runner.VisitCallExpression(callExpr);
-                func_type.ReplaceWith(inferred);
-                return ((FunctionType)inferred).ReturnType;
+                // Don't replace nodes here because the above code does that
+                //func_type.ReplaceWith(inferred);
+                return inferred;
             }
             return ((FunctionType)func_type).ReturnType;
         }
@@ -252,7 +252,7 @@ namespace Expresso.Ast.Analysis
             var expression_type = castExpr.Target.AcceptWalker(this);
             if(!IsCastable(expression_type, target_type)){
                 parser.ReportSemanticErrorRegional(
-                    "Can not cast the type `{0}` to type `{1}`.",
+                    "Error ES1004: Can not cast the type `{0}` to type `{1}`.",
                     castExpr.Target, castExpr.ToExpression,
                     expression_type, target_type
                 );
@@ -282,7 +282,7 @@ namespace Expresso.Ast.Analysis
             var false_type = condExpr.FalseExpression.AcceptWalker(this);
             if(!IsCompatibleWith(true_type, false_type)){
                 parser.ReportSemanticErrorRegional(
-                    "`{0}` is not compatible with `{1}`.",
+                    "Error ES1005: `{0}` is not compatible with `{1}`.",
                     condExpr.Condition, condExpr.FalseExpression,
                     true_type, false_type
                 );
