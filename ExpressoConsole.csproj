@@ -28,7 +28,7 @@
     <WarningLevel>4</WarningLevel>
     <PlatformTarget>x86</PlatformTarget>
     <Externalconsole>True</Externalconsole>
-    <Commandlineparameters>../../ExpressoTest/sources/for_interpreter/basic_operations.exs</Commandlineparameters>
+    <Commandlineparameters>../../ExpressoTest/test_executable/main.exe</Commandlineparameters>
     <BaseAddress>4194304</BaseAddress>
     <RegisterForComInterop>False</RegisterForComInterop>
     <GenerateSerializationAssemblies>Auto</GenerateSerializationAssemblies>

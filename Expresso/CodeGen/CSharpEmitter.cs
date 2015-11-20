@@ -10,6 +10,7 @@ using Expresso.Runtime.Builtins;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Threading;
 
 namespace Expresso.CodeGen
 {
@@ -125,13 +126,15 @@ namespace Expresso.CodeGen
             if(context == null)
                 context = new CSharpEmitterContext();
 
-            var name = new AssemblyName(ast.Name);
+            var name = new AssemblyName("exsAsm");
 
-            var asm_builder = AppDomain.CurrentDomain.DefineDynamicAssembly(name, AssemblyBuilderAccess.RunAndSave, options.OutputPath);
-            var mod_builder = asm_builder.DefineDynamicModule("<Module>");
+            var asm_builder = Thread.GetDomain().DefineDynamicAssembly(name, AssemblyBuilderAccess.RunAndSave, options.OutputPath);
+            var mod_builder = asm_builder.DefineDynamicModule(ast.Name, ast.Name + ".mod", options.BuildType.HasFlag(BuildType.Debug));
+            var type_builder = mod_builder.DefineType("ExsMain", TypeAttributes.Public);
 
             context.AssemblyBuilder = asm_builder;
             context.ModuleBuilder = mod_builder;
+            context.TypeBuilder = type_builder;
 
             foreach(var import in ast.Imports)
                 import.AcceptWalker(this, context);
@@ -139,8 +142,8 @@ namespace Expresso.CodeGen
             foreach(var decl in ast.Declarations)
                 decl.AcceptWalker(this, context);
 
-            mod_builder.CreateGlobalFunctions();
-            var main_func = mod_builder.GetMethod("main");
+            type_builder.CreateType();
+            var main_func = type_builder.GetMethod("main");
             asm_builder.SetEntryPoint(main_func);
             asm_builder.Save(GetModuleName(ast));
 
@@ -406,7 +409,8 @@ namespace Expresso.CodeGen
                 decls.Add(tmp);
             }
             context.ContextAst = null;
-            context.Additionals.AddRange(decls);
+            //if(context.Additionals != null)
+            //context.Additionals.AddRange(decls);
             // A variable declaration statement may contain multiple declarations
             return null;
         }
@@ -445,7 +449,10 @@ namespace Expresso.CodeGen
                         return CSharpExpr.ModuloAssign(lhs.Items.First().AcceptWalker(this, context), rhs.Items.First().AcceptWalker(this, context));
 
                     case OperatorType.Power:
-                        return CSharpExpr.PowerAssign(lhs.Items.First().AcceptWalker(this, context), rhs.Items.First().AcceptWalker(this, context));
+                        var rhs_result = rhs.Items.First().AcceptWalker(this, context);
+                        var prev_type = rhs_result.Type;
+                        rhs_result = CSharpExpr.Convert(rhs_result, typeof(double));
+                        return CSharpExpr.PowerAssign(lhs.Items.First().AcceptWalker(this, context), rhs_result);
 
                     default:
                         return null;
@@ -459,7 +466,7 @@ namespace Expresso.CodeGen
                         //scope: until they are assigned
                         var lhs_result = pair.Item1.AcceptWalker(this, context);
                         var rhs_result = pair.Item2.AcceptWalker(this, context);
-                        var param = CSharpExpr.Parameter(rhs_result.Type);
+                        var param = CSharpExpr.Parameter(rhs_result.Type, "tmp");
                         tmp_variables.Add(param);
 
                         switch(assignment.Operator){
@@ -908,7 +915,7 @@ namespace Expresso.CodeGen
             }
 
             if(types.Count == 1 && types.First() == typeof(void)){
-                return CSharpExpr.Empty();
+                return exprs.First();
             }else{
                 var ctor_method = typeof(Tuple).GetGenericMethod("Create", BindingFlags.Public | BindingFlags.Static, types.ToArray());
 
@@ -1045,7 +1052,7 @@ namespace Expresso.CodeGen
                 attr |= MethodAttributes.Public;
 
             var return_type = CSharpCompilerHelper.GetNativeType(funcDecl.ReturnType);
-            var func_builder = context.ModuleBuilder.DefineGlobalMethod(funcDecl.Name, attr, return_type, param_types.ToArray());
+            var func_builder = context.TypeBuilder.DefineMethod(funcDecl.Name, attr, return_type, param_types.ToArray());
             lambda.CompileToMethod(func_builder);
 
             AscendScope();

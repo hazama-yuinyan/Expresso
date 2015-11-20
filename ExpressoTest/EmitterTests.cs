@@ -51,12 +51,14 @@ namespace Expresso.Test
             ast.AcceptWalker(emitter, null);
 
             var asm = emitter.AssemblyBuilder;
-            var main_method = asm.GetModule("<Module>").GetMethod("main");
+            var main_method = asm.GetModule("main")
+                .GetType("ExsMain")
+                .GetMethod("main");
             Assert.AreEqual(main_method.Name, "main");
             Assert.IsTrue(main_method.IsStatic);
             Assert.AreEqual(main_method.ReturnType, typeof(void));
             Assert.AreEqual(0, main_method.GetParameters().Length);
-            Console.WriteLine("テスト実行");
+            Console.Out.WriteLine("テスト実行");
             Console.Out.WriteLine(main_method.ToString());
 
             main_method.Invoke(null, new object[]{});
