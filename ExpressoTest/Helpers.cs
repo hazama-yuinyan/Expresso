@@ -110,6 +110,16 @@ namespace Expresso.Test
         }
 
         /// <summary>
+        /// Makes a path expression from a string.
+        /// </summary>
+        /// <returns>A path expression</returns>
+        /// <param name="identifier">Identifier.</param>
+        public static PathExpression MakeIdentifierPath(string identifier)
+        {
+            return Expression.MakePath(MakeSomeIdent(identifier));
+        }
+
+        /// <summary>
         /// Makes an AstType with the specified identifier and optional type arguments.
         /// </summary>
         /// <returns>A generic type.</returns>
@@ -165,7 +175,7 @@ namespace Expresso.Test
         public static ExpressionStatement MakeAugmentedAssignment(OperatorType opType,
             IEnumerable<Expression> lhs, IEnumerable<Expression> rhs)
         {
-            return Statement.MakeAugumentedAssignment(Expression.MakeSequence(lhs), Expression.MakeSequence(rhs), opType);
+            return Statement.MakeAugmentedAssignment(opType, Expression.MakeSequence(lhs), Expression.MakeSequence(rhs));
         }
     }
 

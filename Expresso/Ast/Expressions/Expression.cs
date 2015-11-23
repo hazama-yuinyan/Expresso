@@ -126,22 +126,45 @@ namespace Expresso.Ast
         /// Makes a simple assignment expression.
         /// </summary>
         /// <returns>An assignment expression.</returns>
-        /// <param name="lhs">The left hand side expression(single item)</param>
-        /// <param name="rhs">The right hand side expression(single item)</param>
+        /// <param name="lhs">The left-hand-side expression(single item)</param>
+        /// <param name="rhs">The right-hand-side expression(single item)</param>
         public static AssignmentExpression MakeSingleAssignment(Expression lhs, Expression rhs)
         {
             return new AssignmentExpression(lhs, rhs);
         }
 
         /// <summary>
+        /// Makes a simple augmented assignment.
+        /// </summary>
+        /// <returns>An assignment expression.</returns>
+        /// <param name="opType">The type of the operator.</param>
+        /// <param name="lhs">The left-hand-side expression(single item).</param>
+        /// <param name="rhs">The right-hand-side expression(single item).</param>
+        public static AssignmentExpression MakeSingleAugmentedAssignment(OperatorType opType, Expression lhs, Expression rhs)
+        {
+            return new AssignmentExpression(lhs, rhs, opType);
+        }
+
+        /// <summary>
         /// Makes a simuletanous assignment expression.
         /// </summary>
         /// <returns>An assignment.</returns>
-        /// <param name="lhs">The left hand side expressions(multiple items).</param>
-        /// <param name="rhs">The right hand side expressions(multiple items).</param>
+        /// <param name="lhs">The left-hand-side expressions(multiple items).</param>
+        /// <param name="rhs">The right-hand-side expressions(multiple items).</param>
         public static AssignmentExpression MakeAssignment(SequenceExpression lhs, SequenceExpression rhs)
         {
             return new AssignmentExpression(lhs, rhs);
+        }
+
+        /// <summary>
+        /// Makes a simuletanous augumented assignment
+        /// </summary>
+        /// <param name="opType">The type of the operator.</param>
+        /// <param name="lhs">The left-hand-side expressions(multiple items).</param>
+        /// <param name="rhs">The right-hand-side expressions(multiple items).</param>
+        public static AssignmentExpression MakeAugumentedAssignment(OperatorType opType, SequenceExpression lhs, SequenceExpression rhs)
+        {
+            return new AssignmentExpression(lhs, rhs, opType);
         }
 
         /// <summary>

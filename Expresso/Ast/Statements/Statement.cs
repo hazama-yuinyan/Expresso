@@ -120,14 +120,20 @@ namespace Expresso.Ast
         public static ExpressionStatement MakeSingleAssignment(SequenceExpression lhs, SequenceExpression rhs,
             TextLocation start = default(TextLocation), TextLocation end = default(TextLocation))
         {
-            return new ExpressionStatement(new AssignmentExpression(lhs, rhs), start, end);
+            return MakeExprStmt(Expression.MakeSingleAssignment(lhs, rhs), start, end);
         }
 
-        public static ExpressionStatement MakeAugumentedAssignment(SequenceExpression targets,
-            SequenceExpression rhs, OperatorType opType, TextLocation start = default(TextLocation),
+        public static ExpressionStatement MakeSingleAugmentedAssignment(OperatorType opType, SequenceExpression lhs, SequenceExpression rhs,
+            TextLocation start = default(TextLocation), TextLocation end = default(TextLocation))
+        {
+            return MakeExprStmt(Expression.MakeSingleAugmentedAssignment(opType, lhs, rhs), start, end);
+        }
+
+        public static ExpressionStatement MakeAugmentedAssignment(OperatorType opType, SequenceExpression targets,
+            SequenceExpression rhs, TextLocation start = default(TextLocation),
             TextLocation end = default(TextLocation))
         {
-            return new ExpressionStatement(new AssignmentExpression(targets, rhs, opType), start, end);
+            return MakeExprStmt(Expression.MakeAugumentedAssignment(opType, targets, rhs), start, end);
         }
 
         public static BreakStatement MakeBreakStmt(LiteralExpression count,

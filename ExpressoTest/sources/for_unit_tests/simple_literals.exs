@@ -45,4 +45,6 @@ def main()
     let j3 (- intseq = 1..10:1;
     let j_2 = -5..-10:-1;
     let j_2_ = 0...-10:-1;
+
+    println(a, h_a, h_a_, b, f_b, f_b_, c, f_c, f_c2, d, d_, d2, e, u, u_, f_a, f_a_, f, f_, f2, f2_, f3, f3_, g, g_, h, h2, h3, i, i2, i3, i4, i5, i6, i6_, j, j2, j3, j_2, j_2_);
 }

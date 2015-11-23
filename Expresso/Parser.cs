@@ -1115,7 +1115,7 @@ static uint ScopeId = 1;
 				if(lhs.Count != seq.Count)  //See if both sides have the same number of items or not
 				   SemanticError("Error E0007: An augumented assignment must have both sides balanced.");
 				
-				stmt = Statement.MakeAugumentedAssignment(lhs, seq, op_type, start_loc, CurrentLocation);
+				stmt = Statement.MakeAugmentedAssignment(op_type, lhs, seq, start_loc, CurrentLocation);
 				
 			} else {
 				Get();
