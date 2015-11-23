@@ -119,6 +119,11 @@ namespace Expresso.CodeGen
             return options.BuildType.HasFlag(BuildType.Assembly) ? ast.Name + ".dll" : ast.Name + ".exe";
         }
 
+        string GetFunctionName(string name)
+        {
+            return name.Substring(0, 1).ToUpper() + name.Substring(1);
+        }
+
         #region IAstWalker implementation
 
         public CSharpExpr VisitAst(ExpressoAst ast, CSharpEmitterContext context)
@@ -129,8 +134,8 @@ namespace Expresso.CodeGen
             var name = new AssemblyName("exsAsm");
 
             var asm_builder = Thread.GetDomain().DefineDynamicAssembly(name, AssemblyBuilderAccess.RunAndSave, options.OutputPath);
-            var mod_builder = asm_builder.DefineDynamicModule(ast.Name, ast.Name + ".mod", options.BuildType.HasFlag(BuildType.Debug));
-            var type_builder = mod_builder.DefineType("ExsMain", TypeAttributes.Public);
+            var mod_builder = asm_builder.DefineDynamicModule(ast.Name + ".exe");
+            var type_builder = mod_builder.DefineType("ExsMain", TypeAttributes.Class, typeof(object));
 
             context.AssemblyBuilder = asm_builder;
             context.ModuleBuilder = mod_builder;
@@ -143,8 +148,6 @@ namespace Expresso.CodeGen
                 decl.AcceptWalker(this, context);
 
             type_builder.CreateType();
-            var main_func = type_builder.GetMethod("main");
-            asm_builder.SetEntryPoint(main_func);
             asm_builder.Save(GetModuleName(ast));
 
             AssemblyBuilder = asm_builder;
@@ -409,8 +412,6 @@ namespace Expresso.CodeGen
                 decls.Add(tmp);
             }
             context.ContextAst = null;
-            //if(context.Additionals != null)
-            //context.Additionals.AddRange(decls);
             // A variable declaration statement may contain multiple declarations
             return null;
         }
@@ -466,7 +467,7 @@ namespace Expresso.CodeGen
                         //scope: until they are assigned
                         var lhs_result = pair.Item1.AcceptWalker(this, context);
                         var rhs_result = pair.Item2.AcceptWalker(this, context);
-                        var param = CSharpExpr.Parameter(rhs_result.Type, "tmp");
+                        var param = CSharpExpr.Parameter(rhs_result.Type);
                         tmp_variables.Add(param);
 
                         switch(assignment.Operator){
@@ -1047,13 +1048,21 @@ namespace Expresso.CodeGen
             context.Additionals = null;
             var lambda = CSharpExpr.Lambda(body, parameters);
 
-            var attr = MethodAttributes.Static;
-            if((funcDecl.Modifiers | Modifiers.Export) != 0x00)
+            var attr = MethodAttributes.Static | MethodAttributes.Family;
+            if(funcDecl.Modifiers.HasFlag(Modifiers.Export)){
                 attr |= MethodAttributes.Public;
+                attr ^= MethodAttributes.Family;
+            }
+
+            if(funcDecl.Name == "main")
+                attr |= MethodAttributes.HideBySig;
 
             var return_type = CSharpCompilerHelper.GetNativeType(funcDecl.ReturnType);
-            var func_builder = context.TypeBuilder.DefineMethod(funcDecl.Name, attr, return_type, param_types.ToArray());
+            var func_builder = context.TypeBuilder.DefineMethod(GetFunctionName(funcDecl.Name), attr, return_type, param_types.ToArray());
             lambda.CompileToMethod(func_builder);
+
+            if(funcDecl.Name == "main")
+                context.AssemblyBuilder.SetEntryPoint(func_builder, PEFileKinds.ConsoleApplication);
 
             AscendScope();
 

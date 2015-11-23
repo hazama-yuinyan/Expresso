@@ -53,15 +53,16 @@ namespace Expresso.Test
             var asm = emitter.AssemblyBuilder;
             var main_method = asm.GetModule("main")
                 .GetType("ExsMain")
-                .GetMethod("main");
-            Assert.AreEqual(main_method.Name, "main");
+                .GetMethod("Main");
+            Assert.AreEqual(main_method.Name, "Main");
             Assert.IsTrue(main_method.IsStatic);
-            Assert.AreEqual(main_method.ReturnType, typeof(void));
-            Assert.AreEqual(0, main_method.GetParameters().Length);
+            Assert.AreEqual(typeof(int), main_method.ReturnType);
+            Assert.AreEqual(1, main_method.GetParameters().Length);
+            //Assert.IsTrue(main_method.GetParameters().SequenceEqual(new []{typeof(string[])}));
             Console.Out.WriteLine("テスト実行");
             Console.Out.WriteLine(main_method.ToString());
 
-            main_method.Invoke(null, new object[]{});
+            //main_method.Invoke(null, new object[]{});
         }
     }
 }

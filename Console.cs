@@ -24,41 +24,42 @@ Usage: expresso file_name"
 			var file_name = args[0];
 
             if(file_name.EndsWith(".exe") || file_name.EndsWith(".dll")){
-                var asm = Assembly.LoadFile(file_name);
-                var mod = asm.GetModule("main");
-                if(mod == null){
-                    Console.Error.WriteLine("No main module found! Can't execute the file!");
-                    return;
-                }
-                var entry_type = mod.GetType("ExsMain");
-                if(entry_type == null){
-                    Console.Error.WriteLine("No entry point!");
-                    return;
-                }
-
-                var main_func = entry_type.GetMethod("main");
-                if(main_func == null){
-                    Console.Error.WriteLine("No entry function! Can't execute the file.");
-                }
                 try{
+                    var asm = Assembly.LoadFile(file_name);
+                    var mod = asm.GetModule("main");
+                    if(mod == null){
+                        Console.Error.WriteLine("No main module found! Can't execute the file!");
+                        return;
+                    }
+                    var entry_type = mod.GetType("ExsMain");
+                    if(entry_type == null){
+                        Console.Error.WriteLine("No entry point!");
+                        return;
+                    }
+
+                    var main_func = entry_type.GetMethod("Main");
+                    if(main_func == null){
+                        Console.Error.WriteLine("No entry function! Can't execute the file.");
+                        return;
+                    }
                     main_func.Invoke(null, args.Skip(1).ToArray());
-                    return;
                 }
                 catch(Exception e){
-                    Console.Error.WriteLine(e.Message);
+                    Console.WriteLine(e.Message);
                 }
+            }else{
+    			try{
+                    var parser = new Parser(new Scanner(file_name));
+                    parser.DoPostParseProcessing = true;
+                    parser.Parse();
+    			}
+                catch(PanickedException panicked){
+    				Console.WriteLine(panicked.Message);
+    			}
+    			catch(Exception e){
+    				Console.WriteLine(e.Message);
+    			}
             }
-			try{
-                var parser = new Parser(new Scanner(file_name));
-                parser.DoPostParseProcessing = true;
-                parser.Parse();
-			}
-            catch(PanickedException panicked){
-				Console.WriteLine(panicked.Message);
-			}
-			catch(Exception e){
-				Console.WriteLine(e.Message);
-			}
 		}
 	}
 }

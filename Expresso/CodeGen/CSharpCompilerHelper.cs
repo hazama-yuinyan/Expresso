@@ -152,6 +152,9 @@ namespace Expresso.CodeGen
                     var array = System.Array.CreateInstance(type_arg, 1);
                     return array.GetType();
                 }else if(simple.Identifier == "dictionary" || simple.Identifier == "vector" || simple.Identifier == "tuple"){
+                    if(simple.Identifier == "tuple" && !simple.TypeArguments.Any())
+                        return typeof(void);
+                    
                     var generic_type = GetContainerType(simple);
                     var type_args =
                         from ta in simple.TypeArguments
@@ -164,6 +167,8 @@ namespace Expresso.CodeGen
                         );
                     }
                     return substituted;
+                }else if(simple.Identifier == "void"){
+                    return typeof(void);
                 }else if(type == null){
                     throw new EmitterException("Type `{0}` is not found!", simple.Identifier);
                 }

@@ -461,9 +461,9 @@ namespace Expresso.Ast.Analysis
                 AstType type = AstType.Null;
                 var last = funcDecl.Body.Statements.Last() as ReturnStatement;
                 if(last != null)
-                    type = last.Expression.IsNull ? new SimpleType("void", TextLocation.Empty) : last.Expression.AcceptWalker(this);
+                    type = last.Expression.IsNull ? AstType.MakeSimpleType("tuple", TextLocation.Empty) : last.Expression.AcceptWalker(this);
                 else
-                    type = new SimpleType("void", TextLocation.Empty);
+                    type = AstType.MakeSimpleType("tuple", TextLocation.Empty);
 
                 return type;
             }
