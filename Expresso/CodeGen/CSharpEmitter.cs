@@ -11,6 +11,7 @@ using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
+using System.Numerics;
 
 namespace Expresso.CodeGen
 {
@@ -618,8 +619,15 @@ namespace Expresso.CodeGen
         public CSharpExpr VisitLiteralExpression(LiteralExpression literal,
             CSharpEmitterContext context)
         {
-            var native_type = CSharpCompilerHelper.GetNativeType(literal.Type);
-            return CSharpExpr.Constant(literal.Value, native_type);
+            if(literal.Type.Name == "bigint"){
+                var ctor = typeof(BigInteger).GetMethod("Parse", new Type[]{
+                    typeof(string)
+                });
+                return CSharpExpr.Call(ctor, CSharpExpr.Constant(literal.LiteralValue));
+            }else{
+                var native_type = CSharpCompilerHelper.GetNativeType(literal.Type);
+                return CSharpExpr.Constant(literal.Value, native_type);
+            }
         }
 
         public CSharpExpr VisitIdentifier(Identifier ident, CSharpEmitterContext context)
@@ -636,11 +644,12 @@ namespace Expresso.CodeGen
         public CSharpExpr VisitIntegerSequenceExpression(IntegerSequenceExpression intSeq,
             CSharpEmitterContext context)
         {
-            var intseq_ctor = typeof(ExpressoIntegerSequence).GetConstructor(new []{typeof(int), typeof(int), typeof(int)});
+            var intseq_ctor = typeof(ExpressoIntegerSequence).GetConstructor(new []{typeof(int), typeof(int), typeof(int), typeof(bool)});
             var args = new List<CSharpExpr>{
                 intSeq.Lower.AcceptWalker(this, context),
                 intSeq.Upper.AcceptWalker(this, context),
-                intSeq.Step.AcceptWalker(this, context)
+                intSeq.Step.AcceptWalker(this, context),
+                CSharpExpr.Constant(intSeq.UpperInclusive)
             };
             return CSharpExpr.New(intseq_ctor, args);      //new ExpressoIntegerSequence(Start, End, Step)
         }
@@ -784,24 +793,27 @@ namespace Expresso.CodeGen
             // If this node represents a dictionary literal
             // context.Constructor will get set the appropriate constructor method.
             context.Constructor = null;
+            var additionals = context.Additionals;
             context.Additionals = new List<object>();
             foreach(var item in seqInitializer.Items){
                 var tmp = item.AcceptWalker(this, context);
                 exprs.Add(tmp);
             }
 
-            if(exprs.Count == 0)
-                return null;
+            //if(exprs.Count == 0)
+            //   return null;
 
             if(seq_type == typeof(Array)){
                 var elem_type = CSharpCompilerHelper.GetNativeType(obj_type.TypeArguments.FirstOrNullObject());
+                context.Additionals = additionals;
                 return CSharpExpr.NewArrayInit(elem_type, exprs);
             }else if(seq_type == typeof(List<>)){
                 var elem_type = CSharpCompilerHelper.GetNativeType(obj_type.TypeArguments.FirstOrNullObject());
                 var list_type = seq_type.MakeGenericType(elem_type);
                 var constructor = list_type.GetConstructor(new Type[]{});
                 var new_expr = CSharpExpr.New(constructor);
-                return CSharpExpr.ListInit(new_expr, exprs);
+                context.Additionals = additionals;
+                return (exprs.Count == 0) ? new_expr : (CSharpExpr)CSharpExpr.ListInit(new_expr, exprs);
             }else if(seq_type == typeof(Dictionary<,>)){
                 var key_type = CSharpCompilerHelper.GetNativeType(obj_type.TypeArguments.FirstOrNullObject());
                 var value_type = CSharpCompilerHelper.GetNativeType(obj_type.TypeArguments.LastOrNullObject());
@@ -809,12 +821,14 @@ namespace Expresso.CodeGen
                 var dict_type = seq_type.MakeGenericType(key_type, value_type);
                 var constructor = dict_type.GetConstructor(new Type[]{});
                 var new_expr = CSharpExpr.New(constructor);
-                return CSharpExpr.ListInit(new_expr, elems);
+                context.Additionals = additionals;
+                return (exprs.Count == 0) ? new_expr : (CSharpExpr)CSharpExpr.ListInit(new_expr, elems);
             }else if(seq_type == typeof(Tuple)){
                 var child_types = 
                     from e in exprs
                     select e.Type;
                 var ctor_method = typeof(Tuple).GetMethod("Create", child_types.ToArray());
+                context.Additionals = additionals;
                 return CSharpExpr.Call(ctor_method, exprs);
             }else{
                 throw new EmitterException("Could not emit code.");

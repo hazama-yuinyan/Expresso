@@ -161,6 +161,11 @@ namespace Expresso.Runtime.Builtins
 		{
 			return this.step == 1;
 		}
+
+        public override string ToString()
+        {
+            return string.Format("{0}..{1}:{2}", lower, upper, step);
+        }
 	}
 }
 

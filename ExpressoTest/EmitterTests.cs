@@ -4,6 +4,7 @@ using Expresso.CodeGen;
 using NUnit.Framework;
 using NUnit.Framework.SyntaxHelpers;
 using System.Linq;
+using System.Reflection;
 
 namespace Expresso.Test
 {
@@ -20,15 +21,43 @@ namespace Expresso.Test
             var ast = parser.TopmostAst;
             var options = new ExpressoCompilerOptions{
                 LibraryPaths = new List<string>{""},
-                OutputPath = "../../test_executables",
+                OutputPath = "../../test_executable",
                 BuildType = BuildType.Debug | BuildType.Executable
             };
             var emitter = new CSharpEmitter(parser, options);
             ast.AcceptWalker(emitter, null);
 
             var asm = emitter.AssemblyBuilder;
-            var main_method = asm.GetModule("main").GetMethod("main");
-            Assert.AreEqual(main_method.Name, "main");
+            var main_method = asm.GetModule("main.exe")
+                .GetType("ExsMain")
+                .GetMethod("Main", BindingFlags.NonPublic | BindingFlags.Static);
+            Assert.AreEqual(main_method.Name, "Main");
+            Assert.IsTrue(main_method.IsStatic);
+            Assert.AreEqual(main_method.ReturnType, typeof(void));
+            Assert.AreEqual(0, main_method.GetParameters().Length);
+        }
+
+        [Test]
+        public void SimpleLiterals2()
+        {
+            var parser = new Parser(new Scanner("../../sources/for_unit_tests/simple_literals2.exs"));
+            parser.DoPostParseProcessing = true;
+            parser.Parse();
+
+            var ast = parser.TopmostAst;
+            var options = new ExpressoCompilerOptions{
+                LibraryPaths = new List<string>{""},
+                OutputPath = "../../test_executable",
+                BuildType = BuildType.Debug | BuildType.Executable
+            };
+            var emitter = new CSharpEmitter(parser, options);
+            ast.AcceptWalker(emitter, null);
+
+            var asm = emitter.AssemblyBuilder;
+            var main_method = asm.GetModule("main.exe")
+                .GetType("ExsMain")
+                .GetMethod("Main", BindingFlags.NonPublic | BindingFlags.Static);
+            Assert.AreEqual(main_method.Name, "Main");
             Assert.IsTrue(main_method.IsStatic);
             Assert.AreEqual(main_method.ReturnType, typeof(void));
             Assert.AreEqual(0, main_method.GetParameters().Length);
@@ -51,9 +80,9 @@ namespace Expresso.Test
             ast.AcceptWalker(emitter, null);
 
             var asm = emitter.AssemblyBuilder;
-            var main_method = asm.GetModule("main")
+            var main_method = asm.GetModule("main.exe")
                 .GetType("ExsMain")
-                .GetMethod("Main");
+                .GetMethod("Main", BindingFlags.NonPublic | BindingFlags.Static);
             Assert.AreEqual(main_method.Name, "Main");
             Assert.IsTrue(main_method.IsStatic);
             Assert.AreEqual(typeof(int), main_method.ReturnType);

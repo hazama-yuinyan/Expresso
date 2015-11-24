@@ -437,7 +437,7 @@ namespace Expresso.Ast.Analysis
                     item.AcceptWalker(this);
             }
 
-            return type;
+            return seqInitializer.ObjectType;
         }
 
         public AstType VisitMatchClause(MatchPatternClause matchClause)
@@ -685,11 +685,27 @@ namespace Expresso.Ast.Analysis
             var left_type = initializer.NameToken.AcceptWalker(this);
             if(IsPlaceholderType(left_type)){
                 var inferred_type = initializer.Initializer.AcceptWalker(inference_runner);
+                if(IsContainerType(inferred_type) && ((SimpleType)inferred_type).TypeArguments.Any(t => t is PlaceholderType)){
+                    parser.ReportSemanticErrorRegional(
+                        "The left-hand-side lacks the inner type of the container `{0}`",
+                        initializer.NameToken,
+                        initializer.Initializer,
+                        inferred_type.Name
+                    );
+                }
                 left_type.ReplaceWith(inferred_type);
                 return inferred_type;
             }else{
                 var rhs_type = initializer.Initializer.AcceptWalker(this);
-                if(!IsCompatibleWith(left_type, rhs_type)){
+                if(IsContainerType(rhs_type)){
+                    // The laft-hand-side lacks the types of the contents so infer them from the right-hand-side
+                    var lhs_simple = left_type as SimpleType;
+                    var rhs_simple = rhs_type as SimpleType;
+                    foreach(var pair in rhs_simple.TypeArguments.Zip(lhs_simple.TypeArguments,
+                        (l, r) => new Tuple<AstType, AstType>(l, r))){
+                        pair.Item1.ReplaceWith(pair.Item2.Clone());
+                    }
+                }else if(!IsCompatibleWith(left_type, rhs_type)){
                     parser.ReportSemanticErrorRegional(
                         "Type `{0}` on the left-hand-side is not compatible with `{1}` on the right-hand-side.",
                         initializer.NameToken,
@@ -766,7 +782,8 @@ namespace Expresso.Ast.Analysis
 
         /// <summary>
         /// In Expresso, there are 3 valid cast cases.
-        /// The first is the identity cast.
+        /// The first is the identity cast. An identity cast casts itself.
+        /// The second is the up cast. Up casts are usually valid as much as .
         /// </summary>
         /// <returns><c>true</c> if <c>fromType</c> can be casted to <c>totype</c>; otherwise, <c>false</c>.</returns>
         static bool IsCastable(AstType fromType, AstType toType)
@@ -784,6 +801,15 @@ namespace Expresso.Ast.Analysis
         static bool IsPlaceholderType(AstType type)
         {
             return type is PlaceholderType;
+        }
+
+        static bool IsContainerType(AstType type)
+        {
+            var simple = type as SimpleType;
+            if(simple != null)
+                return simple.Identifier == "array" || simple.Identifier == "vector" || simple.Identifier == "dictionary" || simple.Identifier == "tuple";
+            else
+                return false;
         }
 
         void BindTypeName(Identifier ident)

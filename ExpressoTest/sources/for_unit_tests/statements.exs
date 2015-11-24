@@ -23,14 +23,12 @@ def main()
 		println("{}, {}", p, sum);
 	}
 
-	let strs = ["akarichan", "chinatsu", "kyoko", "yui"];
-	for let tmp in strs {
-		match tmp {
-		    "akarichan" => print("kawakawa");
-		    "chinatsu" => print("ankokuthunder!");
-            "kyoko" => print("gaichiban!");
-            "yui" => print("doyaxtu!");
-		}
+	let tmp = "akarichan";
+	match tmp {
+		"akarichan" => print("kawakawa");
+		"chinatsu" => print("ankokuthunder!");
+        "kyoko" => print("gaichiban!");
+    	"yui" => print("doyaxtu!");
 	}
 
 	var fibs = [...], a = 0, b = 1;

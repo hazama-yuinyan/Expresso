@@ -10,9 +10,21 @@ namespace Expresso.CodeGen
     [Flags]
     public enum BuildType
     {
+        /// <summary>
+        /// Represents the debug build.
+        /// </summary>
         Debug = 0x01,
+        /// <summary>
+        /// Represents the release build.
+        /// </summary>
         Release = 0x02,
+        /// <summary>
+        /// Represents an executable
+        /// </summary>
         Executable = 0x04,
+        /// <summary>
+        /// Represents an external assembly
+        /// </summary>
         Assembly = 0x08
     }
 

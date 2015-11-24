@@ -17,7 +17,7 @@ namespace Expresso.CodeGen
             new Regex(@"%([a-zA-Z_][a-zA-Z_0-9]*)");
 
         static List<string> _AssemblyNames =
-            new List<string>{"System", "System.Core", "System.Numerics", "mscorlib"};
+            new List<string>{"System", "System.Core", "System.Numerics", "mscorlib", "ExpressoRuntime"};
 
         static Dictionary<string, string> SpecialNamesMap = new Dictionary<string, string>{
             {"intseq", "ExpressoIntegerSequence"},
@@ -137,7 +137,7 @@ namespace Expresso.CodeGen
                 Type type = null;
                 foreach(var asm in AppDomain.CurrentDomain.GetAssemblies()){
                     var types = asm.GetExportedTypes();
-                    type = types.Where(t => t.Name == name)
+                    type = types.Where(t => t.Name.StartsWith(name))
                         .FirstOrDefault();
 
                     if(type != null)
@@ -151,10 +151,7 @@ namespace Expresso.CodeGen
 
                     var array = System.Array.CreateInstance(type_arg, 1);
                     return array.GetType();
-                }else if(simple.Identifier == "dictionary" || simple.Identifier == "vector" || simple.Identifier == "tuple"){
-                    if(simple.Identifier == "tuple" && !simple.TypeArguments.Any())
-                        return typeof(void);
-                    
+                }else if(simple.Identifier == "dictionary" || simple.Identifier == "vector"){
                     var generic_type = GetContainerType(simple);
                     var type_args =
                         from ta in simple.TypeArguments
@@ -167,6 +164,16 @@ namespace Expresso.CodeGen
                         );
                     }
                     return substituted;
+                }else if(simple.Identifier == "tuple"){
+                    if(!simple.TypeArguments.Any())
+                        return typeof(void);
+
+                    var type_args =
+                        from ta in simple.TypeArguments
+                        select GetNativeType(ta);
+
+                    var tuple = GuessTupleType(type_args);
+                    return tuple;
                 }else if(simple.Identifier == "void"){
                     return typeof(void);
                 }else if(type == null){
