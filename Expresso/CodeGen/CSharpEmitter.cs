@@ -645,7 +645,7 @@ namespace Expresso.CodeGen
                 }
             }else{
                 if(context.RequestField){
-                    var field = (context.TargetType != null) ? context.TargetType.GetField(ident.Name) : context.TypeBuilder.GetField(ident.Name);
+                    var field = (context.TargetType != null) ? context.TargetType.GetField(ident.Name) : context.TypeBuilder.GetDeclaredField(ident.Name);
                     context.Field = field;
                     return null;
                 }else{
@@ -921,7 +921,7 @@ namespace Expresso.CodeGen
                     }else if(destructuring_exprs.Count() != context.Additionals.Count()){
                         // The number of destructured variables must match in every pattern
                         throw new EmitterException(
-                            "Expected the pattern contains {0} variables, but it contains only {1}!",
+                            "Expected the pattern contains {0} variables, but it only contains {1}!",
                             destructuring_exprs.Count(), context.Additionals.Count()
                         );
                     }
@@ -1168,6 +1168,8 @@ namespace Expresso.CodeGen
                 var constant = initializer as ExprTree.ConstantExpression;
                 if(constant != null)
                     field_builder.SetConstant(constant.Value);
+
+                Symbols.Add(init.NameToken.IdentifierId, new ExpressoSymbol{Field = context.TypeBuilder.GetDeclaredField(init.Name)});
             }
 
             return null;

@@ -837,51 +837,42 @@ namespace Expresso.Test
                             )),
                             Modifiers.Immutable
                         ),
-                        Statement.MakeValueBindingForStmt(
-                            Modifiers.Immutable,
-                            Statement.MakeBlock(
-                                Statement.MakeMatchStmt(Helpers.MakeIdentifierPath("tmp"),
-                                    Statement.MakeMatchClause(null,
-                                        Statement.MakeExprStmt(Expression.MakeSequence(
-                                            Expression.MakeCallExpr(
-                                                Helpers.MakeIdentifierPath("print"),
-                                                Expression.MakeConstant("string", "kawakawa")
-                                            ))
-                                        ),
-                                        PatternConstruct.MakeExpressionPattern(Expression.MakeConstant("string", "akarichan"))
-                                    ),
-                                    Statement.MakeMatchClause(null,
-                                        Statement.MakeExprStmt(Expression.MakeSequence(
-                                            Expression.MakeCallExpr(
-                                                Helpers.MakeIdentifierPath("print"),
-                                                Expression.MakeConstant("string", "ankokuthunder!")
-                                            ))
-                                        ),
-                                        PatternConstruct.MakeExpressionPattern(Expression.MakeConstant("string", "chinatsu"))
-                                    ),
-                                    Statement.MakeMatchClause(null,
-                                        Statement.MakeExprStmt(Expression.MakeSequence(
-                                            Expression.MakeCallExpr(
-                                                Helpers.MakeIdentifierPath("print"),
-                                                Expression.MakeConstant("string", "gaichiban!")
-                                            ))
-                                        ),
-                                        PatternConstruct.MakeExpressionPattern(Expression.MakeConstant("string", "kyoko"))
-                                    ),
-                                    Statement.MakeMatchClause(null,
-                                        Statement.MakeExprStmt(Expression.MakeSequence(
-                                            Expression.MakeCallExpr(
-                                                Helpers.MakeIdentifierPath("print"),
-                                                Expression.MakeConstant("string", "doyaxtu!")
-                                            ))
-                                        ),
-                                        PatternConstruct.MakeExpressionPattern(Expression.MakeConstant("string", "yui"))
-                                    )
-                                )
+                        Statement.MakeMatchStmt(Helpers.MakeIdentifierPath("tmp"),
+                            Statement.MakeMatchClause(null,
+                                Statement.MakeExprStmt(Expression.MakeSequence(
+                                    Expression.MakeCallExpr(
+                                        Helpers.MakeIdentifierPath("print"),
+                                        Expression.MakeConstant("string", "kawakawa")
+                                    ))
+                                ),
+                                PatternConstruct.MakeExpressionPattern(Expression.MakeConstant("string", "akarichan"))
                             ),
-                            AstNode.MakeVariableInitializer(
-                                Helpers.MakeSomeIdent("tmp"),
-                                Helpers.MakeIdentifierPath("strs")
+                            Statement.MakeMatchClause(null,
+                                Statement.MakeExprStmt(Expression.MakeSequence(
+                                    Expression.MakeCallExpr(
+                                        Helpers.MakeIdentifierPath("print"),
+                                        Expression.MakeConstant("string", "ankokuthunder!")
+                                    ))
+                                ),
+                                PatternConstruct.MakeExpressionPattern(Expression.MakeConstant("string", "chinatsu"))
+                            ),
+                            Statement.MakeMatchClause(null,
+                                Statement.MakeExprStmt(Expression.MakeSequence(
+                                    Expression.MakeCallExpr(
+                                        Helpers.MakeIdentifierPath("print"),
+                                        Expression.MakeConstant("string", "gaichiban!")
+                                    ))
+                                ),
+                                PatternConstruct.MakeExpressionPattern(Expression.MakeConstant("string", "kyoko"))
+                            ),
+                            Statement.MakeMatchClause(null,
+                                Statement.MakeExprStmt(Expression.MakeSequence(
+                                    Expression.MakeCallExpr(
+                                        Helpers.MakeIdentifierPath("print"),
+                                        Expression.MakeConstant("string", "doyaxtu!")
+                                    ))
+                                ),
+                                PatternConstruct.MakeExpressionPattern(Expression.MakeConstant("string", "yui"))
                             )
                         ),
                         Statement.MakeVarDecl(
@@ -1025,6 +1016,85 @@ namespace Expresso.Test
 
             Assert.IsNotNull(ast);
             Helpers.AstStructuralEqual(ast, expected_ast);
+        }
+
+        [Test]
+        public void Functions()
+        {
+            var parser = new Parser(new Scanner("../../sources/for_unit_tests/functions.exs"));
+            parser.Parse();
+
+            var ast = parser.TopmostAst;
+
+            var expected = AstNode.MakeModuleDef("main", new List<EntityDeclaration>{
+                EntityDeclaration.MakeFunc("test", Enumerable.Empty<ParameterDeclaration>(),
+                    Statement.MakeBlock(new List<Statement>{
+                        Statement.MakeVarDecl(new List<Identifier>{
+                            Helpers.MakeSomeIdent("a")
+                        }, new List<Expression>{
+                            Expression.MakeConstant("int", 10)
+                        }, Modifiers.Immutable),
+                        Statement.MakeReturnStmt(Expression.MakeSequence(new List<Expression>{
+                            Expression.MakeBinaryExpr(OperatorType.Plus,
+                                Helpers.MakeIdentifierPath("a"),
+                                Expression.MakeConstant("int", 10)
+                            )
+                        }))
+                    }), Helpers.MakePlaceholderType(),
+                    Modifiers.None
+                ), EntityDeclaration.MakeFunc("test2", new List<ParameterDeclaration>{
+                    EntityDeclaration.MakeParameter("n", AstType.MakePrimitiveType("int", TextLocation.Empty))
+                }, Statement.MakeBlock(new List<Statement>{
+                    Statement.MakeReturnStmt(Expression.MakeSequence(new List<Expression>{
+                        Expression.MakeBinaryExpr(OperatorType.Plus,
+                            Helpers.MakeIdentifierPath("n"),
+                            Expression.MakeConstant("int", 10)
+                        )
+                    }))
+                }), Helpers.MakePlaceholderType(), Modifiers.None
+                ), EntityDeclaration.MakeFunc("test3", new List<ParameterDeclaration>{
+                    EntityDeclaration.MakeParameter("n", AstType.MakePrimitiveType("int", TextLocation.Empty))
+                }, Statement.MakeBlock(new List<Statement>{
+                    Statement.MakeReturnStmt(Expression.MakeSequence(new List<Expression>{
+                        Expression.MakeBinaryExpr(OperatorType.Plus,
+                            Helpers.MakeIdentifierPath("n"),
+                            Expression.MakeConstant("int", 20)
+                        )
+                    }))
+                }), AstType.MakePrimitiveType("int", TextLocation.Empty), Modifiers.None
+                ), EntityDeclaration.MakeFunc("main", Enumerable.Empty<ParameterDeclaration>(),
+                    Statement.MakeBlock(new List<Statement>{
+                        Statement.MakeVarDecl(new List<Identifier>{
+                            Helpers.MakeSomeIdent("a")
+                        }, new List<Expression>{
+                            Expression.MakeCallExpr(Helpers.MakeIdentifierPath("test"), Enumerable.Empty<Expression>())
+                        }, Modifiers.Immutable),
+                        Statement.MakeVarDecl(new List<Identifier>{
+                            Helpers.MakeSomeIdent("b")
+                        }, new List<Expression>{
+                            Expression.MakeCallExpr(Helpers.MakeIdentifierPath("test2"), new List<Expression>{
+                                Expression.MakeConstant("int", 20)
+                            })
+                        }, Modifiers.Immutable),
+                        Statement.MakeVarDecl(new List<Identifier>{
+                            Helpers.MakeSomeIdent("c")
+                        }, new List<Expression>{
+                            Expression.MakeCallExpr(Helpers.MakeIdentifierPath("test3"), new List<Expression>{
+                                Expression.MakeConstant("int", 20)
+                            })
+                        }, Modifiers.Immutable),
+                        Statement.MakeExprStmt(Expression.MakeCallExpr(Helpers.MakeIdentifierPath("println"), new List<Expression>{
+                            Helpers.MakeIdentifierPath("a"),
+                            Helpers.MakeIdentifierPath("b"),
+                            Helpers.MakeIdentifierPath("c")
+                        }))
+                    }), Helpers.MakePlaceholderType(), Modifiers.None
+                )
+            });
+
+            Assert.IsNotNull(ast);
+
+            Helpers.AstStructuralEqual(ast, expected);
         }
 	}
 }

@@ -24,4 +24,5 @@ def main()
     let z = v * w;
 
     println(ary, d, m, m2, x, p, q, r, s, t, v, w, y, z);
+    println("ary = {0}, d = {1}", ary, d);
 }

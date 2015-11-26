@@ -66,13 +66,25 @@ namespace Expresso.CodeGen
             get; set;
         }
 
+        /// <summary>
+        /// Gets or sets the type.
+        /// </summary>
+        /// <value>The type.</value>
         public Type Type{
+            get; set;
+        }
+
+        /// <summary>
+        /// Gets or sets the parameters.
+        /// </summary>
+        /// <value>The parameters.</value>
+        public List<ParameterExpression> Parameters{
             get; set;
         }
 
         public override string ToString()
         {
-            return string.Format("[ExpressoSymbol: Parameter={0}, Method={1}, Field={2}, Lambda={3}, Member={4}, Type={5}]", Parameter, Method, Field, Lambda, Member, Type);
+            return string.Format("[ExpressoSymbol: Parameter={0}, Method={1}, Field={2}, Lambda={3}, Member={4}, Type={5}, Length of Parameters={6}]", Parameter, Method, Field, Lambda, Member, Type, Parameters.Count);
         }
     }
 }
