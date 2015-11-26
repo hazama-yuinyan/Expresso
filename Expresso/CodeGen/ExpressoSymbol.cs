@@ -34,20 +34,45 @@ namespace Expresso.CodeGen
             get{return _Identifiers;}
         }
 
+        /// <summary>
+        /// Represents a parameter.
+        /// </summary>
         public ParameterExpression Parameter{
             get; set;
         }
 
+        /// <summary>
+        /// Represents a native method.
+        /// </summary>
         public MethodInfo Method{
             get; set;
         }
 
+        /// <summary>
+        /// Gets or sets the field.
+        /// </summary>
         public FieldInfo Field{
+            get; set;
+        }
+
+        /// <summary>
+        /// Represents a method or a function.
+        /// </summary>
+        public LambdaExpression Lambda{
+            get; set;
+        }
+
+        public MemberExpression Member{
             get; set;
         }
 
         public Type Type{
             get; set;
+        }
+
+        public override string ToString()
+        {
+            return string.Format("[ExpressoSymbol: Parameter={0}, Method={1}, Field={2}, Lambda={3}, Member={4}, Type={5}]", Parameter, Method, Field, Lambda, Member, Type);
         }
     }
 }

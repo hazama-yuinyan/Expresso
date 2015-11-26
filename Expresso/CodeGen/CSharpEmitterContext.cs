@@ -42,7 +42,10 @@ namespace Expresso.CodeGen
             get; set;
         }
 
-        public MemberInfo Member{
+        /// <summary>
+        /// This flag indicates whether we are interested in methods or not.
+        /// </summary>
+        public bool RequestMethod{
             get; set;
         }
 
@@ -52,6 +55,13 @@ namespace Expresso.CodeGen
         /// setting it null indicates that you want to know which field we should be looking at.
         /// </summary>
         public FieldInfo Field{
+            get; set;
+        }
+
+        /// <summary>
+        /// This flag indicates whether we are interested in fields or not.
+        /// </summary>
+        public bool RequestField{
             get; set;
         }
 
@@ -91,6 +101,13 @@ namespace Expresso.CodeGen
         /// The type that is concerned to the current expression.
         /// </summary>
         public Type TargetType{
+            get; set;
+        }
+
+        /// <summary>
+        /// This flag indicates whether we are interested in types or not.
+        /// </summary>
+        public bool RequestType{
             get; set;
         }
 

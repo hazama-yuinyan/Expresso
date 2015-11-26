@@ -26,7 +26,7 @@ def main()
 	let tmp = "akarichan";
 	match tmp {
 		"akarichan" => print("kawakawa");
-		"chinatsu" => print("ankokuthunder!");
+		"chinatsu" if tmp.Length == 8 => print("ankokuthunder!");
         "kyoko" => print("gaichiban!");
     	"yui" => print("doyaxtu!");
 	}

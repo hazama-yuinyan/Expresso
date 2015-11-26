@@ -70,7 +70,7 @@ namespace Expresso.Ast.Analysis
         {
             if(breakStmt.Count.Value.GetType() != typeof(int) || (int)breakStmt.Count.Value < 0){
                 parser.ReportSemanticError(
-                    "`count` expression in a break statement has to be a positive integer",
+                    "Error ES4000: `count` expression in a break statement has to be a positive integer",
                     breakStmt
                 );
             }
@@ -82,7 +82,7 @@ namespace Expresso.Ast.Analysis
         {
             if(continueStmt.Count.Value.GetType() != typeof(int) || (int)continueStmt.Count.Value < 0){
                 parser.ReportSemanticError(
-                    "`count` expression in a continue statement has to be a positive integer",
+                    "Error ES4000: `count` expression in a continue statement has to be a positive integer",
                     continueStmt
                 );
             }
@@ -209,7 +209,7 @@ namespace Expresso.Ast.Analysis
                 return inferred_type;
             }else{
                 var right_type = assignment.Right.AcceptWalker(this);
-                if(!IsCompatibleWith(left_type, right_type)){
+                if(IsCompatibleWith(left_type, right_type) == TriBool.False){
                     parser.ReportSemanticErrorRegional(
                         "Error ES1002: Type `{0}` on left-hand-side isn't compatible with type `{1}` on right-hand-side.",
                         assignment.Left, assignment.Right,
@@ -224,7 +224,7 @@ namespace Expresso.Ast.Analysis
         {
             var lhs_type = binaryExpr.Left.AcceptWalker(this);
             var rhs_type = binaryExpr.Right.AcceptWalker(this);
-            if(!IsCompatibleWith(lhs_type, rhs_type)){
+            if(IsCompatibleWith(lhs_type, rhs_type) == TriBool.False){
                 parser.ReportSemanticErrorRegional(
                     "Error ES1003: Can not apply the operator {0} on `{1}` and `{2}`.",
                     binaryExpr.Left, binaryExpr.Right,
@@ -250,7 +250,7 @@ namespace Expresso.Ast.Analysis
         {
             var target_type = castExpr.ToExpression;
             var expression_type = castExpr.Target.AcceptWalker(this);
-            if(!IsCastable(expression_type, target_type)){
+            if(IsCastable(expression_type, target_type) == TriBool.False){
                 parser.ReportSemanticErrorRegional(
                     "Error ES1004: Can not cast the type `{0}` to type `{1}`.",
                     castExpr.Target, castExpr.ToExpression,
@@ -280,7 +280,7 @@ namespace Expresso.Ast.Analysis
         {
             var true_type = condExpr.TrueExpression.AcceptWalker(this);
             var false_type = condExpr.FalseExpression.AcceptWalker(this);
-            if(!IsCompatibleWith(true_type, false_type)){
+            if(IsCompatibleWith(true_type, false_type) == TriBool.False){
                 parser.ReportSemanticErrorRegional(
                     "Error ES1005: `{0}` is not compatible with `{1}`.",
                     condExpr.Condition, condExpr.FalseExpression,
@@ -343,7 +343,7 @@ namespace Expresso.Ast.Analysis
                 var symbol = type_table.GetSymbol(memRef.Member.Name);
                 if(symbol == null){
                     parser.ReportSemanticError(
-                        "Type `{0}` doesn't have a field named {1}.",
+                        "Error ES2000: Type `{0}` doesn't have a field named {1}.",
                         memRef,
                         type.Name, memRef.Member.Name
                     );
@@ -410,7 +410,7 @@ namespace Expresso.Ast.Analysis
                     );
                 }else{
                     var value_type = key_value.ValueExpression.AcceptWalker(this);
-                    if(!IsCastable(value_type, key.Type)){
+                    if(IsCastable(value_type, key.Type) == TriBool.False){
                         parser.ReportSemanticErrorRegional(
                             "The field {0} expects the value to be of type `{1}`, but it actually is `{2}`.",
                             key_value.KeyExpression, key_value.ValueExpression,
@@ -535,7 +535,7 @@ namespace Expresso.Ast.Analysis
             // If the type arguments contain any unsubstituted arguments(placeholder nodes)
             // return the statically defined placeholder type node to indicate that it needs to be inferenced
             if(simpleType.TypeArguments.HasChildren && IsPlaceholderType(simpleType.TypeArguments.FirstOrNullObject()))
-                return PlaceholderTypeNode;
+                return PlaceholderTypeNode.Clone();
             else
                 return simpleType;
         }
@@ -594,7 +594,7 @@ namespace Expresso.Ast.Analysis
                 }else{
                     if(!param.Option.IsNull){
                         var option_type = param.Option.AcceptWalker(this);
-                        if(!IsCastable(option_type, param_type)){
+                        if(IsCastable(option_type, param_type) == TriBool.False){
                             parser.ReportSemanticErrorRegional(
                                 "Type mismatch; `{0}` is not compatible with `{1}`.",
                                 param.NameToken, param.Option,
@@ -659,9 +659,9 @@ namespace Expresso.Ast.Analysis
                 }else{
                     if(!field.Initializer.IsNull){
                         var init_type = field.Initializer.AcceptWalker(this);
-                        if(!IsCastable(init_type, field_type)){
+                        if(IsCastable(init_type, field_type) == TriBool.False){
                             parser.ReportSemanticErrorRegional(
-                                "Can not implicitly cast type `{0}` to type `{1}`.",
+                                "Error ES0110: Can not implicitly cast type `{0}` to type `{1}`.",
                                 field.NameToken, field.Initializer,
                                 init_type, field_type
                             );
@@ -705,7 +705,7 @@ namespace Expresso.Ast.Analysis
                         (l, r) => new Tuple<AstType, AstType>(l, r))){
                         pair.Item1.ReplaceWith(pair.Item2.Clone());
                     }
-                }else if(!IsCompatibleWith(left_type, rhs_type)){
+                }else if(rhs_type != null && IsCompatibleWith(left_type, rhs_type) == TriBool.False){
                     parser.ReportSemanticErrorRegional(
                         "Type `{0}` on the left-hand-side is not compatible with `{1}` on the right-hand-side.",
                         initializer.NameToken,
@@ -786,16 +786,58 @@ namespace Expresso.Ast.Analysis
         /// The second is the up cast. Up casts are usually valid as much as .
         /// </summary>
         /// <returns><c>true</c> if <c>fromType</c> can be casted to <c>totype</c>; otherwise, <c>false</c>.</returns>
-        static bool IsCastable(AstType fromType, AstType toType)
+        static TriBool IsCastable(AstType fromType, AstType toType)
         {
-            // TODO: implement it
-            return false;
+            if(fromType.Name == toType.Name)
+                return TriBool.True;
+            else
+                return IsCompatibleWith(fromType, toType);
+            // TODO: implement the cases of upcasts and downcasts
         }
 
-        static bool IsCompatibleWith(AstType first, AstType second)
+        /// <summary>
+        /// Determines if <c>first</c> is compatible with the specified <c>second</c>.
+        /// </summary>
+        /// <returns><c>true</c> if is compatible with the specified first second; otherwise, <c>false</c>.</returns>
+        /// <param name="first">First.</param>
+        /// <param name="second">Second.</param>
+        static TriBool IsCompatibleWith(AstType first, AstType second)
         {
-            // TODO: implement it
-            return true;
+            if(first == null)
+                throw new ArgumentNullException("first");
+            if(second == null)
+                throw new ArgumentNullException("second");
+            
+            if(first != AstType.Null && second != AstType.Null && IsNumberType(first) && IsNumberType(second)){
+                if(first.Name == "float" && second.Name == "float")
+                    return TriBool.True;
+                else if(first.Name == "double" && (second.Name == "float" || second.Name == "double"))
+                    return TriBool.True;
+                else if(first.Name == "byte" && second.Name == "byte")
+                    return TriBool.True;
+                else if(first.Name == "int" && second.Name == "uint")
+                    return TriBool.Intermmediate;
+                else if(first.Name == "uint" && (second.Name == "int" || second.Name == "byte"))
+                    return TriBool.True;
+                else if(first.Name == "int" && second.Name == "byte")
+                    return TriBool.True;
+                else if(first.Name == "bigint" && (second.Name == "int" || second.Name == "uint" || second.Name == "byte"))
+                    return TriBool.True;
+                else
+                    return TriBool.False;
+            }else{
+                return TriBool.False;
+            }
+        }
+
+        /// <summary>
+        /// Determines if is number type the specified type.
+        /// </summary>
+        /// <returns><c>true</c> if is number type the specified type; otherwise, <c>false</c>.</returns>
+        /// <param name="type">Type.</param>
+        static bool IsNumberType(AstType type)
+        {
+            return type.Name == "int" || type.Name == "uint" || type.Name == "float" || type.Name == "double" || type.Name == "bigint" || type.Name == "byte";
         }
 
         static bool IsPlaceholderType(AstType type)

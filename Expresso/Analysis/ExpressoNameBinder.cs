@@ -548,7 +548,7 @@ namespace Expresso.Ast.Analysis
                 var native = SymbolTable.GetNativeSymbol(ident.Name);
                 if(native == null){
                     parser.ReportSemanticError(
-                        "ES0100: '{0}' turns out not to be declared or accessible in the current scope {1}!",
+                        "Error ES0100: '{0}' turns out not to be declared or accessible in the current scope {1}!",
                         ident,
                         ident.Name, symbol_table.Name
                     );

@@ -79,6 +79,7 @@ namespace Expresso.Ast.Analysis
             type_table = new Dictionary<string, Identifier>();
             table = new Dictionary<string, Identifier>();
             Children = new List<SymbolTable>();
+            Name = "root";
         }
 
         public static Identifier GetNativeSymbol(string name)
@@ -116,6 +117,9 @@ namespace Expresso.Ast.Analysis
                 if(table.Name.StartsWith(class_name))
                     return table;
 
+                if(table.Parent == null)
+                    break;
+                
                 if(child_counter >= table.Parent.Children.Count){
                     child_counter = 0;
                     table = table.Parent;

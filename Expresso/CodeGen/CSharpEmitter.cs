@@ -1,17 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Numerics;
 using System.Reflection;
 using System.Reflection.Emit;
-using System.Linq;
-
-using Expresso.Ast;
-using Expresso.Ast.Analysis;
-using Expresso.Runtime.Builtins;
-using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
-using System.Numerics;
+using Expresso.Ast;
+using Expresso.Ast.Analysis;
+using Expresso.Runtime.Builtins;
 
 namespace Expresso.CodeGen
 {
@@ -39,9 +38,9 @@ namespace Expresso.CodeGen
         //###################################################
         static Dictionary<uint, ExpressoSymbol> Symbols = new Dictionary<uint, ExpressoSymbol>();
         static int LoopCounter = 1;
-
-		ExprTree.LabelTarget return_target = null;
-		bool has_continue;
+        static ExprTree.LabelTarget DefaultTarget = CSharpExpr.Label("defaultTarget");
+		
+        bool has_continue;
 
         SymbolTable symbol_table;
         ExpressoCompilerOptions options;
@@ -112,7 +111,11 @@ namespace Expresso.CodeGen
 
         ExpressoSymbol GetNativeSymbol(Identifier ident)
         {
-            return Symbols[ident.IdentifierId];
+            ExpressoSymbol symbol;
+            if(Symbols.TryGetValue(ident.IdentifierId, out symbol))
+                return symbol;
+            else
+                return null;
         }
 
         string GetModuleName(ExpressoAst ast)
@@ -120,7 +123,7 @@ namespace Expresso.CodeGen
             return options.BuildType.HasFlag(BuildType.Assembly) ? ast.Name + ".dll" : ast.Name + ".exe";
         }
 
-        string GetFunctionName(string name)
+        string ConvertToCLRFunctionName(string name)
         {
             return name.Substring(0, 1).ToUpper() + name.Substring(1);
         }
@@ -322,18 +325,16 @@ namespace Expresso.CodeGen
             // If we are in the main function, then make return statements do nothing
             if(!CanReturn(returnStmt))
                 return CSharpExpr.Empty();
-            else if(return_target == null)
-                throw new EmitterException("Can not guess the return target!");
 
             var expr = returnStmt.Expression.AcceptWalker(this, context);
-            return CSharpExpr.Return(return_target, expr);
+            return CSharpExpr.Return(DefaultTarget, expr);
         }
 
         public CSharpExpr VisitMatchStatement(MatchStatement matchStmt, CSharpEmitterContext context)
         {
             // Match statement semantics: First we evaluate the target expression
             // and assign the result to a temporary variable that's alive within the whole statement.
-            // All the pattern clauses 
+            // All the pattern clauses must meet the same condition.
             // If context.ContextExpression is an ExprTree.ConditionalExpression
             // we know that we're at least at the second branch.
             // If it is null, then we're at the first branch so just set it the context expression.
@@ -403,8 +404,7 @@ namespace Expresso.CodeGen
             throw new NotImplementedException();
         }
 
-        public CSharpExpr VisitVariableDeclarationStatement(VariableDeclarationStatement varDecl,
-            CSharpEmitterContext context)
+        public CSharpExpr VisitVariableDeclarationStatement(VariableDeclarationStatement varDecl, CSharpEmitterContext context)
         {
             var decls = new List<CSharpExpr>();
             context.ContextAst = varDecl;
@@ -536,7 +536,8 @@ namespace Expresso.CodeGen
                 compiled_args.Add(arg.AcceptWalker(this, context));
 
             var inst = call.Target.AcceptWalker(this, context);
-            return ConstructCallExpression((ExprTree.ParameterExpression)inst, context.Method, compiled_args.Cast<ExprTree.ParameterExpression>());
+            var label = CSharpExpr.Label("target_" + call.Target.ToString());
+            return ConstructCallExpression((ExprTree.ParameterExpression)inst, context.Method, compiled_args.Cast<ExprTree.ParameterExpression>(), label);
         }
 
         public CSharpExpr VisitCastExpression(CastExpression castExpr, CSharpEmitterContext context)
@@ -546,8 +547,7 @@ namespace Expresso.CodeGen
             return CSharpExpr.TypeAs(target, to_type);
         }
 
-        public CSharpExpr VisitComprehensionExpression(ComprehensionExpression comp,
-            CSharpEmitterContext context)
+        public CSharpExpr VisitComprehensionExpression(ComprehensionExpression comp, CSharpEmitterContext context)
         {
             var generator = comp.Item.AcceptWalker(this, context);
             context.ContextExpression = generator;
@@ -555,8 +555,7 @@ namespace Expresso.CodeGen
             return body;
         }
 
-        public CSharpExpr VisitComprehensionForClause(ComprehensionForClause compFor,
-            CSharpEmitterContext context)
+        public CSharpExpr VisitComprehensionForClause(ComprehensionForClause compFor, CSharpEmitterContext context)
         {
             compFor.Left.AcceptWalker(this, context);
             compFor.Target.AcceptWalker(this, context);
@@ -564,8 +563,7 @@ namespace Expresso.CodeGen
             return null;
         }
 
-        public CSharpExpr VisitComprehensionIfClause(ComprehensionIfClause compIf,
-            CSharpEmitterContext context)
+        public CSharpExpr VisitComprehensionIfClause(ComprehensionIfClause compIf, CSharpEmitterContext context)
         {
             if(compIf.Body.IsNull)      //[generator...if Condition] -> ...if(Condition) seq.Add(generator);
                 return CSharpExpr.IfThen(compIf.Condition.AcceptWalker(this, context), context.ContextExpression);
@@ -573,8 +571,7 @@ namespace Expresso.CodeGen
                 return CSharpExpr.IfThen(compIf.Condition.AcceptWalker(this, context), compIf.Body.AcceptWalker(this, context));
         }
 
-        public CSharpExpr VisitConditionalExpression(ConditionalExpression condExpr,
-            CSharpEmitterContext context)
+        public CSharpExpr VisitConditionalExpression(ConditionalExpression condExpr, CSharpEmitterContext context)
         {
             var cond = condExpr.Condition.AcceptWalker(this, context);
             var true_result = condExpr.TrueExpression.AcceptWalker(this, context);
@@ -583,8 +580,7 @@ namespace Expresso.CodeGen
             return CSharpExpr.Condition(cond, true_result, false_result);
         }
 
-        public CSharpExpr VisitKeyValueLikeExpression(KeyValueLikeExpression keyValue,
-            CSharpEmitterContext context)
+        public CSharpExpr VisitKeyValueLikeExpression(KeyValueLikeExpression keyValue, CSharpEmitterContext context)
         {
             var ident = keyValue.KeyExpression as PathExpression;
             if(ident != null){
@@ -616,8 +612,7 @@ namespace Expresso.CodeGen
             }
         }
 
-        public CSharpExpr VisitLiteralExpression(LiteralExpression literal,
-            CSharpEmitterContext context)
+        public CSharpExpr VisitLiteralExpression(LiteralExpression literal, CSharpEmitterContext context)
         {
             if(literal.Type.Name == "bigint"){
                 var ctor = typeof(BigInteger).GetMethod("Parse", new Type[]{
@@ -633,16 +628,33 @@ namespace Expresso.CodeGen
         public CSharpExpr VisitIdentifier(Identifier ident, CSharpEmitterContext context)
         {
             var symbol = GetNativeSymbol(ident);
-            if(symbol.Parameter == null){
-                context.Method = symbol.Method;
-                return null;
+            if(symbol != null){
+                if(symbol.Parameter != null){
+                    return symbol.Parameter;
+                }else if(context.RequestType && symbol.Type != null){
+                    context.TargetType = symbol.Type;
+                    return symbol.Parameter;
+                }else if(context.RequestMethod){
+                    if(symbol.Method == null)
+                        throw new EmitterException("The native symbol '{0}' isn't defined", ident.Name);
+
+                    context.Method = symbol.Method;
+                    return null;
+                }else{
+                    throw new EmitterException("I can't guess what you want.");
+                }
             }else{
-                return symbol.Parameter;
+                if(context.RequestField){
+                    var field = (context.TargetType != null) ? context.TargetType.GetField(ident.Name) : context.TypeBuilder.GetField(ident.Name);
+                    context.Field = field;
+                    return null;
+                }else{
+                    throw new EmitterException("It is found that the native symbol '{0}' isn't defined.");
+                }
             }
         }
 
-        public CSharpExpr VisitIntegerSequenceExpression(IntegerSequenceExpression intSeq,
-            CSharpEmitterContext context)
+        public CSharpExpr VisitIntegerSequenceExpression(IntegerSequenceExpression intSeq, CSharpEmitterContext context)
         {
             var intseq_ctor = typeof(ExpressoIntegerSequence).GetConstructor(new []{typeof(int), typeof(int), typeof(int), typeof(bool)});
             var args = new List<CSharpExpr>{
@@ -654,8 +666,7 @@ namespace Expresso.CodeGen
             return CSharpExpr.New(intseq_ctor, args);      //new ExpressoIntegerSequence(Start, End, Step)
         }
 
-        public CSharpExpr VisitIndexerExpression(IndexerExpression indexExpr,
-            CSharpEmitterContext context)
+        public CSharpExpr VisitIndexerExpression(IndexerExpression indexExpr, CSharpEmitterContext context)
         {
             var target = indexExpr.Target.AcceptWalker(this, context);
             var args = new List<CSharpExpr>();
@@ -665,10 +676,10 @@ namespace Expresso.CodeGen
             }
 
             var type = target.Type;
-            if(type == typeof(Array)){
+            if(type.IsArray){
                 return CSharpExpr.ArrayIndex(target, args);
             }else{
-                var property_info = type.GetProperty("index");
+                var property_info = type.GetProperty("Item");
                 return CSharpExpr.MakeIndex(target, property_info, args);
             }
         }
@@ -677,22 +688,41 @@ namespace Expresso.CodeGen
         {
             // In Expresso, a member access can be resolved either to a field reference or instance method call
             var expr = memRef.Target.AcceptWalker(this, context);
-            context.Member = null;
+            context.RequestField = true;
+            context.RequestMethod = true;
+            context.Field = null;
             context.Method = null;
+
             memRef.Member.AcceptWalker(this, context);
-            return context.Method != null ? null : CSharpExpr.MakeMemberAccess(expr, context.Member);
+            context.RequestField = false;
+            context.RequestMethod = false;
+            return (context.Method != null) ? expr : CSharpExpr.Field(expr, context.Field);
         }
 
         public CSharpExpr VisitNewExpression(NewExpression newExpr, CSharpEmitterContext context)
         {
+            var additionals = context.Additionals;
+            context.Additionals = new List<object>();
             // On .NET environment, we have no means of creating object instances on the stack.
-            return newExpr.CreationExpression.AcceptWalker(this, context);
+            newExpr.CreationExpression.AcceptWalker(this, context);
+            var args = context.Additionals.Cast<ExprTree.Expression>();
+            context.Additionals = additionals;
+            return CSharpExpr.New(context.Constructor, args);
         }
 
         public CSharpExpr VisitPathExpression(PathExpression pathExpr, CSharpEmitterContext context)
         {
-            if(pathExpr.AsIdentifier != null)
-                return pathExpr.AsIdentifier.AcceptWalker(this, context);
+            if(pathExpr.AsIdentifier != null){
+                context.RequestType = true;
+                context.RequestMethod = true;
+                context.TargetType = null;
+                context.Method = null;
+
+                var item = pathExpr.AsIdentifier.AcceptWalker(this, context);
+                context.RequestType = false;
+                context.RequestMethod = false;
+                return item;
+            }
 
             // On .NET environment, a path item is mapped to
             // Assembly::[Module]::{Class}
@@ -742,20 +772,18 @@ namespace Expresso.CodeGen
             return null;
         }
 
-        public CSharpExpr VisitParenthesizedExpression(ParenthesizedExpression parensExpr,
-            CSharpEmitterContext context)
+        public CSharpExpr VisitParenthesizedExpression(ParenthesizedExpression parensExpr, CSharpEmitterContext context)
         {
             var child = parensExpr.Expression.AcceptWalker(this, context);
             return child;
         }
 
-        public CSharpExpr VisitObjectCreationExpression(ObjectCreationExpression creation,
-            CSharpEmitterContext context)
+        public CSharpExpr VisitObjectCreationExpression(ObjectCreationExpression creation, CSharpEmitterContext context)
         {
             var args = new List<CSharpExpr>(creation.Items.Count);
             context.Constructor = null;
             creation.TypePath.AcceptWalker(this, context);
-            if(context.Constructor != null)
+            if(context.Constructor == null)
                 throw new EmitterException("No constructor found for the path `{0}`", creation.TypePath);
 
             var formal_params = context.Constructor.GetParameters();
@@ -784,8 +812,7 @@ namespace Expresso.CodeGen
             return CSharpExpr.New(context.Constructor, args);
         }
 
-        public CSharpExpr VisitSequenceInitializer(SequenceInitializer seqInitializer,
-            CSharpEmitterContext context)
+        public CSharpExpr VisitSequenceInitializer(SequenceInitializer seqInitializer, CSharpEmitterContext context)
         {
             var obj_type = seqInitializer.ObjectType;
             var seq_type = CSharpCompilerHelper.GetContainerType(obj_type);
@@ -944,15 +971,13 @@ namespace Expresso.CodeGen
             return ConstructUnaryOp(operand, unaryExpr.Operator);
         }
 
-        public CSharpExpr VisitSelfReferenceExpression(SelfReferenceExpression selfRef,
-            CSharpEmitterContext context)
+        public CSharpExpr VisitSelfReferenceExpression(SelfReferenceExpression selfRef, CSharpEmitterContext context)
         {
-            var cur_context_type = context.TypeBuilder.CreateType();
+            var cur_context_type = context.TypeBuilder.AsType();
             return CSharpExpr.Parameter(cur_context_type, "self");
         }
 
-        public CSharpExpr VisitSuperReferenceExpression(SuperReferenceExpression superRef,
-            CSharpEmitterContext context)
+        public CSharpExpr VisitSuperReferenceExpression(SuperReferenceExpression superRef, CSharpEmitterContext context)
         {
             var super_type = context.TypeBuilder.BaseType;
             return CSharpExpr.Parameter(super_type, "super");
@@ -996,8 +1021,7 @@ namespace Expresso.CodeGen
             return null;
         }
 
-        public CSharpExpr VisitPlaceholderType(PlaceholderType placeholderType,
-            CSharpEmitterContext context)
+        public CSharpExpr VisitPlaceholderType(PlaceholderType placeholderType, CSharpEmitterContext context)
         {
             return null;
         }
@@ -1020,23 +1044,39 @@ namespace Expresso.CodeGen
         public CSharpExpr VisitImportDeclaration(ImportDeclaration importDecl, CSharpEmitterContext context)
         {
             if(importDecl.ImportedEntities.IsEmpty){
+                context.RequestType = true;
+                context.RequestMethod = true;
+                context.RequestField = true;
                 context.TargetType = null;
                 context.Method = null;
                 context.Field = null;
+
                 importDecl.ModuleNameToken.AcceptWalker(this, context);
                 if(importDecl.AliasName != null){
                     var type_symbol = symbol_table.GetTypeSymbol(importDecl.AliasName);
-                    Symbols.Add(type_symbol.IdentifierId, new ExpressoSymbol{
-                        Type = context.TargetType,
-                        Field = context.Field,
-                        Method = context.Method
-                    });
+                    if(type_symbol != null){
+                        Symbols.Add(type_symbol.IdentifierId, new ExpressoSymbol{
+                            Type = context.TargetType,
+                            Field = context.Field,
+                            Method = context.Method
+                        });
+                    }else{
+                        var symbol = symbol_table.GetSymbol(importDecl.ModuleName);
+                        Symbols.Add(symbol.IdentifierId, new ExpressoSymbol{
+                            Type = context.TargetType,
+                            Method = context.Method,
+                            Field = context.Field
+                        });
+                    }
                 }
             }else{
                 foreach(var entity in importDecl.ImportedEntities){
+                    context.RequestType = true;
+                    context.RequestMethod = true;
+                    context.RequestField = true;
                     context.TargetType = null;
                     context.Method = null;
-                    context.Member = null;
+                    context.Field = null;
 
                     // Walking through the path items registers the symbols in question
                     entity.AcceptWalker(this, context);
@@ -1046,8 +1086,7 @@ namespace Expresso.CodeGen
             return null;
         }
 
-        public CSharpExpr VisitFunctionDeclaration(FunctionDeclaration funcDecl,
-            CSharpEmitterContext context)
+        public CSharpExpr VisitFunctionDeclaration(FunctionDeclaration funcDecl, CSharpEmitterContext context)
         {
             context.Additionals = new List<object>();
             DescendScope();
@@ -1072,8 +1111,9 @@ namespace Expresso.CodeGen
                 attr |= MethodAttributes.HideBySig;
 
             var return_type = CSharpCompilerHelper.GetNativeType(funcDecl.ReturnType);
-            var func_builder = context.TypeBuilder.DefineMethod(GetFunctionName(funcDecl.Name), attr, return_type, param_types.ToArray());
+            var func_builder = context.TypeBuilder.DefineMethod(ConvertToCLRFunctionName(funcDecl.Name), attr, return_type, param_types.ToArray());
             lambda.CompileToMethod(func_builder);
+            Symbols.Add(funcDecl.NameToken.IdentifierId, new ExpressoSymbol{Lambda = lambda});
 
             if(funcDecl.Name == "main")
                 context.AssemblyBuilder.SetEntryPoint(func_builder, PEFileKinds.ConsoleApplication);
@@ -1086,13 +1126,16 @@ namespace Expresso.CodeGen
         public CSharpExpr VisitTypeDeclaration(TypeDeclaration typeDecl, CSharpEmitterContext context)
         {
             var parent_type = context.TypeBuilder;
-            var attr = ((typeDecl.Modifiers | Modifiers.Export) != 0) ? TypeAttributes.Public : TypeAttributes.NotPublic;
+            var attr = typeDecl.Modifiers.HasFlag(Modifiers.Export) ? TypeAttributes.Public : TypeAttributes.NotPublic;
             attr |= TypeAttributes.Class;
-            context.TypeBuilder = parent_type.DefineNestedType(typeDecl.Name, attr);
+            context.TypeBuilder = (parent_type != null) ? parent_type.DefineNestedType(typeDecl.Name, attr) : context.ModuleBuilder.DefineType(typeDecl.Name, attr);
 
             try{
                 foreach(var member in typeDecl.Members)
                     member.AcceptWalker(this, context);
+
+                var type = context.TypeBuilder.CreateType();
+                Symbols.Add(typeDecl.NameToken.IdentifierId, new ExpressoSymbol{Type = type});
             }
             finally{
                 context.TypeBuilder = parent_type;
@@ -1103,28 +1146,20 @@ namespace Expresso.CodeGen
         public CSharpExpr VisitFieldDeclaration(FieldDeclaration fieldDecl, CSharpEmitterContext context)
         {
             FieldAttributes attr = FieldAttributes.Private;
-            if((fieldDecl.Modifiers | Modifiers.Static) != 0x00)
+            if(fieldDecl.Modifiers.HasFlag(Modifiers.Static))
                 attr |= FieldAttributes.Static;
 
-            if((fieldDecl.Modifiers | Modifiers.Immutable) != 0x00)
+            if(fieldDecl.Modifiers.HasFlag(Modifiers.Immutable))
                 attr |= FieldAttributes.InitOnly;
 
-            switch(fieldDecl.Modifiers ^ Modifiers.Static ^ Modifiers.Immutable){
-            case Modifiers.Private:
+            if(fieldDecl.Modifiers.HasFlag(Modifiers.Private))
                 attr |= FieldAttributes.Private;
-                break;
-
-            case Modifiers.Protected:
+            else if(fieldDecl.Modifiers.HasFlag(Modifiers.Protected))
                 attr |= FieldAttributes.Family;
-                break;
-
-            case Modifiers.Public:
+            else if(fieldDecl.Modifiers.HasFlag(Modifiers.Public))
                 attr |= FieldAttributes.Public;
-                break;
-
-            default:
+            else
                 throw new EmitterException("Unknown modifiers!");
-            }
 
             foreach(var init in fieldDecl.Initializers){
                 var type = CSharpCompilerHelper.GetNativeType(init.NameToken.Type);
@@ -1138,20 +1173,18 @@ namespace Expresso.CodeGen
             return null;
         }
 
-        public CSharpExpr VisitParameterDeclaration(ParameterDeclaration parameterDecl,
-            CSharpEmitterContext context)
+        public CSharpExpr VisitParameterDeclaration(ParameterDeclaration parameterDecl, CSharpEmitterContext context)
         {
-            var return_type = CSharpCompilerHelper.GetNativeType(parameterDecl.ReturnType);
-            var tmp = CSharpExpr.Parameter(return_type, parameterDecl.Name);
-            Symbols.Add(parameterDecl.NameToken.IdentifierId, new ExpressoSymbol{Parameter = tmp});
+            var native_type = CSharpCompilerHelper.GetNativeType(parameterDecl.ReturnType);
+            var param = CSharpExpr.Parameter(native_type, parameterDecl.Name);
+            Symbols.Add(parameterDecl.NameToken.IdentifierId, new ExpressoSymbol{Parameter = param});
             if(context.Additionals != null)
-                context.Additionals.Add(tmp);
+                context.Additionals.Add(param);
 
-            return tmp;
+            return param;
         }
 
-        public CSharpExpr VisitVariableInitializer(VariableInitializer initializer,
-            CSharpEmitterContext context)
+        public CSharpExpr VisitVariableInitializer(VariableInitializer initializer, CSharpEmitterContext context)
         {
             CSharpExpr variable = CSharpExpr.Variable(CSharpCompilerHelper.GetNativeType(initializer.NameToken.Type), initializer.Name);
             var init = initializer.Initializer.AcceptWalker(this, context);
@@ -1175,16 +1208,14 @@ namespace Expresso.CodeGen
         //#     and the return value indicates the branch condition(in other words, it indicates the condition
         //#     that the pattern should branch on)
         //#################################################
-        public CSharpExpr VisitWildcardPattern(WildcardPattern wildcardPattern,
-            CSharpEmitterContext context)
+        public CSharpExpr VisitWildcardPattern(WildcardPattern wildcardPattern, CSharpEmitterContext context)
         {
             // A wildcard pattern is translated to the else clause
             // so just return null to indicate that.
             return null;
         }
 
-        public CSharpExpr VisitIdentifierPattern(IdentifierPattern identifierPattern,
-            CSharpEmitterContext context)
+        public CSharpExpr VisitIdentifierPattern(IdentifierPattern identifierPattern, CSharpEmitterContext context)
         {
             // An identifier pattern can arise by itself or as a child
             var ident = identifierPattern.Identifier.AcceptWalker(this, context);
@@ -1205,8 +1236,7 @@ namespace Expresso.CodeGen
             return ident;
         }
 
-        public CSharpExpr VisitValueBindingPattern(ValueBindingPattern valueBindingPattern,
-            CSharpEmitterContext context)
+        public CSharpExpr VisitValueBindingPattern(ValueBindingPattern valueBindingPattern, CSharpEmitterContext context)
         {
             // ValueBindingPatterns can be complex because they introduce new variables into the surrounding scope
             // and they have nothing to do with the value being matched.
@@ -1219,8 +1249,7 @@ namespace Expresso.CodeGen
             return result;
         }
 
-        public CSharpExpr VisitCollectionPattern(CollectionPattern collectionPattern,
-            CSharpEmitterContext context)
+        public CSharpExpr VisitCollectionPattern(CollectionPattern collectionPattern, CSharpEmitterContext context)
         {
             // First, make type validation expression
             var collection_type = CSharpCompilerHelper.GetContainerType(collectionPattern.CollectionType);
@@ -1247,8 +1276,7 @@ namespace Expresso.CodeGen
             return CSharpExpr.TypeIs(context.TemporaryVariable, collection_type);
         }
 
-        public CSharpExpr VisitDestructuringPattern(DestructuringPattern destructuringPattern,
-            CSharpEmitterContext context)
+        public CSharpExpr VisitDestructuringPattern(DestructuringPattern destructuringPattern, CSharpEmitterContext context)
         {
             context.TargetType = null;
             destructuringPattern.TypePath.AcceptWalker(this, context);
@@ -1287,8 +1315,7 @@ namespace Expresso.CodeGen
             return CSharpExpr.TypeIs(context.TemporaryVariable, tuple_type);
         }
 
-        public CSharpExpr VisitExpressionPattern(ExpressionPattern exprPattern,
-            CSharpEmitterContext context)
+        public CSharpExpr VisitExpressionPattern(ExpressionPattern exprPattern, CSharpEmitterContext context)
         {
             // Common scinario in an expression pattern:
             // An integer sequence expression or a literal expression.
@@ -1324,8 +1351,7 @@ namespace Expresso.CodeGen
             return null;
         }
 
-        public CSharpExpr VisitPatternPlaceholder(AstNode placeholder,
-            ICSharpCode.NRefactory.PatternMatching.Pattern child, CSharpEmitterContext context)
+        public CSharpExpr VisitPatternPlaceholder(AstNode placeholder, ICSharpCode.NRefactory.PatternMatching.Pattern child, CSharpEmitterContext context)
         {
             // Ignore placeholder nodes because they are just placeholders...
             return null;
@@ -1469,7 +1495,7 @@ namespace Expresso.CodeGen
             return parameters;
         }
 
-        CSharpExpr ConstructCallExpression(ExprTree.ParameterExpression inst, MethodInfo method, IEnumerable<ExprTree.ParameterExpression> args)
+        CSharpExpr ConstructCallExpression(ExprTree.ParameterExpression inst, MethodInfo method, IEnumerable<ExprTree.ParameterExpression> args, ExprTree.LabelTarget label)
         {
             if(method.Name == "Write" || method.Name == "WriteLine"){
                 var first = args.First();
@@ -1508,25 +1534,9 @@ namespace Expresso.CodeGen
                     }
                     return CSharpExpr.Block(new []{param}, body);
                 }
-                /*if(first.Type == typeof(string)){
-                    return CSharpExpr.Call(method, args);
-                }else{
-                    var builder = new StringBuilder();
-                    for(int i = 0; i < args.Count(); ++i){
-                        if(i != 0)
-                            builder.Append(", ");
-
-                        builder.Append("{" + i.ToString() + "}");
-                    }
-                    var param = CSharpExpr.Parameter(typeof(string), "str");
-                    var new_args = new List<ExprTree.ParameterExpression>{param};
-                    new_args.AddRange(args);
-                    var assign = CSharpExpr.Assign(param, CSharpExpr.Constant(builder.ToString()));
-                    var call = CSharpExpr.Call(method, new_args);
-                    return CSharpExpr.Block(method.ReturnType, new []{param}, assign, call);
-                }*/
             }else{
-                return (inst != null) ? CSharpExpr.Call(inst, method, args) : CSharpExpr.Call(method, args);
+                var call = (inst != null) ? CSharpExpr.Call(inst, method, args) : CSharpExpr.Call(method, args);
+                return CSharpExpr.Label(label, call);
             }
         }
 		#endregion

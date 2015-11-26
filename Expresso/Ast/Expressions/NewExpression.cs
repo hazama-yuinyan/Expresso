@@ -7,7 +7,7 @@ namespace Expresso.Ast
     /// <summary>
     /// ヒープオブジェクト生成式。
 	/// Reperesents a new expression.
-    /// A new expression always allocate memory on the heap.
+    /// A new expression always allocates memory on the heap.
     /// "new" ObjectCreationExpression ;
     /// </summary>
     public class NewExpression : Expression

@@ -5,7 +5,7 @@ namespace Expresso.Ast
 {
     /// <summary>
     /// メソッドやフィールド変数などの属性を表す。
-    /// Indicates accesibility or property of the associated fields. 
+    /// Indicates accessibility or property of the associated fields. 
     /// </summary>
     [Flags]
     public enum Modifiers

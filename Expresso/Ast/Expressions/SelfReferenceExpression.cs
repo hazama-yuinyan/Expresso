@@ -22,7 +22,7 @@ namespace Expresso.Ast
         public SelfReferenceExpression(TextLocation loc)
             : base(loc, new TextLocation(loc.Line, loc.Column + "self".Length))
         {
-            SelfIdentifier = AstNode.MakeIdentifier("self");
+            SelfIdentifier = AstNode.MakeIdentifier("self", new PlaceholderType(loc));
         }
 
         #region implemented abstract members of AstNode

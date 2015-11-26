@@ -186,6 +186,7 @@
     <Compile Include="Analysis\UniqueIdGenerator.cs" />
     <Compile Include="Ast\FunctionType.cs" />
     <Compile Include="Ast\Statements\ValueBindingForStatement.cs" />
+    <Compile Include="TriBool.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System" />

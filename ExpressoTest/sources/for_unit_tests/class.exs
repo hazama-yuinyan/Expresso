@@ -6,7 +6,8 @@ module main;
 
 class Test
 {
-	let x (- int, y (- int;
+	public let x (- int;
+	let y (- int, z = 3;
 
 	public def getX()
 	{
@@ -26,11 +27,11 @@ class Test
 
 def main()
 {
+	let a = Test{x : 1, y : 3};
 	let a = new Test{x : 1, y : 3);
-	let (b, c) = (a.getX(), a.getY());
+	let b = a.getX();
+	let c = a.getY();
 	let d = a.getXPlus(100);
 	
 	print("(a.x, a.y) = {}, {}", b, c);
-
-	return new [a, b, c, d];
 }
