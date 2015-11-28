@@ -24,7 +24,8 @@ namespace Expresso.Ast
             set{SetChildByRole(ObjectCreationRole, value);}
 		}
 
-        public NewExpression(ObjectCreationExpression objectCreation)
+        public NewExpression(ObjectCreationExpression objectCreation, TextLocation loc)
+            : base(loc, objectCreation.EndLocation)
 		{
             CreationExpression = objectCreation;
 		}

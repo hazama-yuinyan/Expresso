@@ -147,7 +147,7 @@ namespace Expresso.Test
                         ),
                         Statement.MakeVarDecl(
                             Helpers.MakeSeq(AstNode.MakeIdentifier("f3", Helpers.MakeGenericType("tuple"))),
-                            Helpers.MakeSeq(Expression.MakeParen(Expression.MakeSequence(null))),
+                            Helpers.MakeSeq(Expression.MakeParen(Expression.MakeSequenceExpression(null))),
                             Modifiers.Immutable
                         ),
                         Statement.MakeVarDecl(
@@ -159,7 +159,7 @@ namespace Expresso.Test
                                 )
                             )),
                             Helpers.MakeSeq(Expression.MakeParen(
-                                Expression.MakeSequence(
+                                Expression.MakeSequenceExpression(
                                     Expression.MakeConstant("int", 1),
                                     Expression.MakeConstant("string", "abc"),
                                     Expression.MakeConstant("bool", true)
@@ -324,7 +324,7 @@ namespace Expresso.Test
                         Enumerable.Empty<ParameterDeclaration>(),
                         Statement.MakeBlock(
                             Helpers.MakeSeq(
-                                Statement.MakeReturnStmt(Expression.MakeSequence(Expression.MakeMemRef(
+                                Statement.MakeReturnStmt(Expression.MakeSequenceExpression(Expression.MakeMemRef(
                                     Expression.MakeSelfRef(TextLocation.Empty),
                                     AstNode.MakeIdentifier("y")
                                 )))

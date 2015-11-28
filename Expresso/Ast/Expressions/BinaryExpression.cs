@@ -66,6 +66,7 @@ namespace Expresso.Ast
 		}
 
 		public BinaryExpression(Expression left, Expression right, OperatorType opType)
+            : base(left.StartLocation, right.EndLocation)
 		{
 			op = opType;
             OperatorToken = new ExpressoTokenNode(TextLocation.Empty, GetOperatorRole(op));

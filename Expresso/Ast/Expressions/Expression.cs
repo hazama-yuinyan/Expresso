@@ -200,12 +200,20 @@ namespace Expresso.Ast
             return new CallExpression(target, args);
         }
 
-        public static SequenceExpression MakeSequence(IEnumerable<Expression> items)
+        /// <summary>
+        /// Makes a sequence expression.
+        /// </summary>
+        /// <returns>A sequence expression.</returns>
+        public static SequenceExpression MakeSequenceExpression(IEnumerable<Expression> items)
         {
             return new SequenceExpression(items);
         }
 
-        public static SequenceExpression MakeSequence(params Expression[] items)
+        /// <summary>
+        /// Makes a sequence expression from a sequence of arguments.
+        /// </summary>
+        /// <returns>A sequence expression.</returns>
+        public static SequenceExpression MakeSequenceExpression(params Expression[] items)
         {
             return new SequenceExpression(items);
         }
@@ -216,9 +224,9 @@ namespace Expresso.Ast
         /// <returns>An expression.</returns>
         /// <param name="op">The operator type.</param>
         /// <param name="operand">The operand.</param>
-        public static UnaryExpression MakeUnaryExpr(OperatorType op, Expression operand)
+        public static UnaryExpression MakeUnaryExpr(OperatorType op, Expression operand, TextLocation loc = default(TextLocation))
         {
-            return new UnaryExpression(op, operand);
+            return new UnaryExpression(op, operand, loc);
         }
 
         /// <summary>
@@ -233,23 +241,20 @@ namespace Expresso.Ast
             return new BinaryExpression(lhs, rhs, op);
         }
 
-        public static SequenceInitializer MakeSequenceInitializer(SimpleType type,
-            IEnumerable<Expression> initializeList)
+        public static SequenceInitializer MakeSequenceInitializer(SimpleType type, IEnumerable<Expression> initializers)
         {
-            return new SequenceInitializer(type, initializeList);
+            return new SequenceInitializer(type, initializers);
         }
 
-        public static SequenceInitializer MakeSequenceInitializer(SimpleType type,
-            params Expression[] initializers)
+        public static SequenceInitializer MakeSequenceInitializer(SimpleType type, params Expression[] initializers)
         {
             return new SequenceInitializer(type, initializers);
         }
 
         public static ObjectCreationExpression MakeObjectCreation(AstType path, IEnumerable<Identifier> names,
-            IEnumerable<Expression> values)
+            IEnumerable<Expression> values, TextLocation start = default(TextLocation), TextLocation end = default(TextLocation))
         {
-            return new ObjectCreationExpression(path, names.Select(ident => new PathExpression(ident)),
-                values);
+            return new ObjectCreationExpression(path, names.Select(ident => new PathExpression(ident)), values, start, end);
         }
 
         public static KeyValueLikeExpression MakeKeyValuePair(Expression key, Expression value)
@@ -309,9 +314,9 @@ namespace Expresso.Ast
             return new IntegerSequenceExpression(start, end, step, upperInclusive);
         }
 
-        public static NewExpression MakeNewExpr(ObjectCreationExpression creationExpr)
+        public static NewExpression MakeNewExpr(ObjectCreationExpression creationExpr, TextLocation loc = default(TextLocation))
         {
-            return new NewExpression(creationExpr);
+            return new NewExpression(creationExpr, loc);
         }
 
         /// <summary>

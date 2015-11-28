@@ -460,6 +460,11 @@ namespace Expresso.Ast.Analysis
             throw new NotImplementedException();
         }
 
+        public void VisitParameterType(ParameterType paramType)
+        {
+            throw new NotImplementedException();
+        }
+
         public void VisitPlaceholderType(PlaceholderType placeholderType)
         {
             throw new NotImplementedException();

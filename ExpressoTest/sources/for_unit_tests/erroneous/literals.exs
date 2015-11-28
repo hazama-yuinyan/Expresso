@@ -12,6 +12,7 @@ def main()
 dev test()
 {
 	var m = かきくけこ;
+	let vec = [...];
 	let a = 100
 
 }

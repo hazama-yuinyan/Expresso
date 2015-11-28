@@ -168,7 +168,7 @@ namespace Expresso.Ast
         public static ExpressionStatement MakeExprStmt(Expression expr,
             TextLocation start = default(TextLocation), TextLocation end = default(TextLocation))
         {
-            return new ExpressionStatement(Expression.MakeSequence(expr), start, end);
+            return new ExpressionStatement(Expression.MakeSequenceExpression(expr), start, end);
         }
 
         public static ExpressionStatement MakeExprStmt(SequenceExpression seqExpr,

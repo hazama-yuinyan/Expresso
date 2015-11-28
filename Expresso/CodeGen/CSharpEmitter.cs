@@ -38,7 +38,7 @@ namespace Expresso.CodeGen
         //###################################################
         static Dictionary<uint, ExpressoSymbol> Symbols = new Dictionary<uint, ExpressoSymbol>();
         static int LoopCounter = 1;
-        static ExprTree.LabelTarget DefaultTarget = CSharpExpr.Label("defaultTarget");
+        static ExprTree.LabelTarget ReturnTarget = CSharpExpr.Label("returnTarget");
 		
         bool has_continue;
 
@@ -68,6 +68,9 @@ namespace Expresso.CodeGen
                 Method = typeof(Console).GetMethod("WriteLine", new []{
                     typeof(string), typeof(object)
                 })
+            });
+            Symbols.Add(1000000002u, new ExpressoSymbol{
+                Method = typeof(List<>).GetMethod("Add")
             });
         }
 
@@ -164,8 +167,10 @@ namespace Expresso.CodeGen
             int tmp_counter = sibling_count;
             sibling_count = 0;
             DescendScope();
-            var contents = new List<CSharpExpr>();
+            var parent_block = context.ContextAst;
             context.ContextAst = block;
+
+            var contents = new List<CSharpExpr>();
             foreach(var stmt in block.Statements){
                 var tmp = stmt.AcceptWalker(this, context);
                 if(tmp == null){
@@ -176,7 +181,22 @@ namespace Expresso.CodeGen
                 }
             }
 
+            context.ContextAst = parent_block;
+
             var variables = ConvertSymbolsToParameters().ToList();
+            if(context.ContextAst is FunctionDeclaration && block.Statements.Last() is ReturnStatement){
+                var return_expr = contents.Last() as ExprTree.GotoExpression;
+                if(return_expr == null)
+                    throw new EmitterException("Unknown state found! Expected the last expression is a GotoExpression!");
+
+                contents.RemoveAt(contents.Count - 1);
+                // Don't add an assignment expression here because visiting the return statement has done that
+                //contents.Add(CSharpExpr.Assign(context.ParameterReturnValue, return_expr.Value));
+                contents.Add(CSharpExpr.Label(ReturnTarget));
+                contents.Add(context.ParameterReturnValue);
+                variables.Add(context.ParameterReturnValue);
+            }
+
             AscendScope();
             sibling_count = tmp_counter + 1;
             return CSharpExpr.Block(contents.Last().Type, variables, contents);
@@ -327,7 +347,11 @@ namespace Expresso.CodeGen
                 return CSharpExpr.Empty();
 
             var expr = returnStmt.Expression.AcceptWalker(this, context);
-            return CSharpExpr.Return(DefaultTarget, expr);
+            var assign = CSharpExpr.Assign(context.ParameterReturnValue, expr);
+            var return_expr = CSharpExpr.Return(ReturnTarget, expr);
+            context.Additionals.Add(assign);
+            context.Additionals.Add(return_expr);
+            return null;
         }
 
         public CSharpExpr VisitMatchStatement(MatchStatement matchStmt, CSharpEmitterContext context)
@@ -536,8 +560,7 @@ namespace Expresso.CodeGen
                 compiled_args.Add(arg.AcceptWalker(this, context));
 
             var inst = call.Target.AcceptWalker(this, context);
-            var label = CSharpExpr.Label("target_" + call.Target.ToString());
-            return ConstructCallExpression((ExprTree.ParameterExpression)inst, context.Method, compiled_args.Cast<ExprTree.ParameterExpression>(), label);
+            return ConstructCallExpression((ExprTree.ParameterExpression)inst, context.Method, compiled_args.Cast<ExprTree.ParameterExpression>());
         }
 
         public CSharpExpr VisitCastExpression(CastExpression castExpr, CSharpEmitterContext context)
@@ -956,7 +979,7 @@ namespace Expresso.CodeGen
                 exprs.Add(tmp);
             }
 
-            if(types.Count == 1 && types.First() == typeof(void)){
+            if(types.Count == 1){
                 return exprs.First();
             }else{
                 var ctor_method = typeof(Tuple).GetGenericMethod("Create", BindingFlags.Public | BindingFlags.Static, types.ToArray());
@@ -1017,6 +1040,11 @@ namespace Expresso.CodeGen
         }
 
         public CSharpExpr VisitFunctionType(FunctionType funcType, CSharpEmitterContext context)
+        {
+            return null;
+        }
+
+        public CSharpExpr VisitParameterType(ParameterType paramType, CSharpEmitterContext context)
         {
             return null;
         }
@@ -1090,6 +1118,9 @@ namespace Expresso.CodeGen
         {
             context.Additionals = new List<object>();
             DescendScope();
+            var context_ast = context.ContextAst;
+            context.ContextAst = funcDecl;
+
             var param_types = new List<Type>();
             var parameters = new List<ExprTree.ParameterExpression>();
             foreach(var param in funcDecl.Parameters){
@@ -1097,8 +1128,16 @@ namespace Expresso.CodeGen
                 param_types.Add(tmp.Type);
                 parameters.Add((ExprTree.ParameterExpression)tmp);
             }
+
+            var prev_rv = context.ParameterReturnValue;
+            var return_type = CSharpCompilerHelper.GetNativeType(funcDecl.ReturnType);
+            if(return_type != typeof(void))
+                context.ParameterReturnValue = CSharpExpr.Parameter(return_type, "return_value");
+
             var body = funcDecl.Body.AcceptWalker(this, context);
             context.Additionals = null;
+            context.ContextAst = context_ast;
+            context.ParameterReturnValue = prev_rv;
             var lambda = CSharpExpr.Lambda(body, parameters);
 
             var attr = MethodAttributes.Static | MethodAttributes.Family;
@@ -1110,11 +1149,10 @@ namespace Expresso.CodeGen
             if(funcDecl.Name == "main")
                 attr |= MethodAttributes.HideBySig;
 
-            var return_type = CSharpCompilerHelper.GetNativeType(funcDecl.ReturnType);
             var func_builder = context.TypeBuilder.DefineMethod(ConvertToCLRFunctionName(funcDecl.Name), attr, return_type, param_types.ToArray());
             lambda.CompileToMethod(func_builder);
-            Symbols.Add(funcDecl.NameToken.IdentifierId, new ExpressoSymbol{Lambda = lambda});
 
+            Symbols.Add(funcDecl.NameToken.IdentifierId, new ExpressoSymbol{Method = func_builder});
             if(funcDecl.Name == "main")
                 context.AssemblyBuilder.SetEntryPoint(func_builder, PEFileKinds.ConsoleApplication);
 
@@ -1497,7 +1535,7 @@ namespace Expresso.CodeGen
             return parameters;
         }
 
-        CSharpExpr ConstructCallExpression(ExprTree.ParameterExpression inst, MethodInfo method, IEnumerable<ExprTree.ParameterExpression> args, ExprTree.LabelTarget label)
+        CSharpExpr ConstructCallExpression(ExprTree.ParameterExpression inst, MethodInfo method, IEnumerable<ExprTree.ParameterExpression> args)
         {
             if(method.Name == "Write" || method.Name == "WriteLine"){
                 var first = args.First();
@@ -1537,8 +1575,8 @@ namespace Expresso.CodeGen
                     return CSharpExpr.Block(new []{param}, body);
                 }
             }else{
-                var call = (inst != null) ? CSharpExpr.Call(inst, method, args) : CSharpExpr.Call(method, args);
-                return CSharpExpr.Label(label, call);
+                return (inst != null) ? CSharpExpr.Call(inst, method, args) : CSharpExpr.Call(method, args);
+                //return CSharpExpr.Label(label, call);
             }
         }
 		#endregion

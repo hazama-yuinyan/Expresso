@@ -60,6 +60,7 @@ namespace Expresso.Ast
         void VisitReferenceType(ReferenceType referenceType);
         void VisitMemberType(MemberType memberType);
         void VisitFunctionType(FunctionType funcType);
+        void VisitParameterType(ParameterType paramType);
         void VisitPlaceholderType(PlaceholderType placeholderType);
 
         void VisitImportDeclaration(ImportDeclaration importDecl);
@@ -138,6 +139,7 @@ namespace Expresso.Ast
         TResult VisitReferenceType(ReferenceType referenceType);
         TResult VisitMemberType(MemberType memberType);
         TResult VisitFunctionType(FunctionType funcType);
+        TResult VisitParameterType(ParameterType paramType);
         TResult VisitPlaceholderType(PlaceholderType placeholderType);
 
         TResult VisitImportDeclaration(ImportDeclaration importDecl);
@@ -226,6 +228,7 @@ namespace Expresso.Ast
         TResult VisitReferenceType(ReferenceType referenceType, TData data);
         TResult VisitMemberType(MemberType memberType, TData data);
         TResult VisitFunctionType(FunctionType funcType, TData data);
+        TResult VisitParameterType(ParameterType paramType, TData data);
         TResult VisitPlaceholderType(PlaceholderType placeholderType, TData data);
 
         TResult VisitImportDeclaration(ImportDeclaration importDecl, TData data);

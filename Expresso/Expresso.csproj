@@ -187,6 +187,7 @@
     <Compile Include="Ast\FunctionType.cs" />
     <Compile Include="Ast\Statements\ValueBindingForStatement.cs" />
     <Compile Include="TriBool.cs" />
+    <Compile Include="ParameterType.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System" />

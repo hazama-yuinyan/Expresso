@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 
 namespace Expresso.Ast
@@ -71,11 +72,13 @@ namespace Expresso.Ast
         }
 
         public PathExpression(Identifier ident)
+            : base(ident.StartLocation, ident.EndLocation)
         {
             Items.Add(ident);
         }
 
         public PathExpression(IEnumerable<Identifier> paths)
+            : base(paths.First().StartLocation, paths.Last().EndLocation)
         {
             Items.AddRange(paths);
         }

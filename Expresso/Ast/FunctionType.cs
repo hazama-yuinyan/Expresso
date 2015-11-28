@@ -36,12 +36,12 @@ namespace Expresso.Ast
             set{SetChildByRole(Roles.Identifier, value);}
         }
 
-        public FunctionType(Identifier ident, AstType returnType, IEnumerable<AstType> parameters)
+        public FunctionType(Identifier ident, AstType returnType, IEnumerable<AstType> parameters, TextLocation start, TextLocation end)
+            : base(start, end)
         {
             Identifier = ident;
             ReturnType = returnType;
-            foreach(var param in parameters)
-                AddChild(param, Parameter);
+            Parameters.AddRange(parameters);
         }
 
         #region implemented abstract members of AstNode

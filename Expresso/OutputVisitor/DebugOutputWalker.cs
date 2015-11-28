@@ -490,6 +490,8 @@ namespace Expresso.Ast
 
         public void VisitReferenceType(ReferenceType referenceType)
         {
+            writer.Write("&");
+            referenceType.BaseType.AcceptWalker(this);
         }
 
         public void VisitMemberType(MemberType memberType)
@@ -505,6 +507,12 @@ namespace Expresso.Ast
             PrintList(funcType.Parameters);
             writer.Write("| -> ");
             funcType.ReturnType.AcceptWalker(this);
+        }
+
+        public void VisitParameterType(ParameterType paramType)
+        {
+            writer.Write("`");
+            writer.Write(paramType.Name);
         }
 
         public void VisitPlaceholderType(PlaceholderType placeholderType)

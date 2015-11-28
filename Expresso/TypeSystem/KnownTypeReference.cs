@@ -28,12 +28,12 @@ namespace Expresso.TypeSystem
         Int = 0x04,         //00000100,
         /// <summary><c>uint</c> (System.UInt32)</summary>
         UInt = 0x05,        //00000101
-        /// <summary><c>float</c> (System.Single)</summary>
-        Float = 0x06,       //00000110
-        /// <summary><c>double</c> (System.Double)</summary>
-        Double = 0x07,      //00000111
         /// <summary><c>bigint</c> (System.Math.BigInteger)</summary>
-        BigInteger = 0x08,  //00001000
+        BigInteger = 0x06,  //00000110
+        /// <summary><c>float</c> (System.Single)</summary>
+        Float = 0x07,       //00000111
+        /// <summary><c>double</c> (System.Double)</summary>
+        Double = 0x08,      //00001000
         /// <summary><c>string</c> (System.String)</summary>
         String = 0x09,
 

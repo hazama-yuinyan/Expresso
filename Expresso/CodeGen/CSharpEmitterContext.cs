@@ -140,6 +140,13 @@ namespace Expresso.CodeGen
         }
 
         /// <summary>
+        /// Represents the current return value.
+        /// </summary>
+        public System.Linq.Expressions.ParameterExpression ParameterReturnValue{
+            get; set;
+        }
+
+        /// <summary>
         /// Additional temporary expressions.
         /// Used in expressions that need complicated transformation.
         /// Usually set to null. Not being null indicates that the child nodes should add their results

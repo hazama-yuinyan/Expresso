@@ -9,7 +9,7 @@ def main()
 	let x = 100, y = 50, z = 300, w = 400;
 	var flag (- bool;
 
-	print("(x, y, z, w) = ({}, {}, {}, {})", x, y, z, w);
+	print(x, y, z, w);
 
 	if x == 100 {
 		flag = true;
@@ -20,7 +20,7 @@ def main()
 	var sum = 0;
 	for let p in 0..y {
 		sum += p;
-		println("{}, {}", p, sum);
+		println(p, sum);
 	}
 
 	let tmp = "akarichan";
@@ -31,14 +31,14 @@ def main()
     	"yui" => print("doyaxtu!");
 	}
 
-	var fibs = [...], a = 0, b = 1;
+	var fibs (- vector<int> = [...], a = 0, b = 1;
 	while b < 1000 {
 		fibs.add(b);
 		a, b = b, a + b;
 	}
 
-	var vec = [...];
-	for let i in 0..10 {
+	var vec (- vector<int> = [...];
+	for let i in [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, ...] {
 		for let j in 0..10 {
 			if i == 3 || i == 6 {break;}
 			if j == 8 {continue upto 2;}
@@ -46,5 +46,5 @@ def main()
 		}
 	}
 
-	return [x, y, z, w, flag, sum, strs, fibs, vec];
+	println(x, y, z, w, flag, sum, tmp, fibs, vec);
 }

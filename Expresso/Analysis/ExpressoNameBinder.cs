@@ -284,6 +284,7 @@ namespace Expresso.Ast.Analysis
             // At this point we can't figure out which scope to use for the member expression
             // because we don't know anything about the type of the target expression.
             // So for now bind only the target expression.
+            // Instead we'll do that in type check phase.
             memRef.Target.AcceptWalker(this);
         }
 
@@ -359,6 +360,11 @@ namespace Expresso.Ast.Analysis
         }
 
         public void VisitFunctionType(FunctionType funcType)
+        {
+            // no op
+        }
+
+        public void VisitParameterType(ParameterType paramType)
         {
             // no op
         }

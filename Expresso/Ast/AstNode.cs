@@ -1264,9 +1264,9 @@ namespace Expresso.Ast
             return new Identifier(name, loc);
 		}
 
-        public static Identifier MakeIdentifier(string name, AstType type, TextLocation loc = default(TextLocation))
+        public static Identifier MakeIdentifier(string name, AstType type, TextLocation start = default(TextLocation), TextLocation end = default(TextLocation))
         {
-            return new Identifier(name, type, loc);
+            return new Identifier(name, type, start, end);
         }
 
         public static ExpressoAst MakeModuleDef(string moduleName,

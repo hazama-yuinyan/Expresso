@@ -103,7 +103,7 @@ string cur_class_name;
 	Parser()
 	{
         DoPostParseProcessing = false;
-        Symbols = new SymbolTable();
+        Symbols = SymbolTable.Create();
 	}
 	
 	LiteralExpression CreateDefaultValue(KnownTypeCode type)
@@ -443,7 +443,7 @@ string cur_class_name;
 		     try{
 		  
 		ModuleBody(out module_decl);
-		Debug.Assert(Symbols.Parent == null);
+		Debug.Assert(Symbols.Parent.Name == "root");
 		if(DoPostParseProcessing){
 		   CSharpCompilerHelper.Prepare();
 		   ExpressoNameBinder.BindAst(module_decl, this); //Here's the start of post-parse processing
@@ -898,9 +898,9 @@ string cur_class_name;
 	}
 
 	void Identifier(out Identifier ident) {
-		string name; AstType type = new PlaceholderType(TextLocation.Empty); 
+		string name; AstType type = new PlaceholderType(TextLocation.Empty); var start_loc = CurrentLocation;
 		Expect(14);
-		name = t.val; var loc = CurrentLocation; 
+		name = t.val;
 		if(CheckKeyword(t.val)){
 		   ident = null;
 		   return;
@@ -910,7 +910,7 @@ string cur_class_name;
 			Get();
 			Type(out type);
 		}
-		ident = AstNode.MakeIdentifier(name, type, loc); 
+		ident = AstNode.MakeIdentifier(name, type, start_loc, CurrentLocation); 
 	}
 
 	void Literal(out Expression expr) {
@@ -1241,7 +1241,7 @@ string cur_class_name;
 			CondExpr(out tmp);
 			exprs.Add(tmp);	
 		}
-		seq = Expression.MakeSequence(exprs); 
+		seq = Expression.MakeSequenceExpression(exprs); 
 	}
 
 	void CondExpr(out Expression expr) {
@@ -1320,7 +1320,7 @@ string cur_class_name;
 			LhsPrimary(out tmp);
 			lvalues.Add(tmp); 
 		}
-		lhs = Expression.MakeSequence(lvalues); 
+		lhs = Expression.MakeSequenceExpression(lvalues); 
 	}
 
 	void LhsPrimary(out Expression expr) {
@@ -1387,6 +1387,7 @@ string cur_class_name;
 				Get();
 			}
 			Identifier(out ident);
+			Symbols.AddSymbol(ident.Name, ident); 
 		} else if (StartOf(16)) {
 			LhsPattern(out left);
 		} else SynErr(131);
@@ -1812,13 +1813,13 @@ string cur_class_name;
 	}
 
 	void Factor(out Expression expr) {
-		OperatorType type; Expression factor; expr = null; 
+		OperatorType type; Expression factor; expr = null; var start_loc = CurrentLocation; 
 		if (StartOf(21)) {
 			Primary(out expr);
 		} else if (StartOf(22)) {
 			UnaryOperator(out type);
 			Factor(out factor);
-			expr = Expression.MakeUnaryExpr(type, factor); 
+			expr = Expression.MakeUnaryExpr(type, factor, start_loc); 
 		} else SynErr(143);
 	}
 
@@ -1858,7 +1859,7 @@ string cur_class_name;
 	}
 
 	void ObjectCreation(AstType typePath, out Expression expr) {
-		var fields = new List<Identifier>(); var values = new List<Expression>();
+		var fields = new List<Identifier>(); var values = new List<Expression>(); var start_loc = CurrentLocation;
 		Symbols.AddScope();
 		GoDownScope();
 		
@@ -1878,7 +1879,7 @@ string cur_class_name;
 		}
 		while (!(la.kind == 0 || la.kind == 11)) {SynErr(146); Get();}
 		Expect(11);
-		expr = Expression.MakeObjectCreation(typePath, fields, values);
+		expr = Expression.MakeObjectCreation(typePath, fields, values, start_loc, CurrentLocation);
 		GoUpScope();
 		
 	}
@@ -1891,7 +1892,7 @@ string cur_class_name;
 			Get();
 			if (la.kind == 10) {
 				Get();
-				expr = Expression.MakeParen(Expression.MakeSequence(null)); 
+				expr = Expression.MakeParen(Expression.MakeSequenceExpression(null)); 
 			} else if (StartOf(13)) {
 				CondExpr(out expr);
 				exprs.Add(expr); 
@@ -1906,9 +1907,9 @@ string cur_class_name;
 				}
 				Expect(10);
 				if(exprs.Count == 1)
-				   expr = Expression.MakeParen(seen_trailing_comma ? Expression.MakeSequence(exprs[0]) : exprs[0]);
+				   expr = Expression.MakeParen(seen_trailing_comma ? Expression.MakeSequenceExpression(exprs[0]) : exprs[0]);
 				else
-				   expr = Expression.MakeParen(Expression.MakeSequence(exprs));
+				   expr = Expression.MakeParen(Expression.MakeSequenceExpression(exprs));
 				
 			} else SynErr(147);
 		} else if (la.kind == 9) {
@@ -1939,11 +1940,11 @@ string cur_class_name;
 	}
 
 	void NewExpression(out Expression expr) {
-		AstType type_path; 
+		AstType type_path; var start_loc = CurrentLocation; 
 		Expect(96);
 		Type(out type_path);
 		ObjectCreation(type_path, out expr);
-		expr = Expression.MakeNewExpr((ObjectCreationExpression)expr); 
+		expr = Expression.MakeNewExpr((ObjectCreationExpression)expr, start_loc); 
 	}
 
 	void Trailer(ref Expression expr) {
@@ -2077,13 +2078,13 @@ string cur_class_name;
 	}
 
 	void PatternFactor(out Expression expr) {
-		OperatorType type; Expression factor; expr = null; 
+		OperatorType type; Expression factor; expr = null; var start_loc = CurrentLocation; 
 		if (StartOf(27)) {
 			PatternPrimary(out expr);
 		} else if (StartOf(22)) {
 			UnaryOperator(out type);
 			PatternFactor(out factor);
-			expr = Expression.MakeUnaryExpr(type, factor); 
+			expr = Expression.MakeUnaryExpr(type, factor, start_loc); 
 		} else SynErr(152);
 	}
 

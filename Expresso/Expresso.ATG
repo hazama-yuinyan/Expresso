@@ -55,7 +55,7 @@ $namespace=Expresso
 	Parser()
 	{
         DoPostParseProcessing = false;
-        Symbols = new SymbolTable();
+        Symbols = SymbolTable.Create();
 	}
 	
 	LiteralExpression CreateDefaultValue(KnownTypeCode type)
@@ -407,7 +407,7 @@ Expresso                    		(. ExpressoAst module_decl = null;
                                     .)
 = 
   ModuleBody<out module_decl>		(.
-                                            Debug.Assert(Symbols.Parent == null);
+                                            Debug.Assert(Symbols.Parent.Name == "root");
                                             if(DoPostParseProcessing){
                                                 CSharpCompilerHelper.Prepare();
                                                 ExpressoNameBinder.BindAst(module_decl, this); //Here's the start of post-parse processing
@@ -809,7 +809,7 @@ LValueList<out SequenceExpression lhs>   (. var lvalues = new List<Expression>()
   LhsPrimary<out tmp>                    (. lvalues.Add(tmp); .)
   { WEAK ','
     LhsPrimary<out tmp>                  (. lvalues.Add(tmp); .)
-  }                                      (. lhs = Expression.MakeSequence(lvalues); .).
+  }                                      (. lhs = Expression.MakeSequenceExpression(lvalues); .).
 /*------------------------------------------------------------------------*/
 Block<out BlockStatement block>
                 (. List<Statement> stmts = new List<Statement>();
@@ -876,7 +876,7 @@ ForStmt<out Statement stmt>			(. PatternConstruct left = null; Expression rvalue
   ( ( keyword_let					(. modifiers = ExpressoModifiers.Immutable; .)
     | keyword_var
     )
-    Identifier<out ident>
+    Identifier<out ident>			(. Symbols.AddSymbol(ident.Name, ident); .)
   | LhsPattern<out left>
   )
   keyword_in
@@ -970,7 +970,7 @@ RValueList<out SequenceExpression seq>		(. Expression tmp; var exprs = new List<
   CondExpr<out tmp>							(. exprs.Add(tmp); .)
   { ','
     CondExpr<out tmp>						(. exprs.Add(tmp);	.)
-  }											(. seq = Expression.MakeSequence(exprs); .).
+  }											(. seq = Expression.MakeSequenceExpression(exprs); .).
 /*------------------------------------------------------------------------*/
 Pattern<out PatternConstruct pattern>       (. pattern = null; .)
 =
@@ -1187,11 +1187,11 @@ PowerOp<out Expression expr>   (. Expression rhs; .)
     Factor<out rhs>            (. expr = Expression.MakeBinaryExpr(OperatorType.Power, expr, rhs); .)
   ].
 /*------------------------------------------------------------------------*/
-Factor<out Expression expr> (. OperatorType type; Expression factor; expr = null; .)
+Factor<out Expression expr> (. OperatorType type; Expression factor; expr = null; var start_loc = CurrentLocation; .)
 =
   ( Primary<out expr>
   | UnaryOperator<out type>
-    Factor<out factor>        (. expr = Expression.MakeUnaryExpr(type, factor); .)
+    Factor<out factor>        (. expr = Expression.MakeUnaryExpr(type, factor, start_loc); .)
   ).
 /*------------------------------------------------------------------------*/
 UnaryOperator<out OperatorType opType>  (. opType = OperatorType.None; .)
@@ -1298,11 +1298,11 @@ PatternPowerOp<out Expression expr> (. Expression rhs; .)
     PatternFactor<out rhs>          (. expr = Expression.MakeBinaryExpr(OperatorType.Power, expr, rhs); .)
   ].
 /*------------------------------------------------------------------------*/
-PatternFactor<out Expression expr>  (. OperatorType type; Expression factor; expr = null; .)
+PatternFactor<out Expression expr>  (. OperatorType type; Expression factor; expr = null; var start_loc = CurrentLocation; .)
 =
   ( PatternPrimary<out expr>
   | UnaryOperator<out type>
-    PatternFactor<out factor>       (. expr = Expression.MakeUnaryExpr(type, factor); .)
+    PatternFactor<out factor>       (. expr = Expression.MakeUnaryExpr(type, factor, start_loc); .)
   ).
 /*------------------------------------------------------------------------*/
 PatternPrimary<out Expression expr>     (. expr = null; PathExpression path; .)
@@ -1319,15 +1319,15 @@ LhsPrimary<out Expression expr>     (. expr = null; PathExpression path; .)
   { Trailer<ref expr>
   }.
 /*------------------------------------------------------------------------*/
-NewExpression<out Expression expr>      (. AstType type_path; .)
+NewExpression<out Expression expr>      (. AstType type_path; var start_loc = CurrentLocation; .)
 =
   "new"
   Type<out type_path>
-  ObjectCreation<type_path, out expr>   (. expr = Expression.MakeNewExpr((ObjectCreationExpression)expr); .).
+  ObjectCreation<type_path, out expr>   (. expr = Expression.MakeNewExpr((ObjectCreationExpression)expr, start_loc); .).
 /*------------------------------------------------------------------------*/
 ObjectCreation<AstType typePath, out Expression expr>
                                         (.
-                                           var fields = new List<Identifier>(); var values = new List<Expression>();
+                                           var fields = new List<Identifier>(); var values = new List<Expression>(); var start_loc = CurrentLocation;
                                            Symbols.AddScope();
                                            GoDownScope();
                                         .)
@@ -1342,7 +1342,7 @@ ObjectCreation<AstType typePath, out Expression expr>
     CondExpr<out expr>                  (. values.Add(expr); .)
   }
   SYNC '}'                              (.
-                                           expr = Expression.MakeObjectCreation(typePath, fields, values);
+                                           expr = Expression.MakeObjectCreation(typePath, fields, values, start_loc, CurrentLocation);
                                            GoUpScope();
                                         .).
 /*------------------------------------------------------------------------*/
@@ -1368,7 +1368,7 @@ Atom<out Expression expr>			(. var exprs = new List<Expression>(); expr = null; 
 =
   Literal<out expr>
   | '('
-    ( ')'                           (. expr = Expression.MakeParen(Expression.MakeSequence(null)); .)
+    ( ')'                           (. expr = Expression.MakeParen(Expression.MakeSequenceExpression(null)); .)
     | CondExpr<out expr>            (. exprs.Add(expr); .)
       { IF(NotFinalComma()) WEAK ','
         CondExpr<out expr>          (. exprs.Add(expr); .)
@@ -1376,9 +1376,9 @@ Atom<out Expression expr>			(. var exprs = new List<Expression>(); expr = null; 
       [ ','                         (. seen_trailing_comma = true; .)
       ]
       ')'                           (. if(exprs.Count == 1)
-                                           expr = Expression.MakeParen(seen_trailing_comma ? Expression.MakeSequence(exprs[0]) : exprs[0]);
+                                           expr = Expression.MakeParen(seen_trailing_comma ? Expression.MakeSequenceExpression(exprs[0]) : exprs[0]);
                                        else
-                                           expr = Expression.MakeParen(Expression.MakeSequence(exprs));
+                                           expr = Expression.MakeParen(Expression.MakeSequenceExpression(exprs));
                                     .)
     )
   | '['
@@ -1479,10 +1479,10 @@ CompIf<out ComprehensionIter expr>		(. Expression tmp; ComprehensionIter body = 
   OrTest<out tmp>
   [CompIter<out body>]					(. expr = Expression.MakeCompIf(tmp, body); .).
 /*------------------------------------------------------------------------*/
-Identifier<out Identifier ident>    (. string name; AstType type = new PlaceholderType(TextLocation.Empty); .)
+Identifier<out Identifier ident>    (. string name; AstType type = new PlaceholderType(TextLocation.Empty); var start_loc = CurrentLocation;.)
 =
   ident                             (.
-                                        name = t.val; var loc = CurrentLocation; 
+                                        name = t.val;
                                         if(CheckKeyword(t.val)){
                                             ident = null;
                                             return;
@@ -1490,7 +1490,7 @@ Identifier<out Identifier ident>    (. string name; AstType type = new Placehold
                                     .)
   [ "(-"
     Type<out type>
-  ]                                 (. ident = AstNode.MakeIdentifier(name, type, loc); .).
+  ]                                 (. ident = AstNode.MakeIdentifier(name, type, start_loc, CurrentLocation); .).
 /*------------------------------------------------------------------------*/
 Literal<out Expression expr>	(. expr = null; string tmp;
                                    var start_loc = NextLocation;

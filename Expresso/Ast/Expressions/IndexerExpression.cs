@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using ICSharpCode.NRefactory;
 
 
 namespace Expresso.Ast
@@ -12,6 +13,20 @@ namespace Expresso.Ast
     /// </summary>
     public class IndexerExpression : Expression
     {
+        public override TextLocation StartLocation{
+            get{
+                var first_item = Arguments.FirstOrNullObject();
+                return first_item.IsNull ? base.StartLocation : first_item.StartLocation;
+            }
+        }
+
+        public override TextLocation EndLocation{
+            get{
+                var last_item = Arguments.LastOrNullObject();
+                return last_item.IsNull ? base.EndLocation : last_item.EndLocation;
+            }
+        }
+
         /// <summary>
         /// インデクシングを行う対象となるオブジェクトを生成する式。
         /// The expression to be evaluated and to be indexed.

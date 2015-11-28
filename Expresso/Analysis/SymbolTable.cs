@@ -61,15 +61,15 @@ namespace Expresso.Ast.Analysis
         static SymbolTable()
         {
             NativeMapping = new Dictionary<string, Identifier>();
-            var print_ident = new Identifier("Write", new FunctionType(AstNode.MakeIdentifier("print"), AstType.MakeSimpleType("void", TextLocation.Empty), new []{
+            var print_ident = AstNode.MakeIdentifier("Write", AstType.MakeFunctionType("print", AstType.MakeSimpleType("void", TextLocation.Empty), new []{
                 AstType.MakeSimpleType("string", TextLocation.Empty)
-            }), TextLocation.Empty);
+            }));
             print_ident.IdentifierId = 1000000000u;
             NativeMapping.Add("print", print_ident);
 
-            var println_ident = new Identifier("WriteLine", new FunctionType(AstNode.MakeIdentifier("println"), AstType.MakeSimpleType("void", TextLocation.Empty), new []{
+            var println_ident = AstNode.MakeIdentifier("WriteLine", AstType.MakeFunctionType("println", AstType.MakeSimpleType("void", TextLocation.Empty), new []{
                 AstType.MakeSimpleType("string", TextLocation.Empty)
-            }), TextLocation.Empty);
+            }));
             println_ident.IdentifierId = 1000000001u;
             NativeMapping.Add("println", println_ident);
         }
@@ -79,7 +79,26 @@ namespace Expresso.Ast.Analysis
             type_table = new Dictionary<string, Identifier>();
             table = new Dictionary<string, Identifier>();
             Children = new List<SymbolTable>();
-            Name = "root";
+        }
+
+        public static SymbolTable Create()
+        {
+            var table = new SymbolTable();
+            table.Name = "programRoot";
+            var table2 = new SymbolTable();
+            table2.Name = "root";
+            table.Parent = table2;
+            table2.Children.Add(table);
+
+            var vector_table = new SymbolTable();
+            vector_table.Name = "class vector`T";
+            vector_table.AddSymbol("add", AstType.MakeFunctionType("add", AstType.MakeSimpleType("tuple", TextLocation.Empty), new List<AstType>{
+                AstType.MakeParameterType("T")
+            }));
+            table2.Children.Add(vector_table);
+            table2.AddTypeSymbol("vector", AstType.MakeSimpleType("vector", new List<AstType>{AstType.MakeParameterType("T")}));
+
+            return table;
         }
 
         public static Identifier GetNativeSymbol(string name)

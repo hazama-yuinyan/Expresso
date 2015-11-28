@@ -2,11 +2,11 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Threading;
 using Expresso.Ast;
 using ICSharpCode.NRefactory;
-using NUnit.Framework;
 using ICSharpCode.NRefactory.PatternMatching;
-using System.Threading;
+using NUnit.Framework;
 
 namespace Expresso.Test
 {
@@ -32,10 +32,6 @@ namespace Expresso.Test
         public static void AstStructuralEqual(ExpressoAst target, ExpressoAst expect)
         {
             Assert.IsTrue(target.IsMatch(expect));
-            /*AstNode cur = target;
-            while(cur != null){
-                cur.Match
-            }*/
         }
 
         public static void AstStructuralEqual(Module mainModule, List<string> names, object[] expects)
@@ -151,7 +147,7 @@ namespace Expresso.Test
 
         public static ReturnStatement MakeReturnStatement(params Expression[] expressions)
         {
-            return new ReturnStatement(Expression.MakeSequence(expressions));
+            return new ReturnStatement(Expression.MakeSequenceExpression(expressions));
         }
 
         /// <summary>
@@ -162,7 +158,7 @@ namespace Expresso.Test
         /// <param name="rhs">The right hand side expressions.</param>
         public static AssignmentExpression MakeAssignment(IEnumerable<Expression> lhs, IEnumerable<Expression> rhs)
         {
-            return Expression.MakeAssignment(Expression.MakeSequence(lhs), Expression.MakeSequence(rhs));
+            return Expression.MakeAssignment(Expression.MakeSequenceExpression(lhs), Expression.MakeSequenceExpression(rhs));
         }
 
         /// <summary>
@@ -175,7 +171,7 @@ namespace Expresso.Test
         public static ExpressionStatement MakeAugmentedAssignment(OperatorType opType,
             IEnumerable<Expression> lhs, IEnumerable<Expression> rhs)
         {
-            return Statement.MakeAugmentedAssignment(opType, Expression.MakeSequence(lhs), Expression.MakeSequence(rhs));
+            return Statement.MakeAugmentedAssignment(opType, Expression.MakeSequenceExpression(lhs), Expression.MakeSequenceExpression(rhs));
         }
     }
 

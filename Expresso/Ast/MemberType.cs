@@ -17,8 +17,8 @@ namespace Expresso.Ast
 
         /// <summary>
         /// Gets or sets the target type.
+        /// The target type is the parent type.
         /// </summary>
-        /// <value>The target.</value>
         public AstType Target{
             get{return GetChildByRole(TargetRole);}
             set{SetChildByRole(TargetRole, value);}
@@ -39,6 +39,9 @@ namespace Expresso.Ast
             get{return ChildType.IdentifierNode;}
         }
 
+        /// <summary>
+        /// Gets or sets the child type.
+        /// </summary>
         public SimpleType ChildType{
             get{return GetChildByRole(ChildRole);}
             set{SetChildByRole(ChildRole, value);}

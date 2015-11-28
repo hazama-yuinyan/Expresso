@@ -176,7 +176,7 @@ namespace Expresso.Ast.Analysis
                     var symbol = checker.symbols.GetSymbolInAnyScope(ident.Name);
                     if(symbol == null){
                         parser.ReportSemanticError(
-                            "ES1000: The symbol '{0}' is not defined in the current scope {1}.",
+                            "Error ES1000: The symbol '{0}' is not defined in the current scope {1}.",
                             ident,
                             ident.Name, checker.symbols.Name
                         );
@@ -233,6 +233,7 @@ namespace Expresso.Ast.Analysis
                             target_type.Name, memRef.Member.Name
                         );
                     }else{
+                        memRef.Member.Type.ReplaceWith(symbol.Type);
                         return symbol.Type.Clone();
                     }
                 }
@@ -247,14 +248,10 @@ namespace Expresso.Ast.Analysis
             public AstType VisitPathExpression(PathExpression pathExpr)
             {
                 if(pathExpr.Items.Count == 1){
-                    var type = VisitIdentifier(pathExpr.AsIdentifier);
-                    if(pathExpr.AsIdentifier.Type is PlaceholderType)
-                        pathExpr.AsIdentifier.Type.ReplaceWith(type.Clone());
-
-                    return type;
+                    return VisitIdentifier(pathExpr.AsIdentifier);
                 }else{
                     var table = checker.symbols;
-                    AstType result = null;
+                    AstType result = AstType.Null;
                     foreach(var item in pathExpr.Items){
                         if(table.HasTypeSymbol(item.Name)){
                             var tmp_type = table.GetTypeSymbol(item.Name);
@@ -289,9 +286,9 @@ namespace Expresso.Ast.Analysis
             public AstType VisitSequenceInitializer(SequenceInitializer seqInitializer)
             {
                 // If the node given represents an empty sequence
-                // then we are giving up inferring the type
+                // then we are giving up inferring the type of the elements
                 if(seqInitializer.Items.Count == 0)
-                    return AstType.Null;
+                    return seqInitializer.ObjectType;
 
                 // The type of the elements can be seen as the most restricted type
                 // between all the elements.
@@ -439,6 +436,11 @@ namespace Expresso.Ast.Analysis
                 return funcType.ReturnType;
             }
 
+            public AstType VisitParameterType(ParameterType paramType)
+            {
+                return paramType;
+            }
+
             public AstType VisitPlaceholderType(PlaceholderType placeholderType)
             {
                 return null;
@@ -584,6 +586,12 @@ namespace Expresso.Ast.Analysis
             /// <returns>The common type between `lhs` and `rhs`.</returns>
             internal AstType FigureOutCommonType(AstType lhs, AstType rhs)
             {
+                if(lhs == AstType.Null)
+                    return rhs;
+
+                if(rhs == AstType.Null)
+                    return lhs;
+                
                 var lhs_primitive = lhs as PrimitiveType;
                 var rhs_primitive = rhs as PrimitiveType;
                 if(lhs_primitive != null && rhs_primitive != null){

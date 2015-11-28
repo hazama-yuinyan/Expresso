@@ -31,6 +31,7 @@ namespace Expresso.Ast
 		}
 
         public MemberReference(Expression targetExpr, Identifier member)
+            : base(targetExpr.StartLocation, member.EndLocation)
 		{
             Target = targetExpr;
             Member = member;

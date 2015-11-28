@@ -1,4 +1,5 @@
 ﻿using System;
+using ICSharpCode.NRefactory;
 
 
 namespace Expresso.Ast
@@ -37,7 +38,8 @@ namespace Expresso.Ast
             set{SetChildByRole(Roles.TargetExpression, value);}
 		}
 
-		public UnaryExpression(OperatorType opType, Expression target)
+        public UnaryExpression(OperatorType opType, Expression target, TextLocation loc)
+            : base(loc, target.EndLocation)
 		{
 			op = opType;
             Operand = target;

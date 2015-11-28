@@ -15,6 +15,7 @@ namespace Expresso.Ast.Analysis
     partial class TypeChecker : IAstWalker<AstType>
     {
         static PlaceholderType PlaceholderTypeNode = new PlaceholderType(TextLocation.Empty);
+        static List<AstType> TemporaryTypes = new List<AstType>();
         int scope_counter;
         Parser parser;
         SymbolTable symbols;  //keep a SymbolTable reference in a private field for convenience
@@ -56,8 +57,9 @@ namespace Expresso.Ast.Analysis
         public AstType VisitBlock(BlockStatement block)
         {
             int tmp_counter = scope_counter;
-            scope_counter = 0;
             DescendScope();
+            scope_counter = 0;
+
             foreach(var stmt in block.Statements)
                 stmt.AcceptWalker(this);
 
@@ -103,16 +105,26 @@ namespace Expresso.Ast.Analysis
         public AstType VisitForStatement(ForStatement forStmt)
         {
             int tmp_counter = scope_counter;
-            scope_counter = 0;
             DescendScope();
+            scope_counter = 0;
 
             var left_type = forStmt.Left.AcceptWalker(this);
-            if(IsPlaceholderType(left_type)){
-                var inferred_type = forStmt.Target.AcceptWalker(inference_runner);
-                left_type.ReplaceWith(inferred_type);
+            AstType target_type;
+            if(IsPlaceholderType(left_type))
+                target_type = forStmt.Target.AcceptWalker(inference_runner);
+            else
+                target_type = forStmt.Target.AcceptWalker(this);
+
+            if(!IsSequenceType(target_type)){
+                parser.ReportSemanticError("Error ES1300: `{0}` isn't a sequence type! A for statement can only be used for iterating over sequences",
+                    forStmt.Target,
+                    left_type
+                );
             }else{
-                forStmt.Target.AcceptWalker(this);
+                var elem_type = MakeOutElementType(target_type);
+                left_type.ReplaceWith(elem_type);
             }
+
             forStmt.Body.AcceptWalker(this);
 
             AscendScope();
@@ -123,17 +135,27 @@ namespace Expresso.Ast.Analysis
         public AstType VisitValueBindingForStatement(ValueBindingForStatement valueBindingForStatment)
         {
             int tmp_counter = scope_counter;
-            scope_counter = 0;
             DescendScope();
+            scope_counter = 0;
 
             // TODO: implement it in a more formal way
             var left_type = valueBindingForStatment.Variables.First().NameToken.AcceptWalker(this);
-            if(IsPlaceholderType(left_type)){
-                var inferred_type = valueBindingForStatment.Variables.First().Initializer.AcceptWalker(inference_runner);
-                left_type.ReplaceWith(inferred_type);
+            AstType target_type;
+            if(IsPlaceholderType(left_type))
+                target_type = valueBindingForStatment.Variables.First().Initializer.AcceptWalker(inference_runner);
+            else
+                target_type = valueBindingForStatment.Variables.First().Initializer.AcceptWalker(this);
+
+            if(!IsSequenceType(target_type)){
+                parser.ReportSemanticError("Error ES1300: `{0}` isn't a sequence type! A for statement can only be used for iterating over sequences",
+                    valueBindingForStatment.Variables.First().Initializer,
+                    left_type
+                );
             }else{
-                valueBindingForStatment.Variables.First().Initializer.AcceptWalker(this);
+                var elem_type = MakeOutElementType(target_type);
+                left_type.ReplaceWith(elem_type);
             }
+
             valueBindingForStatment.Body.AcceptWalker(this);
 
             AscendScope();
@@ -144,11 +166,18 @@ namespace Expresso.Ast.Analysis
         public AstType VisitIfStatement(IfStatement ifStmt)
         {
             int tmp_counter = scope_counter;
-            scope_counter = 0;
             DescendScope();
-            ifStmt.Condition.AcceptWalker(this);
+            scope_counter = 0;
+
+            var condition_type = ifStmt.Condition.AcceptWalker(this) as PrimitiveType;
+            if(condition_type == null || condition_type.KnownTypeCode != KnownTypeCode.Bool){
+                parser.ReportSemanticError("Error ES4000: The condition expression has to be of type `bool`",
+                    ifStmt.Condition
+                );
+            }
             ifStmt.TrueBlock.AcceptWalker(this);
             ifStmt.FalseBlock.AcceptWalker(this);
+
             AscendScope();
             scope_counter = tmp_counter + 1;
             return null;
@@ -163,8 +192,9 @@ namespace Expresso.Ast.Analysis
         public AstType VisitMatchStatement(MatchStatement matchStmt)
         {
             int tmp_counter = scope_counter;
-            scope_counter = 0;
             DescendScope();
+            scope_counter = 0;
+
             matchStmt.Target.AcceptWalker(this);
             foreach(var clause in matchStmt.Clauses)
                 clause.AcceptWalker(this);
@@ -177,8 +207,9 @@ namespace Expresso.Ast.Analysis
         public AstType VisitWhileStatement(WhileStatement whileStmt)
         {
             int tmp_counter = scope_counter;
-            scope_counter = 0;
             DescendScope();
+            scope_counter = 0;
+
             whileStmt.Condition.AcceptWalker(this);
             whileStmt.Body.AcceptWalker(this);
             AscendScope();
@@ -202,8 +233,27 @@ namespace Expresso.Ast.Analysis
 
         public AstType VisitAssignment(AssignmentExpression assignment)
         {
+            TemporaryTypes.Clear();
             var left_type = assignment.Left.AcceptWalker(this);
-            if(IsPlaceholderType(left_type)){
+            if(left_type == SimpleType.Null){
+                // We see the left-hand-side is a sequence expression so validate each item on both sides.
+                var left_types = TemporaryTypes;
+                TemporaryTypes.Clear();
+                assignment.Right.AcceptWalker(this);
+                // Don't validate the number of elements because we has already done that in parse phase.
+                for(int i = 0; i < left_types.Count; ++i){
+                    if(IsCompatibleWith(left_types[i], TemporaryTypes[i]) == TriBool.False){
+                        var lhs_seq = assignment.Left as SequenceExpression;
+                        var rhs_seq = assignment.Right as SequenceExpression;
+                        parser.ReportSemanticErrorRegional("Error ES1100: There is a type mismatch; left=`{0}`, right=`{1}`",
+                            lhs_seq.Items.ElementAt(i), rhs_seq.Items.ElementAt(i),
+                            left_types[i], TemporaryTypes[i]
+                        );
+                    }
+                }
+                TemporaryTypes.Clear();
+                return AstType.Null;
+            }else if(IsPlaceholderType(left_type)){
                 var inferred_type = assignment.Right.AcceptWalker(inference_runner);
                 left_type.ReplaceWith(inferred_type);
                 return inferred_type;
@@ -223,15 +273,79 @@ namespace Expresso.Ast.Analysis
         public AstType VisitBinaryExpression(BinaryExpression binaryExpr)
         {
             var lhs_type = binaryExpr.Left.AcceptWalker(this);
+            if(IsPlaceholderType(lhs_type)){
+                var inferred_type = binaryExpr.Left.AcceptWalker(inference_runner);
+                lhs_type.ReplaceWith(inferred_type);
+                lhs_type = inferred_type;
+            }
+
             var rhs_type = binaryExpr.Right.AcceptWalker(this);
+            if(IsPlaceholderType(rhs_type)){
+                var inferred_type2 = binaryExpr.Right.AcceptWalker(inference_runner);
+                rhs_type.ReplaceWith(inferred_type2);
+                rhs_type = inferred_type2;
+            }
+
             if(IsCompatibleWith(lhs_type, rhs_type) == TriBool.False){
                 parser.ReportSemanticErrorRegional(
-                    "Error ES1003: Can not apply the operator {0} on `{1}` and `{2}`.",
+                    "Error ES1003: Can not apply the operator '{0}' on `{1}` and `{2}`.",
                     binaryExpr.Left, binaryExpr.Right,
                     binaryExpr.OperatorToken, lhs_type, rhs_type
                 );
             }
-            return null;
+
+            var lhs_primitive = lhs_type as PrimitiveType;
+            var rhs_primitive = rhs_type as PrimitiveType;
+            switch(binaryExpr.Operator){
+            case OperatorType.ConditionalAnd:
+            case OperatorType.ConditionalOr:
+            case OperatorType.Equality:
+            case OperatorType.InEquality:
+            case OperatorType.LessThan:
+            case OperatorType.LessThanOrEqual:
+            case OperatorType.GreaterThan:
+            case OperatorType.GreaterThanOrEqual:
+                return AstType.MakePrimitiveType("bool", binaryExpr.StartLocation);
+
+            case OperatorType.Plus:
+            case OperatorType.Minus:
+            case OperatorType.Times:
+            case OperatorType.Divide:
+            case OperatorType.Power:
+                if(!IsNumericalType(lhs_type) || !IsNumericalType(rhs_type)){
+                    parser.ReportSemanticErrorRegional("Error ES1003: Can not apply the operator '{0}' on `{1}` and `{2}`",
+                        binaryExpr.Left, binaryExpr.Right,
+                        binaryExpr.OperatorToken, lhs_type, rhs_type
+                    );
+                    return null;
+                }
+
+                return lhs_type;
+
+            case OperatorType.BitwiseAnd:
+            case OperatorType.BitwiseOr:
+            case OperatorType.BitwiseShiftLeft:
+            case OperatorType.BitwiseShiftRight:
+            case OperatorType.ExclusiveOr:
+                if(lhs_primitive.KnownTypeCode == KnownTypeCode.Float || lhs_primitive.KnownTypeCode == KnownTypeCode.Double){
+                    parser.ReportSemanticError("Error ES1010: Can not apply the operator '{0}' on the left-hand-side '{1}'",
+                        binaryExpr.Left,
+                        binaryExpr.OperatorToken, binaryExpr.Left
+                    );
+                    return null;
+                }else if(rhs_primitive.KnownTypeCode == KnownTypeCode.Float || rhs_primitive.KnownTypeCode == KnownTypeCode.Double){
+                    parser.ReportSemanticError("Error ES1010: Can not apply the operator '{0}' on the right-hand-side '{1}'",
+                        binaryExpr.Right,
+                        binaryExpr.OperatorToken, binaryExpr.Right
+                    );
+                    return null;
+                }else{
+                    return lhs_type;
+                }
+
+            default:
+                throw new ArgumentException("Unknown operator found!");
+            }
         }
 
         public AstType VisitCallExpression(CallExpression callExpr)
@@ -335,18 +449,18 @@ namespace Expresso.Ast.Analysis
         public AstType VisitMemberReference(MemberReference memRef)
         {
             var type = memRef.Target.AcceptWalker(this);
-            if(IsPlaceholderType(type))
+            if(IsPlaceholderType(type)){
+                var inferred = memRef.Target.AcceptWalker(inference_runner);
+                type.ReplaceWith(inferred);
                 inference_runner.VisitMemberReference(memRef);
+                type = inferred;
+            }
 
             var type_table = symbols.GetTypeTable(type.Name);
             if(type_table != null){
                 var symbol = type_table.GetSymbol(memRef.Member.Name);
                 if(symbol == null){
-                    parser.ReportSemanticError(
-                        "Error ES2000: Type `{0}` doesn't have a field named {1}.",
-                        memRef,
-                        type.Name, memRef.Member.Name
-                    );
+                    // Don't report field missing error because InferenceRunner has already done that
                 }else{
                     // Bind the name of the member here
                     memRef.Member.IdentifierId = symbol.IdentifierId;
@@ -354,7 +468,7 @@ namespace Expresso.Ast.Analysis
                 }
             }
 
-            return null;
+            return AstType.Null;
         }
 
         public AstType VisitNewExpression(NewExpression newExpr)
@@ -404,7 +518,7 @@ namespace Expresso.Ast.Analysis
                 var key = type_table.GetSymbol(key_path.AsIdentifier.Name);
                 if(key == null){
                     parser.ReportSemanticError(
-                        "Type `{0}` doesn't have a field {1}.",
+                        "Type `{0}` doesn't have a field '{1}'.",
                         key_value.KeyExpression,
                         creation.TypePath, key_path.AsIdentifier.Name
                     );
@@ -442,7 +556,7 @@ namespace Expresso.Ast.Analysis
 
         public AstType VisitMatchClause(MatchPatternClause matchClause)
         {
-            AstType result = null;
+            AstType result = AstType.Null;
             foreach(var pattern in matchClause.Patterns){
                 var tmp = pattern.AcceptWalker(this);
                 result = inference_runner.FigureOutCommonType(result, tmp);
@@ -452,14 +566,11 @@ namespace Expresso.Ast.Analysis
 
         public AstType VisitSequence(SequenceExpression seqExpr)
         {
-            AstType type = null;
-            foreach(var item in seqExpr.Items){
-                if(type == null)
-                    type = item.AcceptWalker(this);
-                else
-                    item.AcceptWalker(this);
-            }
-            return type;
+            TemporaryTypes.Clear();
+            foreach(var item in seqExpr.Items)
+                TemporaryTypes.Add(item.AcceptWalker(this));
+
+            return SimpleType.Null;
         }
 
         public AstType VisitUnaryExpression(UnaryExpression unaryExpr)
@@ -486,7 +597,7 @@ namespace Expresso.Ast.Analysis
                     var primitive_type = tmp as PrimitiveType;
                     if(primitive_type == null || tmp.IsNull || primitive_type.KnownTypeCode == KnownTypeCode.Char){
                         parser.ReportSemanticError(
-                            "Can not apply the operator {0} on type `{1}`.",
+                            "Can not apply the operator '{0}' on type `{1}`.",
                             unaryExpr,
                             unaryExpr.OperatorToken, tmp.Name
                         );
@@ -560,6 +671,11 @@ namespace Expresso.Ast.Analysis
             return funcType.ReturnType;
         }
 
+        public AstType VisitParameterType(ParameterType paramType)
+        {
+            return null;
+        }
+
         public AstType VisitPlaceholderType(PlaceholderType placeholderType)
         {
             return AstType.Null;
@@ -609,8 +725,9 @@ namespace Expresso.Ast.Analysis
             if(IsPlaceholderType(funcDecl.ReturnType)){
                 // Descend scopes 2 times because a function name has its own scope
                 int tmp_counter2 = scope_counter;
-                scope_counter = 0;
                 DescendScope();
+                scope_counter = 0;
+
                 var return_type = inference_runner.VisitFunctionDeclaration(funcDecl);
                 funcDecl.ReturnType.ReplaceWith(return_type);
                 AscendScope();
@@ -735,22 +852,25 @@ namespace Expresso.Ast.Analysis
 
         public AstType VisitCollectionPattern(CollectionPattern collectionPattern)
         {
-            return null;
+            return collectionPattern.CollectionType;
         }
 
         public AstType VisitDestructuringPattern(DestructuringPattern destructuringPattern)
         {
-            return null;
+            return destructuringPattern.TypePath;
         }
 
         public AstType VisitTuplePattern(TuplePattern tuplePattern)
         {
-            return null;
+            var types = 
+                from p in tuplePattern.Patterns
+                select p.AcceptWalker(this);
+            return AstType.MakeSimpleType("tuple", types, tuplePattern.StartLocation, tuplePattern.EndLocation);
         }
 
         public AstType VisitExpressionPattern(ExpressionPattern exprPattern)
         {
-            return null;
+            return exprPattern.Expression.AcceptWalker(this);
         }
 
         public AstType VisitNullNode(AstNode nullNode)
@@ -807,35 +927,45 @@ namespace Expresso.Ast.Analysis
                 throw new ArgumentNullException("first");
             if(second == null)
                 throw new ArgumentNullException("second");
-            
-            if(first != AstType.Null && second != AstType.Null && IsNumberType(first) && IsNumberType(second)){
-                if(first.Name == "float" && second.Name == "float")
+
+            var primitive1 = first as PrimitiveType;
+            var primitive2 = second as PrimitiveType;
+            if(primitive1 != null && primitive2 != null){
+                if(IsNumericalType(first) && IsNumericalType(second)){
+                    if(primitive1.KnownTypeCode == KnownTypeCode.Int && primitive2.KnownTypeCode == KnownTypeCode.UInt){
+                        return TriBool.Intermmediate;
+                    }else if(primitive1.KnownTypeCode == KnownTypeCode.Float && primitive2.KnownTypeCode == KnownTypeCode.Float){
+                        return TriBool.True;
+                    }else if(primitive1.KnownTypeCode == KnownTypeCode.Double && (primitive2.KnownTypeCode == KnownTypeCode.Float || primitive2.KnownTypeCode == KnownTypeCode.Double)){
+                        return TriBool.True;
+                    }else if((int)primitive1.KnownTypeCode >= (int)primitive2.KnownTypeCode && (int)primitive1.KnownTypeCode >= (int)KnownTypeCode.Byte
+                        && (int)primitive1.KnownTypeCode <= (int)KnownTypeCode.BigInteger){
+                        return TriBool.True;
+                    }else{
+                        return TriBool.False;
+                    }
+                }else if(first != AstType.Null && second != AstType.Null && primitive1.KnownTypeCode == primitive2.KnownTypeCode){
                     return TriBool.True;
-                else if(first.Name == "double" && (second.Name == "float" || second.Name == "double"))
-                    return TriBool.True;
-                else if(first.Name == "byte" && second.Name == "byte")
-                    return TriBool.True;
-                else if(first.Name == "int" && second.Name == "uint")
-                    return TriBool.Intermmediate;
-                else if(first.Name == "uint" && (second.Name == "int" || second.Name == "byte"))
-                    return TriBool.True;
-                else if(first.Name == "int" && second.Name == "byte")
-                    return TriBool.True;
-                else if(first.Name == "bigint" && (second.Name == "int" || second.Name == "uint" || second.Name == "byte"))
-                    return TriBool.True;
-                else
+                }else{
                     return TriBool.False;
-            }else{
-                return TriBool.False;
+                }
             }
+
+            var simple1 = first as SimpleType;
+            var simple2 = second as SimpleType;
+            if(simple1 != null && simple2 != null){
+                
+            }
+
+            return TriBool.False;
         }
 
         /// <summary>
-        /// Determines if is number type the specified type.
+        /// Determines if `type` is number type the specified type.
         /// </summary>
         /// <returns><c>true</c> if is number type the specified type; otherwise, <c>false</c>.</returns>
         /// <param name="type">Type.</param>
-        static bool IsNumberType(AstType type)
+        static bool IsNumericalType(AstType type)
         {
             return type.Name == "int" || type.Name == "uint" || type.Name == "float" || type.Name == "double" || type.Name == "bigint" || type.Name == "byte";
         }
@@ -852,6 +982,32 @@ namespace Expresso.Ast.Analysis
                 return simple.Identifier == "array" || simple.Identifier == "vector" || simple.Identifier == "dictionary" || simple.Identifier == "tuple";
             else
                 return false;
+        }
+
+        static bool IsSequenceType(AstType type)
+        {
+            var primitive = type as PrimitiveType;
+            if(primitive.KnownTypeCode == KnownTypeCode.IntSeq)
+                return true;
+            else
+                return IsContainerType(type);
+        }
+
+        static AstType MakeOutElementType(AstType type)
+        {
+            var primitive = type as PrimitiveType;
+            if(primitive != null && primitive.KnownTypeCode == KnownTypeCode.IntSeq)
+                return AstType.MakePrimitiveType("int");
+
+            var simple = type as SimpleType;
+            if(simple != null){
+                if(simple.TypeArguments.Count == 1)
+                    return simple.TypeArguments.FirstOrNullObject();
+                else
+                    return AstType.MakeSimpleType("tuple", simple.TypeArguments);
+            }
+
+            return AstType.Null;
         }
 
         void BindTypeName(Identifier ident)

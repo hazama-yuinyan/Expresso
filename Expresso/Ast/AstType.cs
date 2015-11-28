@@ -247,48 +247,60 @@ namespace Expresso.Ast
         }
 
         #region Factory methods
-        public static PrimitiveType MakePrimitiveType(string name, TextLocation loc)
+        public static PrimitiveType MakePrimitiveType(string name, TextLocation loc = default(TextLocation))
         {
             return new PrimitiveType(name, loc);
         }
 
-        public static SimpleType MakeSimpleType(string name, TextLocation loc)
+        public static SimpleType MakeSimpleType(string name, TextLocation loc = default(TextLocation))
         {
             return new SimpleType(name, loc);
         }
 
-        public static SimpleType MakeSimpleType(Identifier identifier, TextLocation loc)
+        public static SimpleType MakeSimpleType(Identifier identifier, TextLocation loc = default(TextLocation))
         {
             return new SimpleType(identifier, loc);
         }
 
         public static SimpleType MakeSimpleType(string name, IEnumerable<AstType> typeArgs,
-            TextLocation startLoc, TextLocation endLoc)
+            TextLocation start = default(TextLocation), TextLocation end = default(TextLocation))
         {
-            return new SimpleType(name, typeArgs, startLoc, endLoc);
+            return new SimpleType(name, typeArgs, start, end);
         }
 
-        public static ReferenceType MakeReferenceType(AstType baseType, TextLocation startLoc)
+        public static ReferenceType MakeReferenceType(AstType baseType, TextLocation start = default(TextLocation))
         {
-            return new ReferenceType(baseType, startLoc);
+            return new ReferenceType(baseType, start);
         }
 
         public static MemberType MakeMemberType(AstType superType, SimpleType childType,
-            TextLocation endLoc)
+            TextLocation end = default(TextLocation))
         {
-            return new MemberType(superType, childType, endLoc);
+            return new MemberType(superType, childType, end);
         }
 
-        public static FunctionType MakeFunctionType(string name, AstType returnType,
-            IEnumerable<AstType> parameters)
+        public static FunctionType MakeFunctionType(string name, AstType returnType, IEnumerable<AstType> parameters,
+            TextLocation start = default(TextLocation), TextLocation end = default(TextLocation))
         {
-            return new FunctionType(AstNode.MakeIdentifier(name), returnType, parameters);
+            return new FunctionType(AstNode.MakeIdentifier(name, start), returnType, parameters, start, end);
         }
 
-        public static FunctionType MakeFunctionType(string name, AstType returnType,
+        public static FunctionType MakeFunctionType(string name, AstType returnType, TextLocation start, TextLocation end,
             params AstType[] parameters)
         {
-            return new FunctionType(AstNode.MakeIdentifier(name), returnType, parameters);
+            return new FunctionType(AstNode.MakeIdentifier(name, start), returnType, parameters, start, end);
+        }
+
+        public static ParameterType MakeParameterType(string name, TextLocation loc = default(TextLocation))
+        {
+            return new ParameterType(
+                AstNode.MakeIdentifier(name, new PlaceholderType(TextLocation.Empty), loc, new TextLocation(loc.Line, loc.Column + name.Length))
+            );
+        }
+
+        public static ParameterType MakeParameterType(Identifier identifier)
+        {
+            return new ParameterType(identifier);
         }
         #endregion
     }
