@@ -79,8 +79,7 @@ namespace Expresso.Runtime.Builtins
         public struct Enumerator : IEnumerator<int>, IEnumerator
 		{
 			ExpressoIntegerSequence seq;
-			int next;
-			int current;
+			int current, next;
 			
             object IEnumerator.Current{
                 get{
@@ -120,7 +119,7 @@ namespace Expresso.Runtime.Builtins
 				if(this.next == int.MinValue)
 					return false;
 				
-				if(this.seq.upper == int.MinValue || this.next + this.seq.step < this.seq.upper){
+                if(this.seq.upper == int.MinValue || Math.Abs(this.next + this.seq.step) < Math.Abs(this.seq.upper)){
 					this.next += this.seq.step;
 					return true;
 				}
@@ -146,8 +145,8 @@ namespace Expresso.Runtime.Builtins
         [ExpressoFunction("includes")]
 		public bool Includes(int n)
 		{
-			var remaining = n % this.step;
-			return remaining - this.lower == 0;
+			var remaining = n % step;
+            return lower <= n && n < upper && remaining - lower == 0;
 		}
 		
 		/// <summary>

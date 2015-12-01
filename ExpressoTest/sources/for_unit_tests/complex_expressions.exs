@@ -19,6 +19,9 @@ def main()
 	var a (- int, b (- int, c (- int;
 	a = b = c = 0;
     a, b, c = 1, 2, 3;
+    let vec = [...];
+    let t = (a, b, c);
+    vec.add((a, b));
 
 	return [x, y, z, specific_triangles, a, b, c];
 }

@@ -1948,23 +1948,23 @@ string cur_class_name;
 	}
 
 	void Trailer(ref Expression expr) {
-		var args = new List<Expression>(); 
+		var args = new List<Expression>(); var start_loc = CurrentLocation; 
 		if (la.kind == 8) {
 			Get();
 			if (StartOf(13)) {
 				ArgList(out args);
 			}
 			Expect(10);
-			expr = Expression.MakeCallExpr(expr, args); 
+			expr = Expression.MakeCallExpr(expr, args, CurrentLocation); 
 		} else if (la.kind == 9) {
 			Get();
 			ArgList(out args);
 			Expect(3);
-			expr = Expression.MakeIndexer(expr, args); 
+			expr = Expression.MakeIndexer(expr, args, CurrentLocation); 
 		} else if (la.kind == 13) {
 			Get();
 			Expect(14);
-			expr = Expression.MakeMemRef(expr, AstNode.MakeIdentifier(t.val, CurrentLocation)); 
+			expr = Expression.MakeMemRef(expr, AstNode.MakeIdentifier(t.val, new PlaceholderType(TextLocation.Empty), start_loc, CurrentLocation)); 
 		} else SynErr(151);
 	}
 

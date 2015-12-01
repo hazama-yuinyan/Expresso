@@ -173,6 +173,16 @@ namespace Expresso.Test
         {
             return Statement.MakeAugmentedAssignment(opType, Expression.MakeSequenceExpression(lhs), Expression.MakeSequenceExpression(rhs));
         }
+
+        public static CallExpression MakeCallExpression(Expression target, params Expression[] args)
+        {
+            return Expression.MakeCallExpr(target, args);
+        }
+
+        public static IndexerExpression MakeIndexerExpression(Expression target, params Expression[] args)
+        {
+            return Expression.MakeIndexer(target, args);
+        }
     }
 
     internal class FunctionAnnotation

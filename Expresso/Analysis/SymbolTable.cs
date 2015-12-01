@@ -95,6 +95,7 @@ namespace Expresso.Ast.Analysis
             vector_table.AddSymbol("add", AstType.MakeFunctionType("add", AstType.MakeSimpleType("tuple", TextLocation.Empty), new List<AstType>{
                 AstType.MakeParameterType("T")
             }));
+            vector_table.GetSymbol("add").IdentifierId = 1000000002u;
             table2.Children.Add(vector_table);
             table2.AddTypeSymbol("vector", AstType.MakeSimpleType("vector", new List<AstType>{AstType.MakeParameterType("T")}));
 

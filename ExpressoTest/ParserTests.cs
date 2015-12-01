@@ -262,7 +262,7 @@ namespace Expresso.Test
                             Helpers.MakeSeq(Expression.MakeIntSeq(Expression.MakeConstant("int", 0), Expression.MakeUnaryExpr(OperatorType.Minus, Expression.MakeConstant("int", 10)), Expression.MakeUnaryExpr(OperatorType.Minus, Expression.MakeConstant("int", 1)), true)),
                             Modifiers.Immutable
                         ),
-                        Statement.MakeExprStmt(Expression.MakeCallExpr(
+                        Statement.MakeExprStmt(Helpers.MakeCallExpression(
                             Helpers.MakeIdentifierPath("println"),
                             Helpers.MakeIdentifierPath("a"),
                             Helpers.MakeIdentifierPath("h_a"),
@@ -420,7 +420,7 @@ namespace Expresso.Test
                             Expression.MakeSequenceExpression(Helpers.MakeIdentifierPath("xpower")),
                             Expression.MakeSequenceExpression(Expression.MakeConstant("int", 2))
                         ),
-                        Statement.MakeExprStmt(Expression.MakeCallExpr(
+                        Statement.MakeExprStmt(Helpers.MakeCallExpression(
                             Helpers.MakeIdentifierPath("println"),
                             Helpers.MakeIdentifierPath("x"),
                             Helpers.MakeIdentifierPath("a"),
@@ -569,7 +569,7 @@ namespace Expresso.Test
                         ),
                         Statement.MakeVarDecl(
                             Helpers.MakeSeq(Helpers.MakeSomeIdent("l")),
-                            Helpers.MakeSeq(Expression.MakeCallExpr(
+                            Helpers.MakeSeq(Helpers.MakeCallExpression(
                                 Helpers.MakeIdentifierPath("createTest"),
                                 Expression.MakeConstant("int", 1),
                                 Expression.MakeConstant("int", 2),
@@ -579,14 +579,14 @@ namespace Expresso.Test
                         ),
                         Statement.MakeVarDecl(
                             Helpers.MakeSeq(Helpers.MakeSomeIdent("m")),
-                            Helpers.MakeSeq(Expression.MakeIndexer(Helpers.MakeIdentifierPath("ary"),
+                            Helpers.MakeSeq(Helpers.MakeIndexerExpression(Helpers.MakeIdentifierPath("ary"),
                                 Expression.MakeConstant("int", 0)
                             )),
                             Modifiers.Immutable
                         ),
                         Statement.MakeVarDecl(
                             Helpers.MakeSeq(Helpers.MakeSomeIdent("m2")),
-                            Helpers.MakeSeq(Expression.MakeIndexer(Helpers.MakeIdentifierPath("d"),
+                            Helpers.MakeSeq(Helpers.MakeIndexerExpression(Helpers.MakeIdentifierPath("d"),
                                 Expression.MakeConstant("string", "a")
                             )),
                             Modifiers.Immutable
@@ -617,11 +617,11 @@ namespace Expresso.Test
                         Statement.MakeVarDecl(
                             Helpers.MakeSeq(Helpers.MakeSomeIdent("p")),
                             Helpers.MakeSeq(Expression.MakeBinaryExpr(OperatorType.Plus,
-                                Expression.MakeIndexer(Helpers.MakeIdentifierPath("ary"),
+                                Helpers.MakeIndexerExpression(Helpers.MakeIdentifierPath("ary"),
                                     Expression.MakeConstant("int", 0)
                                 ),
                                 Expression.MakeBinaryExpr(OperatorType.Plus,
-                                    Expression.MakeIndexer(Helpers.MakeIdentifierPath("ary"),
+                                    Helpers.MakeIndexerExpression(Helpers.MakeIdentifierPath("ary"),
                                         Expression.MakeConstant("int", 1)
                                     ),
                                     Expression.MakeIndexer(Expression.MakePath(Helpers.MakeSeq(Helpers.MakeSomeIdent("ary"))),
@@ -634,14 +634,14 @@ namespace Expresso.Test
                         Statement.MakeVarDecl(
                             Helpers.MakeSeq(Helpers.MakeSomeIdent("q")),
                             Helpers.MakeSeq(Expression.MakeBinaryExpr(OperatorType.Plus,
-                                Expression.MakeIndexer(Helpers.MakeIdentifierPath("d"),
+                                Helpers.MakeIndexerExpression(Helpers.MakeIdentifierPath("d"),
                                     Expression.MakeConstant("string", "a")
                                 ),
                                 Expression.MakeBinaryExpr(OperatorType.Plus,
-                                    Expression.MakeIndexer(Helpers.MakeIdentifierPath("d"),
+                                    Helpers.MakeIndexerExpression(Helpers.MakeIdentifierPath("d"),
                                         Expression.MakeConstant("string", "b")
                                     ),
-                                    Expression.MakeIndexer(Helpers.MakeIdentifierPath("d"),
+                                    Helpers.MakeIndexerExpression(Helpers.MakeIdentifierPath("d"),
                                         Expression.MakeConstant("string", "何か")
                                     )
                                 ))
@@ -691,11 +691,11 @@ namespace Expresso.Test
                         Statement.MakeVarDecl(
                             Helpers.MakeSeq(Helpers.MakeSomeIdent("y")),
                             Helpers.MakeSeq(Expression.MakeBinaryExpr(OperatorType.Plus,
-                                Expression.MakeIndexer(Helpers.MakeIdentifierPath("ary"),
+                                Helpers.MakeIndexerExpression(Helpers.MakeIdentifierPath("ary"),
                                     Expression.MakeConstant("int", 0)
                                 ),
                                 Expression.MakeBinaryExpr(OperatorType.Plus,
-                                    Expression.MakeIndexer(Helpers.MakeIdentifierPath("ary"),
+                                    Helpers.MakeIndexerExpression(Helpers.MakeIdentifierPath("ary"),
                                         Expression.MakeConstant("int", 1)
                                     ),
                                     Expression.MakeIndexer(Expression.MakePath(Helpers.MakeSeq(Helpers.MakeSomeIdent("d"))),
@@ -724,9 +724,9 @@ namespace Expresso.Test
         }
 
         [Test]
-        public void Statements()
+        public void BasicStatements()
         {
-            var parser = new Parser(new Scanner("../../sources/for_unit_tests/statements.exs"));
+            var parser = new Parser(new Scanner("../../sources/for_unit_tests/basic_statements.exs"));
             parser.Parse();
 
             var ast = parser.TopmostAst;
@@ -757,7 +757,7 @@ namespace Expresso.Test
                         ),
                         Statement.MakeExprStmt(
                             Expression.MakeSequenceExpression(
-                                Expression.MakeCallExpr(
+                                Helpers.MakeCallExpression(
                                     Helpers.MakeIdentifierPath("print"),
                                     Helpers.MakeIdentifierPath("x"),
                                     Helpers.MakeIdentifierPath("y"),
@@ -805,7 +805,7 @@ namespace Expresso.Test
                                     ),
                                     Statement.MakeExprStmt(
                                         Expression.MakeSequenceExpression(
-                                            Expression.MakeCallExpr(
+                                            Helpers.MakeCallExpression(
                                                 Helpers.MakeIdentifierPath("println"),
                                                 Helpers.MakeIdentifierPath("p"),
                                                 Helpers.MakeIdentifierPath("sum")
@@ -822,49 +822,6 @@ namespace Expresso.Test
                                     Expression.MakeConstant("int", 1),
                                     false
                                 )
-                            )
-                        ),
-                        Statement.MakeVarDecl(
-                            Helpers.MakeSeq(Helpers.MakeSomeIdent("tmp")),
-                            Helpers.MakeSeq(Expression.MakeConstant("string", "akarichan")),
-                            Modifiers.Immutable
-                        ),
-                        Statement.MakeMatchStmt(Helpers.MakeIdentifierPath("tmp"),
-                            Statement.MakeMatchClause(null,
-                                Statement.MakeExprStmt(Expression.MakeSequenceExpression(
-                                    Expression.MakeCallExpr(
-                                        Helpers.MakeIdentifierPath("print"),
-                                        Expression.MakeConstant("string", "kawakawa")
-                                    ))
-                                ),
-                                PatternConstruct.MakeExpressionPattern(Expression.MakeConstant("string", "akarichan"))
-                            ),
-                            Statement.MakeMatchClause(null,
-                                Statement.MakeExprStmt(Expression.MakeSequenceExpression(
-                                    Expression.MakeCallExpr(
-                                        Helpers.MakeIdentifierPath("print"),
-                                        Expression.MakeConstant("string", "ankokuthunder!")
-                                    ))
-                                ),
-                                PatternConstruct.MakeExpressionPattern(Expression.MakeConstant("string", "chinatsu"))
-                            ),
-                            Statement.MakeMatchClause(null,
-                                Statement.MakeExprStmt(Expression.MakeSequenceExpression(
-                                    Expression.MakeCallExpr(
-                                        Helpers.MakeIdentifierPath("print"),
-                                        Expression.MakeConstant("string", "gaichiban!")
-                                    ))
-                                ),
-                                PatternConstruct.MakeExpressionPattern(Expression.MakeConstant("string", "kyoko"))
-                            ),
-                            Statement.MakeMatchClause(null,
-                                Statement.MakeExprStmt(Expression.MakeSequenceExpression(
-                                    Expression.MakeCallExpr(
-                                        Helpers.MakeIdentifierPath("print"),
-                                        Expression.MakeConstant("string", "doyaxtu!")
-                                    ))
-                                ),
-                                PatternConstruct.MakeExpressionPattern(Expression.MakeConstant("string", "yui"))
                             )
                         ),
                         Statement.MakeVarDecl(
@@ -888,10 +845,10 @@ namespace Expresso.Test
                             Statement.MakeBlock(
                                 Statement.MakeExprStmt(
                                     Expression.MakeSequenceExpression(
-                                        Expression.MakeCallExpr(
+                                        Helpers.MakeCallExpression(
                                             Expression.MakeMemRef(
                                                 Helpers.MakeIdentifierPath("fibs"),
-                                                AstNode.MakeIdentifier("add")
+                                                Helpers.MakeSomeIdent("add")
                                             ),
                                             Helpers.MakeIdentifierPath("b")
                                         )
@@ -957,15 +914,19 @@ namespace Expresso.Test
                                             ),
                                             null
                                         ),
-                                        Statement.MakeExprStmt(Expression.MakeCallExpr(
+                                        Statement.MakeExprStmt(Helpers.MakeCallExpression(
                                             Expression.MakeMemRef(
                                                 Helpers.MakeIdentifierPath("vec"),
-                                                AstNode.MakeIdentifier("add")
+                                                Helpers.MakeSomeIdent("add")
                                             ),
-                                            Expression.MakeParen(Expression.MakeSequenceExpression(
-                                                Helpers.MakeIdentifierPath("i"),
-                                                Helpers.MakeIdentifierPath("j")
-                                            ))
+                                            Helpers.MakeIdentifierPath("i")
+                                        )),
+                                        Statement.MakeExprStmt(Helpers.MakeCallExpression(
+                                            Expression.MakeMemRef(
+                                                Helpers.MakeIdentifierPath("vec"),
+                                                Helpers.MakeSomeIdent("add")
+                                            ),
+                                            Helpers.MakeIdentifierPath("j")
                                         ))
                                     ),
                                     AstNode.MakeVariableInitializer(
@@ -997,14 +958,11 @@ namespace Expresso.Test
                             )
                         ),
                         Statement.MakeExprStmt(Expression.MakeSequenceExpression(
-                            Expression.MakeCallExpr(Helpers.MakeIdentifierPath("println"),
-                                Helpers.MakeIdentifierPath("x"),
-                                Helpers.MakeIdentifierPath("y"),
-                                Helpers.MakeIdentifierPath("z"),
-                                Helpers.MakeIdentifierPath("w"),
+                            Helpers.MakeCallExpression(Helpers.MakeIdentifierPath("println"),
                                 Helpers.MakeIdentifierPath("flag"),
                                 Helpers.MakeIdentifierPath("sum"),
-                                Helpers.MakeIdentifierPath("tmp"),
+                                Helpers.MakeIdentifierPath("a"),
+                                Helpers.MakeIdentifierPath("b"),
                                 Helpers.MakeIdentifierPath("fibs"),
                                 Helpers.MakeIdentifierPath("vec")
                             )
@@ -1017,6 +975,74 @@ namespace Expresso.Test
 
             Assert.IsNotNull(ast);
             Helpers.AstStructuralEqual(ast, expected_ast);
+        }
+
+        [Test]
+        public void MatchStatements()
+        {
+            var parser = new Parser(new Scanner("../../sources/for_unit_tests/match_statements.exs"));
+            parser.Parse();
+
+            var ast = parser.TopmostAst;
+
+            var expected = AstNode.MakeModuleDef("main", new List<EntityDeclaration>{
+                EntityDeclaration.MakeFunc("main",
+                    Enumerable.Empty<ParameterDeclaration>(),
+                    Statement.MakeBlock(new List<Statement>{
+                        Statement.MakeVarDecl(
+                            Helpers.MakeSeq(Helpers.MakeSomeIdent("tmp")),
+                            Helpers.MakeSeq(Expression.MakeConstant("string", "akarichan")),
+                            Modifiers.Immutable
+                        ),
+                        Statement.MakeMatchStmt(Helpers.MakeIdentifierPath("tmp"),
+                            Statement.MakeMatchClause(null,
+                                Statement.MakeExprStmt(Expression.MakeSequenceExpression(
+                                    Helpers.MakeCallExpression(
+                                        Helpers.MakeIdentifierPath("print"),
+                                        Expression.MakeConstant("string", "kawakawa")
+                                    ))
+                                ),
+                                PatternConstruct.MakeExpressionPattern(Expression.MakeConstant("string", "akarichan"))
+                            ),
+                            Statement.MakeMatchClause(Expression.MakeBinaryExpr(OperatorType.Equality,
+                                Expression.MakeMemRef(Helpers.MakeIdentifierPath("tmp"), AstNode.MakeIdentifier("Length")),
+                                Expression.MakeConstant("int", 8)),
+                                Statement.MakeExprStmt(Expression.MakeSequenceExpression(
+                                    Helpers.MakeCallExpression(
+                                        Helpers.MakeIdentifierPath("print"),
+                                        Expression.MakeConstant("string", "ankokuthunder!")
+                                    ))
+                                ),
+                                PatternConstruct.MakeExpressionPattern(Expression.MakeConstant("string", "chinatsu"))
+                            ),
+                            Statement.MakeMatchClause(null,
+                                Statement.MakeExprStmt(Expression.MakeSequenceExpression(
+                                    Helpers.MakeCallExpression(
+                                        Helpers.MakeIdentifierPath("print"),
+                                        Expression.MakeConstant("string", "gaichiban!")
+                                    ))
+                                ),
+                                PatternConstruct.MakeExpressionPattern(Expression.MakeConstant("string", "kyoko"))
+                            ),
+                            Statement.MakeMatchClause(null,
+                                Statement.MakeExprStmt(Expression.MakeSequenceExpression(
+                                    Helpers.MakeCallExpression(
+                                        Helpers.MakeIdentifierPath("print"),
+                                        Expression.MakeConstant("string", "doyaxtu!")
+                                    ))
+                                ),
+                                PatternConstruct.MakeExpressionPattern(Expression.MakeConstant("string", "yui"))
+                            )
+                        )
+                    }),
+                    Helpers.MakePlaceholderType(),
+                    Modifiers.None
+                )
+            });
+
+            Assert.IsNotNull(ast);
+
+            Helpers.AstStructuralEqual(ast, expected);
         }
 
         [Test]
@@ -1090,6 +1116,39 @@ namespace Expresso.Test
                             Helpers.MakeIdentifierPath("c")
                         }))
                     }), Helpers.MakePlaceholderType(), Modifiers.None
+                )
+            });
+
+            Assert.IsNotNull(ast);
+
+            Helpers.AstStructuralEqual(ast, expected);
+        }
+
+        [Test]
+        public void ComplexExpressions()
+        {
+            var parser = new Parser(new Scanner("../../sources/for_unit_tests/complex_expressions.exs"));
+            parser.Parse();
+
+            var ast = parser.TopmostAst;
+
+            var expected = AstNode.MakeModuleDef("main", new List<EntityDeclaration>{
+                EntityDeclaration.MakeFunc("main",
+                    Enumerable.Empty<ParameterDeclaration>(),
+                    Statement.MakeBlock(new List<Statement>{
+                        Statement.MakeExprStmt(Helpers.MakeCallExpression(
+                            Expression.MakeMemRef(
+                                Helpers.MakeIdentifierPath("vec"),
+                                Helpers.MakeSomeIdent("add")
+                            ),
+                            Expression.MakeParen(Expression.MakeSequenceExpression(
+                                Helpers.MakeIdentifierPath("i"),
+                                Helpers.MakeIdentifierPath("j")
+                            ))
+                        ))
+                    }),
+                    Helpers.MakePlaceholderType(),
+                    Modifiers.None
                 )
             });
 

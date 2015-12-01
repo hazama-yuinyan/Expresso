@@ -306,6 +306,7 @@ namespace Expresso.Ast.Analysis
         public void VisitMatchClause(MatchPatternClause matchClause)
         {
             matchClause.Patterns.AcceptWalker(this);
+            matchClause.Guard.AcceptWalker(this);
             matchClause.Body.AcceptWalker(this);
         }
 
@@ -489,13 +490,15 @@ namespace Expresso.Ast.Analysis
             UniqueIdGenerator.DefineNewId(typeDecl.NameToken);
 
             int tmp_counter = scope_counter;
-            scope_counter = 0;
             DecendScope();
+            scope_counter = 0;
+
             // Add self symbol to the scope of the class
             var self_ident = AstNode.MakeIdentifier("self");
             symbol_table.AddSymbol("self", self_ident);
             UniqueIdGenerator.DefineNewId(self_ident);
             typeDecl.Members.AcceptWalker(this);
+
             AscendScope();
             scope_counter = tmp_counter + 1;
         }

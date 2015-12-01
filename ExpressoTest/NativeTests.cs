@@ -1,5 +1,8 @@
 ﻿using System;
 using NUnit.Framework;
+using Expresso.Runtime.Builtins;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Expresso.Test
 {
@@ -56,6 +59,42 @@ namespace Expresso.Test
             Assert.IsTrue(e.Numerator == 5 && e.Denominator == 2);
 
             Helpers.DoTest(targets, expected);*/
+        }
+
+        [Test]
+        public void IntegerSequence()
+        {
+            ExpressoIntegerSequence seq1 = new ExpressoIntegerSequence(0, 10, 1, false), seq2 = new ExpressoIntegerSequence(0, -10, -1, false), seq3 = new ExpressoIntegerSequence(0, 100, 2, true);
+            var seq4 = new ExpressoIntegerSequence(5, 15, 2, false);
+
+            List<int> expected = new List<int>{0, 1, 2, 3, 4, 5, 6, 7, 8, 9}, expected2 = new List<int>{0, -1, -2, -3, -4, -5, -6, -7, -8, -9};
+            var expected3 =
+                from i in Enumerable.Range(0, 101)
+                    where i % 2 == 0
+                select i;
+            var expected4 = new List<int>{5, 7, 9, 11, 13};
+            Assert.IsTrue(seq1.IsSequential());
+            Assert.IsFalse(seq1.Includes(10));
+            Assert.IsFalse(seq2.Includes(-10));
+            Assert.IsTrue(seq3.Includes(50));
+            Assert.IsFalse(seq3.Includes(49));
+
+            var seq1_list =
+                from i in seq1
+                select i;
+            var seq2_list =
+                from j in seq2
+                select j;
+            var seq3_list =
+                from k in seq3
+                select k;
+            var seq4_list =
+                from l in seq4
+                select l;
+            Assert.IsTrue(seq1_list.SequenceEqual(expected));
+            Assert.IsTrue(seq2_list.SequenceEqual(expected2));
+            Assert.IsTrue(seq3_list.SequenceEqual(expected3));
+            Assert.IsTrue(seq4_list.SequenceEqual(expected4));
         }
     }
 }

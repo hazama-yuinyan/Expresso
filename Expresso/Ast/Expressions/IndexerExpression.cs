@@ -53,16 +53,12 @@ namespace Expresso.Ast
             get{return GetChildByRole(Roles.RBracketToken);}
         }
 
-        public IndexerExpression(Expression target, IEnumerable<Expression> arguments)
+        public IndexerExpression(Expression target, IEnumerable<Expression> arguments, TextLocation loc)
+            : base(target.StartLocation, loc)
         {
             Target = target;
             if(arguments != null)
                 Arguments.AddRange(arguments);
-        }
-
-        public IndexerExpression(Expression target, params Expression[] arguments)
-            : this(target, (IEnumerable<Expression>)arguments)
-        {
         }
 
         #region implemented abstract members of AstNode

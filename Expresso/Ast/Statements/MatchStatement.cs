@@ -132,7 +132,7 @@ namespace Expresso.Ast
         protected internal override bool DoMatch(AstNode other, ICSharpCode.NRefactory.PatternMatching.Match match)
         {
             var o = other as MatchPatternClause;
-            return o != null && Patterns.DoMatch(o.Patterns, match) && Body.DoMatch(o.Body, match);
+            return o != null && Patterns.DoMatch(o.Patterns, match) && Guard.DoMatch(o.Guard, match) && Body.DoMatch(o.Body, match);
         }
 	}
 }

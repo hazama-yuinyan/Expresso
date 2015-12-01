@@ -233,8 +233,9 @@ namespace Expresso.Ast.Analysis
                             target_type.Name, memRef.Member.Name
                         );
                     }else{
-                        memRef.Member.Type.ReplaceWith(symbol.Type);
-                        return symbol.Type.Clone();
+                        var type = symbol.Type.Clone();
+                        memRef.Member.Type.ReplaceWith(type);
+                        return type;
                     }
                 }
                 return null;

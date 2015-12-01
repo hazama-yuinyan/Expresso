@@ -83,7 +83,7 @@ namespace Expresso.Ast
             get{return GetChildByRole(GetOperatorRole(Operator));}
         }
 
-        public AssignmentExpression(Expression lhsExpr, Expression rhsExpr, OperatorType opType = OperatorType.Equality)
+        public AssignmentExpression(Expression lhsExpr, Expression rhsExpr, OperatorType opType)
 		{
             Left = lhsExpr;
             Right = rhsExpr;

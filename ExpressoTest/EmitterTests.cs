@@ -100,9 +100,40 @@ namespace Expresso.Test
         }
 
         [Test]
-        public void Statements()
+        public void BasicStatements()
         {
-            var parser = new Parser(new Scanner("../../sources/for_unit_tests/statements.exs"));
+            var parser = new Parser(new Scanner("../../sources/for_unit_tests/basic_statements.exs"));
+            parser.DoPostParseProcessing = true;
+            parser.Parse();
+
+            var ast = parser.TopmostAst;
+            var options = new ExpressoCompilerOptions{
+                LibraryPaths = new List<string>{""},
+                OutputPath = "../../test_executable",
+                BuildType = BuildType.Debug | BuildType.Executable
+            };
+            var emitter = new CSharpEmitter(parser, options);
+            ast.AcceptWalker(emitter, null);
+
+            var asm = emitter.AssemblyBuilder;
+            var main_method = asm.GetModule("main.exe")
+                .GetType("ExsMain")
+                .GetMethod("Main", BindingFlags.NonPublic | BindingFlags.Static);
+            Assert.AreEqual(main_method.Name, "Main");
+            Assert.IsTrue(main_method.IsStatic);
+            Assert.AreEqual(typeof(int), main_method.ReturnType);
+            Assert.AreEqual(0, main_method.GetParameters().Length);
+            //Assert.IsTrue(main_method.GetParameters().SequenceEqual(new []{typeof(string[])}));
+            Console.Out.WriteLine("テスト実行");
+            Console.Out.WriteLine(main_method.ToString());
+
+            //main_method.Invoke(null, new object[]{});
+        }
+
+        [Test]
+        public void MatchStatements()
+        {
+            var parser = new Parser(new Scanner("../../sources/for_unit_tests/match_statements.exs"));
             parser.DoPostParseProcessing = true;
             parser.Parse();
 

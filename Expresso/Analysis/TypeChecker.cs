@@ -725,6 +725,7 @@ namespace Expresso.Ast.Analysis
             if(IsPlaceholderType(funcDecl.ReturnType)){
                 // Descend scopes 2 times because a function name has its own scope
                 int tmp_counter2 = scope_counter;
+                --scope_counter;
                 DescendScope();
                 scope_counter = 0;
 
@@ -987,7 +988,7 @@ namespace Expresso.Ast.Analysis
         static bool IsSequenceType(AstType type)
         {
             var primitive = type as PrimitiveType;
-            if(primitive.KnownTypeCode == KnownTypeCode.IntSeq)
+            if(primitive != null && primitive.KnownTypeCode == KnownTypeCode.IntSeq)
                 return true;
             else
                 return IsContainerType(type);
@@ -1002,7 +1003,7 @@ namespace Expresso.Ast.Analysis
             var simple = type as SimpleType;
             if(simple != null){
                 if(simple.TypeArguments.Count == 1)
-                    return simple.TypeArguments.FirstOrNullObject();
+                    return simple.TypeArguments.FirstOrNullObject().Clone();
                 else
                     return AstType.MakeSimpleType("tuple", simple.TypeArguments);
             }

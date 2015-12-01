@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using ICSharpCode.NRefactory;
 
 
 namespace Expresso.Ast
@@ -37,7 +38,8 @@ namespace Expresso.Ast
             get{return GetChildByRole(Roles.RParenthesisToken);}
         }
 
-        public CallExpression(Expression targetExpr, IEnumerable<Expression> arguments)
+        public CallExpression(Expression targetExpr, IEnumerable<Expression> arguments, TextLocation loc)
+            : base(targetExpr.StartLocation, loc)
         {
             Target = targetExpr;
             Arguments.AddRange(arguments);

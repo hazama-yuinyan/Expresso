@@ -59,8 +59,7 @@ namespace Expresso.Ast
         protected internal override bool DoMatch(AstNode other, ICSharpCode.NRefactory.PatternMatching.Match match)
         {
             var o = other as KeyValueLikeExpression;
-            return o != null && KeyExpression.DoMatch(o.KeyExpression, match)
-                && ValueExpression.DoMatch(o.ValueExpression, match);
+            return o != null && KeyExpression.DoMatch(o.KeyExpression, match) && ValueExpression.DoMatch(o.ValueExpression, match);
         }
 
         #endregion

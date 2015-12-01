@@ -130,7 +130,7 @@ namespace Expresso.Ast
         /// <param name="rhs">The right-hand-side expression(single item)</param>
         public static AssignmentExpression MakeSingleAssignment(Expression lhs, Expression rhs)
         {
-            return new AssignmentExpression(lhs, rhs);
+            return new AssignmentExpression(lhs, rhs, OperatorType.Assign);
         }
 
         /// <summary>
@@ -153,7 +153,7 @@ namespace Expresso.Ast
         /// <param name="rhs">The right-hand-side expressions(multiple items).</param>
         public static AssignmentExpression MakeAssignment(SequenceExpression lhs, SequenceExpression rhs)
         {
-            return new AssignmentExpression(lhs, rhs);
+            return new AssignmentExpression(lhs, rhs, OperatorType.Assign);
         }
 
         /// <summary>
@@ -175,7 +175,7 @@ namespace Expresso.Ast
         /// <param name="rhs">The right hand side expression(single item).</param>
         public static AssignmentExpression MakeMultipleAssignment(AssignmentExpression lhs, SequenceExpression rhs)
         {
-            return new AssignmentExpression(lhs, rhs);
+            return new AssignmentExpression(lhs, rhs, OperatorType.Assign);
         }
 
         /// <summary>
@@ -184,9 +184,9 @@ namespace Expresso.Ast
         /// <returns>A call expression.</returns>
         /// <param name="target">The target expression to call. It has to be a callable object.</param>
         /// <param name="args">Arguments.</param>
-        public static CallExpression MakeCallExpr(Expression target, IEnumerable<Expression> args)
+        public static CallExpression MakeCallExpr(Expression target, IEnumerable<Expression> args, TextLocation loc = default(TextLocation))
         {
-            return new CallExpression(target, args);
+            return new CallExpression(target, args, loc);
         }
 
         /// <summary>
@@ -195,9 +195,9 @@ namespace Expresso.Ast
         /// <returns>A call expression.</returns>
         /// <param name="target">The target expression to call. It has to be a callable object.</param>
         /// <param name="args">Arguments.</param>
-        public static CallExpression MakeCallExpr(Expression target, params Expression[] args)
+        public static CallExpression MakeCallExpr(Expression target, TextLocation loc, params Expression[] args)
         {
-            return new CallExpression(target, args);
+            return new CallExpression(target, args, loc);
         }
 
         /// <summary>
@@ -344,14 +344,14 @@ namespace Expresso.Ast
             return new ParenthesizedExpression(expr);
         }
 
-        public static IndexerExpression MakeIndexer(Expression target, IEnumerable<Expression> args)
+        public static IndexerExpression MakeIndexer(Expression target, IEnumerable<Expression> args, TextLocation loc = default(TextLocation))
         {
-            return new IndexerExpression(target, args);
+            return new IndexerExpression(target, args, loc);
         }
 
-        public static IndexerExpression MakeIndexer(Expression target, params Expression[] args)
+        public static IndexerExpression MakeIndexer(Expression target, TextLocation loc, params Expression[] args)
         {
-            return new IndexerExpression(target, args);
+            return new IndexerExpression(target, args, loc);
         }
         #endregion
     }

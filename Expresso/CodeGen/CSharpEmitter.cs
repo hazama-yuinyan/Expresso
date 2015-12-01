@@ -11,6 +11,7 @@ using System.Threading;
 using Expresso.Ast;
 using Expresso.Ast.Analysis;
 using Expresso.Runtime.Builtins;
+using System.Collections;
 
 namespace Expresso.CodeGen
 {
@@ -80,16 +81,66 @@ namespace Expresso.CodeGen
             this.options = options;
         }
 
-        static IEnumerable<CSharpExpr> MakeIterableAssignments(IEnumerable<CSharpExpr> variables,
-            ExprTree.MemberExpression property)
+        static Type GuessEnumeratorType(Type type)
         {
-            var result = new List<CSharpExpr>();
-            foreach(var variable in variables){
-                var assignment = CSharpExpr.Assign(variable, property);
-                result.Add(assignment);
+            var enumerator_type = type.GetNestedType("Enumerator");
+            if(enumerator_type != null){
+                foreach(var interface_type in enumerator_type.GetInterfaces()){
+                    if(interface_type.FullName.StartsWith("System.Collections.Generic.IEnumerator")){
+                        if(interface_type.ContainsGenericParameters)
+                            interface_type.MakeGenericType(type.GetGenericArguments());
+                        else
+                            return interface_type;
+                    }
+                }
+
+                throw new EmitterException("Type `{0}` has to implement IEnumerator<> interface", enumerator_type.FullName);
             }
 
-            return result;
+            if(type.IsSubclassOf(typeof(IEnumerable)))
+                return typeof(IEnumerator<>).MakeGenericType(type.GetGenericArguments());
+            else
+                throw new EmitterException("Type `{0}` has to implement IEnumerable<> interface", type.FullName);
+        }
+
+        static IEnumerable<CSharpExpr> MakeEnumeratorCreations(IEnumerable<CSharpExpr> iterators, out List<ExprTree.ParameterExpression> parameters)
+        {
+            var creations = new List<CSharpExpr>();
+            parameters = new List<ExprTree.ParameterExpression>();
+            int counter = 1;
+            foreach(var iterator in iterators){
+                var get_enumerator_method = iterator.Type.GetMethod("GetEnumerator");
+                //if(iterator.Type != get_enumerator_method.ReturnType)
+                //    throw new EmitterException();
+                var param = CSharpExpr.Parameter(get_enumerator_method.ReturnType, "__iter" + counter.ToString());
+                ++counter;
+
+                parameters.Add(param);
+                creations.Add(CSharpExpr.Assign(param, CSharpExpr.Call(iterator, get_enumerator_method)));
+            }
+
+            return creations;
+        }
+
+        static IEnumerable<CSharpExpr> MakeIterableAssignments(IEnumerable<ExprTree.ParameterExpression> variables, IEnumerable<ExprTree.ParameterExpression> enumerators,
+            ExprTree.LabelTarget breakTarget)
+        {
+            var contents = new List<CSharpExpr>();
+            foreach(var pair in variables.Zip(enumerators,
+                (l, r) => new Tuple<ExprTree.ParameterExpression, CSharpExpr>(l, r))){
+                var iterator_type = typeof(IEnumerator<>).MakeGenericType(pair.Item1.Type);
+                var move_method = iterator_type.GetInterface("IEnumerator").GetMethod("MoveNext");
+                var move_call = CSharpExpr.Call(pair.Item2, move_method);
+                contents.Add(move_call);
+
+                var check_failure = CSharpExpr.IfThen(CSharpExpr.IsFalse(move_call), CSharpExpr.Goto(breakTarget));
+                contents.Add(check_failure);
+
+                var current_property = iterator_type.GetProperty("Current");
+                contents.Add(CSharpExpr.Assign(pair.Item1, CSharpExpr.Property(pair.Item2, current_property)));
+            }
+
+            return contents;
         }
 
         void DescendScope()
@@ -165,8 +216,9 @@ namespace Expresso.CodeGen
         public CSharpExpr VisitBlock(BlockStatement block, CSharpEmitterContext context)
         {
             int tmp_counter = sibling_count;
-            sibling_count = 0;
             DescendScope();
+            sibling_count = 0;
+
             var parent_block = context.ContextAst;
             context.ContextAst = block;
 
@@ -235,10 +287,12 @@ namespace Expresso.CodeGen
         public CSharpExpr VisitForStatement(ForStatement forStmt, CSharpEmitterContext context)
         {
             int tmp_counter = sibling_count;
-            sibling_count = 0;
             DescendScope();
+            sibling_count = 0;
+
             forStmt.Left.AcceptWalker(this, context);
             var iterator = forStmt.Target.AcceptWalker(this, context);
+            var iterators = new List<CSharpExpr>{iterator};
 
             var break_target = CSharpExpr.Label("__EndFor" + LoopCounter.ToString());
             var continue_target = CSharpExpr.Label("__StartFor" + LoopCounter.ToString());
@@ -249,40 +303,43 @@ namespace Expresso.CodeGen
             // Here, `Body` represents just the body block itself
             // In a for statement, we must move the iterator a step forward
             // and assign the result to inner-scope variables
-            var real_body = forStmt.Body.AcceptWalker(this, context);
+            var real_body = forStmt.Body.AcceptWalker(this, context) as ExprTree.BlockExpression;
 
-            var iterator_type = typeof(IEnumerator<>).MakeGenericType(iterator.Type);
-            var move_method = iterator_type.GetMethod("MoveNext");
-            var move_call = CSharpExpr.Call(iterator, move_method);
-            var check_failure = CSharpExpr.IfThen(CSharpExpr.IsFalse(move_call), CSharpExpr.Goto(break_target));
-            var current_property = iterator_type.GetProperty("Current");
-
+            List<ExprTree.ParameterExpression> enumerators;
             var variables = ConvertSymbolsToParameters();
-            var assignments = MakeIterableAssignments(variables, CSharpExpr.Property(iterator, current_property));
-            var parameters = ConvertSymbolsToParameters();
+            var creations = MakeEnumeratorCreations(iterators, out enumerators);
+            var assignments = MakeIterableAssignments(variables, enumerators, break_target);
 
-            var body_exprs = new List<CSharpExpr>{check_failure};
-            var body = CSharpExpr.Block(parameters,
-                body_exprs.Concat(assignments)
-                    .Concat(((ExprTree.BlockExpression)real_body).Expressions)
-                );
+            var body = CSharpExpr.Block(variables,
+                assignments.Concat(real_body.Expressions)
+            );
             var loop = CSharpExpr.Loop(body, break_target, continue_target);
             break_targets.RemoveAt(break_targets.Count - 1);
             continue_targets.RemoveAt(continue_targets.Count - 1);
             AscendScope();
             sibling_count = tmp_counter + 1;
 
-            return loop;
+            var contents = new List<CSharpExpr>();
+            contents.AddRange(creations);
+            contents.Add(loop);
+            return CSharpExpr.Block(enumerators, contents);
         }
 
         public CSharpExpr VisitValueBindingForStatement(ValueBindingForStatement valueBindingForStatement, CSharpEmitterContext context)
         {
             int tmp_counter = sibling_count;
-            sibling_count = 0;
             DescendScope();
+            sibling_count = 0;
+
             // TODO: Implement it in a more formal way(take multiple items into account)
-            valueBindingForStatement.Variables.First().NameToken.AcceptWalker(this, context);
-            var iterator = valueBindingForStatement.Variables.First().Initializer.AcceptWalker(this, context);
+            var bound_variables = new List<ExprTree.ParameterExpression>();
+            var iterators = new List<CSharpExpr>();
+            foreach(var variable in valueBindingForStatement.Variables){
+                var bound_variable = CSharpExpr.Variable(CSharpCompilerHelper.GetNativeType(variable.NameToken.Type), variable.Name);
+                Symbols.Add(variable.NameToken.IdentifierId, new ExpressoSymbol{Parameter = bound_variable});
+                bound_variables.Add(bound_variable);
+                iterators.Add(variable.Initializer.AcceptWalker(this, context));
+            }
 
             var break_target = CSharpExpr.Label("__EndFor" + LoopCounter.ToString());
             var continue_target = CSharpExpr.Label("__StartFor" + LoopCounter.ToString());
@@ -293,22 +350,15 @@ namespace Expresso.CodeGen
             // Here, `body` represents just the body block itself
             // In a for statement, we must move the iterator a step forward
             // and assign the result to inner-scope variables
-            var real_body = valueBindingForStatement.Body.AcceptWalker(this, context);
+            var real_body = valueBindingForStatement.Body.AcceptWalker(this, context) as ExprTree.BlockExpression;
 
-            var iterator_type = typeof(IEnumerator<>).MakeGenericType(iterator.Type);
-            var move_method = iterator_type.GetMethod("MoveNext");
-            var move_call = CSharpExpr.Call(iterator, move_method);
-            var check_failure = CSharpExpr.IfThen(CSharpExpr.IsFalse(move_call), CSharpExpr.Goto(break_target));
-            var current_property = iterator_type.GetProperty("Current");
-
-            var variables = ConvertSymbolsToParameters();
-            var assignments = MakeIterableAssignments(variables, CSharpExpr.Property(iterator, current_property));
+            List<ExprTree.ParameterExpression> enumerators;
+            var creations = MakeEnumeratorCreations(iterators, out enumerators);
+            var assignments = MakeIterableAssignments(bound_variables, enumerators, break_target);
             var parameters = ConvertSymbolsToParameters();
 
-            var body_exprs = new List<CSharpExpr>{check_failure};
             var body = CSharpExpr.Block(parameters,
-                body_exprs.Concat(assignments)
-                .Concat(((ExprTree.BlockExpression)real_body).Expressions)
+                assignments.Concat(real_body.Expressions)
             );
             var loop = CSharpExpr.Loop(body, break_target, continue_target);
             break_targets.RemoveAt(break_targets.Count - 1);
@@ -316,26 +366,29 @@ namespace Expresso.CodeGen
             AscendScope();
             sibling_count = tmp_counter + 1;
 
-            return loop;
+            var contents = new List<CSharpExpr>();
+            contents.AddRange(creations);
+            contents.Add(loop);
+            return CSharpExpr.Block(enumerators, contents);
         }
 
         public CSharpExpr VisitIfStatement(IfStatement ifStmt, CSharpEmitterContext context)
         {
             int tmp_counter = sibling_count;
-            sibling_count = 0;
             DescendScope();
+            sibling_count = 0;
 
             var cond = ifStmt.Condition.AcceptWalker(this, context);
             var true_block = ifStmt.TrueBlock.AcceptWalker(this, context);
 
             if(ifStmt.FalseBlock.IsNull){
-                sibling_count = tmp_counter + 1;
                 AscendScope();
+                sibling_count = tmp_counter + 1;
                 return CSharpExpr.IfThen(cond, true_block);
             }else{
                 var false_block = ifStmt.FalseBlock.AcceptWalker(this, context);
-                sibling_count = tmp_counter + 1;
                 AscendScope();
+                sibling_count = tmp_counter + 1;
                 return CSharpExpr.IfThenElse(cond, true_block, false_block);
             }
         }
@@ -366,10 +419,12 @@ namespace Expresso.CodeGen
             var target_var = CSharpExpr.Parameter(target.Type);
             context.TemporaryVariable = target_var;
             context.ContextExpression = null;
+            var context_ast = context.ContextAst;
+            context.ContextAst = matchStmt;
 
             int tmp_counter = sibling_count;
-            sibling_count = 0;
             DescendScope();
+            sibling_count = 0;
 
             foreach(var clause in matchStmt.Clauses){
                 var tmp = clause.AcceptWalker(this, context);
@@ -382,10 +437,12 @@ namespace Expresso.CodeGen
                 }
             }
 
-            sibling_count = tmp_counter + 1;
             AscendScope();
+            sibling_count = tmp_counter + 1;
 
             context.TemporaryVariable = null;
+            context.ContextAst = context_ast;
+
             return CSharpExpr.Block(new List<ExprTree.ParameterExpression>{
                 target_var
             }, new List<CSharpExpr>{
@@ -405,10 +462,10 @@ namespace Expresso.CodeGen
             continue_targets.Add(continue_loop);
 
             int tmp_counter = sibling_count;
-            sibling_count = 0;
             DescendScope();
+            sibling_count = 0;
 
-            var condition = CSharpExpr.IfThen(whileStmt.Condition.AcceptWalker(this, context),
+            var condition = CSharpExpr.IfThen(CSharpExpr.Not(whileStmt.Condition.AcceptWalker(this, context)),
                 CSharpExpr.Break(end_loop));
             var body = CSharpExpr.Block(
                 condition,
@@ -417,8 +474,9 @@ namespace Expresso.CodeGen
             break_targets.RemoveAt(break_targets.Count - 1);
             continue_targets.RemoveAt(continue_targets.Count - 1);
 
-            sibling_count = tmp_counter + 1;
             AscendScope();
+            sibling_count = tmp_counter + 1;
+
             return has_continue ? CSharpExpr.Loop(body, end_loop, continue_loop) :
                 CSharpExpr.Loop(body, end_loop);        //while(condition){body...}
         }
@@ -560,7 +618,7 @@ namespace Expresso.CodeGen
                 compiled_args.Add(arg.AcceptWalker(this, context));
 
             var inst = call.Target.AcceptWalker(this, context);
-            return ConstructCallExpression((ExprTree.ParameterExpression)inst, context.Method, compiled_args.Cast<ExprTree.ParameterExpression>());
+            return ConstructCallExpression((ExprTree.ParameterExpression)inst, context.Method, compiled_args);
         }
 
         public CSharpExpr VisitCastExpression(CastExpression castExpr, CSharpEmitterContext context)
@@ -672,7 +730,7 @@ namespace Expresso.CodeGen
                     context.Field = field;
                     return null;
                 }else{
-                    throw new EmitterException("It is found that the native symbol '{0}' isn't defined.");
+                    throw new EmitterException("It is found that the native symbol '{0}' isn't defined.", ident.Name);
                 }
             }
         }
@@ -797,8 +855,7 @@ namespace Expresso.CodeGen
 
         public CSharpExpr VisitParenthesizedExpression(ParenthesizedExpression parensExpr, CSharpEmitterContext context)
         {
-            var child = parensExpr.Expression.AcceptWalker(this, context);
-            return child;
+            return parensExpr.Expression.AcceptWalker(this, context);
         }
 
         public CSharpExpr VisitObjectCreationExpression(ObjectCreationExpression creation, CSharpEmitterContext context)
@@ -929,9 +986,9 @@ namespace Expresso.CodeGen
             //       }else{
             //           Console.Write("else");
             //       }
-            DescendScope();
             IEnumerable<ExprTree.ParameterExpression> destructuring_exprs = null;
             CSharpExpr res = null;
+            var prev_additionals = context.Additionals;
             foreach(var pattern in matchClause.Patterns){
                 context.Additionals = null;
 
@@ -956,6 +1013,7 @@ namespace Expresso.CodeGen
                     res = CSharpExpr.OrElse(res, pattern_cond);
             }
 
+            context.Additionals = prev_additionals;
             var guard = matchClause.Guard.AcceptWalker(this, context);
             if(guard != null)
                 res = CSharpExpr.AndAlso(res, guard);
@@ -964,8 +1022,7 @@ namespace Expresso.CodeGen
             if(destructuring_exprs != null)
                 body = CSharpExpr.Block(destructuring_exprs, body);
 
-            AscendScope();
-            return res == null ? null : CSharpExpr.IfThen(res, body);
+            return (res == null) ? null : CSharpExpr.IfThen(res, body);
         }
 
         public CSharpExpr VisitSequence(SequenceExpression seqExpr, CSharpEmitterContext context)
@@ -1226,15 +1283,16 @@ namespace Expresso.CodeGen
 
         public CSharpExpr VisitVariableInitializer(VariableInitializer initializer, CSharpEmitterContext context)
         {
-            CSharpExpr variable = CSharpExpr.Variable(CSharpCompilerHelper.GetNativeType(initializer.NameToken.Type), initializer.Name);
+            var variable = CSharpExpr.Variable(CSharpCompilerHelper.GetNativeType(initializer.NameToken.Type), initializer.Name);
             var init = initializer.Initializer.AcceptWalker(this, context);
-            if(context.ContextAst != null && context.ContextAst is VariableDeclarationStatement)
-                Symbols.Add(initializer.NameToken.IdentifierId, new ExpressoSymbol{Parameter = (ExprTree.ParameterExpression)variable});
+            if(context.ContextAst is VariableDeclarationStatement)
+                Symbols.Add(initializer.NameToken.IdentifierId, new ExpressoSymbol{Parameter = variable});
 
+            var result = (init == null) ? variable as CSharpExpr : CSharpExpr.Assign(variable, init);
             if(context.Additionals != null)
-                context.Additionals.Add(CSharpExpr.Assign(variable, init));
+                context.Additionals.Add(result);
             
-            return (init == null) ? variable : CSharpExpr.Assign(variable, init);
+            return result;
         }
 
         //#################################################
@@ -1363,8 +1421,8 @@ namespace Expresso.CodeGen
             // while in the latter case we should just test the value against the literal
             context.Method = null;
             var expr = exprPattern.Expression.AcceptWalker(this, context);
-            return context.Method != null ? CSharpExpr.Call(context.Method, expr) as CSharpExpr
-                    : CSharpExpr.Equal(context.TemporaryVariable, expr) as CSharpExpr;
+            return (context.Method != null) ? CSharpExpr.Call(context.Method, expr) as CSharpExpr :
+                (context.ContextAst is MatchStatement) ? CSharpExpr.Equal(context.TemporaryVariable, expr) as CSharpExpr : expr;
         }
 
         public CSharpExpr VisitNullNode(AstNode nullNode, CSharpEmitterContext context)
@@ -1400,27 +1458,6 @@ namespace Expresso.CodeGen
         #endregion
 
 		#region methods
-		CSharpExpr CreateForeachLoop(ExprTree.ParameterExpression[] variables, CSharpExpr target, CSharpExpr body)
-		{
-			if(variables == null)
-				throw new ArgumentNullException("variables", "For statement takes at least one variable!");
-			if(target == null)
-				throw new ArgumentNullException("target", "Can not iterate over a null object.");
-			if(body == null)
-				throw new ArgumentNullException("body", "I can't understand what job you ask me for in that loop!");
-
-			has_continue = false;
-
-			var false_body = CSharpExpr.Block();
-			var end_loop = break_targets[break_targets.Count - 1];
-			if(has_continue){
-				var continue_loop = continue_targets[continue_targets.Count - 1];
-				return CSharpExpr.Loop(false_body, end_loop, continue_loop);
-            }else{
-				return CSharpExpr.Loop(false_body, end_loop);
-            }
-		}
-
 		CSharpExpr ConstructBinaryOp(CSharpExpr lhs, CSharpExpr rhs, OperatorType opType)
 		{
 			switch(opType){
@@ -1535,11 +1572,15 @@ namespace Expresso.CodeGen
             return parameters;
         }
 
-        CSharpExpr ConstructCallExpression(ExprTree.ParameterExpression inst, MethodInfo method, IEnumerable<ExprTree.ParameterExpression> args)
+        CSharpExpr ConstructCallExpression(ExprTree.ParameterExpression inst, MethodInfo method, IList<CSharpExpr> args)
         {
             if(method.Name == "Write" || method.Name == "WriteLine"){
+                MethodInfo maybe_println = method;
+                if(method.Name == "WriteLine")
+                    method = typeof(Console).GetMethod("Write", new []{typeof(string), typeof(object)});
+                
                 var first = args.First();
-                if(first.Type == typeof(string)){
+                /*if(first.Type == typeof(string)){
                     var param = CSharpExpr.Parameter(typeof(string), "str");
                     var str = "{0}";
                     var calls = new List<CSharpExpr>{CSharpExpr.Assign(param, CSharpExpr.Constant(str))};
@@ -1556,27 +1597,38 @@ namespace Expresso.CodeGen
                         calls.Add(CSharpExpr.Call(method, param, arg));
                     }
                     return CSharpExpr.Block(new []{param}, calls);
-                }else{
-                    var param = CSharpExpr.Parameter(typeof(string), "str");
-                    var str = "{0}";
-                    var body = new List<CSharpExpr>{CSharpExpr.Assign(param, CSharpExpr.Constant(str))};
-                    bool is_first = true;
-                    foreach(var arg in args){
-                        if(is_first){
-                            is_first = false;
-                        }else{
-                            if(str == "{0}"){
-                                str = ", {0}";
-                                body.Add(CSharpExpr.Assign(param, CSharpExpr.Constant(str)));
-                            }
-                        }
-                        body.Add(CSharpExpr.Call(method, param, CSharpExpr.Convert(arg, typeof(object))));
+                }else{*/
+                var param = CSharpExpr.Parameter(typeof(string), "str");
+                var str = "{0}";
+                var body = new List<CSharpExpr>{CSharpExpr.Assign(param, CSharpExpr.Constant(str))};
+                for(int i = 0; i < args.Count(); ++i){
+                    if(i != 0 && str == "{0}"){
+                        str = ", {0}";
+                        body.Add(CSharpExpr.Assign(param, CSharpExpr.Constant(str)));
                     }
-                    return CSharpExpr.Block(new []{param}, body);
+                    if(i == args.Count() - 1 && maybe_println.Name == "WriteLine")
+                        method = maybe_println;
+                    
+                    body.Add(CSharpExpr.Call(method, param, CSharpExpr.Convert(args[i], typeof(object))));
                 }
+                return CSharpExpr.Block(new []{param}, body);
+                //}
             }else{
+                if(method.ContainsGenericParameters){
+                    var parameters = method.GetParameters();
+                    var generic_param_indices = parameters.Where(p => p.ParameterType.IsGenericParameter)
+                        .Select((p, index) => index);
+                    var generic_types = args.Where((a, index) => generic_param_indices.Contains(index))
+                        .Select(e => e.Type);
+                    if(method.IsGenericMethod){
+                        method = method.MakeGenericMethod(generic_types.ToArray());
+                    }else{
+                        var type = method.DeclaringType;
+                        type = type.MakeGenericType(generic_types.ToArray());
+                        method = type.GetMethod(method.Name);
+                    }
+                }
                 return (inst != null) ? CSharpExpr.Call(inst, method, args) : CSharpExpr.Call(method, args);
-                //return CSharpExpr.Label(label, call);
             }
         }
 		#endregion

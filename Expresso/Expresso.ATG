@@ -680,7 +680,7 @@ Type<out AstType type>
                                         }
                                     .)
  ]
- /* Split brackets into 2 tokens that represents the array type
+ /* Split brackets into 2 tokens that represent the array type
     because otherwise it conflicts with the array literal.
  */
  { '[' ']'                          (. if(type.IsNull)
@@ -1346,16 +1346,16 @@ ObjectCreation<AstType typePath, out Expression expr>
                                            GoUpScope();
                                         .).
 /*------------------------------------------------------------------------*/
-Trailer<ref Expression expr>	(. var args = new List<Expression>(); .)
+Trailer<ref Expression expr>	(. var args = new List<Expression>(); var start_loc = CurrentLocation; .)
 =
   '('
   [ArgList<out args>]
-  ')'							(. expr = Expression.MakeCallExpr(expr, args); .)
+  ')'							(. expr = Expression.MakeCallExpr(expr, args, CurrentLocation); .)
   | '['
     ArgList<out args>
-    ']'							(. expr = Expression.MakeIndexer(expr, args); .)
+    ']'							(. expr = Expression.MakeIndexer(expr, args, CurrentLocation); .)
   | '.'
-    ident						(. expr = Expression.MakeMemRef(expr, AstNode.MakeIdentifier(t.val, CurrentLocation)); .).
+    ident						(. expr = Expression.MakeMemRef(expr, AstNode.MakeIdentifier(t.val, new PlaceholderType(TextLocation.Empty), start_loc, CurrentLocation)); .).
 /*------------------------------------------------------------------------*/
 ArgList<. out List<Expression> args .>		(. args = new List<Expression>(); Expression expr; .)
 =
