@@ -927,6 +927,10 @@ namespace Expresso.Test
                                                 Helpers.MakeSomeIdent("add")
                                             ),
                                             Helpers.MakeIdentifierPath("j")
+                                        )),
+                                        Statement.MakeExprStmt(Helpers.MakeCallExpression(Helpers.MakeIdentifierPath("println"),
+                                            Helpers.MakeIdentifierPath("i"),
+                                            Helpers.MakeIdentifierPath("j")
                                         ))
                                     ),
                                     AstNode.MakeVariableInitializer(

@@ -36,6 +36,7 @@ def main()
 			if j == 8 {continue upto 2;}
 			vec.add(i);
 			vec.add(j);
+			println(i, j);
 		}
 	}
 

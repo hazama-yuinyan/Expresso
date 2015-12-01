@@ -131,8 +131,6 @@ namespace Expresso.CodeGen
                 var iterator_type = typeof(IEnumerator<>).MakeGenericType(pair.Item1.Type);
                 var move_method = iterator_type.GetInterface("IEnumerator").GetMethod("MoveNext");
                 var move_call = CSharpExpr.Call(pair.Item2, move_method);
-                contents.Add(move_call);
-
                 var check_failure = CSharpExpr.IfThen(CSharpExpr.IsFalse(move_call), CSharpExpr.Goto(breakTarget));
                 contents.Add(check_failure);
 
