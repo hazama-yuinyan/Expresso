@@ -33,7 +33,7 @@ namespace Expresso.Test
                 .GetMethod("Main", BindingFlags.NonPublic | BindingFlags.Static);
             Assert.AreEqual(main_method.Name, "Main");
             Assert.IsTrue(main_method.IsStatic);
-            Assert.AreEqual(main_method.ReturnType, typeof(void));
+            Assert.AreEqual(typeof(void), main_method.ReturnType);
             Assert.AreEqual(0, main_method.GetParameters().Length);
         }
 
@@ -90,7 +90,7 @@ namespace Expresso.Test
                 .GetMethod("Main", BindingFlags.NonPublic | BindingFlags.Static);
             Assert.AreEqual(main_method.Name, "Main");
             Assert.IsTrue(main_method.IsStatic);
-            Assert.AreEqual(typeof(int), main_method.ReturnType);
+            Assert.AreEqual(typeof(void), main_method.ReturnType);
             Assert.AreEqual(0, main_method.GetParameters().Length);
             //Assert.IsTrue(main_method.GetParameters().SequenceEqual(new []{typeof(string[])}));
             Console.Out.WriteLine("テスト実行");
@@ -121,7 +121,7 @@ namespace Expresso.Test
                 .GetMethod("Main", BindingFlags.NonPublic | BindingFlags.Static);
             Assert.AreEqual(main_method.Name, "Main");
             Assert.IsTrue(main_method.IsStatic);
-            Assert.AreEqual(typeof(int), main_method.ReturnType);
+            Assert.AreEqual(typeof(void), main_method.ReturnType);
             Assert.AreEqual(0, main_method.GetParameters().Length);
             //Assert.IsTrue(main_method.GetParameters().SequenceEqual(new []{typeof(string[])}));
             Console.Out.WriteLine("テスト実行");
@@ -152,7 +152,7 @@ namespace Expresso.Test
                 .GetMethod("Main", BindingFlags.NonPublic | BindingFlags.Static);
             Assert.AreEqual(main_method.Name, "Main");
             Assert.IsTrue(main_method.IsStatic);
-            Assert.AreEqual(typeof(int), main_method.ReturnType);
+            Assert.AreEqual(typeof(void), main_method.ReturnType);
             Assert.AreEqual(0, main_method.GetParameters().Length);
             //Assert.IsTrue(main_method.GetParameters().SequenceEqual(new []{typeof(string[])}));
             Console.Out.WriteLine("テスト実行");

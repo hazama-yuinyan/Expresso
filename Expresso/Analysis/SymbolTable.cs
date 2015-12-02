@@ -90,6 +90,7 @@ namespace Expresso.Ast.Analysis
             table.Parent = table2;
             table2.Children.Add(table);
 
+            // TODO: Use reflection to add native symbols
             var vector_table = new SymbolTable();
             vector_table.Name = "class vector`T";
             vector_table.AddSymbol("add", AstType.MakeFunctionType("add", AstType.MakeSimpleType("tuple", TextLocation.Empty), new List<AstType>{

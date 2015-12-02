@@ -30,8 +30,7 @@ namespace Expresso.Ast
         public ValueBindingPattern(IEnumerable<VariableInitializer> inits, Modifiers modifiers)
         {
             Modifiers = modifiers;
-            foreach(var init in inits)
-                Variables.Add(init);
+            Variables.AddRange(inits);
         }
 
         #region implemented abstract members of AstNode

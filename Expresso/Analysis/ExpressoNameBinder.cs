@@ -101,6 +101,7 @@ namespace Expresso.Ast.Analysis
         {
             Debug.Assert(symbol_table.Parent == null);
             scope_counter = 0;
+
             ast.Imports.AcceptWalker(this);
             ast.Declarations.AcceptWalker(this);
             Debug.Assert(symbol_table.Parent == null);
@@ -111,7 +112,9 @@ namespace Expresso.Ast.Analysis
             int tmp_counter = scope_counter;
             DecendScope();
             scope_counter = 0;
+
             block.Statements.AcceptWalker(this);
+
             AscendScope();
             scope_counter = tmp_counter + 1;
         }
@@ -136,9 +139,11 @@ namespace Expresso.Ast.Analysis
             int tmp_counter = scope_counter;
             DecendScope();
             scope_counter = 0;
+
             forStmt.Left.AcceptWalker(this);
             forStmt.Target.AcceptWalker(this);
             forStmt.Body.AcceptWalker(this);
+
             AscendScope();
             scope_counter = tmp_counter + 1;
         }
@@ -148,8 +153,10 @@ namespace Expresso.Ast.Analysis
             int tmp_counter = scope_counter;
             DecendScope();
             scope_counter = 0;
+
             valueBindingForStmt.Variables.AcceptWalker(this);
             valueBindingForStmt.Body.AcceptWalker(this);
+
             AscendScope();
             scope_counter = tmp_counter + 1;
         }
@@ -159,9 +166,11 @@ namespace Expresso.Ast.Analysis
             int tmp_counter = scope_counter;
             DecendScope();
             scope_counter = 0;
+
             ifStmt.Condition.AcceptWalker(this);
             ifStmt.TrueBlock.AcceptWalker(this);
             ifStmt.FalseBlock.AcceptWalker(this);
+
             AscendScope();
             scope_counter = tmp_counter + 1;
         }
@@ -176,8 +185,10 @@ namespace Expresso.Ast.Analysis
             int tmp_counter = scope_counter;
             DecendScope();
             scope_counter = 0;
+
             matchStmt.Target.AcceptWalker(this);
             matchStmt.Clauses.AcceptWalker(this);
+
             AscendScope();
             scope_counter = tmp_counter + 1;
         }
@@ -187,8 +198,10 @@ namespace Expresso.Ast.Analysis
             int tmp_counter = scope_counter;
             DecendScope();
             scope_counter = 0;
+
             whileStmt.Condition.AcceptWalker(this);
             whileStmt.Body.AcceptWalker(this);
+
             AscendScope();
             scope_counter = tmp_counter + 1;
         }
@@ -231,8 +244,10 @@ namespace Expresso.Ast.Analysis
         {
             // Do not store scope counter because comprehensions contain only expressions.
             DecendScope();
+
             comp.Item.AcceptWalker(this);
             comp.Body.AcceptWalker(this);
+
             AscendScope();
         }
 

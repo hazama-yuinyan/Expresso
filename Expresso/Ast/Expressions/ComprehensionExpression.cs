@@ -27,7 +27,7 @@ namespace Expresso.Ast
 		}
 
         /// <summary>
-        /// The root for clause.
+        /// The root For clause.
         /// </summary>
 		public ComprehensionForClause Body{
             get{return GetChildByRole(CompBodyRole);}

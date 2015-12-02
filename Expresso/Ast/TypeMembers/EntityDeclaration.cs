@@ -100,12 +100,12 @@ namespace Expresso.Ast
 
         public static ParameterDeclaration MakeParameter(string name, AstType type, Expression option = null)
         {
-            return new ParameterDeclaration(AstNode.MakeIdentifier(name, type), option);
+            return new ParameterDeclaration(AstNode.MakeIdentifier(name, type), option ?? Expression.Null);
         }
 
         public static ParameterDeclaration MakeParameter(Identifier identifier, Expression option = null)
         {
-            return new ParameterDeclaration(identifier, option);
+            return new ParameterDeclaration(identifier, option ?? Expression.Null);
         }
 
         public static TypeDeclaration MakeClassDecl(string className, IEnumerable<AstType> bases,

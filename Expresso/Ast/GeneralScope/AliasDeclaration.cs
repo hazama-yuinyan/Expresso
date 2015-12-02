@@ -28,6 +28,9 @@ namespace Expresso.Ast
             get{return AliasToken.Name;}
         }
 
+        /// <summary>
+        /// Gets or sets the new name as an identifier.
+        /// </summary>
         public Identifier AliasToken{
             get{return GetChildByRole(Roles.Identifier);}
             set{SetChildByRole(Roles.Identifier, value);}

@@ -40,10 +40,10 @@ namespace Expresso.Ast
 
         #endregion
 
-        public ParameterDeclaration(Identifier identifier, Expression option = null)
+        public ParameterDeclaration(Identifier identifier, Expression option)
         {
             SetChildByRole(Roles.Identifier, identifier);
-            Option = option ?? Expression.Null;
+            Option = option;
         }
 
         public override void AcceptWalker(IAstWalker walker)

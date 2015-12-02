@@ -62,12 +62,12 @@ namespace Expresso.CodeGen
         {
             Symbols.Add(1000000000u, new ExpressoSymbol{
                 Method = typeof(Console).GetMethod("Write", new []{
-                    typeof(string), typeof(object)
+                    typeof(string), typeof(object[])
                 })
             });
             Symbols.Add(1000000001u, new ExpressoSymbol{
                 Method = typeof(Console).GetMethod("WriteLine", new []{
-                    typeof(string), typeof(object)
+                    typeof(string), typeof(object[])
                 })
             });
             Symbols.Add(1000000002u, new ExpressoSymbol{
@@ -1172,7 +1172,10 @@ namespace Expresso.CodeGen
         public CSharpExpr VisitFunctionDeclaration(FunctionDeclaration funcDecl, CSharpEmitterContext context)
         {
             context.Additionals = new List<object>();
+            int tmp_counter = sibling_count;
             DescendScope();
+            sibling_count = 0;
+
             var context_ast = context.ContextAst;
             context.ContextAst = funcDecl;
 
@@ -1212,6 +1215,7 @@ namespace Expresso.CodeGen
                 context.AssemblyBuilder.SetEntryPoint(func_builder, PEFileKinds.ConsoleApplication);
 
             AscendScope();
+            sibling_count = tmp_counter + 1;
 
             return null;
         }
@@ -1570,49 +1574,31 @@ namespace Expresso.CodeGen
             return parameters;
         }
 
-        CSharpExpr ConstructCallExpression(ExprTree.ParameterExpression inst, MethodInfo method, IList<CSharpExpr> args)
+        CSharpExpr ConstructCallExpression(ExprTree.ParameterExpression inst, MethodInfo method, IEnumerable<CSharpExpr> args)
         {
             if(method.Name == "Write" || method.Name == "WriteLine"){
-                MethodInfo maybe_println = method;
-                if(method.Name == "WriteLine")
-                    method = typeof(Console).GetMethod("Write", new []{typeof(string), typeof(object)});
-                
                 var first = args.First();
-                /*if(first.Type == typeof(string)){
-                    var param = CSharpExpr.Parameter(typeof(string), "str");
-                    var str = "{0}";
-                    var calls = new List<CSharpExpr>{CSharpExpr.Assign(param, CSharpExpr.Constant(str))};
-                    bool is_first = true;
-                    foreach(var arg in args.Skip(1)){
-                        if(is_first){
-                            is_first = false;
-                        }else{
-                            if(str == "{0}"){
-                                str = ", {0}";
-                                calls.Add(CSharpExpr.Assign(param, CSharpExpr.Constant(str)));
-                            }
-                        }
-                        calls.Add(CSharpExpr.Call(method, param, arg));
+                if(first.Type == typeof(string)){
+                    method = typeof(Console).GetMethod(method.Name, new []{typeof(string), typeof(object[])});
+
+                    return CSharpExpr.Call(method, first, CSharpExpr.NewArrayInit(typeof(object),
+                        args.Skip(1).Select(a => CSharpExpr.Convert(a, typeof(object)))
+                    ));
+                }else{
+                    var builder = new StringBuilder();
+                    for(int i = 0; i < args.Count(); ++i){
+                        if(i != 0)
+                            builder.Append(", ");
+                        
+                        builder.Append("{" + i.ToString() + "}");
                     }
-                    return CSharpExpr.Block(new []{param}, calls);
-                }else{*/
-                var param = CSharpExpr.Parameter(typeof(string), "str");
-                var str = "{0}";
-                var body = new List<CSharpExpr>{CSharpExpr.Assign(param, CSharpExpr.Constant(str))};
-                for(int i = 0; i < args.Count(); ++i){
-                    if(i != 0 && str == "{0}"){
-                        str = ", {0}";
-                        body.Add(CSharpExpr.Assign(param, CSharpExpr.Constant(str)));
-                    }
-                    if(i == args.Count() - 1 && maybe_println.Name == "WriteLine")
-                        method = maybe_println;
-                    
-                    body.Add(CSharpExpr.Call(method, param, CSharpExpr.Convert(args[i], typeof(object))));
+
+                    return CSharpExpr.Call(method, CSharpExpr.Constant(builder.ToString()), CSharpExpr.NewArrayInit(typeof(object),
+                        args.Select(a => CSharpExpr.Convert(a, typeof(object)))
+                    ));
                 }
-                return CSharpExpr.Block(new []{param}, body);
-                //}
             }else{
-                if(method.ContainsGenericParameters){
+                if(!(method is MethodBuilder) && method.ContainsGenericParameters){
                     var parameters = method.GetParameters();
                     var generic_param_indices = parameters.Where(p => p.ParameterType.IsGenericParameter)
                         .Select((p, index) => index);
