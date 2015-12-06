@@ -42,6 +42,7 @@
     <CustomCommands>
       <CustomCommands>
         <Command type="BeforeBuild" command="./parserCompile.sh" workingdir="" />
+        <Command type="BeforeExecute" command="mono ./Coco Expresso.ATG -trace GJSP" workingdir="${ProjectDir}" />
       </CustomCommands>
     </CustomCommands>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
@@ -63,6 +64,7 @@
     <CustomCommands>
       <CustomCommands>
         <Command type="BeforeBuild" command="./parserCompile.sh" workingdir="" />
+        <Command type="BeforeExecute" command="mono ./Coco Expresso.ATG trace -GJSP" workingdir="${ProjectDir}" />
       </CustomCommands>
     </CustomCommands>
   </PropertyGroup>
@@ -113,7 +115,6 @@
     <Compile Include="Ast\Expressions\CallExpression.cs" />
     <Compile Include="Ast\Expressions\CastExpression.cs" />
     <Compile Include="Ast\Expressions\ConditionalExpression.cs" />
-    <Compile Include="Ast\Expressions\MemberReference.cs" />
     <Compile Include="Ast\Expressions\UnaryExpression.cs" />
     <Compile Include="Ast\Expressions\SequenceExpression.cs" />
     <Compile Include="Ast\Expressions\NewExpression.cs" />
@@ -188,6 +189,7 @@
     <Compile Include="Ast\Statements\ValueBindingForStatement.cs" />
     <Compile Include="TriBool.cs" />
     <Compile Include="ParameterType.cs" />
+    <Compile Include="Ast\Expressions\MemberReferenceExpression.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System" />

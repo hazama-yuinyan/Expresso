@@ -214,7 +214,7 @@ namespace Expresso.Ast.Analysis
                 return target_type;
             }
 
-            public AstType VisitMemberReference(MemberReference memRef)
+            public AstType VisitMemberReference(MemberReferenceExpression memRef)
             {
                 var target_type = memRef.Target.AcceptWalker(this);
                 var type_table = checker.symbols.GetTypeTable(target_type.Name);

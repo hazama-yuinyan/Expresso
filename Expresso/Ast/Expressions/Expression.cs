@@ -304,9 +304,9 @@ namespace Expresso.Ast
             return new SuperReferenceExpression(start);
         }
 
-        public static MemberReference MakeMemRef(Expression target, Identifier subscript)
+        public static MemberReferenceExpression MakeMemRef(Expression target, Identifier subscript)
         {
-            return new MemberReference(target, subscript);
+            return new MemberReferenceExpression(target, subscript);
         }
 
         public static IntegerSequenceExpression MakeIntSeq(Expression start, Expression end, Expression step, bool upperInclusive)

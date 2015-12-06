@@ -110,8 +110,6 @@ namespace Expresso.CodeGen
             int counter = 1;
             foreach(var iterator in iterators){
                 var get_enumerator_method = iterator.Type.GetMethod("GetEnumerator");
-                //if(iterator.Type != get_enumerator_method.ReturnType)
-                //    throw new EmitterException();
                 var param = CSharpExpr.Parameter(get_enumerator_method.ReturnType, "__iter" + counter.ToString());
                 ++counter;
 
@@ -742,7 +740,7 @@ namespace Expresso.CodeGen
                 intSeq.Step.AcceptWalker(this, context),
                 CSharpExpr.Constant(intSeq.UpperInclusive)
             };
-            return CSharpExpr.New(intseq_ctor, args);      //new ExpressoIntegerSequence(Start, End, Step)
+            return CSharpExpr.New(intseq_ctor, args);      //new ExpressoIntegerSequence(Start, End, Step, UpperInclusive)
         }
 
         public CSharpExpr VisitIndexerExpression(IndexerExpression indexExpr, CSharpEmitterContext context)
@@ -763,7 +761,7 @@ namespace Expresso.CodeGen
             }
         }
 
-        public CSharpExpr VisitMemberReference(MemberReference memRef, CSharpEmitterContext context)
+        public CSharpExpr VisitMemberReference(MemberReferenceExpression memRef, CSharpEmitterContext context)
         {
             // In Expresso, a member access can be resolved either to a field reference or instance method call
             var expr = memRef.Target.AcceptWalker(this, context);
@@ -904,9 +902,6 @@ namespace Expresso.CodeGen
                 var tmp = item.AcceptWalker(this, context);
                 exprs.Add(tmp);
             }
-
-            //if(exprs.Count == 0)
-            //   return null;
 
             if(seq_type == typeof(Array)){
                 var elem_type = CSharpCompilerHelper.GetNativeType(obj_type.TypeArguments.FirstOrNullObject());

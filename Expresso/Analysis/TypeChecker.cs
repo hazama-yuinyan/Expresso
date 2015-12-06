@@ -446,7 +446,7 @@ namespace Expresso.Ast.Analysis
             return null;
         }
 
-        public AstType VisitMemberReference(MemberReference memRef)
+        public AstType VisitMemberReference(MemberReferenceExpression memRef)
         {
             var type = memRef.Target.AcceptWalker(this);
             if(IsPlaceholderType(type)){

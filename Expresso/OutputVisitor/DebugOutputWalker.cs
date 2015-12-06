@@ -194,7 +194,7 @@ namespace Expresso.Ast
                 writer.Write("else{...}");
         }
 
-        public void VisitMemberReference(MemberReference memRef)
+        public void VisitMemberReference(MemberReferenceExpression memRef)
         {
             memRef.Target.AcceptWalker(this);
             writer.Write(".");

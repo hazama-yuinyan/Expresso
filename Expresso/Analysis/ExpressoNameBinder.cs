@@ -294,7 +294,7 @@ namespace Expresso.Ast.Analysis
             indexExpr.Arguments.AcceptWalker(this);
         }
 
-        public void VisitMemberReference(MemberReference memRef)
+        public void VisitMemberReference(MemberReferenceExpression memRef)
         {
             // At this point we can't figure out which scope to use for the member expression
             // because we don't know anything about the type of the target expression.

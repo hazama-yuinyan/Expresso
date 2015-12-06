@@ -39,7 +39,7 @@ namespace Expresso.Ast
         void VisitIdentifier(Identifier ident);
         void VisitIntgerSequenceExpression(IntegerSequenceExpression intSeq);
         void VisitIndexerExpression(IndexerExpression indexExpr);
-        void VisitMemberReference(MemberReference memRef);
+        void VisitMemberReference(MemberReferenceExpression memRef);
         void VisitNewExpression(NewExpression newExpr);
         void VisitPathExpression(PathExpression pathExpr);
         void VisitParenthesizedExpression(ParenthesizedExpression parensExpr);
@@ -118,7 +118,7 @@ namespace Expresso.Ast
         TResult VisitIdentifier(Identifier ident);
         TResult VisitIntegerSequenceExpression(IntegerSequenceExpression intSeq);
         TResult VisitIndexerExpression(IndexerExpression indexExpr);
-        TResult VisitMemberReference(MemberReference memRef);
+        TResult VisitMemberReference(MemberReferenceExpression memRef);
         TResult VisitNewExpression(NewExpression newExpr);
         TResult VisitPathExpression(PathExpression pathExpr);
         TResult VisitParenthesizedExpression(ParenthesizedExpression parensExpr);
@@ -207,7 +207,7 @@ namespace Expresso.Ast
         TResult VisitIdentifier(Identifier ident, TData data);
         TResult VisitIntegerSequenceExpression(IntegerSequenceExpression intSeq, TData data);
         TResult VisitIndexerExpression(IndexerExpression indexExpr, TData data);
-        TResult VisitMemberReference(MemberReference memRef, TData data);
+        TResult VisitMemberReference(MemberReferenceExpression memRef, TData data);
         TResult VisitNewExpression(NewExpression newExpr, TData data);
         TResult VisitPathExpression(PathExpression pathExpr, TData data);
         TResult VisitParenthesizedExpression(ParenthesizedExpression parensExpr, TData data);

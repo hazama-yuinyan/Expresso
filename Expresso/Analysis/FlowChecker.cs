@@ -369,7 +369,7 @@ namespace Expresso.Ast.Analysis
             throw new NotImplementedException();
         }
 
-        public void VisitMemberReference(MemberReference memRef)
+        public void VisitMemberReference(MemberReferenceExpression memRef)
         {
             throw new NotImplementedException();
         }

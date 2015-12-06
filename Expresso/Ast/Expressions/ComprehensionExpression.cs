@@ -14,13 +14,12 @@ namespace Expresso.Ast
 	/// </summary>
     public class ComprehensionExpression : Expression
 	{
-        public static readonly Role<ComprehensionForClause> CompBodyRole =
-            new Role<ComprehensionForClause>("Body");
+        public static readonly Role<ComprehensionForClause> ComprehensionBodyRole =
+            new Role<ComprehensionForClause>("Body", ComprehensionForClause.Null);
 
         /// <summary>
         /// The expression that yields an item at a time.
         /// </summary>
-        /// <value>The item.</value>
 		public Expression Item{
             get{return GetChildByRole(Roles.Expression);}
             set{SetChildByRole(Roles.Expression, value);}
@@ -30,8 +29,8 @@ namespace Expresso.Ast
         /// The root For clause.
         /// </summary>
 		public ComprehensionForClause Body{
-            get{return GetChildByRole(CompBodyRole);}
-            set{SetChildByRole(CompBodyRole, value);}
+            get{return GetChildByRole(ComprehensionBodyRole);}
+            set{SetChildByRole(ComprehensionBodyRole, value);}
 		}
 
         /// <summary>
@@ -77,7 +76,44 @@ namespace Expresso.Ast
 
 	public abstract class ComprehensionIter : Expression
 	{
-        public static readonly Role<ComprehensionIter> CompBody = new Role<ComprehensionIter>("CompBody");
+        #region Null
+        public static new readonly ComprehensionIter Null = new NullComprehensionIter();
+
+        sealed class NullComprehensionIter : ComprehensionIter
+        {
+            public override bool IsNull{
+                get{
+                    return true;
+                }
+            }
+
+            public override void AcceptWalker(IAstWalker walker)
+            {
+                walker.VisitNullNode(this);
+            }
+
+            public override TResult AcceptWalker<TResult>(IAstWalker<TResult> walker)
+            {
+                return walker.VisitNullNode(this);
+            }
+
+            public override TResult AcceptWalker<TResult, TData>(IAstWalker<TData, TResult> walker, TData data)
+            {
+                return walker.VisitNullNode(this, data);
+            }
+
+            internal protected override bool DoMatch(AstNode other, ICSharpCode.NRefactory.PatternMatching.Match match)
+            {
+                return other == null || other.IsNull;
+            }
+        }
+        #endregion
+
+        public static readonly Role<ComprehensionIter> CompBody = new Role<ComprehensionIter>("CompBody", ComprehensionIter.Null);
+
+        protected ComprehensionIter()
+        {
+        }
 	}
 
     /// <summary>
@@ -86,6 +122,39 @@ namespace Expresso.Ast
     /// </summary>
     public class ComprehensionForClause : ComprehensionIter
 	{
+        #region Null
+        public static new readonly ComprehensionForClause Null = new NullComprehensionForClause();
+
+        sealed class NullComprehensionForClause : ComprehensionForClause
+        {
+            public override bool IsNull{
+                get{
+                    return true;
+                }
+            }
+
+            public override void AcceptWalker(IAstWalker walker)
+            {
+                walker.VisitNullNode(this);
+            }
+
+            public override TResult AcceptWalker<TResult>(IAstWalker<TResult> walker)
+            {
+                return walker.VisitNullNode(this);
+            }
+
+            public override TResult AcceptWalker<TResult, TData>(IAstWalker<TData, TResult> walker, TData data)
+            {
+                return walker.VisitNullNode(this, data);
+            }
+
+            internal protected override bool DoMatch(AstNode other, ICSharpCode.NRefactory.PatternMatching.Match match)
+            {
+                return other == null || other.IsNull;
+            }
+        }
+        #endregion
+
 		/// <summary>
         /// body内で操作対象となるオブジェクトを参照するのに使用する式。
         /// 評価結果はlvalueにならなければならない。
@@ -120,6 +189,10 @@ namespace Expresso.Ast
             get{return GetChildByRole(ComprehensionIter.CompBody);}
             set{SetChildByRole(ComprehensionIter.CompBody, value);}
 		}
+
+        protected ComprehensionForClause()
+        {
+        }
 
         public ComprehensionForClause(PatternConstruct lhs, Expression targetExpr, ComprehensionIter bodyExpr)
 		{

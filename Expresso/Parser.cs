@@ -762,7 +762,7 @@ string cur_class_name;
 		if (la.kind == 57) {
 			GenericTypeSignature(name, is_reference, start_loc, out type);
 			if(!IsPrimitiveGenericType(name)){
-			   SemanticError("Error ES0006: `{0}` is not a generic type!");
+			   SemanticError("Error ES0006: `{0}` is not a generic type!", name);
 			   return;
 			}
 			
@@ -878,8 +878,8 @@ string cur_class_name;
 		while (!(la.kind == 0 || la.kind == 11)) {SynErr(116); Get();}
 		Expect(11);
 		block = Statement.MakeBlock(stmts, start_loc, CurrentLocation);
-		        GoUpScope();
-		     
+		       	 	GoUpScope();
+		    	 
 	}
 
 	void Parameter(out ParameterDeclaration param) {
@@ -1122,7 +1122,7 @@ string cur_class_name;
 				AugAssignOpe(ref op_type);
 				RValueList(out seq);
 				if(lhs.Count != seq.Count)  //See if both sides have the same number of items or not
-				   SemanticError("Error ES0007: An augumented assignment must have both sides balanced.");
+				   SemanticError("Error ES0007: An augmented assignment must have both sides balanced.");
 				
 				stmt = Statement.MakeAugmentedAssignment(op_type, lhs, seq, start_loc, CurrentLocation);
 				
@@ -1195,7 +1195,7 @@ string cur_class_name;
 		while (!(la.kind == 0 || la.kind == 6)) {SynErr(125); Get();}
 		Expect(6);
 		stmt = Statement.MakeBreakStmt(
-		                      Expression.MakeConstant("int", count, start_loc), start_loc, CurrentLocation
+		                     Expression.MakeConstant("int", count, start_loc), start_loc, CurrentLocation
 		                 );
 		              
 	}
@@ -2180,13 +2180,19 @@ string cur_class_name;
 	void CompFor(out ComprehensionIter expr) {
 		Expression rvalue = null; ComprehensionIter body = null; PatternConstruct target; 
 		Expect(23);
+		Symbols.AddScope();
+		Symbols.Name = "CompFor`" + ScopeId++;
+		GoDownScope();
+		
 		LhsPattern(out target);
 		Expect(24);
 		CondExpr(out rvalue);
 		if (la.kind == 22 || la.kind == 23) {
 			CompIter(out body);
 		}
-		expr = Expression.MakeCompFor(target, rvalue, body); 
+		GoUpScope();
+		expr = Expression.MakeCompFor(target, rvalue, body);
+		
 	}
 
 	void CompIter(out ComprehensionIter expr) {
@@ -2201,11 +2207,17 @@ string cur_class_name;
 	void CompIf(out ComprehensionIter expr) {
 		Expression tmp; ComprehensionIter body = null; 
 		Expect(22);
+		Symbols.AddScope();
+		Symbols.Name = "CompIf`" + ScopeId++;
+		GoDownScope();
+		
 		OrTest(out tmp);
 		if (la.kind == 22 || la.kind == 23) {
 			CompIter(out body);
 		}
-		expr = Expression.MakeCompIf(tmp, body); 
+		GoUpScope();
+		expr = Expression.MakeCompIf(tmp, body);
+		
 	}
 
 

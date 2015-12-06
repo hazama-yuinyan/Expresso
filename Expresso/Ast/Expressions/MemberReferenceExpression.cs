@@ -8,7 +8,7 @@ namespace Expresso.Ast
     /// A member reference expression references a member or method of an object.
     /// Expression '.' Identifier ;
 	/// </summary>
-    public class MemberReference : Expression
+    public class MemberReferenceExpression : Expression
 	{
 		/// <summary>
 		/// The target expression of which a member will be referenced.
@@ -30,7 +30,7 @@ namespace Expresso.Ast
             set{SetChildByRole(Roles.Identifier, value);}
 		}
 
-        public MemberReference(Expression targetExpr, Identifier member)
+        public MemberReferenceExpression(Expression targetExpr, Identifier member)
             : base(targetExpr.StartLocation, member.EndLocation)
 		{
             Target = targetExpr;
@@ -56,7 +56,7 @@ namespace Expresso.Ast
 
         protected internal override bool DoMatch(AstNode other, ICSharpCode.NRefactory.PatternMatching.Match match)
         {
-            var o = other as MemberReference;
+            var o = other as MemberReferenceExpression;
             return o != null && Target.DoMatch(o.Target, match) && Member.DoMatch(o.Member, match);
         }
 
