@@ -553,6 +553,7 @@ Modifiers<ref Modifiers modifiers>
 FuncDecl<out EntityDeclaration decl, Modifiers modifiers>
                                 (.  Identifier ident = null;
 									string name; AstType type = null; BlockStatement block;
+									var type_params = new List<ParameterType>();
 									var @params = new List<ParameterDeclaration>();
                                     var start_loc = NextLocation;
 								.)
@@ -569,64 +570,86 @@ FuncDecl<out EntityDeclaration decl, Modifiers modifiers>
                                        // Leave the parser to recover its state.
                                    }
                                 .)
+ [ GenericTypeParameters<ref type_params> ]
   '('                           (. GoDownScope();
                                    Symbols.Name = "func " + name + "`" + ScopeId++;
                                 .)
-  [ParamList<out @params>]
+  [ParamList<type_params, ref @params>]
   ')'
   [ "->"
     Type<out type>
   ]                             (. if(type == null)
                                        type = new PlaceholderType(TextLocation.Empty);
+
+                                   if(type_params.Any(tp => tp.Identifier == type.Name)){
+                                   	   var type_param = type_params.Where(tp => tp.Identifier == type.Name)
+                                   	       .Select(tp => tp)
+                                   	       .First()
+                                   	       .Clone();
+
+                                   	   
+                                   }
                                 .)
   Block<out block> 				(. decl = EntityDeclaration.MakeFunc(ident, @params, block, type, modifiers, start_loc);
                                    GoUpScope();
                                 .).
 /*------------------------------------------------------------------------*/
-ParamList<. out List<ParameterDeclaration> @params .>
-                                (. @params = new List<ParameterDeclaration>(); ParameterDeclaration param; bool seen_option = false; .)
+ParamList<. List<ParameterType> typeParams, ref List<ParameterDeclaration> @params .>
+                                (. ParameterDeclaration param; bool seen_option = false; .)
 =
   Parameter<out param>          (.
-                                   if(param.Option != null)
+                                   if(!param.Option.IsNull)
                                        seen_option = true;
 
+                                   if(typeParams.Any(tp => tp.Identifier == param.ReturnType.Name)){
+                                       var param_type = typeParams.Where(tp => tp.Identifier == param.ReturnType.Name)
+                                       	   .Select(tp => tp)
+                                       	   .First()
+                                       	   .Clone();
+
+                                       param.ReturnType.ReplaceWith(param_type);
+                                   }
                                    @params.Add(param);
                                 .)
   { WEAK ','
     Parameter<out param>        (.
-                                   if(seen_option && param.Option == null)
+                                   if(seen_option && param.Option.IsNull)
                                        SemanticError("Error ES0002: You can't put optional parameters before non-optional parameters");
-                                   else if(!seen_option && param.Option != null)
+                                   else if(!seen_option && !param.Option.IsNull)
                                        seen_option = true;
 
+                                   if(typeParams.Any(tp => tp.Identifier == param.ReturnType.Name)){
+                                   	   var param_type = typeParams.Where(tp => tp.Identifier == param.ReturnType.Name)
+                                   	   	   .Select(tp => tp)
+                                   	   	   .First()
+                                   	   	   .Clone();
+
+                                   	   param.ReturnType.ReplaceWith(param_type);
+                                   }
                                    @params.Add(param);
                                 .)
-  }
-  [ ident                       (. string name = t.val; AstType type = null; var loc = CurrentLocation; .)
-    "..."
-    [ "(-"
-      Type<out type>
-    ]                           (.
-                                   if(type == null || !(type is SimpleType) || ((SimpleType)type).Name != "array")
-                                       SemanticError("Error ES0001: The variadic parameter must be an array!");
-
-                                   var identifier = AstNode.MakeIdentifier(name, type, loc);
-                                   param = EntityDeclaration.MakeParameter(identifier, null);
-                                   @params.Add(param);
-                               .)
-  ].
+  }.
 /*------------------------------------------------------------------------*/
-Parameter<out ParameterDeclaration param>   (. Identifier identifier; Expression option = null; .)
+Parameter<out ParameterDeclaration param>   (. Identifier identifier; Expression option = null; AstType type; .)
 =
   Identifier<out identifier>
   [ '='
-    Literal<out option>
-  ]                                         (. if(identifier.Type is PlaceholderType && option == null)
+    Literal<out option>                     (. if(identifier.Type is PlaceholderType && option == null)
                                                    SemanticError("Error ES0004: You can't omit both the type annotation and the default value!");
 
                                                Symbols.AddSymbol(identifier.Name, identifier);
-                                               param = EntityDeclaration.MakeParameter(identifier, option);
-                                            .).
+                                            .)
+  | "..."
+    "(-"
+    Type<out type>							(.
+    										    if(la.kind == _ident)
+    										    	SemanticError("Error ES0010: The variadic parameter has to be placed in the last position of a parameter list");
+    										  	else if(type == null || !(type is SimpleType) || ((SimpleType)type).Name != "array")
+    										  		SemanticError("Error ES0001: The variadic parameter must be an array!");
+
+    										  	Symbols.AddSymbol(identifier.Name, identifier);
+    										.)
+  ]											(. param = EntityDeclaration.MakeParameter(identifier, option); .).
 /*------------------------------------------------------------------------*/
 FieldDecl<out EntityDeclaration field, Modifiers modifiers>
   (. Expression rhs; Identifier ident; var start_loc = NextLocation;
@@ -648,14 +671,14 @@ FieldDecl<out EntityDeclaration field, Modifiers modifiers>
   }
   SYNC ';'							(. field = EntityDeclaration.MakeField(idents, exprs, modifiers, start_loc, CurrentLocation); .).
 /*------------------------------------------------------------------------*/
-/*GenericTypeParameters<. out List<AstType> types .>	(. types = new List<AstType>(); .)
+GenericTypeParameters<. ref List<ParameterType> types .>
 =
   '<'
   ident												(. types.Add(AstType.MakeParameterType(t.val)); .)
   { ','
     ident											(. types.Add(AstType.MakeParameterType(t.val)); .)
   }
-  '>'.*/
+  '>'.
 /*------------------------------------------------------------------------*/
 Type<out AstType type>				(. var start_loc = NextLocation; type = new PlaceholderType(NextLocation);
        								   var is_reference = false; string name = null;
@@ -701,7 +724,10 @@ Type<out AstType type>				(. var start_loc = NextLocation; type = new Placeholde
 TupleTypeSignature<out AstType type> (. var inners = new List<AstType>(); var start_loc = NextLocation; .)
 =
   '('
-  { Type<out type>                  (. inners.Add(type); .)
+  [ Type<out type>					(. inners.Add(type); .)
+  ]
+  { ','
+    Type<out type>                  (. inners.Add(type); .)
   }
   ')'                               (. type = AstType.MakeSimpleType("tuple", inners, start_loc, CurrentLocation); .).
 /*------------------------------------------------------------------------*/

@@ -1043,20 +1043,6 @@ namespace Expresso.Test
             var ast = parser.TopmostAst;
 
             var expected = AstNode.MakeModuleDef("main", new List<EntityDeclaration>{
-                EntityDeclaration.MakeFunc("createList", new List<ParameterDeclaration>{
-                    EntityDeclaration.MakeParameter("a", AstType.MakeParameterType("T")),
-                    EntityDeclaration.MakeParameter("b", AstType.MakeParameterType("T")),
-                    EntityDeclaration.MakeParameter("rest", AstType.MakeSimpleType("array", new []{AstType.MakeParameterType("T")}))
-                }, Statement.MakeBlock(
-                    Statement.MakeReturnStmt(Expression.MakeCallExpr(Expression.MakeMemRef(
-                        Expression.MakeSequenceInitializer(AstType.MakeSimpleType("vector", new []{Helpers.MakePlaceholderType()}),
-                            Helpers.MakeIdentifierPath("a"),
-                            Helpers.MakeIdentifierPath("b")
-                        ), Helpers.MakeSomeIdent("join")
-                    ), new List<Expression>{
-                        Helpers.MakeIdentifierPath("rest")
-                    }))
-                ), AstType.MakeSimpleType("vector", new []{AstType.MakeParameterType("T")}), Modifiers.None),
                 EntityDeclaration.MakeFunc("main",
                     Enumerable.Empty<ParameterDeclaration>(),
                     Statement.MakeBlock(
@@ -1182,19 +1168,22 @@ namespace Expresso.Test
                                 )
                             ), AstType.MakeSimpleType("vector", new []{Helpers.MakePlaceholderType()}))
                         }, Modifiers.Immutable),
-                        Statement.MakeVarDecl(new List<Identifier>{
-                            Helpers.MakeSomeIdent("a"),
-                            Helpers.MakeSomeIdent("b"),
-                            Helpers.MakeSomeIdent("c")
-                        }, Enumerable.Empty<Expression>(),
+                        Helpers.MakeVariableDeclaration(new List<Identifier>{
+                            AstNode.MakeIdentifier("a", AstType.MakePrimitiveType("int")),
+                            AstNode.MakeIdentifier("b", AstType.MakePrimitiveType("int")),
+                            AstNode.MakeIdentifier("c", AstType.MakePrimitiveType("int"))
+                        }, 
                             Modifiers.None
                         ),
-                        Statement.MakeExprStmt(Expression.MakeSingleAssignment(Helpers.MakeIdentifierPath("a"),
-                            Expression.MakeSingleAssignment(Helpers.MakeIdentifierPath("b"),
-                                Expression.MakeSingleAssignment(Helpers.MakeIdentifierPath("c"),
-                                    Expression.MakeConstant("int", 0)
-                                )
-                            )
+                        Statement.MakeExprStmt(Expression.MakeSingleAssignment(
+                            Expression.MakeSingleAssignment(
+                                Expression.MakeSingleAssignment(
+                                    Expression.MakeSequenceExpression(Helpers.MakeIdentifierPath("a")),
+                                    Expression.MakeSequenceExpression(Helpers.MakeIdentifierPath("b"))
+                                ),
+                                Expression.MakeSequenceExpression(Helpers.MakeIdentifierPath("c"))
+                            ),
+                            Expression.MakeSequenceExpression(Expression.MakeConstant("int", 0))
                         )),
                         Statement.MakeExprStmt(Expression.MakeAssignment(Expression.MakeSequenceExpression(
                             Helpers.MakeIdentifierPath("a"),
@@ -1206,43 +1195,38 @@ namespace Expresso.Test
                             Expression.MakeConstant("int", 3)
                         ))),
                         Statement.MakeVarDecl(new List<Identifier>{
-                            Helpers.MakeSomeIdent("vec")
+                            AstNode.MakeIdentifier("vec", AstType.MakeSimpleType("vector", new []{AstType.MakeSimpleType("tuple", new []{
+                                AstType.MakePrimitiveType("int"),
+                                AstType.MakePrimitiveType("int")
+                            })}))
                         }, new List<Expression>{
-                            Expression.MakeSequenceInitializer(AstType.MakeSimpleType("vector", null), Enumerable.Empty<Expression>())
+                            Expression.MakeSequenceInitializer(AstType.MakeSimpleType("vector", new []{Helpers.MakePlaceholderType()}), Enumerable.Empty<Expression>())
                         }, Modifiers.Immutable),
                         Statement.MakeVarDecl(new List<Identifier>{
                             Helpers.MakeSomeIdent("t")
                         }, new List<Expression>{
-                            Expression.MakeSequenceInitializer(AstType.MakeSimpleType("tuple", new List<AstType>{
-                                AstType.MakePrimitiveType("int"),
-                                AstType.MakePrimitiveType("int"),
-                                AstType.MakePrimitiveType("int")
-                            }), new List<Expression>{
+                            Expression.MakeParen(Expression.MakeSequenceExpression(new List<Expression>{
                                 Helpers.MakeIdentifierPath("a"),
                                 Helpers.MakeIdentifierPath("b"),
                                 Helpers.MakeIdentifierPath("c")
-                            })
+                            }))
                         }, Modifiers.Immutable),
                         Statement.MakeExprStmt(Expression.MakeCallExpr(Expression.MakeMemRef(Helpers.MakeIdentifierPath("vec"),
                             Helpers.MakeSomeIdent("add")
                         ), new List<Expression>{
-                            Expression.MakeSequenceInitializer(AstType.MakeSimpleType("tuple", new List<AstType>{
-                                AstType.MakePrimitiveType("int"),
-                                AstType.MakePrimitiveType("int")
-                            }), new List<Expression>{
+                            Expression.MakeParen(Expression.MakeSequenceExpression(new List<Expression>{
                                 Helpers.MakeIdentifierPath("a"),
                                 Helpers.MakeIdentifierPath("b")
-                            })
+                            }))
                         })),
-                        Statement.MakeExprStmt(Helpers.MakeCallExpression(
-                            Expression.MakeMemRef(
-                                Helpers.MakeIdentifierPath("vec"),
-                                Helpers.MakeSomeIdent("add")
-                            ),
-                            Expression.MakeParen(Expression.MakeSequenceExpression(
-                                Helpers.MakeIdentifierPath("i"),
-                                Helpers.MakeIdentifierPath("j")
-                            ))
+                        Statement.MakeExprStmt(Helpers.MakeCallExpression(Helpers.MakeIdentifierPath("println"),
+                            Helpers.MakeIdentifierPath("x"),
+                            Helpers.MakeIdentifierPath("y"),
+                            Helpers.MakeIdentifierPath("z"),
+                            Helpers.MakeIdentifierPath("specific_triangles"),
+                            Helpers.MakeIdentifierPath("a"),
+                            Helpers.MakeIdentifierPath("b"),
+                            Helpers.MakeIdentifierPath("c")
                         ))
                     ),
                     Helpers.MakePlaceholderType(),
@@ -1253,6 +1237,27 @@ namespace Expresso.Test
             Assert.IsNotNull(ast);
 
             Helpers.AstStructuralEqual(ast, expected);
+        }
+
+        [Test]
+        public void GenericParams()
+        {
+            var expected = EntityDeclaration.MakeModuleDef("main", new List<EntityDeclaration>{
+                EntityDeclaration.MakeFunc("createList", new List<ParameterDeclaration>{
+                    EntityDeclaration.MakeParameter("a", AstType.MakeParameterType("T")),
+                    EntityDeclaration.MakeParameter("b", AstType.MakeParameterType("T")),
+                    EntityDeclaration.MakeParameter("rest", AstType.MakeSimpleType("array", new []{AstType.MakeParameterType("T")}))
+                }, Statement.MakeBlock(
+                    Statement.MakeReturnStmt(Expression.MakeCallExpr(Expression.MakeMemRef(
+                        Expression.MakeSequenceInitializer(AstType.MakeSimpleType("vector", new []{Helpers.MakePlaceholderType()}),
+                            Helpers.MakeIdentifierPath("a"),
+                            Helpers.MakeIdentifierPath("b")
+                        ), Helpers.MakeSomeIdent("join")
+                    ), new List<Expression>{
+                        Helpers.MakeIdentifierPath("rest")
+                    }))
+                ), AstType.MakeSimpleType("vector", new []{AstType.MakeParameterType("T")}), Modifiers.None)
+            });
         }
 	}
 }

@@ -183,6 +183,15 @@ namespace Expresso.Test
         {
             return Expression.MakeIndexer(target, args);
         }
+
+        public static VariableDeclarationStatement MakeVariableDeclaration(IEnumerable<Identifier> identifiers, Modifiers modifiers)
+        {
+            var exprs =
+                from ident in identifiers
+                select Expression.Null;
+
+            return Statement.MakeVarDecl(identifiers, exprs, modifiers);
+        }
     }
 
     internal class FunctionAnnotation

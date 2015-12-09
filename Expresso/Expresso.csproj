@@ -188,8 +188,8 @@
     <Compile Include="Ast\FunctionType.cs" />
     <Compile Include="Ast\Statements\ValueBindingForStatement.cs" />
     <Compile Include="TriBool.cs" />
-    <Compile Include="ParameterType.cs" />
     <Compile Include="Ast\Expressions\MemberReferenceExpression.cs" />
+    <Compile Include="Ast\ParameterType.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System" />
