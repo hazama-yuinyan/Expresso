@@ -376,7 +376,7 @@ namespace Expresso.Ast
             writer.Write(literal.LiteralValue);
         }
 
-        public void VisitIntgerSequenceExpression(IntegerSequenceExpression intSeq)
+        public void VisitIntegerSequenceExpression(IntegerSequenceExpression intSeq)
         {
             intSeq.Lower.AcceptWalker(this);
             writer.Write(intSeq.UpperInclusive ? "..." : "..");

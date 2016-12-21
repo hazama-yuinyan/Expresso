@@ -190,6 +190,8 @@
     <Compile Include="TriBool.cs" />
     <Compile Include="Ast\Expressions\MemberReferenceExpression.cs" />
     <Compile Include="Ast\ParameterType.cs" />
+    <Compile Include="CodeGen\LazyTypeBuilder.cs" />
+    <Compile Include="CodeGen\InterfaceTypeDefiner.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System" />

@@ -29,7 +29,7 @@ namespace Expresso.CodeGen
     /// other semantics analisys phases do that.
     /// We just care if an Expresso's expresson is convertible and has been converted to C# expressions or not.
     /// </remarks>
-    public class CSharpEmitter : IAstWalker<CSharpEmitterContext, CSharpExpr>
+    public partial class CSharpEmitter : IAstWalker<CSharpEmitterContext, CSharpExpr>
 	{
         //###################################################
         //# Symbols defined in the whole program.
@@ -173,11 +173,6 @@ namespace Expresso.CodeGen
             return options.BuildType.HasFlag(BuildType.Assembly) ? ast.Name + ".dll" : ast.Name + ".exe";
         }
 
-        string ConvertToCLRFunctionName(string name)
-        {
-            return name.Substring(0, 1).ToUpper() + name.Substring(1);
-        }
-
         #region IAstWalker implementation
 
         public CSharpExpr VisitAst(ExpressoAst ast, CSharpEmitterContext context)
@@ -189,7 +184,7 @@ namespace Expresso.CodeGen
 
             var asm_builder = Thread.GetDomain().DefineDynamicAssembly(name, AssemblyBuilderAccess.RunAndSave, options.OutputPath);
             var mod_builder = asm_builder.DefineDynamicModule(ast.Name + ".exe");
-            var type_builder = mod_builder.DefineType("ExsMain", TypeAttributes.Class, typeof(object));
+            var type_builder = new LazyTypeBuilder(mod_builder, "ExsMain", TypeAttributes.Class, Enumerable.Empty<Type>());
 
             context.AssemblyBuilder = asm_builder;
             context.ModuleBuilder = mod_builder;
@@ -410,7 +405,7 @@ namespace Expresso.CodeGen
             // All the pattern clauses must meet the same condition.
             // If context.ContextExpression is an ExprTree.ConditionalExpression
             // we know that we're at least at the second branch.
-            // If it is null, then we're at the first branch so just set it the context expression.
+            // If it is null, then we're at the first branch so just set it to the context expression.
             var target = matchStmt.Target.AcceptWalker(this, context);
             var target_var = CSharpExpr.Parameter(target.Type);
             context.TemporaryVariable = target_var;
@@ -708,6 +703,9 @@ namespace Expresso.CodeGen
             if(symbol != null){
                 if(symbol.Parameter != null){
                     return symbol.Parameter;
+                }else if(context.RequestField && symbol.Field != null){
+                    context.Field = symbol.Field;
+                    return null;
                 }else if(context.RequestType && symbol.Type != null){
                     context.TargetType = symbol.Type;
                     return symbol.Parameter;
@@ -722,7 +720,7 @@ namespace Expresso.CodeGen
                 }
             }else{
                 if(context.RequestField){
-                    var field = (context.TargetType != null) ? context.TargetType.GetField(ident.Name) : context.TypeBuilder.GetDeclaredField(ident.Name);
+                    var field = (context.TargetType != null) ? context.TargetType.GetField(ident.Name) : context.TypeBuilder.GetField(ident.Name);
                     context.Field = field;
                     return null;
                 }else{
@@ -1046,8 +1044,7 @@ namespace Expresso.CodeGen
 
         public CSharpExpr VisitSelfReferenceExpression(SelfReferenceExpression selfRef, CSharpEmitterContext context)
         {
-            var cur_context_type = context.TypeBuilder.AsType();
-            return CSharpExpr.Parameter(cur_context_type, "self");
+            return context.ParameterSelf;
         }
 
         public CSharpExpr VisitSuperReferenceExpression(SuperReferenceExpression superRef, CSharpEmitterContext context)
@@ -1174,40 +1171,29 @@ namespace Expresso.CodeGen
             var context_ast = context.ContextAst;
             context.ContextAst = funcDecl;
 
-            var param_types = new List<Type>();
-            var parameters = new List<ExprTree.ParameterExpression>();
-            foreach(var param in funcDecl.Parameters){
-                var tmp = param.AcceptWalker(this, context);
-                param_types.Add(tmp.Type);
-                parameters.Add((ExprTree.ParameterExpression)tmp);
-            }
+            var additional_parameters = funcDecl.Parameters.Select(param => param.AcceptWalker(this, context))
+                .OfType<ExprTree.ParameterExpression>();
 
             var prev_rv = context.ParameterReturnValue;
             var return_type = CSharpCompilerHelper.GetNativeType(funcDecl.ReturnType);
             if(return_type != typeof(void))
                 context.ParameterReturnValue = CSharpExpr.Parameter(return_type, "return_value");
 
+            var prev_self = context.ParameterSelf;
+            var self_type = context.TypeBuilder.CreateInterfaceType();
+            context.ParameterSelf = CSharpExpr.Parameter(self_type, "self");
+
+            var parameters = new []{context.ParameterSelf}.Concat(additional_parameters);
+
             var body = funcDecl.Body.AcceptWalker(this, context);
             context.Additionals = null;
             context.ContextAst = context_ast;
             context.ParameterReturnValue = prev_rv;
+            context.ParameterSelf = prev_self;
             var lambda = CSharpExpr.Lambda(body, parameters);
 
-            var attr = MethodAttributes.Static | MethodAttributes.Family;
-            if(funcDecl.Modifiers.HasFlag(Modifiers.Export)){
-                attr |= MethodAttributes.Public;
-                attr ^= MethodAttributes.Family;
-            }
-
-            if(funcDecl.Name == "main")
-                attr |= MethodAttributes.HideBySig;
-
-            var func_builder = context.TypeBuilder.DefineMethod(ConvertToCLRFunctionName(funcDecl.Name), attr, return_type, param_types.ToArray());
-            lambda.CompileToMethod(func_builder);
-
-            Symbols.Add(funcDecl.NameToken.IdentifierId, new ExpressoSymbol{Method = func_builder});
-            if(funcDecl.Name == "main")
-                context.AssemblyBuilder.SetEntryPoint(func_builder, PEFileKinds.ConsoleApplication);
+            var func_builder = Symbols[funcDecl.NameToken.IdentifierId].Method as MethodBuilder;
+            context.TypeBuilder.SetBody(func_builder, lambda);
 
             AscendScope();
             sibling_count = tmp_counter + 1;
@@ -1217,51 +1203,39 @@ namespace Expresso.CodeGen
 
         public CSharpExpr VisitTypeDeclaration(TypeDeclaration typeDecl, CSharpEmitterContext context)
         {
+            var original_count = sibling_count;
+            var interface_definer = new InterfaceTypeDefiner(this, context);
+            interface_definer.VisitTypeDeclaration(typeDecl);
+
             var parent_type = context.TypeBuilder;
-            var attr = typeDecl.Modifiers.HasFlag(Modifiers.Export) ? TypeAttributes.Public : TypeAttributes.NotPublic;
-            attr |= TypeAttributes.Class;
-            context.TypeBuilder = (parent_type != null) ? parent_type.DefineNestedType(typeDecl.Name, attr) : context.ModuleBuilder.DefineType(typeDecl.Name, attr);
+            context.TypeBuilder = Symbols[typeDecl.NameToken.IdentifierId].TypeBuilder;
+
+            sibling_count = original_count;
+            DescendScope();
+            sibling_count = 0;
 
             try{
                 foreach(var member in typeDecl.Members)
                     member.AcceptWalker(this, context);
 
-                var type = context.TypeBuilder.CreateType();
-                Symbols.Add(typeDecl.NameToken.IdentifierId, new ExpressoSymbol{Type = type});
+                context.TypeBuilder.CreateType();
             }
             finally{
                 context.TypeBuilder = parent_type;
             }
+
+            AscendScope();
+            sibling_count = original_count;
             return null;
         }
 
         public CSharpExpr VisitFieldDeclaration(FieldDeclaration fieldDecl, CSharpEmitterContext context)
         {
-            FieldAttributes attr = FieldAttributes.Private;
-            if(fieldDecl.Modifiers.HasFlag(Modifiers.Static))
-                attr |= FieldAttributes.Static;
-
-            if(fieldDecl.Modifiers.HasFlag(Modifiers.Immutable))
-                attr |= FieldAttributes.InitOnly;
-
-            if(fieldDecl.Modifiers.HasFlag(Modifiers.Private))
-                attr |= FieldAttributes.Private;
-            else if(fieldDecl.Modifiers.HasFlag(Modifiers.Protected))
-                attr |= FieldAttributes.Family;
-            else if(fieldDecl.Modifiers.HasFlag(Modifiers.Public))
-                attr |= FieldAttributes.Public;
-            else
-                throw new EmitterException("Unknown modifiers!");
-
             foreach(var init in fieldDecl.Initializers){
-                var type = CSharpCompilerHelper.GetNativeType(init.NameToken.Type);
-                var field_builder = context.TypeBuilder.DefineField(init.Name, type, attr);
+                var field_builder = Symbols[init.NameToken.IdentifierId].Field as FieldBuilder;
                 var initializer = init.Initializer.AcceptWalker(this, context);
-                var constant = initializer as ExprTree.ConstantExpression;
-                if(constant != null)
-                    field_builder.SetConstant(constant.Value);
-
-                Symbols.Add(init.NameToken.IdentifierId, new ExpressoSymbol{Field = context.TypeBuilder.GetDeclaredField(init.Name)});
+                if(initializer != null)
+                    context.TypeBuilder.SetBody(field_builder, initializer);
             }
 
             return null;
@@ -1269,9 +1243,14 @@ namespace Expresso.CodeGen
 
         public CSharpExpr VisitParameterDeclaration(ParameterDeclaration parameterDecl, CSharpEmitterContext context)
         {
-            var native_type = CSharpCompilerHelper.GetNativeType(parameterDecl.ReturnType);
-            var param = CSharpExpr.Parameter(native_type, parameterDecl.Name);
-            Symbols.Add(parameterDecl.NameToken.IdentifierId, new ExpressoSymbol{Parameter = param});
+            ExprTree.ParameterExpression param;
+            if(!Symbols.ContainsKey(parameterDecl.NameToken.IdentifierId)){
+                var native_type = CSharpCompilerHelper.GetNativeType(parameterDecl.ReturnType);
+                param = CSharpExpr.Parameter(native_type, parameterDecl.Name);
+                Symbols.Add(parameterDecl.NameToken.IdentifierId, new ExpressoSymbol{Parameter = param});
+            }else{
+                param = (ExprTree.ParameterExpression)VisitIdentifier(parameterDecl.NameToken, context);
+            }
             if(context.Additionals != null)
                 context.Additionals.Add(param);
 

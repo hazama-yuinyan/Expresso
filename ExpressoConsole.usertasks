@@ -1,21 +1,21 @@
-<ListOfTask>
-  <Task file="" description="モジュール定義、利用の追加(require文（？）)" completed="True" />
-  <Task file="" description="expression型、bigint型などの追加" priority="High" completed="True" />
-  <Task file="" description="クロージャー（ラムダ式）の追加" />
-  <Task file="" description="処理系の高速化・効率化(式木を使ったコンパイル方式への移行または、ILコードの生成)" priority="Low" />
-  <Task file="" description="クラス定義の追加" priority="High" completed="True" />
-  <Task file="" description="型検査機能の実装" />
-  <Task file="" description="例外処理機構の追加" priority="High" />
-  <Task file="" description="staticメソッド・関数の追加" />
-  <Task file="" description="標準ライブラリの整備" priority="Low" />
-  <Task file="" description="継承の実装" />
-  <Task file="" description="インタプリタのswitch文化" priority="High" completed="True" />
-  <Task file="" description="演算子オーバーロードの追加" />
-  <Task file="" description="他の.NET言語との連携性強化" />
-  <Task file="" description="プロパティーの実装" />
-  <Task file="" description="実引数・仮引数の属性対応(ref,outなど)" />
-  <Task file="" description="import ... in ...構文の追加(Pythonのfrom...import...構文相当)" />
-  <Task file="" description="最低限初期化構文から変数の型推論する機能の追加" priority="High" />
-  <Task file="" description="NRefactoryを使用した型システムの導入" priority="High" />
-  <Task file="" description="ソースファイルの先頭にモジュール名定義文の追加" priority="High" completed="True" />
-</ListOfTask>
+<ListOfTaskListEntry>
+  <TaskListEntry file="" description="モジュール定義、利用の追加(require文（？）)" completed="True" />
+  <TaskListEntry file="" description="expression型、bigint型などの追加" priority="High" completed="True" />
+  <TaskListEntry file="" description="クロージャー（ラムダ式）の追加" />
+  <TaskListEntry file="" description="処理系の高速化・効率化(式木を使ったコンパイル方式への移行または、ILコードの生成)" priority="Low" />
+  <TaskListEntry file="" description="クラス定義の追加" priority="High" completed="True" />
+  <TaskListEntry file="" description="型検査機能の実装" />
+  <TaskListEntry file="" description="例外処理機構の追加" priority="High" />
+  <TaskListEntry file="" description="staticメソッド・関数の追加" />
+  <TaskListEntry file="" description="標準ライブラリの整備" priority="Low" />
+  <TaskListEntry file="" description="継承の実装" />
+  <TaskListEntry file="" description="インタプリタのswitch文化" priority="High" completed="True" />
+  <TaskListEntry file="" description="演算子オーバーロードの追加" />
+  <TaskListEntry file="" description="他の.NET言語との連携性強化" />
+  <TaskListEntry file="" description="プロパティーの実装" />
+  <TaskListEntry file="" description="実引数・仮引数の属性対応(ref,outなど)" />
+  <TaskListEntry file="" description="import ... in ...構文の追加(Pythonのfrom...import...構文相当)" />
+  <TaskListEntry file="" description="最低限初期化構文から変数の型推論する機能の追加" priority="High" />
+  <TaskListEntry file="" description="NRefactoryを使用した型システムの導入" priority="High" />
+  <TaskListEntry file="" description="ソースファイルの先頭にモジュール名定義文の追加" priority="High" completed="True" />
+</ListOfTaskListEntry>

@@ -384,22 +384,24 @@ namespace Expresso.Ast.Analysis
             {
                 var decls =
                     from a in selfRef.Ancestors
-                        where a.NodeType == NodeType.TypeDeclaration || a.NodeType == NodeType.Member
+                        where a.NodeType == NodeType.TypeDeclaration
                     let entity = a as EntityDeclaration
                     select entity;
 
-                return decls.First().ReturnType;
+                return decls.First().ReturnType.Clone();
             }
 
             public AstType VisitSuperReferenceExpression(SuperReferenceExpression superRef)
             {
                 var decls =
                     from a in superRef.Ancestors
-                        where a.NodeType == NodeType.TypeReference || a.NodeType == NodeType.Member
-                    let entity = a as EntityDeclaration
-                    select entity;
+                        where a.NodeType == NodeType.TypeDeclaration
+                    let type = a as TypeDeclaration
+                        where type != null
+                    from pt in type.BaseTypes
+                    select pt as AstType;
 
-                return decls.First().ReturnType;
+                return decls.First().Clone();
             }
 
             public AstType VisitCommentNode(CommentNode comment)
@@ -414,32 +416,32 @@ namespace Expresso.Ast.Analysis
 
             public AstType VisitSimpleType(SimpleType simpleType)
             {
-                return simpleType;
+                return simpleType.Clone();
             }
 
             public AstType VisitPrimitiveType(PrimitiveType primitiveType)
             {
-                return primitiveType;
+                return primitiveType.Clone();
             }
 
             public AstType VisitReferenceType(ReferenceType referenceType)
             {
-                return referenceType.BaseType;
+                return referenceType.BaseType.Clone();
             }
 
             public AstType VisitMemberType(MemberType memberType)
             {
-                return memberType.ChildType;
+                return memberType.ChildType.Clone();
             }
 
             public AstType VisitFunctionType(FunctionType funcType)
             {
-                return funcType.ReturnType;
+                return funcType.ReturnType.Clone();
             }
 
             public AstType VisitParameterType(ParameterType paramType)
             {
-                return paramType;
+                return paramType.Clone();
             }
 
             public AstType VisitPlaceholderType(PlaceholderType placeholderType)

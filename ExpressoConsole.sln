@@ -5,11 +5,11 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExpressoConsole", "Expresso
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Expresso", "Expresso\Expresso.csproj", "{4E28200A-5808-419F-8A57-F504842991AF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExpressoTest", "ExpressoTest\ExpressoTest.csproj", "{20AC9F09-B706-428B-B0F9-E32E865D41EA}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExpressoRuntime", "Expresso\ExpressoRuntime\ExpressoRuntime.csproj", "{D60E49D6-6CBA-4D54-A009-6A0528181C88}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ICSharpCode.NRefactory", "Libraries\NRefactory\ICSharpCode.NRefactory\ICSharpCode.NRefactory.csproj", "{3B2A5653-EC97-4001-BB9B-D90F1AF2C371}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExpressoTest", "ExpressoTest\ExpressoTest.csproj", "{EB393D0B-8183-45EF-89E8-822BC29F097D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -19,14 +19,6 @@ Global
 		net_4_5_Release|Any CPU = net_4_5_Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{20AC9F09-B706-428B-B0F9-E32E865D41EA}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{20AC9F09-B706-428B-B0F9-E32E865D41EA}.Debug|x86.Build.0 = Debug|Any CPU
-		{20AC9F09-B706-428B-B0F9-E32E865D41EA}.net_4_5_Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{20AC9F09-B706-428B-B0F9-E32E865D41EA}.net_4_5_Debug|Any CPU.Build.0 = Debug|Any CPU
-		{20AC9F09-B706-428B-B0F9-E32E865D41EA}.net_4_5_Release|Any CPU.ActiveCfg = Debug|Any CPU
-		{20AC9F09-B706-428B-B0F9-E32E865D41EA}.net_4_5_Release|Any CPU.Build.0 = Debug|Any CPU
-		{20AC9F09-B706-428B-B0F9-E32E865D41EA}.Release|x86.ActiveCfg = Release|Any CPU
-		{20AC9F09-B706-428B-B0F9-E32E865D41EA}.Release|x86.Build.0 = Release|Any CPU
 		{3B2A5653-EC97-4001-BB9B-D90F1AF2C371}.Debug|x86.ActiveCfg = Debug|Any CPU
 		{3B2A5653-EC97-4001-BB9B-D90F1AF2C371}.Debug|x86.Build.0 = Debug|Any CPU
 		{3B2A5653-EC97-4001-BB9B-D90F1AF2C371}.net_4_5_Debug|Any CPU.ActiveCfg = net_4_5_Debug|Any CPU
@@ -59,6 +51,14 @@ Global
 		{D60E49D6-6CBA-4D54-A009-6A0528181C88}.net_4_5_Release|Any CPU.Build.0 = Debug|Any CPU
 		{D60E49D6-6CBA-4D54-A009-6A0528181C88}.Release|x86.ActiveCfg = Release|Any CPU
 		{D60E49D6-6CBA-4D54-A009-6A0528181C88}.Release|x86.Build.0 = Release|Any CPU
+		{EB393D0B-8183-45EF-89E8-822BC29F097D}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{EB393D0B-8183-45EF-89E8-822BC29F097D}.Debug|x86.Build.0 = Debug|Any CPU
+		{EB393D0B-8183-45EF-89E8-822BC29F097D}.net_4_5_Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EB393D0B-8183-45EF-89E8-822BC29F097D}.net_4_5_Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EB393D0B-8183-45EF-89E8-822BC29F097D}.net_4_5_Release|Any CPU.ActiveCfg = Debug|Any CPU
+		{EB393D0B-8183-45EF-89E8-822BC29F097D}.net_4_5_Release|Any CPU.Build.0 = Debug|Any CPU
+		{EB393D0B-8183-45EF-89E8-822BC29F097D}.Release|x86.ActiveCfg = Release|Any CPU
+		{EB393D0B-8183-45EF-89E8-822BC29F097D}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(MonoDevelopProperties) = preSolution
 		Policies = $0

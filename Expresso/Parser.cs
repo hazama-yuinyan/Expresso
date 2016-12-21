@@ -910,14 +910,13 @@ string cur_class_name;
 	void Parameter(out ParameterDeclaration param) {
 		Identifier identifier; Expression option = null; AstType type; 
 		Identifier(out identifier);
+		Symbols.AddSymbol(identifier.Name, identifier); 
 		if (la.kind == 2 || la.kind == 40) {
 			if (la.kind == 40) {
 				Get();
 				Literal(out option);
 				if(identifier.Type is PlaceholderType && option == null)
 				   SemanticError("Error ES0004: You can't omit both the type annotation and the default value!");
-				
-				Symbols.AddSymbol(identifier.Name, identifier);
 				
 			} else {
 				Get();
@@ -927,8 +926,6 @@ string cur_class_name;
 				SemanticError("Error ES0010: The variadic parameter has to be placed in the last position of a parameter list");
 				else if(type == null || !(type is SimpleType) || ((SimpleType)type).Name != "array")
 				SemanticError("Error ES0001: The variadic parameter must be an array!");
-				
-				Symbols.AddSymbol(identifier.Name, identifier);
 				
 			}
 		}
@@ -1018,7 +1015,8 @@ string cur_class_name;
 			Get();
 			var self_expr = Expression.MakeSelfRef(start_loc);
 			expr = self_expr;
-			Symbols.AddSymbol(cur_class_name + "self", self_expr.SelfIdentifier);
+			// Don't add self symbol because we only need one ParameterExpression instance per type.
+			//Symbols.AddSymbol(cur_class_name + "self", self_expr.SelfIdentifier);
 			
 			break;
 		}

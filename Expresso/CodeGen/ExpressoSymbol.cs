@@ -75,6 +75,14 @@ namespace Expresso.CodeGen
         }
 
         /// <summary>
+        /// Gets or sets the type builder.
+        /// </summary>
+        /// <value>The type builder.</value>
+        public LazyTypeBuilder TypeBuilder{
+            get; set;
+        }
+
+        /// <summary>
         /// Gets or sets the parameters.
         /// </summary>
         /// <value>The parameters.</value>

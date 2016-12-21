@@ -61,7 +61,7 @@ namespace Expresso.Ast
 		}
 
 		public override NodeType NodeType{
-            get{return NodeType.Unknown;}
+            get{return NodeType.TypeDeclaration;}
         }
 
         public ExpressoAst(IEnumerable<EntityDeclaration> decls, IEnumerable<ImportDeclaration> imports, string maybeModuleName = null)

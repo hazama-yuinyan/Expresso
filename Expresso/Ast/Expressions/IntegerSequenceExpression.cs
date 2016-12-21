@@ -61,7 +61,7 @@ namespace Expresso.Ast
 		
         public override void AcceptWalker(IAstWalker walker)
 		{
-            walker.VisitIntgerSequenceExpression(this);
+            walker.VisitIntegerSequenceExpression(this);
 		}
 
         public override TResult AcceptWalker<TResult>(IAstWalker<TResult> walker)

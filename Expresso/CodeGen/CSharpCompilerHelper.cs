@@ -136,8 +136,8 @@ namespace Expresso.CodeGen
                 var name = ConvertToDotNetTypeName(simple.Identifier);
                 Type type = null;
                 foreach(var asm in AppDomain.CurrentDomain.GetAssemblies()){
-                    var types = asm.GetExportedTypes();
-                    type = types.Where(t => t.Name.StartsWith(name))
+                    var types = GetExportedTypes(asm);
+                    type = types.Where(t => t.Name.StartsWith(name) && t.Name.IndexOf('`') == name.Length)
                         .FirstOrDefault();
 
                     if(type != null)
@@ -315,13 +315,23 @@ namespace Expresso.CodeGen
             if(SpecialNamesMap.ContainsKey(originalName))
                 return SpecialNamesMap[originalName];
             else
-                throw new EmitterException("Error ES9001: Unknown dot net type");
+                return originalName;
         }
 
         public static void Prepare()
         {
             foreach(var name in _AssemblyNames)
                 AppDomain.CurrentDomain.Load(name);
+        }
+
+        static IEnumerable<Type> GetExportedTypes(Assembly asm)
+        {
+            try{
+                return asm.GetExportedTypes();
+            }
+            catch(Exception){
+                return Enumerable.Empty<Type>();
+            }
         }
     }
 }

@@ -13,6 +13,17 @@ using Expresso.Runtime.Builtins;
 
 namespace Expresso.Test
 {
+    [SetUpFixture]
+    public class SetupClass
+    {
+        [OneTimeSetUp]
+        public void RunBeforeAnyTest()
+        {
+            var dir = Path.GetDirectoryName(typeof(SetupClass).Assembly.Location);
+            Directory.SetCurrentDirectory(dir);
+        }
+    }
+
 	[TestFixture]
 	public class ParserTests
 	{
@@ -149,11 +160,11 @@ namespace Expresso.Test
                             ),
                             Modifiers.Immutable
                         ),
-                        Statement.MakeVarDecl(
+                        /*Statement.MakeVarDecl(
                             Helpers.MakeSeq(Helpers.MakeSomeIdent("f3")),
                             Helpers.MakeSeq(Expression.MakeParen(Expression.MakeSequenceExpression(null))),
                             Modifiers.Immutable
-                        ),
+                        ),*/
                         Statement.MakeVarDecl(
                             Helpers.MakeSeq(Helpers.MakeSomeIdent("f3_")),
                             Helpers.MakeSeq(Expression.MakeParen(
@@ -284,7 +295,7 @@ namespace Expresso.Test
                             Helpers.MakeIdentifierPath("f_"),
                             Helpers.MakeIdentifierPath("f2"),
                             Helpers.MakeIdentifierPath("f2_"),
-                            Helpers.MakeIdentifierPath("f3"),
+                            //Helpers.MakeIdentifierPath("f3"),
                             Helpers.MakeIdentifierPath("f3_"),
                             Helpers.MakeIdentifierPath("g"),
                             Helpers.MakeIdentifierPath("g_"),
@@ -1223,6 +1234,7 @@ namespace Expresso.Test
                             Helpers.MakeIdentifierPath("x"),
                             Helpers.MakeIdentifierPath("y"),
                             Helpers.MakeIdentifierPath("z"),
+                            Helpers.MakeIdentifierPath("triangles"),
                             Helpers.MakeIdentifierPath("specific_triangles"),
                             Helpers.MakeIdentifierPath("a"),
                             Helpers.MakeIdentifierPath("b"),

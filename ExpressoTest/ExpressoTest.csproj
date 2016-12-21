@@ -1,117 +1,85 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>8.0.30703</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{20AC9F09-B706-428B-B0F9-E32E865D41EA}</ProjectGuid>
+    <ProjectGuid>{EB393D0B-8183-45EF-89E8-822BC29F097D}</ProjectGuid>
     <OutputType>Library</OutputType>
     <RootNamespace>ExpressoTest</RootNamespace>
     <AssemblyName>ExpressoTest</AssemblyName>
     <ReleaseVersion>1.3</ReleaseVersion>
-    <NoWin32Manifest>False</NoWin32Manifest>
-    <AllowUnsafeBlocks>False</AllowUnsafeBlocks>
-    <NoStdLib>False</NoStdLib>
-    <TreatWarningsAsErrors>False</TreatWarningsAsErrors>
-    <IntermediateOutputPath>obj\$(Configuration)\</IntermediateOutputPath>
-    <TargetFrameworkProfile />
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugSymbols>True</DebugSymbols>
-    <DebugType>Full</DebugType>
-    <Optimize>False</Optimize>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
     <OutputPath>bin\Debug</OutputPath>
     <DefineConstants>DEBUG;</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <ConsolePause>False</ConsolePause>
-    <BaseIntermediateOutputPath>obj\</BaseIntermediateOutputPath>
-    <BaseAddress>4194304</BaseAddress>
-    <RegisterForComInterop>False</RegisterForComInterop>
-    <GenerateSerializationAssemblies>Auto</GenerateSerializationAssemblies>
-    <FileAlignment>4096</FileAlignment>
-    <PlatformTarget>x86</PlatformTarget>
+    <ConsolePause>false</ConsolePause>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType>none</DebugType>
-    <Optimize>True</Optimize>
+    <DebugType>full</DebugType>
+    <Optimize>true</Optimize>
     <OutputPath>bin\Release</OutputPath>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <ConsolePause>False</ConsolePause>
-    <BaseAddress>4194304</BaseAddress>
-    <RegisterForComInterop>False</RegisterForComInterop>
-    <GenerateSerializationAssemblies>Auto</GenerateSerializationAssemblies>
-    <FileAlignment>4096</FileAlignment>
-    <PlatformTarget>x86</PlatformTarget>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
-    <CheckForOverflowUnderflow>False</CheckForOverflowUnderflow>
-    <BaseIntermediateOutputPath>obj\</BaseIntermediateOutputPath>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Platform)' == 'AnyCPU' ">
-    <BaseAddress>4194304</BaseAddress>
-    <PlatformTarget>x86</PlatformTarget>
-    <RegisterForComInterop>False</RegisterForComInterop>
-    <GenerateSerializationAssemblies>Auto</GenerateSerializationAssemblies>
-    <FileAlignment>4096</FileAlignment>
+    <ConsolePause>false</ConsolePause>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="nunit.framework">
-      <HintPath>..\packages\NUnit.2.6.3\lib\nunit.framework.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Numerics" />
-    <Reference Include="System.Core" />
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="Helpers.cs" />
-    <Compile Include="ParserTests.cs" />
-    <Compile Include="NativeTests.cs" />
-    <Compile Include="AnalyzerTests.cs" />
-    <Compile Include="EmitterTests.cs" />
-    <Compile Include="EvaluationTests.cs" />
-    <Compile Include="ErroneouesTests.cs" />
+    <Reference Include="nunit.framework">
+      <HintPath>..\packages\NUnit.3.5.0\lib\net45\nunit.framework.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
-  <ItemGroup>
-    <ProjectReference Include="..\Expresso\Expresso.csproj">
-      <Project>{4E28200A-5808-419F-8A57-F504842991AF}</Project>
-      <Name>Expresso</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Libraries\NRefactory\ICSharpCode.NRefactory\ICSharpCode.NRefactory.csproj">
-      <Project>{3B2A5653-EC97-4001-BB9B-D90F1AF2C371}</Project>
-      <Name>ICSharpCode.NRefactory</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Expresso\ExpressoRuntime\ExpressoRuntime.csproj">
-      <Project>{D60E49D6-6CBA-4D54-A009-6A0528181C88}</Project>
-      <Name>ExpressoRuntime</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="sources\" />
-    <Folder Include="sources\for_unit_tests\" />
-    <Folder Include="sources\for_unit_tests\erroneous\" />
-  </ItemGroup>
   <ItemGroup>
     <None Include="sources\calc_prime_nums.exs" />
     <None Include="sources\fibs.exs" />
     <None Include="sources\json_parser.exs" />
     <None Include="sources\test.exs" />
-    <None Include="sources\for_unit_tests\simple_literals.exs" />
+    <None Include="sources\for_unit_tests\basic_statements.exs" />
     <None Include="sources\for_unit_tests\builtin_objects.exs" />
     <None Include="sources\for_unit_tests\class.exs" />
     <None Include="sources\for_unit_tests\complex_expressions.exs" />
+    <None Include="sources\for_unit_tests\functions.exs" />
+    <None Include="sources\for_unit_tests\general_expressions.exs" />
+    <None Include="sources\for_unit_tests\generic_params.exs" />
     <None Include="sources\for_unit_tests\library.exs" />
+    <None Include="sources\for_unit_tests\match_statements.exs" />
     <None Include="sources\for_unit_tests\module.exs" />
     <None Include="sources\for_unit_tests\simple_arithmetic.exs" />
+    <None Include="sources\for_unit_tests\simple_literals.exs" />
     <None Include="sources\for_unit_tests\test_module.exs" />
-    <None Include="sources\for_unit_tests\general_expressions.exs" />
     <None Include="sources\for_unit_tests\erroneous\literals.exs" />
-    <None Include="sources\for_unit_tests\functions.exs" />
-    <None Include="sources\for_unit_tests\basic_statements.exs" />
-    <None Include="sources\for_unit_tests\match_statements.exs" />
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="AnalyzerTests.cs" />
+    <Compile Include="EmitterTests.cs" />
+    <Compile Include="ErroneouesTests.cs" />
+    <Compile Include="EvaluationTests.cs" />
+    <Compile Include="Helpers.cs" />
+    <Compile Include="NativeTests.cs" />
+    <Compile Include="ParserTests.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Libraries\NRefactory\ICSharpCode.NRefactory\ICSharpCode.NRefactory.csproj">
+      <Project>{3B2A5653-EC97-4001-BB9B-D90F1AF2C371}</Project>
+      <Name>ICSharpCode.NRefactory</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Expresso\Expresso.csproj">
+      <Project>{4E28200A-5808-419F-8A57-F504842991AF}</Project>
+      <Name>Expresso</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Expresso\ExpressoRuntime\ExpressoRuntime.csproj">
+      <Project>{D60E49D6-6CBA-4D54-A009-6A0528181C88}</Project>
+      <Name>ExpressoRuntime</Name>
+    </ProjectReference>
   </ItemGroup>
 </Project>

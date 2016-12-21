@@ -37,7 +37,7 @@ namespace Expresso.Ast
         void VisitKeyValueLikeExpression(KeyValueLikeExpression keyValue);
         void VisitLiteralExpression(LiteralExpression literal);
         void VisitIdentifier(Identifier ident);
-        void VisitIntgerSequenceExpression(IntegerSequenceExpression intSeq);
+        void VisitIntegerSequenceExpression(IntegerSequenceExpression intSeq);
         void VisitIndexerExpression(IndexerExpression indexExpr);
         void VisitMemberReference(MemberReferenceExpression memRef);
         void VisitNewExpression(NewExpression newExpr);

@@ -30,7 +30,7 @@ namespace Expresso.CodeGen
         /// Current type builder.
         /// It will be null if we are not constructing a type declaration.
         /// </summary>
-        public TypeBuilder TypeBuilder{
+        public LazyTypeBuilder TypeBuilder{
             get; set;
         }
 
@@ -133,16 +133,23 @@ namespace Expresso.CodeGen
         }
 
         /// <summary>
-        /// It will be set to a parameter expression that represents the temporary variable.
+        /// It will be set to a ParameterExpression that represents the temporary variable.
         /// </summary>
         public System.Linq.Expressions.ParameterExpression TemporaryVariable{
             get; set;
         }
 
         /// <summary>
-        /// Represents the current return value.
+        /// Represents the current return value as a ParameterExpression.
         /// </summary>
         public System.Linq.Expressions.ParameterExpression ParameterReturnValue{
+            get; set;
+        }
+
+        /// <summary>
+        /// Represents the current context type or module as a ParameterExpression.
+        /// </summary>
+        public System.Linq.Expressions.ParameterExpression ParameterSelf{
             get; set;
         }
 

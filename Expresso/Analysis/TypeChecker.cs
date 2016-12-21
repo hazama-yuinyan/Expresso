@@ -9,7 +9,7 @@ namespace Expresso.Ast.Analysis
 {
     /// <summary>
     /// A type checker is responsible for type validity check as well as type inference, if needed.
-    /// All <see cref="Expresso.Ast.PlaceholderType"/> nodes are replaced with real types
+    /// All <see cref="Expresso.Ast.PlaceholderType"/> nodes will be replaced with real types
     /// inferred from the context.
     /// </summary>
     partial class TypeChecker : IAstWalker<AstType>
@@ -622,12 +622,18 @@ namespace Expresso.Ast.Analysis
 
         public AstType VisitSelfReferenceExpression(SelfReferenceExpression selfRef)
         {
-            return selfRef.SelfIdentifier.Type;
+            if(selfRef.SelfIdentifier.Type is PlaceholderType)
+                return inference_runner.VisitSelfReferenceExpression(selfRef);
+            else
+                return selfRef.SelfIdentifier.Type;
         }
 
         public AstType VisitSuperReferenceExpression(SuperReferenceExpression superRef)
         {
-            return superRef.SuperIdentifier.Type;
+            if(superRef.SuperIdentifier.Type is PlaceholderType)
+                return inference_runner.VisitSuperReferenceExpression(superRef);
+            else
+                return superRef.SuperIdentifier.Type;
         }
 
         public AstType VisitCommentNode(CommentNode comment)

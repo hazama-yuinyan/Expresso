@@ -184,6 +184,12 @@ namespace Expresso.Test
             return Expression.MakeIndexer(target, args);
         }
 
+        /// <summary>
+        /// Makes a variable declaration that contains as many null expressions as the identifiers.
+        /// </summary>
+        /// <returns>A variable declaration.</returns>
+        /// <param name="identifiers">Identifiers.</param>
+        /// <param name="modifiers">Modifiers.</param>
         public static VariableDeclarationStatement MakeVariableDeclaration(IEnumerable<Identifier> identifiers, Modifiers modifiers)
         {
             var exprs =
@@ -191,6 +197,16 @@ namespace Expresso.Test
                 select Expression.Null;
 
             return Statement.MakeVarDecl(identifiers, exprs, modifiers);
+        }
+
+        /// <summary>
+        /// Makes an AstType instance that identifies the void type.
+        /// </summary>
+        /// <returns>The void type.</returns>
+        /// <param name="loc">Location.</param>
+        public static AstType MakeVoidType(TextLocation loc = default(TextLocation))
+        {
+            return AstType.MakeSimpleType("tuple", loc);
         }
     }
 

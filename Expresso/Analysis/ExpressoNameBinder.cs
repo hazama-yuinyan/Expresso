@@ -281,7 +281,7 @@ namespace Expresso.Ast.Analysis
             BindName(ident);
         }
 
-        public void VisitIntgerSequenceExpression(IntegerSequenceExpression intSeq)
+        public void VisitIntegerSequenceExpression(IntegerSequenceExpression intSeq)
         {
             intSeq.Lower.AcceptWalker(this);
             intSeq.Upper.AcceptWalker(this);

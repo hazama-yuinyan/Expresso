@@ -359,7 +359,7 @@ namespace Expresso.Ast.Analysis
             }
         }
 
-        public void VisitIntgerSequenceExpression(IntegerSequenceExpression intSeq)
+        public void VisitIntegerSequenceExpression(IntegerSequenceExpression intSeq)
         {
             throw new NotImplementedException();
         }
