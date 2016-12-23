@@ -111,7 +111,7 @@ namespace Expresso.Test
                         ),
                         Statement.MakeVarDecl(
                             Helpers.MakeSeq(AstNode.MakeIdentifier("f", Helpers.MakeGenericType("array", Helpers.MakePrimitiveType("int")))),
-                            Helpers.MakeSeq(Expression.MakeSequenceInitializer(Helpers.MakeGenericType("array", Helpers.MakePlaceholderType()),
+                                Helpers.MakeSeq(Expression.MakeSequenceInitializer(Helpers.MakeGenericType("array", Helpers.MakePrimitiveType("int")),
                                 Enumerable.Empty<Expression>()
                             )),
                             Modifiers.Immutable
@@ -129,7 +129,7 @@ namespace Expresso.Test
                         ),
                         Statement.MakeVarDecl(
                             Helpers.MakeSeq(AstNode.MakeIdentifier("f2", Helpers.MakeGenericType("vector", Helpers.MakePrimitiveType("int")))),
-                            Helpers.MakeSeq(Expression.MakeSequenceInitializer(Helpers.MakeGenericType("vector", Helpers.MakePlaceholderType()),
+                                Helpers.MakeSeq(Expression.MakeSequenceInitializer(Helpers.MakeGenericType("vector", Helpers.MakePrimitiveType("int")),
                                 Enumerable.Empty<Expression>()
                             )),
                             Modifiers.Immutable
@@ -145,11 +145,11 @@ namespace Expresso.Test
                             ),
                             Modifiers.Immutable
                         ),
-                        Statement.MakeVarDecl(
+                        /*Statement.MakeVarDecl(
                             Helpers.MakeSeq(AstNode.MakeIdentifier("f3", Helpers.MakeGenericType("tuple"))),
                             Helpers.MakeSeq(Expression.MakeParen(Expression.MakeSequenceExpression(null))),
                             Modifiers.Immutable
-                        ),
+                        ),*/
                         Statement.MakeVarDecl(
                             Helpers.MakeSeq(AstNode.MakeIdentifier("f3_",
                                 Helpers.MakeGenericType("tuple",
@@ -176,8 +176,8 @@ namespace Expresso.Test
                             ),
                             Helpers.MakeSeq(Expression.MakeSequenceInitializer(
                                 Helpers.MakeGenericType("dictionary",
-                                    Helpers.MakePlaceholderType(),
-                                    Helpers.MakePlaceholderType()
+                                                        Helpers.MakePrimitiveType("string"),
+                                                        Helpers.MakePrimitiveType("int")
                                 ),
                                 Enumerable.Empty<Expression>()
                             )),
@@ -277,7 +277,49 @@ namespace Expresso.Test
                             Helpers.MakeSeq(AstNode.MakeIdentifier("j_2_", Helpers.MakePrimitiveType("intseq"))),
                             Helpers.MakeSeq(Expression.MakeIntSeq(Expression.MakeConstant("int", 0), Expression.MakeUnaryExpr(OperatorType.Minus, Expression.MakeConstant("int", 10)), Expression.MakeUnaryExpr(OperatorType.Minus, Expression.MakeConstant("int", 1)), true)),
                             Modifiers.Immutable
-                        )
+                        ),
+                        Statement.MakeExprStmt(Helpers.MakeCallExpression(
+                            Helpers.MakeIdentifierPath("println"),
+                            Helpers.MakeIdentifierPath("a"),
+                            Helpers.MakeIdentifierPath("h_a"),
+                            Helpers.MakeIdentifierPath("h_a_"),
+                            Helpers.MakeIdentifierPath("b"),
+                            Helpers.MakeIdentifierPath("f_b"),
+                            Helpers.MakeIdentifierPath("f_b_"),
+                            Helpers.MakeIdentifierPath("c"),
+                            Helpers.MakeIdentifierPath("f_c"),
+                            Helpers.MakeIdentifierPath("f_c2"),
+                            Helpers.MakeIdentifierPath("d"),
+                            Helpers.MakeIdentifierPath("d_"),
+                            Helpers.MakeIdentifierPath("d2"),
+                            Helpers.MakeIdentifierPath("e"),
+                            Helpers.MakeIdentifierPath("u"),
+                            Helpers.MakeIdentifierPath("u_"),
+                            Helpers.MakeIdentifierPath("f_a"),
+                            Helpers.MakeIdentifierPath("f_a_"),
+                            Helpers.MakeIdentifierPath("f"),
+                            Helpers.MakeIdentifierPath("f_"),
+                            Helpers.MakeIdentifierPath("f2"),
+                            Helpers.MakeIdentifierPath("f2_"),
+                            Helpers.MakeIdentifierPath("f3_"),
+                            Helpers.MakeIdentifierPath("g"),
+                            Helpers.MakeIdentifierPath("g_"),
+                            Helpers.MakeIdentifierPath("h"),
+                            Helpers.MakeIdentifierPath("h2"),
+                            Helpers.MakeIdentifierPath("h3"),
+                            Helpers.MakeIdentifierPath("i"),
+                            Helpers.MakeIdentifierPath("i2"),
+                            Helpers.MakeIdentifierPath("i3"),
+                            Helpers.MakeIdentifierPath("i4"),
+                            Helpers.MakeIdentifierPath("i5"),
+                            Helpers.MakeIdentifierPath("i6"),
+                            Helpers.MakeIdentifierPath("i6_"),
+                            Helpers.MakeIdentifierPath("j"),
+                            Helpers.MakeIdentifierPath("j2"),
+                            Helpers.MakeIdentifierPath("j3"),
+                            Helpers.MakeIdentifierPath("j_2"),
+                            Helpers.MakeIdentifierPath("j_2_")
+                        ))
                     }),
                                            Helpers.MakeVoidType(),
                     Modifiers.None
@@ -482,6 +524,12 @@ namespace Expresso.Test
         [Test]
         public void Class()
         {
+            var parser = new Parser(new Scanner("../../sources/for_unit_tests/class.exs"));
+            parser.DoPostParseProcessing = true;
+            parser.Parse();
+
+            var ast = parser.TopmostAst;
+
             var expected_ast = AstNode.MakeModuleDef("main", new List<EntityDeclaration>{
                 EntityDeclaration.MakeClassDecl("Test", Enumerable.Empty<AstType>(), Helpers.MakeSeq<EntityDeclaration>(
                     EntityDeclaration.MakeField(
@@ -601,6 +649,9 @@ namespace Expresso.Test
                     Modifiers.None
                 )
             });
+
+            Assert.IsNotNull(ast);
+            Helpers.AstStructuralEqual(ast, expected_ast);
         }
     }
 }
