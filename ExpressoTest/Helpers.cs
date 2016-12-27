@@ -116,6 +116,17 @@ namespace Expresso.Test
         }
 
         /// <summary>
+        /// Makes a path expression from a string and a type.
+        /// </summary>
+        /// <returns>The identifier path.</returns>
+        /// <param name="identifier">Identifier.</param>
+        /// <param name="type">Type.</param>
+        public static PathExpression MakeIdentifierPath(string identifier, AstType type)
+        {
+            return Expression.MakePath(AstNode.MakeIdentifier(identifier, type));
+        }
+
+        /// <summary>
         /// Makes an AstType with the specified identifier and optional type arguments.
         /// </summary>
         /// <returns>A generic type.</returns>

@@ -70,7 +70,36 @@ namespace Expresso.Ast
         public void VisitAssignment(AssignmentExpression assignment)
         {
             assignment.Left.AcceptWalker(this);
-            writer.Write(" = ");
+            writer.Write(" ");
+            switch(assignment.Operator){
+                case OperatorType.Assign:
+                writer.Write("= ");
+                break;
+
+                case OperatorType.Plus:
+                writer.Write("+= ");
+                break;
+
+                case OperatorType.Minus:
+                writer.Write("-= ");
+                break;
+
+                case OperatorType.Times:
+                writer.Write("*= ");
+                break;
+
+                case OperatorType.Divide:
+                writer.Write("/= ");
+                break;
+
+                case OperatorType.Modulus:
+                writer.Write("%= ");
+                break;
+
+                case OperatorType.Power:
+                writer.Write("**= ");
+                break;
+            }
             assignment.Right.AcceptWalker(this);
         }
 

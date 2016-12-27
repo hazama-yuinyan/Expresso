@@ -182,6 +182,8 @@ namespace Expresso.Ast.Analysis
                         );
                         return null;
                     }else{
+                        var cloned = symbol.Type.Clone();
+                        ident.Type.ReplaceWith(cloned);
                         return symbol.Type.Clone();
                     }
                 }else{

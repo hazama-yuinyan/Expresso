@@ -130,7 +130,7 @@ namespace Expresso.Ast
         /// <param name="rhs">The right-hand-side expression(single item)</param>
         public static AssignmentExpression MakeSingleAssignment(Expression lhs, Expression rhs)
         {
-            return new AssignmentExpression(lhs, rhs, OperatorType.Assign);
+            return new AssignmentExpression(Expression.MakeSequenceExpression(lhs), Expression.MakeSequenceExpression(rhs), OperatorType.Assign);
         }
 
         /// <summary>
@@ -142,7 +142,7 @@ namespace Expresso.Ast
         /// <param name="rhs">The right-hand-side expression(single item).</param>
         public static AssignmentExpression MakeSingleAugmentedAssignment(OperatorType opType, Expression lhs, Expression rhs)
         {
-            return new AssignmentExpression(lhs, rhs, opType);
+            return new AssignmentExpression(Expression.MakeSequenceExpression(lhs), Expression.MakeSequenceExpression(rhs), opType);
         }
 
         /// <summary>

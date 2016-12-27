@@ -61,15 +61,29 @@ namespace Expresso.Ast.Analysis
         static SymbolTable()
         {
             NativeMapping = new Dictionary<string, Identifier>();
-            var print_ident = AstNode.MakeIdentifier("Write", AstType.MakeFunctionType("print", AstType.MakeSimpleType("void", TextLocation.Empty), new []{
-                AstType.MakeSimpleType("string", TextLocation.Empty)
-            }));
+            var print_ident = AstNode.MakeIdentifier(
+                "Write",
+                AstType.MakeFunctionType(
+                    "print",
+                    AstType.MakeSimpleType("tuple", TextLocation.Empty),    //The void type
+                    TextLocation.Empty,
+                    TextLocation.Empty,
+                    AstType.MakePrimitiveType("String", TextLocation.Empty)
+                )
+            );
             print_ident.IdentifierId = 1000000000u;
             NativeMapping.Add("print", print_ident);
 
-            var println_ident = AstNode.MakeIdentifier("WriteLine", AstType.MakeFunctionType("println", AstType.MakeSimpleType("void", TextLocation.Empty), new []{
-                AstType.MakeSimpleType("string", TextLocation.Empty)
-            }));
+            var println_ident = AstNode.MakeIdentifier(
+                "WriteLine",
+                AstType.MakeFunctionType(
+                    "println",
+                    AstType.MakeSimpleType("tuple", TextLocation.Empty),    //The void type
+                    TextLocation.Empty,
+                    TextLocation.Empty,
+                    AstType.MakePrimitiveType("String", TextLocation.Empty)
+                )
+            );
             println_ident.IdentifierId = 1000000001u;
             NativeMapping.Add("println", println_ident);
         }

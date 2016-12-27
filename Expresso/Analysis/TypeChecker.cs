@@ -237,12 +237,15 @@ namespace Expresso.Ast.Analysis
             var left_type = assignment.Left.AcceptWalker(this);
             if(left_type == SimpleType.Null){
                 // We see the left-hand-side is a sequence expression so validate each item on both sides.
-                var left_types = TemporaryTypes;
+                var left_types = TemporaryTypes.ToList();
                 TemporaryTypes.Clear();
                 assignment.Right.AcceptWalker(this);
                 // Don't validate the number of elements because we has already done that in parse phase.
                 for(int i = 0; i < left_types.Count; ++i){
-                    if(IsCompatibleWith(left_types[i], TemporaryTypes[i]) == TriBool.False){
+                    if(IsPlaceholderType(left_types[i])){
+                        var inferred_type = TemporaryTypes[i].Clone();
+                        left_types[i].ReplaceWith(inferred_type);
+                    }else if(IsCompatibleWith(left_types[i], TemporaryTypes[i]) == TriBool.False){
                         var lhs_seq = assignment.Left as SequenceExpression;
                         var rhs_seq = assignment.Right as SequenceExpression;
                         parser.ReportSemanticErrorRegional("Error ES1100: There is a type mismatch; left=`{0}`, right=`{1}`",

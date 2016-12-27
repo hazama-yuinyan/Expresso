@@ -279,7 +279,16 @@ namespace Expresso.Test
                             Modifiers.Immutable
                         ),
                         Statement.MakeExprStmt(Helpers.MakeCallExpression(
-                            Helpers.MakeIdentifierPath("println"),
+                            Helpers.MakeIdentifierPath(
+                                "println",
+                                AstType.MakeFunctionType(
+                                    "println",
+                                    Helpers.MakeVoidType(),
+                                    default(TextLocation),
+                                    default(TextLocation),
+                                    Helpers.MakePrimitiveType("string")
+                                )
+                            ),
                             Helpers.MakeIdentifierPath("a"),
                             Helpers.MakeIdentifierPath("h_a"),
                             Helpers.MakeIdentifierPath("h_a_"),
@@ -378,14 +387,22 @@ namespace Expresso.Test
                         ),
                         Statement.MakeVarDecl(
                             Helpers.MakeSeq(AstNode.MakeIdentifier("m", Helpers.MakePrimitiveType("int"))),
-                            Helpers.MakeSeq(Helpers.MakeIndexerExpression(Expression.MakePath(Helpers.MakeSomeIdent("ary")),
+                            Helpers.MakeSeq(Helpers.MakeIndexerExpression(
+                                Helpers.MakeIdentifierPath(
+                                    "ary",
+                                    Helpers.MakeGenericType("array", Helpers.MakePrimitiveType("int"))
+                                ),
                                 Expression.MakeConstant("int", 0)
                             )),
                             Modifiers.Immutable
                         ),
                         Statement.MakeVarDecl(
                             Helpers.MakeSeq(AstNode.MakeIdentifier("m2", Helpers.MakePrimitiveType("int"))),
-                            Helpers.MakeSeq(Helpers.MakeIndexerExpression(Expression.MakePath(Helpers.MakeSomeIdent("d")),
+                            Helpers.MakeSeq(Helpers.MakeIndexerExpression(
+                                Helpers.MakeIdentifierPath(
+                                    "d",
+                                    Helpers.MakeGenericType("dictionary", Helpers.MakePrimitiveType("string"), Helpers.MakePrimitiveType("int"))
+                                ),
                                 Expression.MakeConstant("string", "a")
                             )),
                             Modifiers.Immutable
@@ -397,105 +414,171 @@ namespace Expresso.Test
                         ),
                         Statement.MakeVarDecl(
                             Helpers.MakeSeq(AstNode.MakeIdentifier("p", Helpers.MakePrimitiveType("int"))),
-                            Helpers.MakeSeq(Expression.MakeBinaryExpr(OperatorType.Plus,
-                                Helpers.MakeIndexerExpression(Expression.MakePath(Helpers.MakeSomeIdent("ary")),
-                                    Expression.MakeConstant("int", 0)
-                                ),
-                                Expression.MakeBinaryExpr(OperatorType.Plus,
-                                    Helpers.MakeIndexerExpression(Expression.MakePath(Helpers.MakeSomeIdent("ary")),
-                                        Expression.MakeConstant("int", 1)
+                            Helpers.MakeSeq(
+                                Expression.MakeBinaryExpr(
+                                    OperatorType.Plus,
+                                    Helpers.MakeIndexerExpression(
+                                        Helpers.MakeIdentifierPath(
+                                            "ary",
+                                            Helpers.MakeGenericType("array", Helpers.MakePrimitiveType("int"))
+                                        ),
+                                        Expression.MakeConstant("int", 0)
                                     ),
-                                    Expression.MakeIndexer(Expression.MakePath(Helpers.MakeSeq(Helpers.MakeSomeIdent("ary"))),
-                                        Helpers.MakeSeq(Expression.MakeConstant("int", 2))
+                                    Expression.MakeBinaryExpr(
+                                        OperatorType.Plus,
+                                        Helpers.MakeIndexerExpression(
+                                            Helpers.MakeIdentifierPath(
+                                                "ary",
+                                                Helpers.MakeGenericType("array", Helpers.MakePrimitiveType("int"))
+                                            ),
+                                            Expression.MakeConstant("int", 1)
+                                        ),
+                                        Expression.MakeIndexer(
+                                            Helpers.MakeIdentifierPath(
+                                                "ary",
+                                                Helpers.MakeGenericType("array", Helpers.MakePrimitiveType("int"))
+                                            ),
+                                            Helpers.MakeSeq(Expression.MakeConstant("int", 2))
+                                        )
                                     )
-                                ))
+                                )
                             ),
                             Modifiers.Immutable
                         ),
                         Statement.MakeVarDecl(
                             Helpers.MakeSeq(AstNode.MakeIdentifier("q", Helpers.MakePrimitiveType("int"))),
-                            Helpers.MakeSeq(Expression.MakeBinaryExpr(OperatorType.Plus,
-                                Helpers.MakeIndexerExpression(Expression.MakePath(Helpers.MakeSomeIdent("d")),
-                                    Expression.MakeConstant("string", "a")
-                                ),
-                                Expression.MakeBinaryExpr(OperatorType.Plus,
-                                    Helpers.MakeIndexerExpression(Expression.MakePath(Helpers.MakeSomeIdent("d")),
-                                        Expression.MakeConstant("string", "b")
+                            Helpers.MakeSeq(
+                                Expression.MakeBinaryExpr(
+                                    OperatorType.Plus,
+                                    Helpers.MakeIndexerExpression(
+                                        Helpers.MakeIdentifierPath(
+                                            "d",
+                                            Helpers.MakeGenericType("dictionary", Helpers.MakePrimitiveType("string"), Helpers.MakePrimitiveType("int"))
+                                        ),
+                                        Expression.MakeConstant("string", "a")
                                     ),
-                                    Helpers.MakeIndexerExpression(Expression.MakePath(Helpers.MakeSomeIdent("d")),
-                                        Expression.MakeConstant("string", "何か")
+                                    Expression.MakeBinaryExpr(
+                                        OperatorType.Plus,
+                                        Helpers.MakeIndexerExpression(
+                                            Helpers.MakeIdentifierPath(
+                                                "d",
+                                                Helpers.MakeGenericType("dictionary", Helpers.MakePrimitiveType("string"), Helpers.MakePrimitiveType("int"))
+                                            ),
+                                            Expression.MakeConstant("string", "b")
+                                        ),
+                                        Helpers.MakeIndexerExpression(
+                                            Helpers.MakeIdentifierPath(
+                                                "d",
+                                                Helpers.MakeGenericType("dictionary", Helpers.MakePrimitiveType("string"), Helpers.MakePrimitiveType("int"))
+                                            ),
+                                            Expression.MakeConstant("string", "何か")
+                                        )
                                     )
-                                ))
+                                )
                             ),
                             Modifiers.Immutable
                         ),
                         Statement.MakeVarDecl(
                             Helpers.MakeSeq(AstNode.MakeIdentifier("r", Helpers.MakePrimitiveType("int"))),
-                            Helpers.MakeSeq(Expression.MakeBinaryExpr(OperatorType.BitwiseShiftRight,
-                                Expression.MakePath(Helpers.MakeSomeIdent("x")),
-                                Expression.MakePath(Helpers.MakeSomeIdent("p"))
-                            )),
+                            Helpers.MakeSeq(
+                                Expression.MakeBinaryExpr(
+                                    OperatorType.BitwiseShiftRight,
+                                    Helpers.MakeIdentifierPath("x", Helpers.MakePrimitiveType("int")),
+                                    Helpers.MakeIdentifierPath("p", Helpers.MakePrimitiveType("int"))
+                                )
+                            ),
                             Modifiers.Immutable
                         ),
                         Statement.MakeVarDecl(
                             Helpers.MakeSeq(AstNode.MakeIdentifier("s", Helpers.MakePrimitiveType("int"))),
-                            Helpers.MakeSeq(Expression.MakeBinaryExpr(OperatorType.BitwiseShiftLeft,
-                                Expression.MakePath(Helpers.MakeSomeIdent("x")),
-                                Expression.MakeConstant("int", 2)
-                            )),
+                            Helpers.MakeSeq(
+                                Expression.MakeBinaryExpr(
+                                    OperatorType.BitwiseShiftLeft,
+                                    Helpers.MakeIdentifierPath("x", Helpers.MakePrimitiveType("int")),
+                                    Expression.MakeConstant("int", 2)
+                                )
+                            ),
                             Modifiers.Immutable
                         ),
                         Statement.MakeVarDecl(
                             Helpers.MakeSeq(AstNode.MakeIdentifier("t", Helpers.MakePrimitiveType("int"))),
-                            Helpers.MakeSeq(Expression.MakeBinaryExpr(OperatorType.BitwiseAnd,
-                                Expression.MakePath(Helpers.MakeSomeIdent("r")),
-                                Expression.MakePath(Helpers.MakeSomeIdent("s"))
-                            )),
+                            Helpers.MakeSeq(
+                                Expression.MakeBinaryExpr(
+                                    OperatorType.BitwiseAnd,
+                                    Helpers.MakeIdentifierPath("r", Helpers.MakePrimitiveType("int")),
+                                    Helpers.MakeIdentifierPath("s", Helpers.MakePrimitiveType("int"))
+                                )
+                            ),
                             Modifiers.Immutable
                         ),
                         Statement.MakeVarDecl(
                             Helpers.MakeSeq(AstNode.MakeIdentifier("v", Helpers.MakePrimitiveType("int"))),
-                            Helpers.MakeSeq(Expression.MakeBinaryExpr(OperatorType.BitwiseOr,
-                                Expression.MakePath(Helpers.MakeSomeIdent("x")),
-                                Expression.MakePath(Helpers.MakeSomeIdent("t"))
-                            )),
+                            Helpers.MakeSeq(
+                                Expression.MakeBinaryExpr(
+                                    OperatorType.BitwiseOr,
+                                    Helpers.MakeIdentifierPath("x", Helpers.MakePrimitiveType("int")),
+                                    Helpers.MakeIdentifierPath("t", Helpers.MakePrimitiveType("int"))
+                                )
+                            ),
                             Modifiers.Immutable
                         ),
                         Statement.MakeVarDecl(
                             Helpers.MakeSeq(AstNode.MakeIdentifier("w", Helpers.MakePrimitiveType("int"))),
-                            Helpers.MakeSeq(Expression.MakeBinaryExpr(OperatorType.Plus,
-                                Expression.MakePath(Helpers.MakeSomeIdent("r")),
-                                Expression.MakePath(Helpers.MakeSomeIdent("s"))
-                            )),
+                            Helpers.MakeSeq(
+                                Expression.MakeBinaryExpr(
+                                    OperatorType.Plus,
+                                    Helpers.MakeIdentifierPath("r", Helpers.MakePrimitiveType("int")),
+                                    Helpers.MakeIdentifierPath("s", Helpers.MakePrimitiveType("int"))
+                                )
+                            ),
                             Modifiers.Immutable
                         ),
                         Statement.MakeVarDecl(
                             Helpers.MakeSeq(AstNode.MakeIdentifier("y", Helpers.MakePrimitiveType("int"))),
-                            Helpers.MakeSeq(Expression.MakeBinaryExpr(OperatorType.Plus,
-                                Helpers.MakeIndexerExpression(Expression.MakePath(Helpers.MakeSomeIdent("ary")),
-                                    Expression.MakeConstant("int", 0)
-                                ),
-                                Expression.MakeBinaryExpr(OperatorType.Plus,
-                                    Helpers.MakeIndexerExpression(Expression.MakePath(Helpers.MakeSomeIdent("ary")),
-                                        Expression.MakeConstant("int", 1)
+                            Helpers.MakeSeq(
+                                Expression.MakeBinaryExpr(
+                                    OperatorType.Plus,
+                                    Helpers.MakeIndexerExpression(
+                                        Helpers.MakeIdentifierPath("ary", Helpers.MakeGenericType("array", Helpers.MakePrimitiveType("int"))),
+                                        Expression.MakeConstant("int", 0)
                                     ),
-                                    Expression.MakeIndexer(Expression.MakePath(Helpers.MakeSeq(Helpers.MakeSomeIdent("d"))),
-                                        Helpers.MakeSeq(Expression.MakeConstant("string", "a"))
+                                    Expression.MakeBinaryExpr(
+                                        OperatorType.Plus,
+                                        Helpers.MakeIndexerExpression(
+                                            Helpers.MakeIdentifierPath("ary", Helpers.MakeGenericType("array", Helpers.MakePrimitiveType("int"))),
+                                            Expression.MakeConstant("int", 1)
+                                        ),
+                                        Expression.MakeIndexer(
+                                            Helpers.MakeIdentifierPath("d", Helpers.MakeGenericType("dictionary", Helpers.MakePrimitiveType("string"), Helpers.MakePrimitiveType("int"))),
+                                            Helpers.MakeSeq(Expression.MakeConstant("string", "a"))
+                                        )
                                     )
-                                ))
+                                )
                             ),
                             Modifiers.Immutable
                         ),
                         Statement.MakeVarDecl(
                             Helpers.MakeSeq(AstNode.MakeIdentifier("z", Helpers.MakePrimitiveType("int"))),
-                            Helpers.MakeSeq(Expression.MakeBinaryExpr(OperatorType.Times,
-                                Expression.MakePath(Helpers.MakeSomeIdent("v")),
-                                Expression.MakePath(Helpers.MakeSomeIdent("w"))
-                            )),
+                            Helpers.MakeSeq(
+                                Expression.MakeBinaryExpr(
+                                    OperatorType.Times,
+                                    Helpers.MakeIdentifierPath("v", Helpers.MakePrimitiveType("int")),
+                                    Helpers.MakeIdentifierPath("w", Helpers.MakePrimitiveType("int"))
+                                )
+                            ),
                             Modifiers.Immutable
                         ),
                         Statement.MakeExprStmt(Helpers.MakeCallExpression(
-                            Helpers.MakeIdentifierPath("println"),
+                            Helpers.MakeIdentifierPath(
+                                "println",
+                                AstType.MakeFunctionType(
+                                    "println",
+                                    Helpers.MakeVoidType(),
+                                    default(TextLocation),
+                                    default(TextLocation),
+                                    Helpers.MakePrimitiveType("string")
+                                )
+                            ),
                             Helpers.MakeIdentifierPath("ary"),
                             Helpers.MakeIdentifierPath("d"),
                             Helpers.MakeIdentifierPath("m"),
@@ -513,6 +596,200 @@ namespace Expresso.Test
                         ))
                     }),
                                            Helpers.MakeVoidType(),
+                    Modifiers.None
+                )
+            });
+
+            Assert.IsNotNull(ast);
+            Helpers.AstStructuralEqual(ast, expected_ast);
+        }
+
+        [Test]
+        public void SimpleArithmetic()
+        {
+            var parser = new Parser(new Scanner("../../sources/for_unit_tests/simple_arithmetic.exs"));
+            parser.DoPostParseProcessing = true;
+            parser.Parse();
+
+            var ast = parser.TopmostAst;
+
+            var expected_ast = AstNode.MakeModuleDef("main", new List<EntityDeclaration>{
+                EntityDeclaration.MakeFunc(
+                    "main",
+                    Helpers.MakeSeq(
+                        EntityDeclaration.MakeParameter("args", Helpers.MakeGenericType("array", Helpers.MakePrimitiveType("string")))
+                    ),
+                    Statement.MakeBlock(new List<Statement>{
+                        Statement.MakeVarDecl(
+                            Helpers.MakeSeq(
+                                AstNode.MakeIdentifier("x", Helpers.MakePrimitiveType("int")),
+                                AstNode.MakeIdentifier("xp", Helpers.MakePrimitiveType("int")),
+                                AstNode.MakeIdentifier("xm", Helpers.MakePrimitiveType("int")),
+                                AstNode.MakeIdentifier("xt", Helpers.MakePrimitiveType("int")),
+                                AstNode.MakeIdentifier("xd", Helpers.MakePrimitiveType("int")),
+                                AstNode.MakeIdentifier("xmod", Helpers.MakePrimitiveType("int")),
+                                AstNode.MakeIdentifier("xpower", Helpers.MakePrimitiveType("int"))
+                            ),
+                            Helpers.MakeSeq(
+                                Expression.MakeConstant("int", 3),
+                                Expression.MakeConstant("int", 3),
+                                Expression.MakeConstant("int", 3),
+                                Expression.MakeConstant("int", 3),
+                                Expression.MakeConstant("int", 4),
+                                Expression.MakeConstant("int", 4),
+                                Expression.MakeConstant("int", 3)
+                            ),
+                            Modifiers.None
+                        ),
+                        Statement.MakeVarDecl(
+                            Helpers.MakeSeq(
+                                AstNode.MakeIdentifier("a", Helpers.MakePrimitiveType("int"))
+                            ),
+                            Helpers.MakeSeq(
+                                Expression.MakeBinaryExpr(
+                                    OperatorType.Plus,
+                                    Helpers.MakeIdentifierPath("x", Helpers.MakePrimitiveType("int")),
+                                    Expression.MakeConstant("int", 4)
+                                )
+                            ),
+                            Modifiers.Immutable
+                        ),
+                        Statement.MakeVarDecl(
+                            Helpers.MakeSeq(
+                                AstNode.MakeIdentifier("b", Helpers.MakePrimitiveType("int"))
+                            ),
+                            Helpers.MakeSeq(
+                                Expression.MakeBinaryExpr(
+                                    OperatorType.Minus,
+                                    Helpers.MakeIdentifierPath("x", Helpers.MakePrimitiveType("int")),
+                                    Expression.MakeConstant("int", 4)
+                                )
+                            ),
+                            Modifiers.Immutable
+						),
+                        Statement.MakeVarDecl(
+                            Helpers.MakeSeq(
+                                AstNode.MakeIdentifier("c", Helpers.MakePrimitiveType("int"))
+                            ),
+                            Helpers.MakeSeq(
+                                Expression.MakeBinaryExpr(
+                                    OperatorType.Times,
+                                    Helpers.MakeIdentifierPath("x", Helpers.MakePrimitiveType("int")),
+                                    Expression.MakeConstant("int", 4)
+                                )
+                            ),
+                            Modifiers.Immutable
+                        ),
+                        Statement.MakeVarDecl(
+                            Helpers.MakeSeq(
+                                AstNode.MakeIdentifier("d", Helpers.MakePrimitiveType("int"))
+                            ),
+                            Helpers.MakeSeq(
+                                Expression.MakeBinaryExpr(
+                                    OperatorType.Divide,
+                                    Expression.MakeConstant("int", 4),
+                                    Expression.MakeConstant("int", 2)
+                                )
+                            ),
+                            Modifiers.Immutable
+                        ),
+                        Statement.MakeVarDecl(
+                            Helpers.MakeSeq(
+                                AstNode.MakeIdentifier("e", Helpers.MakePrimitiveType("int"))
+                            ),
+                            Helpers.MakeSeq(
+                                Expression.MakeBinaryExpr(
+                                    OperatorType.Modulus,
+                                    Expression.MakeConstant("int", 4),
+                                    Expression.MakeConstant("int", 2)
+                                )
+                            ),
+                            Modifiers.Immutable
+                        ),
+                        Statement.MakeVarDecl(
+                            Helpers.MakeSeq(
+                                AstNode.MakeIdentifier("f", Helpers.MakePrimitiveType("int"))
+                            ),
+                            Helpers.MakeSeq(
+                                Expression.MakeBinaryExpr(
+                                    OperatorType.Power,
+                                    Helpers.MakeIdentifierPath("x", Helpers.MakePrimitiveType("int")),
+                                    Expression.MakeConstant("int", 2)
+                                )
+                            ),
+                            Modifiers.Immutable
+                        ),
+                        Statement.MakeExprStmt(
+                            Expression.MakeSingleAugmentedAssignment(
+                                OperatorType.Plus,
+                                Helpers.MakeIdentifierPath("xp", Helpers.MakePrimitiveType("int")),
+                                Expression.MakeConstant("int", 4)
+                            )
+                        ),
+                        Statement.MakeExprStmt(
+                            Expression.MakeSingleAugmentedAssignment(
+                                OperatorType.Minus,
+                                Helpers.MakeIdentifierPath("xm", Helpers.MakePrimitiveType("int")),
+                                Expression.MakeConstant("int", 4)
+                            )
+                        ),
+                        Statement.MakeExprStmt(
+                            Expression.MakeSingleAugmentedAssignment(
+                                OperatorType.Times,
+                                Helpers.MakeIdentifierPath("xt", Helpers.MakePrimitiveType("int")),
+                                Expression.MakeConstant("int", 4)
+                            )
+                        ),
+                        Statement.MakeExprStmt(
+                            Expression.MakeSingleAugmentedAssignment(
+                                OperatorType.Divide,
+								Helpers.MakeIdentifierPath("xd", Helpers.MakePrimitiveType("int")),
+                                Expression.MakeConstant("int", 2)
+                            )
+                        ),
+                        Statement.MakeExprStmt(
+                            Expression.MakeSingleAugmentedAssignment(
+                                OperatorType.Modulus,
+                                Helpers.MakeIdentifierPath("xmod", Helpers.MakePrimitiveType("int")),
+                                Expression.MakeConstant("int", 2)
+                            )
+                        ),
+                        Statement.MakeExprStmt(
+                            Expression.MakeSingleAugmentedAssignment(
+                                OperatorType.Power,
+                                Helpers.MakeIdentifierPath("xpower", Helpers.MakePrimitiveType("int")),
+                                Expression.MakeConstant("int", 2)
+                            )
+                        ),
+                        Statement.MakeExprStmt(
+                            Helpers.MakeCallExpression(
+                                Helpers.MakeIdentifierPath(
+                                    "println",
+                                    AstType.MakeFunctionType(
+                                        "println",
+                                        Helpers.MakeVoidType(),
+                                        default(TextLocation),
+                                        default(TextLocation),
+                                        Helpers.MakePrimitiveType("string")
+                                    )
+                                ),
+                                Helpers.MakeIdentifierPath("x"),
+                                Helpers.MakeIdentifierPath("a"),
+                                Helpers.MakeIdentifierPath("b"),
+                                Helpers.MakeIdentifierPath("c"),
+                                Helpers.MakeIdentifierPath("d"),
+                                Helpers.MakeIdentifierPath("e"),
+                                Helpers.MakeIdentifierPath("f"),
+                                Helpers.MakeIdentifierPath("xp"),
+                                Helpers.MakeIdentifierPath("xm"),
+                                Helpers.MakeIdentifierPath("xt"),
+                                Helpers.MakeIdentifierPath("xd"),
+                                Helpers.MakeIdentifierPath("xmod"),
+                                Helpers.MakeIdentifierPath("xpower")
+                            )
+                        )
+                    }),
+                    Helpers.MakeVoidType(),
                     Modifiers.None
                 )
             });
