@@ -10,21 +10,26 @@ namespace Expresso.Ast.Analysis
     /// </summary>
     public class ParserException : Exception
     {
+        AstNode node;
+
         public ParserException()
         {
         }
 
-        public ParserException(string message) : base(message)
+        public ParserException(string message, AstNode node) : base(message)
         {
+            this.node = node;
         }
 
-        public ParserException(string formatMessage, params object[] values)
+        public ParserException(string formatMessage, AstNode node, params object[] values)
             : base(string.Format(formatMessage, values))
         {
+            this.node = node;
         }
 
-        public ParserException(string message, Exception exception) : base(message, exception)
+        public ParserException(string message, AstNode node, Exception exception) : base(message, exception)
         {
+            this.node = node;
         }
     }
 }

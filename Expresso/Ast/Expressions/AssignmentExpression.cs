@@ -16,14 +16,14 @@ namespace Expresso.Ast
     /// on both the left-hand-side and right-hand-side.
     /// So, for example, "x = y = z = 3" is represented as follows:
     /// AssignmentExpression{
-    ///     Left = PathExpression(Identifier("x")),
-    ///     Right = AssignmentExpression{
-    ///         Left = PathExpression(Identifier("y")),
-    ///         Right = AssignmentExpression{
-    ///             Left = PathExpression(Identifier("z")),
-    ///             Right = LiteralExpression("3")
-    ///         }
-    ///     }
+    ///     Left = AssginmentExpression{
+    ///         Left = AssginmentExpression{
+    ///             Left = PathExpression(Identifier("x")),
+    ///             Right = PathExpression(Identifier("y"))
+    ///         },
+    ///         Right = PathExpression(Identifier("z"))
+    ///     },
+    ///     Right = LiteralExpression("3")
     /// }
     /// 
     /// while "x, y = 1, 2" is represented as:

@@ -405,7 +405,7 @@ namespace Expresso.Ast.Analysis
             throw new NotImplementedException();
         }
 
-        public void VisitSequence(SequenceExpression seqExpr)
+        public void VisitSequenceExpression(SequenceExpression seqExpr)
         {
             throw new NotImplementedException();
         }

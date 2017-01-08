@@ -46,7 +46,7 @@ namespace Expresso.Ast
         void VisitObjectCreationExpression(ObjectCreationExpression creation);
         void VisitSequenceInitializer(SequenceInitializer seqInitializer);
         void VisitMatchClause(MatchPatternClause matchClause);
-        void VisitSequence(SequenceExpression seqExpr);
+        void VisitSequenceExpression(SequenceExpression seqExpr);
         void VisitUnaryExpression(UnaryExpression unaryExpr);
 
         void VisitSelfReferenceExpression(SelfReferenceExpression selfRef);
@@ -125,7 +125,7 @@ namespace Expresso.Ast
         TResult VisitObjectCreationExpression(ObjectCreationExpression creation);
         TResult VisitSequenceInitializer(SequenceInitializer seqInitializer);
         TResult VisitMatchClause(MatchPatternClause matchClause);
-        TResult VisitSequence(SequenceExpression seqExpr);
+        TResult VisitSequenceExpression(SequenceExpression seqExpr);
         TResult VisitUnaryExpression(UnaryExpression unaryExpr);
 
         TResult VisitSelfReferenceExpression(SelfReferenceExpression selfRef);
@@ -214,7 +214,7 @@ namespace Expresso.Ast
         TResult VisitObjectCreationExpression(ObjectCreationExpression creation, TData data);
         TResult VisitSequenceInitializer(SequenceInitializer seqInitializer, TData data);
         TResult VisitMatchClause(MatchPatternClause matchClause, TData data);
-        TResult VisitSequence(SequenceExpression seqExpr, TData data);
+        TResult VisitSequenceExpression(SequenceExpression seqExpr, TData data);
         TResult VisitUnaryExpression(UnaryExpression unaryExpr, TData data);
 
         TResult VisitSelfReferenceExpression(SelfReferenceExpression selfRef, TData data);

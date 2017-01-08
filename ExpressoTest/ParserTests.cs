@@ -1189,12 +1189,12 @@ namespace Expresso.Test
                         Statement.MakeExprStmt(Expression.MakeSingleAssignment(
                             Expression.MakeSingleAssignment(
                                 Expression.MakeSingleAssignment(
-                                    Expression.MakeSequenceExpression(Helpers.MakeIdentifierPath("a")),
-                                    Expression.MakeSequenceExpression(Helpers.MakeIdentifierPath("b"))
+                                    Helpers.MakeIdentifierPath("a"),
+                                    Helpers.MakeIdentifierPath("b")
                                 ),
-                                Expression.MakeSequenceExpression(Helpers.MakeIdentifierPath("c"))
+                                Helpers.MakeIdentifierPath("c")
                             ),
-                            Expression.MakeSequenceExpression(Expression.MakeConstant("int", 0))
+                            Expression.MakeConstant("int", 0)
                         )),
                         Statement.MakeExprStmt(Expression.MakeAssignment(Expression.MakeSequenceExpression(
                             Helpers.MakeIdentifierPath("a"),
@@ -1212,7 +1212,7 @@ namespace Expresso.Test
                             })}))
                         }, new List<Expression>{
                             Expression.MakeSequenceInitializer(AstType.MakeSimpleType("vector", new []{Helpers.MakePlaceholderType()}), Enumerable.Empty<Expression>())
-                        }, Modifiers.Immutable),
+                    }, Modifiers.None),
                         Statement.MakeVarDecl(new List<Identifier>{
                             Helpers.MakeSomeIdent("t")
                         }, new List<Expression>{

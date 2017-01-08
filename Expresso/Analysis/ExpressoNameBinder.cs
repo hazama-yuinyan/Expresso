@@ -242,13 +242,15 @@ namespace Expresso.Ast.Analysis
 
         public void VisitComprehensionExpression(ComprehensionExpression comp)
         {
-            // Do not store scope counter because comprehensions contain only expressions.
+            int tmp_counter = scope_counter;
             DecendScope();
+            scope_counter = 0;
 
-            comp.Item.AcceptWalker(this);
             comp.Body.AcceptWalker(this);
+            comp.Item.AcceptWalker(this);
 
             AscendScope();
+            scope_counter = tmp_counter + 1;
         }
 
         public void VisitComprehensionForClause(ComprehensionForClause compFor)
@@ -325,7 +327,7 @@ namespace Expresso.Ast.Analysis
             matchClause.Body.AcceptWalker(this);
         }
 
-        public void VisitSequence(SequenceExpression seqExpr)
+        public void VisitSequenceExpression(SequenceExpression seqExpr)
         {
             seqExpr.Items.AcceptWalker(this);
         }
@@ -583,4 +585,5 @@ namespace Expresso.Ast.Analysis
         }
 	}
 }
+
 

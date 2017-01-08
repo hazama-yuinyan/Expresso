@@ -20,6 +20,7 @@ COMPILER Expresso
 
 $namespace=Expresso
 	string cur_class_name;
+	bool is_first_comprehension_for_clause = true;
     static uint ScopeId = 1;
     static Regex UnicodeEscapeFinder = new Regex(@"\\[uU]([\dA-Fa-f]{4}|[\dA-Fa-f]{6})", RegexOptions.Compiled);
     internal SymbolTable Symbols{get; set;}
@@ -1359,6 +1360,7 @@ ObjectCreation<AstType typePath, out Expression expr>
                                            var fields = new List<Identifier>(); var values = new List<Expression>(); var start_loc = CurrentLocation;
                                            Symbols.AddScope();
                                            GoDownScope();
+                                           Symbols.Name = "ObjectCreation`" + ScopeId++;
                                         .)
 =
   lcurly
@@ -1460,12 +1462,10 @@ SequenceMaker<out Expression expr>	(.  var exprs = new List<Expression>();
     ]                                   (. var type = CreateTypeWithArgs(seq_type_name, new PlaceholderType(TextLocation.Empty));
                                            expr = Expression.MakeSequenceInitializer(type, exprs);
                                         .)
-  | CompFor<out comp>                   (. Symbols.AddScope();
-                                           GoDownScope();
-
-                                           var type = CreateTypeWithArgs("vector", new PlaceholderType(TextLocation.Empty));
+  | CompFor<out comp>                   (. var type = CreateTypeWithArgs("vector", new PlaceholderType(TextLocation.Empty));
                                            expr = Expression.MakeComp(expr, (ComprehensionForClause)comp, type);
                                            GoUpScope();
+                                           is_first_comprehension_for_clause = true;
                                         .)
   ).
 /*------------------------------------------------------------------------*/
@@ -1486,7 +1486,10 @@ DictMaker<out Expression expr>			(. Expression key, val; var list = new List<Key
                                            list.Add(pair);
                                         .)
     }                                   (. expr = Expression.MakeSequenceInitializer(type, list); .)
-  | CompFor<out comp>                   (. expr = Expression.MakeComp(pair, (ComprehensionForClause)comp, type); .)
+  | CompFor<out comp>                   (. expr = Expression.MakeComp(pair, (ComprehensionForClause)comp, type);
+  										   GoDownScope();
+  										   is_first_comprehension_for_clause = true;
+  										.)
   ).
 /*------------------------------------------------------------------------*/
 CompIter<out ComprehensionIter expr>    (. expr = null; .)
@@ -1496,29 +1499,25 @@ CompIter<out ComprehensionIter expr>    (. expr = null; .)
 /*------------------------------------------------------------------------*/
 CompFor<out ComprehensionIter expr>		(. Expression rvalue = null; ComprehensionIter body = null; PatternConstruct target; .)
 =
-  keyword_for							(.
-  										   Symbols.AddScope();
-  										   Symbols.Name = "CompFor`" + ScopeId++;
-  										   GoDownScope();
+  keyword_for							(. if(is_first_comprehension_for_clause){
+  										   	   Symbols.AddScope();
+  										   	   GoDownScope();
+  										   	   Symbols.Name = "Comprehension`" + ScopeId++;
+  										   	   is_first_comprehension_for_clause = false;
+  										   }
   										.)
   LhsPattern<out target>
   keyword_in
   CondExpr<out rvalue>
   [CompIter<out body>]					(.
-  										   GoUpScope();
   										   expr = Expression.MakeCompFor(target, rvalue, body);
   										.).
 /*------------------------------------------------------------------------*/
 CompIf<out ComprehensionIter expr>		(. Expression tmp; ComprehensionIter body = null; .)
 =
-  keyword_if							(.
-  										   Symbols.AddScope();
-  										   Symbols.Name = "CompIf`" + ScopeId++;
-  										   GoDownScope();
-  										.)
+  keyword_if
   OrTest<out tmp>
   [CompIter<out body>]					(. 
-  										   GoUpScope();
   										   expr = Expression.MakeCompIf(tmp, body);
   										.).
 /*------------------------------------------------------------------------*/

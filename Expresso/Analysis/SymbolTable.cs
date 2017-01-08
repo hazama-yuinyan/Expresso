@@ -246,7 +246,7 @@ namespace Expresso.Ast.Analysis
                 table.Add(name, ident);
             }
             catch(ArgumentException){
-                throw new ParserException("The name `{0}` is already defined in the current scope {1}.", name, Name);
+                throw new ParserException("The name `{0}` is already defined in the current scope {1}.", ident, name, Name);
             }
         }
 
@@ -334,7 +334,7 @@ namespace Expresso.Ast.Analysis
 
         public override string ToString()
         {
-            return string.Format("<SymbolTable`{0}: {1}>", Name, Symbols.Count());
+            return string.Format("<SymbolTable`{0}: count={1}, childrenCount={2}>", Name, Symbols.Count(), Children.Count);
         }
     }
 }

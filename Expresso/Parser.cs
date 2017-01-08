@@ -68,6 +68,7 @@ public class Parser {
 	int errDist = minErrDist;
 
 string cur_class_name;
+	bool is_first_comprehension_for_clause = true;
     static uint ScopeId = 1;
     static Regex UnicodeEscapeFinder = new Regex(@"\\[uU]([\dA-Fa-f]{4}|[\dA-Fa-f]{6})", RegexOptions.Compiled);
     internal SymbolTable Symbols{get; set;}
@@ -1903,6 +1904,7 @@ string cur_class_name;
 		var fields = new List<Identifier>(); var values = new List<Expression>(); var start_loc = CurrentLocation;
 		Symbols.AddScope();
 		GoDownScope();
+		Symbols.Name = "ObjectCreation`" + ScopeId++;
 		
 		Expect(7);
 		Expect(14);
@@ -2180,12 +2182,10 @@ string cur_class_name;
 				
 			} else if (la.kind == 23) {
 				CompFor(out comp);
-				Symbols.AddScope();
-				GoDownScope();
-				
 				var type = CreateTypeWithArgs("vector", new PlaceholderType(TextLocation.Empty));
 				expr = Expression.MakeComp(expr, (ComprehensionForClause)comp, type);
 				GoUpScope();
+				is_first_comprehension_for_clause = true;
 				
 			} else SynErr(154);
 		} else SynErr(155);
@@ -2214,16 +2214,22 @@ string cur_class_name;
 			expr = Expression.MakeSequenceInitializer(type, list); 
 		} else if (la.kind == 23) {
 			CompFor(out comp);
-			expr = Expression.MakeComp(pair, (ComprehensionForClause)comp, type); 
+			expr = Expression.MakeComp(pair, (ComprehensionForClause)comp, type);
+			GoDownScope();
+			is_first_comprehension_for_clause = true;
+			
 		} else SynErr(156);
 	}
 
 	void CompFor(out ComprehensionIter expr) {
 		Expression rvalue = null; ComprehensionIter body = null; PatternConstruct target; 
 		Expect(23);
+		if(is_first_comprehension_for_clause){
 		Symbols.AddScope();
-		Symbols.Name = "CompFor`" + ScopeId++;
 		GoDownScope();
+		Symbols.Name = "Comprehension`" + ScopeId++;
+		is_first_comprehension_for_clause = false;
+		}
 		
 		LhsPattern(out target);
 		Expect(24);
@@ -2231,7 +2237,6 @@ string cur_class_name;
 		if (la.kind == 22 || la.kind == 23) {
 			CompIter(out body);
 		}
-		GoUpScope();
 		expr = Expression.MakeCompFor(target, rvalue, body);
 		
 	}
@@ -2248,15 +2253,10 @@ string cur_class_name;
 	void CompIf(out ComprehensionIter expr) {
 		Expression tmp; ComprehensionIter body = null; 
 		Expect(22);
-		Symbols.AddScope();
-		Symbols.Name = "CompIf`" + ScopeId++;
-		GoDownScope();
-		
 		OrTest(out tmp);
 		if (la.kind == 22 || la.kind == 23) {
 			CompIter(out body);
 		}
-		GoUpScope();
 		expr = Expression.MakeCompIf(tmp, body);
 		
 	}

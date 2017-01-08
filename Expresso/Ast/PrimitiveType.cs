@@ -41,7 +41,7 @@ namespace Expresso.Ast
         }
 
         public ExpressoTypeCode KnownTypeCode{
-            get{return GetKnownTypeCodeForPrimitiveType(KeywordToken.Token);}
+            get{return GetKnownTypeCodeForPrimitiveType(KeywordToken.Token, this);}
         }
 
         public override string Name{
@@ -89,7 +89,7 @@ namespace Expresso.Ast
 
         #endregion
 
-        public static ExpressoTypeCode GetKnownTypeCodeForPrimitiveType(string keyword)
+        public static ExpressoTypeCode GetKnownTypeCodeForPrimitiveType(string keyword, AstNode node)
         {
             switch(keyword){
             case "array":
@@ -141,7 +141,7 @@ namespace Expresso.Ast
                 return ExpressoTypeCode.String;
 
             default:
-                throw new ParserException("{0} is an unknown primitive type!", keyword);
+                throw new ParserException("{0} is an unknown primitive type!", node, keyword);
             }
         }
     }

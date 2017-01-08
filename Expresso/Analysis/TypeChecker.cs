@@ -84,7 +84,7 @@ namespace Expresso.Ast.Analysis
         {
             if(continueStmt.Count.Value.GetType() != typeof(int) || (int)continueStmt.Count.Value < 0){
                 parser.ReportSemanticError(
-                    "Error ES4000: `count` expression in a continue statement has to be a positive integer",
+                    "Error ES4001: `count` expression in a continue statement has to be a positive integer",
                     continueStmt
                 );
             }
@@ -234,13 +234,15 @@ namespace Expresso.Ast.Analysis
         public AstType VisitAssignment(AssignmentExpression assignment)
         {
             TemporaryTypes.Clear();
+            assignment.AcceptWalker(inference_runner);
+
             var left_type = assignment.Left.AcceptWalker(this);
             if(left_type == SimpleType.Null){
                 // We see the left-hand-side is a sequence expression so validate each item on both sides.
                 var left_types = TemporaryTypes.ToList();
                 TemporaryTypes.Clear();
                 assignment.Right.AcceptWalker(this);
-                // Don't validate the number of elements because we has already done that in parse phase.
+                // Don't validate the number of elements because we have already done that in parse phase.
                 for(int i = 0; i < left_types.Count; ++i){
                     if(IsPlaceholderType(left_types[i])){
                         var inferred_type = TemporaryTypes[i].Clone();
@@ -360,6 +362,9 @@ namespace Expresso.Ast.Analysis
                 //func_type.ReplaceWith(inferred);
                 return inferred;
             }
+
+            // TODO: implement the type check on arguments.
+            inference_runner.VisitCallExpression(callExpr);
             return ((FunctionType)func_type).ReturnType;
         }
 
@@ -454,7 +459,8 @@ namespace Expresso.Ast.Analysis
             var type = memRef.Target.AcceptWalker(this);
             if(IsPlaceholderType(type)){
                 var inferred = memRef.Target.AcceptWalker(inference_runner);
-                type.ReplaceWith(inferred);
+                // Do not replace the type node because ExpressoInferenceRunner has already done that
+                //type.ReplaceWith(inferred);
                 inference_runner.VisitMemberReference(memRef);
                 type = inferred;
             }
@@ -567,7 +573,7 @@ namespace Expresso.Ast.Analysis
             return result;
         }
 
-        public AstType VisitSequence(SequenceExpression seqExpr)
+        public AstType VisitSequenceExpression(SequenceExpression seqExpr)
         {
             TemporaryTypes.Clear();
             foreach(var item in seqExpr.Items)

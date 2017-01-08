@@ -34,80 +34,82 @@ namespace Expresso.Ast.Analysis
 
             public AstType VisitAst(ExpressoAst ast)
             {
-                throw new NotImplementedException("Can not work on that node!");
+                throw new InvalidOperationException("Can not work on that node!");
             }
 
             public AstType VisitBlock(BlockStatement block)
             {
-                throw new NotImplementedException("Can not work on that node!");
+                throw new InvalidOperationException("Can not work on that node!");
             }
 
             public AstType VisitBreakStatement(BreakStatement breakStmt)
             {
-                throw new NotImplementedException("Can not work on that node!");
+                throw new InvalidOperationException("Can not work on that node!");
             }
 
             public AstType VisitContinueStatement(ContinueStatement continueStmt)
             {
-                throw new NotImplementedException("Can not work on that node!");
+                throw new InvalidOperationException("Can not work on that node!");
             }
 
             public AstType VisitEmptyStatement(EmptyStatement emptyStmt)
             {
-                throw new NotImplementedException("Can not work on that node!");
+                throw new InvalidOperationException("Can not work on that node!");
             }
 
             public AstType VisitExpressionStatement(ExpressionStatement exprStmt)
             {
-                throw new NotImplementedException("Can not work on that node!");
+                throw new InvalidOperationException("Can not work on that node!");
             }
 
             public AstType VisitForStatement(ForStatement forStmt)
             {
-                throw new NotImplementedException("Can not work on that node!");
+                throw new InvalidOperationException("Can not work on that node!");
             }
 
             public AstType VisitValueBindingForStatement(ValueBindingForStatement valueBindingForStatment)
             {
-                throw new NotImplementedException("Can not work on that node!");
+                throw new InvalidOperationException("Can not work on that node!");
             }
 
             public AstType VisitIfStatement(IfStatement ifStmt)
             {
-                throw new NotImplementedException("Can not work on that node!");
+                throw new InvalidOperationException("Can not work on that node!");
             }
 
             public AstType VisitReturnStatement(ReturnStatement returnStmt)
             {
-                throw new NotImplementedException("Can not work on that node!");
+                throw new InvalidOperationException("Can not work on that node!");
             }
 
             public AstType VisitMatchStatement(MatchStatement matchStmt)
             {
-                throw new NotImplementedException("Can not work on that node!");
+                throw new InvalidOperationException("Can not work on that node!");
             }
 
             public AstType VisitWhileStatement(WhileStatement whileStmt)
             {
-                throw new NotImplementedException("Can not work on that node!");
+                throw new InvalidOperationException("Can not work on that node!");
             }
 
             public AstType VisitYieldStatement(YieldStatement yieldStmt)
             {
-                throw new NotImplementedException("Can not work on that node!");
+                throw new InvalidOperationException("Can not work on that node!");
             }
 
             public AstType VisitVariableDeclarationStatement(VariableDeclarationStatement varDecl)
             {
-                throw new NotImplementedException("Can not work on that node!");
+                throw new InvalidOperationException("Can not work on that node!");
             }
 
             public AstType VisitAssignment(AssignmentExpression assignment)
             {
-                // In an assignment, we want to know the type of the left-hand-side
-                // So let's take a look at the right-hand-side
-                var right_type = assignment.Right.AcceptWalker(this);
-                return right_type.Clone();
+                // In an assignment, we usually see variables on the left-hand-side.
+                // So let's take a look at the left-hand-side
+                var type = assignment.Left.AcceptWalker(this);
+                // In a compound assignment, we could see variables on the right-hand-side
+                assignment.Right.AcceptWalker(this);
+                return type.Clone();
             }
 
             public AstType VisitBinaryExpression(BinaryExpression binaryExpr)
@@ -118,6 +120,9 @@ namespace Expresso.Ast.Analysis
             public AstType VisitCallExpression(CallExpression callExpr)
             {
                 var func_type = callExpr.Target.AcceptWalker(this);
+                foreach(var arg in callExpr.Arguments)
+                    arg.AcceptWalker(this);
+                
                 return ((FunctionType)func_type).ReturnType.Clone();
             }
 
@@ -128,7 +133,13 @@ namespace Expresso.Ast.Analysis
 
             public AstType VisitComprehensionExpression(ComprehensionExpression comp)
             {
+                int tmp_counter = checker.scope_counter;
+                checker.DescendScope();
+                checker.scope_counter = 0;
+
                 var obj_type = comp.ObjectType;
+                comp.Body.AcceptWalker(this);
+
                 if(obj_type.Name == "dictionary"){
                     var key_value = comp.Item as KeyValueLikeExpression;
                     var key_type = key_value.KeyExpression.AcceptWalker(this);
@@ -142,17 +153,59 @@ namespace Expresso.Ast.Analysis
                     throw new InvalidOperationException("Unreachable!");
                 }
 
+                checker.AscendScope();
+                checker.scope_counter = tmp_counter + 1;
+
                 return obj_type.Clone();
             }
 
             public AstType VisitComprehensionForClause(ComprehensionForClause compFor)
             {
-                throw new NotImplementedException("Can not work on that node!");
+                var inferred = compFor.Target.AcceptWalker(this);
+                var inferred_primitive = inferred as PrimitiveType;
+                if(inferred_primitive != null){
+                    // See if it is a IntSeq object
+                    if(inferred_primitive.KnownTypeCode != KnownTypeCode.IntSeq){
+                        parser.ReportSemanticError(
+                            "Error ES1301: '{0}' isn't a sequence type! A comprehension expects a sequence object.",
+                            inferred_primitive,
+                            inferred_primitive
+                        );
+                    }
+
+                    inferred = new PrimitiveType("int", inferred_primitive.StartLocation);
+                }
+
+                var inferred_simple = inferred as SimpleType;
+                if(inferred_simple != null){
+                    // See if it is a sequence object like array or vector
+                    if(inferred_simple.Name != "array" && inferred_simple.Name != "vector"){
+                        parser.ReportSemanticError(
+                            "Error ES1301: '{0}' isn't a sequence type! A comprehension expects a sequence object.",
+                            inferred_simple,
+                            inferred_simple
+                        );
+                    }
+
+                    inferred = inferred_simple.TypeArguments.FirstOrDefault();
+                }
+
+                var identifier_ptn = compFor.Left as IdentifierPattern;
+                if(identifier_ptn != null)
+                    identifier_ptn.Identifier.Type.ReplaceWith(inferred);
+
+                if(compFor.Body != null)
+                    compFor.Body.AcceptWalker(this);
+                
+                return inferred;
             }
 
             public AstType VisitComprehensionIfClause(ComprehensionIfClause compIf)
             {
-                throw new NotImplementedException("Can not work on that node!");
+                if(compIf.Body != null)
+                    compIf.Body.AcceptWalker(this);
+
+                return AstType.Null;
             }
 
             public AstType VisitConditionalExpression(ConditionalExpression condExpr)
@@ -162,7 +215,7 @@ namespace Expresso.Ast.Analysis
 
             public AstType VisitKeyValueLikeExpression(KeyValueLikeExpression keyValue)
             {
-                throw new NotImplementedException("Can not work on that node!");
+                throw new InvalidOperationException("Can not work on that node!");
             }
 
             public AstType VisitLiteralExpression(LiteralExpression literal)
@@ -202,7 +255,7 @@ namespace Expresso.Ast.Analysis
                 var simple_type = target_type as SimpleType;
                 if(simple_type != null){
                     //TODO: get it to work for more general types 
-                    if(simple_type.Identifier != "array" && simple_type.Identifier != "dictionary"){
+                    if(simple_type.Identifier != "array" && simple_type.Identifier != "dictionary" && simple_type.Identifier != "vector"){
                         parser.ReportSemanticErrorRegional(
                             "Can not apply the indexer expression on type `{0}`",
                             indexExpr.Target, indexExpr,
@@ -267,6 +320,7 @@ namespace Expresso.Ast.Analysis
                         }else{
                             throw new ParserException(
                                 "Type or symbol name '{0}' is not declared",
+                                item,
                                 item.Name
                             );
                         }
@@ -327,10 +381,10 @@ namespace Expresso.Ast.Analysis
 
             public AstType VisitMatchClause(MatchPatternClause matchClause)
             {
-                throw new NotImplementedException("Can not work on that node!");
+                throw new InvalidOperationException("Can not work on that node!");
             }
 
-            public AstType VisitSequence(SequenceExpression seqExpr)
+            public AstType VisitSequenceExpression(SequenceExpression seqExpr)
             {
                 // The type of the element of a sequence can be seen as the most common type
                 // of the whole sequence.
@@ -378,7 +432,7 @@ namespace Expresso.Ast.Analysis
                     return new PrimitiveType("bool", TextLocation.Empty);
 
                 default:
-                    throw new ParserException("Unknown unary operator!");
+                    throw new ParserException("Unknown unary operator!", unaryExpr);
                 };
             }
 
@@ -408,12 +462,12 @@ namespace Expresso.Ast.Analysis
 
             public AstType VisitCommentNode(CommentNode comment)
             {
-                throw new NotImplementedException("Can not work on that node!");
+                throw new InvalidOperationException("Can not work on that node!");
             }
 
             public AstType VisitTextNode(TextNode textNode)
             {
-                throw new NotImplementedException("Can not work on that node!");
+                throw new InvalidOperationException("Can not work on that node!");
             }
 
             public AstType VisitSimpleType(SimpleType simpleType)
@@ -458,7 +512,7 @@ namespace Expresso.Ast.Analysis
 
             public AstType VisitImportDeclaration(ImportDeclaration importDecl)
             {
-                throw new NotImplementedException("Can not work on that node!");
+                throw new InvalidOperationException("Can not work on that node!");
             }
 
             public AstType VisitFunctionDeclaration(FunctionDeclaration funcDecl)
@@ -477,19 +531,19 @@ namespace Expresso.Ast.Analysis
 
             public AstType VisitTypeDeclaration(TypeDeclaration typeDecl)
             {
-                throw new NotImplementedException("Can not work on that node!");
+                throw new InvalidOperationException("Can not work on that node!");
             }
 
             public AstType VisitFieldDeclaration(FieldDeclaration fieldDecl)
             {
-                throw new NotImplementedException("Can not work on that node!");
+                throw new InvalidOperationException("Can not work on that node!");
             }
 
             public AstType VisitParameterDeclaration(ParameterDeclaration parameterDecl)
             {
                 if(parameterDecl.Option.IsNull){
                     parser.ReportSemanticErrorRegional(
-                        "Can not infer the expression {0} because it doesn't have any context.",
+                        "Can not infer the expression '{0}' because it doesn't have any context.",
                         parameterDecl.NameToken, parameterDecl.Option,
                         parameterDecl
                     );
@@ -504,7 +558,7 @@ namespace Expresso.Ast.Analysis
             {
                 if(initializer.Initializer.IsNull){
                     parser.ReportSemanticErrorRegional(
-                        "Can not infer the expression {0} because it doesn't have any context.",
+                        "Can not infer the expression '{0}' because it doesn't have any context.",
                         initializer.NameToken, initializer.Initializer,
                         initializer
                     );
@@ -560,27 +614,28 @@ namespace Expresso.Ast.Analysis
 
             public AstType VisitNullNode(AstNode nullNode)
             {
-                throw new NotImplementedException("Can not work on that node!");
+                // Just ignore it.
+                return AstType.Null;
             }
 
             public AstType VisitNewLine(NewLineNode newlineNode)
             {
-                throw new NotImplementedException("Can not work on that node!");
+                throw new InvalidOperationException("Can not work on that node!");
             }
 
             public AstType VisitWhitespace(WhitespaceNode whitespaceNode)
             {
-                throw new NotImplementedException("Can not work on that node!");
+                throw new InvalidOperationException("Can not work on that node!");
             }
 
             public AstType VisitExpressoTokenNode(ExpressoTokenNode tokenNode)
             {
-                throw new NotImplementedException("Can not work on that node!");
+                throw new InvalidOperationException("Can not work on that node!");
             }
 
             public AstType VisitPatternPlaceholder(AstNode placeholder, ICSharpCode.NRefactory.PatternMatching.Pattern child)
             {
-                throw new NotImplementedException("Can not work on that node!");
+                throw new InvalidOperationException("Can not work on that node!");
             }
 
             #endregion

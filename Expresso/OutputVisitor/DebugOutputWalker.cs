@@ -304,7 +304,7 @@ namespace Expresso.Ast
             clause.Body.AcceptWalker(this);
         }
 
-        public void VisitSequence(SequenceExpression seqExpr)
+        public void VisitSequenceExpression(SequenceExpression seqExpr)
         {
             PrintList(seqExpr.Items);
         }

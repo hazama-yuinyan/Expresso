@@ -33,17 +33,17 @@ namespace Expresso.Ast
 
         public override void AcceptWalker(IAstWalker walker)
 		{
-            walker.VisitSequence(this);
+            walker.VisitSequenceExpression(this);
 		}
 
         public override TResult AcceptWalker<TResult>(IAstWalker<TResult> walker)
         {
-            return walker.VisitSequence(this);
+            return walker.VisitSequenceExpression(this);
         }
 
         public override TResult AcceptWalker<TResult, TData>(IAstWalker<TData, TResult> walker, TData data)
         {
-            return walker.VisitSequence(this, data);
+            return walker.VisitSequenceExpression(this, data);
         }
 
         #region implemented abstract members of AstNode

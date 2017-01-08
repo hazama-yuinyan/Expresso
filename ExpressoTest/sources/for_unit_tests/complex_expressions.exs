@@ -15,7 +15,7 @@ def main()
 	var a (- int, b (- int, c (- int;
 	a = b = c = 0;
     a, b, c = 1, 2, 3;
-    let vec (- vector<(int, int)> = [...];
+    var vec (- vector<(int, int)> = [...];
     let t = (a, b, c);
     vec.add((a, b));
 

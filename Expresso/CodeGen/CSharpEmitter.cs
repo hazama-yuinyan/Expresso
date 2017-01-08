@@ -1016,7 +1016,7 @@ namespace Expresso.CodeGen
             return (res == null) ? null : CSharpExpr.IfThen(res, body);
         }
 
-        public CSharpExpr VisitSequence(SequenceExpression seqExpr, CSharpEmitterContext context)
+        public CSharpExpr VisitSequenceExpression(SequenceExpression seqExpr, CSharpEmitterContext context)
         {
             // A sequence expression is always translated to a tuple
             var exprs = new List<CSharpExpr>();
