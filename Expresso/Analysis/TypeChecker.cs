@@ -138,22 +138,20 @@ namespace Expresso.Ast.Analysis
             DescendScope();
             scope_counter = 0;
 
-            // TODO: implement it in a more formal way
-            var left_type = valueBindingForStatment.Variables.First().NameToken.AcceptWalker(this);
-            AstType target_type;
-            if(IsPlaceholderType(left_type))
-                target_type = valueBindingForStatment.Variables.First().Initializer.AcceptWalker(inference_runner);
-            else
-                target_type = valueBindingForStatment.Variables.First().Initializer.AcceptWalker(this);
-
-            if(!IsSequenceType(target_type)){
-                parser.ReportSemanticError("Error ES1300: `{0}` isn't a sequence type! A for statement can only be used for iterating over sequences",
-                    valueBindingForStatment.Variables.First().Initializer,
-                    left_type
-                );
-            }else{
-                var elem_type = MakeOutElementType(target_type);
-                left_type.ReplaceWith(elem_type);
+            foreach(var variable in valueBindingForStatment.Variables){
+                var target_type = variable.Initializer.AcceptWalker(this);
+                if(!IsSequenceType(target_type)){
+                    parser.ReportSemanticError(
+                        "Error ES1300: `{0}` isn't a sequence type! A for statemant can only be used for iterating over sequences.",
+                        variable.Initializer,
+                        target_type
+                    );
+                }else{
+                    var elem_type = MakeOutElementType(target_type);
+                    var left_type = variable.NameToken.AcceptWalker(this);
+                    if(IsPlaceholderType(left_type))
+                        left_type.ReplaceWith(elem_type);
+                }
             }
 
             valueBindingForStatment.Body.AcceptWalker(this);
@@ -171,7 +169,8 @@ namespace Expresso.Ast.Analysis
 
             var condition_type = ifStmt.Condition.AcceptWalker(this) as PrimitiveType;
             if(condition_type == null || condition_type.KnownTypeCode != KnownTypeCode.Bool){
-                parser.ReportSemanticError("Error ES4000: The condition expression has to be of type `bool`",
+                parser.ReportSemanticError(
+                    "Error ES4000: The condition expression has to be of type `bool`",
                     ifStmt.Condition
                 );
             }
@@ -279,16 +278,17 @@ namespace Expresso.Ast.Analysis
         {
             var lhs_type = binaryExpr.Left.AcceptWalker(this);
             if(IsPlaceholderType(lhs_type)){
-                var inferred_type = binaryExpr.Left.AcceptWalker(inference_runner);
-                lhs_type.ReplaceWith(inferred_type);
-                lhs_type = inferred_type;
+                lhs_type = binaryExpr.Left.AcceptWalker(inference_runner);
+                // Do not replace the type node because inference runner has already done that.
+                //lhs_type.ReplaceWith(inferred_type);
+                //lhs_type = inferred_type;
             }
 
             var rhs_type = binaryExpr.Right.AcceptWalker(this);
             if(IsPlaceholderType(rhs_type)){
-                var inferred_type2 = binaryExpr.Right.AcceptWalker(inference_runner);
-                rhs_type.ReplaceWith(inferred_type2);
-                rhs_type = inferred_type2;
+                rhs_type = binaryExpr.Right.AcceptWalker(inference_runner);
+                //rhs_type.ReplaceWith(inferred_type2);
+                //rhs_type = inferred_type2;
             }
 
             if(IsCompatibleWith(lhs_type, rhs_type) == TriBool.False){
@@ -430,6 +430,34 @@ namespace Expresso.Ast.Analysis
 
         public AstType VisitIntegerSequenceExpression(IntegerSequenceExpression intSeq)
         {
+            var lower_type = intSeq.Lower.AcceptWalker(inference_runner);
+            var upper_type = intSeq.Upper.AcceptWalker(inference_runner);
+            var step_type = intSeq.Step.AcceptWalker(inference_runner);
+            // TODO: implement uint and bigint version of the intseq type
+            if(!IsSmallIntegerType(lower_type)){
+                parser.ReportSemanticError(
+                    "Error ES4001: `{0}` is not an `int` type! An integer sequence expression expects an `int`.",
+                    intSeq.Lower,
+                    lower_type
+                );
+            }
+
+            if(!IsSmallIntegerType(upper_type)){
+                parser.ReportSemanticError(
+                    "Error ES4001: `{0}` is not an `int` type! An integer sequence expression expects an `int`.",
+                    intSeq.Upper,
+                    upper_type
+                );
+            }
+
+            if(!IsSmallIntegerType(step_type)){
+                parser.ReportSemanticError(
+                    "Error ES4001: `{0}` is not an `int` type! An integer sequence expression expects an `int`.",
+                    intSeq.Step,
+                    step_type
+                );
+            }
+
             return new PrimitiveType("intseq", TextLocation.Empty);
         }
 
@@ -977,20 +1005,40 @@ namespace Expresso.Ast.Analysis
         }
 
         /// <summary>
-        /// Determines if `type` is number type the specified type.
+        /// Determines if `type` is a number type.
         /// </summary>
-        /// <returns><c>true</c> if is number type the specified type; otherwise, <c>false</c>.</returns>
+        /// <returns><c>true</c> if `type` is a number type; otherwise, <c>false</c>.</returns>
         /// <param name="type">Type.</param>
         static bool IsNumericalType(AstType type)
         {
             return type.Name == "int" || type.Name == "uint" || type.Name == "float" || type.Name == "double" || type.Name == "bigint" || type.Name == "byte";
         }
 
+        /// <summary>
+        /// Determines if `type` a small integer type.
+        /// </summary>
+        /// <returns><c>true</c>, if `type` is a small integer type, <c>false</c> otherwise.</returns>
+        /// <param name="type">Type.</param>
+        static bool IsSmallIntegerType(AstType type)
+        {
+            return type.Name == "int";
+        }
+
+        /// <summary>
+        /// Determines if `type` is a placeholder type.
+        /// </summary>
+        /// <returns><c>true</c>, if `type` is a placeholder type, <c>false</c> otherwise.</returns>
+        /// <param name="type">Type.</param>
         static bool IsPlaceholderType(AstType type)
         {
             return type is PlaceholderType;
         }
 
+        /// <summary>
+        /// Determines if `type` is a container type.
+        /// </summary>
+        /// <returns><c>true</c>, if `type` is a container type, <c>false</c> otherwise.</returns>
+        /// <param name="type">Type.</param>
         static bool IsContainerType(AstType type)
         {
             var simple = type as SimpleType;
@@ -1043,7 +1091,7 @@ namespace Expresso.Ast.Analysis
                 parser.ReportSemanticError(
                     "Type name `{0}` turns out not to be declared in the current scope {1}!",
                     ident,
-                    ident.Name, table.Name
+                    ident.Name, symbols.Name
                 );
             }
         }

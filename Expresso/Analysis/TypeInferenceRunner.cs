@@ -246,7 +246,7 @@ namespace Expresso.Ast.Analysis
 
             public AstType VisitIntegerSequenceExpression(IntegerSequenceExpression intSeq)
             {
-                return new PrimitiveType("intseq", TextLocation.Empty);
+                throw new InvalidOperationException("Can not work on that node.");
             }
 
             public AstType VisitIndexerExpression(IndexerExpression indexExpr)
