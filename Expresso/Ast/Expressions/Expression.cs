@@ -294,12 +294,12 @@ namespace Expresso.Ast
             return new LiteralExpression(val, new PrimitiveType(typeName, TextLocation.Empty), loc);
         }
 
-        public static SelfReferenceExpression MakeSelfRef(TextLocation start)
+        public static SelfReferenceExpression MakeSelfRef(TextLocation start = default(TextLocation))
         {
             return new SelfReferenceExpression(start);
         }
 
-        public static SuperReferenceExpression MakeSuperRef(TextLocation start)
+        public static SuperReferenceExpression MakeSuperRef(TextLocation start = default(TextLocation))
         {
             return new SuperReferenceExpression(start);
         }

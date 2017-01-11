@@ -95,7 +95,6 @@ namespace Expresso.Ast
         /// </summary>
         /// <param name="identifier">The name of the type.</param>
         /// <param name="start">The start location this reference appears.</param>
-        /// <param name="end">The location this reference ends at.</param>
         public SimpleType(string identifier, TextLocation start)
             : base(start, new TextLocation(start.Line, start.Column + identifier.Length))
         {

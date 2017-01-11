@@ -1872,121 +1872,239 @@ namespace Expresso.Test
             var ast = parser.TopmostAst;
 
             var expected_ast = AstNode.MakeModuleDef("main", new List<EntityDeclaration>{
-                EntityDeclaration.MakeClassDecl("Test", Enumerable.Empty<AstType>(), Helpers.MakeSeq<EntityDeclaration>(
-                    EntityDeclaration.MakeField(
-                        Helpers.MakeSeq(
-                            AstNode.MakeIdentifier("x", Helpers.MakePrimitiveType("int"))
-                        ),
-                        Helpers.MakeSeq<Expression>(
-                            Expression.Null
-                        ),
-                        Modifiers.Public | Modifiers.Immutable
-                    ),
-                    EntityDeclaration.MakeField(
-                        Helpers.MakeSeq(
-                            AstNode.MakeIdentifier("y", Helpers.MakePrimitiveType("int")),
-                            AstNode.MakeIdentifier("z", Helpers.MakePrimitiveType("int"))
-                        ),
-                        Helpers.MakeSeq(
-                            Expression.Null,
-                            Expression.MakeConstant("int", 3)
-                        ),
-                        Modifiers.Private | Modifiers.Immutable
-                    ),
-                    EntityDeclaration.MakeFunc(
-                        "getY",
-                        Enumerable.Empty<ParameterDeclaration>(),
-                        Statement.MakeBlock(
+                EntityDeclaration.MakeClassDecl(
+                    "Test",
+                    Enumerable.Empty<AstType>(),
+                    Helpers.MakeSeq<EntityDeclaration>(
+                        EntityDeclaration.MakeField(
                             Helpers.MakeSeq(
-                                Statement.MakeReturnStmt(Expression.MakeSequenceExpression(Expression.MakeMemRef(
-                                    Expression.MakeSelfRef(TextLocation.Empty),
-                                    AstNode.MakeIdentifier("y")
-                                )))
-                            )
+                                AstNode.MakeIdentifier("x", Helpers.MakePrimitiveType("int"))
+                            ),
+                            Helpers.MakeSeq<Expression>(
+                                Expression.Null
+                            ),
+                            Modifiers.Public | Modifiers.Immutable
                         ),
-                        Helpers.MakePrimitiveType("int"),
-                        Modifiers.Public
-                    ),
-                    EntityDeclaration.MakeFunc(
-                        "createTest",
-                        Helpers.MakeSeq(
-                            EntityDeclaration.MakeParameter("x", Helpers.MakePrimitiveType("int")),
-                            EntityDeclaration.MakeParameter("y", Helpers.MakePrimitiveType("int"), Expression.MakeConstant("int", 2)),
-                            EntityDeclaration.MakeParameter("z", Helpers.MakePrimitiveType("int"), Expression.MakeConstant("int", 3))
-                        ),
-                        Statement.MakeBlock(
+                        EntityDeclaration.MakeField(
                             Helpers.MakeSeq(
-                                Helpers.MakeReturnStatement(Expression.MakeNewExpr(Expression.MakeObjectCreation(
-                                    Helpers.MakeGenericType("Test"),
-                                    Helpers.MakeSeq(
-                                        AstNode.MakeIdentifier("x"),
-                                        AstNode.MakeIdentifier("y"),
-                                        AstNode.MakeIdentifier("z")
-                                    ),
-                                    Helpers.MakeSeq(
-                                        Expression.MakePath(Helpers.MakeSomeIdent("x")),
-                                        Expression.MakePath(Helpers.MakeSomeIdent("y")),
-                                        Expression.MakePath(Helpers.MakeSomeIdent("z"))
+                                AstNode.MakeIdentifier("y", Helpers.MakePrimitiveType("int")),
+                                AstNode.MakeIdentifier("z", Helpers.MakePrimitiveType("int"))
+                            ),
+                            Helpers.MakeSeq(
+                                Expression.Null,
+                                Expression.MakeConstant("int", 3)
+                            ),
+                            Modifiers.Private | Modifiers.Immutable
+                        ),
+                        EntityDeclaration.MakeFunc(
+                            "getX",
+                            Enumerable.Empty<ParameterDeclaration>(),
+                            Statement.MakeBlock(
+                                Helpers.MakeSingleItemReturnStatement(
+                                    Expression.MakeMemRef(
+                                        Expression.MakeSelfRef(),
+                                        AstNode.MakeIdentifier(
+                                            "x",
+                                            Helpers.MakePrimitiveType("int")
+                                        )
                                     )
-                                )))
-                            )
-                        ), 
-                        Helpers.MakeGenericType("Test"),
-                        Modifiers.Export
-                    )
-                ), Modifiers.None),
+                                )
+                            ),
+                            Helpers.MakePrimitiveType("int"),
+                            Modifiers.Public
+                        ),
+                        EntityDeclaration.MakeFunc(
+                            "getY",
+                            Enumerable.Empty<ParameterDeclaration>(),
+                            Statement.MakeBlock(
+                                Helpers.MakeSingleItemReturnStatement(
+                                    Expression.MakeMemRef(
+                                        Expression.MakeSelfRef(),
+                                        AstNode.MakeIdentifier(
+                                            "y",
+                                            Helpers.MakePrimitiveType("int")
+                                        )
+                                    )
+                                )
+                            ),
+                            Helpers.MakePrimitiveType("int"),
+                            Modifiers.Public
+                        ),
+                        EntityDeclaration.MakeFunc(
+                            "getXPlus",
+                            Helpers.MakeSeq(
+                                EntityDeclaration.MakeParameter("n", Helpers.MakePrimitiveType("int"))
+                            ),
+                            Statement.MakeBlock(
+                                Helpers.MakeSingleItemReturnStatement(
+                                    Expression.MakeBinaryExpr(
+                                        OperatorType.Plus,
+                                        Expression.MakeMemRef(
+                                            Expression.MakeSelfRef(),
+                                            AstNode.MakeIdentifier(
+                                                "x",
+                                                Helpers.MakePrimitiveType("int")
+                                            )
+                                        ),
+                                        Helpers.MakeIdentifierPath(
+                                            "n",
+                                            Helpers.MakePrimitiveType("int")
+                                        )
+                                    )
+                                )
+                            ), 
+                            Helpers.MakePrimitiveType("int"),
+                            Modifiers.Public
+                        )
+                    ),
+                    Modifiers.None
+                ),
                 EntityDeclaration.MakeFunc(
                     "main",
                     Enumerable.Empty<ParameterDeclaration>(),
-                    Statement.MakeBlock(new List<Statement>{
+                    Statement.MakeBlock(
                         Statement.MakeVarDecl(
-                            Helpers.MakeSeq(AstNode.MakeIdentifier("k", Helpers.MakeGenericType("Test"))),
-                            Helpers.MakeSeq(Expression.MakeObjectCreation(
-                                Helpers.MakeGenericType("Test"),
-                                Helpers.MakeSeq(AstNode.MakeIdentifier("x"), AstNode.MakeIdentifier("y")),
-                                Helpers.MakeSeq(Expression.MakeConstant("int", 1), Expression.MakeConstant("int", 2))
-                            )),
-                            Modifiers.Immutable
-                        ),
-                        Statement.MakeVarDecl(
-                            Helpers.MakeSeq(AstNode.MakeIdentifier("k2", Helpers.MakeGenericType("Test"))),
-                            Helpers.MakeSeq(Expression.MakeNewExpr(Expression.MakeObjectCreation(
-                                Helpers.MakeGenericType("Test"),
-                                Helpers.MakeSeq(AstNode.MakeIdentifier("x"), AstNode.MakeIdentifier("y")),
-                                Helpers.MakeSeq(Expression.MakeConstant("int", 1), Expression.MakeConstant("int", 2))
-                            ))),
-                            Modifiers.Immutable
-                        ),
-                        Statement.MakeVarDecl(
-                            Helpers.MakeSeq(AstNode.MakeIdentifier("l", Helpers.MakeGenericType("Test"))),
-                            Helpers.MakeSeq(Helpers.MakeCallExpression(
-                                Expression.MakePath(Helpers.MakeSomeIdent("createTest")),
-                                Expression.MakeConstant("int", 1),
-                                Expression.MakeConstant("int", 2),
-                                Expression.MakeConstant("int", 4)
-                            )),
-                            Modifiers.Immutable
-                        ),
-                        Statement.MakeVarDecl(
-                            Helpers.MakeSeq(AstNode.MakeIdentifier("n", Helpers.MakePrimitiveType("int"))),
-                            Helpers.MakeSeq(Expression.MakeMemRef(
-                                Expression.MakePath(Helpers.MakeSomeIdent("k")),
-                                AstNode.MakeIdentifier("x"))
-                                           ),
-                            Modifiers.Immutable
-                        ),
-                        Statement.MakeVarDecl(
-                            Helpers.MakeSeq(AstNode.MakeIdentifier("n2", Helpers.MakePrimitiveType("int"))),
                             Helpers.MakeSeq(
-                                Expression.MakeCallExpr(Expression.MakeMemRef(
-                                    Expression.MakePath(Helpers.MakeSeq(Helpers.MakeSomeIdent("k"))),
-                                    AstNode.MakeIdentifier("getY")
-                                ), Enumerable.Empty<Expression>())
+                                AstNode.MakeIdentifier("a", Helpers.MakeGenericType("Test"))
+                            ),
+                            Helpers.MakeSeq(
+                                Expression.MakeObjectCreation(
+                                    Helpers.MakeGenericType("Test"),
+                                    Helpers.MakeSeq(
+                                        AstNode.MakeIdentifier("x"),
+                                        AstNode.MakeIdentifier("y")
+                                    ),
+                                    Helpers.MakeSeq(
+                                        Expression.MakeConstant("int", 1),
+                                        Expression.MakeConstant("int", 3)
+                                    )
+                                )
                             ),
                             Modifiers.Immutable
+                        ),
+                        Statement.MakeVarDecl(
+                            Helpers.MakeSeq(
+                                AstNode.MakeIdentifier("b", Helpers.MakeGenericType("Test"))
+                            ),
+                            Helpers.MakeSeq(
+                                Expression.MakeNewExpr(
+                                    Expression.MakeObjectCreation(
+                                        Helpers.MakeGenericType("Test"),
+                                        Helpers.MakeSeq(
+                                            AstNode.MakeIdentifier("x"),
+                                            AstNode.MakeIdentifier("y")
+                                        ),
+                                        Helpers.MakeSeq(
+                                            Expression.MakeConstant("int", 1),
+                                            Expression.MakeConstant("int", 3)
+                                        )
+                                    )
+                                )
+                            ),
+                            Modifiers.Immutable
+                        ),
+                        Statement.MakeVarDecl(
+                            Helpers.MakeSeq(
+                                AstNode.MakeIdentifier("c", Helpers.MakePrimitiveType("int"))
+                            ),
+                            Helpers.MakeSeq(
+                                Expression.MakeCallExpr(
+                                    Expression.MakeMemRef(
+                                        Helpers.MakeIdentifierPath(
+                                            "a",
+                                            Helpers.MakeGenericType("Test")
+                                        ),
+                                        AstNode.MakeIdentifier(
+                                            "getX",
+                                            AstType.MakeFunctionType(
+                                                "getX",
+                                                Helpers.MakePrimitiveType("int"),
+                                                Enumerable.Empty<ParameterType>()
+                                            )
+                                        )
+                                    ),
+                                    Enumerable.Empty<Expression>()
+                                )
+                            ),
+                            Modifiers.Immutable
+                        ),
+                        Statement.MakeVarDecl(
+                            Helpers.MakeSeq(
+                                AstNode.MakeIdentifier("d", Helpers.MakePrimitiveType("int"))
+                            ),
+                            Helpers.MakeSeq(
+                                Expression.MakeCallExpr(
+                                    Expression.MakeMemRef(
+                                        Helpers.MakeIdentifierPath(
+                                            "a",
+                                            Helpers.MakeGenericType("Test")
+                                        ),
+                                        AstNode.MakeIdentifier(
+                                            "getY",
+                                            AstType.MakeFunctionType(
+                                                "getY",
+                                                Helpers.MakePrimitiveType("int"),
+                                                Enumerable.Empty<ParameterType>()
+                                            )
+                                        )
+                                    ),
+                                    Enumerable.Empty<Expression>()
+                                )
+                            ),
+                            Modifiers.Immutable
+                        ),
+                        Statement.MakeVarDecl(
+                            Helpers.MakeSeq(
+                                AstNode.MakeIdentifier("e", Helpers.MakePrimitiveType("int"))
+                            ),
+                            Helpers.MakeSeq(
+                                Helpers.MakeCallExpression(
+                                    Expression.MakeMemRef(
+                                        Helpers.MakeIdentifierPath(
+                                            "a",
+                                            Helpers.MakeGenericType("Test")
+                                        ),
+                                        AstNode.MakeIdentifier(
+                                            "getXPlus",
+                                            AstType.MakeFunctionType(
+                                                "getXPlus",
+                                                Helpers.MakePrimitiveType("int"),
+                                                TextLocation.Empty,
+                                                TextLocation.Empty,
+                                                Helpers.MakePrimitiveType("int")
+                                            )
+                                        )
+                                    ),
+                                    Expression.MakeConstant("int", 100)
+                                )
+                            ),
+                            Modifiers.Immutable
+                        ),
+                        Statement.MakeExprStmt(
+                            Helpers.MakeCallExpression(
+                                Helpers.MakeIdentifierPath(
+                                    "printFormat",
+                                    AstType.MakeFunctionType(
+                                        "printFormat",
+                                        Helpers.MakeVoidType(),
+                                        TextLocation.Empty,
+                                        TextLocation.Empty,
+                                        Helpers.MakePrimitiveType("string")
+                                    )
+                                ),
+                                Expression.MakeConstant("string", "(a.x, a.y) = ({0}, {1})\n"),
+                                Helpers.MakeIdentifierPath(
+                                    "c",
+                                    Helpers.MakePrimitiveType("int")
+                                ),
+                                Helpers.MakeIdentifierPath(
+                                    "d",
+                                    Helpers.MakePrimitiveType("int")
+                                )
+                            )
                         )
-                    }),
-                    AstType.Null,
+                    ),
+                    Helpers.MakeVoidType(),
                     Modifiers.None
                 )
             });

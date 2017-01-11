@@ -86,6 +86,19 @@ namespace Expresso.Ast.Analysis
             );
             println_ident.IdentifierId = 1000000001u;
             NativeMapping.Add("println", println_ident);
+
+            var printformat_ident = AstNode.MakeIdentifier(
+                "WriteLine",
+                AstType.MakeFunctionType(
+                    "printFormat",
+                    AstType.MakeSimpleType("tuple", TextLocation.Empty),    // The void type
+                    TextLocation.Empty,
+                    TextLocation.Empty,
+                    AstType.MakePrimitiveType("String", TextLocation.Empty)
+                )
+            );
+            printformat_ident.IdentifierId = 1000000002u;
+            NativeMapping.Add("printFormat", printformat_ident);
         }
 
         public SymbolTable()

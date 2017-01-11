@@ -28,10 +28,10 @@ class Test
 def main()
 {
 	let a = Test{x : 1, y : 3};
-	let b = new Test{x : 1, y : 3);
+	let b = new Test{x : 1, y : 3};
 	let c = a.getX();
 	let d = a.getY();
 	let e = a.getXPlus(100);
 	
-	println("(a.x, a.y) = ", c, d);
+	printFormat("(a.x, a.y) = ({0}, {1})\n", c, d);
 }

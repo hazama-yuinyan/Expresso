@@ -506,6 +506,10 @@ namespace Expresso.Ast.Analysis
         {
             UniqueIdGenerator.DefineNewId(typeDecl.NameToken);
 
+            // Add Return type node
+            var type_node = AstType.MakeSimpleType(typeDecl.Name);
+            typeDecl.AddChild(type_node, Roles.Type);
+
             int tmp_counter = scope_counter;
             DecendScope();
             scope_counter = 0;

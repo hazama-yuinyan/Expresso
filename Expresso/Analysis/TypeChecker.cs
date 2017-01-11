@@ -484,6 +484,8 @@ namespace Expresso.Ast.Analysis
 
         public AstType VisitMemberReference(MemberReferenceExpression memRef)
         {
+            memRef.AcceptWalker(inference_runner);
+
             var type = memRef.Target.AcceptWalker(this);
             if(IsPlaceholderType(type)){
                 var inferred = memRef.Target.AcceptWalker(inference_runner);
@@ -855,27 +857,27 @@ namespace Expresso.Ast.Analysis
                     );
                 }
                 left_type.ReplaceWith(inferred_type);
-                return inferred_type;
-            }else{
-                var rhs_type = initializer.Initializer.AcceptWalker(this);
-                if(IsContainerType(rhs_type)){
-                    // The laft-hand-side lacks the types of the contents so infer them from the right-hand-side
-                    var lhs_simple = left_type as SimpleType;
-                    var rhs_simple = rhs_type as SimpleType;
-                    foreach(var pair in rhs_simple.TypeArguments.Zip(lhs_simple.TypeArguments,
-                        (l, r) => new Tuple<AstType, AstType>(l, r))){
-                        pair.Item1.ReplaceWith(pair.Item2.Clone());
-                    }
-                }else if(rhs_type != null && IsCompatibleWith(left_type, rhs_type) == TriBool.False){
-                    parser.ReportSemanticErrorRegional(
-                        "Type `{0}` on the left-hand-side is not compatible with `{1}` on the right-hand-side.",
-                        initializer.NameToken,
-                        initializer.Initializer,
-                        left_type, rhs_type
-                    );
-                }
-                return left_type;
+                left_type = inferred_type;
             }
+
+            var rhs_type = initializer.Initializer.AcceptWalker(this);
+            if(IsContainerType(rhs_type)){
+                // The laft-hand-side lacks the types of the contents so infer them from the right-hand-side
+                var lhs_simple = left_type as SimpleType;
+                var rhs_simple = rhs_type as SimpleType;
+                foreach(var pair in rhs_simple.TypeArguments.Zip(lhs_simple.TypeArguments,
+                    (l, r) => new Tuple<AstType, AstType>(l, r))){
+                    pair.Item1.ReplaceWith(pair.Item2.Clone());
+                }
+            }else if(rhs_type != null && IsCompatibleWith(left_type, rhs_type) == TriBool.False){
+                parser.ReportSemanticErrorRegional(
+                    "Type `{0}` on the left-hand-side is not compatible with `{1}` on the right-hand-side.",
+                    initializer.NameToken,
+                    initializer.Initializer,
+                    left_type, rhs_type
+                );
+            }
+            return left_type;
         }
 
         public AstType VisitWildcardPattern(WildcardPattern wildcardPattern)

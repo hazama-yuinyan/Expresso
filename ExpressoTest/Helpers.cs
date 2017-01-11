@@ -219,6 +219,16 @@ namespace Expresso.Test
         {
             return AstType.MakeSimpleType("tuple", loc);
         }
+
+        /// <summary>
+        /// Makes a single-item return statement
+        /// </summary>
+        /// <returns>The single item return statement.</returns>
+        /// <param name="expr">Expr.</param>
+        public static ReturnStatement MakeSingleItemReturnStatement(Expression expr)
+        {
+            return Statement.MakeReturnStmt(Expression.MakeSequenceExpression(expr));
+        }
     }
 
     internal class FunctionAnnotation
