@@ -458,96 +458,134 @@ namespace Expresso.Test
                             ),
                             Modifiers.None
                         ),
-                        Statement.MakeVarDecl(new List<Identifier>{
-                            Helpers.MakeSomeIdent("a")
-                        }, new List<Expression>{
-                            Expression.MakeBinaryExpr(OperatorType.Plus,
-                                Helpers.MakeIdentifierPath("x"),
+                        Statement.MakeVarDecl(
+                            Helpers.MakeSeq(Helpers.MakeSomeIdent("a")),
+                            Helpers.MakeSeq(
+                                Expression.MakeBinaryExpr(
+                                    OperatorType.Plus,
+                                    Helpers.MakeIdentifierPath("x"),
+                                    Expression.MakeConstant("int", 4)
+                                )
+                            ),
+                            Modifiers.Immutable
+                        ),
+                        Statement.MakeVarDecl(
+                            Helpers.MakeSeq(Helpers.MakeSomeIdent("b")),
+                            Helpers.MakeSeq(
+                                Expression.MakeBinaryExpr(
+                                    OperatorType.Minus,
+                                    Helpers.MakeIdentifierPath("x"),
+                                    Expression.MakeConstant("int", 4)
+                                )
+                            ),
+                            Modifiers.Immutable
+                        ),
+                        Statement.MakeVarDecl(
+                            Helpers.MakeSeq(Helpers.MakeSomeIdent("c")),
+                            Helpers.MakeSeq(
+                                Expression.MakeBinaryExpr(
+                                    OperatorType.Times,
+                                    Helpers.MakeIdentifierPath("x"),
+                                    Expression.MakeConstant("int", 4)
+                                )
+                            ),
+                            Modifiers.Immutable
+                        ),
+                        Statement.MakeVarDecl(
+                            Helpers.MakeSeq(Helpers.MakeSomeIdent("d")),
+                            Helpers.MakeSeq(
+                                Expression.MakeBinaryExpr(
+                                    OperatorType.Divide,
+                                    Expression.MakeConstant("int", 4),
+                                    Expression.MakeConstant("int", 2)
+                                )
+                            ),
+                            Modifiers.Immutable
+                        ),
+                        Statement.MakeVarDecl(
+                            Helpers.MakeSeq(Helpers.MakeSomeIdent("e")),
+                            Helpers.MakeSeq(
+                                Expression.MakeBinaryExpr(
+                                    OperatorType.Modulus,
+                                    Expression.MakeConstant("int", 4),
+                                    Expression.MakeConstant("int", 2)
+                                )
+                            ),
+                            Modifiers.Immutable
+                        ),
+                        Statement.MakeVarDecl(
+                            Helpers.MakeSeq(Helpers.MakeSomeIdent("f")),
+                            Helpers.MakeSeq(
+                                Expression.MakeBinaryExpr(
+                                    OperatorType.Power,
+                                    Helpers.MakeIdentifierPath("x"),
+                                    Expression.MakeConstant("int", 2)
+                                )
+                            ),
+                            Modifiers.Immutable
+                        ),
+                        Statement.MakeExprStmt(
+                            Expression.MakeSingleAugmentedAssignment(
+                                OperatorType.Plus,
+                                Helpers.MakeIdentifierPath("xp"),
                                 Expression.MakeConstant("int", 4)
                             )
-                        }, Modifiers.Immutable),
-                        Statement.MakeVarDecl(new List<Identifier>{
-                            Helpers.MakeSomeIdent("b")
-                        }, new List<Expression>{
-                            Expression.MakeBinaryExpr(OperatorType.Minus,
-                                Helpers.MakeIdentifierPath("x"),
+                        ),
+                        Statement.MakeExprStmt(
+                            Expression.MakeSingleAugmentedAssignment(
+                                OperatorType.Minus,
+                                Helpers.MakeIdentifierPath("xm"),
                                 Expression.MakeConstant("int", 4)
                             )
-                        }, Modifiers.Immutable),
-                        Statement.MakeVarDecl(new List<Identifier>{
-                            Helpers.MakeSomeIdent("c")
-                        }, new List<Expression>{
-                            Expression.MakeBinaryExpr(OperatorType.Times,
-                                Helpers.MakeIdentifierPath("x"),
+                        ),
+                        Statement.MakeExprStmt(
+                            Expression.MakeSingleAugmentedAssignment(
+                                OperatorType.Times,
+                                Helpers.MakeIdentifierPath("xt"),
                                 Expression.MakeConstant("int", 4)
                             )
-                        }, Modifiers.Immutable),
-                        Statement.MakeVarDecl(new List<Identifier>{
-                            Helpers.MakeSomeIdent("d")
-                        }, new List<Expression>{
-                            Expression.MakeBinaryExpr(OperatorType.Divide,
-                                Expression.MakeConstant("int", 4),
+                        ),
+                        Statement.MakeExprStmt(
+                            Expression.MakeSingleAugmentedAssignment(
+                                OperatorType.Divide,
+                                Helpers.MakeIdentifierPath("xd"),
                                 Expression.MakeConstant("int", 2)
                             )
-                        }, Modifiers.Immutable),
-                        Statement.MakeVarDecl(new List<Identifier>{
-                            Helpers.MakeSomeIdent("e")
-                        }, new List<Expression>{
-                            Expression.MakeBinaryExpr(OperatorType.Modulus,
-                                Expression.MakeConstant("int", 4),
+                        ),
+                        Statement.MakeExprStmt(
+                            Expression.MakeSingleAugmentedAssignment(
+                                OperatorType.Modulus,
+                                Helpers.MakeIdentifierPath("xmod"),
                                 Expression.MakeConstant("int", 2)
                             )
-                        }, Modifiers.Immutable),
-                        Statement.MakeVarDecl(new List<Identifier>{
-                            Helpers.MakeSomeIdent("f")
-                        }, new List<Expression>{
-                            Expression.MakeBinaryExpr(OperatorType.Power,
+                        ),
+                        Statement.MakeExprStmt(
+                            Expression.MakeSingleAugmentedAssignment(
+                                OperatorType.Power,
+                                Helpers.MakeIdentifierPath("xpower"),
+                                Expression.MakeConstant("int", 2)
+                            )
+                        ),
+                        Statement.MakeExprStmt(
+                            Helpers.MakeCallExpression(
+                                Helpers.MakeIdentifierPath("println"),
                                 Helpers.MakeIdentifierPath("x"),
-                                Expression.MakeConstant("int", 2)
+                                Helpers.MakeIdentifierPath("a"),
+                                Helpers.MakeIdentifierPath("b"),
+                                Helpers.MakeIdentifierPath("c"),
+                                Helpers.MakeIdentifierPath("d"),
+                                Helpers.MakeIdentifierPath("e"),
+                                Helpers.MakeIdentifierPath("f"),
+                                Helpers.MakeIdentifierPath("xp"),
+                                Helpers.MakeIdentifierPath("xm"),
+                                Helpers.MakeIdentifierPath("xt"),
+                                Helpers.MakeIdentifierPath("xd"),
+                                Helpers.MakeIdentifierPath("xmod"),
+                                Helpers.MakeIdentifierPath("xpower")
                             )
-                        }, Modifiers.Immutable),
-                        Statement.MakeSingleAugmentedAssignment(OperatorType.Plus,
-                            Expression.MakeSequenceExpression(Helpers.MakeIdentifierPath("xp")),
-                            Expression.MakeSequenceExpression(Expression.MakeConstant("int", 4))
-                        ),
-                        Statement.MakeSingleAugmentedAssignment(OperatorType.Minus,
-                            Expression.MakeSequenceExpression(Helpers.MakeIdentifierPath("xm")),
-                            Expression.MakeSequenceExpression(Expression.MakeConstant("int", 4))
-                        ),
-                        Statement.MakeSingleAugmentedAssignment(OperatorType.Times,
-                            Expression.MakeSequenceExpression(Helpers.MakeIdentifierPath("xt")),
-                            Expression.MakeSequenceExpression(Expression.MakeConstant("int", 4))
-                        ),
-                        Statement.MakeSingleAugmentedAssignment(OperatorType.Divide,
-                            Expression.MakeSequenceExpression(Helpers.MakeIdentifierPath("xd")),
-                            Expression.MakeSequenceExpression(Expression.MakeConstant("int", 2))
-                        ),
-                        Statement.MakeSingleAugmentedAssignment(OperatorType.Modulus,
-                            Expression.MakeSequenceExpression(Helpers.MakeIdentifierPath("xmod")),
-                            Expression.MakeSequenceExpression(Expression.MakeConstant("int", 2))
-                        ),
-                        Statement.MakeSingleAugmentedAssignment(OperatorType.Power,
-                            Expression.MakeSequenceExpression(Helpers.MakeIdentifierPath("xpower")),
-                            Expression.MakeSequenceExpression(Expression.MakeConstant("int", 2))
-                        ),
-                        Statement.MakeExprStmt(Helpers.MakeCallExpression(
-                            Helpers.MakeIdentifierPath("println"),
-                            Helpers.MakeIdentifierPath("x"),
-                            Helpers.MakeIdentifierPath("a"),
-                            Helpers.MakeIdentifierPath("b"),
-                            Helpers.MakeIdentifierPath("c"),
-                            Helpers.MakeIdentifierPath("d"),
-                            Helpers.MakeIdentifierPath("e"),
-                            Helpers.MakeIdentifierPath("f"),
-                            Helpers.MakeIdentifierPath("xp"),
-                            Helpers.MakeIdentifierPath("xm"),
-                            Helpers.MakeIdentifierPath("xt"),
-                            Helpers.MakeIdentifierPath("xd"),
-                            Helpers.MakeIdentifierPath("xmod"),
-                            Helpers.MakeIdentifierPath("xpower")
-                        ))
+                        )
                     ),
-                    AstType.MakeSimpleType("tuple", TextLocation.Empty),
+                    Helpers.MakeVoidType(),
                     Modifiers.None
                 )
             });
