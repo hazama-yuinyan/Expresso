@@ -603,7 +603,8 @@ namespace Expresso.Test
             var ast = parser.TopmostAst;
 
             var expected_ast = AstNode.MakeModuleDef("main", new List<EntityDeclaration>{
-                EntityDeclaration.MakeFunc("main",
+                EntityDeclaration.MakeFunc(
+                    "main",
                     Enumerable.Empty<ParameterDeclaration>(),
                     Statement.MakeBlock(
                         Statement.MakeVarDecl(
@@ -636,16 +637,22 @@ namespace Expresso.Test
                         ),
                         Statement.MakeVarDecl(
                             Helpers.MakeSeq(Helpers.MakeSomeIdent("m")),
-                            Helpers.MakeSeq(Helpers.MakeIndexerExpression(Helpers.MakeIdentifierPath("ary"),
-                                Expression.MakeConstant("int", 0)
-                            )),
+                            Helpers.MakeSeq(
+                                Helpers.MakeIndexerExpression(
+                                    Helpers.MakeIdentifierPath("ary"),
+                                    Expression.MakeConstant("int", 0)
+                                )
+                            ),
                             Modifiers.Immutable
                         ),
                         Statement.MakeVarDecl(
                             Helpers.MakeSeq(Helpers.MakeSomeIdent("m2")),
-                            Helpers.MakeSeq(Helpers.MakeIndexerExpression(Helpers.MakeIdentifierPath("d"),
-                                Expression.MakeConstant("string", "a")
-                            )),
+                            Helpers.MakeSeq(
+                                Helpers.MakeIndexerExpression(
+                                    Helpers.MakeIdentifierPath("d"),
+                                    Expression.MakeConstant("string", "a")
+                                )
+                            ),
                             Modifiers.Immutable
                         ),
                         Statement.MakeVarDecl(
@@ -655,119 +662,161 @@ namespace Expresso.Test
                         ),
                         Statement.MakeVarDecl(
                             Helpers.MakeSeq(Helpers.MakeSomeIdent("p")),
-                            Helpers.MakeSeq(Expression.MakeBinaryExpr(OperatorType.Plus,
-                                Helpers.MakeIndexerExpression(Helpers.MakeIdentifierPath("ary"),
-                                    Expression.MakeConstant("int", 0)
-                                ),
-                                Expression.MakeBinaryExpr(OperatorType.Plus,
-                                    Helpers.MakeIndexerExpression(Helpers.MakeIdentifierPath("ary"),
-                                        Expression.MakeConstant("int", 1)
+                            Helpers.MakeSeq(
+                                Expression.MakeBinaryExpr(
+                                    OperatorType.Plus,
+                                    Helpers.MakeIndexerExpression(
+                                        Helpers.MakeIdentifierPath("ary"),
+                                        Expression.MakeConstant("int", 0)
                                     ),
-                                    Expression.MakeIndexer(Expression.MakePath(Helpers.MakeSeq(Helpers.MakeSomeIdent("ary"))),
-                                        Helpers.MakeSeq(Expression.MakeConstant("int", 2))
+                                    Expression.MakeBinaryExpr(
+                                        OperatorType.Plus,
+                                        Helpers.MakeIndexerExpression(
+                                            Helpers.MakeIdentifierPath("ary"),
+                                            Expression.MakeConstant("int", 1)
+                                        ),
+                                        Helpers.MakeIndexerExpression(
+                                            Helpers.MakeIdentifierPath("ary"),
+                                            Expression.MakeConstant("int", 2)
+                                        )
                                     )
-                                ))
+                                )
                             ),
                             Modifiers.Immutable
                         ),
                         Statement.MakeVarDecl(
                             Helpers.MakeSeq(Helpers.MakeSomeIdent("q")),
-                            Helpers.MakeSeq(Expression.MakeBinaryExpr(OperatorType.Plus,
-                                Helpers.MakeIndexerExpression(Helpers.MakeIdentifierPath("d"),
-                                    Expression.MakeConstant("string", "a")
-                                ),
-                                Expression.MakeBinaryExpr(OperatorType.Plus,
-                                    Helpers.MakeIndexerExpression(Helpers.MakeIdentifierPath("d"),
-                                        Expression.MakeConstant("string", "b")
+                            Helpers.MakeSeq(
+                                Expression.MakeBinaryExpr(
+                                    OperatorType.Plus,
+                                    Helpers.MakeIndexerExpression(
+                                        Helpers.MakeIdentifierPath("d"),
+                                        Expression.MakeConstant("string", "a")
                                     ),
-                                    Helpers.MakeIndexerExpression(Helpers.MakeIdentifierPath("d"),
-                                        Expression.MakeConstant("string", "何か")
+                                    Expression.MakeBinaryExpr(
+                                        OperatorType.Plus,
+                                        Helpers.MakeIndexerExpression(
+                                            Helpers.MakeIdentifierPath("d"),
+                                            Expression.MakeConstant("string", "b")
+                                        ),
+                                        Helpers.MakeIndexerExpression(
+                                            Helpers.MakeIdentifierPath("d"),
+											Expression.MakeConstant("string", "何か")
+                                        )
                                     )
-                                ))
+                                )
                             ),
                             Modifiers.Immutable
                         ),
                         Statement.MakeVarDecl(
                             Helpers.MakeSeq(Helpers.MakeSomeIdent("r")),
-                            Helpers.MakeSeq(Expression.MakeBinaryExpr(OperatorType.BitwiseShiftRight,
-                                Helpers.MakeIdentifierPath("x"),
-                                Helpers.MakeIdentifierPath("p")
-                            )),
+                            Helpers.MakeSeq(
+                                Expression.MakeBinaryExpr(
+                                    OperatorType.BitwiseShiftRight,
+                                    Helpers.MakeIdentifierPath("x"),
+                                    Helpers.MakeIdentifierPath("p")
+                                )
+                            ),
                             Modifiers.Immutable
                         ),
                         Statement.MakeVarDecl(
                             Helpers.MakeSeq(Helpers.MakeSomeIdent("s")),
-                            Helpers.MakeSeq(Expression.MakeBinaryExpr(OperatorType.BitwiseShiftLeft,
-                                Helpers.MakeIdentifierPath("x"),
-                                Expression.MakeConstant("int", 2)
-                            )),
+                            Helpers.MakeSeq(
+                                Expression.MakeBinaryExpr(
+                                    OperatorType.BitwiseShiftLeft,
+                                    Helpers.MakeIdentifierPath("x"),
+                                    Expression.MakeConstant("int", 2)
+                                )
+                            ),
                             Modifiers.Immutable
                         ),
                         Statement.MakeVarDecl(
                             Helpers.MakeSeq(Helpers.MakeSomeIdent("t")),
-                            Helpers.MakeSeq(Expression.MakeBinaryExpr(OperatorType.BitwiseAnd,
-                                Helpers.MakeIdentifierPath("r"),
-                                Helpers.MakeIdentifierPath("s")
-                            )),
+                            Helpers.MakeSeq(
+                                Expression.MakeBinaryExpr(
+                                    OperatorType.BitwiseAnd,
+                                    Helpers.MakeIdentifierPath("r"),
+                                    Helpers.MakeIdentifierPath("s")
+                                )
+                            ),
                             Modifiers.Immutable
                         ),
                         Statement.MakeVarDecl(
                             Helpers.MakeSeq(Helpers.MakeSomeIdent("v")),
-                            Helpers.MakeSeq(Expression.MakeBinaryExpr(OperatorType.BitwiseOr,
-                                Helpers.MakeIdentifierPath("x"),
-                                Helpers.MakeIdentifierPath("t")
-                            )),
+                            Helpers.MakeSeq(
+                                Expression.MakeBinaryExpr(
+                                    OperatorType.BitwiseOr,
+                                    Helpers.MakeIdentifierPath("x"),
+                                    Helpers.MakeIdentifierPath("t")
+                                )
+                            ),
                             Modifiers.Immutable
                         ),
                         Statement.MakeVarDecl(
                             Helpers.MakeSeq(Helpers.MakeSomeIdent("w")),
-                            Helpers.MakeSeq(Expression.MakeBinaryExpr(OperatorType.Plus,
-                                Helpers.MakeIdentifierPath("r"),
-                                Helpers.MakeIdentifierPath("s")
-                            )),
+                            Helpers.MakeSeq(
+                                Expression.MakeBinaryExpr(
+                                    OperatorType.Plus,
+                                    Helpers.MakeIdentifierPath("r"),
+                                    Helpers.MakeIdentifierPath("s")
+                                )
+                            ),
                             Modifiers.Immutable
                         ),
                         Statement.MakeVarDecl(
                             Helpers.MakeSeq(Helpers.MakeSomeIdent("y")),
-                            Helpers.MakeSeq(Expression.MakeBinaryExpr(OperatorType.Plus,
-                                Helpers.MakeIndexerExpression(Helpers.MakeIdentifierPath("ary"),
-                                    Expression.MakeConstant("int", 0)
-                                ),
-                                Expression.MakeBinaryExpr(OperatorType.Plus,
-                                    Helpers.MakeIndexerExpression(Helpers.MakeIdentifierPath("ary"),
-                                        Expression.MakeConstant("int", 1)
+                            Helpers.MakeSeq(
+                                Expression.MakeBinaryExpr(
+                                    OperatorType.Plus,
+                                    Helpers.MakeIndexerExpression(
+                                        Helpers.MakeIdentifierPath("ary"),
+                                        Expression.MakeConstant("int", 0)
                                     ),
-                                    Expression.MakeIndexer(Expression.MakePath(Helpers.MakeSeq(Helpers.MakeSomeIdent("d"))),
-                                        Helpers.MakeSeq(Expression.MakeConstant("string", "a"))
+                                    Expression.MakeBinaryExpr(
+                                        OperatorType.Plus,
+                                        Helpers.MakeIndexerExpression(
+                                            Helpers.MakeIdentifierPath("ary"),
+                                            Expression.MakeConstant("int", 1)
+                                        ),
+                                        Helpers.MakeIndexerExpression(
+                                            Helpers.MakeIdentifierPath("d"),
+                                            Expression.MakeConstant("string", "a")
+                                        )
                                     )
-                                ))
+                                )
                             ),
                             Modifiers.Immutable
                         ),
                         Statement.MakeVarDecl(
                             Helpers.MakeSeq(Helpers.MakeSomeIdent("z")),
-                            Helpers.MakeSeq(Expression.MakeBinaryExpr(OperatorType.Times,
-                                Helpers.MakeIdentifierPath("v"),
-                                Helpers.MakeIdentifierPath("w")
-                            )),
+                            Helpers.MakeSeq(
+                                Expression.MakeBinaryExpr(
+                                    OperatorType.Times,
+                                    Helpers.MakeIdentifierPath("v"),
+                                    Helpers.MakeIdentifierPath("w")
+                                )
+                            ),
                             Modifiers.Immutable
                         ),
-                        Statement.MakeExprStmt(Expression.MakeSequenceExpression(Expression.MakeCallExpr(Helpers.MakeIdentifierPath("println"), new List<Expression>{
-                            Helpers.MakeIdentifierPath("ary"),
-                            Helpers.MakeIdentifierPath("d"),
-                            Helpers.MakeIdentifierPath("m"),
-                            Helpers.MakeIdentifierPath("m2"),
-                            Helpers.MakeIdentifierPath("x"),
-                            Helpers.MakeIdentifierPath("p"),
-                            Helpers.MakeIdentifierPath("q"),
-                            Helpers.MakeIdentifierPath("r"),
-                            Helpers.MakeIdentifierPath("s"),
-                            Helpers.MakeIdentifierPath("t"),
-                            Helpers.MakeIdentifierPath("v"),
-                            Helpers.MakeIdentifierPath("w"),
-                            Helpers.MakeIdentifierPath("y"),
-                            Helpers.MakeIdentifierPath("z")
-                        })))
+                        Statement.MakeExprStmt(
+                            Helpers.MakeCallExpression(
+                                Helpers.MakeIdentifierPath("println"),
+                                Helpers.MakeIdentifierPath("ary"),
+                                Helpers.MakeIdentifierPath("d"),
+                                Helpers.MakeIdentifierPath("m"),
+                                Helpers.MakeIdentifierPath("m2"),
+                                Helpers.MakeIdentifierPath("x"),
+                                Helpers.MakeIdentifierPath("p"),
+                                Helpers.MakeIdentifierPath("q"),
+                                Helpers.MakeIdentifierPath("r"),
+                                Helpers.MakeIdentifierPath("s"),
+                                Helpers.MakeIdentifierPath("t"),
+                                Helpers.MakeIdentifierPath("v"),
+                                Helpers.MakeIdentifierPath("w"),
+                                Helpers.MakeIdentifierPath("y"),
+                                Helpers.MakeIdentifierPath("z")
+                            )
+                        )
                     ),
                     Helpers.MakePlaceholderType(),
                     Modifiers.None
