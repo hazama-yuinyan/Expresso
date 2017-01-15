@@ -34,6 +34,8 @@ namespace Expresso.Test
             Assert.IsTrue(main_method.IsStatic);
             Assert.AreEqual(typeof(void), main_method.ReturnType);
             Assert.AreEqual(0, main_method.GetParameters().Length);
+
+            main_method.Invoke(null, new object[]{});
         }
 
         [Test]
