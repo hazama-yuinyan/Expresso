@@ -1132,7 +1132,8 @@ namespace Expresso.Test
             var ast = parser.TopmostAst;
 
             var expected = AstNode.MakeModuleDef("main", new List<EntityDeclaration>{
-                EntityDeclaration.MakeFunc("main",
+                EntityDeclaration.MakeFunc(
+                    "main",
                     Enumerable.Empty<ParameterDeclaration>(),
                     Statement.MakeBlock(
                         Statement.MakeVarDecl(
@@ -1140,40 +1141,53 @@ namespace Expresso.Test
                             Helpers.MakeSeq(Expression.MakeConstant("string", "akarichan")),
                             Modifiers.Immutable
                         ),
-                        Statement.MakeMatchStmt(Helpers.MakeIdentifierPath("tmp"),
-                            Statement.MakeMatchClause(null,
-                                Statement.MakeExprStmt(Expression.MakeSequenceExpression(
-                                    Helpers.MakeCallExpression(
-                                        Helpers.MakeIdentifierPath("print"),
-                                        Expression.MakeConstant("string", "kawakawa")
-                                    ))
+                        Statement.MakeMatchStmt(
+                            Helpers.MakeIdentifierPath("tmp"),
+                            Statement.MakeMatchClause(
+                                null,
+                                Statement.MakeExprStmt(
+                                    Expression.MakeSequenceExpression(
+                                        Helpers.MakeCallExpression(
+                                            Helpers.MakeIdentifierPath("print"),
+                                            Expression.MakeConstant("string", "kawakawa")
+                                        )
+                                    )
                                 ),
                                 PatternConstruct.MakeExpressionPattern(Expression.MakeConstant("string", "akarichan"))
                             ),
-                            Statement.MakeMatchClause(Expression.MakeConstant("bool", true),
-                                Statement.MakeExprStmt(Expression.MakeSequenceExpression(
-                                    Helpers.MakeCallExpression(
-                                        Helpers.MakeIdentifierPath("print"),
-                                        Expression.MakeConstant("string", "ankokuthunder!")
-                                    ))
+                            Statement.MakeMatchClause(
+                                Expression.MakeConstant("bool", true),
+                                Statement.MakeExprStmt(
+                                    Expression.MakeSequenceExpression(
+                                        Helpers.MakeCallExpression(
+                                            Helpers.MakeIdentifierPath("print"),
+                                            Expression.MakeConstant("string", "ankokuthunder!")
+                                        )
+                                    )
                                 ),
                                 PatternConstruct.MakeExpressionPattern(Expression.MakeConstant("string", "chinatsu"))
                             ),
-                            Statement.MakeMatchClause(null,
-                                Statement.MakeExprStmt(Expression.MakeSequenceExpression(
-                                    Helpers.MakeCallExpression(
-                                        Helpers.MakeIdentifierPath("print"),
-                                        Expression.MakeConstant("string", "gaichiban!")
-                                    ))
+                            Statement.MakeMatchClause(
+                                null,
+                                Statement.MakeExprStmt(
+                                    Expression.MakeSequenceExpression(
+                                        Helpers.MakeCallExpression(
+                                            Helpers.MakeIdentifierPath("print"),
+                                            Expression.MakeConstant("string", "gaichiban!")
+                                        )
+                                    )
                                 ),
                                 PatternConstruct.MakeExpressionPattern(Expression.MakeConstant("string", "kyoko"))
                             ),
-                            Statement.MakeMatchClause(null,
-                                Statement.MakeExprStmt(Expression.MakeSequenceExpression(
-                                    Helpers.MakeCallExpression(
-                                        Helpers.MakeIdentifierPath("print"),
-                                        Expression.MakeConstant("string", "doyaxtu!")
-                                    ))
+                            Statement.MakeMatchClause(
+                                null,
+                                Statement.MakeExprStmt(
+                                    Expression.MakeSequenceExpression(
+                                        Helpers.MakeCallExpression(
+                                            Helpers.MakeIdentifierPath("print"),
+                                            Expression.MakeConstant("string", "doyaxtu!")
+                                        )
+                                    )
                                 ),
                                 PatternConstruct.MakeExpressionPattern(Expression.MakeConstant("string", "yui"))
                             )
