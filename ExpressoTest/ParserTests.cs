@@ -1237,7 +1237,7 @@ namespace Expresso.Test
                 EntityDeclaration.MakeFunc(
                     "test2",
                     Helpers.MakeSeq(
-                        EntityDeclaration.MakeParameter("n", AstType.MakePrimitiveType("int", TextLocation.Empty))
+                        EntityDeclaration.MakeParameter("n", Helpers.MakePrimitiveType("int"))
                     ),
                     Statement.MakeBlock(
                         Statement.MakeReturnStmt(
@@ -1256,7 +1256,7 @@ namespace Expresso.Test
                 EntityDeclaration.MakeFunc(
                     "test3",
                     Helpers.MakeSeq(
-                    EntityDeclaration.MakeParameter("n", AstType.MakePrimitiveType("int", TextLocation.Empty))
+                        EntityDeclaration.MakeParameter("n", Helpers.MakePrimitiveType("int"))
                     ),
                     Statement.MakeBlock(
                         Statement.MakeReturnStmt(
@@ -1279,7 +1279,10 @@ namespace Expresso.Test
                         Statement.MakeVarDecl(
                             Helpers.MakeSeq(Helpers.MakeSomeIdent("a")),
                             Helpers.MakeSeq(
-                                Expression.MakeCallExpr(Helpers.MakeIdentifierPath("test"), Enumerable.Empty<Expression>())
+                                Expression.MakeCallExpr(
+                                    Helpers.MakeIdentifierPath("test"),
+                                    Enumerable.Empty<Expression>()
+                                )
                             ),
                             Modifiers.Immutable
                         ),
@@ -1331,192 +1334,352 @@ namespace Expresso.Test
             var ast = parser.TopmostAst;
 
             var expected = AstNode.MakeModuleDef("main", new List<EntityDeclaration>{
-                EntityDeclaration.MakeFunc("main",
+                EntityDeclaration.MakeFunc(
+                    "main",
                     Enumerable.Empty<ParameterDeclaration>(),
                     Statement.MakeBlock(
-                        Statement.MakeVarDecl(new List<Identifier>{
-                            Helpers.MakeSomeIdent("x")
-                        }, new List<Expression>{
-                            Expression.MakeComp(Helpers.MakeIdentifierPath("x"), Expression.MakeCompFor(
-                                PatternConstruct.MakeIdentifierPattern("x", Helpers.MakePlaceholderType(), null),
-                                Expression.MakeIntSeq(Expression.MakeConstant("int", 0), Expression.MakeConstant("int", 100), Expression.MakeConstant("int", 1), false),
-                                null
-                            ), AstType.MakeSimpleType("vector", new []{Helpers.MakePlaceholderType()}))
-                        }, Modifiers.Immutable),
-                        Statement.MakeVarDecl(new List<Identifier>{
-                            Helpers.MakeSomeIdent("y")
-                        }, new List<Expression>{
-                            Expression.MakeComp(Helpers.MakeIdentifierPath("x"), Expression.MakeCompFor(
-                                PatternConstruct.MakeIdentifierPattern("x", Helpers.MakePlaceholderType(), null),
-                                Expression.MakeIntSeq(Expression.MakeConstant("int", 0), Expression.MakeConstant("int", 100), Expression.MakeConstant("int", 1), false),
-                                Expression.MakeCompIf(Expression.MakeBinaryExpr(OperatorType.Equality,
-                                    Expression.MakeBinaryExpr(OperatorType.Modulus, 
-                                        Helpers.MakeIdentifierPath("x"),
-                                        Expression.MakeConstant("int", 2)
-                                    ), Expression.MakeConstant("int", 0)
-                                ), null)
-                            ), AstType.MakeSimpleType("vector", new []{Helpers.MakePlaceholderType()}))
-                        }, Modifiers.Immutable),
-                        Statement.MakeVarDecl(new List<Identifier>{
-                            Helpers.MakeSomeIdent("z")
-                        }, new List<Expression>{
-                            Expression.MakeComp(Expression.MakeParen(Expression.MakeSequenceExpression(
-                                Helpers.MakeIdentifierPath("x"),
-                                Helpers.MakeIdentifierPath("y")
-                            )), Expression.MakeCompFor(
-                                PatternConstruct.MakeIdentifierPattern("x", Helpers.MakePlaceholderType(), null),
-                                Expression.MakeIntSeq(Expression.MakeConstant("int", 0), Expression.MakeConstant("int", 100), Expression.MakeConstant("int", 1), false),
-                                Expression.MakeCompIf(Expression.MakeBinaryExpr(OperatorType.Equality,
-                                    Expression.MakeBinaryExpr(OperatorType.Modulus,
-                                        Helpers.MakeIdentifierPath("x"),
-                                        Expression.MakeConstant("int", 2)
-                                    ), Expression.MakeConstant("int", 0)
-                                ), Expression.MakeCompFor(
-                                    PatternConstruct.MakeIdentifierPattern("y", Helpers.MakePlaceholderType(), null),
-                                    Expression.MakeIntSeq(Expression.MakeConstant("int", 0), Expression.MakeConstant("int", 100), Expression.MakeConstant("int", 1), false),
-                                    null
-                                ))
-                            ), AstType.MakeSimpleType("vector", new []{Helpers.MakePlaceholderType()}))
-                        }, Modifiers.Immutable),
-                        Statement.MakeVarDecl(new List<Identifier>{
-                            Helpers.MakeSomeIdent("triangles")
-                        }, new List<Expression>{
-                            Expression.MakeComp(Expression.MakeParen(Expression.MakeSequenceExpression(
-                                Helpers.MakeIdentifierPath("a"),
-                                Helpers.MakeIdentifierPath("b"),
-                                Helpers.MakeIdentifierPath("c")
-                            )), Expression.MakeCompFor(
-                                PatternConstruct.MakeIdentifierPattern("c", Helpers.MakePlaceholderType(), null),
-                                Expression.MakeIntSeq(Expression.MakeConstant("int", 1), Expression.MakeConstant("int", 10), Expression.MakeConstant("int", 1), true),
-                                Expression.MakeCompFor(
-                                    PatternConstruct.MakeIdentifierPattern("b", Helpers.MakePlaceholderType(), null),
-                                    Expression.MakeIntSeq(Expression.MakeConstant("int", 1), Helpers.MakeIdentifierPath("c"), Expression.MakeConstant("int", 1), true),
+                        Statement.MakeVarDecl(
+                            Helpers.MakeSeq(Helpers.MakeSomeIdent("x")),
+                            Helpers.MakeSeq(
+                                Expression.MakeComp(
+                                    Helpers.MakeIdentifierPath("x"),
                                     Expression.MakeCompFor(
-                                        PatternConstruct.MakeIdentifierPattern("a", Helpers.MakePlaceholderType(), null),
-                                        Expression.MakeIntSeq(Expression.MakeConstant("int", 1), Helpers.MakeIdentifierPath("b"), Expression.MakeConstant("int", 1), true),
-                                        Expression.MakeCompIf(Expression.MakeBinaryExpr(OperatorType.Equality,
-                                            Expression.MakeBinaryExpr(OperatorType.Plus,
-                                                Expression.MakeBinaryExpr(OperatorType.Power,
-                                                    Helpers.MakeIdentifierPath("a"),
+                                        PatternConstruct.MakeIdentifierPattern("x", Helpers.MakePlaceholderType(), null),
+                                        Expression.MakeIntSeq(
+                                            Expression.MakeConstant("int", 0),
+                                            Expression.MakeConstant("int", 100),
+                                            Expression.MakeConstant("int", 1),
+                                            false
+                                        ),
+                                        null
+                                    ),
+                                    Helpers.MakeGenericType("vector", Helpers.MakePlaceholderType())
+                                )
+                            ),
+                            Modifiers.Immutable
+                        ),
+                        Statement.MakeVarDecl(
+                            Helpers.MakeSeq(Helpers.MakeSomeIdent("y")),
+                            Helpers.MakeSeq(
+                                Expression.MakeComp(
+                                    Helpers.MakeIdentifierPath("x"),
+                                    Expression.MakeCompFor(
+                                        PatternConstruct.MakeIdentifierPattern("x", Helpers.MakePlaceholderType(), null),
+                                        Expression.MakeIntSeq(
+                                            Expression.MakeConstant("int", 0),
+                                            Expression.MakeConstant("int", 100),
+                                            Expression.MakeConstant("int", 1),
+                                            false
+                                        ),
+                                        Expression.MakeCompIf(
+                                            Expression.MakeBinaryExpr(
+                                                OperatorType.Equality,
+                                                Expression.MakeBinaryExpr(
+                                                    OperatorType.Modulus, 
+                                                    Helpers.MakeIdentifierPath("x"),
                                                     Expression.MakeConstant("int", 2)
-                                                ), Expression.MakeBinaryExpr(OperatorType.Power,
-                                                    Helpers.MakeIdentifierPath("b"),
+                                                ),
+                                                Expression.MakeConstant("int", 0)
+                                            ),
+                                            null
+                                        )
+                                    ),
+                                    Helpers.MakeGenericType("vector", Helpers.MakePlaceholderType())
+                                )
+                            ),
+                            Modifiers.Immutable
+                        ),
+                        Statement.MakeVarDecl(
+                            Helpers.MakeSeq(Helpers.MakeSomeIdent("z")),
+                            Helpers.MakeSeq(
+                                Expression.MakeComp(
+                                    Expression.MakeParen(
+                                        Expression.MakeSequenceExpression(
+                                            Helpers.MakeIdentifierPath("x"),
+                                            Helpers.MakeIdentifierPath("y")
+                                        )
+                                    ),
+                                    Expression.MakeCompFor(
+                                        PatternConstruct.MakeIdentifierPattern("x", Helpers.MakePlaceholderType(), null),
+                                        Expression.MakeIntSeq(
+                                            Expression.MakeConstant("int", 0),
+                                            Expression.MakeConstant("int", 100),
+                                            Expression.MakeConstant("int", 1),
+                                            false
+                                        ),
+                                        Expression.MakeCompIf(
+                                            Expression.MakeBinaryExpr(
+                                                OperatorType.Equality,
+                                                Expression.MakeBinaryExpr(
+                                                    OperatorType.Modulus,
+                                                    Helpers.MakeIdentifierPath("x"),
                                                     Expression.MakeConstant("int", 2)
-                                                )
-                                            ), Expression.MakeBinaryExpr(OperatorType.Power,
+                                                ),
+                                                Expression.MakeConstant("int", 0)
+                                            ),
+                                            Expression.MakeCompFor(
+                                                PatternConstruct.MakeIdentifierPattern("y", Helpers.MakePlaceholderType(), null),
+                                                Expression.MakeIntSeq(
+                                                    Expression.MakeConstant("int", 0),
+                                                    Expression.MakeConstant("int", 100),
+                                                    Expression.MakeConstant("int", 1),
+                                                    false
+                                                ),
+                                                null
+                                            )
+                                        )
+                                    ),
+                                    Helpers.MakeGenericType("vector", Helpers.MakePlaceholderType())
+                                )
+                            ),
+                            Modifiers.Immutable
+                        ),
+                        Statement.MakeVarDecl(
+                            Helpers.MakeSeq(Helpers.MakeSomeIdent("triangles")),
+                            Helpers.MakeSeq(
+                                Expression.MakeComp(
+                                    Expression.MakeParen(
+                                        Expression.MakeSequenceExpression(
+                                            Helpers.MakeIdentifierPath("a"),
+                                            Helpers.MakeIdentifierPath("b"),
+                                            Helpers.MakeIdentifierPath("c")
+                                        )
+                                    ),
+                                    Expression.MakeCompFor(
+                                        PatternConstruct.MakeIdentifierPattern("c", Helpers.MakePlaceholderType(), null),
+                                        Expression.MakeIntSeq(
+                                            Expression.MakeConstant("int", 1),
+                                            Expression.MakeConstant("int", 10),
+                                            Expression.MakeConstant("int", 1),
+                                            true
+                                        ),
+                                        Expression.MakeCompFor(
+                                            PatternConstruct.MakeIdentifierPattern("b", Helpers.MakePlaceholderType(), null),
+                                            Expression.MakeIntSeq(
+                                                Expression.MakeConstant("int", 1),
                                                 Helpers.MakeIdentifierPath("c"),
-                                                Expression.MakeConstant("int", 2)
-                                            )
-                                        ), null)
-                                    )
-                                )
-                            ), AstType.MakeSimpleType("vector", new []{Helpers.MakePlaceholderType()}))
-                        }, Modifiers.Immutable),
-                        Statement.MakeVarDecl(new List<Identifier>{
-                            Helpers.MakeSomeIdent("specific_triangles")
-                        }, new List<Expression>{
-                            Expression.MakeComp(Expression.MakeParen(Expression.MakeSequenceExpression(
-                                Helpers.MakeIdentifierPath("a"),
-                                Helpers.MakeIdentifierPath("b"),
-                                Helpers.MakeIdentifierPath("c")
-                            )), Expression.MakeCompFor(
-                                PatternConstruct.MakeIdentifierPattern("c", Helpers.MakePlaceholderType(), null),
-                                Expression.MakeIntSeq(Expression.MakeConstant("int", 1), Expression.MakeConstant("int", 10), Expression.MakeConstant("int", 1), true),
-                                Expression.MakeCompFor(
-                                    PatternConstruct.MakeIdentifierPattern("b", Helpers.MakePlaceholderType(), null),
-                                    Expression.MakeIntSeq(Expression.MakeConstant("int", 1), Helpers.MakeIdentifierPath("c"), Expression.MakeConstant("int", 1), true),
-                                    Expression.MakeCompFor(
-                                        PatternConstruct.MakeIdentifierPattern("a", Helpers.MakePlaceholderType(), null),
-                                        Expression.MakeIntSeq(Expression.MakeConstant("int", 1), Helpers.MakeIdentifierPath("b"), Expression.MakeConstant("int", 1), true),
-                                        Expression.MakeCompIf(Expression.MakeBinaryExpr(OperatorType.ConditionalAnd,
-                                            Expression.MakeBinaryExpr(OperatorType.Equality,
-                                                Expression.MakeBinaryExpr(OperatorType.Plus,
-                                                    Expression.MakeBinaryExpr(OperatorType.Power,
-                                                        Helpers.MakeIdentifierPath("a"),
-                                                        Expression.MakeConstant("int", 2)
-                                                    ), Expression.MakeBinaryExpr(OperatorType.Power,
-                                                        Helpers.MakeIdentifierPath("b"),
-                                                        Expression.MakeConstant("int", 2)
-                                                    )
-                                                ), Expression.MakeBinaryExpr(OperatorType.Power,
-                                                    Helpers.MakeIdentifierPath("c"),
-                                                    Expression.MakeConstant("int", 2)
+                                                Expression.MakeConstant("int", 1),
+                                                true
+                                            ),
+                                            Expression.MakeCompFor(
+                                                PatternConstruct.MakeIdentifierPattern("a", Helpers.MakePlaceholderType(), null),
+                                                Expression.MakeIntSeq(
+                                                    Expression.MakeConstant("int", 1),
+                                                    Helpers.MakeIdentifierPath("b"),
+                                                    Expression.MakeConstant("int", 1),
+                                                    true
+                                                ),
+                                                Expression.MakeCompIf(
+                                                    Expression.MakeBinaryExpr(
+                                                        OperatorType.Equality,
+                                                        Expression.MakeBinaryExpr(
+                                                            OperatorType.Plus,
+                                                            Expression.MakeBinaryExpr(
+                                                                OperatorType.Power,
+                                                                Helpers.MakeIdentifierPath("a"),
+                                                                Expression.MakeConstant("int", 2)
+                                                            ),
+                                                            Expression.MakeBinaryExpr(
+                                                                OperatorType.Power,
+                                                                Helpers.MakeIdentifierPath("b"),
+                                                                Expression.MakeConstant("int", 2)
+                                                            )
+                                                        ),
+                                                        Expression.MakeBinaryExpr(
+                                                            OperatorType.Power,
+                                                            Helpers.MakeIdentifierPath("c"),
+                                                            Expression.MakeConstant("int", 2)
+                                                        )
+                                                    ),
+                                                    null
                                                 )
-                                            ), Expression.MakeBinaryExpr(OperatorType.Equality,
-                                                Expression.MakeBinaryExpr(OperatorType.Plus,
-                                                    Helpers.MakeIdentifierPath("a"),
-                                                    Expression.MakeBinaryExpr(OperatorType.Plus,
-                                                        Helpers.MakeIdentifierPath("b"),
-                                                        Helpers.MakeIdentifierPath("c")
-                                                    )
-                                                ), Expression.MakeConstant("int", 24)
                                             )
-                                        ), null)
-                                    )
+                                        )
+                                    ),
+                                    Helpers.MakeGenericType("vector", Helpers.MakePlaceholderType())
                                 )
-                            ), AstType.MakeSimpleType("vector", new []{Helpers.MakePlaceholderType()}))
-                        }, Modifiers.Immutable),
-                        Helpers.MakeVariableDeclaration(new List<Identifier>{
-                            AstNode.MakeIdentifier("a", AstType.MakePrimitiveType("int")),
-                            AstNode.MakeIdentifier("b", AstType.MakePrimitiveType("int")),
-                            AstNode.MakeIdentifier("c", AstType.MakePrimitiveType("int"))
-                        }, 
+                            ),
+                            Modifiers.Immutable
+                        ),
+                        Statement.MakeVarDecl(
+                            Helpers.MakeSeq(Helpers.MakeSomeIdent("specific_triangles")),
+                            Helpers.MakeSeq(
+                                Expression.MakeComp(
+                                    Expression.MakeParen(
+                                        Expression.MakeSequenceExpression(
+                                            Helpers.MakeIdentifierPath("a"),
+                                            Helpers.MakeIdentifierPath("b"),
+                                            Helpers.MakeIdentifierPath("c")
+                                        )
+                                    ),
+                                    Expression.MakeCompFor(
+                                        PatternConstruct.MakeIdentifierPattern("c", Helpers.MakePlaceholderType(), null),
+                                        Expression.MakeIntSeq(
+                                            Expression.MakeConstant("int", 1),
+                                            Expression.MakeConstant("int", 10),
+                                            Expression.MakeConstant("int", 1),
+                                            true
+                                        ),
+                                        Expression.MakeCompFor(
+                                            PatternConstruct.MakeIdentifierPattern("b", Helpers.MakePlaceholderType(), null),
+                                            Expression.MakeIntSeq(
+                                                Expression.MakeConstant("int", 1),
+                                                Helpers.MakeIdentifierPath("c"),
+                                                Expression.MakeConstant("int", 1),
+                                                true
+                                            ),
+                                            Expression.MakeCompFor(
+                                                PatternConstruct.MakeIdentifierPattern("a", Helpers.MakePlaceholderType(), null),
+                                                Expression.MakeIntSeq(
+                                                    Expression.MakeConstant("int", 1),
+                                                    Helpers.MakeIdentifierPath("b"),
+                                                    Expression.MakeConstant("int", 1),
+                                                    true
+                                                ),
+                                                Expression.MakeCompIf(
+                                                    Expression.MakeBinaryExpr(
+                                                        OperatorType.ConditionalAnd,
+                                                        Expression.MakeBinaryExpr(
+                                                            OperatorType.Equality,
+                                                            Expression.MakeBinaryExpr(
+                                                                OperatorType.Plus,
+                                                                Expression.MakeBinaryExpr(
+                                                                    OperatorType.Power,
+                                                                    Helpers.MakeIdentifierPath("a"),
+                                                                    Expression.MakeConstant("int", 2)
+                                                                ),
+                                                                Expression.MakeBinaryExpr(
+                                                                    OperatorType.Power,
+                                                                    Helpers.MakeIdentifierPath("b"),
+                                                                    Expression.MakeConstant("int", 2)
+                                                                )
+                                                            ),
+                                                            Expression.MakeBinaryExpr(
+                                                                OperatorType.Power,
+                                                                Helpers.MakeIdentifierPath("c"),
+                                                                Expression.MakeConstant("int", 2)
+                                                            )
+                                                        ),
+                                                        Expression.MakeBinaryExpr(
+                                                            OperatorType.Equality,
+                                                            Expression.MakeBinaryExpr(
+                                                                OperatorType.Plus,
+                                                                Helpers.MakeIdentifierPath("a"),
+                                                                Expression.MakeBinaryExpr(
+                                                                    OperatorType.Plus,
+                                                                    Helpers.MakeIdentifierPath("b"),
+                                                                    Helpers.MakeIdentifierPath("c")
+                                                                )
+                                                            ),
+                                                            Expression.MakeConstant("int", 24)
+                                                        )
+                                                    ),
+                                                    null
+                                                )
+                                            )
+                                        )
+                                    ),
+                                    Helpers.MakeGenericType("vector", Helpers.MakePlaceholderType())
+                                )
+                            ),
+                            Modifiers.Immutable
+                        ),
+                        Helpers.MakeVariableDeclaration(
+                            Helpers.MakeSeq(
+                                AstNode.MakeIdentifier("a", AstType.MakePrimitiveType("int")),
+                                AstNode.MakeIdentifier("b", AstType.MakePrimitiveType("int")),
+                                AstNode.MakeIdentifier("c", AstType.MakePrimitiveType("int"))
+                            ),
                             Modifiers.None
                         ),
-                        Statement.MakeExprStmt(Expression.MakeSingleAssignment(
-                            Expression.MakeSingleAssignment(
-                                Expression.MakeSingleAssignment(
-                                    Helpers.MakeIdentifierPath("a"),
-                                    Helpers.MakeIdentifierPath("b")
+                        Statement.MakeExprStmt(
+                            Expression.MakeMultipleAssignment(
+                                Expression.MakeMultipleAssignment(
+                                    Expression.MakeSingleAssignment(
+                                        Helpers.MakeIdentifierPath("a"),
+                                        Helpers.MakeIdentifierPath("b")
+                                    ),
+                                    Expression.MakeSequenceExpression(Helpers.MakeIdentifierPath("c"))
                                 ),
-                                Helpers.MakeIdentifierPath("c")
+                                Expression.MakeSequenceExpression(Expression.MakeConstant("int", 0))
+                            )
+                        ),
+                        Statement.MakeExprStmt(
+                            Expression.MakeAssignment(
+                                Expression.MakeSequenceExpression(
+                                    Helpers.MakeIdentifierPath("a"),
+                                    Helpers.MakeIdentifierPath("b"),
+                                    Helpers.MakeIdentifierPath("c")
+                                ),
+                                Expression.MakeSequenceExpression(
+                                    Expression.MakeConstant("int", 1),
+                                    Expression.MakeConstant("int", 2),
+                                    Expression.MakeConstant("int", 3)
+                                )
+                            )
+                        ),
+                        Statement.MakeVarDecl(
+                            Helpers.MakeSeq(
+                                AstNode.MakeIdentifier(
+                                    "vec",
+                                    Helpers.MakeGenericType(
+                                        "vector", 
+                                        Helpers.MakeGenericType(
+                                            "tuple", 
+                                            Helpers.MakePrimitiveType("int"),
+                                            Helpers.MakePrimitiveType("int")
+                                        )
+                                    )
+                                )
                             ),
-                            Expression.MakeConstant("int", 0)
-                        )),
-                        Statement.MakeExprStmt(Expression.MakeAssignment(Expression.MakeSequenceExpression(
-                            Helpers.MakeIdentifierPath("a"),
-                            Helpers.MakeIdentifierPath("b"),
-                            Helpers.MakeIdentifierPath("c")
-                        ), Expression.MakeSequenceExpression(
-                            Expression.MakeConstant("int", 1),
-                            Expression.MakeConstant("int", 2),
-                            Expression.MakeConstant("int", 3)
-                        ))),
-                        Statement.MakeVarDecl(new List<Identifier>{
-                            AstNode.MakeIdentifier("vec", AstType.MakeSimpleType("vector", new []{AstType.MakeSimpleType("tuple", new []{
-                                AstType.MakePrimitiveType("int"),
-                                AstType.MakePrimitiveType("int")
-                            })}))
-                        }, new List<Expression>{
-                            Expression.MakeSequenceInitializer(AstType.MakeSimpleType("vector", new []{Helpers.MakePlaceholderType()}), Enumerable.Empty<Expression>())
-                    }, Modifiers.None),
-                        Statement.MakeVarDecl(new List<Identifier>{
-                            Helpers.MakeSomeIdent("t")
-                        }, new List<Expression>{
-                            Expression.MakeParen(Expression.MakeSequenceExpression(new List<Expression>{
+                            Helpers.MakeSeq(
+                                Expression.MakeSequenceInitializer(
+                                    Helpers.MakeGenericType("vector", Helpers.MakePlaceholderType()),
+                                    Enumerable.Empty<Expression>()
+                                )
+                            ),
+                            Modifiers.None
+                        ),
+                        Statement.MakeVarDecl(
+                            Helpers.MakeSeq(Helpers.MakeSomeIdent("t")),
+                            Helpers.MakeSeq(
+                                Expression.MakeParen(
+                                    Expression.MakeSequenceExpression(
+                                        Helpers.MakeIdentifierPath("a"),
+                                        Helpers.MakeIdentifierPath("b"),
+                                        Helpers.MakeIdentifierPath("c")
+                                    )
+                                )
+                            ),
+                            Modifiers.Immutable
+                        ),
+                        Statement.MakeExprStmt(
+                            Helpers.MakeCallExpression(
+                                Expression.MakeMemRef(
+                                    Helpers.MakeIdentifierPath("vec"),
+                                    Helpers.MakeSomeIdent("add")
+                                ),
+                                Expression.MakeParen(
+                                    Expression.MakeSequenceExpression(
+                                        Helpers.MakeIdentifierPath("a"),
+                                        Helpers.MakeIdentifierPath("b")
+                                    )
+                                )
+                            )
+                        ),
+                        Statement.MakeExprStmt(
+                            Helpers.MakeCallExpression(
+                                Helpers.MakeIdentifierPath("println"),
+                                Helpers.MakeIdentifierPath("x"),
+                                Helpers.MakeIdentifierPath("y"),
+                                Helpers.MakeIdentifierPath("z"),
+                                Helpers.MakeIdentifierPath("triangles"),
+                                Helpers.MakeIdentifierPath("specific_triangles"),
                                 Helpers.MakeIdentifierPath("a"),
                                 Helpers.MakeIdentifierPath("b"),
                                 Helpers.MakeIdentifierPath("c")
-                            }))
-                        }, Modifiers.Immutable),
-                        Statement.MakeExprStmt(Expression.MakeCallExpr(Expression.MakeMemRef(Helpers.MakeIdentifierPath("vec"),
-                            Helpers.MakeSomeIdent("add")
-                        ), new List<Expression>{
-                            Expression.MakeParen(Expression.MakeSequenceExpression(new List<Expression>{
-                                Helpers.MakeIdentifierPath("a"),
-                                Helpers.MakeIdentifierPath("b")
-                            }))
-                        })),
-                        Statement.MakeExprStmt(Helpers.MakeCallExpression(Helpers.MakeIdentifierPath("println"),
-                            Helpers.MakeIdentifierPath("x"),
-                            Helpers.MakeIdentifierPath("y"),
-                            Helpers.MakeIdentifierPath("z"),
-                            Helpers.MakeIdentifierPath("triangles"),
-                            Helpers.MakeIdentifierPath("specific_triangles"),
-                            Helpers.MakeIdentifierPath("a"),
-                            Helpers.MakeIdentifierPath("b"),
-                            Helpers.MakeIdentifierPath("c")
-                        ))
+                            )
+                        )
                     ),
                     Helpers.MakePlaceholderType(),
                     Modifiers.None
