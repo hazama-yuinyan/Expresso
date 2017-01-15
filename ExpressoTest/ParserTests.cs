@@ -836,7 +836,8 @@ namespace Expresso.Test
             var ast = parser.TopmostAst;
 
             var expected_ast = AstNode.MakeModuleDef("main", new List<EntityDeclaration>{
-                EntityDeclaration.MakeFunc("main",
+                EntityDeclaration.MakeFunc(
+                    "main",
                     Enumerable.Empty<ParameterDeclaration>(),
                     Statement.MakeBlock(
                         Statement.MakeVarDecl(
@@ -854,9 +855,8 @@ namespace Expresso.Test
                             ),
                             Modifiers.Immutable
                         ),
-                        Statement.MakeVarDecl(
+                        Helpers.MakeVariableDeclaration(
                             Helpers.MakeSeq(AstNode.MakeIdentifier("flag", Helpers.MakePrimitiveType("bool"))),
-                            Helpers.MakeSeq(Expression.Null),
                             Modifiers.None
                         ),
                         Statement.MakeExprStmt(
@@ -872,25 +872,30 @@ namespace Expresso.Test
                         ),
                         Statement.MakeIfStmt(
                             PatternConstruct.MakeExpressionPattern(
-                                Expression.MakeBinaryExpr(OperatorType.Equality,
+                                Expression.MakeBinaryExpr(
+                                    OperatorType.Equality,
                                     Helpers.MakeIdentifierPath("x"),
                                     Expression.MakeConstant("int", 100)
                                 )
                             ),
                             Statement.MakeBlock(
                                 Helpers.MakeSeq(
-                                    Statement.MakeExprStmt(Helpers.MakeAssignment(
-                                        Helpers.MakeSeq(Helpers.MakeIdentifierPath("flag")),
-                                        Helpers.MakeSeq(Expression.MakeConstant("bool", true))
-                                    ))
+                                    Statement.MakeExprStmt(
+                                        Expression.MakeSingleAssignment(
+                                            Helpers.MakeIdentifierPath("flag"),
+                                            Expression.MakeConstant("bool", true)
+                                        )
+                                    )
                                 )
                             ),
                             Statement.MakeBlock(
                                 Helpers.MakeSeq(
-                                    Statement.MakeExprStmt(Helpers.MakeAssignment(
-                                        Helpers.MakeSeq(Helpers.MakeIdentifierPath("flag")),
-                                        Helpers.MakeSeq(Expression.MakeConstant("bool", false))
-                                    ))
+                                    Statement.MakeExprStmt(
+                                        Expression.MakeSingleAssignment(
+                                            Helpers.MakeIdentifierPath("flag"),
+                                            Expression.MakeConstant("bool", false)
+                                        )
+                                    )
                                 )
                             )
                         ),
@@ -903,7 +908,8 @@ namespace Expresso.Test
                             Modifiers.Immutable,
                             Statement.MakeBlock(
                                 Helpers.MakeSeq(
-                                    Helpers.MakeAugmentedAssignment(OperatorType.Plus,
+                                    Helpers.MakeAugmentedAssignment(
+                                        OperatorType.Plus,
                                         Helpers.MakeSeq(Helpers.MakeIdentifierPath("sum")),
                                         Helpers.MakeSeq(Helpers.MakeIdentifierPath("p"))
                                     ),
@@ -929,8 +935,16 @@ namespace Expresso.Test
                             )
                         ),
                         Statement.MakeVarDecl(
-                            Helpers.MakeSeq(AstNode.MakeIdentifier("fibs", Helpers.MakeGenericType("vector", AstType.MakePrimitiveType("int"))),
-                                Helpers.MakeSomeIdent("a"), Helpers.MakeSomeIdent("b")
+                            Helpers.MakeSeq(
+                                AstNode.MakeIdentifier(
+                                    "fibs",
+                                    Helpers.MakeGenericType(
+                                        "vector",
+                                        AstType.MakePrimitiveType("int")
+                                    )
+                                ),
+                                Helpers.MakeSomeIdent("a"),
+                                Helpers.MakeSomeIdent("b")
                             ),
                             Helpers.MakeSeq<Expression>(
                                 Expression.MakeSequenceInitializer(
@@ -942,7 +956,8 @@ namespace Expresso.Test
                             Modifiers.None
                         ),
                         Statement.MakeWhileStmt(
-                            Expression.MakeBinaryExpr(OperatorType.LessThan,
+                            Expression.MakeBinaryExpr(
+                                OperatorType.LessThan,
                                 Helpers.MakeIdentifierPath("b"),
                                 Expression.MakeConstant("int", 1000)
                             ),
@@ -966,7 +981,8 @@ namespace Expresso.Test
                                         ),
                                         Helpers.MakeSeq<Expression>(
                                             Helpers.MakeIdentifierPath("b"),
-                                            Expression.MakeBinaryExpr(OperatorType.Plus,
+                                            Expression.MakeBinaryExpr(
+                                                OperatorType.Plus,
                                                 Helpers.MakeIdentifierPath("a"),
                                                 Helpers.MakeIdentifierPath("b")
                                             )
@@ -976,10 +992,20 @@ namespace Expresso.Test
                             )
                         ),
                         Statement.MakeVarDecl(
-                            Helpers.MakeSeq(AstNode.MakeIdentifier("vec", Helpers.MakeGenericType("vector", AstType.MakePrimitiveType("int")))),
-                            Helpers.MakeSeq(Expression.MakeSequenceInitializer(
-                                Helpers.MakeGenericType("vector", Helpers.MakePlaceholderType())
-                            )),
+                            Helpers.MakeSeq(
+                                AstNode.MakeIdentifier(
+                                    "vec",
+                                    Helpers.MakeGenericType(
+                                        "vector",
+                                        AstType.MakePrimitiveType("int")
+                                    )
+                                )
+                            ),
+                            Helpers.MakeSeq(
+                                Expression.MakeSequenceInitializer(
+                                    Helpers.MakeGenericType("vector", Helpers.MakePlaceholderType())
+                                )
+                            ),
                             Modifiers.None
                         ),
                         Statement.MakeValueBindingForStmt(
@@ -990,12 +1016,15 @@ namespace Expresso.Test
                                     Statement.MakeBlock(
                                         Statement.MakeIfStmt(
                                             PatternConstruct.MakeExpressionPattern(
-                                                Expression.MakeBinaryExpr(OperatorType.ConditionalAnd,
-                                                    Expression.MakeBinaryExpr(OperatorType.Equality,
+                                                Expression.MakeBinaryExpr(
+                                                    OperatorType.ConditionalAnd,
+                                                    Expression.MakeBinaryExpr(
+                                                        OperatorType.Equality,
                                                         Helpers.MakeIdentifierPath("i"),
                                                         Expression.MakeConstant("int", 3)
                                                     ),
-                                                    Expression.MakeBinaryExpr(OperatorType.Equality,
+                                                    Expression.MakeBinaryExpr(
+                                                        OperatorType.Equality,
                                                         Helpers.MakeIdentifierPath("i"),
                                                         Expression.MakeConstant("int", 6)
                                                     )
@@ -1008,7 +1037,8 @@ namespace Expresso.Test
                                         ),
                                         Statement.MakeIfStmt(
                                             PatternConstruct.MakeExpressionPattern(
-                                                Expression.MakeBinaryExpr(OperatorType.Equality,
+                                                Expression.MakeBinaryExpr(
+                                                    OperatorType.Equality,
                                                     Helpers.MakeIdentifierPath("j"),
                                                     Expression.MakeConstant("int", 8)
                                                 )
@@ -1018,24 +1048,31 @@ namespace Expresso.Test
                                             ),
                                             null
                                         ),
-                                        Statement.MakeExprStmt(Helpers.MakeCallExpression(
-                                            Expression.MakeMemRef(
-                                                Helpers.MakeIdentifierPath("vec"),
-                                                Helpers.MakeSomeIdent("add")
-                                            ),
-                                            Helpers.MakeIdentifierPath("i")
-                                        )),
-                                        Statement.MakeExprStmt(Helpers.MakeCallExpression(
-                                            Expression.MakeMemRef(
-                                                Helpers.MakeIdentifierPath("vec"),
-                                                Helpers.MakeSomeIdent("add")
-                                            ),
-                                            Helpers.MakeIdentifierPath("j")
-                                        )),
-                                        Statement.MakeExprStmt(Helpers.MakeCallExpression(Helpers.MakeIdentifierPath("println"),
-                                            Helpers.MakeIdentifierPath("i"),
-                                            Helpers.MakeIdentifierPath("j")
-                                        ))
+                                        Statement.MakeExprStmt(
+                                            Helpers.MakeCallExpression(
+                                                Expression.MakeMemRef(
+                                                    Helpers.MakeIdentifierPath("vec"),
+                                                    Helpers.MakeSomeIdent("add")
+                                                ),
+                                                Helpers.MakeIdentifierPath("i")
+                                            )
+                                        ),
+                                        Statement.MakeExprStmt(
+                                            Helpers.MakeCallExpression(
+                                                Expression.MakeMemRef(
+                                                    Helpers.MakeIdentifierPath("vec"),
+                                                    Helpers.MakeSomeIdent("add")
+                                                ),
+                                                Helpers.MakeIdentifierPath("j")
+                                            )
+                                        ),
+                                        Statement.MakeExprStmt(
+                                            Helpers.MakeCallExpression(
+                                                Helpers.MakeIdentifierPath("println"),
+                                                Helpers.MakeIdentifierPath("i"),
+                                                Helpers.MakeIdentifierPath("j")
+                                            )
+                                        )
                                     ),
                                     AstNode.MakeVariableInitializer(
                                         Helpers.MakeSomeIdent("j"),
@@ -1051,7 +1088,7 @@ namespace Expresso.Test
                             AstNode.MakeVariableInitializer(
                                 Helpers.MakeSomeIdent("i"),
                                 Expression.MakeSequenceInitializer(
-                                    AstType.MakeSimpleType("vector", new List<AstType>{Helpers.MakePlaceholderType()}),
+                                    Helpers.MakeGenericType("vector", Helpers.MakePlaceholderType()),
                                     Expression.MakeConstant("int", 0),
                                     Expression.MakeConstant("int", 1),
                                     Expression.MakeConstant("int", 2),
@@ -1065,8 +1102,9 @@ namespace Expresso.Test
                                 )
                             )
                         ),
-                        Statement.MakeExprStmt(Expression.MakeSequenceExpression(
-                            Helpers.MakeCallExpression(Helpers.MakeIdentifierPath("println"),
+                        Statement.MakeExprStmt(
+                            Helpers.MakeCallExpression(
+                                Helpers.MakeIdentifierPath("println"),
                                 Helpers.MakeIdentifierPath("flag"),
                                 Helpers.MakeIdentifierPath("sum"),
                                 Helpers.MakeIdentifierPath("a"),
@@ -1074,7 +1112,7 @@ namespace Expresso.Test
                                 Helpers.MakeIdentifierPath("fibs"),
                                 Helpers.MakeIdentifierPath("vec")
                             )
-                        ))
+                        )
                     ),
                     Helpers.MakePlaceholderType(),
                     Modifiers.None
