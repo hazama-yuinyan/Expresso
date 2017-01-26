@@ -1221,13 +1221,11 @@ namespace Expresso.Test
                             Helpers.MakeSeq(Expression.MakeConstant("int", 10)),
                             Modifiers.Immutable
                         ),
-                        Statement.MakeReturnStmt(
-                            Expression.MakeSequenceExpression(
-                                Expression.MakeBinaryExpr(
-                                    OperatorType.Plus,
-                                    Helpers.MakeIdentifierPath("a"),
-                                    Expression.MakeConstant("int", 10)
-                                )
+                        Helpers.MakeSingleItemReturnStatement(
+                            Expression.MakeBinaryExpr(
+                                OperatorType.Plus,
+                                Helpers.MakeIdentifierPath("a"),
+                                Expression.MakeConstant("int", 10)
                             )
                         )
                     ),
@@ -1240,13 +1238,11 @@ namespace Expresso.Test
                         EntityDeclaration.MakeParameter("n", Helpers.MakePrimitiveType("int"))
                     ),
                     Statement.MakeBlock(
-                        Statement.MakeReturnStmt(
-                            Expression.MakeSequenceExpression(
-                                Expression.MakeBinaryExpr(
-                                    OperatorType.Plus,
-                                    Helpers.MakeIdentifierPath("n"),
-                                    Expression.MakeConstant("int", 10)
-                                )
+                        Helpers.MakeSingleItemReturnStatement(
+                            Expression.MakeBinaryExpr(
+                                OperatorType.Plus,
+                                Helpers.MakeIdentifierPath("n"),
+                                Expression.MakeConstant("int", 10)
                             )
                         )
                     ),
@@ -1259,13 +1255,11 @@ namespace Expresso.Test
                         EntityDeclaration.MakeParameter("n", Helpers.MakePrimitiveType("int"))
                     ),
                     Statement.MakeBlock(
-                        Statement.MakeReturnStmt(
-                            Expression.MakeSequenceExpression(
-                                Expression.MakeBinaryExpr(
-                                    OperatorType.Plus,
-                                    Helpers.MakeIdentifierPath("n"),
-                                    Expression.MakeConstant("int", 20)
-                                )
+                        Helpers.MakeSingleItemReturnStatement(
+                            Expression.MakeBinaryExpr(
+                                OperatorType.Plus,
+                                Helpers.MakeIdentifierPath("n"),
+                                Expression.MakeConstant("int", 20)
                             )
                         )
                     ),
@@ -1694,22 +1688,42 @@ namespace Expresso.Test
         [Test]
         public void GenericParams()
         {
-            var expected = EntityDeclaration.MakeModuleDef("main", new List<EntityDeclaration>{
-                EntityDeclaration.MakeFunc("createList", new List<ParameterDeclaration>{
-                    EntityDeclaration.MakeParameter("a", AstType.MakeParameterType("T")),
-                    EntityDeclaration.MakeParameter("b", AstType.MakeParameterType("T")),
-                    EntityDeclaration.MakeParameter("rest", AstType.MakeSimpleType("array", new []{AstType.MakeParameterType("T")}))
-                }, Statement.MakeBlock(
-                    Statement.MakeReturnStmt(Expression.MakeCallExpr(Expression.MakeMemRef(
-                        Expression.MakeSequenceInitializer(AstType.MakeSimpleType("vector", new []{Helpers.MakePlaceholderType()}),
-                            Helpers.MakeIdentifierPath("a"),
-                            Helpers.MakeIdentifierPath("b")
-                        ), Helpers.MakeSomeIdent("join")
-                    ), new List<Expression>{
-                        Helpers.MakeIdentifierPath("rest")
-                    }))
-                ), AstType.MakeSimpleType("vector", new []{AstType.MakeParameterType("T")}), Modifiers.None)
+            var parser = new Parser(new Scanner("../../sources/for_unit_tests/generic_params.exs"));
+            parser.Parse();
+
+            var ast = parser.TopmostAst;
+
+            var expected = AstNode.MakeModuleDef("main", new List<EntityDeclaration>{
+                EntityDeclaration.MakeFunc(
+                    "createList", 
+                    Helpers.MakeSeq(
+                        EntityDeclaration.MakeParameter("a", AstType.MakeParameterType("T")),
+                        EntityDeclaration.MakeParameter("b", AstType.MakeParameterType("T")),
+                        EntityDeclaration.MakeParameter("rest", Helpers.MakeGenericType("array", AstType.MakeParameterType("T")))
+                    ),
+                    Statement.MakeBlock(
+                        Statement.MakeReturnStmt(
+                            Helpers.MakeCallExpression(
+                                Expression.MakeMemRef(
+                                    Expression.MakeSequenceInitializer(
+                                        Helpers.MakeGenericType("vector", Helpers.MakePlaceholderType()),
+                                        Helpers.MakeIdentifierPath("a"),
+                                        Helpers.MakeIdentifierPath("b")
+                                    ),
+                                    Helpers.MakeSomeIdent("join")
+                                ),
+                                Helpers.MakeIdentifierPath("rest")
+                            )
+                        )
+                    ),
+                    Helpers.MakeGenericType("vector", AstType.MakeParameterType("T")),
+                    Modifiers.None
+                )
             });
+
+            Assert.IsNotNull(ast);
+
+            Helpers.AstStructuralEqual(ast, expected);
         }
 	}
 }
