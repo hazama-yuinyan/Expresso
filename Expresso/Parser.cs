@@ -451,7 +451,7 @@ string cur_class_name;
 		}
 		}
 		catch(ParserException e){
-		ReportSemanticError(e.Message, null);
+		SemanticError(e.Message);
 		}
 		this.TopmostAst = module_decl;	//Currently there is not so much code out there, though...
 		
@@ -526,6 +526,7 @@ string cur_class_name;
 		var type_params = new List<ParameterType>();
 		var @params = new List<ParameterDeclaration>();
 		var start_loc = NextLocation;
+		var replacer = new ParameterTypeReplacer(type_params);
 		
 		while (!(la.kind == 0 || la.kind == 38)) {SynErr(105); Get();}
 		Expect(38);
@@ -558,14 +559,7 @@ string cur_class_name;
 		if(type == null)
 		   type = new PlaceholderType(TextLocation.Empty);
 		
-		if(type_params.Any(tp => tp.Identifier == type.Name)){
-		   var type_param = type_params.Where(tp => tp.Identifier == type.Name)
-		       .Select(tp => tp)
-		       .First()
-		       .Clone();
-		
-		   
-		}
+		type.AcceptWalker(replacer);
 		
 		Block(out block);
 		decl = EntityDeclaration.MakeFunc(ident, @params, block, type, modifiers, start_loc);
@@ -851,19 +845,12 @@ string cur_class_name;
 	}
 
 	void ParamList(List<ParameterType> typeParams, ref List<ParameterDeclaration> @params ) {
-		ParameterDeclaration param; bool seen_option = false; 
+		ParameterDeclaration param; bool seen_option = false; var replacer = new ParameterTypeReplacer(typeParams); 
 		Parameter(out param);
 		if(!param.Option.IsNull)
 		   seen_option = true;
 		
-		if(typeParams.Any(tp => tp.Identifier == param.ReturnType.Name)){
-		   var param_type = typeParams.Where(tp => tp.Identifier == param.ReturnType.Name)
-		   	   .Select(tp => tp)
-		   	   .First()
-		   	   .Clone();
-		
-		   param.ReturnType.ReplaceWith(param_type);
-		}
+		param.ReturnType.AcceptWalker(replacer);
 		@params.Add(param);
 		
 		while (WeakSeparator(12,3,5) ) {
@@ -873,14 +860,7 @@ string cur_class_name;
 			else if(!seen_option && !param.Option.IsNull)
 			   seen_option = true;
 			
-			if(typeParams.Any(tp => tp.Identifier == param.ReturnType.Name)){
-			   var param_type = typeParams.Where(tp => tp.Identifier == param.ReturnType.Name)
-			   	   .Select(tp => tp)
-			   	   .First()
-			   	   .Clone();
-			
-			   param.ReturnType.ReplaceWith(param_type);
-			}
+			param.ReturnType.AcceptWalker(replacer);
 			@params.Add(param);
 			
 		}
@@ -909,44 +889,41 @@ string cur_class_name;
 	}
 
 	void Parameter(out ParameterDeclaration param) {
-		Identifier identifier; Expression option = null; AstType type; 
-		Identifier(out identifier);
-		Symbols.AddSymbol(identifier.Name, identifier); 
+		string name; Identifier identifier; Expression option = null; AstType type = null; bool is_variadic = false; 
+		Expect(14);
+		name = t.val;
+		if(CheckKeyword(name)){
+		// Failed to parse a name.
+		// Stop parsing parameters.
+		param = null;
+		return;
+		}
+		
 		if (la.kind == 2 || la.kind == 40) {
 			if (la.kind == 40) {
 				Get();
 				Literal(out option);
-				if(identifier.Type is PlaceholderType && option == null)
-				   SemanticError("Error ES0004: You can't omit both the type annotation and the default value!");
-				
 			} else {
 				Get();
-				Expect(41);
-				Type(out type);
-				if(la.kind == _ident)
-				SemanticError("Error ES0010: The variadic parameter has to be placed in the last position of a parameter list");
-				else if(type == null || !(type is SimpleType) || ((SimpleType)type).Name != "array")
-				SemanticError("Error ES0001: The variadic parameter must be an array!");
-				
+				is_variadic = true; 
 			}
 		}
-		param = EntityDeclaration.MakeParameter(identifier, option); 
-	}
-
-	void Identifier(out Identifier ident) {
-		string name; AstType type = new PlaceholderType(TextLocation.Empty); var start_loc = CurrentLocation;
-		Expect(14);
-		name = t.val;
-		if(CheckKeyword(t.val)){
-		   ident = null;
-		   return;
-		}
-		
 		if (la.kind == 41) {
 			Get();
 			Type(out type);
+			if(is_variadic && la.kind == _ident)
+			SemanticError("Error ES0010: The variadic parameter has to be placed in the last position of a parameter list");
+			else if(is_variadic && (type == null || !(type is SimpleType) || ((SimpleType)type).Name != "array"))
+			SemanticError("Error ES0001: The variadic parameter must be an array!");
+			
 		}
-		ident = AstNode.MakeIdentifier(name, type, start_loc, CurrentLocation); 
+		identifier = AstNode.MakeIdentifier(name, type);
+		if(identifier.Type is PlaceholderType && option == null)
+		SemanticError("Error ES0004: You can't imit both the type annotation and the default value!");
+		
+		Symbols.AddSymbol(name, identifier);
+		param = EntityDeclaration.MakeParameter(identifier, option, is_variadic);
+		
 	}
 
 	void Literal(out Expression expr) {
@@ -1487,6 +1464,22 @@ string cur_class_name;
 			inits.Add(init); 
 		}
 		pattern = PatternConstruct.MakeValueBindingPattern(inits, modifier); 
+	}
+
+	void Identifier(out Identifier ident) {
+		string name; AstType type = new PlaceholderType(TextLocation.Empty); var start_loc = CurrentLocation;
+		Expect(14);
+		name = t.val;
+		if(CheckKeyword(t.val)){
+		   ident = null;
+		   return;
+		}
+		
+		if (la.kind == 41) {
+			Get();
+			Type(out type);
+		}
+		ident = AstNode.MakeIdentifier(name, type, start_loc, CurrentLocation); 
 	}
 
 	void LhsPattern(out PatternConstruct pattern) {

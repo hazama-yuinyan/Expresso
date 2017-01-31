@@ -613,6 +613,9 @@ namespace Expresso.Ast
         public void VisitParameterDeclaration(ParameterDeclaration parameterDecl)
         {
             parameterDecl.NameToken.AcceptWalker(this);
+            if(parameterDecl.IsVariadic)
+                writer.Write("...");
+            
             if(!parameterDecl.Option.IsNull){
                 writer.Write(" = ");
                 parameterDecl.Option.AcceptWalker(this);

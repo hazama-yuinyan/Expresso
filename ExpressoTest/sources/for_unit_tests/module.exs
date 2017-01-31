@@ -13,5 +13,5 @@ def main()
 	let b = TestModule.createTest(50, 100);
 	let c = TestModule.pair;
 	
-	return new [a, b, c];
+	println(a, b, c);
 }

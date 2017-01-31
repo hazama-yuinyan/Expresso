@@ -98,14 +98,14 @@ namespace Expresso.Ast
             return new FieldDeclaration(lhs, rhs, modifiers, start, end);
         }
 
-        public static ParameterDeclaration MakeParameter(string name, AstType type, Expression option = null)
+        public static ParameterDeclaration MakeParameter(string name, AstType type, Expression option = null, bool isVariadic = false)
         {
-            return new ParameterDeclaration(AstNode.MakeIdentifier(name, type), option ?? Expression.Null);
+            return new ParameterDeclaration(AstNode.MakeIdentifier(name, type), option ?? Expression.Null, isVariadic);
         }
 
-        public static ParameterDeclaration MakeParameter(Identifier identifier, Expression option = null)
+        public static ParameterDeclaration MakeParameter(Identifier identifier, Expression option = null, bool isVariadic = false)
         {
-            return new ParameterDeclaration(identifier, option ?? Expression.Null);
+            return new ParameterDeclaration(identifier, option ?? Expression.Null, isVariadic);
         }
 
         public static TypeDeclaration MakeClassDecl(string className, IEnumerable<AstType> bases,

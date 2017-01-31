@@ -30,6 +30,14 @@ namespace Expresso.Ast
             set{SetChildByRole(Roles.Expression, value);}
         }
 
+        /// <summary>
+        /// Represents the parameter is variadic or not.
+        /// </summary>
+        /// <value><c>true</c> if is variadic; otherwise, <c>false</c>.</value>
+        public bool IsVariadic{
+            get; set;
+        }
+
         #region implemented abstract members of EntityDeclaration
 
         public override SymbolKind SymbolKind{
@@ -40,10 +48,11 @@ namespace Expresso.Ast
 
         #endregion
 
-        public ParameterDeclaration(Identifier identifier, Expression option)
+        public ParameterDeclaration(Identifier identifier, Expression option, bool isVariadic)
         {
             SetChildByRole(Roles.Identifier, identifier);
             Option = option;
+            IsVariadic = isVariadic;
         }
 
         public override void AcceptWalker(IAstWalker walker)
@@ -65,7 +74,7 @@ namespace Expresso.Ast
         {
             var o = other as ParameterDeclaration;
             return o != null && ReturnType.DoMatch(o.ReturnType, match) && MatchString(Name, o.Name)
-                && Option.DoMatch(o.Option, match);
+                                          && Option.DoMatch(o.Option, match) && IsVariadic == o.IsVariadic;
         }
     }
 }

@@ -2307,6 +2307,147 @@ namespace Expresso.Test
             Assert.IsNotNull(ast);
             Helpers.AstStructuralEqual(ast, expected_ast);
         }
+
+        [Test]
+        public void MatchStatements()
+        {
+            var parser = new Parser(new Scanner("../../sources/for_unit_tests/match_statements.exs"));
+            parser.DoPostParseProcessing = true;
+            parser.Parse();
+
+            var ast = parser.TopmostAst;
+
+            var expected_ast = AstNode.MakeModuleDef("main", new List<EntityDeclaration>{
+                EntityDeclaration.MakeFunc(
+                    "main",
+                    Enumerable.Empty<ParameterDeclaration>(),
+                    Statement.MakeBlock(
+                        Statement.MakeVarDecl(
+                            Helpers.MakeSeq(
+                                AstNode.MakeIdentifier(
+                                    "tmp",
+                                    Helpers.MakePrimitiveType("string")
+                                )
+                            ),
+                            Helpers.MakeSeq(
+                                Expression.MakeConstant(
+                                    "string",
+                                    "akarichan"
+                                )
+                            ),
+                            Modifiers.Immutable
+                        ),
+                        Statement.MakeMatchStmt(
+                            Helpers.MakeIdentifierPath(
+                                "tmp",
+                                Helpers.MakePrimitiveType("string")
+                            ),
+                            Statement.MakeMatchClause(
+                                null,
+                                Statement.MakeExprStmt(
+                                    Helpers.MakeCallExpression(
+                                        Helpers.MakeIdentifierPath(
+                                            "println",
+                                            AstType.MakeFunctionType(
+                                                "println",
+                                                Helpers.MakeVoidType(),
+                                                TextLocation.Empty,
+                                                TextLocation.Empty,
+                                                Helpers.MakePrimitiveType("string")
+                                            )
+                                        ),
+                                        Expression.MakeConstant(
+                                            "string",
+                                            "kawakawa"
+                                        )
+                                    )
+                                ),
+                                PatternConstruct.MakeExpressionPattern(
+                                    Expression.MakeConstant("string", "akarichan")
+                                )
+                            ),
+                            Statement.MakeMatchClause(
+                                Expression.MakeConstant("bool", true),
+                                Statement.MakeExprStmt(
+                                    Helpers.MakeCallExpression(
+                                        Helpers.MakeIdentifierPath(
+                                            "println",
+                                            AstType.MakeFunctionType(
+                                                "println",
+                                                Helpers.MakeVoidType(),
+                                                TextLocation.Empty,
+                                                TextLocation.Empty,
+                                                Helpers.MakePrimitiveType("string")
+                                            )
+                                        ),
+                                        Expression.MakeConstant(
+                                            "string",
+                                            "ankokuthunder"
+                                        )
+                                    )
+                                ),
+                                PatternConstruct.MakeExpressionPattern(
+                                    Expression.MakeConstant("string", "chinatsu")
+                                )
+                            ),
+                            Statement.MakeMatchClause(
+                                null,
+                                Statement.MakeExprStmt(
+                                    Helpers.MakeCallExpression(
+                                        Helpers.MakeIdentifierPath(
+                                            "println",
+                                            AstType.MakeFunctionType(
+                                                "println",
+                                                Helpers.MakeVoidType(),
+                                                TextLocation.Empty,
+                                                TextLocation.Empty,
+                                                Helpers.MakePrimitiveType("string")
+                                            )
+                                        ),
+                                        Expression.MakeConstant(
+                                            "string",
+                                            "gaichiban!"
+                                        )
+                                    )
+                                ),
+                                PatternConstruct.MakeExpressionPattern(
+                                    Expression.MakeConstant("string", "kyoko")
+                                )
+                            ),
+                            Statement.MakeMatchClause(
+                                null,
+                                Statement.MakeExprStmt(
+                                    Helpers.MakeCallExpression(
+                                        Helpers.MakeIdentifierPath(
+                                            "println",
+                                            AstType.MakeFunctionType(
+                                                "println",
+                                                Helpers.MakeVoidType(),
+                                                TextLocation.Empty,
+                                                TextLocation.Empty,
+                                                Helpers.MakePrimitiveType("string")
+                                            )
+                                        ),
+                                        Expression.MakeConstant(
+                                            "string",
+                                            "doyaxtu!"
+                                        )
+                                    )
+                                ),
+                                PatternConstruct.MakeExpressionPattern(
+                                    Expression.MakeConstant("string", "yui")
+                                )
+                            )
+                        )
+                    ),
+                    Helpers.MakeVoidType(),
+                    Modifiers.None
+                )
+            });
+
+            Assert.IsNotNull(ast);
+            Helpers.AstStructuralEqual(ast, expected_ast);
+        }
     }
 }
 

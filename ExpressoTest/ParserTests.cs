@@ -1699,10 +1699,18 @@ namespace Expresso.Test
                     Helpers.MakeSeq(
                         EntityDeclaration.MakeParameter("a", AstType.MakeParameterType("T")),
                         EntityDeclaration.MakeParameter("b", AstType.MakeParameterType("T")),
-                        EntityDeclaration.MakeParameter("rest", Helpers.MakeGenericType("array", AstType.MakeParameterType("T")))
+                        EntityDeclaration.MakeParameter(
+                            "rest",
+                            Helpers.MakeGenericType(
+                                "array",
+                                AstType.MakeParameterType("T")
+                            ),
+                            null,
+                            true
+                        )
                     ),
                     Statement.MakeBlock(
-                        Statement.MakeReturnStmt(
+                        Helpers.MakeSingleItemReturnStatement(
                             Helpers.MakeCallExpression(
                                 Expression.MakeMemRef(
                                     Expression.MakeSequenceInitializer(
@@ -1717,6 +1725,41 @@ namespace Expresso.Test
                         )
                     ),
                     Helpers.MakeGenericType("vector", AstType.MakeParameterType("T")),
+                    Modifiers.None
+                ),
+                EntityDeclaration.MakeFunc(
+                    "main",
+                    Enumerable.Empty<ParameterDeclaration>(),
+                    Statement.MakeBlock(
+                        Statement.MakeVarDecl(
+                            Helpers.MakeSeq(
+                                Helpers.MakeSomeIdent("a"),
+                                Helpers.MakeSomeIdent("b"),
+                                Helpers.MakeSomeIdent("c")
+                            ),
+                            Helpers.MakeSeq(
+                                Expression.MakeConstant("int", 1),
+                                Expression.MakeConstant("int", 2),
+                                Expression.MakeConstant("int", 3)
+                            ),
+                            Modifiers.Immutable
+                        ),
+                        Statement.MakeVarDecl(
+                            Helpers.MakeSeq(
+                                Helpers.MakeSomeIdent("vec")
+                            ),
+                            Helpers.MakeSeq(
+                                Helpers.MakeCallExpression(
+                                    Helpers.MakeIdentifierPath("createList"),
+                                    Helpers.MakeIdentifierPath("a"),
+                                    Helpers.MakeIdentifierPath("b"),
+                                    Helpers.MakeIdentifierPath("c")
+                                )
+                            ),
+                            Modifiers.Immutable
+                        )
+                    ),
+                    Helpers.MakePlaceholderType(),
                     Modifiers.None
                 )
             });

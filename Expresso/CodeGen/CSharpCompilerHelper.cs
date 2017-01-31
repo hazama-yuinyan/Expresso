@@ -17,7 +17,7 @@ namespace Expresso.CodeGen
             new Regex(@"%([a-zA-Z_][a-zA-Z_0-9]*)");
 
         static List<string> _AssemblyNames =
-            new List<string>{"System", "System.Core", "System.Numerics", "mscorlib", "ExpressoRuntime"};
+            new List<string>{"mscorlib", "System", "System.Core", "System.Numerics", "ExpressoRuntime"};
 
         static Dictionary<string, string> SpecialNamesMap = new Dictionary<string, string>{
             {"intseq", "ExpressoIntegerSequence"},
