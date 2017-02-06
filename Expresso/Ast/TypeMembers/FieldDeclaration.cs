@@ -45,6 +45,7 @@ namespace Expresso.Ast
             Modifiers modifiers, TextLocation start, TextLocation end)
             : base(start, end)
         {
+            rhs = rhs ?? lhs.Select(arg => Expression.Null);
             foreach(var variable in lhs.Zip(rhs, (ident, expr) => new Tuple<Identifier, Expression>(ident, expr)))
                 Initializers.Add(new VariableInitializer(variable.Item1, variable.Item2));
 

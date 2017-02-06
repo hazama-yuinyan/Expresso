@@ -593,6 +593,13 @@ namespace Expresso.Ast
 
         public void VisitFieldDeclaration(FieldDeclaration fieldDecl)
         {
+            if(fieldDecl.HasModifier(Modifiers.Public))
+                writer.Write("public ");
+            else if(fieldDecl.HasModifier(Modifiers.Protected))
+                writer.Write("protected ");
+            else if(fieldDecl.HasModifier(Modifiers.Private))
+                writer.Write("private ");
+            
             if(fieldDecl.HasModifier(Modifiers.Immutable))
                 writer.Write("let ");
             else

@@ -432,6 +432,7 @@ ModuleBody<out ExpressoAst ast>	    (.  var decls = new List<EntityDeclaration>(
   [ "export"						(. modifiers = ExpressoModifiers.Export; .)
   ]
   ( FuncDecl<out decl, modifiers>
+  | FieldDecl<out decl, modifiers>
   | ClassDecl<out decl, modifiers>
   )									(.  decls.Add(decl);
 										modifiers = ExpressoModifiers.None;
@@ -440,6 +441,7 @@ ModuleBody<out ExpressoAst ast>	    (.  var decls = new List<EntityDeclaration>(
     [ "export"						(. modifiers = ExpressoModifiers.Export; .)
     ]
     ( FuncDecl<out decl, modifiers>
+    | FieldDecl<out decl, modifiers>
     | ClassDecl<out decl, modifiers>
     )								(.  decls.Add(decl);
     									modifiers = ExpressoModifiers.None;

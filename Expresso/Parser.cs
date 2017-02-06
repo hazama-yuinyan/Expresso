@@ -472,19 +472,23 @@ string cur_class_name;
 		}
 		if (la.kind == 38) {
 			FuncDecl(out decl, modifiers);
+		} else if (la.kind == 27 || la.kind == 28) {
+			FieldDecl(out decl, modifiers);
 		} else if (la.kind == 33) {
 			ClassDecl(out decl, modifiers);
 		} else SynErr(102);
 		decls.Add(decl);
 		modifiers = ExpressoModifiers.None;
 		
-		while (la.kind == 29 || la.kind == 33 || la.kind == 38) {
+		while (StartOf(1)) {
 			if (la.kind == 29) {
 				Get();
 				modifiers = ExpressoModifiers.Export; 
 			}
 			if (la.kind == 38) {
 				FuncDecl(out decl, modifiers);
+			} else if (la.kind == 27 || la.kind == 28) {
+				FieldDecl(out decl, modifiers);
 			} else if (la.kind == 33) {
 				ClassDecl(out decl, modifiers);
 			} else SynErr(103);
@@ -567,12 +571,38 @@ string cur_class_name;
 		     
 	}
 
+	void FieldDecl(out EntityDeclaration field, Modifiers modifiers) {
+		Expression rhs; Identifier ident; var start_loc = NextLocation;
+		var idents = new List<Identifier>(); var exprs = new List<Expression>();
+		
+		if (la.kind == 27) {
+			Get();
+			modifiers |= ExpressoModifiers.Immutable; 
+		} else if (la.kind == 28) {
+			Get();
+		} else SynErr(106);
+		VarDef(out ident, out rhs);
+		idents.Add(ident);
+		exprs.Add(rhs);
+		
+		while (la.kind == 12) {
+			Get();
+			VarDef(out ident, out rhs);
+			idents.Add(ident);
+			exprs.Add(rhs);
+			
+		}
+		while (!(la.kind == 0 || la.kind == 6)) {SynErr(107); Get();}
+		Expect(6);
+		field = EntityDeclaration.MakeField(idents, exprs, modifiers, start_loc, CurrentLocation); 
+	}
+
 	void ClassDecl(out EntityDeclaration decl, Modifiers modifiers) {
 		EntityDeclaration entity = null; var decls = new List<EntityDeclaration>(); AstType type_path;
 		string name; var bases = new List<AstType>(); Modifiers cur_flag; var start_loc = NextLocation;
 		Identifier ident = null;
 		
-		while (!(la.kind == 0 || la.kind == 33)) {SynErr(106); Get();}
+		while (!(la.kind == 0 || la.kind == 33)) {SynErr(108); Get();}
 		Expect(33);
 		Symbols.AddScope(); 
 		Expect(14);
@@ -600,9 +630,9 @@ string cur_class_name;
 		GoDownScope();
 		Symbols.Name = "class " + name + "`" + ScopeId++;
 		
-		while (StartOf(1)) {
+		while (StartOf(2)) {
 			cur_flag = ExpressoModifiers.Private; 
-			while (StartOf(2)) {
+			while (StartOf(3)) {
 				Modifiers(ref cur_flag);
 			}
 			
@@ -615,9 +645,9 @@ string cur_class_name;
 			} else if (la.kind == 33) {
 				ClassDecl(out entity, cur_flag);
 				decls.Add(entity); 
-			} else SynErr(107);
+			} else SynErr(109);
 		}
-		while (!(la.kind == 0 || la.kind == 11)) {SynErr(108); Get();}
+		while (!(la.kind == 0 || la.kind == 11)) {SynErr(110); Get();}
 		Expect(11);
 		decl = EntityDeclaration.MakeClassDecl(ident, bases, decls, modifiers, start_loc, CurrentLocation);
 		                   GoUpScope();
@@ -628,7 +658,7 @@ string cur_class_name;
 		decl = null; var has_in = false; PathExpression path;
 		Identifier alias = null; var entities = new List<PathExpression>();
 		
-		while (!(la.kind == 0 || la.kind == 31)) {SynErr(109); Get();}
+		while (!(la.kind == 0 || la.kind == 31)) {SynErr(111); Get();}
 		Expect(31);
 		PathExpression(out path);
 		entities.Add(path); 
@@ -644,15 +674,15 @@ string cur_class_name;
 			}
 			
 		} else if (la.kind == 12 || la.kind == 24) {
-			while (WeakSeparator(12,3,4) ) {
+			while (WeakSeparator(12,4,5) ) {
 				PathExpression(out path);
 				entities.Add(path); 
 			}
 			Expect(24);
 			has_in = true; 
 			PathExpression(out path);
-		} else SynErr(110);
-		while (!(la.kind == 0 || la.kind == 6)) {SynErr(111); Get();}
+		} else SynErr(112);
+		while (!(la.kind == 0 || la.kind == 6)) {SynErr(113); Get();}
 		Expect(6);
 		if(has_in)
 		   decl = AstNode.MakeImportDecl(path, entities);
@@ -764,7 +794,7 @@ string cur_class_name;
 			if(is_reference) type = AstType.MakeReferenceType(type, TextLocation.Empty); 
 			break;
 		}
-		default: SynErr(112); break;
+		default: SynErr(114); break;
 		}
 		start_loc = NextLocation; 
 		if (la.kind == 42) {
@@ -803,33 +833,7 @@ string cur_class_name;
 		} else if (la.kind == 37) {
 			Get();
 			modifiers |= ExpressoModifiers.Static; 
-		} else SynErr(113);
-	}
-
-	void FieldDecl(out EntityDeclaration field, Modifiers modifiers) {
-		Expression rhs; Identifier ident; var start_loc = NextLocation;
-		var idents = new List<Identifier>(); var exprs = new List<Expression>();
-		
-		if (la.kind == 27) {
-			Get();
-			modifiers |= ExpressoModifiers.Immutable; 
-		} else if (la.kind == 28) {
-			Get();
-		} else SynErr(114);
-		VarDef(out ident, out rhs);
-		idents.Add(ident);
-		exprs.Add(rhs);
-		
-		while (la.kind == 12) {
-			Get();
-			VarDef(out ident, out rhs);
-			idents.Add(ident);
-			exprs.Add(rhs);
-			
-		}
-		while (!(la.kind == 0 || la.kind == 6)) {SynErr(115); Get();}
-		Expect(6);
-		field = EntityDeclaration.MakeField(idents, exprs, modifiers, start_loc, CurrentLocation); 
+		} else SynErr(115);
 	}
 
 	void GenericTypeParameters(ref List<ParameterType> types ) {
@@ -853,7 +857,7 @@ string cur_class_name;
 		param.ReturnType.AcceptWalker(replacer);
 		@params.Add(param);
 		
-		while (WeakSeparator(12,3,5) ) {
+		while (WeakSeparator(12,4,6) ) {
 			Parameter(out param);
 			if(seen_option && param.Option.IsNull)
 			   SemanticError("Error ES0002: You can't put optional parameters before non-optional parameters");
@@ -877,7 +881,7 @@ string cur_class_name;
 		
 		Stmt(out stmt);
 		stmts.Add(stmt); 
-		while (StartOf(6)) {
+		while (StartOf(7)) {
 			Stmt(out stmt);
 			stmts.Add(stmt); 
 		}
@@ -1026,7 +1030,7 @@ string cur_class_name;
 	void TupleTypeSignature(out AstType type) {
 		var inners = new List<AstType>(); var start_loc = NextLocation; 
 		Expect(8);
-		if (StartOf(7)) {
+		if (StartOf(8)) {
 			Type(out type);
 			inners.Add(type); 
 		}
@@ -1069,9 +1073,9 @@ string cur_class_name;
 
 	void Stmt(out Statement stmt) {
 		stmt = null; 
-		if (StartOf(8)) {
+		if (StartOf(9)) {
 			SimpleStmt(out stmt);
-		} else if (StartOf(9)) {
+		} else if (StartOf(10)) {
 			CompoundStmt(out stmt);
 		} else SynErr(118);
 	}
@@ -1136,8 +1140,8 @@ string cur_class_name;
 		        AssignmentExpression assign = null;
 		
 		LValueList(out lhs);
-		if (StartOf(10)) {
-			if (StartOf(11)) {
+		if (StartOf(11)) {
+			if (StartOf(12)) {
 				AugAssignOpe(ref op_type);
 				RValueList(out seq);
 				if(lhs.Count != seq.Count)  //See if both sides have the same number of items or not
@@ -1180,7 +1184,7 @@ string cur_class_name;
 		exprs.Add(rhs ?? Expression.Null);
 		rhs = null;
 		
-		while (WeakSeparator(12,3,12) ) {
+		while (WeakSeparator(12,4,13) ) {
 			VarDef(out ident, out rhs);
 			idents.Add(ident);
 			exprs.Add(rhs ?? Expression.Null);
@@ -1195,7 +1199,7 @@ string cur_class_name;
 	void ReturnStmt(out Statement stmt) {
 		SequenceExpression items = null; 
 		Expect(59);
-		if (StartOf(13)) {
+		if (StartOf(14)) {
 			RValueList(out items);
 		}
 		while (!(la.kind == 0 || la.kind == 6)) {SynErr(124); Get();}
@@ -1335,7 +1339,7 @@ string cur_class_name;
 		var lvalues = new List<Expression>(); Expression tmp; 
 		LhsPrimary(out tmp);
 		lvalues.Add(tmp); 
-		while (WeakSeparator(12,3,14) ) {
+		while (WeakSeparator(12,4,15) ) {
 			LhsPrimary(out tmp);
 			lvalues.Add(tmp); 
 		}
@@ -1360,7 +1364,7 @@ string cur_class_name;
 		GoDownScope();
 		Symbols.Name = "if`" + ScopeId++;
 		
-		if (StartOf(15)) {
+		if (StartOf(16)) {
 			ExpressionPattern(out pattern);
 		} else if (la.kind == 27 || la.kind == 28) {
 			ValueBindingPattern(out pattern);
@@ -1407,7 +1411,7 @@ string cur_class_name;
 			}
 			Identifier(out ident);
 			Symbols.AddSymbol(ident.Name, ident); 
-		} else if (StartOf(16)) {
+		} else if (StartOf(17)) {
 			LhsPattern(out left);
 		} else SynErr(131);
 		Expect(24);
@@ -1504,7 +1508,7 @@ string cur_class_name;
 		PatternList(out pattern_list, out guard);
 		Stmt(out inner);
 		clauses.Add(Statement.MakeMatchClause(pattern_list, guard, inner)); 
-		while (StartOf(17)) {
+		while (StartOf(18)) {
 			PatternList(out pattern_list, out guard);
 			Stmt(out inner);
 			clauses.Add(Statement.MakeMatchClause(pattern_list, guard, inner)); 
@@ -1536,7 +1540,7 @@ string cur_class_name;
 			TuplePattern(out pattern);
 		} else if (IsDestructuringPattern()) {
 			DestructuringPattern(out pattern);
-		} else if (StartOf(15)) {
+		} else if (StartOf(16)) {
 			ExpressionPattern(out pattern);
 		} else SynErr(135);
 	}
@@ -1569,8 +1573,8 @@ string cur_class_name;
 	void TuplePattern(out PatternConstruct pattern) {
 		var inners = new List<PatternConstruct>(); 
 		Expect(8);
-		while (StartOf(18)) {
-			if (StartOf(16)) {
+		while (StartOf(19)) {
+			if (StartOf(17)) {
 				LhsPattern(out pattern);
 			} else {
 				ExpressionPattern(out pattern);
@@ -1589,7 +1593,7 @@ string cur_class_name;
 		if (la.kind == 14) {
 			TypePathExpression(out type_path);
 			Expect(7);
-			if (StartOf(15)) {
+			if (StartOf(16)) {
 				PatternItem(out pattern);
 				patterns.Add(pattern); 
 			}
@@ -1602,12 +1606,12 @@ string cur_class_name;
 			pattern = PatternConstruct.MakeDestructuringPattern(type_path, patterns); 
 		} else if (la.kind == 9) {
 			Get();
-			if (StartOf(15)) {
+			if (StartOf(16)) {
 				PatternItem(out pattern);
 				patterns.Add(pattern); 
 			}
 			while (NotFinalComma()) {
-				ExpectWeak(12, 19);
+				ExpectWeak(12, 20);
 				PatternItem(out pattern);
 				patterns.Add(pattern); 
 			}
@@ -1623,7 +1627,7 @@ string cur_class_name;
 
 	void PatternItem(out PatternConstruct pattern) {
 		pattern = PatternConstruct.Null; 
-		if (StartOf(15)) {
+		if (StartOf(16)) {
 			ExpressionPattern(out pattern);
 		} else if (la.kind == 14) {
 			IdentifierPattern(out pattern);
@@ -1668,7 +1672,7 @@ string cur_class_name;
 		Expression rhs; OperatorType type; 
 		IntSeqExpr(out expr);
 		type = OperatorType.Equality; 
-		if (StartOf(20)) {
+		if (StartOf(21)) {
 			ComparisonOperator(out type);
 			Comparison(out rhs);
 			expr = Expression.MakeBinaryExpr(type, expr, rhs); 
@@ -1849,9 +1853,9 @@ string cur_class_name;
 
 	void Factor(out Expression expr) {
 		OperatorType type; Expression factor; expr = null; var start_loc = CurrentLocation; 
-		if (StartOf(21)) {
+		if (StartOf(22)) {
 			Primary(out expr);
-		} else if (StartOf(22)) {
+		} else if (StartOf(23)) {
 			UnaryOperator(out type);
 			Factor(out factor);
 			expr = Expression.MakeUnaryExpr(type, factor, start_loc); 
@@ -1867,7 +1871,7 @@ string cur_class_name;
 				type_path = ConvertPathToType(path); 
 				ObjectCreation(type_path, out expr);
 			}
-		} else if (StartOf(23)) {
+		} else if (StartOf(24)) {
 			Atom(out expr);
 		} else if (la.kind == 96) {
 			NewExpression(out expr);
@@ -1922,18 +1926,18 @@ string cur_class_name;
 
 	void Atom(out Expression expr) {
 		var exprs = new List<Expression>(); expr = null; bool seen_trailing_comma = false; 
-		if (StartOf(24)) {
+		if (StartOf(25)) {
 			Literal(out expr);
 		} else if (la.kind == 8) {
 			Get();
 			if (la.kind == 10) {
 				Get();
 				expr = Expression.MakeParen(Expression.MakeSequenceExpression(null)); 
-			} else if (StartOf(13)) {
+			} else if (StartOf(14)) {
 				CondExpr(out expr);
 				exprs.Add(expr); 
 				while (NotFinalComma()) {
-					ExpectWeak(12, 25);
+					ExpectWeak(12, 26);
 					CondExpr(out expr);
 					exprs.Add(expr); 
 				}
@@ -1950,7 +1954,7 @@ string cur_class_name;
 			} else SynErr(147);
 		} else if (la.kind == 9) {
 			Get();
-			if (StartOf(26)) {
+			if (StartOf(27)) {
 				SequenceMaker(out expr);
 			}
 			while (!(la.kind == 0 || la.kind == 3)) {SynErr(148); Get();}
@@ -1962,7 +1966,7 @@ string cur_class_name;
 			
 		} else if (la.kind == 7) {
 			Get();
-			if (StartOf(13)) {
+			if (StartOf(14)) {
 				DictMaker(out expr);
 			}
 			while (!(la.kind == 0 || la.kind == 11)) {SynErr(149); Get();}
@@ -1987,7 +1991,7 @@ string cur_class_name;
 		var args = new List<Expression>(); var start_loc = CurrentLocation; 
 		if (la.kind == 8) {
 			Get();
-			if (StartOf(13)) {
+			if (StartOf(14)) {
 				ArgList(out args);
 			}
 			Expect(10);
@@ -2017,7 +2021,7 @@ string cur_class_name;
 	void PatternComparison(out Expression expr) {
 		Expression rhs; OperatorType type = OperatorType.None; 
 		PatternIntSeqExpr(out expr);
-		if (StartOf(20)) {
+		if (StartOf(21)) {
 			ComparisonOperator(out type);
 			PatternComparison(out rhs);
 			expr = Expression.MakeBinaryExpr(type, expr, rhs); 
@@ -2115,9 +2119,9 @@ string cur_class_name;
 
 	void PatternFactor(out Expression expr) {
 		OperatorType type; Expression factor; expr = null; var start_loc = CurrentLocation; 
-		if (StartOf(27)) {
+		if (StartOf(28)) {
 			PatternPrimary(out expr);
-		} else if (StartOf(22)) {
+		} else if (StartOf(23)) {
 			UnaryOperator(out type);
 			PatternFactor(out factor);
 			expr = Expression.MakeUnaryExpr(type, factor, start_loc); 
@@ -2129,7 +2133,7 @@ string cur_class_name;
 		if (la.kind == 14) {
 			PathExpression(out path);
 			expr = path; 
-		} else if (StartOf(24)) {
+		} else if (StartOf(25)) {
 			Literal(out expr);
 		} else SynErr(153);
 		while (la.kind == 8 || la.kind == 9 || la.kind == 13) {
@@ -2156,12 +2160,12 @@ string cur_class_name;
 		if (la.kind == 2) {
 			Get();
 			expr = Expression.MakeSequenceInitializer(CreateTypeWithArgs("vector", new PlaceholderType(TextLocation.Empty)), Enumerable.Empty<Expression>()); 
-		} else if (StartOf(13)) {
+		} else if (StartOf(14)) {
 			CondExpr(out expr);
 			exprs.Add(expr); 
 			if (la.kind == 3 || la.kind == 12) {
 				while (NotFinalComma()) {
-					ExpectWeak(12, 25);
+					ExpectWeak(12, 26);
 					CondExpr(out expr);
 					exprs.Add(expr); 
 				}
@@ -2196,7 +2200,7 @@ string cur_class_name;
 		list.Add(pair);
 		
 		if (la.kind == 11 || la.kind == 12) {
-			while (WeakSeparator(12,13,28) ) {
+			while (WeakSeparator(12,14,29) ) {
 				BitOr(out key);
 				Expect(4);
 				CondExpr(out val);
@@ -2267,6 +2271,7 @@ string cur_class_name;
 	
 	static readonly bool[,] set = {
 		{_T,_x,_x,_T, _x,_x,_T,_x, _x,_x,_x,_T, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_T, _x,_T,_x,_x, _x,_x,_T,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_T, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x},
+		{_x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_T, _T,_T,_x,_x, _x,_T,_x,_x, _x,_x,_T,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x},
 		{_x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_T, _T,_x,_x,_x, _x,_T,_T,_T, _T,_T,_T,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x},
 		{_x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_T,_T, _T,_T,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x},
 		{_x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_T,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x},
@@ -2414,16 +2419,16 @@ public class Errors {
 			case 103: s = "invalid ModuleBody"; break;
 			case 104: s = "this symbol not expected in ModuleNameDefinition"; break;
 			case 105: s = "this symbol not expected in FuncDecl"; break;
-			case 106: s = "this symbol not expected in ClassDecl"; break;
-			case 107: s = "invalid ClassDecl"; break;
+			case 106: s = "invalid FieldDecl"; break;
+			case 107: s = "this symbol not expected in FieldDecl"; break;
 			case 108: s = "this symbol not expected in ClassDecl"; break;
-			case 109: s = "this symbol not expected in ImportDecl"; break;
-			case 110: s = "invalid ImportDecl"; break;
+			case 109: s = "invalid ClassDecl"; break;
+			case 110: s = "this symbol not expected in ClassDecl"; break;
 			case 111: s = "this symbol not expected in ImportDecl"; break;
-			case 112: s = "invalid Type"; break;
-			case 113: s = "invalid Modifiers"; break;
-			case 114: s = "invalid FieldDecl"; break;
-			case 115: s = "this symbol not expected in FieldDecl"; break;
+			case 112: s = "invalid ImportDecl"; break;
+			case 113: s = "this symbol not expected in ImportDecl"; break;
+			case 114: s = "invalid Type"; break;
+			case 115: s = "invalid Modifiers"; break;
 			case 116: s = "this symbol not expected in Block"; break;
 			case 117: s = "invalid Literal"; break;
 			case 118: s = "invalid Stmt"; break;

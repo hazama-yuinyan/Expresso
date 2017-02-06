@@ -23,5 +23,5 @@ export let pair = (200, 300);
 
 export def createTest(x (- int, y (- int) -> Test
 {
-	return new Test{x : x, y : y};
+	return Test{x : x, y : y};
 }
