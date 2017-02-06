@@ -1871,5 +1871,89 @@ namespace Expresso.Test
 
             Helpers.AstStructuralEqual(ast, expected_ast);
         }
+
+        [Test]
+        public void Module()
+        {
+            var parser = new Parser(new Scanner("../../sources/for_unit_tests/module.exs"));
+            parser.Parse();
+
+            var ast = parser.TopmostAst;
+
+            var expected_ast = AstNode.MakeModuleDef("main", new List<EntityDeclaration>{
+                EntityDeclaration.MakeFunc(
+                    "main",
+                    Enumerable.Empty<ParameterDeclaration>(),
+                    Statement.MakeBlock(
+                        Statement.MakeVarDecl(
+                            Helpers.MakeSeq(
+                                Helpers.MakeSomeIdent("a")
+                            ),
+                            Helpers.MakeSeq(
+                                Expression.MakeObjectCreation(
+                                    AstType.MakeMemberType(
+                                        Helpers.MakeGenericType("TestModule"),
+                                        Helpers.MakeGenericType("Test")
+                                    ),
+                                    Helpers.MakeSeq(
+                                        AstNode.MakeIdentifier("x"),
+                                        AstNode.MakeIdentifier("y")
+                                    ),
+                                    Helpers.MakeSeq(
+                                        Expression.MakeConstant("int", 100),
+                                        Expression.MakeConstant("int", 300)
+                                    )
+                                )
+                            ),
+                            Modifiers.Immutable
+                        ),
+                        Statement.MakeVarDecl(
+                            Helpers.MakeSeq(
+                                Helpers.MakeSomeIdent("b")
+                            ),
+                            Helpers.MakeSeq(
+                                Helpers.MakeCallExpression(
+                                    Expression.MakeMemRef(
+                                        Helpers.MakeIdentifierPath("TestModule"),
+                                        Helpers.MakeSomeIdent("createTest")
+                                    ),
+                                    Expression.MakeConstant("int", 50),
+                                    Expression.MakeConstant("int", 100)
+                                )
+                            ),
+                            Modifiers.Immutable
+                        ),
+                        Statement.MakeVarDecl(
+                            Helpers.MakeSeq(
+                                Helpers.MakeSomeIdent("c")
+                            ),
+                            Helpers.MakeSeq(
+                                Expression.MakeMemRef(
+                                    Helpers.MakeIdentifierPath("TestModule"),
+                                    Helpers.MakeSomeIdent("pair")
+                                )
+                            ),
+                            Modifiers.Immutable
+                        ),
+                        Statement.MakeExprStmt(
+                            Helpers.MakeCallExpression(
+                                Helpers.MakeIdentifierPath("println"),
+                                Helpers.MakeIdentifierPath("a"),
+                                Helpers.MakeIdentifierPath("b"),
+                                Helpers.MakeIdentifierPath("c")
+                            )
+                        )
+                    ),
+                    Helpers.MakePlaceholderType(),
+                    Modifiers.None
+                )
+            }, new List<ImportDeclaration>{
+                AstNode.MakeImportDecl(Helpers.MakeIdentifierPath("test_module"), "TestModule")
+            });
+
+            Assert.IsNotNull(ast);
+
+            Helpers.AstStructuralEqual(ast, expected_ast);
+        }
 	}
 }
