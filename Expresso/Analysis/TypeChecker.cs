@@ -540,6 +540,7 @@ namespace Expresso.Ast.Analysis
 
         public AstType VisitObjectCreationExpression(ObjectCreationExpression creation)
         {
+            creation.AcceptWalker(inference_runner);
             var type_table = symbols.GetTypeTable(creation.TypePath.IdentifierNode.Name);
             if(type_table == null){
                 parser.ReportSemanticError(

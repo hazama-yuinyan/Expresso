@@ -337,6 +337,10 @@ namespace Expresso.Ast.Analysis
 
             public AstType VisitObjectCreationExpression(ObjectCreationExpression creation)
             {
+                foreach(var keyvalue in creation.Items){
+                    // Walk through creation.Items in order to make them type-aware
+                    keyvalue.ValueExpression.AcceptWalker(this);
+                }
                 return creation.TypePath.Clone();
             }
 
