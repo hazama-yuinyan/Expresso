@@ -24,8 +24,8 @@ namespace Expresso.Ast
     {
         public static readonly TokenRole ImportKeyword =
             new TokenRole("import", ExpressoTokenNode.Null);
-        public static readonly Role<PathExpression> ModuleNameRole =
-            new Role<PathExpression>("ModuleName", PathExpression.Null);
+        public static readonly Role<Identifier> ModuleNameRole =
+            new Role<Identifier>("ModuleName", Identifier.Null);
         public static readonly Role<Identifier> AliasNameRole =
             new Role<Identifier>("AliasName", Identifier.Null);
         public static readonly Role<PathExpression> ImportedEntityRole =
@@ -43,7 +43,7 @@ namespace Expresso.Ast
             get{return ModuleNameToken.ToString();}
 		}
 
-        public PathExpression ModuleNameToken{
+        public Identifier ModuleNameToken{
             get{return GetChildByRole(ModuleNameRole);}
             set{SetChildByRole(ModuleNameRole, value);}
         }
@@ -90,7 +90,7 @@ namespace Expresso.Ast
             get{return NodeType.Statement;}
         }
 
-        public ImportDeclaration(PathExpression moduleName, Identifier alias = null,
+        public ImportDeclaration(Identifier moduleName, Identifier alias = null,
             IEnumerable<PathExpression> importedEntities = null)
         {
             ModuleNameToken = moduleName;

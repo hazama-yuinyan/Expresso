@@ -4,14 +4,14 @@
 module main;
 
 
-import test_module as TestModule;
+import "./test_module.exs" as TestModule;
 
 
 def main()
 {
 	let a = TestModule::Test{x : 100, y : 300};
-	let b = TestModule.createTest(50, 100);
-	let c = TestModule.pair;
+	let b = TestModule::createTest(50, 100);
+	let c = TestModule::pair;
 	
 	println(a, b, c);
 }

@@ -1913,8 +1913,8 @@ namespace Expresso.Test
                             ),
                             Helpers.MakeSeq(
                                 Helpers.MakeCallExpression(
-                                    Expression.MakeMemRef(
-                                        Helpers.MakeIdentifierPath("TestModule"),
+                                    Expression.MakePath(
+                                        Helpers.MakeSomeIdent("TestModule"),
                                         Helpers.MakeSomeIdent("createTest")
                                     ),
                                     Expression.MakeConstant("int", 50),
@@ -1928,8 +1928,8 @@ namespace Expresso.Test
                                 Helpers.MakeSomeIdent("c")
                             ),
                             Helpers.MakeSeq(
-                                Expression.MakeMemRef(
-                                    Helpers.MakeIdentifierPath("TestModule"),
+                                Expression.MakePath(
+                                    Helpers.MakeSomeIdent("TestModule"),
                                     Helpers.MakeSomeIdent("pair")
                                 )
                             ),
@@ -1948,7 +1948,7 @@ namespace Expresso.Test
                     Modifiers.None
                 )
             }, new List<ImportDeclaration>{
-                AstNode.MakeImportDecl(Helpers.MakeIdentifierPath("test_module"), "TestModule")
+                AstNode.MakeImportDecl(AstNode.MakeIdentifier("./test_module.exs"), "TestModule")
             });
 
             Assert.IsNotNull(ast);

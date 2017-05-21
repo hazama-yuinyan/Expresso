@@ -2628,8 +2628,10 @@ namespace Expresso.Test
                             ),
                             Helpers.MakeSeq(
                                 Helpers.MakeCallExpression(
-                                    Expression.MakeMemRef(
-                                        Helpers.MakeIdentifierPath("TestModule"),
+                                    Expression.MakePath(
+                                        AstNode.MakeIdentifier(
+                                            "TestModule"
+                                        ),
                                         AstNode.MakeIdentifier(
                                             "createTest",
                                             AstType.MakeFunctionType(
@@ -2657,8 +2659,10 @@ namespace Expresso.Test
                                 )
                             ),
                             Helpers.MakeSeq(
-                                Expression.MakeMemRef(
-                                    Helpers.MakeIdentifierPath("TestModule"),
+                                Expression.MakePath(
+                                    AstNode.MakeIdentifier(
+                                        "TestModule"
+                                    ),
                                     AstNode.MakeIdentifier(
 										"pair",
                                         Helpers.MakeGenericType(
@@ -2701,6 +2705,8 @@ namespace Expresso.Test
                     Helpers.MakeVoidType(),
                     Modifiers.None
                 )
+            }, new List<ImportDeclaration>{
+                AstNode.MakeImportDecl(AstNode.MakeIdentifier("test_module"), "TestModule")
             });
 
             Assert.IsNotNull(ast);

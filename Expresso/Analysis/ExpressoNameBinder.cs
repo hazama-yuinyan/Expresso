@@ -472,13 +472,16 @@ namespace Expresso.Ast.Analysis
             if(pathExpr.Items.Count == 1){
                 pathExpr.AsIdentifier.AcceptWalker(this);
             }else{
-                while(symbol_table.Parent != null)
-                    symbol_table = symbol_table.Parent;
-
+                var old_table = symbol_table;
                 foreach(var ident in pathExpr.Items){
-                    ident.AcceptWalker(this);
-                    symbol_table = symbol_table.GetTypeTable(ident.Name);
+                    var tmp_table = symbol_table.GetTypeTable(ident.Name);
+                    if(tmp_table == null)
+                        ident.AcceptWalker(this);
+                    else
+                        symbol_table = tmp_table;
                 }
+
+                symbol_table = old_table;
             }
         }
 
@@ -492,14 +495,21 @@ namespace Expresso.Ast.Analysis
         {
             // Here's the good place to import names from other files
             // All external names will be imported into the module scope we are currently compiling
-            if(importDecl.AliasNameToken.IsNull){
+            var inner_parser = new Parser(parser.scanner.OpenChildFile(importDecl.ModuleName));
+            inner_parser.Parse();
+
+            //importDecl.ModuleNameToken.AcceptWalker(this);
+            symbol_table.AddExternalSymbols(inner_parser.Symbols, importDecl.AliasName);
+            UniqueIdGenerator.DefineNewId(importDecl.AliasNameToken);
+            /*if(importDecl.AliasNameToken.IsNull){
                 importDecl.ModuleNameToken.AcceptWalker(this);
                 foreach(var ie in importDecl.ImportedEntities)
                     UniqueIdGenerator.DefineNewId(ie.AsIdentifier);
             }else{
                 importDecl.ModuleNameToken.AcceptWalker(this);
+
                 UniqueIdGenerator.DefineNewId(importDecl.AliasNameToken);
-            }
+            }*/
         }
 
         public void VisitTypeDeclaration(TypeDeclaration typeDecl)

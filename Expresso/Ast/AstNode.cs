@@ -1275,21 +1275,21 @@ namespace Expresso.Ast
             return new ExpressoAst(decls, imports, moduleName);
 		}
 
-        public static ImportDeclaration MakeImportDecl(PathExpression moduleName, string aliasName)
+        public static ImportDeclaration MakeImportDecl(Identifier moduleName, string aliasName)
 		{
             return (aliasName != null) ? new ImportDeclaration(moduleName, AstNode.MakeIdentifier(aliasName)) :
                 new ImportDeclaration(moduleName);
 		}
 
-        public static ImportDeclaration MakeImportDecl(PathExpression moduleName, Identifier alias)
+        public static ImportDeclaration MakeImportDecl(Identifier moduleName, Identifier alias)
         {
             return (alias != null) ? new ImportDeclaration(moduleName, alias) : new ImportDeclaration(moduleName);
         }
 
-        public static ImportDeclaration MakeImportDecl(PathExpression moduleName, IEnumerable<PathExpression> importedEntities)
+        /*public static ImportDeclaration MakeImportDecl(PathExpression moduleName, IEnumerable<PathExpression> importedEntities)
         {
             return new ImportDeclaration(moduleName, null, importedEntities);
-        }
+        }*/
 
         public static VariableInitializer MakeVariableInitializer(Identifier ident, Expression expr)
         {

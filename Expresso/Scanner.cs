@@ -209,6 +209,7 @@ public class Scanner {
 
 	public Buffer buffer; // scanner buffer
 	
+	string directoryName;  // file name that we've opened
 	Token t;          // current token
 	int ch;           // current input character
 	int pos;          // byte position of current character
@@ -265,6 +266,7 @@ public class Scanner {
 	}
 	
 	public Scanner (string fileName) {
+		this.directoryName = Path.GetDirectoryName(fileName);
 		try {
 			Stream stream = new FileStream(fileName, FileMode.Open, FileAccess.Read, FileShare.Read);
 			buffer = new UTF8Buffer(new Buffer(stream, false));
@@ -814,6 +816,13 @@ public class Scanner {
 
 	// make sure that peeking starts at the current scan position
 	public void ResetPeek () { pt = tokens; }
+
+	public Scanner OpenChildFile(string childFileName)
+	{
+		var combined = Path.GetFullPath(Path.Combine(directoryName, childFileName));
+		var child_scanner = new Scanner(combined);
+		return child_scanner;
+	}
 
 } // end Scanner
 }

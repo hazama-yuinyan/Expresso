@@ -14,9 +14,10 @@ namespace Expresso.Ast.Analysis
     /// In Expresso, there are 2 kinds of namespaces.
     /// One is for types, and the other is for local variables, parameters, function names and method names.
     /// </summary>
-    public class SymbolTable : ISerializable
+    public class SymbolTable : ISerializable, ICloneable<SymbolTable>
     {
         static Dictionary<string, Identifier> NativeMapping;
+        static string TypeTablePrefix = "type_";
         Dictionary<string, Identifier> type_table, table;
 
         /// <summary>
@@ -119,7 +120,7 @@ namespace Expresso.Ast.Analysis
 
             // TODO: Use reflection to add native symbols
             var vector_table = new SymbolTable();
-            vector_table.Name = "class vector`T";
+            vector_table.Name = TypeTablePrefix + "vector`T";
             vector_table.AddSymbol("add", AstType.MakeFunctionType("add", AstType.MakeSimpleType("tuple", TextLocation.Empty), new List<AstType>{
                 AstType.MakeParameterType("T")
             }));
@@ -158,21 +159,23 @@ namespace Expresso.Ast.Analysis
 
         public SymbolTable GetTypeTable(string name)
         {
-            var table = this;
-            var class_name = "class " + name;
-            int child_counter = 0;
-            while(table != null){
-                if(table.Name.StartsWith(class_name))
-                    return table;
+            var parent = Parent;
+            var tmp = parent.Children[0];
+            var class_name = TypeTablePrefix + name;
+            int child_counter = 1;
+            while(tmp != null){
+                if(tmp.Name.Equals(class_name))
+                    return tmp;
 
-                if(table.Parent == null)
-                    break;
-                
-                if(child_counter >= table.Parent.Children.Count){
-                    child_counter = 0;
-                    table = table.Parent;
+                if(child_counter >= parent.Children.Count){
+                    child_counter = 1;
+                    parent = parent.Parent;
+                    if(parent == null)
+                        break;
+                    
+                    tmp = parent.Children[0];
                 }else{
-                    table = table.Parent.Children[child_counter++];
+                    tmp = parent.Children[child_counter++];
                 }
             }
 
@@ -345,9 +348,67 @@ namespace Expresso.Ast.Analysis
             Children.Add(child);
         }
 
+        /// <summary>
+        /// Adds external symbols to the global scope of this SymbolTable.
+        /// </summary>
+        /// <param name="externalTable">External table.</param>
+        /*public void AddExternalSymbols(SymbolTable externalTable)
+        {
+            foreach(var external_symbol in externalTable.table)
+                table.Add(external_symbol.Key, external_symbol.Value);
+
+            foreach(var external_typesymbol in externalTable.type_table)
+                type_table.Add(external_typesymbol.Key, external_typesymbol.Value);
+        }*/
+
+        /// <summary>
+        /// Adds external symbols as a new scope.
+        /// </summary>
+        /// <param name="externalTable">External table.</param>
+        /// <param name="aliasName">Alias name.</param>
+        public void AddExternalSymbols(SymbolTable externalTable, string aliasName)
+        {
+            var cloned = externalTable.Clone();
+            cloned.Name = TypeTablePrefix + aliasName;
+
+            var tmp = this;
+            while(tmp.Parent != null)
+                tmp = tmp.Parent;
+
+            cloned.Parent = tmp;
+            tmp.Children.Add(cloned);
+        }
+
         public override string ToString()
         {
             return string.Format("<SymbolTable`{0}: count={1}, childrenCount={2}>", Name, Symbols.Count(), Children.Count);
+        }
+
+        /// <summary>
+        /// Clones this instance as it has the same values as this instance.
+        /// </summary>
+        /// <returns>The clone.</returns>
+        public SymbolTable Clone()
+        {
+            var cloned = new SymbolTable();
+
+            cloned.Name = Name;
+            Identifier value;
+            foreach(var key in table.Keys){
+                if(!table.TryGetValue(key, out value))
+                    return null;
+                else
+                    cloned.table.Add(key, value);
+            }
+
+            foreach(var key in type_table.Keys){
+                if(!type_table.TryGetValue(key, out value))
+                    return null;
+                else
+                    cloned.type_table.Add(key, value);
+            }
+
+            return cloned;
         }
     }
 }

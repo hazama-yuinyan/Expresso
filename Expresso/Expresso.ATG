@@ -466,8 +466,8 @@ ProgramDefinition<. out List<ImportDeclaration> imports .>	(. imports = new List
   }.
 /*------------------------------------------------------------------------*/
 ImportDecl<out ImportDeclaration decl>
-            (.  decl = null; var has_in = false; PathExpression path;
-				Identifier alias = null; var entities = new List<PathExpression>();
+            (.  decl = null; /*var has_in = false; PathExpression path;*/ Identifier symbol = null;
+				Identifier alias = null; var entities = new List<Identifier>();
 			.)
 =
   /*****************************
@@ -476,12 +476,29 @@ ImportDecl<out ImportDeclaration decl>
    *****************************/
   SYNC
   "import"
-  PathExpression<out path>      (. entities.Add(path); .)
+  string_literal                (.
+                                   var path = t.val.Substring(1, t.val.Length - 2);
+  								   symbol = AstNode.MakeIdentifier(path, CurrentLocation);
+  								   Symbols.AddTypeSymbol(t.val, symbol);
+  								   //entities.Add(symbol);
+  								.)
+  ( "as"
+    ident						(.
+    							   if(!CheckKeyword(t.val)){
+    							       alias = AstNode.MakeIdentifier(t.val, CurrentLocation);
+    							       Symbols.AddTypeSymbol(t.val, alias);
+    							   }else{
+    							       // Failed to parse an alias name.
+    							       // Leave the parser to recover its state.
+    							   }
+    							.)
+  )
+  /*PathExpression<out path>      (. entities.Add(path); .)
   ( "as"
     ident						(.
                                    if(!CheckKeyword(t.val)){
                                        alias = AstNode.MakeIdentifier(t.val, CurrentLocation);
-                                       Symbols.AddSymbol(t.val, alias);
+                                       Symbols.AddTypeSymbol(t.val, alias);
                                    }else{
                                        // Failed to parse an alias name.
                                        // Leave the parser to recover its state.
@@ -492,11 +509,11 @@ ImportDecl<out ImportDeclaration decl>
     }
     "in"                        (. has_in = true; .)
     PathExpression<out path>
-  )
-  SYNC ';'                      (. if(has_in)
-                                       decl = AstNode.MakeImportDecl(path, entities);
-                                   else
-                                       decl = AstNode.MakeImportDecl(entities[0], alias);
+  )*/
+  SYNC ';'                      (. //if(has_in)
+                                   //    decl = AstNode.MakeImportDecl(path, entities);
+                                   //else
+                                       decl = AstNode.MakeImportDecl(symbol, alias);
                                 .).
 /*------------------------------------------------------------------------*/
 ClassDecl<out EntityDeclaration decl, Modifiers modifiers>   
@@ -524,7 +541,7 @@ ClassDecl<out EntityDeclaration decl, Modifiers modifiers>
     }
   ]
   lcurly                                (. GoDownScope();
-                                           Symbols.Name = "class " + name + "`" + ScopeId++;
+                                           Symbols.Name = "type_" + name + "`" + ScopeId++;
                                         .)
   {                                     (. cur_flag = ExpressoModifiers.Private; .)
     { Modifiers<ref cur_flag>
@@ -1434,14 +1451,16 @@ TypePathExpression<out AstType type>
 /*------------------------------------------------------------------------*/
 PathExpression<out PathExpression path> (. var paths = new List<Identifier>(); .)
 =
-  ident                                 (. paths.Add(AstNode.MakeIdentifier(t.val, CurrentLocation)); .)
+  ident                                 (.
+  										   var ident = AstNode.MakeIdentifier(t.val, new PlaceholderType(TextLocation.Empty), CurrentLocation);
+  										   paths.Add(ident);
+  										.)
   { "::"
-    ident                               (. paths.Add(AstNode.MakeIdentifier(t.val, CurrentLocation)); .)
-  }                                     (. 
-                                           var last_ident = paths.Last();
-                                           last_ident.Type = new PlaceholderType(TextLocation.Empty);
-                                           path = Expression.MakePath(paths);
-                                        .).
+    ident                               (.
+    									   var ident2 = AstNode.MakeIdentifier(t.val, new PlaceholderType(TextLocation.Empty), CurrentLocation);
+    									   paths.Add(ident2);
+    									.)
+  }                                     (. path = Expression.MakePath(paths); .).
 /*------------------------------------------------------------------------*/
 SequenceMaker<out Expression expr>	(.  var exprs = new List<Expression>();
 										expr = null; ComprehensionIter comp = null;
