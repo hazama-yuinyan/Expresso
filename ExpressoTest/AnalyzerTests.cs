@@ -2598,7 +2598,10 @@ namespace Expresso.Test
                             Helpers.MakeSeq(
                                 AstNode.MakeIdentifier(
                                     "a",
-                                    Helpers.MakeGenericType("Test")
+                                    AstType.MakeMemberType(
+                                        Helpers.MakeGenericType("TestModule"),
+                                        Helpers.MakeGenericType("Test")
+                                    )
                                 )
                             ),
                             Helpers.MakeSeq(
@@ -2629,7 +2632,7 @@ namespace Expresso.Test
                             Helpers.MakeSeq(
                                 Helpers.MakeCallExpression(
                                     Expression.MakePath(
-                                        AstNode.MakeIdentifier(
+                                        Helpers.MakeSomeIdent(
                                             "TestModule"
                                         ),
                                         AstNode.MakeIdentifier(
@@ -2637,7 +2640,10 @@ namespace Expresso.Test
                                             AstType.MakeFunctionType(
                                                 "createTest",
                                                 Helpers.MakeGenericType("Test"),
-                                                Enumerable.Empty<AstType>()
+                                                Helpers.MakeSeq(
+                                                    Helpers.MakePrimitiveType("int"),
+                                                    Helpers.MakePrimitiveType("int")
+                                                )
                                             )
                                         )
                                     ),
@@ -2660,7 +2666,7 @@ namespace Expresso.Test
                             ),
                             Helpers.MakeSeq(
                                 Expression.MakePath(
-                                    AstNode.MakeIdentifier(
+                                    Helpers.MakeSomeIdent(
                                         "TestModule"
                                     ),
                                     AstNode.MakeIdentifier(
@@ -2689,7 +2695,10 @@ namespace Expresso.Test
                                 ),
                                 Helpers.MakeIdentifierPath(
                                     "a",
-                                    Helpers.MakeGenericType("Test")
+                                    AstType.MakeMemberType(
+                                        Helpers.MakeGenericType("TestModule"),
+                                        Helpers.MakeGenericType("Test")
+                                    )
                                 ),
                                 Helpers.MakeIdentifierPath(
                                     "b",
@@ -2697,7 +2706,11 @@ namespace Expresso.Test
                                 ),
                                 Helpers.MakeIdentifierPath(
                                     "c",
-                                    Helpers.MakeGenericType("Test")
+                                    Helpers.MakeGenericType(
+                                        "tuple",
+                                        Helpers.MakePrimitiveType("int"),
+                                        Helpers.MakePrimitiveType("int")
+                                    )
                                 )
                             )
                         )

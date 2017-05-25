@@ -164,7 +164,7 @@ namespace Expresso.Ast.Analysis
             var class_name = TypeTablePrefix + name;
             int child_counter = 1;
             while(tmp != null){
-                if(tmp.Name.Equals(class_name))
+                if(tmp.Name.StartsWith(class_name))
                     return tmp;
 
                 if(child_counter >= parent.Children.Count){
@@ -192,6 +192,16 @@ namespace Expresso.Ast.Analysis
             return type_table.ContainsKey(name);
         }
 
+        public bool HasTypeSymbolInAnyScope(string name)
+        {
+            if(type_table.ContainsKey(name))
+                return true;
+            else if(Parent == null)
+                return false;
+            else
+                return Parent.HasTypeSymbolInAnyScope(name);
+        }
+
         /// <summary>
         /// Determines whether `name` is a symbol name(variables or functions).
         /// </summary>
@@ -200,6 +210,16 @@ namespace Expresso.Ast.Analysis
         public bool HasSymbol(string name)
         {
             return table.ContainsKey(name);
+        }
+
+        public bool HasSymbolInAnyScope(string name)
+        {
+            if(table.ContainsKey(name))
+                return true;
+            else if(Parent == null)
+                return false;
+            else
+                return Parent.HasSymbolInAnyScope(name);
         }
 
         /// <summary>
@@ -274,6 +294,19 @@ namespace Expresso.Ast.Analysis
             Identifier result;
             if(!type_table.TryGetValue(name, out result))
                 return null;
+
+            return result;
+        }
+
+        public Identifier GetTypeSymbolInAnyScope(string name)
+        {
+            Identifier result;
+            if(!type_table.TryGetValue(name, out result)){
+                if(Parent != null)
+                    return Parent.GetTypeSymbolInAnyScope(name);
+                else
+                    return null;
+            }
 
             return result;
         }

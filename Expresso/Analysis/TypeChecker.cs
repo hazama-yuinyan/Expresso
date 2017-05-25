@@ -317,6 +317,7 @@ namespace Expresso.Ast.Analysis
             case OperatorType.Times:
             case OperatorType.Divide:
             case OperatorType.Power:
+            case OperatorType.Modulus:
                 if(!IsNumericalType(lhs_type) || !IsNumericalType(rhs_type)){
                     parser.ReportSemanticErrorRegional("Error ES1003: Can not apply the operator '{0}' on `{1}` and `{2}`",
                         binaryExpr.Left, binaryExpr.Right,
@@ -520,15 +521,17 @@ namespace Expresso.Ast.Analysis
             if(pathExpr.Items.Count == 1){
                 return VisitIdentifier(pathExpr.AsIdentifier);
             }else{
-                while(symbols.Parent != null)
-                    symbols = symbols.Parent;
-
+                var old_table = symbols;
                 AstType result = null;
                 foreach(var item in pathExpr.Items){
-                    result = VisitIdentifier(item);
-                    symbols = symbols.GetTypeTable(item.Name);
+                    var tmp_table = symbols.GetTypeTable(item.Name);
+                    if(tmp_table == null)
+                        result = VisitIdentifier(item);
+                    else
+                        symbols = tmp_table;
                 }
 
+                symbols = old_table;
                 return result;
             }
         }

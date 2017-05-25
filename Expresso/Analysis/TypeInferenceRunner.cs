@@ -309,14 +309,14 @@ namespace Expresso.Ast.Analysis
                     var table = checker.symbols;
                     AstType result = AstType.Null;
                     foreach(var item in pathExpr.Items){
-                        if(table.HasTypeSymbol(item.Name)){
-                            var tmp_type = table.GetTypeSymbol(item.Name);
+                        if(table.HasTypeSymbolInAnyScope(item.Name)){
+                            var tmp_type = table.GetTypeSymbolInAnyScope(item.Name);
                             result = tmp_type.Type;
-                            table = table.Children[0];
-                        }else if(table.HasSymbol(item.Name)){
-                            var tmp = table.GetTypeSymbol(item.Name);
-                            result = tmp.Type;
-                            table = table.Children[0];
+                            table = table.GetTypeTable(item.Name);
+                        }else if(table.HasSymbolInAnyScope(item.Name)){
+                            var tmp = table.GetSymbolInAnyScope(item.Name);
+                            result = tmp.Type.Clone();
+                            item.Type.ReplaceWith(result);
                         }else{
                             throw new ParserException(
                                 "Type or symbol name '{0}' is not declared",

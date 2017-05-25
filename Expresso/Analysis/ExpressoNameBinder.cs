@@ -71,6 +71,12 @@ namespace Expresso.Ast.Analysis
             Console.WriteLine("We have given ids on total of {0} identifiers.", UniqueIdGenerator.CurrentId - 1);
             #endif
 		}
+
+        internal static void NameBindAst(Parser parser)
+        {
+            ExpressoNameBinder binder = new ExpressoNameBinder(parser);
+            binder.OnlyBind(parser.TopmostAst);
+        }
 		#endregion
 		
 		void Bind(ExpressoAst unboundAst)
@@ -84,6 +90,16 @@ namespace Expresso.Ast.Analysis
 			// Run flow checker
             //FlowChecker.Check(unboundAst);
 		}
+
+        void OnlyBind(ExpressoAst unboundAst)
+        {
+            Debug.Assert(unboundAst != null);
+
+            // Find all scopes and variables
+            unboundAst.AcceptWalker(this);
+
+            TypeChecker.Check(unboundAst, parser);
+        }
 		
         void DecendScope()
 		{
@@ -476,7 +492,7 @@ namespace Expresso.Ast.Analysis
                 foreach(var ident in pathExpr.Items){
                     var tmp_table = symbol_table.GetTypeTable(ident.Name);
                     if(tmp_table == null)
-                        ident.AcceptWalker(this);
+                        VisitIdentifier(ident);
                     else
                         symbol_table = tmp_table;
                 }
@@ -500,6 +516,7 @@ namespace Expresso.Ast.Analysis
 
             //importDecl.ModuleNameToken.AcceptWalker(this);
             symbol_table.AddExternalSymbols(inner_parser.Symbols, importDecl.AliasName);
+            ExpressoNameBinder.NameBindAst(inner_parser);
             UniqueIdGenerator.DefineNewId(importDecl.AliasNameToken);
             /*if(importDecl.AliasNameToken.IsNull){
                 importDecl.ModuleNameToken.AcceptWalker(this);
