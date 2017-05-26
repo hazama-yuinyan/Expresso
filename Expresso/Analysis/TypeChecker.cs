@@ -470,7 +470,7 @@ namespace Expresso.Ast.Analysis
 
             var simple_type = type as SimpleType;
             if(simple_type != null){
-                if(simple_type.Name != "array" && simple_type.Name != "vector"){
+                if(simple_type.Name != "array" && simple_type.Name != "vector" && simple_type.Name != "dictionary"){
                     parser.ReportSemanticError(
                         "Can not apply the indexer operator on type `{0}`",
                         indexExpr,
@@ -478,7 +478,7 @@ namespace Expresso.Ast.Analysis
                     );
                 }
 
-                return simple_type;
+                return simple_type.TypeArguments.Last();
             }
             return null;
         }
@@ -865,7 +865,7 @@ namespace Expresso.Ast.Analysis
             }
 
             var rhs_type = initializer.Initializer.AcceptWalker(this);
-            if(IsContainerType(rhs_type)){
+            if(IsContainerType(left_type) && ContainsPlaceholderType(left_type as SimpleType)){
                 // The laft-hand-side lacks the types of the contents so infer them from the right-hand-side
                 var lhs_simple = left_type as SimpleType;
                 var rhs_simple = rhs_type as SimpleType;
@@ -966,7 +966,7 @@ namespace Expresso.Ast.Analysis
         }
 
         /// <summary>
-        /// Determines if <c>first</c> is compatible with the specified <c>second</c>.
+        /// Determines whether <c>first</c> is compatible with the specified <c>second</c>.
         /// </summary>
         /// <returns><c>true</c> if is compatible with the specified first second; otherwise, <c>false</c>.</returns>
         /// <param name="first">First.</param>
@@ -1004,14 +1004,14 @@ namespace Expresso.Ast.Analysis
             var simple1 = first as SimpleType;
             var simple2 = second as SimpleType;
             if(simple1 != null && simple2 != null){
-                
+                //TODO: implement it
             }
 
             return TriBool.False;
         }
 
         /// <summary>
-        /// Determines if `type` is a number type.
+        /// Determines whether `type` is a number type.
         /// </summary>
         /// <returns><c>true</c> if `type` is a number type; otherwise, <c>false</c>.</returns>
         /// <param name="type">Type.</param>
@@ -1021,7 +1021,7 @@ namespace Expresso.Ast.Analysis
         }
 
         /// <summary>
-        /// Determines if `type` a small integer type.
+        /// Determines whether `type` a small integer type.
         /// </summary>
         /// <returns><c>true</c>, if `type` is a small integer type, <c>false</c> otherwise.</returns>
         /// <param name="type">Type.</param>
@@ -1031,7 +1031,7 @@ namespace Expresso.Ast.Analysis
         }
 
         /// <summary>
-        /// Determines if `type` is a placeholder type.
+        /// Determines whether `type` is a placeholder type.
         /// </summary>
         /// <returns><c>true</c>, if `type` is a placeholder type, <c>false</c> otherwise.</returns>
         /// <param name="type">Type.</param>
@@ -1041,7 +1041,7 @@ namespace Expresso.Ast.Analysis
         }
 
         /// <summary>
-        /// Determines if `type` is a container type.
+        /// Determines whether `type` is a container type.
         /// </summary>
         /// <returns><c>true</c>, if `type` is a container type, <c>false</c> otherwise.</returns>
         /// <param name="type">Type.</param>
@@ -1052,6 +1052,19 @@ namespace Expresso.Ast.Analysis
                 return simple.Identifier == "array" || simple.Identifier == "vector" || simple.Identifier == "dictionary" || simple.Identifier == "tuple";
             else
                 return false;
+        }
+
+        /// <summary>
+        /// Determines whether `type` is a container type and whether it contains a placeholder type.
+        /// </summary>
+        /// <returns><c>true</c>, if placeholder type was containsed, <c>false</c> otherwise.</returns>
+        /// <param name="type">Type.</param>
+        static bool ContainsPlaceholderType(SimpleType type)
+        {
+            if(type == null || !IsContainerType(type))
+                return false;
+            
+            return type.TypeArguments.Any(t => IsPlaceholderType(t));
         }
 
         static bool IsSequenceType(AstType type)
