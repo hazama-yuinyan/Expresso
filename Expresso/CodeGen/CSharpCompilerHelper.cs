@@ -210,9 +210,8 @@ namespace Expresso.CodeGen
             }
 
             var placeholder = astType as PlaceholderType;
-            if(placeholder != null){
+            if(placeholder != null)
                 throw new EmitterException("Unknown placeholder!");
-            }
 
             throw new EmitterException("Unknown AstType!");
         }
@@ -322,6 +321,11 @@ namespace Expresso.CodeGen
         {
             foreach(var name in _AssemblyNames)
                 AppDomain.CurrentDomain.Load(name);
+        }
+
+        public static string ConvertToCLRFunctionName(string name)
+        {
+            return name.Substring(0, 1).ToUpper() + name.Substring(1);
         }
 
         static IEnumerable<Type> GetExportedTypes(Assembly asm)

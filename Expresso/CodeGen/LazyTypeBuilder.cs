@@ -31,6 +31,10 @@ namespace Expresso.CodeGen
             get{ return interface_type.BaseType; }
         }
 
+        public Type InterfaceType{
+            get{return interface_type;}
+        }
+
         public LazyTypeBuilder(ModuleBuilder module, string name, TypeAttributes attr, IEnumerable<Type> baseTypes)
             : this(module.DefineType(name, attr, baseTypes.Any() ? baseTypes.First() : typeof(object), baseTypes.Skip(1).ToArray()))
         {
@@ -81,7 +85,7 @@ namespace Expresso.CodeGen
             // Emit call to the implementation method no matter whether we actually need it.
             // TODO: Consider a better solution
             var impl_method = impl_type.DefineMethod(name + "_Impl", MethodAttributes.Assembly | MethodAttributes.Static, returnType, types.Concat(parameterTypes).ToArray());
-            LoadArgs(il, Enumerable.Range(0, parameterTypes.Count + 1));
+            LoadArgs(il, (parameterTypes.Count == 0) ? new int[]{} : Enumerable.Range(0, parameterTypes.Count + 1));
             il.Emit(OpCodes.Call, impl_method);
             il.Emit(OpCodes.Ret);
             if(body == null)
@@ -152,7 +156,7 @@ namespace Expresso.CodeGen
             LoadArgs(il, 0);
             il.Emit(OpCodes.Call, prologue);
 
-            LoadArgs(il, Enumerable.Range(0, parameterTypes.Count + 1));
+            LoadArgs(il, (parameterTypes.Count == 0) ? new int[]{} : Enumerable.Range(0, parameterTypes.Count + 1));
             var impl_method = impl_type.DefineMethod("Ctor_Impl", MethodAttributes.Assembly | MethodAttributes.Static, typeof(void), types.Concat(parameterTypes).ToArray());
             il.Emit(OpCodes.Call, impl_method);
             if(body == null)
@@ -184,7 +188,7 @@ namespace Expresso.CodeGen
         public Type CreateInterfaceType()
         {
             if(!members.OfType<ConstructorBuilder>().Any())
-                DefineConstructor(Type.EmptyTypes);
+                DefineConstructor(Type.EmptyTypes/*new []{interface_type.AsType()}*/);
 
             if(type_cache == null)
                 type_cache = interface_type.CreateType();
@@ -209,7 +213,7 @@ namespace Expresso.CodeGen
 
             prologue.GetILGenerator().Emit(OpCodes.Ret);
 
-            impl_type.CreateType();
+            type_cache = impl_type.CreateType();
             is_created = true;
             return type_cache;
         }

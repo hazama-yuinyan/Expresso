@@ -865,8 +865,9 @@ namespace Expresso.Ast.Analysis
             }
 
             var rhs_type = initializer.Initializer.AcceptWalker(this);
-            if(IsContainerType(left_type) && ContainsPlaceholderType(left_type as SimpleType)){
+            if(IsContainerType(left_type) && ContainsPlaceholderType(left_type as SimpleType) || IsContainerType(rhs_type) && ContainsPlaceholderType(rhs_type as SimpleType)){
                 // The laft-hand-side lacks the types of the contents so infer them from the right-hand-side
+                // Or the right-hand-side contains some placeholders, so infer them
                 var lhs_simple = left_type as SimpleType;
                 var rhs_simple = rhs_type as SimpleType;
                 foreach(var pair in rhs_simple.TypeArguments.Zip(lhs_simple.TypeArguments,

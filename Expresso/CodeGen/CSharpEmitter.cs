@@ -196,6 +196,7 @@ namespace Expresso.CodeGen
             foreach(var decl in ast.Declarations)
                 decl.AcceptWalker(this, context);
 
+            type_builder.CreateInterfaceType();
             type_builder.CreateType();
             asm_builder.Save(GetModuleName(ast));
 
@@ -479,11 +480,10 @@ namespace Expresso.CodeGen
 
         public CSharpExpr VisitVariableDeclarationStatement(VariableDeclarationStatement varDecl, CSharpEmitterContext context)
         {
-            var decls = new List<CSharpExpr>();
             context.ContextAst = varDecl;
             foreach(var variable in varDecl.Variables){
-                var tmp = variable.AcceptWalker(this, context);
-                decls.Add(tmp);
+                // We have to care for only context.Additionals
+                variable.AcceptWalker(this, context);
             }
             context.ContextAst = null;
             // A variable declaration statement may contain multiple declarations
@@ -1180,10 +1180,25 @@ namespace Expresso.CodeGen
                 context.ParameterReturnValue = CSharpExpr.Parameter(return_type, "return_value");
 
             var prev_self = context.ParameterSelf;
-            var self_type = context.TypeBuilder.CreateInterfaceType();
+            var self_type = context.TypeBuilder.InterfaceType;
             context.ParameterSelf = CSharpExpr.Parameter(self_type, "self");
 
-            var parameters = new []{context.ParameterSelf}.Concat(additional_parameters);
+            var is_static_method = !funcDecl.Modifiers.HasFlag(Modifiers.Public) && !funcDecl.Modifiers.HasFlag(Modifiers.Protected) && !funcDecl.Modifiers.HasFlag(Modifiers.Private);
+            var parameters = is_static_method ? additional_parameters : new []{context.ParameterSelf}.Concat(additional_parameters);
+
+            var attrs = is_static_method ? MethodAttributes.Static :
+                                funcDecl.Modifiers.HasFlag(Modifiers.Protected) ? MethodAttributes.Family :
+                                funcDecl.Modifiers.HasFlag(Modifiers.Public) ? MethodAttributes.Public : MethodAttributes.Private;
+            if(funcDecl.Modifiers.HasFlag(Modifiers.Export))
+                attrs |= MethodAttributes.Public;
+            else
+                attrs |= MethodAttributes.Private;
+
+            var param_types =
+                from param in parameters
+                select param.Type;
+            var func_builder = context.TypeBuilder.DefineMethod(CSharpCompilerHelper.ConvertToCLRFunctionName(funcDecl.Name), attrs, return_type, param_types.ToArray());
+            Symbols[funcDecl.NameToken.IdentifierId] = new ExpressoSymbol{Method = func_builder};
 
             var body = funcDecl.Body.AcceptWalker(this, context);
             context.Additionals = null;
@@ -1192,7 +1207,9 @@ namespace Expresso.CodeGen
             context.ParameterSelf = prev_self;
             var lambda = CSharpExpr.Lambda(body, parameters);
 
-            var func_builder = Symbols[funcDecl.NameToken.IdentifierId].Method as MethodBuilder;
+            if(funcDecl.Name == "main")
+                context.AssemblyBuilder.SetEntryPoint(func_builder, PEFileKinds.ConsoleApplication);
+
             context.TypeBuilder.SetBody(func_builder, lambda);
 
             AscendScope();

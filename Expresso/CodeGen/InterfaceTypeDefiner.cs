@@ -24,11 +24,6 @@ namespace Expresso.CodeGen
                 this.context = context;
             }
 
-            string ConvertToCLRFunctionName(string name)
-            {
-                return name.Substring(0, 1).ToUpper() + name.Substring(1);
-            }
-
             #region IAstWalker implementation
 
             public void VisitAst(ExpressoAst ast)
@@ -294,7 +289,7 @@ namespace Expresso.CodeGen
                 if(funcDecl.Name == "main")
                     attr |= MethodAttributes.HideBySig;
 
-                var func_builder = context.TypeBuilder.DefineMethod(ConvertToCLRFunctionName(funcDecl.Name), attr, return_type, param_types.ToArray());
+                var func_builder = context.TypeBuilder.DefineMethod(CSharpCompilerHelper.ConvertToCLRFunctionName(funcDecl.Name), attr, return_type, param_types.ToArray());
                 Symbols.Add(funcDecl.NameToken.IdentifierId, new ExpressoSymbol{Method = func_builder});
                 if(funcDecl.Name == "main")
                     context.AssemblyBuilder.SetEntryPoint(func_builder, PEFileKinds.ConsoleApplication);
@@ -322,7 +317,7 @@ namespace Expresso.CodeGen
                     foreach(var member in typeDecl.Members)
                         member.AcceptWalker(this);
 
-                    var type = context.TypeBuilder.CreateInterfaceType();
+                    var type = context.TypeBuilder.InterfaceType;
                     Symbols.Add(typeDecl.NameToken.IdentifierId, new ExpressoSymbol{Type = type, TypeBuilder = context.TypeBuilder});
                 }
                 finally{
