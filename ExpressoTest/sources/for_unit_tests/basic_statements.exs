@@ -6,7 +6,7 @@ module main;
 
 def main()
 {
-	let x = 100, y = 50, z = 300, w = 400;
+	let x = 100, y = 20, z = 300, w = 400;
 	var flag (- bool;
 
 	print(x, y, z, w);
