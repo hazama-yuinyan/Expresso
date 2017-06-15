@@ -380,14 +380,21 @@ namespace Expresso.CodeGen
         private static string ExpandList<T>(IEnumerable<T> enumerable)
         {
             var builder = new StringBuilder();
+            var type = enumerable.GetType();
             if(enumerable.Any()){
                 builder.AppendFormat("[{0}", ExpandContainer(enumerable.First()));
                 foreach(var elem in enumerable.Skip(1))
                     builder.AppendFormat(", {0}", ExpandContainer(elem));
 
-                builder.Append("]");
+                if(type.IsArray)
+                    builder.Append("]");
+                else
+                    builder.Append("...]");
             }else{
-                builder.Append("[]");
+                if(type.IsArray)
+                    builder.Append("[]");
+                else
+                    builder.Append("[...]");
             }
             return builder.ToString();
         }
