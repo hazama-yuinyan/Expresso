@@ -7,10 +7,13 @@ using System.Text.RegularExpressions;
 using Expresso.Ast;
 using Expresso.TypeSystem;
 using Expresso.Runtime.Builtins;
-
+using System.Text;
 
 namespace Expresso.CodeGen
 {
+    /// <summary>
+    /// Contains helper methods for Expresso compilation.
+    /// </summary>
     public static class CSharpCompilerHelper
     {
         public static Regex InterpolateStringRegexp =
@@ -326,6 +329,82 @@ namespace Expresso.CodeGen
         public static string ConvertToCLRFunctionName(string name)
         {
             return name.Substring(0, 1).ToUpper() + name.Substring(1);
+        }
+
+        public static string ExpandContainer(object obj)
+        {
+            var type = obj.GetType();
+            if(type.IsGenericType){
+	            var type_def = type.GetGenericTypeDefinition();
+	            if(type_def == typeof(List<>)){
+                    if(obj is IEnumerable<int> enumerable)
+	                    return ExpandList(enumerable);
+                    else if(obj is IEnumerable<uint> eumerable2)
+	                    return ExpandList(eumerable2);
+	                else
+                        return ExpandList((IEnumerable<object>)obj);
+	            }
+
+	            if(type_def == typeof(Dictionary<,>)){
+	                if(obj is Dictionary<int, int> dict)
+	                    return ExpandDictionary(dict);
+	                else if(obj is Dictionary<uint, int> dict2)
+	                    return ExpandDictionary(dict2);
+                    else if(obj is Dictionary<string, int> dict3)
+                        return ExpandDictionary(dict3);
+                    else if(obj is Dictionary<int, uint> dict4)
+	                    return ExpandDictionary(dict4);
+                    else if(obj is Dictionary<int, string> dict5)
+                        return ExpandDictionary(dict5);
+	                else if(obj is Dictionary<uint, uint> dict6)
+	                    return ExpandDictionary(dict6);
+                    else if(obj is Dictionary<uint, string> dict7)
+                        return ExpandDictionary(dict7);
+                    else if(obj is Dictionary<string, uint> dict8)
+                        return ExpandDictionary(dict8);
+                    else if(obj is Dictionary<string, string> dict9)
+                        return ExpandDictionary(dict9);
+	            }
+            }else if(type.IsArray){
+                if(obj is IEnumerable<int> enumerable)
+                    return ExpandList(enumerable);
+                else if(obj is IEnumerable<uint> enumerable2)
+                    return ExpandList(enumerable2);
+                else
+                    return ExpandList((IEnumerable<object>)obj);
+            }
+
+            return obj.ToString();
+        }
+
+        private static string ExpandList<T>(IEnumerable<T> enumerable)
+        {
+            var builder = new StringBuilder();
+            if(enumerable.Any()){
+                builder.AppendFormat("[{0}", ExpandContainer(enumerable.First()));
+                foreach(var elem in enumerable.Skip(1))
+                    builder.AppendFormat(", {0}", ExpandContainer(elem));
+
+                builder.Append("]");
+            }else{
+                builder.Append("[]");
+            }
+            return builder.ToString();
+        }
+
+        private static string ExpandDictionary<T, S>(Dictionary<T, S> dict)
+        {
+            var builder = new StringBuilder();
+            if(dict.Any()){
+                builder.AppendFormat("{{{0}: {1}", ExpandContainer(dict.First().Key), ExpandContainer(dict.First().Value));
+                foreach(var pair in dict.Skip(1))
+                    builder.AppendFormat(", {0}: {1}", ExpandContainer(pair.Key), ExpandContainer(pair.Value));
+
+                builder.Append("}");
+            }else{
+                builder.Append("{}");
+            }
+            return builder.ToString();
         }
 
         static IEnumerable<Type> GetExportedTypes(Assembly asm)

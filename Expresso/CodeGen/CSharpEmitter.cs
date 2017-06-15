@@ -1569,11 +1569,13 @@ namespace Expresso.CodeGen
         {
             if(method.Name == "Write" || method.Name == "WriteLine"){
                 var first = args.First();
+                var expand_method = typeof(CSharpCompilerHelper).GetMethod("ExpandContainer");
                 if(first.Type == typeof(string)){
                     method = typeof(Console).GetMethod(method.Name, new []{typeof(string), typeof(object[])});
 
-                    return CSharpExpr.Call(method, first, CSharpExpr.NewArrayInit(typeof(object),
-                        args.Skip(1).Select(a => CSharpExpr.Convert(a, typeof(object)))
+                    return CSharpExpr.Call(method, first, CSharpExpr.NewArrayInit(
+                        typeof(string),
+                        args.Skip(1).Select(a => CSharpExpr.Call(expand_method, CSharpExpr.Convert(a, typeof(object))))
                     ));
                 }else{
                     var builder = new StringBuilder();
@@ -1584,8 +1586,9 @@ namespace Expresso.CodeGen
                         builder.Append("{" + i.ToString() + "}");
                     }
 
-                    return CSharpExpr.Call(method, CSharpExpr.Constant(builder.ToString()), CSharpExpr.NewArrayInit(typeof(object),
-                        args.Select(a => CSharpExpr.Convert(a, typeof(object)))
+                    return CSharpExpr.Call(method, CSharpExpr.Constant(builder.ToString()), CSharpExpr.NewArrayInit(
+                        typeof(string),
+                        args.Select(a => CSharpExpr.Call(expand_method, CSharpExpr.Convert(a, typeof(object))))
                     ));
                 }
             }else{
