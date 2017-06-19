@@ -2555,6 +2555,61 @@ namespace Expresso.Test
                     Modifiers.None
                 ),
                 EntityDeclaration.MakeFunc(
+                    "test4",
+                    Helpers.MakeSeq(
+                        EntityDeclaration.MakeParameter("n", Helpers.MakePrimitiveType("int"))
+                    ),
+                    Statement.MakeBlock(
+                        Statement.MakeIfStmt(
+                            PatternConstruct.MakeExpressionPattern(
+                                Expression.MakeBinaryExpr(
+                                    OperatorType.GreaterThanOrEqual,
+                                    Helpers.MakeIdentifierPath(
+                                        "n",
+                                        Helpers.MakePrimitiveType("int")
+                                    ),
+                                    Expression.MakeConstant("int", 100)
+                                )
+                            ),
+                            Statement.MakeBlock(
+                                Helpers.MakeSingleItemReturnStatement(
+                                    Helpers.MakeIdentifierPath(
+                                        "n",
+                                        Helpers.MakePrimitiveType("int")
+                                    )
+                                )
+                            ),
+                            Statement.MakeBlock(
+                                Helpers.MakeSingleItemReturnStatement(
+                                    Expression.MakeCallExpr(
+                                        Helpers.MakeIdentifierPath(
+                                            "test4",
+                                            AstType.MakeFunctionType(
+                                                "test4",
+                                                Helpers.MakePrimitiveType("int"),
+                                                TextLocation.Empty,
+                                                TextLocation.Empty,
+                                                Helpers.MakePrimitiveType("int")
+                                            )
+                                        ),
+                                        TextLocation.Empty,
+                                        Expression.MakeBinaryExpr(
+                                            OperatorType.Plus,
+                                            Helpers.MakeIdentifierPath(
+                                                "n",
+                                                Helpers.MakePrimitiveType("int")
+                                            ),
+                                            Expression.MakeConstant("int", 10)
+                                        )
+                                    )
+                                )
+                            )
+                        )
+                    ),
+                    Helpers.MakePrimitiveType("int"),
+                    Modifiers.None
+                ),
+                EntityDeclaration.MakeFunc(
                     "main",
                     Enumerable.Empty<ParameterDeclaration>(),
                     Statement.MakeBlock(
@@ -2627,6 +2682,30 @@ namespace Expresso.Test
                             ),
                             Modifiers.Immutable
                         ),
+                        Statement.MakeVarDecl(
+                            Helpers.MakeSeq(
+                                AstNode.MakeIdentifier(
+                                    "d",
+                                    Helpers.MakePrimitiveType("int")
+                                )
+                            ),
+                            Helpers.MakeSeq(
+                                Helpers.MakeCallExpression(
+                                    Helpers.MakeIdentifierPath(
+                                        "test4",
+                                        AstType.MakeFunctionType(
+                                            "test4",
+                                            Helpers.MakePrimitiveType("int"),
+                                            TextLocation.Empty,
+                                            TextLocation.Empty,
+                                            Helpers.MakePrimitiveType("int")
+                                        )
+                                    ),
+                                    Expression.MakeConstant("int", 80)
+                                )
+                            ),
+                            Modifiers.Immutable
+                        ),
                         Statement.MakeExprStmt(
                             Helpers.MakeCallExpression(
                                 Helpers.MakeIdentifierPath(
@@ -2649,6 +2728,10 @@ namespace Expresso.Test
                                 ),
                                 Helpers.MakeIdentifierPath(
                                     "c",
+                                    Helpers.MakePrimitiveType("int")
+                                ),
+                                Helpers.MakeIdentifierPath(
+                                    "d",
                                     Helpers.MakePrimitiveType("int")
                                 )
                             )

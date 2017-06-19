@@ -308,16 +308,17 @@ namespace Expresso.CodeGen
                 var attr = typeDecl.Modifiers.HasFlag(Modifiers.Export) ? TypeAttributes.Public : TypeAttributes.NotPublic;
                 attr |= TypeAttributes.Class;
                 var name = typeDecl.Name;
+                // TODO: take 1 type from base_types.
                 var base_types = 
                     from bt in typeDecl.BaseTypes
                     select Symbols[bt.IdentifierNode.IdentifierId].Type;
-                context.TypeBuilder = (parent_type != null) ? parent_type.DefineNestedType(name, attr, base_types) : new LazyTypeBuilder(context.ModuleBuilder, name, attr, base_types);
+                context.TypeBuilder = (parent_type != null) ? parent_type.DefineNestedType(name, attr, base_types.Last()) : context.ModuleBuilder.DefineType(name, attr, base_types.Last());//new LazyTypeBuilder(context.ModuleBuilder, name, attr, base_types);
 
                 try{
                     foreach(var member in typeDecl.Members)
                         member.AcceptWalker(this);
 
-                    var type = context.TypeBuilder.InterfaceType;
+                    var type = context.TypeBuilder.AsType();
                     Symbols.Add(typeDecl.NameToken.IdentifierId, new ExpressoSymbol{Type = type, TypeBuilder = context.TypeBuilder});
                 }
                 finally{

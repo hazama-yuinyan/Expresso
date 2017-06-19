@@ -12,6 +12,8 @@ namespace Expresso.CodeGen
     /// </summary>
     public class CSharpEmitterContext
     {
+        static List<Tuple<uint, string>> function_ids = new List<Tuple<uint, string>>();
+
         /// <summary>
         /// Current assembly builder that we are using.
         /// </summary>
@@ -30,7 +32,15 @@ namespace Expresso.CodeGen
         /// Current type builder.
         /// It will be null if we are not constructing a type declaration.
         /// </summary>
-        public LazyTypeBuilder TypeBuilder{
+        public TypeBuilder TypeBuilder{
+            get; set;
+        }
+
+        /// <summary>
+        /// Current main type builder.
+        /// </summary>
+        /// <value>The main type builder.</value>
+        public LazyTypeBuilder MainTypeBuilder{
             get; set;
         }
 
@@ -163,6 +173,17 @@ namespace Expresso.CodeGen
         /// </summary>
         public List<object> Additionals{
             get; set;
+        }
+
+        /// <summary>
+        /// The identifier ids of global functions.
+        /// Used to retrieve global functions and to define their exposing class.
+        /// </summary>
+        /// <value>The function identifiers.</value>
+        public static List<Tuple<uint, string>> FunctionIds{
+            get{
+                return function_ids;
+            }
         }
     }
 }

@@ -221,7 +221,7 @@ namespace Expresso.Test
             Console.Out.WriteLine("テスト実行");
             Console.Out.WriteLine(main_method.ToString());
 
-            //main_method.Invoke(null, new object[]{});
+            main_method.Invoke(null, new object[]{});
         }
 
         [Test]
@@ -252,7 +252,7 @@ namespace Expresso.Test
             Console.Out.WriteLine("テスト実行");
             Console.Out.WriteLine(main_method.ToString());
 
-            //main_method.Invoke(null, new object[]{});
+            main_method.Invoke(null, new object[]{});
         }
     }
 }

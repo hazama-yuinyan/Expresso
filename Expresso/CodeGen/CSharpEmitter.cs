@@ -40,6 +40,7 @@ namespace Expresso.CodeGen
         static Dictionary<uint, ExpressoSymbol> Symbols = new Dictionary<uint, ExpressoSymbol>();
         static int LoopCounter = 1;
         static ExprTree.LabelTarget ReturnTarget = CSharpExpr.Label("returnTarget");
+        static uint CountGlobalFunctions = 0;
 		
         bool has_continue;
 
@@ -184,11 +185,12 @@ namespace Expresso.CodeGen
 
             var asm_builder = Thread.GetDomain().DefineDynamicAssembly(name, AssemblyBuilderAccess.RunAndSave, options.OutputPath);
             var mod_builder = asm_builder.DefineDynamicModule(ast.Name + ".exe");
-            var type_builder = new LazyTypeBuilder(mod_builder, "ExsMain", TypeAttributes.Class, Enumerable.Empty<Type>());
+            var type_builder = new LazyTypeBuilder(mod_builder, "ExsMainGlobalFunctions", TypeAttributes.Class, Enumerable.Empty<Type>());
 
             context.AssemblyBuilder = asm_builder;
             context.ModuleBuilder = mod_builder;
-            context.TypeBuilder = type_builder;
+            context.MainTypeBuilder = type_builder;
+            context.TypeBuilder = mod_builder.DefineType("ExsGlobalFunctions" + CountGlobalFunctions++);
 
             foreach(var import in ast.Imports)
                 import.AcceptWalker(this, context);
@@ -1180,7 +1182,7 @@ namespace Expresso.CodeGen
                 context.ParameterReturnValue = CSharpExpr.Parameter(return_type, "return_value");
 
             var prev_self = context.ParameterSelf;
-            var self_type = context.TypeBuilder.InterfaceType;
+            var self_type = context.TypeBuilder.AsType();
             context.ParameterSelf = CSharpExpr.Parameter(self_type, "self");
 
             var is_static_method = !funcDecl.Modifiers.HasFlag(Modifiers.Public) && !funcDecl.Modifiers.HasFlag(Modifiers.Protected) && !funcDecl.Modifiers.HasFlag(Modifiers.Private);
@@ -1194,11 +1196,18 @@ namespace Expresso.CodeGen
             else
                 attrs |= MethodAttributes.Private;
 
+            //if(funcDecl.Name == "main")
+            //    PrepareGlobalFunctions(context);
+
             var param_types =
                 from param in parameters
                 select param.Type;
             var func_builder = context.TypeBuilder.DefineMethod(CSharpCompilerHelper.ConvertToCLRFunctionName(funcDecl.Name), attrs, return_type, param_types.ToArray());
-            Symbols[funcDecl.NameToken.IdentifierId] = new ExpressoSymbol{Method = func_builder};
+            var type = context.TypeBuilder.AsType();
+            var method = type.GetMethod(CSharpCompilerHelper.ConvertToCLRFunctionName(funcDecl.Name));
+            Symbols[funcDecl.NameToken.IdentifierId] = new ExpressoSymbol{Method = method};
+            //if(funcDecl.Name != "main")
+            //    CSharpEmitterContext.FunctionIds.Add(new Tuple<uint, string>(funcDecl.NameToken.IdentifierId, funcDecl.Name));
 
             var body = funcDecl.Body.AcceptWalker(this, context);
             context.Additionals = null;
@@ -1210,7 +1219,8 @@ namespace Expresso.CodeGen
             if(funcDecl.Name == "main")
                 context.AssemblyBuilder.SetEntryPoint(func_builder, PEFileKinds.ConsoleApplication);
 
-            context.TypeBuilder.SetBody(func_builder, lambda);
+            //context.TypeBuilder.SetBody(func_builder, lambda);
+            lambda.CompileToMethod(func_builder);
 
             AscendScope();
             sibling_count = tmp_counter + 1;
@@ -1251,8 +1261,10 @@ namespace Expresso.CodeGen
             foreach(var init in fieldDecl.Initializers){
                 var field_builder = Symbols[init.NameToken.IdentifierId].Field as FieldBuilder;
                 var initializer = init.Initializer.AcceptWalker(this, context);
-                if(initializer != null)
-                    context.TypeBuilder.SetBody(field_builder, initializer);
+                if(initializer != null){
+                    //context.TypeBuilder.SetBody(field_builder, initializer);
+                    field_builder.SetConstant(initializer);
+                }
             }
 
             return null;
@@ -1608,6 +1620,17 @@ namespace Expresso.CodeGen
                 }
                 return (inst != null) ? CSharpExpr.Call(inst, method, args) : CSharpExpr.Call(method, args);
             }
+        }
+
+        void PrepareGlobalFunctions(CSharpEmitterContext context)
+        {
+            var type = context.TypeBuilder.CreateType();
+            foreach(var pair in CSharpEmitterContext.FunctionIds){
+                var method = type.GetMethod(pair.Item2);
+                Symbols[pair.Item1] = new ExpressoSymbol{Method = method};
+            }
+
+            context.TypeBuilder = context.ModuleBuilder.DefineType("ExsGlobalFunctions" + CountGlobalFunctions++);
         }
 		#endregion
 	}

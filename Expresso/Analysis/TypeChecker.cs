@@ -426,6 +426,8 @@ namespace Expresso.Ast.Analysis
 
         public AstType VisitIdentifier(Identifier ident)
         {
+            // Infer and spread the type of the identifier to this node
+            inference_runner.VisitIdentifier(ident);
             return ident.Type;
         }
 
@@ -770,7 +772,26 @@ namespace Expresso.Ast.Analysis
                 }
             }
 
+            // In case of recursive calls, we first discover the function type.
+            if(IsPlaceholderType(funcDecl.NameToken.Type)){
+                var param_types =
+                    from param in funcDecl.Parameters
+                    select param.ReturnType.Clone();
+
+                var return_type = funcDecl.ReturnType.Clone();
+                var func_type = AstType.MakeFunctionType(funcDecl.Name, return_type, param_types);
+                funcDecl.NameToken.Type.ReplaceWith(func_type);
+            }
+
+            if(funcDecl.Name == "main"){
+                var next = funcDecl.GetNextNode();
+                if(next != null)
+                    parser.ReportSemanticError("Error ES1100: Can't define functions after the main function", next);
+            }
+
             funcDecl.Body.AcceptWalker(this);
+
+            // Delay discovering the return type
             if(IsPlaceholderType(funcDecl.ReturnType)){
                 // Descend scopes 2 times because a function name has its own scope
                 int tmp_counter2 = scope_counter;
@@ -780,18 +801,10 @@ namespace Expresso.Ast.Analysis
 
                 var return_type = inference_runner.VisitFunctionDeclaration(funcDecl);
                 funcDecl.ReturnType.ReplaceWith(return_type);
+                // Replace the return type of the function type with an appropriate ast type object
+                ((FunctionType)funcDecl.NameToken.Type).ReturnType.ReplaceWith(funcDecl.ReturnType.Clone());
                 AscendScope();
                 scope_counter = tmp_counter2;
-            }
-
-            if(IsPlaceholderType(funcDecl.NameToken.Type)){
-                var param_types =
-                    from param in funcDecl.Parameters
-                    select param.ReturnType.Clone();
-
-                var return_type = funcDecl.ReturnType.Clone();
-                var func_type = AstType.MakeFunctionType(funcDecl.Name, return_type, param_types);
-                funcDecl.NameToken.Type.ReplaceWith(func_type);
             }
 
             AscendScope();
