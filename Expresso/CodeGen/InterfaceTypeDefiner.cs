@@ -312,14 +312,14 @@ namespace Expresso.CodeGen
                 var base_types = 
                     from bt in typeDecl.BaseTypes
                     select Symbols[bt.IdentifierNode.IdentifierId].Type;
-                context.TypeBuilder = (parent_type != null) ? parent_type.DefineNestedType(name, attr, base_types.Last()) : context.ModuleBuilder.DefineType(name, attr, base_types.Last());//new LazyTypeBuilder(context.ModuleBuilder, name, attr, base_types);
+                context.TypeBuilder = (parent_type != null) ? parent_type.DefineNestedType(name, attr, base_types) : new LazyTypeBuilder(context.ModuleBuilder, name, attr, base_types, false);
 
                 try{
                     foreach(var member in typeDecl.Members)
                         member.AcceptWalker(this);
 
-                    var type = context.TypeBuilder.AsType();
-                    Symbols.Add(typeDecl.NameToken.IdentifierId, new ExpressoSymbol{Type = type, TypeBuilder = context.TypeBuilder});
+                    //var type = context.TypeBuilder.AsType();
+                    Symbols.Add(typeDecl.NameToken.IdentifierId, new ExpressoSymbol{/*Type = type, */TypeBuilder = context.TypeBuilder});
                 }
                 finally{
                     context.TypeBuilder = parent_type;

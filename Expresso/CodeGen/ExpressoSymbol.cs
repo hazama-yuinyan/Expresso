@@ -3,7 +3,6 @@ using System.Reflection;
 using System.Linq.Expressions;
 using System.Collections.Generic;
 using Expresso.Ast;
-using System.Reflection.Emit;
 
 namespace Expresso.CodeGen
 {
@@ -78,7 +77,7 @@ namespace Expresso.CodeGen
         /// Gets or sets the type builder.
         /// </summary>
         /// <value>The type builder.</value>
-        public TypeBuilder TypeBuilder{
+        public LazyTypeBuilder TypeBuilder{
             get; set;
         }
 

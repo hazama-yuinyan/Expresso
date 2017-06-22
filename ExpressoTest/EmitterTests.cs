@@ -215,13 +215,19 @@ namespace Expresso.Test
                 .GetMethod("Main", BindingFlags.NonPublic | BindingFlags.Static);
             Assert.AreEqual(main_method.Name, "Main");
             Assert.IsTrue(main_method.IsStatic);
-            Assert.AreEqual(typeof(int), main_method.ReturnType);
+            Assert.AreEqual(typeof(void), main_method.ReturnType);
             Assert.AreEqual(0, main_method.GetParameters().Length);
             //Assert.IsTrue(main_method.GetParameters().SequenceEqual(new []{typeof(string[])}));
             Console.Out.WriteLine("テスト実行");
             Console.Out.WriteLine(main_method.ToString());
 
-            main_method.Invoke(null, new object[]{});
+            try{
+                main_method.Invoke(null, new object[]{});
+            }catch(Exception e){
+                Console.WriteLine(e.Message);
+                Console.WriteLine(e.StackTrace);
+                Console.WriteLine(e.InnerException);
+            }
         }
 
         [Test]

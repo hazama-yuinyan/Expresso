@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq.Expressions;
 using System.Reflection;
 using System.Reflection.Emit;
 using Expresso.Ast;
@@ -12,7 +13,8 @@ namespace Expresso.CodeGen
     /// </summary>
     public class CSharpEmitterContext
     {
-        static List<Tuple<uint, string>> function_ids = new List<Tuple<uint, string>>();
+        static List<Identifier> function_ids = new List<Identifier>();
+        static List<MethodCallExpression> unbound_calls = new List<MethodCallExpression>();
 
         /// <summary>
         /// Current assembly builder that we are using.
@@ -32,15 +34,7 @@ namespace Expresso.CodeGen
         /// Current type builder.
         /// It will be null if we are not constructing a type declaration.
         /// </summary>
-        public TypeBuilder TypeBuilder{
-            get; set;
-        }
-
-        /// <summary>
-        /// Current main type builder.
-        /// </summary>
-        /// <value>The main type builder.</value>
-        public LazyTypeBuilder MainTypeBuilder{
+        public LazyTypeBuilder TypeBuilder{
             get; set;
         }
 
@@ -152,9 +146,9 @@ namespace Expresso.CodeGen
         /// <summary>
         /// Represents the current return value as a ParameterExpression.
         /// </summary>
-        public System.Linq.Expressions.ParameterExpression ParameterReturnValue{
+        /*public System.Linq.Expressions.ParameterExpression ParameterReturnValue{
             get; set;
-        }
+        }*/
 
         /// <summary>
         /// Represents the current context type or module as a ParameterExpression.
@@ -176,15 +170,25 @@ namespace Expresso.CodeGen
         }
 
         /// <summary>
-        /// The identifier ids of global functions.
+        /// The unbound identifiers that correspond to global functions or methods that reside in the current context type.
         /// Used to retrieve global functions and to define their exposing class.
         /// </summary>
         /// <value>The function identifiers.</value>
-        public static List<Tuple<uint, string>> FunctionIds{
+        /*public static List<Identifier> UnboundFunctionIdentifiers{
             get{
                 return function_ids;
             }
-        }
+        }*/
+
+        /// <summary>
+        /// The unbound call expressions that need to be resolved.
+        /// </summary>
+        /// <value>The unbound calls.</value>
+        /*public static List<MethodCallExpression> UnboundCalls{
+            get{
+                return unbound_calls;
+            }
+        }*/
     }
 }
 

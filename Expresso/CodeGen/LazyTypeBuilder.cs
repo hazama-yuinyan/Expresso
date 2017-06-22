@@ -32,18 +32,23 @@ namespace Expresso.CodeGen
         }
 
         public Type InterfaceType{
-            get{return interface_type;}
+            get{
+                if(type_cache == null)
+                    throw new InvalidOperationException("The interface type is yet to be defined");
+                
+                return type_cache;
+            }
         }
 
-        public LazyTypeBuilder(ModuleBuilder module, string name, TypeAttributes attr, IEnumerable<Type> baseTypes)
-            : this(module.DefineType(name, attr, baseTypes.Any() ? baseTypes.First() : typeof(object), baseTypes.Skip(1).ToArray()))
+        public LazyTypeBuilder(ModuleBuilder module, string name, TypeAttributes attr, IEnumerable<Type> baseTypes, bool isGlobalFunctions)
+            : this(module.DefineType(name, attr, baseTypes.Any() ? baseTypes.First() : typeof(object), baseTypes.Skip(1).ToArray()), isGlobalFunctions)
         {
         }
 
-        LazyTypeBuilder(TypeBuilder builder)
+        LazyTypeBuilder(TypeBuilder builder, bool isGlobalFunctions)
         {
             interface_type = builder;
-            types = new []{ builder };
+            types = isGlobalFunctions ? new Type[]{} : new []{ builder };
             impl_type = interface_type.DefineNestedType("<Impl>", TypeAttributes.NestedPrivate);
             prologue = impl_type.DefineMethod("Prologue", MethodAttributes.Assembly | MethodAttributes.Static, typeof(void), types);
             implementers = new List<Tuple<Expression, MethodBuilder>>();
@@ -77,62 +82,61 @@ namespace Expresso.CodeGen
         /// <param name="returnType">Return type.</param>
         /// <param name="parameterTypes">Parameter types.</param>
         /// <param name="body">Body.</param>
-        public MethodBuilder DefineMethod(string name, MethodAttributes attr, Type returnType, IList<Type> parameterTypes, Expression body = null)
+        public MethodBuilder DefineMethod(string name, MethodAttributes attr, Type returnType, Type[] parameterTypes, Expression body = null)
         {
-            var method = interface_type.DefineMethod(name, attr, returnType, parameterTypes.ToArray());
+            var method = interface_type.DefineMethod(name, attr, returnType, parameterTypes);
             var il = method.GetILGenerator();
             //if(body != null){
             // Emit call to the implementation method no matter whether we actually need it.
             // TODO: Consider a better solution
-            var impl_method = impl_type.DefineMethod(name + "_Impl", MethodAttributes.Assembly | MethodAttributes.Static, returnType, types.Concat(parameterTypes).ToArray());
-            LoadArgs(il, (parameterTypes.Count == 0) ? new int[]{} : Enumerable.Range(0, parameterTypes.Count + 1));
+            var real_params = types.Concat(parameterTypes).ToArray();
+            var impl_method = impl_type.DefineMethod(name + "_Impl", MethodAttributes.Assembly | MethodAttributes.Static, returnType, real_params);
+            LoadArgs(il, (parameterTypes.Length == 0) ? new int[]{} : Enumerable.Range(0, real_params.Length));
             il.Emit(OpCodes.Call, impl_method);
             il.Emit(OpCodes.Ret);
             if(body == null)
                 body = Expression.Empty();
             
             AddImplementer(body, impl_method);
-            /*}else{
-                if(returnType.IsValueType){
-                    switch(Type.GetTypeCode(returnType)){
-                    case TypeCode.Byte:
-                    case TypeCode.SByte:
-                    case TypeCode.Char:
-                    case TypeCode.Int16:
-                    case TypeCode.UInt16:
-                    case TypeCode.Int32:
-                    case TypeCode.UInt32:
-                    case TypeCode.Boolean:
-                        il.Emit(OpCodes.Ldc_I4_0);
-                        break;
+            /*if(returnType.IsValueType){
+                switch(Type.GetTypeCode(returnType)){
+                case TypeCode.Byte:
+                case TypeCode.SByte:
+                case TypeCode.Char:
+                case TypeCode.Int16:
+                case TypeCode.UInt16:
+                case TypeCode.Int32:
+                case TypeCode.UInt32:
+                case TypeCode.Boolean:
+                    il.Emit(OpCodes.Ldc_I4_0);
+                    break;
 
-                    case TypeCode.Int64:
-                    case TypeCode.UInt64:
-                        il.Emit(OpCodes.Ldc_I4_0);
-                        il.Emit(OpCodes.Conv_I8);
-                        break;
+                case TypeCode.Int64:
+                case TypeCode.UInt64:
+                    il.Emit(OpCodes.Ldc_I4_0);
+                    il.Emit(OpCodes.Conv_I8);
+                    break;
 
-                    case TypeCode.Single:
-                        il.Emit(OpCodes.Ldc_R4, 0.0f);
-                        break;
+                case TypeCode.Single:
+                    il.Emit(OpCodes.Ldc_R4, 0.0f);
+                    break;
 
-                    case TypeCode.Double:
-                        il.Emit(OpCodes.Ldc_R8, 0.0);
-                        break;
+                case TypeCode.Double:
+                    il.Emit(OpCodes.Ldc_R8, 0.0);
+                    break;
 
-                    default:
-                        if(returnType != typeof(void)){
-                            il.Emit(OpCodes.Ldloca_S, (short)1);
-                            il.Emit(OpCodes.Initobj, returnType);
-                        }
-                        break;
+                default:
+                    if(returnType != typeof(void)){
+                        il.Emit(OpCodes.Ldloca_S, (short)1);
+                        il.Emit(OpCodes.Initobj, returnType);
                     }
-                }else{
-                    il.Emit(OpCodes.Ldnull);
+                    break;
                 }
+            }else{
+                il.Emit(OpCodes.Ldnull);
+            }
 
-                il.Emit(OpCodes.Ret);
-            }*/
+            il.Emit(OpCodes.Ret);*/
 
             members.Add(method);
             return method;
@@ -178,7 +182,7 @@ namespace Expresso.CodeGen
         public LazyTypeBuilder DefineNestedType(string name, TypeAttributes attr, IEnumerable<Type> baseTypes)
         {
             var real_attr = attr.HasFlag(TypeAttributes.Public) ? TypeAttributes.NestedPublic : TypeAttributes.NestedPrivate;
-            return new LazyTypeBuilder(interface_type.DefineNestedType(name, real_attr, baseTypes.Any() ? baseTypes.First() : typeof(object), baseTypes.Skip(1).ToArray()));
+            return new LazyTypeBuilder(interface_type.DefineNestedType(name, real_attr, baseTypes.Any() ? baseTypes.First() : typeof(object), baseTypes.Skip(1).ToArray()), false);
         }
 
         /// <summary>
@@ -213,9 +217,37 @@ namespace Expresso.CodeGen
 
             prologue.GetILGenerator().Emit(OpCodes.Ret);
 
-            type_cache = impl_type.CreateType();
+            var type = impl_type.CreateType();
             is_created = true;
             return type_cache;
+        }
+
+        /// <summary>
+        /// Gets a method on the interface type.
+        /// Note that it only gets public methods.
+        /// </summary>
+        /// <returns>The interface method.</returns>
+        /// <param name="name">Name.</param>
+        public MethodInfo GetInterfaceMethod(string name)
+        {
+            if(type_cache == null)
+                throw new InvalidOperationException("The interface type is yet to be defined");
+
+            return type_cache.GetMethod(name);
+        }
+
+        /// <summary>
+        /// Gets a method on the interface type using name and flags.
+        /// </summary>
+        /// <returns>The interface method.</returns>
+        /// <param name="name">Name.</param>
+        /// <param name="flags">Flags.</param>
+        public MethodInfo GetInterfaceMethod(string name, BindingFlags flags)
+        {
+            if(type_cache == null)
+                throw new InvalidOperationException("The interface type is yet to be defined");
+
+            return type_cache.GetMethod(name, flags);
         }
 
         public FieldBuilder GetField(string name)
@@ -226,6 +258,11 @@ namespace Expresso.CodeGen
                 .FirstOrDefault();
         }
 
+        /// <summary>
+        /// Gets a method on the implementation.
+        /// </summary>
+        /// <returns>The method.</returns>
+        /// <param name="name">Name.</param>
         public MethodBuilder GetMethod(string name)
         {
             return members.OfType<MethodBuilder>()
@@ -237,7 +274,7 @@ namespace Expresso.CodeGen
         public void SetBody(FieldBuilder field, Expression body)
         {
             if(body == null)
-                throw new ArgumentNullException("body");
+                throw new ArgumentNullException(nameof(body));
             
             var impl_method = impl_type.DefineMethod(field.Name + "_Init", MethodAttributes.Assembly | MethodAttributes.Static, field.FieldType, types);
             var prologue_il = prologue.GetILGenerator();
@@ -247,10 +284,10 @@ namespace Expresso.CodeGen
             AddImplementer(body, impl_method);
         }
 
-        public void SetBody(MethodBuilder method, Expression body)
+        public void SetBody(MethodInfo method, Expression body)
         {
             if(body == null)
-                throw new ArgumentNullException("body");
+                throw new ArgumentNullException(nameof(body));
             
             var impl_method_name = method.Name + "_Impl";
             for(int i = 0; i < implementers.Count; ++i){
@@ -264,7 +301,7 @@ namespace Expresso.CodeGen
         public void SetBody(ConstructorBuilder ctor, Expression body)
         {
             if(body == null)
-                throw new ArgumentNullException("body");
+                throw new ArgumentNullException(nameof(body));
             
             var impl_method_name = "Ctor_Impl";
             for(int i = 0; i < implementers.Count; ++i){

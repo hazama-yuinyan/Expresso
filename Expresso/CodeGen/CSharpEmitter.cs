@@ -39,8 +39,10 @@ namespace Expresso.CodeGen
         //###################################################
         static Dictionary<uint, ExpressoSymbol> Symbols = new Dictionary<uint, ExpressoSymbol>();
         static int LoopCounter = 1;
-        static ExprTree.LabelTarget ReturnTarget = CSharpExpr.Label("returnTarget");
-        static uint CountGlobalFunctions = 0;
+        static ExprTree.LabelTarget ReturnTarget = null;
+        static CSharpExpr DefaultReturnValue = null;
+        //static uint CountGlobalFunctions = 0;
+        //static IdentifierSearcher IdentifierSearcher = new IdentifierSearcher();
 		
         bool has_continue;
 
@@ -157,7 +159,9 @@ namespace Expresso.CodeGen
 
         static bool CanReturn(ReturnStatement returnStmt)
         {
-            return returnStmt.Parent is BlockStatement && returnStmt.Parent.Parent is FunctionDeclaration && ((FunctionDeclaration)returnStmt.Parent.Parent).Name != "main";
+            var surrounding_func = returnStmt.Ancestors.OfType<FunctionDeclaration>()
+                                             .First();
+            return surrounding_func != null && surrounding_func.Name != "main";
         }
 
         ExpressoSymbol GetNativeSymbol(Identifier ident)
@@ -185,20 +189,19 @@ namespace Expresso.CodeGen
 
             var asm_builder = Thread.GetDomain().DefineDynamicAssembly(name, AssemblyBuilderAccess.RunAndSave, options.OutputPath);
             var mod_builder = asm_builder.DefineDynamicModule(ast.Name + ".exe");
-            var type_builder = new LazyTypeBuilder(mod_builder, "ExsMainGlobalFunctions", TypeAttributes.Class, Enumerable.Empty<Type>());
+            var type_builder = new LazyTypeBuilder(mod_builder, "ExsMain", TypeAttributes.Class, Enumerable.Empty<Type>(), true);
 
             context.AssemblyBuilder = asm_builder;
             context.ModuleBuilder = mod_builder;
-            context.MainTypeBuilder = type_builder;
-            context.TypeBuilder = mod_builder.DefineType("ExsGlobalFunctions" + CountGlobalFunctions++);
+            context.TypeBuilder = type_builder;
 
             foreach(var import in ast.Imports)
                 import.AcceptWalker(this, context);
 
+            DefineFunctionSignatures(ast.Declarations, context);
             foreach(var decl in ast.Declarations)
                 decl.AcceptWalker(this, context);
 
-            type_builder.CreateInterfaceType();
             type_builder.CreateType();
             asm_builder.Save(GetModuleName(ast));
 
@@ -230,18 +233,8 @@ namespace Expresso.CodeGen
             context.ContextAst = parent_block;
 
             var variables = ConvertSymbolsToParameters().ToList();
-            if(context.ContextAst is FunctionDeclaration && block.Statements.Last() is ReturnStatement){
-                var return_expr = contents.Last() as ExprTree.GotoExpression;
-                if(return_expr == null)
-                    throw new EmitterException("Unknown state found! Expected the last expression is a GotoExpression!");
-
-                contents.RemoveAt(contents.Count - 1);
-                // Don't add an assignment expression here because visiting the return statement has done that
-                //contents.Add(CSharpExpr.Assign(context.ParameterReturnValue, return_expr.Value));
-                contents.Add(CSharpExpr.Label(ReturnTarget));
-                contents.Add(context.ParameterReturnValue);
-                variables.Add(context.ParameterReturnValue);
-            }
+            if(context.ContextAst is FunctionDeclaration)
+                contents.Add(CSharpExpr.Label(ReturnTarget, DefaultReturnValue));
 
             AscendScope();
             sibling_count = tmp_counter + 1;
@@ -394,11 +387,7 @@ namespace Expresso.CodeGen
                 return CSharpExpr.Empty();
 
             var expr = returnStmt.Expression.AcceptWalker(this, context);
-            var assign = CSharpExpr.Assign(context.ParameterReturnValue, expr);
-            var return_expr = CSharpExpr.Return(ReturnTarget, expr);
-            context.Additionals.Add(assign);
-            context.Additionals.Add(return_expr);
-            return null;
+            return CSharpExpr.Return(ReturnTarget, expr);
         }
 
         public CSharpExpr VisitMatchStatement(MatchStatement matchStmt, CSharpEmitterContext context)
@@ -1176,51 +1165,36 @@ namespace Expresso.CodeGen
             var additional_parameters = funcDecl.Parameters.Select(param => param.AcceptWalker(this, context))
                 .OfType<ExprTree.ParameterExpression>();
 
-            var prev_rv = context.ParameterReturnValue;
             var return_type = CSharpCompilerHelper.GetNativeType(funcDecl.ReturnType);
-            if(return_type != typeof(void))
-                context.ParameterReturnValue = CSharpExpr.Parameter(return_type, "return_value");
+            ReturnTarget = CSharpExpr.Label(return_type, "returnTarget");
+            DefaultReturnValue = CSharpExpr.Default(return_type);
 
             var prev_self = context.ParameterSelf;
-            var self_type = context.TypeBuilder.AsType();
+            var self_type = context.TypeBuilder.InterfaceType;
             context.ParameterSelf = CSharpExpr.Parameter(self_type, "self");
 
-            var is_static_method = !funcDecl.Modifiers.HasFlag(Modifiers.Public) && !funcDecl.Modifiers.HasFlag(Modifiers.Protected) && !funcDecl.Modifiers.HasFlag(Modifiers.Private);
-            var parameters = is_static_method ? additional_parameters : new []{context.ParameterSelf}.Concat(additional_parameters);
+            var is_global_function = !funcDecl.Modifiers.HasFlag(Modifiers.Public) && !funcDecl.Modifiers.HasFlag(Modifiers.Protected) && !funcDecl.Modifiers.HasFlag(Modifiers.Private);
+            var parameters = is_global_function ? additional_parameters : new []{context.ParameterSelf}.Concat(additional_parameters);
 
-            var attrs = is_static_method ? MethodAttributes.Static :
-                                funcDecl.Modifiers.HasFlag(Modifiers.Protected) ? MethodAttributes.Family :
-                                funcDecl.Modifiers.HasFlag(Modifiers.Public) ? MethodAttributes.Public : MethodAttributes.Private;
-            if(funcDecl.Modifiers.HasFlag(Modifiers.Export))
-                attrs |= MethodAttributes.Public;
+            var attrs = is_global_function ? BindingFlags.Static : BindingFlags.Instance;
+            if(funcDecl.Modifiers.HasFlag(Modifiers.Export) || funcDecl.Modifiers.HasFlag(Modifiers.Public))
+                attrs |= BindingFlags.Public;
             else
-                attrs |= MethodAttributes.Private;
+                attrs |= BindingFlags.NonPublic;
 
-            //if(funcDecl.Name == "main")
-            //    PrepareGlobalFunctions(context);
-
-            var param_types =
-                from param in parameters
-                select param.Type;
-            var func_builder = context.TypeBuilder.DefineMethod(CSharpCompilerHelper.ConvertToCLRFunctionName(funcDecl.Name), attrs, return_type, param_types.ToArray());
-            var type = context.TypeBuilder.AsType();
-            var method = type.GetMethod(CSharpCompilerHelper.ConvertToCLRFunctionName(funcDecl.Name));
-            Symbols[funcDecl.NameToken.IdentifierId] = new ExpressoSymbol{Method = method};
-            //if(funcDecl.Name != "main")
-            //    CSharpEmitterContext.FunctionIds.Add(new Tuple<uint, string>(funcDecl.NameToken.IdentifierId, funcDecl.Name));
+            var interface_func = context.TypeBuilder.GetInterfaceMethod(CSharpCompilerHelper.ConvertToCLRFunctionName(funcDecl.Name), attrs);
+            Symbols[funcDecl.NameToken.IdentifierId] = new ExpressoSymbol{Method = interface_func};
 
             var body = funcDecl.Body.AcceptWalker(this, context);
             context.Additionals = null;
             context.ContextAst = context_ast;
-            context.ParameterReturnValue = prev_rv;
             context.ParameterSelf = prev_self;
             var lambda = CSharpExpr.Lambda(body, parameters);
 
             if(funcDecl.Name == "main")
-                context.AssemblyBuilder.SetEntryPoint(func_builder, PEFileKinds.ConsoleApplication);
+                context.AssemblyBuilder.SetEntryPoint(interface_func, PEFileKinds.ConsoleApplication);
 
-            //context.TypeBuilder.SetBody(func_builder, lambda);
-            lambda.CompileToMethod(func_builder);
+            context.TypeBuilder.SetBody(interface_func, lambda);
 
             AscendScope();
             sibling_count = tmp_counter + 1;
@@ -1245,7 +1219,7 @@ namespace Expresso.CodeGen
                 foreach(var member in typeDecl.Members)
                     member.AcceptWalker(this, context);
 
-                context.TypeBuilder.CreateType();
+                //context.TypeBuilder.CreateType();
             }
             finally{
                 context.TypeBuilder = parent_type;
@@ -1262,7 +1236,7 @@ namespace Expresso.CodeGen
                 var field_builder = Symbols[init.NameToken.IdentifierId].Field as FieldBuilder;
                 var initializer = init.Initializer.AcceptWalker(this, context);
                 if(initializer != null){
-                    //context.TypeBuilder.SetBody(field_builder, initializer);
+                    context.TypeBuilder.SetBody(field_builder, initializer);
                     field_builder.SetConstant(initializer);
                 }
             }
@@ -1604,7 +1578,7 @@ namespace Expresso.CodeGen
                     ));
                 }
             }else{
-                if(!(method is MethodBuilder) && method.ContainsGenericParameters){
+                if(method.ContainsGenericParameters){
                     var parameters = method.GetParameters();
                     var generic_param_indices = parameters.Where(p => p.ParameterType.IsGenericParameter)
                         .Select((p, index) => index);
@@ -1622,15 +1596,45 @@ namespace Expresso.CodeGen
             }
         }
 
-        void PrepareGlobalFunctions(CSharpEmitterContext context)
+        void DefineFunctionSignatures(IEnumerable<EntityDeclaration> entities, CSharpEmitterContext context)
         {
-            var type = context.TypeBuilder.CreateType();
-            foreach(var pair in CSharpEmitterContext.FunctionIds){
-                var method = type.GetMethod(pair.Item2);
-                Symbols[pair.Item1] = new ExpressoSymbol{Method = method};
-            }
+            var tmp_counter = sibling_count;
+            foreach(var func_decl in entities.OfType<FunctionDeclaration>())
+                DefineFunctionSignature(func_decl, context);
 
-            context.TypeBuilder = context.ModuleBuilder.DefineType("ExsGlobalFunctions" + CountGlobalFunctions++);
+            context.TypeBuilder.CreateInterfaceType();
+            sibling_count = tmp_counter;
+        }
+
+        void DefineFunctionSignature(FunctionDeclaration funcDecl, CSharpEmitterContext context)
+        {
+            int tmp_counter = sibling_count;
+            DescendScope();
+            sibling_count = 0;
+
+            var additional_parameters = funcDecl.Parameters.Select(param => param.AcceptWalker(this, context))
+                                                .OfType<ExprTree.ParameterExpression>();
+
+            var return_type = CSharpCompilerHelper.GetNativeType(funcDecl.ReturnType);
+
+            var is_global_function = !funcDecl.Modifiers.HasFlag(Modifiers.Public) && !funcDecl.Modifiers.HasFlag(Modifiers.Protected) && !funcDecl.Modifiers.HasFlag(Modifiers.Private);
+            var parameters = is_global_function ? additional_parameters : new []{context.ParameterSelf}.Concat(additional_parameters);
+
+            var attrs = is_global_function ? MethodAttributes.Static :
+                                                             funcDecl.Modifiers.HasFlag(Modifiers.Protected) ? MethodAttributes.Family :
+                                                             funcDecl.Modifiers.HasFlag(Modifiers.Public) ? MethodAttributes.Public : MethodAttributes.Private;
+            if(funcDecl.Modifiers.HasFlag(Modifiers.Export))
+                attrs |= MethodAttributes.Public;
+            else
+                attrs |= MethodAttributes.Private;
+
+            var param_types =
+                from param in parameters
+                select param.Type;
+            context.TypeBuilder.DefineMethod(CSharpCompilerHelper.ConvertToCLRFunctionName(funcDecl.Name), attrs, return_type, param_types.ToArray());
+
+            AscendScope();
+            sibling_count = tmp_counter + 1;
         }
 		#endregion
 	}
