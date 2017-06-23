@@ -21,7 +21,7 @@ class Test
 
 	public def getXPlus(n (- int) -> int
 	{
-		return self.x + n;
+		return self.getX() + n;
 	}
 }
 

@@ -2294,11 +2294,17 @@ namespace Expresso.Test
                                 Helpers.MakeSingleItemReturnStatement(
                                     Expression.MakeBinaryExpr(
                                         OperatorType.Plus,
-                                        Expression.MakeMemRef(
-                                            Expression.MakeSelfRef(),
-                                            AstNode.MakeIdentifier(
-                                                "x",
-                                                Helpers.MakePrimitiveType("int")
+                                        Helpers.MakeCallExpression(
+	                                        Expression.MakeMemRef(
+	                                            Expression.MakeSelfRef(),
+	                                            AstNode.MakeIdentifier(
+	                                                "getX",
+	                                                AstType.MakeFunctionType(
+	                                                    "getX",
+	                                                    Helpers.MakePrimitiveType("int"),
+	                                                    Enumerable.Empty<AstType>()
+	                                                )
+	                                            )
                                             )
                                         ),
                                         Helpers.MakeIdentifierPath(
