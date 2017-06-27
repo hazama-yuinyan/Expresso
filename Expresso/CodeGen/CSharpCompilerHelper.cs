@@ -139,8 +139,8 @@ namespace Expresso.CodeGen
                 var name = ConvertToDotNetTypeName(simple.Identifier);
                 Type type = null;
                 foreach(var asm in AppDomain.CurrentDomain.GetAssemblies()){
-                    var types = GetExportedTypes(asm);
-                    type = types.Where(t => t.Name.StartsWith(name) && t.Name.IndexOf('`') == name.Length)
+                    var types = GetTypes(asm);
+                    type = types.Where(t => t.Name.StartsWith(name) && t.Name.IndexOf('`') != -1 && t.Name.IndexOf('`') == name.Length || t.Name == name)
                         .FirstOrDefault();
 
                     if(type != null)
@@ -414,10 +414,10 @@ namespace Expresso.CodeGen
             return builder.ToString();
         }
 
-        static IEnumerable<Type> GetExportedTypes(Assembly asm)
+        static IEnumerable<Type> GetTypes(Assembly asm)
         {
             try{
-                return asm.GetExportedTypes();
+                return asm.GetTypes();
             }
             catch(Exception){
                 return Enumerable.Empty<Type>();

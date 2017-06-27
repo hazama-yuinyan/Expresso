@@ -124,7 +124,7 @@ namespace Expresso.Ast.Analysis
             vector_table.AddSymbol("add", AstType.MakeFunctionType("add", AstType.MakeSimpleType("tuple", TextLocation.Empty), new List<AstType>{
                 AstType.MakeParameterType("T")
             }));
-            vector_table.GetSymbol("add").IdentifierId = 1000000002u;
+            vector_table.GetSymbol("add").IdentifierId = 1000000003u;
             table2.Children.Add(vector_table);
             table2.AddTypeSymbol("vector", AstType.MakeSimpleType("vector", new List<AstType>{AstType.MakeParameterType("T")}));
 
@@ -414,7 +414,7 @@ namespace Expresso.Ast.Analysis
 
         public override string ToString()
         {
-            return string.Format("<SymbolTable`{0}: count={1}, childrenCount={2}>", Name, Symbols.Count(), Children.Count);
+            return string.Format("<SymbolTable`{0}: symbolsCount={1}, typeSymbolsCount={2} childrenCount={3}>", Name, Symbols.Count(), type_table.Values.Count(), Children.Count);
         }
 
         /// <summary>

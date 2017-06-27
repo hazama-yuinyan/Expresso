@@ -1,6 +1,6 @@
 ﻿* The Expresso tutorial
 ** Preface
-Expresso primarily aims to be a programming language for education, or in other words another Pascal. And therefore Expresso has two concepts. Expresso aims to be a "easy-to-write" and "expressive" programming language.
+Expresso primarily aims to be a programming language for education, or in other words another Pascal. And therefore Expresso has two concepts. Expresso aims to be an "easy-to-write" and "expressive" programming language.
 Even though we heavily put focus on syntax and the grammar, its policy reads "Easy for beginners, elegant for enthusisasts" meaning that it's easy for beginners to read and write, and still it has lots of rich features that advanced programmers can take advantage of.
 Even though it's a type-strict language, it looks rather in type-free way thanks to the very powerful type inference system.
 

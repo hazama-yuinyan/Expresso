@@ -353,6 +353,11 @@ namespace Expresso.Ast
         {
             return new IndexerExpression(target, args, loc);
         }
+
+        public static bool IsNullNode(Expression node)
+        {
+            return node == Null || node == null;
+        }
         #endregion
     }
 }

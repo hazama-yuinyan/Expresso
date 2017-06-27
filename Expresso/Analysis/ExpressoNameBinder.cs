@@ -375,7 +375,7 @@ namespace Expresso.Ast.Analysis
 
         public void VisitSimpleType(SimpleType simpleType)
         {
-            // no op
+            BindTypeName(simpleType.IdentifierNode);
         }
 
         public void VisitPrimitiveType(PrimitiveType primitiveType)
@@ -503,6 +503,7 @@ namespace Expresso.Ast.Analysis
 
         public void VisitObjectCreationExpression(ObjectCreationExpression creation)
         {
+            creation.TypePath.AcceptWalker(this);
             foreach(var keyvalue in creation.Items)
                 keyvalue.ValueExpression.AcceptWalker(this);
         }
@@ -590,7 +591,7 @@ namespace Expresso.Ast.Analysis
 
         void BindName(Identifier ident)
         {
-            var table = symbol_table;
+            /*var table = symbol_table;
             while(table != null){
                 var referenced = table.GetSymbol(ident.Name);
                 if(referenced != null){
@@ -599,7 +600,10 @@ namespace Expresso.Ast.Analysis
                 }
 
                 table = table.Parent;
-            }
+            }*/
+            var referenced = symbol_table.GetSymbolInAnyScope(ident.Name);
+            if(referenced != null)
+                ident.IdentifierId = referenced.IdentifierId;
 
             if(ident.IdentifierId == 0){
                 var native = SymbolTable.GetNativeSymbol(ident.Name);
@@ -612,6 +616,21 @@ namespace Expresso.Ast.Analysis
                 }else{
                     ident.IdentifierId = native.IdentifierId;
                 }
+            }
+        }
+
+        void BindTypeName(Identifier ident)
+        {
+            var symbol = symbol_table.GetTypeSymbolInAnyScope(ident.Name);
+            if(symbol != null)
+                ident.IdentifierId = symbol.IdentifierId;
+
+            if(ident.IdentifierId == 0){
+                parser.ReportSemanticError(
+                    "Error ES0101: Type symbol '{0}' turns out not to be declared or accessible in the current scope {1}!",
+                    ident,
+                    ident.Name, symbol_table.Name
+                );
             }
         }
 	}

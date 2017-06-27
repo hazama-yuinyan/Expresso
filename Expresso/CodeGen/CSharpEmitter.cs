@@ -74,6 +74,11 @@ namespace Expresso.CodeGen
                 })
             });
             Symbols.Add(1000000002u, new ExpressoSymbol{
+                Method = typeof(Console).GetMethod("Write", new []{
+                    typeof(string), typeof(object[])
+                })
+            });
+            Symbols.Add(1000000003u, new ExpressoSymbol{
                 Method = typeof(List<>).GetMethod("Add")
             });
         }
@@ -650,17 +655,17 @@ namespace Expresso.CodeGen
                 if(context.TargetType == null)
                     throw new EmitterException("Can not create an object of UNKNOWN!");
 
-                var field = context.TargetType.GetField(ident.AsIdentifier.Name);
+                /*var field = context.TargetType.GetField(ident.AsIdentifier.Name);
                 if(field == null){
                     throw new EmitterException(
                         "Type `{0}` does not have the field `{1}`.",
                         context.TargetType, ident.AsIdentifier.Name
                     );
                 }
-                context.Field = field;
+                context.Field = field;*/
 
-                var value = keyValue.ValueExpression.AcceptWalker(this, context);
-                return value;
+                var value_expr = keyValue.ValueExpression.AcceptWalker(this, context);
+                return value_expr;
             }else{
                 // In a dictionary literal, the key can be any expression that is evaluated
                 // to a hashable object.
@@ -699,6 +704,7 @@ namespace Expresso.CodeGen
                     return null;
                 }else if(context.RequestType && symbol.Type != null){
                     context.TargetType = symbol.Type;
+                    context.Constructor = context.TargetType.GetConstructors().Last();
                     return symbol.Parameter;
                 }else if(context.RequestMethod){
                     if(symbol.Method == null)
@@ -845,18 +851,22 @@ namespace Expresso.CodeGen
 
         public CSharpExpr VisitObjectCreationExpression(ObjectCreationExpression creation, CSharpEmitterContext context)
         {
-            var args = new List<CSharpExpr>(creation.Items.Count);
+            var args = new CSharpExpr[creation.Items.Count];
             context.Constructor = null;
             creation.TypePath.AcceptWalker(this, context);
             if(context.Constructor == null)
-                throw new EmitterException("No constructor found for the path `{0}`", creation.TypePath);
+                throw new EmitterException("No constructor found for the path `{0}`", creation, creation.TypePath);
 
             var formal_params = context.Constructor.GetParameters();
-            foreach(var pair in creation.Items){
+            // TODO: make object creation arguments pair to constructor parameters
+            foreach(var pair in Enumerable.Range(0, creation.Items.Count()).Zip(
+                creation.Items,
+                (i, item) => Tuple.Create(i, item)
+            )){
                 context.Field = null;
-                var value_expr = pair.AcceptWalker(this, context);
+                var value_expr = pair.Item2.AcceptWalker(this, context);
 
-                int index = 0;
+                /*int index = 0;
                 var key = context.Field.Name;
                 if(!formal_params.Any(param => {
                     if(param.Name == key){
@@ -870,8 +880,8 @@ namespace Expresso.CodeGen
                         "Can not create an instance with constructor `{0}` because it doesn't have field named `{1}`",
                         creation.TypePath, key
                     );
-                }
-                args[index] = value_expr;
+                }*/
+                args[pair.Item1] = value_expr;
             }
 
             return CSharpExpr.New(context.Constructor, args);
@@ -1059,7 +1069,14 @@ namespace Expresso.CodeGen
         // AstType nodes should be treated with special care
         public CSharpExpr VisitSimpleType(SimpleType simpleType, CSharpEmitterContext context)
         {
-            return null;
+            var symbol = GetNativeSymbol(simpleType.IdentifierNode);
+            if(symbol != null && symbol.Type != null){
+                context.TargetType = symbol.Type;
+                context.Constructor = context.TargetType.GetConstructors().Last();
+                return symbol.Parameter;
+            }else{
+                throw new EmitterException("It is found that Type '{0}' isn't defined.", simpleType.Identifier);
+            }
         }
 
         public CSharpExpr VisitPrimitiveType(PrimitiveType primitiveType, CSharpEmitterContext context)
@@ -1162,8 +1179,8 @@ namespace Expresso.CodeGen
             var context_ast = context.ContextAst;
             context.ContextAst = funcDecl;
 
-            var additional_parameters = funcDecl.Parameters.Select(param => param.AcceptWalker(this, context))
-                .OfType<ExprTree.ParameterExpression>();
+            var formal_parameters = funcDecl.Parameters.Select(param => param.AcceptWalker(this, context))
+                                            .OfType<ExprTree.ParameterExpression>();
 
             var return_type = CSharpCompilerHelper.GetNativeType(funcDecl.ReturnType);
             ReturnTarget = CSharpExpr.Label(return_type, "returnTarget");
@@ -1174,7 +1191,7 @@ namespace Expresso.CodeGen
             context.ParameterSelf = CSharpExpr.Parameter(self_type, "self");
 
             var is_global_function = !funcDecl.Modifiers.HasFlag(Modifiers.Public) && !funcDecl.Modifiers.HasFlag(Modifiers.Protected) && !funcDecl.Modifiers.HasFlag(Modifiers.Private);
-            var parameters = is_global_function ? additional_parameters : new []{context.ParameterSelf}.Concat(additional_parameters);
+            var parameters = is_global_function ? formal_parameters : new []{context.ParameterSelf}.Concat(formal_parameters);
 
             var attrs = is_global_function ? BindingFlags.Static : BindingFlags.Instance;
             if(funcDecl.Modifiers.HasFlag(Modifiers.Export) || funcDecl.Modifiers.HasFlag(Modifiers.Public))
@@ -1208,10 +1225,11 @@ namespace Expresso.CodeGen
             var interface_definer = new InterfaceTypeDefiner(this, context);
             interface_definer.VisitTypeDeclaration(typeDecl);
 
+            sibling_count = original_count;
+
             var parent_type = context.TypeBuilder;
             context.TypeBuilder = Symbols[typeDecl.NameToken.IdentifierId].TypeBuilder;
 
-            sibling_count = original_count;
             DescendScope();
             sibling_count = 0;
 
@@ -1219,14 +1237,14 @@ namespace Expresso.CodeGen
                 foreach(var member in typeDecl.Members)
                     member.AcceptWalker(this, context);
 
-                //context.TypeBuilder.CreateType();
+                context.TypeBuilder.CreateType();
             }
             finally{
                 context.TypeBuilder = parent_type;
             }
 
             AscendScope();
-            sibling_count = original_count;
+            sibling_count = original_count + 1;
             return null;
         }
 
@@ -1235,10 +1253,15 @@ namespace Expresso.CodeGen
             foreach(var init in fieldDecl.Initializers){
                 var field_builder = Symbols[init.NameToken.IdentifierId].Field as FieldBuilder;
                 var initializer = init.Initializer.AcceptWalker(this, context);
-                if(initializer != null){
+                if(initializer != null)
                     context.TypeBuilder.SetBody(field_builder, initializer);
-                    field_builder.SetConstant(initializer);
-                }
+
+                var flags = BindingFlags.Default;
+                flags |= fieldDecl.Modifiers.HasFlag(Modifiers.Static) ? BindingFlags.Static : BindingFlags.Instance;
+                flags |= fieldDecl.Modifiers.HasFlag(Modifiers.Public) ? BindingFlags.Public : BindingFlags.NonPublic;
+
+                var field_info = context.TypeBuilder.GetField(init.Name, flags);
+                Symbols[init.NameToken.IdentifierId] = new ExpressoSymbol{Field = field_info};
             }
 
             return null;
@@ -1557,8 +1580,6 @@ namespace Expresso.CodeGen
                 var first = args.First();
                 var expand_method = typeof(CSharpCompilerHelper).GetMethod("ExpandContainer");
                 if(first.Type == typeof(string)){
-                    method = typeof(Console).GetMethod(method.Name, new []{typeof(string), typeof(object[])});
-
                     return CSharpExpr.Call(method, first, CSharpExpr.NewArrayInit(
                         typeof(string),
                         args.Skip(1).Select(a => CSharpExpr.Call(expand_method, CSharpExpr.Convert(a, typeof(object))))
@@ -1612,20 +1633,21 @@ namespace Expresso.CodeGen
             DescendScope();
             sibling_count = 0;
 
-            var additional_parameters = funcDecl.Parameters.Select(param => param.AcceptWalker(this, context))
+            var formal_parameters = funcDecl.Parameters.Select(param => param.AcceptWalker(this, context))
                                                 .OfType<ExprTree.ParameterExpression>();
 
             var return_type = CSharpCompilerHelper.GetNativeType(funcDecl.ReturnType);
 
             var is_global_function = !funcDecl.Modifiers.HasFlag(Modifiers.Public) && !funcDecl.Modifiers.HasFlag(Modifiers.Protected) && !funcDecl.Modifiers.HasFlag(Modifiers.Private);
-            var parameters = is_global_function ? additional_parameters : new []{context.ParameterSelf}.Concat(additional_parameters);
+            var self_param = CSharpExpr.Parameter(context.TypeBuilder.InterfaceTypeBuilder, "self");
+            var parameters = is_global_function ? formal_parameters : new []{self_param}.Concat(formal_parameters);
 
             var attrs = is_global_function ? MethodAttributes.Static :
                                                              funcDecl.Modifiers.HasFlag(Modifiers.Protected) ? MethodAttributes.Family :
                                                              funcDecl.Modifiers.HasFlag(Modifiers.Public) ? MethodAttributes.Public : MethodAttributes.Private;
             if(funcDecl.Modifiers.HasFlag(Modifiers.Export))
                 attrs |= MethodAttributes.Public;
-            else
+            else if(is_global_function)
                 attrs |= MethodAttributes.Private;
 
             var param_types =

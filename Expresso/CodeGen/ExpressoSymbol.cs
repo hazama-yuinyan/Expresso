@@ -8,6 +8,7 @@ namespace Expresso.CodeGen
 {
     /// <summary>
     /// Describes an entry to the emitter symbol table.
+    /// ExpressoSymbol binds Expresso world identifiers to CLR functions.
     /// </summary>
     public class ExpressoSymbol
     {

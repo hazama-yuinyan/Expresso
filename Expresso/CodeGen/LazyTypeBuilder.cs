@@ -20,6 +20,7 @@ namespace Expresso.CodeGen
         readonly MethodBuilder prologue;
         readonly List<Tuple<Expression, MethodBuilder>> implementers;
         readonly List<MemberInfo> members;
+        readonly List<string> has_initializer_list = new List<string>();
         Type type_cache;
         bool is_created;
 
@@ -37,6 +38,18 @@ namespace Expresso.CodeGen
                     throw new InvalidOperationException("The interface type is yet to be defined");
                 
                 return type_cache;
+            }
+        }
+
+        public TypeBuilder InterfaceTypeBuilder{
+            get{
+                return interface_type;
+            }
+        }
+
+        public string Name{
+            get{
+                return interface_type.Name;
             }
         }
 
@@ -64,12 +77,15 @@ namespace Expresso.CodeGen
         /// <param name="type">Type.</param>
         /// <param name="attr">Attr.</param>
         /// <param name="initializer">Initializer.</param>
-        public FieldBuilder DefineField(string name, Type type, FieldAttributes attr = FieldAttributes.Public, Expression initializer = null)
+        public FieldBuilder DefineField(string name, Type type, bool hasInitializer, FieldAttributes attr = FieldAttributes.Public, Expression initializer = null)
         {
             var field = interface_type.DefineField(name, type, attr);
             if(initializer != null)
                 SetBody(field, initializer);
 
+            if(hasInitializer)
+                has_initializer_list.Add(name);
+            
             members.Add(field);
             return field;
         }
@@ -86,58 +102,17 @@ namespace Expresso.CodeGen
         {
             var method = interface_type.DefineMethod(name, attr, returnType, parameterTypes);
             var il = method.GetILGenerator();
-            //if(body != null){
             // Emit call to the implementation method no matter whether we actually need it.
             // TODO: Consider a better solution
             var real_params = types.Concat(parameterTypes).ToArray();
             var impl_method = impl_type.DefineMethod(name + "_Impl", MethodAttributes.Assembly | MethodAttributes.Static, returnType, real_params);
-            LoadArgs(il, (parameterTypes.Length == 0) ? new int[]{} : Enumerable.Range(0, real_params.Length));
+            LoadArgs(il, (real_params.Length == 0) ? new int[]{} : Enumerable.Range(0, real_params.Length));
             il.Emit(OpCodes.Call, impl_method);
             il.Emit(OpCodes.Ret);
             if(body == null)
                 body = Expression.Empty();
             
             AddImplementer(body, impl_method);
-            /*if(returnType.IsValueType){
-                switch(Type.GetTypeCode(returnType)){
-                case TypeCode.Byte:
-                case TypeCode.SByte:
-                case TypeCode.Char:
-                case TypeCode.Int16:
-                case TypeCode.UInt16:
-                case TypeCode.Int32:
-                case TypeCode.UInt32:
-                case TypeCode.Boolean:
-                    il.Emit(OpCodes.Ldc_I4_0);
-                    break;
-
-                case TypeCode.Int64:
-                case TypeCode.UInt64:
-                    il.Emit(OpCodes.Ldc_I4_0);
-                    il.Emit(OpCodes.Conv_I8);
-                    break;
-
-                case TypeCode.Single:
-                    il.Emit(OpCodes.Ldc_R4, 0.0f);
-                    break;
-
-                case TypeCode.Double:
-                    il.Emit(OpCodes.Ldc_R8, 0.0);
-                    break;
-
-                default:
-                    if(returnType != typeof(void)){
-                        il.Emit(OpCodes.Ldloca_S, (short)1);
-                        il.Emit(OpCodes.Initobj, returnType);
-                    }
-                    break;
-                }
-            }else{
-                il.Emit(OpCodes.Ldnull);
-            }
-
-            il.Emit(OpCodes.Ret);*/
-
             members.Add(method);
             return method;
         }
@@ -148,20 +123,22 @@ namespace Expresso.CodeGen
         /// <returns>The constructor.</returns>
         /// <param name="parameterTypes">Parameter types.</param>
         /// <param name="body">Body.</param>
-        public ConstructorBuilder DefineConstructor(IList<Type> parameterTypes, Expression body = null)
+        public ConstructorBuilder DefineConstructor(Type[] parameterTypes, Expression body = null)
         {
-            var ctor = interface_type.DefineConstructor(MethodAttributes.Public | MethodAttributes.HideBySig | MethodAttributes.SpecialName | MethodAttributes.RTSpecialName,
-                           CallingConventions.Standard, parameterTypes.ToArray()
-                       );
+            var ctor = interface_type.DefineConstructor(
+                MethodAttributes.Public | MethodAttributes.HideBySig | MethodAttributes.SpecialName | MethodAttributes.RTSpecialName,
+                CallingConventions.Standard, parameterTypes.ToArray()
+            );
             var il = ctor.GetILGenerator();
+            var real_params = types.Concat(parameterTypes).ToArray();
             LoadArgs(il, 0);
             il.Emit(OpCodes.Call, interface_type.BaseType.GetConstructor(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance, null, Type.EmptyTypes, null));
 
             LoadArgs(il, 0);
             il.Emit(OpCodes.Call, prologue);
 
-            LoadArgs(il, (parameterTypes.Count == 0) ? new int[]{} : Enumerable.Range(0, parameterTypes.Count + 1));
-            var impl_method = impl_type.DefineMethod("Ctor_Impl", MethodAttributes.Assembly | MethodAttributes.Static, typeof(void), types.Concat(parameterTypes).ToArray());
+            LoadArgs(il, (real_params.Length == 0) ? new int[]{} : Enumerable.Range(0, real_params.Length));
+            var impl_method = impl_type.DefineMethod("Ctor_Impl", MethodAttributes.Assembly | MethodAttributes.Static, typeof(void), real_params);
             il.Emit(OpCodes.Call, impl_method);
             if(body == null)
                 body = Expression.Empty();
@@ -191,11 +168,40 @@ namespace Expresso.CodeGen
         /// <returns>The interface type.</returns>
         public Type CreateInterfaceType()
         {
-            if(!members.OfType<ConstructorBuilder>().Any())
-                DefineConstructor(Type.EmptyTypes/*new []{interface_type.AsType()}*/);
+            ConstructorBuilder ctor = null;
+            if(!members.OfType<ConstructorBuilder>().Any()){
+                var param_types = members.OfType<FieldBuilder>()
+                                         .Where(t => !has_initializer_list.Any(name => t.Name == name))
+                                         .Select(t => t.FieldType)
+                                         .ToArray();
+                ctor = DefineConstructor(param_types);
+            }
 
             if(type_cache == null)
                 type_cache = interface_type.CreateType();
+
+            if(ctor != null){
+                var parameters = members.OfType<FieldBuilder>()
+                                        .Where(t => !has_initializer_list.Any(name => t.Name == name))
+                                        .Select(t => Expression.Parameter(t.FieldType, t.Name))
+                                        .ToList();
+
+                var self_param = Expression.Parameter(type_cache, "self");
+                var block_contents = parameters.Select(p => {
+                    return Expression.Assign(
+                        Expression.Field(self_param, p.Name),
+                        p
+                    );
+                }).OfType<Expression>().ToList();
+                block_contents.Add(Expression.Empty());
+
+                parameters.Insert(0, self_param);
+                var impl_tree = Expression.Lambda(
+                    Expression.Block(block_contents),
+                    parameters
+                );
+                SetBody(ctor, impl_tree);
+            }
 
             return type_cache;
         }
@@ -253,22 +259,17 @@ namespace Expresso.CodeGen
         public FieldBuilder GetField(string name)
         {
             return members.OfType<FieldBuilder>()
-                .Where(m => m.Name == name)
-                .Select(m => m)
-                .FirstOrDefault();
+                          .Where(fb => fb.Name == name)
+                          .Select(fb => fb)
+                          .First();
         }
 
-        /// <summary>
-        /// Gets a method on the implementation.
-        /// </summary>
-        /// <returns>The method.</returns>
-        /// <param name="name">Name.</param>
-        public MethodBuilder GetMethod(string name)
+        public FieldInfo GetField(string name, BindingFlags flags)
         {
-            return members.OfType<MethodBuilder>()
-                .Where(m => m.Name == name)
-                .Select(m => m)
-                .FirstOrDefault();
+            if(type_cache == null)
+                throw new InvalidOperationException("The interface type is yet to be defined");
+
+            return type_cache.GetField(name, flags);
         }
 
         public void SetBody(FieldBuilder field, Expression body)
@@ -278,7 +279,7 @@ namespace Expresso.CodeGen
             
             var impl_method = impl_type.DefineMethod(field.Name + "_Init", MethodAttributes.Assembly | MethodAttributes.Static, field.FieldType, types);
             var prologue_il = prologue.GetILGenerator();
-            LoadArgs(prologue_il, 0, 0);
+            prologue_il.Emit(OpCodes.Ldarg_0);
             prologue_il.Emit(OpCodes.Call, impl_method);
             prologue_il.Emit(OpCodes.Stfld, field);
             AddImplementer(body, impl_method);

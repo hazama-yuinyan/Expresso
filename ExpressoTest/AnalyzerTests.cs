@@ -2228,7 +2228,7 @@ namespace Expresso.Test
 
             var expected_ast = AstNode.MakeModuleDef("main", new List<EntityDeclaration>{
                 EntityDeclaration.MakeClassDecl(
-                    "Test",
+                    "TestClass",
                     Enumerable.Empty<AstType>(),
                     Helpers.MakeSeq<EntityDeclaration>(
                         EntityDeclaration.MakeField(
@@ -2326,11 +2326,11 @@ namespace Expresso.Test
                     Statement.MakeBlock(
                         Statement.MakeVarDecl(
                             Helpers.MakeSeq(
-                                AstNode.MakeIdentifier("a", Helpers.MakeGenericType("Test"))
+                                AstNode.MakeIdentifier("a", Helpers.MakeGenericType("TestClass"))
                             ),
                             Helpers.MakeSeq(
                                 Expression.MakeObjectCreation(
-                                    Helpers.MakeGenericType("Test"),
+                                    Helpers.MakeGenericType("TestClass"),
                                     Helpers.MakeSeq(
                                         AstNode.MakeIdentifier("x"),
                                         AstNode.MakeIdentifier("y")
@@ -2343,7 +2343,7 @@ namespace Expresso.Test
                             ),
                             Modifiers.Immutable
                         ),
-                        Statement.MakeVarDecl(
+                        /*Statement.MakeVarDecl(
                             Helpers.MakeSeq(
                                 AstNode.MakeIdentifier("b", Helpers.MakeGenericType("Test"))
                             ),
@@ -2363,7 +2363,7 @@ namespace Expresso.Test
                                 )
                             ),
                             Modifiers.Immutable
-                        ),
+                        ),*/
                         Statement.MakeVarDecl(
                             Helpers.MakeSeq(
                                 AstNode.MakeIdentifier("c", Helpers.MakePrimitiveType("int"))
@@ -2373,7 +2373,7 @@ namespace Expresso.Test
                                     Expression.MakeMemRef(
                                         Helpers.MakeIdentifierPath(
                                             "a",
-                                            Helpers.MakeGenericType("Test")
+                                            Helpers.MakeGenericType("TestClass")
                                         ),
                                         AstNode.MakeIdentifier(
                                             "getX",
@@ -2398,7 +2398,7 @@ namespace Expresso.Test
                                     Expression.MakeMemRef(
                                         Helpers.MakeIdentifierPath(
                                             "a",
-                                            Helpers.MakeGenericType("Test")
+                                            Helpers.MakeGenericType("TestClass")
                                         ),
                                         AstNode.MakeIdentifier(
                                             "getY",
@@ -2423,7 +2423,7 @@ namespace Expresso.Test
                                     Expression.MakeMemRef(
                                         Helpers.MakeIdentifierPath(
                                             "a",
-                                            Helpers.MakeGenericType("Test")
+                                            Helpers.MakeGenericType("TestClass")
                                         ),
                                         AstNode.MakeIdentifier(
                                             "getXPlus",

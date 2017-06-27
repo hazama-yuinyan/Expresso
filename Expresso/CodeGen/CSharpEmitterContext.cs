@@ -13,9 +13,6 @@ namespace Expresso.CodeGen
     /// </summary>
     public class CSharpEmitterContext
     {
-        static List<Identifier> function_ids = new List<Identifier>();
-        static List<MethodCallExpression> unbound_calls = new List<MethodCallExpression>();
-
         /// <summary>
         /// Current assembly builder that we are using.
         /// </summary>
@@ -69,14 +66,12 @@ namespace Expresso.CodeGen
             get; set;
         }
 
-        public ConstructorInfo Constructor{
-            get; set;
-        }
-
         /// <summary>
-        /// The constructor builder that we are currently constructing.
+        /// Contains constructor information that we have any interest in.
+        /// Setting it null may tell child nodes to fill this property.
         /// </summary>
-        public ConstructorBuilder ConstructorBuilder{
+        /// <value>The constructor.</value>
+        public ConstructorInfo Constructor{
             get; set;
         }
 
@@ -144,13 +139,6 @@ namespace Expresso.CodeGen
         }
 
         /// <summary>
-        /// Represents the current return value as a ParameterExpression.
-        /// </summary>
-        /*public System.Linq.Expressions.ParameterExpression ParameterReturnValue{
-            get; set;
-        }*/
-
-        /// <summary>
         /// Represents the current context type or module as a ParameterExpression.
         /// </summary>
         public System.Linq.Expressions.ParameterExpression ParameterSelf{
@@ -168,27 +156,6 @@ namespace Expresso.CodeGen
         public List<object> Additionals{
             get; set;
         }
-
-        /// <summary>
-        /// The unbound identifiers that correspond to global functions or methods that reside in the current context type.
-        /// Used to retrieve global functions and to define their exposing class.
-        /// </summary>
-        /// <value>The function identifiers.</value>
-        /*public static List<Identifier> UnboundFunctionIdentifiers{
-            get{
-                return function_ids;
-            }
-        }*/
-
-        /// <summary>
-        /// The unbound call expressions that need to be resolved.
-        /// </summary>
-        /// <value>The unbound calls.</value>
-        /*public static List<MethodCallExpression> UnboundCalls{
-            get{
-                return unbound_calls;
-            }
-        }*/
     }
 }
 

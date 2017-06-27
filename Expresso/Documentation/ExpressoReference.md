@@ -32,7 +32,7 @@ Tuples are alike to arrays except that they can contain different types of objec
 Vectors are also alike to arrays, but they can contain any number of elements in it if you desire and if your buddy allows, of course.(I mean, if you have enough memory. Don't take me wrong...)
 ```Expresso
     let some_vector = [1, 2, 3, 4, ...];
-    println(some_vector);   // print "vector[1,2,3,4]"
+    println(some_vector);   // print "[1,2,3,4...]"
 ```
 Unlike the previous 2 data structures, dictionaries introduce a bit different story because they should have 2 values for each of their elements.
 One is called "key" and the other "value". A key, like indexes in arrays or vectors, refers to a specific element. And the element referred to by the key is the value. In other words, we can say that arrays and vectors are the kind of dictionaries that use indexes as keys. Most of the times, however, we distinguish them because they are based on different concepts and are used in different situations.
@@ -60,13 +60,13 @@ The `IntSeq` type has 3 fields, `lower`, `upper` and `step`. `lower` represents 
 The `IntSeq` type has the corresponding literal form and it is written as follows:
 `lower(..|...)upper[:step]`
 ```Expresso
-    let seq = 1..10;    // `step` can be omitted and 1 is assumed if ommited and double dots mean that the lower bound is
+    let seq = 1..10;    // `step` can be omitted and 1 is assumed if ommited and the double dots mean that the lower bound is
                         // inclusive but the upper bound is exclusive
     let series = seq.collect();
     for let elem in seq {  // print "123456789"
         print(elem);
     }
-    println(series); // print "vector[1,2,3,4,5,6,7,8,9]"
+    println(series); // print "[1,2,3,4,5,6,7,8,9...]"
 ```
 An integer sequence expression does not create a vector of integers by itself. Instead, it creates a new object that is ready to produce integers that are in the range specified in the expression.
 ```Expresso
@@ -108,5 +108,5 @@ Our primary goal of teaching beginners the basics of programming leads us to the
 *** Some tips on general concepts
 
 **** --- Give things descriptive names ---
-For coders, source codes are another yourself. Once any part of source codes is available to the public, you will be valued at those. Having that said, names are important for humans in the real world and in the computer world. Humans make errors. But unfortunately the computers are smarter than us. They don't care if the names are long or short. But we do care. The more discriptive names we give things, the less likely we are to make errors. Names describe their properties, their . So give things descriptive names as much as possible. Names in source codes are much like letters you write on paper. The more descriptive they get, the more beautifuly you write letters. Lazy and old-fashioned C programmers prefer shorter names and abbriviations. Think source codes as publications of coders for coders and by coders. They will be read by other coders and when that happens what do they think if the publications look ugly. It doesn't only deterate readbility but their interests in your sorce codes, and which makes it harder to be maintained and therefore they will be replaced with other ones at some point in the future. Then your self is disappeared from that world. That's a sad story. Surely. Certainly. And I don't want to read those sad stories anymore.
+For coders, source codes are another yourself. Once any part of source codes is available to the public, you will be valued at those. Having that said, names are important for humans in the real world and in the computer world. Humans make errors. But unfortunately the computers are smarter than us. They don't care if the names are long or short. But we do care. The more discriptive names we give things, the less likely we are to make errors. Names describe their properties, their . So give things descriptive names as much as possible. Names in source codes are much like letters you write on paper. The more descriptive they get, the more beautifuly you write letters. Lazy and old-fashioned C programmers prefer shorter names and abbriviations. Think source codes as publications of coders for coders and by coders. They will be read by other coders and when that happens what they think if the publications look ugly. It doesn't only deterate readbility but their interests in your sorce codes, and which makes it harder to be maintained and therefore they will be replaced with other ones at some point in the future. Then your self is disappeared from that world. That's a sad story. Surely. Certainly. And I don't want to read those sad stories anymore.
 Another reason why you should use longer names is because names are fighters. Imagine if you wrote a very large program of, say, 10,000 LOC. Several weeks have passed and you were told that your program had some bugs in it and you should read it all back again and it would cost you precious time. I know programmers are lazy. Too lazy not to get up at early in the morning. But don't be lazy at giving longer, descriptive and hopefully distinct names. They will certainly revenge on you. I can tell.

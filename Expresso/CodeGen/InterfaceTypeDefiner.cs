@@ -281,18 +281,12 @@ namespace Expresso.CodeGen
                 var return_type = CSharpCompilerHelper.GetNativeType(funcDecl.ReturnType);
 
                 var attr = (context.TypeBuilder != null) ? MethodAttributes.Private : MethodAttributes.Static | MethodAttributes.Private;
-                if(funcDecl.Modifiers.HasFlag(Modifiers.Export) || funcDecl.Modifiers.HasFlag(Modifiers.Public)){
+                if(funcDecl.Modifiers.HasFlag(Modifiers.Public)){
                     attr |= MethodAttributes.Public;
                     attr ^= MethodAttributes.Private;
                 }
 
-                if(funcDecl.Name == "main")
-                    attr |= MethodAttributes.HideBySig;
-
-                var func_builder = context.TypeBuilder.DefineMethod(CSharpCompilerHelper.ConvertToCLRFunctionName(funcDecl.Name), attr, return_type, param_types.ToArray());
-                Symbols.Add(funcDecl.NameToken.IdentifierId, new ExpressoSymbol{Method = func_builder});
-                if(funcDecl.Name == "main")
-                    context.AssemblyBuilder.SetEntryPoint(func_builder, PEFileKinds.ConsoleApplication);
+                context.TypeBuilder.DefineMethod(CSharpCompilerHelper.ConvertToCLRFunctionName(funcDecl.Name), attr, return_type, param_types.ToArray());
 
                 emitter.AscendScope();
                 emitter.sibling_count = tmp_counter + 1;
@@ -312,14 +306,14 @@ namespace Expresso.CodeGen
                 var base_types = 
                     from bt in typeDecl.BaseTypes
                     select Symbols[bt.IdentifierNode.IdentifierId].Type;
-                context.TypeBuilder = (parent_type != null) ? parent_type.DefineNestedType(name, attr, base_types) : new LazyTypeBuilder(context.ModuleBuilder, name, attr, base_types, false);
+                context.TypeBuilder = (parent_type != null && parent_type.Name != "ExsMain") ? parent_type.DefineNestedType(name, attr, base_types) : new LazyTypeBuilder(context.ModuleBuilder, name, attr, base_types, false);
 
                 try{
                     foreach(var member in typeDecl.Members)
                         member.AcceptWalker(this);
 
-                    //var type = context.TypeBuilder.AsType();
-                    Symbols.Add(typeDecl.NameToken.IdentifierId, new ExpressoSymbol{/*Type = type, */TypeBuilder = context.TypeBuilder});
+                    var type = context.TypeBuilder.CreateInterfaceType();
+                    Symbols.Add(typeDecl.NameToken.IdentifierId, new ExpressoSymbol{Type = type, TypeBuilder = context.TypeBuilder});
                 }
                 finally{
                     context.TypeBuilder = parent_type;
@@ -340,8 +334,9 @@ namespace Expresso.CodeGen
                 if(fieldDecl.Modifiers.HasFlag(Modifiers.Static))
                     attr |= FieldAttributes.Static;
 
-                if(fieldDecl.Modifiers.HasFlag(Modifiers.Immutable))
-                    attr |= FieldAttributes.InitOnly;
+                // Don't set InitOnly flag or we'll fail to initialize the fields
+                //if(fieldDecl.Modifiers.HasFlag(Modifiers.Immutable))
+                //    attr |= FieldAttributes.InitOnly;
 
                 if(fieldDecl.Modifiers.HasFlag(Modifiers.Private))
                     attr |= FieldAttributes.Private;
@@ -352,9 +347,12 @@ namespace Expresso.CodeGen
                 else
                     throw new EmitterException("Unknown modifiers!");
 
+                if(!fieldDecl.Modifiers.HasFlag(Modifiers.Private))
+                    attr ^= FieldAttributes.Private;
+
                 foreach(var init in fieldDecl.Initializers){
                     var type = CSharpCompilerHelper.GetNativeType(init.NameToken.Type);
-                    var field_builder = context.TypeBuilder.DefineField(init.Name, type, attr);
+                    var field_builder = context.TypeBuilder.DefineField(init.Name, type, !Expression.IsNullNode(init.Initializer), attr);
                     Symbols.Add(init.NameToken.IdentifierId, new ExpressoSymbol{Field = field_builder});
                 }
             }
