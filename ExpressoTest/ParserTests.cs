@@ -2086,6 +2086,20 @@ namespace Expresso.Test
                             ), 
                             Helpers.MakePrimitiveType("int"),
                             Modifiers.Public
+                        ),
+                        EntityDeclaration.MakeFunc(
+                            "getZ",
+                            Enumerable.Empty<ParameterDeclaration>(),
+                            Statement.MakeBlock(
+                                Helpers.MakeSingleItemReturnStatement(
+                                    Expression.MakeMemRef(
+                                        Expression.MakeSelfRef(),
+                                        Helpers.MakeSomeIdent("z")
+                                    )
+                                )
+                            ),
+                            Helpers.MakePrimitiveType("int"),
+                            Modifiers.Public
                         )
                     ),
                     Modifiers.None
@@ -2177,12 +2191,27 @@ namespace Expresso.Test
                             ),
                             Modifiers.Immutable
                         ),
+                        Statement.MakeVarDecl(
+                            Helpers.MakeSeq(
+                                Helpers.MakeSomeIdent("f")
+                            ),
+                            Helpers.MakeSeq(
+                                Helpers.MakeCallExpression(
+                                    Expression.MakeMemRef(
+                                        Helpers.MakeIdentifierPath("a"),
+                                        Helpers.MakeSomeIdent("getZ")
+                                    )
+                                )
+                            ),
+                            Modifiers.Immutable
+                        ),
                         Statement.MakeExprStmt(
                             Helpers.MakeCallExpression(
                                 Helpers.MakeIdentifierPath("printFormat"),
-                                Expression.MakeConstant("string", "(a.x, a.y) = ({0}, {1})\n"),
+                                Expression.MakeConstant("string", "(a.x, a.y, a.z) = ({0}, {1}, {2})\n"),
                                 Helpers.MakeIdentifierPath("c"),
-                                Helpers.MakeIdentifierPath("d")
+                                Helpers.MakeIdentifierPath("d"),
+                                Helpers.MakeIdentifierPath("f")
                             )
                         )
                     ),

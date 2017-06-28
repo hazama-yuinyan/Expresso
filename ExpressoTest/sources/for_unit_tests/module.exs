@@ -9,7 +9,7 @@ import "./test_module.exs" as TestModule;
 
 def main()
 {
-	let a = TestModule::Test{x : 100, y : 300};
+	let a = TestModule::TestClass{x : 100, y : 300};
 	let b = TestModule::createTest(50, 100);
 	let c = TestModule::pair;
 	

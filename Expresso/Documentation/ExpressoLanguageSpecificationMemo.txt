@@ -1,6 +1,7 @@
 ﻿Expressoの簡易仕様書
 0.デザインメモにもあるとおり、どちらかというと、教育的観点から言語仕様を決定する。
 Expressoのポリシーは、Expressive, easy to write。コンセプトは、Easy for beginners, elegant for enthusiasts。
+言語哲学は"What the compiler doesn't allow to do is what just you can't"と"Just do as the compiler says"
 1.基本的には静的型付けであるが、極力プログラマーが型を明示しなくてもいいようになっている。
 値と参照の区別はつけるが、C#レベルのサポートに留める。
 2.他の大多数のスクリプト言語同様、関数は第一級オブジェクトであり、関数の引数や戻り値として扱うことができる。

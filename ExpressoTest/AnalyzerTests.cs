@@ -2316,6 +2316,23 @@ namespace Expresso.Test
                             ), 
                             Helpers.MakePrimitiveType("int"),
                             Modifiers.Public
+                        ),
+                        EntityDeclaration.MakeFunc(
+                            "getZ",
+                            Enumerable.Empty<ParameterDeclaration>(),
+                            Statement.MakeBlock(
+                                Helpers.MakeSingleItemReturnStatement(
+                                    Expression.MakeMemRef(
+                                        Expression.MakeSelfRef(),
+                                        AstNode.MakeIdentifier(
+                                            "z",
+                                            Helpers.MakePrimitiveType("int")
+                                        )
+                                    )
+                                )
+                            ),
+                            Helpers.MakePrimitiveType("int"),
+                            Modifiers.Public
                         )
                     ),
                     Modifiers.None
@@ -2441,6 +2458,30 @@ namespace Expresso.Test
                             ),
                             Modifiers.Immutable
                         ),
+                        Statement.MakeVarDecl(
+                            Helpers.MakeSeq(
+                                AstNode.MakeIdentifier("f", Helpers.MakePrimitiveType("int"))
+                            ),
+                            Helpers.MakeSeq(
+                                Helpers.MakeCallExpression(
+                                    Expression.MakeMemRef(
+                                        Helpers.MakeIdentifierPath(
+                                            "a",
+                                            Helpers.MakeGenericType("TestClass")
+                                        ),
+                                        AstNode.MakeIdentifier(
+                                            "getZ",
+                                            AstType.MakeFunctionType(
+                                                "getZ",
+                                                Helpers.MakePrimitiveType("int"),
+                                                Enumerable.Empty<AstType>()
+                                            )
+                                        )
+                                    )
+                                )
+                            ),
+                            Modifiers.Immutable
+                        ),
                         Statement.MakeExprStmt(
                             Helpers.MakeCallExpression(
                                 Helpers.MakeIdentifierPath(
@@ -2453,13 +2494,17 @@ namespace Expresso.Test
                                         Helpers.MakePrimitiveType("string")
                                     )
                                 ),
-                                Expression.MakeConstant("string", "(a.x, a.y) = ({0}, {1})\n"),
+                                Expression.MakeConstant("string", "(a.x, a.y, a.z) = ({0}, {1}, {2})\n"),
                                 Helpers.MakeIdentifierPath(
                                     "c",
                                     Helpers.MakePrimitiveType("int")
                                 ),
                                 Helpers.MakeIdentifierPath(
                                     "d",
+                                    Helpers.MakePrimitiveType("int")
+                                ),
+                                Helpers.MakeIdentifierPath(
+                                    "f",
                                     Helpers.MakePrimitiveType("int")
                                 )
                             )

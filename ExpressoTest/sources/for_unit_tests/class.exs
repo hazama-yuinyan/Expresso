@@ -23,15 +23,21 @@ class TestClass
 	{
 		return self.getX() + n;
 	}
+
+    public def getZ() -> int
+    {
+        return self.z;
+    }
 }
 
 def main()
 {
-	let a = TestClass{x : 1, y : 3};
-	//let b = new Test{x : 1, y : 3};
+	let a = TestClass{x : 1, y : 2};
+	//let b = new Test{x : 1, y : 2};
 	let c = a.getX();
 	let d = a.getY();
 	let e = a.getXPlus(100);
+    let f = a.getZ();
 	
-	printFormat("(a.x, a.y) = ({0}, {1})\n", c, d);
+	printFormat("(a.x, a.y, a.z) = ({0}, {1}, {2})\n", c, d, f);
 }

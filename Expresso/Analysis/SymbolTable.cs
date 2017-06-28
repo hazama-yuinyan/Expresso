@@ -382,19 +382,6 @@ namespace Expresso.Ast.Analysis
         }
 
         /// <summary>
-        /// Adds external symbols to the global scope of this SymbolTable.
-        /// </summary>
-        /// <param name="externalTable">External table.</param>
-        /*public void AddExternalSymbols(SymbolTable externalTable)
-        {
-            foreach(var external_symbol in externalTable.table)
-                table.Add(external_symbol.Key, external_symbol.Value);
-
-            foreach(var external_typesymbol in externalTable.type_table)
-                type_table.Add(external_typesymbol.Key, external_typesymbol.Value);
-        }*/
-
-        /// <summary>
         /// Adds external symbols as a new scope.
         /// </summary>
         /// <param name="externalTable">External table.</param>

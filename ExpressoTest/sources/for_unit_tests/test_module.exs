@@ -4,7 +4,7 @@
 module TestModule;
 
 
-export class Test
+export class TestClass
 {
 	let x (- int, y (- int;
 	
@@ -21,7 +21,7 @@ export class Test
 
 export let pair = (200, 300);
 
-export def createTest(x (- int, y (- int) -> Test
+export def createTest(x (- int, y (- int) -> TestClass
 {
-	return Test{x : x, y : y};
+	return TestClass{x : x, y : y};
 }

@@ -591,16 +591,6 @@ namespace Expresso.Ast.Analysis
 
         void BindName(Identifier ident)
         {
-            /*var table = symbol_table;
-            while(table != null){
-                var referenced = table.GetSymbol(ident.Name);
-                if(referenced != null){
-                    ident.IdentifierId = referenced.IdentifierId;
-                    break;
-                }
-
-                table = table.Parent;
-            }*/
             var referenced = symbol_table.GetSymbolInAnyScope(ident.Name);
             if(referenced != null)
                 ident.IdentifierId = referenced.IdentifierId;
