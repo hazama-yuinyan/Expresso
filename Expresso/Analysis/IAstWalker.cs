@@ -24,12 +24,15 @@ namespace Expresso.Ast
         void VisitMatchStatement(MatchStatement matchStmt);
         void VisitWhileStatement(WhileStatement whileStmt);
         void VisitYieldStatement(YieldStatement yieldStmt);
+        void VisitTryStatement(TryStatement tryStmt);
+        void VisitThrowStatement(ThrowStatement throwStmt);
         void VisitVariableDeclarationStatement(VariableDeclarationStatement varDecl);
 
         void VisitAssignment(AssignmentExpression assignment);
         void VisitBinaryExpression(BinaryExpression binaryExpr);
         void VisitCallExpression(CallExpression callExpr);
         void VisitCastExpression(CastExpression castExpr);
+        void VisitCatchClause(CatchClause catchClause);
         void VisitComprehensionExpression(ComprehensionExpression comp);
         void VisitComprehensionForClause(ComprehensionForClause compFor);
         void VisitComprehensionIfClause(ComprehensionIfClause compIf);
@@ -103,12 +106,15 @@ namespace Expresso.Ast
         TResult VisitMatchStatement(MatchStatement matchStmt);
         TResult VisitWhileStatement(WhileStatement whileStmt);
         TResult VisitYieldStatement(YieldStatement yieldStmt);
+        TResult VisitThrowStatement(ThrowStatement throwStmt);
+        TResult VisitTryStatement(TryStatement tryStmt);
         TResult VisitVariableDeclarationStatement(VariableDeclarationStatement varDecl);
 
         TResult VisitAssignment(AssignmentExpression assignment);
         TResult VisitBinaryExpression(BinaryExpression binaryExpr);
         TResult VisitCallExpression(CallExpression call);
         TResult VisitCastExpression(CastExpression castExpr);
+        TResult VisitCatchClause(CatchClause catchClause);
         TResult VisitComprehensionExpression(ComprehensionExpression comp);
         TResult VisitComprehensionForClause(ComprehensionForClause compFor);
         TResult VisitComprehensionIfClause(ComprehensionIfClause compIf);
@@ -192,12 +198,15 @@ namespace Expresso.Ast
         TResult VisitMatchStatement(MatchStatement matchStmt, TData data);
         TResult VisitWhileStatement(WhileStatement whileStmt, TData data);
         TResult VisitYieldStatement(YieldStatement yieldStmt, TData data);
+        TResult VisitTryStatement(TryStatement tryStmt, TData data);
+        TResult VisitThrowStatement(ThrowStatement throwStmt, TData data);
         TResult VisitVariableDeclarationStatement(VariableDeclarationStatement varDecl, TData data);
 
         TResult VisitAssignment(AssignmentExpression assignment, TData data);
         TResult VisitBinaryExpression(BinaryExpression binaryExpr, TData data);
         TResult VisitCallExpression(CallExpression call, TData data);
         TResult VisitCastExpression(CastExpression castExpr, TData data);
+        TResult VisitCatchClause(CatchClause catchClause, TData data);
         TResult VisitComprehensionExpression(ComprehensionExpression comp, TData data);
         TResult VisitComprehensionForClause(ComprehensionForClause compFor, TData data);
         TResult VisitComprehensionIfClause(ComprehensionIfClause compIf, TData data);

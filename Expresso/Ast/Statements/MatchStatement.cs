@@ -8,7 +8,7 @@ namespace Expresso.Ast
 	/// <summary>
     /// Match文。
     /// The Match statement.
-    /// A match statement pattern-match a value against several patterns
+    /// A match statement pattern-matches a value against several patterns
     /// and if successful the flow takes the corresponding branch and continues execution on that path.
     /// "match" Expression '{' MatchPatternClause { MatchPatternClause } '}' ;
 	/// </summary>

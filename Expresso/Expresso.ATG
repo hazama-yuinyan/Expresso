@@ -769,6 +769,7 @@ SimpleStmt<out Statement stmt>		(. stmt = null; BlockStatement block = null; .)
   | BreakStmt<out stmt>
   | ContinueStmt<out stmt>
   | YieldStmt<out stmt>
+  | ThrowStmt<out stmt>
   | EmptyStmt<out stmt>.
 /*------------------------------------------------------------------------*/
 ReturnStmt<out Statement stmt>		(. SequenceExpression items = null; .)
@@ -804,6 +805,13 @@ YieldStmt<out Statement stmt>		(. Expression expr; var start_loc = NextLocation;
   "yield"
   CondExpr<out expr>
   SYNC ';'							(. stmt = Statement.MakeYieldStmt(expr, start_loc, CurrentLocation); .).
+/*------------------------------------------------------------------------*/
+ThrowStmt<out Statement stmt>       (. ObjectCreation obj; var start_loc = NextLocation; AstType type_path; .)
+=
+  "throw"
+  Type<out type_path>
+  ObjectCreation<type_path, out obj>
+  SYNC ';'                          (. stmt = Statement.MakeThrowStmt(obj, start_loc, CurrentLocation); .).
 /*------------------------------------------------------------------------*/
 EmptyStmt<out Statement stmt>       (. var start_loc = NextLocation; .)
 =

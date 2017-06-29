@@ -209,6 +209,8 @@
     <Compile Include="CodeGen\InterfaceTypeDefiner.cs" />
     <Compile Include="Analysis\ParameterTypeReplacer.cs" />
     <Compile Include="Utilities\ICloneable.cs" />
+    <Compile Include="Ast\Statements\ThrowStatement.cs" />
+    <Compile Include="Ast\Statements\TryStatement.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System" />
