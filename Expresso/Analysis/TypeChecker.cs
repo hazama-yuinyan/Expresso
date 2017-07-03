@@ -203,6 +203,21 @@ namespace Expresso.Ast.Analysis
             return null;
         }
 
+        public AstType VisitThrowStatement(ThrowStatement throwStmt)
+        {
+            throwStmt.CreationExpression.AcceptWalker(this);
+            return null;
+        }
+
+        public AstType VisitTryStatement(TryStatement tryStmt)
+        {
+            tryStmt.EnclosingBlock.AcceptWalker(this);
+            foreach(var clause in tryStmt.CatchClauses)
+                clause.AcceptWalker(this);
+
+            return null;
+        }
+
         public AstType VisitWhileStatement(WhileStatement whileStmt)
         {
             int tmp_counter = scope_counter;
@@ -382,6 +397,12 @@ namespace Expresso.Ast.Analysis
             }
 
             return target_type;
+        }
+
+        public AstType VisitCatchClause(CatchClause catchClause)
+        {
+            catchClause.Body.AcceptWalker(this);
+            return null;
         }
 
         public AstType VisitComprehensionExpression(ComprehensionExpression comp)
@@ -601,11 +622,18 @@ namespace Expresso.Ast.Analysis
 
         public AstType VisitMatchClause(MatchPatternClause matchClause)
         {
+            int tmp_counter = scope_counter;
+            DescendScope();
+            scope_counter = 0;
+
             AstType result = AstType.Null;
             foreach(var pattern in matchClause.Patterns){
                 var tmp = pattern.AcceptWalker(this);
                 result = inference_runner.FigureOutCommonType(result, tmp);
             }
+
+            AscendScope();
+            scope_counter = tmp_counter + 1;
             return result;
         }
 
@@ -935,6 +963,11 @@ namespace Expresso.Ast.Analysis
         public AstType VisitExpressionPattern(ExpressionPattern exprPattern)
         {
             return exprPattern.Expression.AcceptWalker(this);
+        }
+
+        public AstType VisitIgnoringRestPattern(IgnoringRestPattern restPattern)
+        {
+            return SimpleType.Null;
         }
 
         public AstType VisitNullNode(AstNode nullNode)

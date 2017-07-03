@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-
+using System.Linq;
 
 namespace Expresso.Ast
 {
@@ -10,6 +10,7 @@ namespace Expresso.Ast
     /// it decomposes the fields into child patterns.
     /// As with usual field access, the fields being decomposed must be accessible from the scope
     /// that the pattern resides.
+    /// TypePath '{' [ PatternConstruct ] '}'
     /// </summary>
     public class DestructuringPattern : PatternConstruct
     {
@@ -29,6 +30,7 @@ namespace Expresso.Ast
         }
 
         public DestructuringPattern(AstType typePath, IEnumerable<PatternConstruct> patterns)
+            : base(typePath.StartLocation, patterns.Last().EndLocation)
         {
             TypePath = typePath;
             Items.AddRange(patterns);

@@ -26,43 +26,35 @@ namespace Expresso.Ast
             this.writer = writer;
         }
 
-        void PrintList<TObject>(IEnumerable<TObject> list)
+        void PrintLongList<TObject>(IEnumerable<TObject> list, string terminator = "...", int numberItems = 5)
             where TObject : AstNode
         {
-            int length = list.Count();
-            var enumerator = list.GetEnumerator();
-            for(int i = 0; i < length; ++i){
-                if(i != 0)
+            int i = 0, max_items = numberItems + 1;
+            foreach(var elem in list){
+                if(i > max_items){
+                    writer.Write(", {0}", terminator);
+                    break;
+                }else if(i != 0){
                     writer.Write(", ");
+                }
 
-                enumerator.MoveNext();
-                TObject obj = enumerator.Current;
-                obj.AcceptWalker(this);
+                elem.AcceptWalker(this);
+                ++i;
             }
         }
 
-        void PrintPairList<T>(IEnumerable<Tuple<T, T>> list, Func<T, T, string> connector)
+        void PrintList<T>(IEnumerable<T> list)
             where T : AstNode
         {
-            int length = list.Count();
-            var enumerator = list.GetEnumerator();
-            for(int i = 0; i < length; ++i){
-                if(i != 0)
+            bool first = true;
+            foreach(var elem in list){
+                if(first)
+                    first = false;
+                else
                     writer.Write(", ");
 
-                enumerator.MoveNext();
-                Tuple<T, T> pair = enumerator.Current;
-                pair.Item1.AcceptWalker(this);
-                writer.Write(connector(pair.Item1, pair.Item2));
-                pair.Item2.AcceptWalker(this);
+                elem.AcceptWalker(this);
             }
-        }
-
-        void PrintPairList<T, U>(IEnumerable<Tuple<T, U>> list, string delimiter)
-            where T : AstNode
-            where U : AstNode
-        {
-
         }
 
         #region IAstWalker implementation
@@ -132,6 +124,13 @@ namespace Expresso.Ast
             castExpr.Target.AcceptWalker(this);
             writer.Write(" as ");
             castExpr.ToExpression.AcceptWalker(this);
+        }
+
+        public void VisitCatchClause(CatchClause catchClause)
+        {
+            writer.Write("catch ");
+            catchClause.Pattern.AcceptWalker(this);
+            writer.Write("{...}");
         }
 
         public void VisitConstant(LiteralExpression literal)
@@ -251,18 +250,7 @@ namespace Expresso.Ast
             var enclosures = Enclosures[type];
             writer.Write(enclosures[0]);
 
-            int i = 0;
-            foreach(var item in seqInitializer.Items){
-                if(i >= 5){
-                    writer.Write(", ~~");
-                    break;
-                }else if(i != 0){
-                    writer.Write(", ");
-                }
-
-                item.AcceptWalker(this);
-                ++i;
-            }
+            PrintLongList(seqInitializer.Items, "~~");
 
             if(seqInitializer.ObjectType.Identifier == "vector")
                 writer.Write("...");
@@ -286,6 +274,19 @@ namespace Expresso.Ast
             writer.Write(" {");
             writer.Write(matchStmt.Clauses.Count);
             writer.Write("...}");
+        }
+
+        public void VisitThrowStatement(ThrowStatement throwStmt)
+        {
+            writer.Write("throw ");
+            throwStmt.CreationExpression.AcceptWalker(this);
+        }
+
+        public void VisitTryStatement(TryStatement tryStmt)
+        {
+            writer.Write("try");
+            tryStmt.EnclosingBlock.AcceptWalker(this);
+            tryStmt.CatchClauses.AcceptWalker(this);
         }
 
         public void VisitMatchPatternClause(MatchPatternClause clause)
@@ -446,35 +447,13 @@ namespace Expresso.Ast
         {
             creation.TypePath.AcceptWalker(this);
             writer.Write("{");
-            int i = 0;
-            foreach(var item in creation.Items){
-                if(i > 5){
-                    writer.Write(", ...");
-                    break;
-                }else if(i != 0){
-                    writer.Write(", ");
-                }
-
-                item.AcceptWalker(this);
-                ++i;
-            }
+            PrintLongList(creation.Items);
             writer.Write("}");
         }
 
         public void VisitMatchClause(MatchPatternClause matchClause)
         {
-            int i = 0;
-            foreach(var pattern in matchClause.Patterns){
-                if(i >= 3){
-                    writer.Write("...");
-                    break;
-                }else if(i != 0){
-                    writer.Write(" | ");
-                }
-
-                pattern.AcceptWalker(this);
-                ++i;
-            }
+            PrintLongList(matchClause.Patterns, "...", 3);
 
             writer.Write(" => {...}");
         }
@@ -605,16 +584,7 @@ namespace Expresso.Ast
             else
                 writer.Write("var ");
 
-            int i = 0;
-            foreach(var init in fieldDecl.Initializers){
-                if(i != 0){
-                    writer.Write(", ...");
-                    break;
-                }
-
-                init.AcceptWalker(this);
-                ++i;
-            }
+            PrintLongList(fieldDecl.Initializers, "...", 2);
         }
 
         public void VisitParameterDeclaration(ParameterDeclaration parameterDecl)
@@ -665,33 +635,11 @@ namespace Expresso.Ast
             var type = CSharpCompilerHelper.GetNativeType(collectionPattern.CollectionType);
             if(type == typeof(Dictionary<,>)){
                 writer.Write("{");
-                int i = 0;
-                foreach(var elem in collectionPattern.Items){
-                    if(i > 5){
-                        writer.Write(", ...");
-                        break;
-                    }else if(i != 0){
-                        writer.Write(", ");
-                    }
-
-                    elem.AcceptWalker(this);
-                    ++i;
-                }
+                PrintLongList(collectionPattern.Items);
                 writer.Write("}");
             }else if(type == typeof(List<>) || type == typeof(Array)){
                 writer.Write("[");
-                int i = 0;
-                foreach(var elem in collectionPattern.Items){
-                    if(i > 5){
-                        writer.Write(", ...");
-                        break;
-                    }else if(i != 0){
-                        writer.Write(", ");
-                    }
-
-                    elem.AcceptWalker(this);
-                    ++i;
-                }
+                PrintLongList(collectionPattern.Items);
                 writer.Write("]");
             }
         }
@@ -700,20 +648,25 @@ namespace Expresso.Ast
         {
             destructuringPattern.TypePath.AcceptWalker(this);
             writer.Write("{");
-            destructuringPattern.Items.AcceptWalker(this);
+            PrintLongList(destructuringPattern.Items);
             writer.Write("}");
         }
 
         public void VisitTuplePattern(TuplePattern tuplePattern)
         {
             writer.Write("(");
-            tuplePattern.Patterns.AcceptWalker(this);
+            PrintLongList(tuplePattern.Patterns);
             writer.Write(")");
         }
 
         public void VisitExpressionPattern(ExpressionPattern exprPattern)
         {
             exprPattern.Expression.AcceptWalker(this);
+        }
+
+        public void VisitIgnoringRestPattern(IgnoringRestPattern restPattern)
+        {
+            writer.Write("..");
         }
 
         public void VisitNewLine(NewLineNode newlineNode)

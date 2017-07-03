@@ -19,6 +19,7 @@ namespace Expresso.Ast
         }
 
         public ExpressionPattern(Expression expr)
+            : base(expr.StartLocation, expr.EndLocation)
         {
             Expression = expr;
         }

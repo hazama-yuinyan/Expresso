@@ -1,4 +1,5 @@
 ﻿using System;
+using ICSharpCode.NRefactory;
 
 
 namespace Expresso.Ast
@@ -10,6 +11,11 @@ namespace Expresso.Ast
     /// </summary>
     public class WildcardPattern : PatternConstruct
     {
+        public WildcardPattern(TextLocation loc)
+            : base(loc, new TextLocation(loc.Line, loc.Column + 1))
+        {
+        }
+
         #region implemented abstract members of AstNode
 
         public override void AcceptWalker(IAstWalker walker)

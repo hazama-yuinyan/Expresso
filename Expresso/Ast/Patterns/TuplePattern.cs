@@ -1,7 +1,7 @@
 ﻿using System;
 using ICSharpCode.NRefactory;
 using System.Collections.Generic;
-
+using System.Linq;
 
 namespace Expresso.Ast
 {
@@ -20,6 +20,7 @@ namespace Expresso.Ast
         }
 
         public TuplePattern(IEnumerable<PatternConstruct> patterns)
+            : base(patterns.First().StartLocation, patterns.Last().EndLocation)
         {
             Patterns.AddRange(patterns);
         }

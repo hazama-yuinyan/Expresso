@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using ICSharpCode.NRefactory;
 
 
@@ -28,6 +29,7 @@ namespace Expresso.Ast
         }
 
         public CollectionPattern(IEnumerable<PatternConstruct> patterns, bool isVector)
+            : base(patterns.First().StartLocation, patterns.Last().EndLocation)
         {
             CollectionType = new SimpleType(isVector ? "vector" : "array", new List<AstType>{
                 new PlaceholderType(TextLocation.Empty)

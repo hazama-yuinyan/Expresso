@@ -54,6 +54,11 @@ namespace Expresso.Ast
             throw new InvalidOperationException("Can not work on that node");
         }
 
+        public void VisitCatchClause(CatchClause catchClause)
+        {
+            throw new InvalidOperationException("Can not work on that node");
+        }
+
         public void VisitCollectionPattern (CollectionPattern collectionPattern)
         {
             throw new InvalidOperationException("Can not work on that node");
@@ -146,6 +151,11 @@ namespace Expresso.Ast
         }
 
         public void VisitIfStatement (IfStatement ifStmt)
+        {
+            throw new InvalidOperationException("Can not work on that node");
+        }
+
+        public void VisitIgnoringRestPattern(IgnoringRestPattern restPattern)
         {
             throw new InvalidOperationException("Can not work on that node");
         }
@@ -276,9 +286,9 @@ namespace Expresso.Ast
             foreach(var type_arg in simpleType.TypeArguments)
                 type_arg.AcceptWalker(this);
 
-            if(type_params.Any((arg) => arg.Name == simpleType.Name)){
-                var param_type = type_params.Where((arg) => arg.Name == simpleType.Name)
-                                            .Select((arg) => arg)
+            if(type_params.Any(arg => arg.Name == simpleType.Name)){
+                var param_type = type_params.Where(arg => arg.Name == simpleType.Name)
+                                            .Select(arg => arg)
                                             .First()
                                             .Clone();
                 simpleType.ReplaceWith(param_type);
@@ -291,6 +301,16 @@ namespace Expresso.Ast
         }
 
         public void VisitTextNode (TextNode textNode)
+        {
+            throw new InvalidOperationException("Can not work on that node");
+        }
+
+        public void VisitThrowStatement(ThrowStatement throwStmt)
+        {
+            throw new InvalidOperationException("Can not work on that node");
+        }
+
+        public void VisitTryStatement(TryStatement tryStmt)
         {
             throw new InvalidOperationException("Can not work on that node");
         }
@@ -322,7 +342,7 @@ namespace Expresso.Ast
 
         public void VisitVariableDeclarationStatement (VariableDeclarationStatement varDecl)
         {
-            throw new NotImplementedException ();
+            throw new NotImplementedException("Can not work on that node");
         }
 
         public void VisitVariableInitializer (VariableInitializer initializer)

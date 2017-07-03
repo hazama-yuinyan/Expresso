@@ -269,6 +269,16 @@ namespace Expresso.Ast.Analysis
         {
         }
 
+        public void VisitThrowStatement(ThrowStatement throwStmt)
+        {
+            
+        }
+
+        public void VisitTryStatement(TryStatement tryStmt)
+        {
+            
+        }
+
         public void VisitWhileStatement(WhileStatement whileStmt)
         {
             // Walk the expression
@@ -311,6 +321,11 @@ namespace Expresso.Ast.Analysis
         public void VisitCastExpression(CastExpression castExpr)
         {
             throw new NotImplementedException();
+        }
+
+        public void VisitCatchClause(CatchClause catchClause)
+        {
+            
         }
 
         public void VisitComprehensionExpression(ComprehensionExpression comp)
@@ -570,6 +585,11 @@ namespace Expresso.Ast.Analysis
         }
 
         public void VisitExpressionPattern(ExpressionPattern exprPattern)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void VisitIgnoringRestPattern(IgnoringRestPattern restPattern)
         {
             throw new NotImplementedException();
         }

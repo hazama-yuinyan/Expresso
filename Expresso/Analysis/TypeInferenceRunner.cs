@@ -87,6 +87,16 @@ namespace Expresso.Ast.Analysis
                 throw new InvalidOperationException("Can not work on that node!");
             }
 
+            public AstType VisitThrowStatement(ThrowStatement throwStmt)
+            {
+                throw new InvalidOperationException("Can not work on that node!");
+            }
+
+            public AstType VisitTryStatement(TryStatement tryStmt)
+            {
+                throw new InvalidOperationException("Can not work on that node!");
+            }
+
             public AstType VisitWhileStatement(WhileStatement whileStmt)
             {
                 throw new InvalidOperationException("Can not work on that node!");
@@ -129,6 +139,11 @@ namespace Expresso.Ast.Analysis
             public AstType VisitCastExpression(CastExpression castExpr)
             {
                 return castExpr.ToExpression.Clone();
+            }
+
+            public AstType VisitCatchClause(CatchClause catchClause)
+            {
+                return catchClause.Pattern.AcceptWalker(this);
             }
 
             public AstType VisitComprehensionExpression(ComprehensionExpression comp)
@@ -614,6 +629,11 @@ namespace Expresso.Ast.Analysis
             public AstType VisitExpressionPattern(ExpressionPattern exprPattern)
             {
                 return exprPattern.Expression.AcceptWalker(this);
+            }
+
+            public AstType VisitIgnoringRestPattern(IgnoringRestPattern restPattern)
+            {
+                return SimpleType.Null;
             }
 
             public AstType VisitNullNode(AstNode nullNode)

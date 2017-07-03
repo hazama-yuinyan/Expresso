@@ -231,6 +231,11 @@ namespace Expresso.Ast
         {
             return new YieldStatement(expr, start, end);
         }
+
+        public static ThrowStatement MakeThrowStmt(ObjectCreationExpression objExpr, TextLocation loc = default(TextLocation))
+        {
+            return new ThrowStatement(objExpr, loc);
+        }
         #endregion
     }
 }

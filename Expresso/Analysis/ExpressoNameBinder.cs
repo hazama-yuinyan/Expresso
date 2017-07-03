@@ -209,6 +209,17 @@ namespace Expresso.Ast.Analysis
             scope_counter = tmp_counter + 1;
         }
 
+        public void VisitThrowStatement(ThrowStatement throwStmt)
+        {
+            throwStmt.CreationExpression.AcceptWalker(this);
+        }
+
+        public void VisitTryStatement(TryStatement tryStmt)
+        {
+            tryStmt.EnclosingBlock.AcceptWalker(this);
+            tryStmt.CatchClauses.AcceptWalker(this);
+        }
+
         public void VisitWhileStatement(WhileStatement whileStmt)
         {
             int tmp_counter = scope_counter;
@@ -254,6 +265,12 @@ namespace Expresso.Ast.Analysis
         {
             castExpr.Target.AcceptWalker(this);
             castExpr.ToExpression.AcceptWalker(this);
+        }
+
+        public void VisitCatchClause(CatchClause catchClause)
+        {
+            catchClause.Pattern.AcceptWalker(this);
+            catchClause.Body.AcceptWalker(this);
         }
 
         public void VisitComprehensionExpression(ComprehensionExpression comp)
@@ -338,9 +355,16 @@ namespace Expresso.Ast.Analysis
 
         public void VisitMatchClause(MatchPatternClause matchClause)
         {
+            int tmp_counter = scope_counter;
+            DecendScope();
+            scope_counter = 0;
+
             matchClause.Patterns.AcceptWalker(this);
             matchClause.Guard.AcceptWalker(this);
             matchClause.Body.AcceptWalker(this);
+
+            AscendScope();
+            scope_counter = tmp_counter + 1;
         }
 
         public void VisitSequenceExpression(SequenceExpression seqExpr)
@@ -586,6 +610,11 @@ namespace Expresso.Ast.Analysis
         public void VisitExpressionPattern(ExpressionPattern exprPattern)
         {
             exprPattern.Expression.AcceptWalker(this);
+        }
+
+        public void VisitIgnoringRestPattern(IgnoringRestPattern restPattern)
+        {
+            // no op
         }
 		#endregion
 

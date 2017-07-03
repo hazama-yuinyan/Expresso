@@ -1132,6 +1132,26 @@ namespace Expresso.Test
             var ast = parser.TopmostAst;
 
             var expected = AstNode.MakeModuleDef("main", new List<EntityDeclaration>{
+                EntityDeclaration.MakeClassDecl(
+                    "TestClass",
+                    Enumerable.Empty<AstType>(),
+                    Helpers.MakeSeq<EntityDeclaration>(
+                        EntityDeclaration.MakeField(
+                            Helpers.MakeSeq(
+                                AstNode.MakeIdentifier("x", Helpers.MakePrimitiveType("int")),
+                                AstNode.MakeIdentifier("y", Helpers.MakePrimitiveType("int")),
+                                AstNode.MakeIdentifier("z", Helpers.MakePrimitiveType("int"))
+                            ),
+                            Helpers.MakeSeq(
+                                Expression.Null,
+                                Expression.Null,
+                                Expression.Null
+                            ),
+                            Modifiers.Public | Modifiers.Immutable
+                        )
+                    ),
+                    Modifiers.None
+                ),
                 EntityDeclaration.MakeFunc(
                     "main",
                     Enumerable.Empty<ParameterDeclaration>(),
@@ -1190,6 +1210,218 @@ namespace Expresso.Test
                                     )
                                 ),
                                 PatternConstruct.MakeExpressionPattern(Expression.MakeConstant("string", "yui"))
+                            )
+                        ),
+                        Statement.MakeVarDecl(
+                            Helpers.MakeSeq(Helpers.MakeSomeIdent("tmp2")),
+                            Helpers.MakeSeq(
+                                Expression.MakeConstant("int", 1)
+                            ),
+                            Modifiers.Immutable
+                        ),
+                        Statement.MakeMatchStmt(
+                            Helpers.MakeIdentifierPath("tmp2"),
+                            Statement.MakeMatchClause(
+                                null,
+                                Statement.MakeExprStmt(
+                                    Expression.MakeSequenceExpression(
+                                        Helpers.MakeCallExpression(
+                                            Helpers.MakeIdentifierPath("print"),
+                                            Expression.MakeConstant("string", "0")
+                                        )
+                                    )
+                                ),
+                                PatternConstruct.MakeExpressionPattern(Expression.MakeConstant("int", 0))
+                            ),
+                            Statement.MakeMatchClause(
+                                null,
+                                Statement.MakeExprStmt(
+                                    Expression.MakeSequenceExpression(
+                                        Helpers.MakeCallExpression(
+                                            Helpers.MakeIdentifierPath("print"),
+                                            Expression.MakeConstant("string", "1 or 2")
+                                        )
+                                    )
+                                ),
+                                PatternConstruct.MakeExpressionPattern(Expression.MakeConstant("int", 1)),
+                                PatternConstruct.MakeExpressionPattern(Expression.MakeConstant("int", 2))
+                            ),
+                            Statement.MakeMatchClause(
+                                null,
+                                Statement.MakeExprStmt(
+                                    Expression.MakeSequenceExpression(
+                                        Helpers.MakeCallExpression(
+                                            Helpers.MakeIdentifierPath("printFormat"),
+                                            Expression.MakeConstant("string", "{} is in the range of 3 to 10"),
+                                            Helpers.MakeIdentifierPath("x")
+                                        )
+                                    )
+                                ),
+                                PatternConstruct.MakeIdentifierPattern(
+                                    "x",
+                                    Helpers.MakePlaceholderType(),
+                                    PatternConstruct.MakeExpressionPattern(
+                                        Expression.MakeIntSeq(
+                                            Expression.MakeConstant("int", 3),
+                                            Expression.MakeConstant("int", 10),
+                                            Expression.MakeConstant("int", 1),
+                                            true
+                                        )
+                                    )
+                                )
+                            ),
+                            Statement.MakeMatchClause(
+                                null,
+                                Statement.MakeExprStmt(
+                                    Expression.MakeSequenceExpression(
+                                        Helpers.MakeCallExpression(
+                                            Helpers.MakeIdentifierPath("print"),
+                                            Expression.MakeConstant("string", "otherwise")
+                                        )
+                                    )
+                                ),
+                                PatternConstruct.MakeWildcardPattern()
+                            )
+                        ),
+                        Statement.MakeVarDecl(
+                            Helpers.MakeSeq(Helpers.MakeSomeIdent("tmp3")),
+                            Helpers.MakeSeq(
+                                Expression.MakeObjectCreation(
+                                    Helpers.MakeGenericType("TestClass"),
+                                    Helpers.MakeSeq(
+                                        AstNode.MakeIdentifier("x"),
+                                        AstNode.MakeIdentifier("y"),
+                                        AstNode.MakeIdentifier("z")
+                                    ),
+                                    Helpers.MakeSeq(
+                                        Expression.MakeConstant("int", 1),
+                                        Expression.MakeConstant("int", 2),
+                                        Expression.MakeConstant("int", 3)
+                                    )
+                                )
+                            ),
+                            Modifiers.Immutable
+                        ),
+                        Statement.MakeMatchStmt(
+                            Helpers.MakeIdentifierPath("tmp3"),
+                            Statement.MakeMatchClause(
+                                null,
+                                Statement.MakeExprStmt(
+                                    Expression.MakeSequenceExpression(
+                                        Helpers.MakeCallExpression(
+                                            Helpers.MakeIdentifierPath("printFormat"),
+                                            Expression.MakeConstant("string", "x is {}"),
+                                            Helpers.MakeIdentifierPath("x")
+                                        )
+                                    )
+                                ),
+                                PatternConstruct.MakeDestructuringPattern(
+                                    Helpers.MakeGenericType("TestClass"),
+                                    PatternConstruct.MakeIdentifierPattern(
+                                        "x",
+                                        Helpers.MakePlaceholderType(),
+                                        null
+                                    ),
+                                    PatternConstruct.MakeIgnoringRestPattern()
+                                )
+                            ),
+                            Statement.MakeMatchClause(
+                                null,
+                                Statement.MakeExprStmt(
+                                    Expression.MakeSequenceExpression(
+                                        Helpers.MakeCallExpression(
+                                            Helpers.MakeIdentifierPath("printFormat"),
+                                            Expression.MakeConstant("string", "x is {}, y is {}"),
+                                            Helpers.MakeIdentifierPath("x"),
+                                            Helpers.MakeIdentifierPath("y")
+                                        )
+                                    )
+                                ),
+                                PatternConstruct.MakeDestructuringPattern(
+                                    Helpers.MakeGenericType("TestClass"),
+                                    PatternConstruct.MakeIdentifierPattern(
+                                        "x",
+                                        Helpers.MakePlaceholderType(),
+                                        null
+                                    ),
+                                    PatternConstruct.MakeIdentifierPattern(
+                                        "y",
+                                        Helpers.MakePlaceholderType(),
+                                        null
+                                    ),
+                                    PatternConstruct.MakeWildcardPattern()
+                                )
+                            )
+                        ),
+                        Statement.MakeVarDecl(
+                            Helpers.MakeSeq(
+                                Helpers.MakeSomeIdent("tmp4")
+                            ),
+                            Helpers.MakeSeq(
+                                Expression.MakeSequenceInitializer(
+                                    Helpers.MakeGenericType("vector", Helpers.MakePlaceholderType()),
+                                    Expression.MakeConstant("int", 1),
+                                    Expression.MakeConstant("int", 2),
+                                    Expression.MakeConstant("int", 3),
+                                    Expression.MakeConstant("int", 4)
+                                )
+                            ),
+                            Modifiers.Immutable
+                        ),
+                        Statement.MakeMatchStmt(
+                            Helpers.MakeIdentifierPath("tmp4"),
+                            Statement.MakeMatchClause(
+                                null,
+                                Statement.MakeExprStmt(
+                                    Expression.MakeSequenceExpression(
+                                        Helpers.MakeCallExpression(
+                                            Helpers.MakeIdentifierPath("printFormat"),
+                                            Expression.MakeConstant("string", "x and y are both vector's elements and the values are {} and {} respectively"),
+                                            Helpers.MakeIdentifierPath("x"),
+                                            Helpers.MakeIdentifierPath("y")
+                                        )
+                                    )
+                                ),
+                                PatternConstruct.MakeCollectionPattern(
+                                    true,
+                                    PatternConstruct.MakeExpressionPattern(Expression.MakeConstant("int", 1)),
+                                    PatternConstruct.MakeExpressionPattern(Expression.MakeConstant("int", 2)),
+                                    PatternConstruct.MakeIdentifierPattern(
+                                        "x",
+                                        Helpers.MakePlaceholderType(),
+                                        null
+                                    ),
+                                    PatternConstruct.MakeIdentifierPattern(
+                                        "y",
+                                        Helpers.MakePlaceholderType(),
+                                        null
+                                    )
+                                )
+                            ),
+                            Statement.MakeMatchClause(
+                                null,
+                                Statement.MakeExprStmt(
+                                    Expression.MakeSequenceExpression(
+                                        Helpers.MakeCallExpression(
+                                            Helpers.MakeIdentifierPath("printFormat"),
+                                            Expression.MakeConstant("string", "tuple detected and the values are {}, {}"),
+                                            Helpers.MakeIdentifierPath("x"),
+                                            Helpers.MakeIdentifierPath("y")
+                                        )
+                                    )
+                                ),
+                                PatternConstruct.MakeTuplePattern(
+                                    PatternConstruct.MakeIdentifierPattern(
+                                        "x",
+                                        Helpers.MakePlaceholderType(),
+                                        null
+                                    ),
+                                    PatternConstruct.MakeIdentifierPattern(
+                                        "y",
+                                        Helpers.MakePlaceholderType(),
+                                        null
+                                    )
+                                )
                             )
                         )
                     ),

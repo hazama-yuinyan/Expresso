@@ -22,6 +22,11 @@ namespace Expresso.Ast
                 }
             }
 
+            internal NullPatternConstruct()
+                : base(default(TextLocation), default(TextLocation))
+            {
+            }
+
             public override void AcceptWalker(IAstWalker walker)
             {
                 walker.VisitNullNode(this);
@@ -55,6 +60,7 @@ namespace Expresso.Ast
             readonly Pattern child;
 
             public PatternPlaceholder(Pattern child)
+                : base(default(TextLocation), default(TextLocation))
             {
                 this.child = child;
             }
@@ -94,12 +100,17 @@ namespace Expresso.Ast
             }
         }
 
+        protected PatternConstruct(TextLocation startLoc, TextLocation endLoc)
+            : base(startLoc, endLoc)
+        {
+        }
+
         #endregion
 
         #region Factory methods
-        public static WildcardPattern MakeWildcardPattern()
+        public static WildcardPattern MakeWildcardPattern(TextLocation loc = default(TextLocation))
         {
-            return new WildcardPattern();
+            return new WildcardPattern(loc);
         }
 
         public static IdentifierPattern MakeIdentifierPattern(string name, AstType type,
@@ -113,14 +124,12 @@ namespace Expresso.Ast
             return new IdentifierPattern(ident, inner);
         }
 
-        public static ValueBindingPattern MakeValueBindingPattern(IEnumerable<VariableInitializer> inits,
-            Modifiers modifiers)
+        public static ValueBindingPattern MakeValueBindingPattern(IEnumerable<VariableInitializer> inits, Modifiers modifiers)
         {
             return new ValueBindingPattern(inits, modifiers);
         }
 
-        public static CollectionPattern MakeCollectionPattern(IEnumerable<PatternConstruct> items,
-            bool isVector)
+        public static CollectionPattern MakeCollectionPattern(IEnumerable<PatternConstruct> items, bool isVector)
         {
             return new CollectionPattern(items, isVector);
         }
@@ -155,6 +164,11 @@ namespace Expresso.Ast
         public static ExpressionPattern MakeExpressionPattern(Expression inner)
         {
             return new ExpressionPattern(inner);
+        }
+
+        public static IgnoringRestPattern MakeIgnoringRestPattern(TextLocation loc = default(TextLocation))
+        {
+            return new IgnoringRestPattern(loc);
         }
         #endregion
     }

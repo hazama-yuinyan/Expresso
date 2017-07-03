@@ -28,6 +28,7 @@ namespace Expresso.Ast
         }
 
         public ValueBindingPattern(IEnumerable<VariableInitializer> inits, Modifiers modifiers)
+            : base(inits.First().StartLocation, inits.Last().EndLocation)
         {
             Modifiers = modifiers;
             Variables.AddRange(inits);

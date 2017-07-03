@@ -238,21 +238,17 @@ $namespace=Expresso
 		
 		while(x.kind != 0 && x.kind != _comma && x.kind != _keyword_for)
             x = scanner.Peek();
-		
+
         scanner.ResetPeek();
         return x.kind != _keyword_for;
 	}
 
     bool IsIdentifierPattern()
     {
-        Token x = scanner.Peek();
+        var la = this.la;
+        var x = scanner.Peek();
         scanner.ResetPeek();
-        return x.kind != _double_colon && x.kind != _lcurly;
-    }
-
-    bool IsDestructuringPattern()
-    {
-    	return la.kind == _double_colon;
+        return la.kind == _ident && x.kind != _double_colon && x.kind != _lcurly;
     }
 
     bool NotFinalComma()
@@ -806,12 +802,12 @@ YieldStmt<out Statement stmt>		(. Expression expr; var start_loc = NextLocation;
   CondExpr<out expr>
   SYNC ';'							(. stmt = Statement.MakeYieldStmt(expr, start_loc, CurrentLocation); .).
 /*------------------------------------------------------------------------*/
-ThrowStmt<out Statement stmt>       (. ObjectCreation obj; var start_loc = NextLocation; AstType type_path; .)
+ThrowStmt<out Statement stmt>       (. Expression obj; var start_loc = NextLocation; AstType type_path; .)
 =
   "throw"
   Type<out type_path>
   ObjectCreation<type_path, out obj>
-  SYNC ';'                          (. stmt = Statement.MakeThrowStmt(obj, start_loc, CurrentLocation); .).
+  SYNC ';'                          (. stmt = Statement.MakeThrowStmt((ObjectCreationExpression)obj, start_loc); .).
 /*------------------------------------------------------------------------*/
 EmptyStmt<out Statement stmt>       (. var start_loc = NextLocation; .)
 =
@@ -958,14 +954,25 @@ MatchStmt<out Statement stmt>		(. Expression target; List<MatchPatternClause> ma
                                     .).
 /*------------------------------------------------------------------------*/
 MatchPatternList<. out List<MatchPatternClause> clauses .>
-                                    (. clauses = new List<MatchPatternClause>(); List<PatternConstruct> pattern_list;
-                                       Statement inner; Expression guard;
-                                    .)
+                                             (. clauses = new List<MatchPatternClause>(); List<PatternConstruct> pattern_list;
+                                                Statement inner; Expression guard;
+                                                Symbols.AddScope();
+                                                GoDownScope();
+                                                Symbols.Name = "arm`" + ScopeId++;
+                                             .)
 =
   PatternList<out pattern_list, out guard>
-  Stmt<out inner>					(. clauses.Add(Statement.MakeMatchClause(pattern_list, guard, inner)); .)
-  { PatternList<out pattern_list, out guard>
-    Stmt<out inner>					(. clauses.Add(Statement.MakeMatchClause(pattern_list, guard, inner)); .)
+  Stmt<out inner>					         (. clauses.Add(Statement.MakeMatchClause(pattern_list, guard, inner));
+                                                GoUpScope();
+                                             .)
+  { ','                                      (. Symbols.AddScope();
+                                                GoDownScope();
+                                                Symbols.Name = "arm`" + ScopeId++;
+                                             .)
+    PatternList<out pattern_list, out guard> 
+    Stmt<out inner>					         (. clauses.Add(Statement.MakeMatchClause(pattern_list, guard, inner));
+                                                GoUpScope();
+                                             .)
   }.
 /*------------------------------------------------------------------------*/
 PatternList<. out List<PatternConstruct> patterns, out Expression guard .>
@@ -1027,8 +1034,10 @@ Pattern<out PatternConstruct pattern>       (. pattern = null; .)
 =
   WildcardPattern<out pattern>
   | TuplePattern<out pattern>
-  | IF(IsDestructuringPattern()) DestructuringPattern<out pattern>
-  | ExpressionPattern<out pattern>.
+  | IF(IsIdentifierPattern())
+    IdentifierPattern<out pattern>
+  | DestructuringPattern<out pattern>
+  | RValuePattern<out pattern>.
 /*------------------------------------------------------------------------*/
 ValueBindingPattern<out PatternConstruct pattern>
                                 (. VariableInitializer init; var modifier = ExpressoModifiers.None; .)
@@ -1045,10 +1054,9 @@ ExpressionPattern<out PatternConstruct pattern> (. Expression expr; .)
 =
   PatternOrTest<out expr>                       (. pattern = PatternConstruct.MakeExpressionPattern(expr); .).
 /*------------------------------------------------------------------------*/
-PatternItem<out PatternConstruct pattern>   (. pattern = PatternConstruct.Null; .)
+RValuePattern<out PatternConstruct pattern>     (. Expression expr; .)
 =
-  ExpressionPattern<out pattern>
-  | IdentifierPattern<out pattern>.
+  LiteralIntSeqExpr<out expr>                   (. pattern = PatternConstruct.MakeExpressionPattern(expr); .).
 /*------------------------------------------------------------------------*/
 LhsPattern<out PatternConstruct pattern>    (. pattern = PatternConstruct.Null; .)
 =
@@ -1071,7 +1079,7 @@ IdentifierPattern<out PatternConstruct pattern> (. PatternConstruct inner = null
                                        Symbols.AddSymbol(name, ident);
                                     .)
   [ '@'
-    LhsPattern<out inner>
+    Pattern<out inner>
   ]                                 (. pattern = PatternConstruct.MakeIdentifierPattern(ident, inner); .).
 /*------------------------------------------------------------------------*/
 TuplePattern<out PatternConstruct pattern>  (. var inners = new List<PatternConstruct>(); .)
@@ -1091,17 +1099,19 @@ DestructuringPattern<out PatternConstruct pattern>
 =
   ( TypePathExpression<out type_path>
     lcurly
-    [ PatternItem<out pattern>              (. patterns.Add(pattern); .)
+    [ Pattern<out pattern>                  (. patterns.Add(pattern); .)
     ]
     { ','
-      PatternItem<out pattern>              (. patterns.Add(pattern); .)
+      ( Pattern<out pattern>                (. patterns.Add(pattern); .)
+      | ".."                                (. patterns.Add(PatternConstruct.MakeIgnoringRestPattern(CurrentLocation)); .)
+      )
     }
     rcurly                                  (. pattern = PatternConstruct.MakeDestructuringPattern(type_path, patterns); .)
   | '['
-    [ PatternItem<out pattern>              (. patterns.Add(pattern); .)
+    [ Pattern<out pattern>                  (. patterns.Add(pattern); .)
     ]
     { IF(NotFinalComma()) WEAK ','
-      PatternItem<out pattern>              (. patterns.Add(pattern); .)
+      Pattern<out pattern>                  (. patterns.Add(pattern); .)
     }
     [ ','
       "..."                                 (. is_vector = true; .)
@@ -1260,7 +1270,6 @@ Primary<out Expression expr>		    (. expr = null; PathExpression path; AstType t
       ObjectCreation<type_path, out expr>
     ]
   | Atom<out expr>
-  | NewExpression<out expr>
   )
   { Trailer<ref expr>
   }.
@@ -1370,11 +1379,19 @@ LhsPrimary<out Expression expr>     (. expr = null; PathExpression path; .)
   { Trailer<ref expr>
   }.
 /*------------------------------------------------------------------------*/
-NewExpression<out Expression expr>      (. AstType type_path; var start_loc = CurrentLocation; .)
+LiteralIntSeqExpr<out Expression expr>  (. Expression start = null, end = null, step = null; bool upper_inclusive = false; .)
 =
-  "new"
-  Type<out type_path>
-  ObjectCreation<type_path, out expr>   (. expr = Expression.MakeNewExpr((ObjectCreationExpression)expr, start_loc); .).
+  Literal<out start>                    (. expr = start; .)
+  [ RangeOperator<ref upper_inclusive>
+    Literal<out end>
+    [ ':'
+      Literal<out step>
+    ]                                   (. if(step == null)
+                                               step = Expression.MakeConstant("int", 1, TextLocation.Empty);
+
+                                           expr = Expression.MakeIntSeq(start, end, step, upper_inclusive);
+                                        .)
+  ].
 /*------------------------------------------------------------------------*/
 ObjectCreation<AstType typePath, out Expression expr>
                                         (.

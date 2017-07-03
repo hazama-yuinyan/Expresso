@@ -27,6 +27,7 @@ namespace Expresso.Ast
         }
 
         public IdentifierPattern(Identifier ident, PatternConstruct inner)
+            : base(ident.StartLocation, (inner != null) ? inner.EndLocation : ident.EndLocation)
         {
             Identifier = ident;
             InnerPattern = inner;

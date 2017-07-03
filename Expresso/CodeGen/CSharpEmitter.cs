@@ -439,6 +439,16 @@ namespace Expresso.CodeGen
             });
         }
 
+        public CSharpExpr VisitThrowStatement(ThrowStatement throwStmt, CSharpEmitterContext context)
+        {
+            return null;
+        }
+
+        public CSharpExpr VisitTryStatement(TryStatement tryStmt, CSharpEmitterContext context)
+        {
+            return null;
+        }
+
         public CSharpExpr VisitWhileStatement(WhileStatement whileStmt, CSharpEmitterContext context)
         {
             has_continue = false;
@@ -613,6 +623,11 @@ namespace Expresso.CodeGen
             var target = castExpr.Target.AcceptWalker(this, context);
             var to_type = CSharpCompilerHelper.GetNativeType(castExpr.ToExpression);
             return CSharpExpr.TypeAs(target, to_type);
+        }
+
+        public CSharpExpr VisitCatchClause(CatchClause catchClause, CSharpEmitterContext context)
+        {
+            return null;
         }
 
         public CSharpExpr VisitComprehensionExpression(ComprehensionExpression comp, CSharpEmitterContext context)
@@ -978,6 +993,10 @@ namespace Expresso.CodeGen
             //       }else{
             //           Console.Write("else");
             //       }
+            int tmp_counter = sibling_count;
+            DescendScope();
+            sibling_count = 0;
+
             IEnumerable<ExprTree.ParameterExpression> destructuring_exprs = null;
             CSharpExpr res = null;
             var prev_additionals = context.Additionals;
@@ -1013,6 +1032,9 @@ namespace Expresso.CodeGen
             var body = matchClause.Body.AcceptWalker(this, context);
             if(destructuring_exprs != null)
                 body = CSharpExpr.Block(destructuring_exprs, body);
+
+            AscendScope();
+            sibling_count = tmp_counter + 1;
 
             return (res == null) ? null : CSharpExpr.IfThen(res, body);
         }
@@ -1425,6 +1447,11 @@ namespace Expresso.CodeGen
             var expr = exprPattern.Expression.AcceptWalker(this, context);
             return (context.Method != null) ? CSharpExpr.Call(context.Method, expr) as CSharpExpr :
                 (context.ContextAst is MatchStatement) ? CSharpExpr.Equal(context.TemporaryVariable, expr) as CSharpExpr : expr;
+        }
+
+        public CSharpExpr VisitIgnoringRestPattern(IgnoringRestPattern restPattern, CSharpEmitterContext context)
+        {
+            return null;
         }
 
         public CSharpExpr VisitNullNode(AstNode nullNode, CSharpEmitterContext context)

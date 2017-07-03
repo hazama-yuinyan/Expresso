@@ -81,6 +81,16 @@ namespace Expresso.CodeGen
                 throw new NotImplementedException();
             }
 
+            public void VisitThrowStatement(ThrowStatement throwStmt)
+            {
+                throw new NotImplementedException();
+            }
+
+            public void VisitTryStatement(TryStatement tryStmt)
+            {
+                throw new NotImplementedException();
+            }
+
             public void VisitWhileStatement(WhileStatement whileStmt)
             {
                 throw new NotImplementedException();
@@ -112,6 +122,11 @@ namespace Expresso.CodeGen
             }
 
             public void VisitCastExpression(CastExpression castExpr)
+            {
+                throw new NotImplementedException();
+            }
+
+            public void VisitCatchClause(CatchClause catchClause)
             {
                 throw new NotImplementedException();
             }
@@ -398,6 +413,11 @@ namespace Expresso.CodeGen
             }
 
             public void VisitExpressionPattern(ExpressionPattern exprPattern)
+            {
+                throw new NotImplementedException();
+            }
+
+            public void VisitIgnoringRestPattern(IgnoringRestPattern restPattern)
             {
                 throw new NotImplementedException();
             }
