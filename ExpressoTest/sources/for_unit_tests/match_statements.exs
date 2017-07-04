@@ -33,6 +33,12 @@ def main()
     let tmp4 = [1, 2, 3, 4, ...];
     match tmp4 {
         [1, 2, x, y, ...] => printFormat("x and y are both vector's elements and the values are {} and {} respectively", x, y);,
-        (x, y) => printFormat("tuple detected and the values are {}, {}", x, y);
+        [1, 2, 3, _, ...] => print("tmp4 is a vector");
+    }
+
+    let tmp5 = (1, 2);
+    match tmp5 {
+        (x, ..) => printFormat("x is {}", x);,
+        (x, y) => printFormat("x is {} and y is {}", x, y);
     }
 }

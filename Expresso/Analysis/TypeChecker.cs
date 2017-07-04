@@ -632,6 +632,8 @@ namespace Expresso.Ast.Analysis
                 result = inference_runner.FigureOutCommonType(result, tmp);
             }
 
+            matchClause.Body.AcceptWalker(this);
+
             AscendScope();
             scope_counter = tmp_counter + 1;
             return result;
@@ -933,7 +935,10 @@ namespace Expresso.Ast.Analysis
 
         public AstType VisitIdentifierPattern(IdentifierPattern identifierPattern)
         {
-            return !identifierPattern.InnerPattern.IsNull ? identifierPattern.InnerPattern.AcceptWalker(this) : AstType.Null;
+            var type = identifierPattern.AcceptWalker(inference_runner);
+            identifierPattern.Identifier.Type.ReplaceWith(type);
+            identifierPattern.InnerPattern.AcceptWalker(this);
+            return type;
         }
 
         public AstType VisitValueBindingPattern(ValueBindingPattern valueBindingPattern)

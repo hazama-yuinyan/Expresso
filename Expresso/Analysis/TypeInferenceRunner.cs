@@ -595,10 +595,30 @@ namespace Expresso.Ast.Analysis
 
             public AstType VisitIdentifierPattern(IdentifierPattern identifierPattern)
             {
-                if(identifierPattern.InnerPattern.IsNull)
-                    return identifierPattern.Identifier.AcceptWalker(this);
-                else
-                    return identifierPattern.InnerPattern.AcceptWalker(this);
+                if(identifierPattern.InnerPattern.IsNull){
+                    var type = identifierPattern.Parent.AcceptWalker(this);
+                    if(IsContainerType(type)){
+                        var parent = identifierPattern.Parent;
+                        int i = 0;
+                        parent.Children.Any(node => {
+                            ++i;
+                            return node.IsMatch(identifierPattern);
+                        });
+                        // decrement i before use because the above code always returns the index + 1
+                        --i;
+                        type = ((SimpleType)type).TypeArguments.ElementAt(i);
+                    }else if(IsIntSeqType(type)){
+                        type = AstType.MakePrimitiveType("int", type.StartLocation);
+                    }
+
+                    return type;
+                }else{
+                    var type = identifierPattern.InnerPattern.AcceptWalker(this);
+                    if(IsIntSeqType(type))
+                        type = AstType.MakePrimitiveType("int", type.StartLocation);
+
+                    return type;
+                }
             }
 
             public AstType VisitValueBindingPattern(ValueBindingPattern valueBindingPattern)
@@ -711,6 +731,11 @@ namespace Expresso.Ast.Analysis
             {
                 return (int)Expresso.TypeSystem.KnownTypeCode.Int <= (int)type.KnownTypeCode
                     && (int)type.KnownTypeCode <= (int)Expresso.TypeSystem.KnownTypeCode.BigInteger;
+            }
+
+            static bool IsIntSeqType(AstType type)
+            {
+                return type is PrimitiveType && ((PrimitiveType)type).KnownTypeCode == KnownTypeCode.IntSeq;
             }
         }
     }

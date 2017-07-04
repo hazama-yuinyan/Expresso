@@ -1403,8 +1403,69 @@ namespace Expresso.Test
                                 Statement.MakeExprStmt(
                                     Expression.MakeSequenceExpression(
                                         Helpers.MakeCallExpression(
+                                            Helpers.MakeIdentifierPath("print"),
+                                            Expression.MakeConstant("string", "tmp4 is a vector")
+                                        )
+                                    )
+                                ),
+                                PatternConstruct.MakeCollectionPattern(
+                                    true,
+                                    PatternConstruct.MakeExpressionPattern(
+                                        Expression.MakeConstant("int", 1)
+                                    ),
+                                    PatternConstruct.MakeExpressionPattern(
+                                        Expression.MakeConstant("int", 2)
+                                    ),
+                                    PatternConstruct.MakeExpressionPattern(
+                                        Expression.MakeConstant("int", 3)
+                                    ),
+                                    PatternConstruct.MakeWildcardPattern()
+                                )
+                            )
+                        ),
+                        Statement.MakeVarDecl(
+                            Helpers.MakeSeq(
+                                Helpers.MakeSomeIdent("tmp5")
+                            ),
+                            Helpers.MakeSeq(
+                                Expression.MakeParen(
+                                    Expression.MakeSequenceExpression(
+                                        Expression.MakeConstant("int", 1),
+                                        Expression.MakeConstant("int", 2)
+                                    )
+                                )
+                            ),
+                            Modifiers.Immutable
+                        ),
+                        Statement.MakeMatchStmt(
+                            Helpers.MakeIdentifierPath("tmp5"),
+                            Statement.MakeMatchClause(
+                                null,
+                                Statement.MakeExprStmt(
+                                    Expression.MakeSequenceExpression(
+                                        Helpers.MakeCallExpression(
                                             Helpers.MakeIdentifierPath("printFormat"),
-                                            Expression.MakeConstant("string", "tuple detected and the values are {}, {}"),
+                                            Expression.MakeConstant("string", "x is {}"),
+                                            Helpers.MakeIdentifierPath("x")
+                                        )
+                                    )
+                                ),
+                                PatternConstruct.MakeTuplePattern(
+                                    PatternConstruct.MakeIdentifierPattern(
+                                        "x",
+                                        Helpers.MakePlaceholderType(),
+                                        null
+                                    ),
+                                    PatternConstruct.MakeIgnoringRestPattern()
+                                )
+                            ),
+                            Statement.MakeMatchClause(
+                                null,
+                                Statement.MakeExprStmt(
+                                    Expression.MakeSequenceExpression(
+                                        Helpers.MakeCallExpression(
+                                            Helpers.MakeIdentifierPath("printFormat"),
+                                            Expression.MakeConstant("string", "x is {} and y is {}"),
                                             Helpers.MakeIdentifierPath("x"),
                                             Helpers.MakeIdentifierPath("y")
                                         )

@@ -1087,6 +1087,7 @@ TuplePattern<out PatternConstruct pattern>  (. var inners = new List<PatternCons
   '('
   { ( LhsPattern<out pattern>
     | ExpressionPattern<out pattern>
+    | ".."                                  (. pattern = PatternConstruct.MakeIgnoringRestPattern(CurrentLocation); .)
     )                                       (. inners.Add(pattern); .)
     ','
   }
@@ -1396,9 +1397,9 @@ LiteralIntSeqExpr<out Expression expr>  (. Expression start = null, end = null, 
 ObjectCreation<AstType typePath, out Expression expr>
                                         (.
                                            var fields = new List<Identifier>(); var values = new List<Expression>(); var start_loc = CurrentLocation;
-                                           Symbols.AddScope();
+                                           /*Symbols.AddScope();
                                            GoDownScope();
-                                           Symbols.Name = "ObjectCreation`" + ScopeId++;
+                                           Symbols.Name = "ObjectCreation`" + ScopeId++;*/
                                         .)
 =
   lcurly
@@ -1412,7 +1413,7 @@ ObjectCreation<AstType typePath, out Expression expr>
   }
   SYNC '}'                              (.
                                            expr = Expression.MakeObjectCreation(typePath, fields, values, start_loc, CurrentLocation);
-                                           GoUpScope();
+                                           //GoUpScope();
                                         .).
 /*------------------------------------------------------------------------*/
 Trailer<ref Expression expr>	(. var args = new List<Expression>(); var start_loc = CurrentLocation; .)
