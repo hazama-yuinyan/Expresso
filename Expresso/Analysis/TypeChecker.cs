@@ -236,6 +236,7 @@ namespace Expresso.Ast.Analysis
 
             whileStmt.Condition.AcceptWalker(this);
             whileStmt.Body.AcceptWalker(this);
+
             AscendScope();
             scope_counter = tmp_counter + 1;
             return null;
@@ -647,7 +648,7 @@ namespace Expresso.Ast.Analysis
             AstType result = AstType.Null;
             foreach(var pattern in matchClause.Patterns){
                 var tmp = pattern.AcceptWalker(this);
-                result = inference_runner.FigureOutCommonType(result, tmp);
+                result = FigureOutCommonType(result, tmp);
             }
 
             matchClause.Body.AcceptWalker(this);
@@ -970,9 +971,17 @@ namespace Expresso.Ast.Analysis
 
         public AstType VisitCollectionPattern(CollectionPattern collectionPattern)
         {
-            foreach(var item in collectionPattern.Items)
-                item.AcceptWalker(this);
-            
+            AstType item_type = null;
+            foreach(var item in collectionPattern.Items){
+                var type = item.AcceptWalker(this);
+                if(item_type == null && !type.IsNull)
+                    item_type = type.Clone();
+            }
+
+            collectionPattern.CollectionType
+                             .TypeArguments
+                             .First()
+                             .ReplaceWith(item_type);
             return collectionPattern.CollectionType;
         }
 
@@ -1088,7 +1097,57 @@ namespace Expresso.Ast.Analysis
                 }
             }
 
+            if(simple2 != null && simple2.IsNull){
+                // This indicates that the right-hand-side represents, say, the wildcard pattern
+                return TriBool.True;
+            }
+
             return TriBool.False;
+        }
+
+        /// <summary>
+        /// Given 2 expressions, it tries to figure out the most common type.
+        /// </summary>
+        /// <returns>The common type between `lhs` and `rhs`.</returns>
+        AstType FigureOutCommonType(AstType lhs, AstType rhs)
+        {
+            if(lhs == AstType.Null)
+                return rhs;
+
+            if(rhs == AstType.Null)
+                return lhs;
+
+            var lhs_primitive = lhs as PrimitiveType;
+            var rhs_primitive = rhs as PrimitiveType;
+            if(lhs_primitive != null && rhs_primitive != null){
+                // If both are primitives, check first if both are exactly the same type
+                if(lhs_primitive.KnownTypeCode == rhs_primitive.KnownTypeCode){
+                    return lhs_primitive;
+                }else if(IsNumericalType(lhs_primitive) && IsNumericalType(rhs_primitive)){
+                    // If not, then check if both are numeric types or not
+                    var common_typecode = lhs_primitive.KnownTypeCode | rhs_primitive.KnownTypeCode;
+                    return new PrimitiveType(common_typecode.ToString().ToLower(), TextLocation.Empty);
+                }else{
+                    // If both aren't the case, then we must say there is no common types between these 2 expressions
+                    return AstType.Null;
+                }
+            }
+
+            var lhs_simple = lhs as SimpleType;
+            var rhs_simple = rhs as SimpleType;
+            if(lhs_simple != null && rhs_simple != null){
+                if(lhs_simple.IsMatch(rhs_simple)){
+                    return lhs_simple;
+                }
+            }
+
+            parser.ReportWarning(
+                "Can not guess the common type between `{0}` and `{1}`.",
+                lhs,
+                lhs, rhs
+            );
+
+            return null;
         }
 
         /// <summary>

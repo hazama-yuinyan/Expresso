@@ -20,7 +20,7 @@ def main()
     try{
         throwException()
     }
-    catch(ex (- ExsException){
-        println(ex.Message);
+    catch ExsException{Message} {
+        println(Message);
     }
 }

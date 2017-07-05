@@ -53,7 +53,7 @@ namespace Expresso.CodeGen
         public static Type GetPrimitiveType(PrimitiveType type)
         {
             if(type == null)
-                throw new ArgumentNullException("type");
+                throw new ArgumentNullException(nameof(type));
 
             switch(type.KnownTypeCode){
             case KnownTypeCode.Bool:
@@ -108,7 +108,7 @@ namespace Expresso.CodeGen
         public static Type GetContainerType(SimpleType containerType)
         {
             if(containerType == null)
-                throw new ArgumentNullException("containerType");
+                throw new ArgumentNullException(nameof(containerType));
 
             switch(containerType.Name){
             case "dictionary":

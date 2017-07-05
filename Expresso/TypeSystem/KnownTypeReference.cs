@@ -41,9 +41,9 @@ namespace Expresso.TypeSystem
 
         /// <summary>System.Tuple</summary>
         Tuple = 0x10,
-        /// <summary>System.Collections.Generics.List{T}</summary>
+        /// <summary>System.Collections.Generics.List&lt;T&gt;</summary>
         Vector,
-        /// <summary>System.Collections.Generics.Dictionary{K, V}</summary>
+        /// <summary>System.Collections.Generics.Dictionary&lt;K, V&gt;</summary>
         Dictionary,
         /// <summary><c>void</c> (System.Void)</summary>
         Void,

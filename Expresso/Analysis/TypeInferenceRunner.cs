@@ -124,7 +124,7 @@ namespace Expresso.Ast.Analysis
 
             public AstType VisitBinaryExpression(BinaryExpression binaryExpr)
             {
-                return FigureOutCommonType(binaryExpr.Left.AcceptWalker(this), binaryExpr.Right.AcceptWalker(this));
+                return checker.FigureOutCommonType(binaryExpr.Left.AcceptWalker(this), binaryExpr.Right.AcceptWalker(this));
             }
 
             public AstType VisitCallExpression(CallExpression callExpr)
@@ -225,7 +225,7 @@ namespace Expresso.Ast.Analysis
 
             public AstType VisitConditionalExpression(ConditionalExpression condExpr)
             {
-                return FigureOutCommonType(condExpr.TrueExpression.AcceptWalker(this), condExpr.FalseExpression.AcceptWalker(this));
+                return checker.FigureOutCommonType(condExpr.TrueExpression.AcceptWalker(this), condExpr.FalseExpression.AcceptWalker(this));
             }
 
             public AstType VisitKeyValueLikeExpression(KeyValueLikeExpression keyValue)
@@ -379,8 +379,8 @@ namespace Expresso.Ast.Analysis
                     foreach(var item in seqInitializer.Items.Skip(1).Cast<KeyValueLikeExpression>()){
                         var tmp_key = item.KeyExpression.AcceptWalker(this);
                         var tmp_value = item.ValueExpression.AcceptWalker(this);
-                        key_type = FigureOutCommonType(key_type, tmp_key);
-                        value_type = FigureOutCommonType(value_type, tmp_value);
+                        key_type = checker.FigureOutCommonType(key_type, tmp_key);
+                        value_type = checker.FigureOutCommonType(value_type, tmp_value);
                     }
                     seqInitializer.ObjectType.TypeArguments.FirstOrNullObject().ReplaceWith(key_type);
                     seqInitializer.ObjectType.TypeArguments.LastOrNullObject().ReplaceWith(value_type);
@@ -391,7 +391,7 @@ namespace Expresso.Ast.Analysis
                 }else{
                     AstType first = seqInitializer.Items.FirstOrNullObject().AcceptWalker(this);
                     var result = seqInitializer.Items.Skip(1)
-                        .Aggregate(first, (accum, item) => FigureOutCommonType(accum, item.AcceptWalker(this)));
+                        .Aggregate(first, (accum, item) => checker.FigureOutCommonType(accum, item.AcceptWalker(this)));
                     seqInitializer.ObjectType.TypeArguments.FirstOrNullObject().ReplaceWith(result.Clone());
 
                     return seqInitializer.ObjectType.Clone();
@@ -562,7 +562,7 @@ namespace Expresso.Ast.Analysis
             {
                 if(parameterDecl.Option.IsNull){
                     parser.ReportSemanticErrorRegional(
-                        "Can not infer the expression '{0}' because it doesn't have any context.",
+                        "Error ES1301: Can not infer the expression '{0}' because it doesn't have any context.",
                         parameterDecl.NameToken, parameterDecl.Option,
                         parameterDecl
                     );
@@ -577,7 +577,7 @@ namespace Expresso.Ast.Analysis
             {
                 if(initializer.Initializer.IsNull){
                     parser.ReportSemanticErrorRegional(
-                        "Can not infer the expression '{0}' because it doesn't have any context.",
+                        "Error ES1301: Can not infer the expression '{0}' because it doesn't have any context.",
                         initializer.NameToken, initializer.Initializer,
                         initializer
                     );
@@ -608,9 +608,9 @@ namespace Expresso.Ast.Analysis
                         --i;
                         type = ((SimpleType)type).TypeArguments.ElementAt(i);
                     }else if(IsContainerType(type)){
-                        type = ((SimpleType)type).TypeArguments.First();
+                        type = MakeOutElementType(type);
                     }else if(IsIntSeqType(type)){
-                        type = AstType.MakePrimitiveType("int", type.StartLocation);
+                        type = MakeOutElementType(type);
                     }else if(IsDictionaryType(type)){
                         
                     }else{
@@ -696,49 +696,6 @@ namespace Expresso.Ast.Analysis
             }
 
             #endregion
-
-            /// <summary>
-            /// Given 2 expressions, it tries to figure out the most common type.
-            /// </summary>
-            /// <returns>The common type between `lhs` and `rhs`.</returns>
-            internal AstType FigureOutCommonType(AstType lhs, AstType rhs)
-            {
-                if(lhs == AstType.Null)
-                    return rhs;
-
-                if(rhs == AstType.Null)
-                    return lhs;
-                
-                var lhs_primitive = lhs as PrimitiveType;
-                var rhs_primitive = rhs as PrimitiveType;
-                if(lhs_primitive != null && rhs_primitive != null){
-                    // If both are primitives, check first if both are exactly the same type
-                    if(lhs_primitive.KnownTypeCode == rhs_primitive.KnownTypeCode){
-                        return lhs_primitive;
-                    }else if(IsNumericalType(lhs_primitive) && IsNumericalType(rhs_primitive)){
-                        // If not, then check if both are numeric types or not
-                        var common_typecode = lhs_primitive.KnownTypeCode | rhs_primitive.KnownTypeCode;
-                        return new PrimitiveType(common_typecode.ToString().ToLower(), TextLocation.Empty);
-                    }else{
-                        // If both aren't the case, then we must say there is no common types between these 2 expressions
-                        return AstType.Null;
-                    }
-                }
-
-                var lhs_simple = lhs as SimpleType;
-                var rhs_simple = rhs as SimpleType;
-                if(lhs_simple != null && rhs_simple != null){
-                    return null;
-                }
-
-                parser.ReportWarning(
-                    "Can not guess the common type between `{0}` and `{1}`.",
-                    lhs,
-                    lhs, rhs
-                );
-
-                return null;
-            }
 
             static bool IsNumericalType(PrimitiveType type)
             {

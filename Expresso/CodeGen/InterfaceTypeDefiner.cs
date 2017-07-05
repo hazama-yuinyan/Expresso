@@ -2,14 +2,12 @@
 using Expresso.Ast;
 using System.Reflection;
 using System.Collections.Generic;
-using System.Reflection.Emit;
 using System.Linq;
 
 
 namespace Expresso.CodeGen
 {
     using CSharpExpr = System.Linq.Expressions.Expression;
-    using ExprTree = System.Linq.Expressions;
 
     public partial class CSharpEmitter : IAstWalker<CSharpEmitterContext, CSharpExpr>
     {

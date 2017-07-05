@@ -194,7 +194,7 @@ namespace Expresso.Ast
             return new ValueBindingForStatement(modifiers, initializers, body, loc);
         }
 
-        public static ValueBindingForStatement MakeValueBindingForStmt(Modifiers modifiers,BlockStatement body, params VariableInitializer[] initializers)
+        public static ValueBindingForStatement MakeValueBindingForStmt(Modifiers modifiers, BlockStatement body, params VariableInitializer[] initializers)
         {
             return new ValueBindingForStatement(modifiers, initializers, body, TextLocation.Empty);
         }
@@ -215,8 +215,7 @@ namespace Expresso.Ast
             return new MatchStatement(target, clauses, TextLocation.Empty, TextLocation.Empty);
         }
 
-        public static MatchPatternClause MakeMatchClause(IEnumerable<PatternConstruct> patterns,
-            Expression guard, Statement body)
+        public static MatchPatternClause MakeMatchClause(IEnumerable<PatternConstruct> patterns, Expression guard, Statement body)
         {
             return new MatchPatternClause(patterns, guard, body);
         }
@@ -226,8 +225,7 @@ namespace Expresso.Ast
             return new MatchPatternClause(patterns, guard, body);
         }
 
-        public static YieldStatement MakeYieldStmt(Expression expr, TextLocation start = default(TextLocation), 
-            TextLocation end = default(TextLocation))
+        public static YieldStatement MakeYieldStmt(Expression expr, TextLocation start = default(TextLocation), TextLocation end = default(TextLocation))
         {
             return new YieldStatement(expr, start, end);
         }

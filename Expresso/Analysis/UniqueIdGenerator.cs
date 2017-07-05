@@ -8,13 +8,13 @@ namespace Expresso.Ast.Analysis
     /// </summary>
     public static class UniqueIdGenerator
     {
-        static uint id = 1;
+        static uint Id = 1;
 
         /// <summary>
         /// Peeks at the next unique id.
         /// </summary>
         public static uint CurrentId{
-            get{return id;}
+            get{return Id;}
         }
 
         /// <summary>
@@ -22,7 +22,7 @@ namespace Expresso.Ast.Analysis
         /// </summary>
         public static void DefineNewId(Identifier ident)
         {
-            ident.IdentifierId = id++;
+            ident.IdentifierId = Id++;
         }
     }
 }
