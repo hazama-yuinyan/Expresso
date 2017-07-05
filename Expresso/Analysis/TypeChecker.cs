@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using ICSharpCode.NRefactory;
+using ICSharpCode.NRefactory.PatternMatching;
 using Expresso.TypeSystem;
 
 
@@ -194,9 +195,18 @@ namespace Expresso.Ast.Analysis
             DescendScope();
             scope_counter = 0;
 
-            matchStmt.Target.AcceptWalker(this);
-            foreach(var clause in matchStmt.Clauses)
-                clause.AcceptWalker(this);
+            var target_type = matchStmt.Target.AcceptWalker(this);
+            foreach(var clause in matchStmt.Clauses){
+                var type = clause.AcceptWalker(this);
+                if(IsCompatibleWith(target_type, type) == TriBool.False){
+                    parser.ReportSemanticErrorRegional(
+                        "Error ES1020: Mismatched types found! Expected {0}, found {1}.",
+                        matchStmt,
+                        clause,
+                        target_type, type
+                    );
+                }
+            }
 
             AscendScope();
             scope_counter = tmp_counter + 1;
@@ -561,7 +571,15 @@ namespace Expresso.Ast.Analysis
 
         public AstType VisitParenthesizedExpression(ParenthesizedExpression parensExpr)
         {
-            return parensExpr.Expression.AcceptWalker(this);
+            var type = parensExpr.Expression.AcceptWalker(this);
+            if(TemporaryTypes.Any()){
+                var types = 
+                    from t in TemporaryTypes
+                    select t.Clone();
+                type = AstType.MakeSimpleType("tuple", types, parensExpr.StartLocation, parensExpr.EndLocation);
+            }
+
+            return type;
         }
 
         public AstType VisitObjectCreationExpression(ObjectCreationExpression creation)
@@ -793,7 +811,7 @@ namespace Expresso.Ast.Analysis
                         var option_type = param.Option.AcceptWalker(this);
                         if(IsCastable(option_type, param_type) == TriBool.False){
                             parser.ReportSemanticErrorRegional(
-                                "Type mismatch; `{0}` is not compatible with `{1}`.",
+                                "Error ES1100: Type mismatch; `{0}` is not compatible with `{1}`.",
                                 param.NameToken, param.Option,
                                 option_type, param_type
                             );
@@ -816,12 +834,15 @@ namespace Expresso.Ast.Analysis
             if(funcDecl.Name == "main"){
                 var next = funcDecl.GetNextNode();
                 if(next != null)
-                    parser.ReportSemanticError("Error ES1100: Can't define functions after the main function", next);
+                    parser.ReportSemanticError(
+                        "Error ES1100: Can't define functions after the main function",
+                        next
+                    );
             }
 
             funcDecl.Body.AcceptWalker(this);
 
-            // Delay discovering the return type
+            // Delay discovering the return type because of type inference
             if(IsPlaceholderType(funcDecl.ReturnType)){
                 // Descend scopes 2 times because a function name has its own scope
                 int tmp_counter2 = scope_counter;
@@ -895,7 +916,7 @@ namespace Expresso.Ast.Analysis
             var left_type = initializer.NameToken.AcceptWalker(this);
             if(IsPlaceholderType(left_type)){
                 var inferred_type = initializer.Initializer.AcceptWalker(inference_runner);
-                if(IsContainerType(inferred_type) && ((SimpleType)inferred_type).TypeArguments.Any(t => t is PlaceholderType)){
+                if(IsCollectionType(inferred_type) && ((SimpleType)inferred_type).TypeArguments.Any(t => t is PlaceholderType)){
                     parser.ReportSemanticErrorRegional(
                         "The left-hand-side lacks the inner type of the container `{0}`",
                         initializer.NameToken,
@@ -908,7 +929,7 @@ namespace Expresso.Ast.Analysis
             }
 
             var rhs_type = initializer.Initializer.AcceptWalker(this);
-            if(IsContainerType(left_type) && ContainsPlaceholderType(left_type as SimpleType) || IsContainerType(rhs_type) && ContainsPlaceholderType(rhs_type as SimpleType)){
+            if(IsCollectionType(left_type) && ContainsPlaceholderType(left_type as SimpleType) || IsCollectionType(rhs_type) && ContainsPlaceholderType(rhs_type as SimpleType)){
                 // The laft-hand-side lacks the types of the contents so infer them from the right-hand-side
                 // Or the right-hand-side contains some placeholders, so infer them
                 var lhs_simple = left_type as SimpleType;
@@ -949,11 +970,17 @@ namespace Expresso.Ast.Analysis
 
         public AstType VisitCollectionPattern(CollectionPattern collectionPattern)
         {
+            foreach(var item in collectionPattern.Items)
+                item.AcceptWalker(this);
+            
             return collectionPattern.CollectionType;
         }
 
         public AstType VisitDestructuringPattern(DestructuringPattern destructuringPattern)
         {
+            foreach(var item in destructuringPattern.Items)
+                item.AcceptWalker(this);
+            
             return destructuringPattern.TypePath;
         }
 
@@ -961,7 +988,7 @@ namespace Expresso.Ast.Analysis
         {
             var types = 
                 from p in tuplePattern.Patterns
-                select p.AcceptWalker(this);
+                select p.AcceptWalker(this).Clone();
             return AstType.MakeSimpleType("tuple", types, tuplePattern.StartLocation, tuplePattern.EndLocation);
         }
 
@@ -1004,8 +1031,8 @@ namespace Expresso.Ast.Analysis
 
         /// <summary>
         /// In Expresso, there are 3 valid cast cases.
-        /// The first is the identity cast. An identity cast casts itself.
-        /// The second is the up cast. Up casts are usually valid as much as .
+        /// The first is the identity cast. An identity cast casts itself to itself.
+        /// The second is the up cast. Up casts are usually valid as long as the types are derived.
         /// </summary>
         /// <returns><c>true</c> if <c>fromType</c> can be casted to <c>totype</c>; otherwise, <c>false</c>.</returns>
         static TriBool IsCastable(AstType fromType, AstType toType)
@@ -1014,7 +1041,6 @@ namespace Expresso.Ast.Analysis
                 return TriBool.True;
             else
                 return IsCompatibleWith(fromType, toType);
-            // TODO: implement the cases of upcasts and downcasts
         }
 
         /// <summary>
@@ -1026,9 +1052,9 @@ namespace Expresso.Ast.Analysis
         static TriBool IsCompatibleWith(AstType first, AstType second)
         {
             if(first == null)
-                throw new ArgumentNullException("first");
+                throw new ArgumentNullException(nameof(first));
             if(second == null)
-                throw new ArgumentNullException("second");
+                throw new ArgumentNullException(nameof(second));
 
             var primitive1 = first as PrimitiveType;
             var primitive2 = second as PrimitiveType;
@@ -1046,7 +1072,7 @@ namespace Expresso.Ast.Analysis
                     }else{
                         return TriBool.False;
                     }
-                }else if(first != AstType.Null && second != AstType.Null && primitive1.KnownTypeCode == primitive2.KnownTypeCode){
+                }else if(primitive1.IsMatch(primitive2)){
                     return TriBool.True;
                 }else{
                     return TriBool.False;
@@ -1057,6 +1083,9 @@ namespace Expresso.Ast.Analysis
             var simple2 = second as SimpleType;
             if(simple1 != null && simple2 != null){
                 //TODO: implement it
+                if(simple1.IsMatch(simple2)){
+                    return TriBool.True;
+                }
             }
 
             return TriBool.False;
@@ -1093,15 +1122,57 @@ namespace Expresso.Ast.Analysis
         }
 
         /// <summary>
-        /// Determines whether `type` is a container type.
+        /// Determines whether `type` is a collection type.
         /// </summary>
-        /// <returns><c>true</c>, if `type` is a container type, <c>false</c> otherwise.</returns>
+        /// <returns><c>true</c>, if `type` is a collection type, <c>false</c> otherwise.</returns>
+        /// <param name="type">Type.</param>
+        static bool IsCollectionType(AstType type)
+        {
+            var simple = type as SimpleType;
+            if(simple != null)
+                return simple.Identifier == "array" || simple.Identifier == "vector" || simple.Identifier == "dictionary" || simple.Identifier == "tuple";
+            else
+                return false;
+        }
+
+        /// <summary>
+        /// Determines whether the `type` represents the tuple type
+        /// </summary>
+        /// <returns><c>true</c>, if `type` represents the tuple type, <c>false</c> otherwise.</returns>
+        /// <param name="type">Type.</param>
+        static bool IsTupleType(AstType type)
+        {
+            var simple = type as SimpleType;
+            if(simple != null)
+                return simple.Identifier == "tuple";
+            else
+                return false;
+        }
+
+        /// <summary>
+        /// Determines whether the `type` represents a container type.
+        /// </summary>
+        /// <returns><c>true</c>, if `type` represents a container type, <c>false</c> otherwise.</returns>
         /// <param name="type">Type.</param>
         static bool IsContainerType(AstType type)
         {
             var simple = type as SimpleType;
             if(simple != null)
-                return simple.Identifier == "array" || simple.Identifier == "vector" || simple.Identifier == "dictionary" || simple.Identifier == "tuple";
+                return simple.Identifier == "array" || simple.Identifier == "vector";
+            else
+                return false;
+        }
+
+        /// <summary>
+        /// Determines whether the `type` represents the dictionary type.
+        /// </summary>
+        /// <returns><c>true</c>, if `type` represents the dictionary type, <c>false</c> otherwise.</returns>
+        /// <param name="type">Type.</param>
+        static bool IsDictionaryType(AstType type)
+        {
+            var simple = type as SimpleType;
+            if(simple != null)
+                return simple.Identifier == "dictionary";
             else
                 return false;
         }
@@ -1113,7 +1184,7 @@ namespace Expresso.Ast.Analysis
         /// <param name="type">Type.</param>
         static bool ContainsPlaceholderType(SimpleType type)
         {
-            if(type == null || !IsContainerType(type))
+            if(type == null || !IsCollectionType(type))
                 return false;
             
             return type.TypeArguments.Any(t => IsPlaceholderType(t));
@@ -1125,7 +1196,7 @@ namespace Expresso.Ast.Analysis
             if(primitive != null && primitive.KnownTypeCode == KnownTypeCode.IntSeq)
                 return true;
             else
-                return IsContainerType(type);
+                return IsCollectionType(type);
         }
 
         static AstType MakeOutElementType(AstType type)
@@ -1160,7 +1231,7 @@ namespace Expresso.Ast.Analysis
 
             if(ident.IdentifierId == 0){
                 parser.ReportSemanticError(
-                    "Type name `{0}` turns out not to be declared in the current scope {1}!",
+                    "Error ES0101: Type name `{0}` turns out not to be declared in the current scope {1}!",
                     ident,
                     ident.Name, symbols.Name
                 );

@@ -157,6 +157,11 @@ namespace Expresso.Ast.Analysis
 
         #endregion
 
+        /// <summary>
+        /// Gets the type table named `name`.
+        /// </summary>
+        /// <returns>The type table.</returns>
+        /// <param name="name">Name.</param>
         public SymbolTable GetTypeTable(string name)
         {
             var parent = Parent;
@@ -369,6 +374,10 @@ namespace Expresso.Ast.Analysis
                 return table.Count;
         }
 
+        /// <summary>
+        /// Counts all the variables that reside in this scope.
+        /// </summary>
+        /// <returns>The variables.</returns>
         public int CountVariables()
         {
             return Count(null);

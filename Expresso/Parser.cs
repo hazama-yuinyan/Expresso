@@ -1610,7 +1610,9 @@ string cur_class_name;
 				pattern = PatternConstruct.MakeIgnoringRestPattern(CurrentLocation); 
 			}
 			inners.Add(pattern); 
-			Expect(12);
+			if (la.kind == 12) {
+				Get();
+			}
 		}
 		Expect(10);
 		pattern = PatternConstruct.MakeTuplePattern(inners); 

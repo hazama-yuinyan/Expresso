@@ -15,11 +15,11 @@ namespace Expresso.Ast
         /// </summary>
         Assign,
         /// <summary>
-        /// Represents the reference operator `&`
+        /// Represents the reference operator `&amp;`
         /// </summary>
         Reference,
         /// <summary>
-        /// Represents the dereference operator `&`
+        /// Represents the dereference operator `&amp;`
         /// </summary>
         Dereference,
         /// <summary>
@@ -75,7 +75,7 @@ namespace Expresso.Ast
         /// </summary>
         Not,
         /// <summary>
-        /// Represents the and operator `&&`
+        /// Represents the and operator `&amp;&amp;`
         /// </summary>
         ConditionalAnd,
         /// <summary>
@@ -83,7 +83,7 @@ namespace Expresso.Ast
         /// </summary>
         ConditionalOr,
         /// <summary>
-        /// Represents the bitwise and operator `&`
+        /// Represents the bitwise and operator `&amp;`
         /// </summary>
         BitwiseAnd,
         /// <summary>

@@ -84,7 +84,7 @@ namespace Expresso.Ast.Analysis
 
             public AstType VisitMatchStatement(MatchStatement matchStmt)
             {
-                throw new InvalidOperationException("Can not work on that node!");
+                return matchStmt.Target.AcceptWalker(this);
             }
 
             public AstType VisitThrowStatement(ThrowStatement throwStmt)
@@ -400,7 +400,7 @@ namespace Expresso.Ast.Analysis
 
             public AstType VisitMatchClause(MatchPatternClause matchClause)
             {
-                throw new InvalidOperationException("Can not work on that node!");
+                return matchClause.Parent.AcceptWalker(this);
             }
 
             public AstType VisitSequenceExpression(SequenceExpression seqExpr)
@@ -597,7 +597,7 @@ namespace Expresso.Ast.Analysis
             {
                 if(identifierPattern.InnerPattern.IsNull){
                     var type = identifierPattern.Parent.AcceptWalker(this);
-                    if(IsContainerType(type)){
+                    if(IsTupleType(type)){
                         var parent = identifierPattern.Parent;
                         int i = 0;
                         parent.Children.Any(node => {
@@ -607,17 +607,34 @@ namespace Expresso.Ast.Analysis
                         // decrement i before use because the above code always returns the index + 1
                         --i;
                         type = ((SimpleType)type).TypeArguments.ElementAt(i);
+                    }else if(IsContainerType(type)){
+                        type = ((SimpleType)type).TypeArguments.First();
                     }else if(IsIntSeqType(type)){
                         type = AstType.MakePrimitiveType("int", type.StartLocation);
+                    }else if(IsDictionaryType(type)){
+                        
+                    }else{
+                        // type is a user defined type
+                        var table = checker.symbols.GetTypeTable(type.Name);
+                        if(table == null){
+                            parser.ReportSemanticError(
+                                "Error ES0101: Type symbol '{0}' turns out not to be declared or accessible in the current scope {1}!",
+                                identifierPattern,
+                                type.Name, checker.symbols.Name
+                            );
+                        }else{
+                            var symbol = table.GetSymbol(identifierPattern.Identifier.Name);
+                            type = symbol.Type;
+                        }
                     }
 
-                    return type;
+                    return type.Clone();
                 }else{
                     var type = identifierPattern.InnerPattern.AcceptWalker(this);
                     if(IsIntSeqType(type))
                         type = AstType.MakePrimitiveType("int", type.StartLocation);
 
-                    return type;
+                    return type.Clone();
                 }
             }
 
@@ -629,21 +646,17 @@ namespace Expresso.Ast.Analysis
 
             public AstType VisitTuplePattern(TuplePattern tuplePattern)
             {
-                var types =
-                    from pattern in tuplePattern.Patterns
-                    select pattern.AcceptWalker(this).Clone();
-
-                return new SimpleType("tuple", types, tuplePattern.StartLocation, tuplePattern.EndLocation);
+                return tuplePattern.Parent.AcceptWalker(this);
             }
 
             public AstType VisitCollectionPattern(CollectionPattern collectionPattern)
             {
-                throw new NotImplementedException();
+                return collectionPattern.Parent.AcceptWalker(this);
             }
 
             public AstType VisitDestructuringPattern(DestructuringPattern destructuringPattern)
             {
-                throw new NotImplementedException();
+                return destructuringPattern.TypePath;
             }
 
             public AstType VisitExpressionPattern(ExpressionPattern exprPattern)

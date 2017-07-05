@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-
+using System.Linq;
 using ICSharpCode.NRefactory;
 
 namespace Expresso.Ast
@@ -74,7 +74,7 @@ namespace Expresso.Ast
 
 	/// <summary>
     /// Represents a pattern clause in match statements.
-    /// A pattern clause represents a clause that patterns that should be matched and the corresponding code
+    /// A pattern clause represents a clause that contains patterns that should be matched and the corresponding code
     /// that will be exceuted if the patterns match the value.
     /// PatternConstruct { '|' PatternConstruct } "=>" Statement
 	/// </summary>
@@ -108,6 +108,7 @@ namespace Expresso.Ast
 		}
 
         public MatchPatternClause(IEnumerable<PatternConstruct> patternExprs, Expression guard, Statement bodyStmt)
+            : base(patternExprs.First().StartLocation, bodyStmt.EndLocation)
 		{
             Patterns.AddRange(patternExprs);
             Guard = guard;

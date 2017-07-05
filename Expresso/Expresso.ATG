@@ -1089,7 +1089,7 @@ TuplePattern<out PatternConstruct pattern>  (. var inners = new List<PatternCons
     | ExpressionPattern<out pattern>
     | ".."                                  (. pattern = PatternConstruct.MakeIgnoringRestPattern(CurrentLocation); .)
     )                                       (. inners.Add(pattern); .)
-    ','
+    [ ',' ]
   }
   ')'                                       (. pattern = PatternConstruct.MakeTuplePattern(inners); .).
 /*------------------------------------------------------------------------*/

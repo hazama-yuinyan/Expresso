@@ -3023,7 +3023,7 @@ namespace Expresso.Test
                                                     Helpers.MakePrimitiveType("string")
                                                 )
                                             ),
-                                            Expression.MakeConstant("string", "{} is in the range of 3 to 10"),
+                                            Expression.MakeConstant("string", "{0} is in the range of 3 to 10"),
                                             Helpers.MakeIdentifierPath("x", Helpers.MakePrimitiveType("int"))
                                         )
                                     )
@@ -3101,7 +3101,7 @@ namespace Expresso.Test
                                                     Helpers.MakePrimitiveType("string")
                                                 )
                                             ),
-                                            Expression.MakeConstant("string", "x is {}"),
+                                            Expression.MakeConstant("string", "x is {0}"),
                                             Helpers.MakeIdentifierPath(
                                                 "x",
                                                 Helpers.MakePrimitiveType("int")
@@ -3117,6 +3117,34 @@ namespace Expresso.Test
                                         null
                                     ),
                                     PatternConstruct.MakeIgnoringRestPattern()
+                                )
+                            ),
+                            Statement.MakeMatchClause(
+                                null,
+                                Statement.MakeExprStmt(
+                                    Expression.MakeSequenceExpression(
+                                        Helpers.MakeCallExpression(
+                                            Helpers.MakeIdentifierPath(
+                                                "printFormat",
+                                                AstType.MakeFunctionType(
+                                                    "printFormat",
+                                                    Helpers.MakeVoidType(),
+                                                    TextLocation.Empty,
+                                                    TextLocation.Empty,
+                                                    Helpers.MakePrimitiveType("string")
+                                                )
+                                            ),
+                                            Expression.MakeConstant("string", "x is {0} and y is {1}"),
+                                            Helpers.MakeIdentifierPath(
+                                                "x",
+                                                Helpers.MakePrimitiveType("int")
+                                            ),
+                                            Helpers.MakeIdentifierPath(
+                                                "y",
+                                                Helpers.MakePrimitiveType("int")
+                                            )
+                                        )
+                                    )
                                 ),
                                 PatternConstruct.MakeDestructuringPattern(
                                     Helpers.MakeGenericType("TestClass"),
@@ -3129,7 +3157,8 @@ namespace Expresso.Test
                                         "y",
                                         Helpers.MakePrimitiveType("int"),
                                         null
-                                    )
+                                    ),
+                                    PatternConstruct.MakeWildcardPattern()
                                 )
                             )
                         ),
@@ -3168,7 +3197,7 @@ namespace Expresso.Test
                                                     Helpers.MakePrimitiveType("string")
                                                 )
                                             ),
-                                            Expression.MakeConstant("string", "x and y are vector elements and the values are {} and {}"),
+                                            Expression.MakeConstant("string", "x and y are both vector's elements and the values are {0} and {1} respectively"),
                                             Helpers.MakeIdentifierPath(
                                                 "x",
                                                 Helpers.MakePrimitiveType("int")
@@ -3231,6 +3260,109 @@ namespace Expresso.Test
                                         Expression.MakeConstant("int", 3)
                                     ),
                                     PatternConstruct.MakeWildcardPattern()
+                                )
+                            )
+                        ),
+                        Statement.MakeVarDecl(
+                            Helpers.MakeSeq(
+                                AstNode.MakeIdentifier(
+                                    "tmp5",
+                                    Helpers.MakeGenericType(
+                                        "tuple",
+                                        Helpers.MakePrimitiveType("int"),
+                                        Helpers.MakePrimitiveType("int")
+                                    )
+                                )
+                            ),
+                            Helpers.MakeSeq(
+                                Expression.MakeParen(
+                                    Expression.MakeSequenceExpression(
+                                        Expression.MakeConstant("int", 1),
+                                        Expression.MakeConstant("int", 2)
+                                    )
+                                )
+                            ),
+                            Modifiers.Immutable
+                        ),
+                        Statement.MakeMatchStmt(
+                            Helpers.MakeIdentifierPath(
+                                "tmp5",
+                                Helpers.MakeGenericType(
+                                    "tuple",
+                                    Helpers.MakePrimitiveType("int"),
+                                    Helpers.MakePrimitiveType("int")
+                                )
+                            ),
+                            Statement.MakeMatchClause(
+                                null,
+                                Statement.MakeExprStmt(
+                                    Expression.MakeSequenceExpression(
+                                        Helpers.MakeCallExpression(
+                                            Helpers.MakeIdentifierPath(
+                                                "printFormat",
+                                                AstType.MakeFunctionType(
+                                                    "printFormat",
+                                                    Helpers.MakeVoidType(),
+                                                    TextLocation.Empty,
+                                                    TextLocation.Empty,
+                                                    Helpers.MakePrimitiveType("string")
+                                                )
+                                            ),
+                                            Expression.MakeConstant("string", "x is {0}"),
+                                            Helpers.MakeIdentifierPath(
+                                                "x",
+                                                Helpers.MakePrimitiveType("int")
+                                            )
+                                        ) 
+                                    )
+                                ),
+                                PatternConstruct.MakeTuplePattern(
+                                    PatternConstruct.MakeIdentifierPattern(
+                                        "x",
+                                        Helpers.MakePrimitiveType("int"),
+                                        null
+                                    ),
+                                    PatternConstruct.MakeIgnoringRestPattern()
+                                )
+                            ),
+                            Statement.MakeMatchClause(
+                                null,
+                                Statement.MakeExprStmt(
+                                    Expression.MakeSequenceExpression(
+                                        Helpers.MakeCallExpression(
+                                            Helpers.MakeIdentifierPath(
+                                                "printFormat",
+                                                AstType.MakeFunctionType(
+                                                    "printFormat",
+                                                    Helpers.MakeVoidType(),
+                                                    TextLocation.Empty,
+                                                    TextLocation.Empty,
+                                                    Helpers.MakePrimitiveType("string")
+                                                )
+                                            ),
+                                            Expression.MakeConstant("string", "x is {0} and y is {1}"),
+                                            Helpers.MakeIdentifierPath(
+                                                "x",
+                                                Helpers.MakePrimitiveType("int")
+                                            ),
+                                            Helpers.MakeIdentifierPath(
+                                                "y",
+                                                Helpers.MakePrimitiveType("int")
+                                            )
+                                        )
+                                    )
+                                ),
+                                PatternConstruct.MakeTuplePattern(
+                                    PatternConstruct.MakeIdentifierPattern(
+                                        "x",
+                                        Helpers.MakePrimitiveType("int"),
+                                        null
+                                    ),
+                                    PatternConstruct.MakeIdentifierPattern(
+                                        "y",
+                                        Helpers.MakePrimitiveType("int"),
+                                        null
+                                    )
                                 )
                             )
                         )
