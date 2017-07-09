@@ -1384,8 +1384,6 @@ namespace Expresso.Test
                                 ),
                                 PatternConstruct.MakeCollectionPattern(
                                     true,
-                                    PatternConstruct.MakeExpressionPattern(Expression.MakeConstant("int", 1)),
-                                    PatternConstruct.MakeExpressionPattern(Expression.MakeConstant("int", 2)),
                                     PatternConstruct.MakeIdentifierPattern(
                                         "x",
                                         Helpers.MakePlaceholderType(),
@@ -1395,7 +1393,8 @@ namespace Expresso.Test
                                         "y",
                                         Helpers.MakePlaceholderType(),
                                         null
-                                    )
+                                    ),
+                                    PatternConstruct.MakeIgnoringRestPattern()
                                 )
                             ),
                             Statement.MakeMatchClause(

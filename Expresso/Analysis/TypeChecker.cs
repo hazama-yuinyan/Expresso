@@ -998,6 +998,7 @@ namespace Expresso.Ast.Analysis
             var types = 
                 from p in tuplePattern.Patterns
                 select p.AcceptWalker(this).Clone();
+            // TODO: consider the case that the tuple contains an IgnoringRestPattern
             return AstType.MakeSimpleType("tuple", types, tuplePattern.StartLocation, tuplePattern.EndLocation);
         }
 

@@ -32,7 +32,7 @@ def main()
 
     let tmp4 = [1, 2, 3, 4, ...];
     match tmp4 {
-        [1, 2, x, y, ...] => printFormat("x and y are both vector's elements and the values are {0} and {1} respectively", x, y);,
+        [x, y, .., ...] => printFormat("x and y are both vector's elements and the values are {0} and {1} respectively", x, y);,
         [1, 2, 3, _, ...] => print("tmp4 is a vector");
     }
 

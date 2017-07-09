@@ -404,7 +404,7 @@ namespace Expresso.CodeGen
             // we know that we're at least at the second branch.
             // If it is null, then we're at the first branch so just set it to the context expression.
             var target = matchStmt.Target.AcceptWalker(this, context);
-            var target_var = CSharpExpr.Parameter(target.Type);
+            var target_var = CSharpExpr.Parameter(target.Type, "match_target");
             context.TemporaryVariable = target_var;
             context.ContextExpression = null;
             var context_ast = context.ContextAst;
@@ -972,26 +972,61 @@ namespace Expresso.CodeGen
             //       }
             //
             //       match t {
-            //           Test{1, _} => print("1, x");
-            //           Test{2, 2} => print("2, 2");
-            //           Test{3, _} => print("3, x");
-            //           Test{x, y} if y == 2 * x => print("y == 2 * x");
-            //           Test{x, _} => print("{}, y", x);
+            //           Test{1, _} => print("1, x");,
+            //           Test{2, 2} => print("2, 2");,
+            //           Test{3, _} => print("3, x");,
+            //           Test{x, y} if y == 2 * x => print("y == 2 * x");,
+            //           Test{x, _} => print("{0}, y", x);,
+            //           _          => ;
             //       }
-            // =>    if(t is Test && t.x == 1){
-            //           Console.Write("1, x");
-            //       }else if(t is Test && t.x == 2 && t.y == 2){
-            //           Console.Write("2, 2");
-            //       }else if(t is Test && t.x == 3){
-            //           Console.Write("3, x");
-            //       }else if(t is Test && t.y == 2 * t.x){ //a guard becomes and-ed condition
-            //           int x = t.x, y = t.y;    //destructuring becomes inner scope variable declarations
-            //           Console.Write("y == 2 * x");
-            //       }else if(t is Test){
-            //           int x = t.x;
-            //           Console.Write("{0}, y", x);
-            //       }else{
-            //           Console.Write("else");
+            // =>    if(t is Test){
+            //           var _0 = t.x, _1 = t.y;
+            //           if(_0 == 1){
+            //               Console.Write("1, x");
+            //           }else if(_0 == 2 && _1 == 2){
+            //               Console.Write("2, 2");
+            //           }else if(_0 == 3){
+            //               Console.Write("3, x");
+            //           }else{
+            //               int x = _0, y = _1;    //destructuring becomes inner scope variable declarations
+            //               if(y == 2 * x){          //a guard becomes an inner-scope if statement
+            //                   Console.Write("y == 2 * x");
+            //               }
+            //           }
+            //       }else{                       // a wildcard pattern becomes the else clause
+            //       }
+            // e.g.3 let x = [1, 2, 3];
+            //       match x {
+            //           [1, 2, x] => println("x is {0}", x);,
+            //           [_, 2, x] => println("x is {0}", x);,
+            //           [x, ..]   => println("x is {0}", x);
+            //       }
+            // =>    if(x is Array){
+            //           var _0 = x[0], _1 = x[1], _2 = x[2];  // in practice, the prefix is omitted
+            //           if(_0 == 1 && _1 == 2){
+            //               var x = _2;
+            //               Console.WriteLine("x is {0}", x);
+            //           }else if(_1 == 2){
+            //               var x = _2;
+            //               Console.WriteLine("x is {0}", x);
+            //           }else if(x.Length > 1){
+            //               var x = _0;
+            //               Console.WriteLine("x is {0}", x);
+            //           }
+            //       }
+            // e.g.4 let t = (1, 'a', true);
+            //       match t {
+            //           (1, x, y) => println("x is {0} and y is {1}", x, y);,
+            //           (1, 'a', _) => println("t is (1, 'a', _)");
+            //       }
+            // =>    if(t is Tuple)}
+            //           var _0 = t.Item0, _1 = t.Item1, _2 = t.Item2; // in practice, the prefix is omitted
+            //           if(_0 == 1){
+            //               var x = _1, y = _2;
+            //               Console.WriteLine("x is {0} and y is {1}", x, y);
+            //           }else if(_0 == 1 && _1 == 'a'){
+            //               Console.WriteLine("t is (1, 'a', _)");
+            //           }
             //       }
             int tmp_counter = sibling_count;
             DescendScope();
@@ -1009,12 +1044,6 @@ namespace Expresso.CodeGen
                     // then the first expression is the only source for the condition it explains.
                     if(destructuring_exprs == null){
                         destructuring_exprs = context.Additionals.Cast<ExprTree.ParameterExpression>();
-                    }else if(destructuring_exprs.Count() != context.Additionals.Count()){
-                        // The number of destructured variables must match in every pattern
-                        throw new EmitterException(
-                            "Expected the pattern contains {0} variables, but it only contains {1}!",
-                            destructuring_exprs.Count(), context.Additionals.Count()
-                        );
                     }
                 }
 
@@ -1022,6 +1051,14 @@ namespace Expresso.CodeGen
                     res = pattern_cond;
                 else
                     res = CSharpExpr.OrElse(res, pattern_cond);
+            }
+
+            if(destructuring_exprs.Count() != context.Additionals.Count()){
+                // The number of destructured variables must match in every pattern
+                throw new EmitterException(
+                    "Expected the pattern contains {0} variables, but it only contains {1}!",
+                    destructuring_exprs.Count(), context.Additionals.Count()
+                );
             }
 
             context.Additionals = prev_additionals;
@@ -1404,14 +1441,16 @@ namespace Expresso.CodeGen
             destructuringPattern.TypePath.AcceptWalker(this, context);
             var type = context.TargetType;
 
-            var parameters = new List<CSharpExpr>();
+            var assigns = new List<CSharpExpr>();
+            var parameters = new List<ExprTree.ParameterExpression>();
             foreach(var pattern in destructuringPattern.Items){
                 context.Field = null;
                 var param = pattern.AcceptWalker(this, context) as ExprTree.ParameterExpression;
-                parameters.Add(CSharpExpr.Assign(param, CSharpExpr.Field(context.TemporaryVariable, context.Field)));
+                parameters.Add(param);
+                assigns.Add(CSharpExpr.Assign(param, CSharpExpr.Field(context.TemporaryVariable, context.Field)));
             }
 
-            context.ContextExpression = CSharpExpr.Block(parameters);
+            context.ContextExpression = CSharpExpr.Block(parameters, assigns);
             return CSharpExpr.TypeIs(context.TemporaryVariable, type);
         }
 
