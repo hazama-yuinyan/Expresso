@@ -630,6 +630,11 @@ namespace Expresso.CodeGen
             return null;
         }
 
+        public CSharpExpr VisitClosureLiteralExpression(ClosureLiteralExpression closure, CSharpEmitterContext context)
+        {
+            return null;
+        }
+
         public CSharpExpr VisitComprehensionExpression(ComprehensionExpression comp, CSharpEmitterContext context)
         {
             var generator = comp.Item.AcceptWalker(this, context);

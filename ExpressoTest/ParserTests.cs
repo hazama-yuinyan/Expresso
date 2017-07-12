@@ -2515,5 +2515,172 @@ namespace Expresso.Test
             Assert.IsNotNull(ast);
             Helpers.AstStructuralEqual(ast, expected_ast);
         }
+
+        [Test]
+        public void Closures()
+        {
+            var parser = new Parser(new Scanner("../../sources/for_unit_tests/closures.exs"));
+            parser.Parse();
+
+            var ast = parser.TopmostAst;
+
+            var expected = AstNode.MakeModuleDef("main", new List<EntityDeclaration>{
+                EntityDeclaration.MakeFunc(
+                    "addOneToOne",
+                    Helpers.MakeSeq(
+                        EntityDeclaration.MakeParameter(
+                            "addOne",
+                            AstType.MakeFunctionType(
+                                "closure",
+                                Helpers.MakePrimitiveType("int"),
+                                TextLocation.Empty,
+                                TextLocation.Empty,
+                                Helpers.MakePrimitiveType("int")
+                            )
+                        )
+                    ),
+                    Statement.MakeBlock(
+                        Helpers.MakeSingleItemReturnStatement(
+                            Helpers.MakeCallExpression(
+                                Helpers.MakeIdentifierPath("addOne"),
+                                Expression.MakeConstant("int", 1)
+                            )
+                        )
+                    ),
+                    Helpers.MakePlaceholderType(),
+                    Modifiers.None
+                ),
+                EntityDeclaration.MakeFunc(
+                    "main",
+                    Enumerable.Empty<ParameterDeclaration>(),
+                    Statement.MakeBlock(
+                        Statement.MakeVarDecl(
+                            Helpers.MakeSeq(
+                                Helpers.MakeSomeIdent("c")
+                            ),
+                            Helpers.MakeSeq<Expression>(
+                                Expression.MakeClosureExpression(
+                                    Helpers.MakePlaceholderType(),
+                                    Statement.MakeBlock(
+                                        Helpers.MakeSingleItemReturnStatement(
+                                            Expression.MakeBinaryExpr(
+                                                OperatorType.Plus,
+                                                Helpers.MakeIdentifierPath("x"),
+                                                Expression.MakeConstant("int", 1)
+                                            )
+                                        )
+                                    ),
+                                    TextLocation.Empty,
+                                    EntityDeclaration.MakeParameter(
+                                        "x",
+                                        Helpers.MakePrimitiveType("int")
+                                    )
+                                )
+                            ),
+                            Modifiers.Immutable
+                        ),
+                        Statement.MakeVarDecl(
+                            Helpers.MakeSeq(
+                                Helpers.MakeSomeIdent("c2")
+                            ),
+                            Helpers.MakeSeq<Expression>(
+                                Expression.MakeClosureExpression(
+                                    Helpers.MakePlaceholderType(),
+                                    Statement.MakeBlock(
+                                        Statement.MakeVarDecl(
+                                            Helpers.MakeSeq(
+                                                Helpers.MakeSomeIdent("y")
+                                            ),
+                                            Helpers.MakeSeq(
+                                                Expression.MakeConstant("int", 1)
+                                            ),
+                                            Modifiers.Immutable
+                                        ),
+                                        Helpers.MakeSingleItemReturnStatement(
+                                            Expression.MakeBinaryExpr(
+                                                OperatorType.Plus,
+                                                Helpers.MakeIdentifierPath("x"),
+                                                Helpers.MakeIdentifierPath("y")
+                                            )
+                                        )
+                                    ),
+                                    TextLocation.Empty,
+                                    EntityDeclaration.MakeParameter(
+                                        "x",
+                                        Helpers.MakePrimitiveType("int")
+                                    )
+                                )
+                            ),
+                            Modifiers.Immutable
+                        ),
+                        Statement.MakeVarDecl(
+                            Helpers.MakeSeq(
+                                Helpers.MakeSomeIdent("a")
+                            ),
+                            Helpers.MakeSeq(
+                                Helpers.MakeCallExpression(
+                                    Helpers.MakeIdentifierPath("c"),
+                                    Expression.MakeConstant("int", 1)
+                                )
+                            ),
+                            Modifiers.Immutable
+                        ),
+                        Statement.MakeVarDecl(
+                            Helpers.MakeSeq(
+                                Helpers.MakeSomeIdent("b")
+                            ),
+                            Helpers.MakeSeq(
+                                Helpers.MakeCallExpression(
+                                    Helpers.MakeIdentifierPath("c2"),
+                                    Expression.MakeConstant("int", 1)
+                                )
+                            ),
+                            Modifiers.Immutable
+                        ),
+                        Statement.MakeVarDecl(
+                            Helpers.MakeSeq(
+                                Helpers.MakeSomeIdent("d")
+                            ),
+                            Helpers.MakeSeq(
+                                Helpers.MakeCallExpression(
+                                    Helpers.MakeIdentifierPath("addOneToOne"),
+                                    Expression.MakeClosureExpression(
+                                        Helpers.MakePlaceholderType(),
+                                        Statement.MakeBlock(
+                                            Helpers.MakeSingleItemReturnStatement(
+                                                Expression.MakeBinaryExpr(
+                                                    OperatorType.Plus,
+                                                    Helpers.MakeIdentifierPath("x"),
+                                                    Expression.MakeConstant("int", 1)
+                                                )
+                                            )
+                                        ),
+                                        TextLocation.Empty,
+                                        EntityDeclaration.MakeParameter(
+                                            "x",
+                                            Helpers.MakePlaceholderType()
+                                        )
+                                    )
+                                )
+                            ),
+                            Modifiers.Immutable
+                        ),
+                        Statement.MakeExprStmt(
+                            Helpers.MakeCallExpression(
+                                Helpers.MakeIdentifierPath("println"),
+                                Helpers.MakeIdentifierPath("a"),
+                                Helpers.MakeIdentifierPath("b"),
+                                Helpers.MakeIdentifierPath("d")
+                            )
+                        )
+                    ),
+                    Helpers.MakePlaceholderType(),
+                    Modifiers.None
+                )
+            });
+
+            Assert.IsNotNull(ast);
+            Helpers.AstStructuralEqual(ast, expected);
+        }
 	}
 }

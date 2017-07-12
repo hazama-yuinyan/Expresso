@@ -359,6 +359,15 @@ namespace Expresso.Ast
             }
         }
 
+        public void VisitClosureLiteralExpression(ClosureLiteralExpression closure)
+        {
+            writer.Write("|");
+            PrintList(closure.Parameters);
+            writer.Write("| -> ");
+            closure.ReturnType.AcceptWalker(this);
+            VisitBlock(closure.Body);
+        }
+
         public void VisitComprehensionExpression(ComprehensionExpression comp)
         {
             writer.Write("[");

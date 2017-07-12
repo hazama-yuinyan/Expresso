@@ -20,7 +20,7 @@ COMPILER Expresso
 
 $namespace=Expresso
 	string cur_class_name;
-	bool is_first_comprehension_for_clause = true;
+	bool is_first_comprehension_for_clause = true, defining_closure_parameters = false;
     static uint ScopeId = 1;
     static Regex UnicodeEscapeFinder = new Regex(@"\\[uU]([\dA-Fa-f]{4}|[\dA-Fa-f]{6})", RegexOptions.Compiled);
     internal SymbolTable Symbols{get; set;}
@@ -280,6 +280,19 @@ $namespace=Expresso
         return key.kind == _ident && tt.kind == _colon;
     }
 
+    bool IsStartOfAnotherType()
+    {
+        var t = la;
+        var tt = scanner.Peek();
+        scanner.ResetPeek();
+        return t.val != "|" || tt.val != "->";
+    }
+
+    bool IsStartOfBlockScope()
+    {
+        return la.val == "{";
+    }
+
     bool CheckKeyword(string name)
     {
         if(KnownTypeReference.Keywords.Contains(name)){
@@ -448,9 +461,6 @@ ModuleNameDefinition<out string moduleName>
 =                               (. .)
   "module"
   ident                         (. moduleName = t.val; .)
-  { '.'
-    ident
-  }
   SYNC ';'.
 /*------------------------------------------------------------------------*/
 ProgramDefinition<. out List<ImportDeclaration> imports .>	(. imports = new List<ImportDeclaration>();
@@ -649,9 +659,9 @@ Parameter<out ParameterDeclaration param>   (. string name; Identifier identifie
     										  		SemanticError("Error ES0001: The variadic parameter must be an array!");
     										.)
   ]											(.
-  												identifier = AstNode.MakeIdentifier(name, type);
-  												if(identifier.Type is PlaceholderType && option == null)
-  													SemanticError("Error ES0004: You can't imit both the type annotation and the default value!");
+  												identifier = AstNode.MakeIdentifier(name, type ?? new PlaceholderType(default(TextLocation)));
+  												if(!defining_closure_parameters && type == null && option == null)
+  													SemanticError("Error ES0004: You can't omit both the type annotation and the default value in a function parameter definition!");
 
   												Symbols.AddSymbol(name, identifier);
   												param = EntityDeclaration.MakeParameter(identifier, option, is_variadic);
@@ -690,42 +700,43 @@ Type<out AstType type>				(. var start_loc = NextLocation; type = new Placeholde
        								   var is_reference = false; string name = null;
     								.)
 =
- [ '&'                              (. is_reference = true; .)
- ]
- ( "int"                			(. type = CreateType(t.val, start_loc, is_reference); .)
- | "uint"                           (. type = CreateType(t.val, start_loc, is_reference); .)
- | "bool"               			(. type = CreateType(t.val, start_loc, is_reference); .)
- | "float"							(. type = CreateType(t.val, start_loc, is_reference); .)
- | "double"                         (. type = CreateType(t.val, start_loc, is_reference); .)
- | "bigint"							(. type = CreateType(t.val, start_loc, is_reference); .)
- | "string"							(. type = CreateType(t.val, start_loc, is_reference); .)
- | "byte"						    (. type = CreateType(t.val, start_loc, is_reference); .)
- | "char"                           (. type = CreateType(t.val, start_loc, is_reference); .)
- | TupleTypeSignature<out type>
- | "vector"							(. name = t.val; .)
- | "dictionary"						(. name = t.val; .)
- | "function"						(. type = CreateType(t.val, start_loc, is_reference); .)
- | "intseq"							(. type = CreateType(t.val, start_loc, is_reference); .)
- | "void"							(. type = AstType.MakeSimpleType("tuple", Enumerable.Empty<AstType>(), start_loc, CurrentLocation); .)
- | TypePathExpression<out type>     (. if(is_reference) type = AstType.MakeReferenceType(type, TextLocation.Empty); .)
- )                                  (. start_loc = NextLocation; .)
- [ GenericTypeSignature<name, is_reference, start_loc, out type>
+ ( [ '&'                            (. is_reference = true; .)
+   ]
+   ( "int"                			(. type = CreateType(t.val, start_loc, is_reference); .)
+   | "uint"                         (. type = CreateType(t.val, start_loc, is_reference); .)
+   | "bool"               			(. type = CreateType(t.val, start_loc, is_reference); .)
+   | "float"						(. type = CreateType(t.val, start_loc, is_reference); .)
+   | "double"                       (. type = CreateType(t.val, start_loc, is_reference); .)
+   | "bigint"						(. type = CreateType(t.val, start_loc, is_reference); .)
+   | "string"						(. type = CreateType(t.val, start_loc, is_reference); .)
+   | "byte"						    (. type = CreateType(t.val, start_loc, is_reference); .)
+   | "char"                         (. type = CreateType(t.val, start_loc, is_reference); .)
+   | TupleTypeSignature<out type>
+   | "vector"						(. name = t.val; .)
+   | "dictionary"					(. name = t.val; .)
+   | "intseq"						(. type = CreateType(t.val, start_loc, is_reference); .)
+   | "void"							(. type = AstType.MakeSimpleType("tuple", Enumerable.Empty<AstType>(), start_loc, CurrentLocation); .)
+   | TypePathExpression<out type>   (. if(is_reference) type = AstType.MakeReferenceType(type, TextLocation.Empty); .)
+   )                                (. start_loc = NextLocation; .)
+   [ GenericTypeSignature<name, is_reference, start_loc, out type>
                                     (.
                                         if(!IsPrimitiveGenericType(name)){
                                             SemanticError("Error ES0006: `{0}` is not a generic type!", name);
                                             return;
                                         }
                                     .)
- ]
+   ]
  /* Split brackets into 2 tokens that represent the array type
     because otherwise it conflicts with the array literal.
  */
- { '[' ']'                          (. if(type.IsNull)
+   { '[' ']'                        (. if(type.IsNull)
                                            SemanticError("Error ES0007: Array of unknown type is specified. Unknown type is just unknown!");
                 
                                        type = AstType.MakeSimpleType("array", new []{type}, start_loc, CurrentLocation);
                                     .)
- }.
+   }
+ | FunctionTypeSignature<out type>
+ ).
 /*------------------------------------------------------------------------*/
 TupleTypeSignature<out AstType type> (. var inners = new List<AstType>(); var start_loc = NextLocation; .)
 =
@@ -750,6 +761,16 @@ GenericTypeSignature<string name, bool isReference, TextLocation startLoc, out A
                                        if(isReference)
                                        	   genericType = AstType.MakeReferenceType(genericType, CurrentLocation);
                                     .).
+/*------------------------------------------------------------------------*/
+FunctionTypeSignature<out AstType type> (. var start_loc = NextLocation; AstType inner_type; List<AstType> arg_types = new List<AstType>(); .)
+=
+  '|'
+  { IF(IsStartOfAnotherType())
+    Type<out inner_type>                (. arg_types.Add(inner_type); .)
+  }
+  '|'
+  "->"
+  Type<out inner_type>                  (. type = AstType.MakeFunctionType("closure", inner_type, arg_types, start_loc, CurrentLocation); .).
 /*------------------------------------------------------------------------*/
 Stmt<out Statement stmt>			(. stmt = null; .)
 =
@@ -1082,14 +1103,29 @@ IdentifierPattern<out PatternConstruct pattern> (. PatternConstruct inner = null
     Pattern<out inner>
   ]                                 (. pattern = PatternConstruct.MakeIdentifierPattern(ident, inner); .).
 /*------------------------------------------------------------------------*/
-TuplePattern<out PatternConstruct pattern>  (. var inners = new List<PatternConstruct>(); .)
+TupleElementPattern<out PatternConstruct pattern>   (. pattern = PatternConstruct.Null; .)
+=
+  ( WildcardPattern<out pattern>
+  | ValueBindingPattern<out pattern>
+  | TuplePattern<out pattern>
+  | DestructuringPattern<out pattern>
+  | ExpressionPattern<out pattern>
+  ).
+/*------------------------------------------------------------------------*/
+TuplePattern<out PatternConstruct pattern>  (. var inners = new List<PatternConstruct>(); pattern = null; .)
 =
   '('
-  { ( LhsPattern<out pattern>
-    | ExpressionPattern<out pattern>
+  [ TupleElementPattern<out pattern>        (. inners.Add(pattern); .)
+    ','
+    [ ( TupleElementPattern<out pattern>
+      | ".."                                (. pattern = PatternConstruct.MakeIgnoringRestPattern(CurrentLocation); .)
+      )                                     (. inners.Add(pattern); .)
+    ]
+  ]
+  { ','
+    ( TupleElementPattern<out pattern>
     | ".."                                  (. pattern = PatternConstruct.MakeIgnoringRestPattern(CurrentLocation); .)
     )                                       (. inners.Add(pattern); .)
-    [ ',' ]
   }
   ')'                                       (. pattern = PatternConstruct.MakeTuplePattern(inners); .).
 /*------------------------------------------------------------------------*/
@@ -1120,14 +1156,47 @@ DestructuringPattern<out PatternConstruct pattern>
     ']'                                     (. pattern = PatternConstruct.MakeCollectionPattern(patterns, is_vector); .)
   ).
 /*------------------------------------------------------------------------*/
-CondExpr<out Expression expr>		(. Expression true_expr, false_expr; .)
+CondExpr<out Expression expr>		(. Expression true_expr, false_expr; expr = null; .)
 =
-  OrTest<out expr>
-  [ '?'
-    OrTest<out true_expr>
-    ':'
-    CondExpr<out false_expr>		(. expr = Expression.MakeCondExpr(expr, true_expr, false_expr); .)
-  ].
+  ( OrTest<out expr>
+    [ '?'
+      OrTest<out true_expr>
+      ':'
+      CondExpr<out false_expr>		(. expr = Expression.MakeCondExpr(expr, true_expr, false_expr); .)
+    ]
+  | ClosureLiteral<out expr>
+  ).
+/*------------------------------------------------------------------------*/
+ClosureLiteral<out Expression expr>     (. AstType return_type = new PlaceholderType(default(TextLocation)); var parameters = new List<ParameterDeclaration>();
+                                           var empty_params = new List<ParameterType>(); Expression body_expr; var start_loc = NextLocation;
+                                           BlockStatement body_block = null;
+                                        .)
+=
+  '|'                                   (. Symbols.AddScope();
+                                           GoDownScope();
+                                           Symbols.Name = "closure`" + ScopeId++;
+                                           defining_closure_parameters = true;
+                                        .)
+  [ ParamList<empty_params, ref parameters> ]
+  '|'                                   (. if(la.val != "->" && la.val != "{"){
+                                               Symbols.AddScope();
+                                               GoDownScope();
+                                           }
+                                           defining_closure_parameters = false;
+                                        .)
+  [ "->"
+    Type<out return_type>               (. if(la.val != "{"){
+                                               Symbols.AddScope();
+                                               GoDownScope();
+                                           }
+                                        .)
+  ]
+  ( IF(IsStartOfBlockScope())    /*Here is the place that is ambiguous for Block and DictMaker. We always choose the first variant(Block scope)*/
+    Block<out body_block>
+  | CondExpr<out body_expr>             (. body_block = Statement.MakeBlock(Statement.MakeReturnStmt(Expression.MakeSequenceExpression(body_expr))); .)
+  )                                     (. expr = Expression.MakeClosureExpression(parameters, return_type, body_block, start_loc);
+                                           GoUpScope();
+                                        .).
 /*------------------------------------------------------------------------*/
 OrTest<out Expression expr>			(. Expression rhs; .)
 =

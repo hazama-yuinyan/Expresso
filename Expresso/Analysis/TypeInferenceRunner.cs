@@ -146,6 +146,18 @@ namespace Expresso.Ast.Analysis
                 return catchClause.Pattern.AcceptWalker(this);
             }
 
+            public AstType VisitClosureLiteralExpression(ClosureLiteralExpression closure)
+            {
+                AstType type = AstType.Null;
+                var last = closure.Body.Statements.Last() as ReturnStatement;
+                if(last != null)
+                    type = last.Expression.IsNull ? AstType.MakeSimpleType("tuple", TextLocation.Empty) : last.Expression.AcceptWalker(this);
+                else
+                    type = AstType.MakeSimpleType("tuple", TextLocation.Empty);
+
+                return type;
+            }
+
             public AstType VisitComprehensionExpression(ComprehensionExpression comp)
             {
                 int tmp_counter = checker.scope_counter;
@@ -536,7 +548,7 @@ namespace Expresso.Ast.Analysis
 
             public AstType VisitFunctionDeclaration(FunctionDeclaration funcDecl)
             {
-                // TODO:Try to figure out the most common type between all the types that
+                // TODO: Try to figure out the most common type between all the types that
                 // all code paths return
                 AstType type = AstType.Null;
                 var last = funcDecl.Body.Statements.Last() as ReturnStatement;

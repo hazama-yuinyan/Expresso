@@ -59,6 +59,7 @@
     <None Include="sources\for_unit_tests\erroneous\literals.exs" />
     <None Include="packages.config" />
     <None Include="sources\for_unit_tests\try_statements.exs" />
+    <None Include="sources\for_unit_tests\closures.exs" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AnalyzerTests.cs" />

@@ -416,6 +416,41 @@ namespace Expresso.Ast.Analysis
             return null;
         }
 
+        public AstType VisitClosureLiteralExpression(ClosureLiteralExpression closure)
+        {
+            int tmp_counter = scope_counter;
+            DescendScope();
+            scope_counter = 0;
+
+            foreach(var param in closure.Parameters){
+                param.AcceptWalker(this);
+            }
+
+            closure.Body.AcceptWalker(this);
+
+            // Delay discovering the return type because the body statements should be type-aware
+            // before the return type is started to be inferred
+            if(IsPlaceholderType(closure.ReturnType)){
+                // Descend scopes 2 times because a closure parameters has its own scope
+                int tmp_counter2 = scope_counter;
+                --scope_counter;
+                DescendScope();
+                scope_counter = 0;
+
+                var return_type = inference_runner.VisitClosureLiteralExpression(closure);
+                closure.ReturnType.ReplaceWith(return_type);
+
+                AscendScope();
+                scope_counter = tmp_counter2;
+            }
+
+            var param_types = 
+                from p in closure.Parameters
+                                 select p.ReturnType.Clone();
+            
+            return AstType.MakeFunctionType("closure", closure.ReturnType.Clone(), param_types);
+        }
+
         public AstType VisitComprehensionExpression(ComprehensionExpression comp)
         {
             return comp.ObjectType;
@@ -843,7 +878,8 @@ namespace Expresso.Ast.Analysis
 
             funcDecl.Body.AcceptWalker(this);
 
-            // Delay discovering the return type because of type inference
+            // Delay discovering the return type because the body statements should be type-aware
+            // before the return type is started to be inferred
             if(IsPlaceholderType(funcDecl.ReturnType)){
                 // Descend scopes 2 times because a function name has its own scope
                 int tmp_counter2 = scope_counter;
@@ -855,6 +891,7 @@ namespace Expresso.Ast.Analysis
                 funcDecl.ReturnType.ReplaceWith(return_type);
                 // Replace the return type of the function type with an appropriate ast type object
                 ((FunctionType)funcDecl.NameToken.Type).ReturnType.ReplaceWith(funcDecl.ReturnType.Clone());
+
                 AscendScope();
                 scope_counter = tmp_counter2;
             }

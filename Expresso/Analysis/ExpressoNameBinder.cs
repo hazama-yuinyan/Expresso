@@ -273,6 +273,19 @@ namespace Expresso.Ast.Analysis
             catchClause.Body.AcceptWalker(this);
         }
 
+        public void VisitClosureLiteralExpression(ClosureLiteralExpression closure)
+        {
+            int tmp_counter = scope_counter;
+            DecendScope();
+            scope_counter = 0;
+
+            closure.Parameters.AcceptWalker(this);
+            closure.Body.AcceptWalker(this);
+
+            AscendScope();
+            scope_counter = tmp_counter + 1;
+        }
+
         public void VisitComprehensionExpression(ComprehensionExpression comp)
         {
             int tmp_counter = scope_counter;

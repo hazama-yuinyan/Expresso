@@ -328,6 +328,11 @@ namespace Expresso.Ast.Analysis
             
         }
 
+        public void VisitClosureLiteralExpression(ClosureLiteralExpression closure)
+        {
+            
+        }
+
         public void VisitComprehensionExpression(ComprehensionExpression comp)
         {
             BitArray save = bits;

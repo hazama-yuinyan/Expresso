@@ -354,6 +354,18 @@ namespace Expresso.Ast
             return new IndexerExpression(target, args, loc);
         }
 
+        public static ClosureLiteralExpression MakeClosureExpression(IEnumerable<ParameterDeclaration> parameters, AstType returnType,
+                                                                     BlockStatement body, TextLocation loc = default(TextLocation))
+        {
+            return new ClosureLiteralExpression(parameters, returnType, body, loc);
+        }
+
+        public static ClosureLiteralExpression MakeClosureExpression(AstType returnType, BlockStatement body,
+                                                                     TextLocation loc = default(TextLocation), params ParameterDeclaration[] parameters)
+        {
+            return new ClosureLiteralExpression(parameters, returnType, body, loc);
+        }
+
         public static bool IsNullNode(Expression node)
         {
             return node == Null || node == null;

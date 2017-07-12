@@ -212,6 +212,7 @@
     <Compile Include="Ast\Statements\ThrowStatement.cs" />
     <Compile Include="Ast\Statements\TryStatement.cs" />
     <Compile Include="Ast\Patterns\IgnoringRestPattern.cs" />
+    <Compile Include="Ast\Expressions\ClosureLiteralExpression.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System" />

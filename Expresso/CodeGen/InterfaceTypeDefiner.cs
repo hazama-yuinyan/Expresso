@@ -129,6 +129,11 @@ namespace Expresso.CodeGen
                 throw new NotImplementedException();
             }
 
+            public void VisitClosureLiteralExpression(ClosureLiteralExpression closure)
+            {
+                throw new NotImplementedException();
+            }
+
             public void VisitComprehensionExpression(ComprehensionExpression comp)
             {
                 throw new NotImplementedException();

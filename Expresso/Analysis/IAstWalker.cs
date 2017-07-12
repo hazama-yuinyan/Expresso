@@ -33,6 +33,7 @@ namespace Expresso.Ast
         void VisitCallExpression(CallExpression callExpr);
         void VisitCastExpression(CastExpression castExpr);
         void VisitCatchClause(CatchClause catchClause);
+        void VisitClosureLiteralExpression(ClosureLiteralExpression closure);
         void VisitComprehensionExpression(ComprehensionExpression comp);
         void VisitComprehensionForClause(ComprehensionForClause compFor);
         void VisitComprehensionIfClause(ComprehensionIfClause compIf);
@@ -116,6 +117,7 @@ namespace Expresso.Ast
         TResult VisitCallExpression(CallExpression call);
         TResult VisitCastExpression(CastExpression castExpr);
         TResult VisitCatchClause(CatchClause catchClause);
+        TResult VisitClosureLiteralExpression(ClosureLiteralExpression closure);
         TResult VisitComprehensionExpression(ComprehensionExpression comp);
         TResult VisitComprehensionForClause(ComprehensionForClause compFor);
         TResult VisitComprehensionIfClause(ComprehensionIfClause compIf);
@@ -209,6 +211,7 @@ namespace Expresso.Ast
         TResult VisitCallExpression(CallExpression call, TData data);
         TResult VisitCastExpression(CastExpression castExpr, TData data);
         TResult VisitCatchClause(CatchClause catchClause, TData data);
+        TResult VisitClosureLiteralExpression(ClosureLiteralExpression closure, TData data);
         TResult VisitComprehensionExpression(ComprehensionExpression comp, TData data);
         TResult VisitComprehensionForClause(ComprehensionForClause compFor, TData data);
         TResult VisitComprehensionIfClause(ComprehensionIfClause compIf, TData data);
