@@ -24,6 +24,10 @@ namespace Expresso.Ast.Analysis
             Parser parser;
             TypeChecker checker;
 
+            public bool InspectsClosure{
+                get; set;
+            }
+
             public TypeInferenceRunner(Parser parser, TypeChecker checker)
             {
                 this.parser = parser;
@@ -129,11 +133,14 @@ namespace Expresso.Ast.Analysis
 
             public AstType VisitCallExpression(CallExpression callExpr)
             {
-                var func_type = callExpr.Target.AcceptWalker(this);
+                var func_type = callExpr.Target.AcceptWalker(this) as FunctionType;
+                if(func_type == null)
+                    throw new InvalidOperationException("func_type turns out not to be a FunctionType");
+                
                 foreach(var arg in callExpr.Arguments)
                     arg.AcceptWalker(this);
                 
-                return ((FunctionType)func_type).ReturnType.Clone();
+                return func_type.ReturnType.Clone();
             }
 
             public AstType VisitCastExpression(CastExpression castExpr)
@@ -148,6 +155,28 @@ namespace Expresso.Ast.Analysis
 
             public AstType VisitClosureLiteralExpression(ClosureLiteralExpression closure)
             {
+                // Because there are times when the closure is not inspected beforehand
+                // examine it here
+                if(InspectsClosure){
+                    InspectsClosure = false;
+                    checker.VisitClosureLiteralExpression(closure);
+                }
+
+                // Usually we don't need to descend or ascend scopes in TypeInferenceRunner
+                // we do need to do that here because TypeChecker.VisitVariableInitializer can directly call this method.
+                // Descend scopes 2 times because closure parameters also have thier own scope.
+                int tmp_counter = checker.scope_counter;
+                bool has_descended = false;
+                // This condition would cause a problem if the closure is surrounded by another closure
+                if(!checker.symbols.Parent.Name.StartsWith("closure")){
+                    checker.DescendScope();
+                    checker.scope_counter = 0;
+
+                    checker.DescendScope();
+
+                    has_descended = true;
+                }
+
                 AstType type = AstType.Null;
                 var last = closure.Body.Statements.Last() as ReturnStatement;
                 if(last != null)
@@ -155,7 +184,18 @@ namespace Expresso.Ast.Analysis
                 else
                     type = AstType.MakeSimpleType("tuple", TextLocation.Empty);
 
-                return type;
+                var param_types = 
+                    from p in closure.Parameters
+                                 select p.ReturnType.Clone();
+
+                if(has_descended){
+                    checker.AscendScope();
+                    checker.AscendScope();
+                    // Doesn't add 1 to tmp_counter because other methods also peek into that scope
+                    checker.scope_counter = tmp_counter;
+                }
+
+                return AstType.MakeFunctionType("closure", type, param_types);
             }
 
             public AstType VisitComprehensionExpression(ComprehensionExpression comp)
@@ -256,9 +296,9 @@ namespace Expresso.Ast.Analysis
                     var symbol = checker.symbols.GetSymbolInAnyScope(ident.Name);
                     if(symbol == null){
                         parser.ReportSemanticError(
-                            "Error ES1000: The symbol '{0}' is not defined in the current scope {1}.",
+                            "Error ES1000: The symbol '{0}' at {1} is not defined in the current scope {2}.",
                             ident,
-                            ident.Name, checker.symbols.Name
+                            ident.Name, ident.StartLocation, checker.symbols.Name
                         );
                         return null;
                     }else{

@@ -8,7 +8,9 @@ namespace Expresso.Ast
     /// <summary>
     /// Represents the closure literal expression.
     /// A closure literal expression defines a new closure.
-    /// '|' { Identifiers } '|' [ "->" ReturnType ] ( Expression | Block ) ;
+    /// Closure literal expressions can contain parameters with no types associated with if they are directly passed
+    /// to functions or methods.
+    /// '|' [ Identifier { ',' Identifier } ] '|' [ "->" ReturnType ] ( Expression | Block ) ;
     /// </summary>
     public class ClosureLiteralExpression : Expression
     {

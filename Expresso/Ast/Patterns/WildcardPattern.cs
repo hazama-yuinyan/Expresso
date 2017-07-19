@@ -6,7 +6,7 @@ namespace Expresso.Ast
 {
     /// <summary>
     /// Represents the wildcard pattern.
-    /// A wildcard pattern matches any value.
+    /// A wildcard pattern matches any single item.
     /// '_' ;
     /// </summary>
     public class WildcardPattern : PatternConstruct

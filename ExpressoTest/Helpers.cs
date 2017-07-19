@@ -158,7 +158,7 @@ namespace Expresso.Test
 
         public static ReturnStatement MakeReturnStatement(params Expression[] expressions)
         {
-            return new ReturnStatement(Expression.MakeSequenceExpression(expressions));
+            return new ReturnStatement(Expression.MakeSequenceExpression(expressions), expressions.First().StartLocation);
         }
 
         /// <summary>

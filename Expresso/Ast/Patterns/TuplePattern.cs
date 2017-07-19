@@ -7,7 +7,7 @@ namespace Expresso.Ast
 {
     /// <summary>
     /// Represents a tuple pattern.
-    /// A tuple pattern matches a tuple, which consists of a pair of parenthesis and values.
+    /// A tuple pattern matches a tuple, which consists of a pair of parentheses and values.
     /// '(' {ident ','} ')' ;
     /// </summary>
     public class TuplePattern : PatternConstruct

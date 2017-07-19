@@ -559,6 +559,10 @@ namespace Expresso.Ast
 
         public void VisitFunctionDeclaration(FunctionDeclaration funcDecl)
         {
+            if(!funcDecl.Modifiers.HasFlag(Modifiers.None)){
+                writer.Write(funcDecl.Modifiers);
+                writer.Write(" ");
+            }
             writer.Write("def ");
             writer.Write(funcDecl.Name);
             writer.Write("(");

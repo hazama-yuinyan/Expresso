@@ -7,7 +7,7 @@ namespace Expresso.Ast
 	/// <summary>
 	/// 単項演算。
 	/// Reperesents an unary expression.
-    /// An unary expression takes one operand and operate it.
+    /// An unary expression takes one operand and performs some operation on it.
     /// UnaryOperator Expression ;
 	/// </summary>
     public class UnaryExpression : Expression

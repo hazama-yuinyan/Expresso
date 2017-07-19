@@ -4,7 +4,7 @@
 namespace Expresso.Ast
 {
     /// <summary>
-    /// Represents an expression surrounded by a pair of parenthesis.
+    /// Represents an expression surrounded by a pair of parentheses.
     /// Also, a tuple expression is represented as 
     /// ParenthesizedExpression{
     ///     SequenceExpression{

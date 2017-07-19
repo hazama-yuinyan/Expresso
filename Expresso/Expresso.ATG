@@ -417,7 +417,7 @@ Expresso                    		(. ExpressoAst module_decl = null;
                                     .)
 = 
   ModuleBody<out module_decl>		(.
-                                            Debug.Assert(Symbols.Parent.Name == "root");
+                                            Debug.Assert(Symbols.Parent.Name == "root", "The symbol table should indicate \"programRoot\" before name binding ");
                                             if(DoPostParseProcessing){
                                                 CSharpCompilerHelper.Prepare();
                                                 ExpressoNameBinder.BindAst(module_decl, this); //Here's the start of post-parse processing
@@ -789,11 +789,11 @@ SimpleStmt<out Statement stmt>		(. stmt = null; BlockStatement block = null; .)
   | ThrowStmt<out stmt>
   | EmptyStmt<out stmt>.
 /*------------------------------------------------------------------------*/
-ReturnStmt<out Statement stmt>		(. SequenceExpression items = null; .)
+ReturnStmt<out Statement stmt>		(. SequenceExpression items = null; var start_loc = NextLocation; .)
 =
   "return"
   [RValueList<out items>]
-  SYNC ';'							(. stmt = Statement.MakeReturnStmt(items); .).
+  SYNC ';'							(. stmt = Statement.MakeReturnStmt(items, start_loc); .).
 /*------------------------------------------------------------------------*/
 BreakStmt<out Statement stmt>		(. int count = 1; var start_loc = NextLocation; .)
 =
@@ -1181,6 +1181,7 @@ ClosureLiteral<out Expression expr>     (. AstType return_type = new Placeholder
   '|'                                   (. if(la.val != "->" && la.val != "{"){
                                                Symbols.AddScope();
                                                GoDownScope();
+                                               Symbols.Name = "block`" + ScopeId++;
                                            }
                                            defining_closure_parameters = false;
                                         .)
@@ -1188,13 +1189,19 @@ ClosureLiteral<out Expression expr>     (. AstType return_type = new Placeholder
     Type<out return_type>               (. if(la.val != "{"){
                                                Symbols.AddScope();
                                                GoDownScope();
+                                               Symbols.Name = "block`" + ScopeId++;
                                            }
                                         .)
   ]
   ( IF(IsStartOfBlockScope())    /*Here is the place that is ambiguous for Block and DictMaker. We always choose the first variant(Block scope)*/
     Block<out body_block>
-  | CondExpr<out body_expr>             (. body_block = Statement.MakeBlock(Statement.MakeReturnStmt(Expression.MakeSequenceExpression(body_expr))); .)
+  | CondExpr<out body_expr>             (. var seq_expr = Expression.MakeSequenceExpression(body_expr);
+                                           body_block = Statement.MakeBlock(Statement.MakeReturnStmt(seq_expr, seq_expr.StartLocation));
+                                        .)
   )                                     (. expr = Expression.MakeClosureExpression(parameters, return_type, body_block, start_loc);
+                                           if(t.val != "}")
+                                               GoUpScope();
+
                                            GoUpScope();
                                         .).
 /*------------------------------------------------------------------------*/

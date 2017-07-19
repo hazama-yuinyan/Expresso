@@ -6,7 +6,8 @@ namespace Expresso.Ast
 {
     /// <summary>
     /// Represents the throw statement.
-    /// A throw statement transfers control to surrounding catch clause.
+    /// A throw statement transfers control to surrounding catch clause and
+    /// gives it an exception object.
     /// "throw" Type ObjectCreation ';' ;
     /// </summary>
     public class ThrowStatement : Statement

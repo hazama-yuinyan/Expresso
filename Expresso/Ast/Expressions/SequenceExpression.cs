@@ -1,13 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
-
+using System.Linq;
 
 namespace Expresso.Ast
 {
     /// <summary>
     /// カンマで区切られたリテラル式をあらわす。
 	/// Reperesents a comma-separated list expression like "1,2,3,4".
-	/// It could show up in a simultaneous assignment like "a, b = 1, 2"
+	/// It could show up in a simultaneous assignment like "a, b = 1, 2".
     /// Expression ',' Expression { ',' Expression } ;
     /// </summary>
     /// <remarks>Note that this single node doesn't specify any semantics in Expresso.</remarks>
@@ -21,11 +21,16 @@ namespace Expresso.Ast
             get{return GetChildrenByRole(Roles.Expression);}
 		}
 
+        /// <summary>
+        /// Gets the number of items.
+        /// </summary>
+        /// <value>The count.</value>
 		public int Count{
             get{return Items.Count;}
 		}
 
         public SequenceExpression(IEnumerable<Expression> items)
+            : base(items.First().StartLocation, items.Last().EndLocation)
 		{
             if(items != null)
                 Items.AddRange(items);

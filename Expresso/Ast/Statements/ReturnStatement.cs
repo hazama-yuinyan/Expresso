@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-
+using ICSharpCode.NRefactory;
 
 namespace Expresso.Ast
 {
@@ -20,7 +20,8 @@ namespace Expresso.Ast
             set{SetChildByRole(Roles.Expression, value);}
 		}
 
-		public ReturnStatement(Expression expression)
+		public ReturnStatement(Expression expression, TextLocation loc)
+            : base(loc, new TextLocation(expression.EndLocation.Line, expression.EndLocation.Column + 1))
 		{
             Expression = expression;
 		}

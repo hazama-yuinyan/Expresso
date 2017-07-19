@@ -9,7 +9,7 @@ namespace Expresso.Ast
 	/// <summary>
     /// 変数宣言文。
     /// The variable declaration statement.
-    /// A variable declaration statement introduces a new variable or a read-only value into the surrounding scope.
+    /// A variable declaration statement introduces a new variable or an immutable one into the surrounding scope.
     /// ("let" | "var") VariableInitializer { ',' VariableInitializer } ;
 	/// </summary>
     public class VariableDeclarationStatement : Statement

@@ -21,12 +21,14 @@ namespace Expresso.Ast.Analysis
         Parser parser;
         SymbolTable symbols;  //keep a SymbolTable reference in a private field for convenience
         TypeInferenceRunner inference_runner;
+        ClosureParameterInferencer closure_parameter_inferencer;
 
         public TypeChecker(Parser parser)
         {
             this.parser = parser;
             symbols = parser.Symbols;
             inference_runner = new TypeInferenceRunner(parser, this);
+            closure_parameter_inferencer = new ClosureParameterInferencer(parser, this);
         }
 
         public static void Check(ExpressoAst ast, Parser parser)
@@ -423,7 +425,9 @@ namespace Expresso.Ast.Analysis
             scope_counter = 0;
 
             foreach(var param in closure.Parameters){
-                param.AcceptWalker(this);
+                var param_type = param.AcceptWalker(this);
+                if(IsPlaceholderType(param_type))
+                    closure_parameter_inferencer.VisitParameterDeclaration(param);
             }
 
             closure.Body.AcceptWalker(this);
@@ -431,14 +435,15 @@ namespace Expresso.Ast.Analysis
             // Delay discovering the return type because the body statements should be type-aware
             // before the return type is started to be inferred
             if(IsPlaceholderType(closure.ReturnType)){
-                // Descend scopes 2 times because a closure parameters has its own scope
+                // Descend scopes 2 times because closure parameters have their own scope
                 int tmp_counter2 = scope_counter;
                 --scope_counter;
                 DescendScope();
                 scope_counter = 0;
 
-                var return_type = inference_runner.VisitClosureLiteralExpression(closure);
-                closure.ReturnType.ReplaceWith(return_type);
+                inference_runner.InspectsClosure = false;
+                var func_type = (FunctionType)inference_runner.VisitClosureLiteralExpression(closure);
+                closure.ReturnType.ReplaceWith(func_type.ReturnType.Clone());
 
                 AscendScope();
                 scope_counter = tmp_counter2;
@@ -447,6 +452,9 @@ namespace Expresso.Ast.Analysis
             var param_types = 
                 from p in closure.Parameters
                                  select p.ReturnType.Clone();
+
+            AscendScope();
+            scope_counter = inference_runner.InspectsClosure ? tmp_counter + 1 : tmp_counter;
             
             return AstType.MakeFunctionType("closure", closure.ReturnType.Clone(), param_types);
         }
@@ -953,7 +961,9 @@ namespace Expresso.Ast.Analysis
         {
             var left_type = initializer.NameToken.AcceptWalker(this);
             if(IsPlaceholderType(left_type)){
+                inference_runner.InspectsClosure = true;
                 var inferred_type = initializer.Initializer.AcceptWalker(inference_runner);
+                inference_runner.InspectsClosure = true;
                 if(IsCollectionType(inferred_type) && ((SimpleType)inferred_type).TypeArguments.Any(t => t is PlaceholderType)){
                     parser.ReportSemanticErrorRegional(
                         "The left-hand-side lacks the inner type of the container `{0}`",
@@ -978,7 +988,7 @@ namespace Expresso.Ast.Analysis
                 }
             }else if(rhs_type != null && IsCompatibleWith(left_type, rhs_type) == TriBool.False){
                 parser.ReportSemanticErrorRegional(
-                    "Type `{0}` on the left-hand-side is not compatible with `{1}` on the right-hand-side.",
+                    "Error ES1300: Type `{0}` on the left-hand-side is not compatible with `{1}` on the right-hand-side.",
                     initializer.NameToken,
                     initializer.Initializer,
                     left_type, rhs_type
@@ -1149,10 +1159,16 @@ namespace Expresso.Ast.Analysis
         /// <returns>The common type between `lhs` and `rhs`.</returns>
         AstType FigureOutCommonType(AstType lhs, AstType rhs)
         {
-            if(lhs == AstType.Null)
+            if(lhs == null)
+                throw new ArgumentNullException(nameof(lhs));
+
+            if(rhs == null)
+                throw new ArgumentNullException(nameof(rhs));
+            
+            if(lhs.IsNull)
                 return rhs;
 
-            if(rhs == AstType.Null)
+            if(rhs.IsNull)
                 return lhs;
 
             var lhs_primitive = lhs as PrimitiveType;
@@ -1180,7 +1196,7 @@ namespace Expresso.Ast.Analysis
             }
 
             parser.ReportWarning(
-                "Can not guess the common type between `{0}` and `{1}`.",
+                "Warning ES1200: Can not guess the common type between `{0}` and `{1}`.",
                 lhs,
                 lhs, rhs
             );

@@ -453,7 +453,7 @@ string cur_class_name;
 		     try{
 		  
 		ModuleBody(out module_decl);
-		Debug.Assert(Symbols.Parent.Name == "root");
+		Debug.Assert(Symbols.Parent.Name == "root", "The symbol table should indicate \"programRoot\" before name binding ");
 		if(DoPostParseProcessing){
 		   CSharpCompilerHelper.Prepare();
 		   ExpressoNameBinder.BindAst(module_decl, this); //Here's the start of post-parse processing
@@ -1194,14 +1194,14 @@ string cur_class_name;
 	}
 
 	void ReturnStmt(out Statement stmt) {
-		SequenceExpression items = null; 
+		SequenceExpression items = null; var start_loc = NextLocation; 
 		Expect(59);
 		if (StartOf(14)) {
 			RValueList(out items);
 		}
 		while (!(la.kind == 0 || la.kind == 6)) {SynErr(123); Get();}
 		Expect(6);
-		stmt = Statement.MakeReturnStmt(items); 
+		stmt = Statement.MakeReturnStmt(items, start_loc); 
 	}
 
 	void BreakStmt(out Statement stmt) {
@@ -1779,6 +1779,7 @@ string cur_class_name;
 		if(la.val != "->" && la.val != "{"){
 		   Symbols.AddScope();
 		   GoDownScope();
+		   Symbols.Name = "block`" + ScopeId++;
 		}
 		defining_closure_parameters = false;
 		
@@ -1788,6 +1789,7 @@ string cur_class_name;
 			if(la.val != "{"){
 			   Symbols.AddScope();
 			   GoDownScope();
+			   Symbols.Name = "block`" + ScopeId++;
 			}
 			
 		}
@@ -1795,9 +1797,14 @@ string cur_class_name;
 			Block(out body_block);
 		} else if (StartOf(14)) {
 			CondExpr(out body_expr);
-			body_block = Statement.MakeBlock(Statement.MakeReturnStmt(Expression.MakeSequenceExpression(body_expr))); 
+			var seq_expr = Expression.MakeSequenceExpression(body_expr);
+			body_block = Statement.MakeBlock(Statement.MakeReturnStmt(seq_expr, seq_expr.StartLocation));
+			
 		} else SynErr(142);
 		expr = Expression.MakeClosureExpression(parameters, return_type, body_block, start_loc);
+		if(t.val != "}")
+		   GoUpScope();
+		
 		GoUpScope();
 		
 	}

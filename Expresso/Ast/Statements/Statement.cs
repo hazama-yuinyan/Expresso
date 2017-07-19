@@ -165,9 +165,9 @@ namespace Expresso.Ast
             return new ExpressionStatement(seqExpr, start, end);
         }
 
-        public static ReturnStatement MakeReturnStmt(Expression expr)
+        public static ReturnStatement MakeReturnStmt(Expression expr, TextLocation loc = default(TextLocation))
         {
-            return new ReturnStatement(expr);
+            return new ReturnStatement(expr, loc);
         }
 
         public static IfStatement MakeIfStmt(PatternConstruct condition, BlockStatement trueBlock,

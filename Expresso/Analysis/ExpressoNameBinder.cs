@@ -115,12 +115,12 @@ namespace Expresso.Ast.Analysis
 
         public void VisitAst(ExpressoAst ast)
         {
-            Debug.Assert(symbol_table.Parent == null);
+            Debug.Assert(symbol_table.Name == "programRoot", "When entering VisitAst, symbol_table should be programRoot");
             scope_counter = 0;
 
             ast.Imports.AcceptWalker(this);
             ast.Declarations.AcceptWalker(this);
-            Debug.Assert(symbol_table.Parent == null);
+            Debug.Assert(symbol_table.Name == "programRoot", "When exiting VisitAst, symbol_table should be programRoot");
         }
 
         public void VisitBlock(BlockStatement block)

@@ -17,6 +17,7 @@ namespace Expresso.Ast
     /// <item>bool</item>
     /// <item>byte</item>
     /// <item>float</item>
+    /// <item>double</item>
     /// <item>bigint</item>
     /// <item>char</item>
     /// <item>tuple</item>
