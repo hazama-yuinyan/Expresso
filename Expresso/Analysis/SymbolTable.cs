@@ -329,6 +329,29 @@ namespace Expresso.Ast.Analysis
         }
 
         /// <summary>
+        /// Gets the corresponding <see cref="Expresso.Ast.Identifier"/> node to `name`, trying to track up, at most, n scopes.
+        /// </summary>
+        /// <returns>The symbol</returns>
+        /// <param name="name">The symbol name to be fetched.</param>
+        /// <param name="limit">The maximum count to track up scopes, while trying to find the symbol.</param>
+        public Identifier GetSymbolInNScopesAbove(string name, int limit)
+        {
+            Identifier result;
+            if(!table.TryGetValue(name, out result)){
+                if(Parent != null && limit > 0){
+                    return Parent.GetSymbolInNScopesAbove(name, limit - 1);
+                }else{
+                    if(limit > 0 && NativeMapping.TryGetValue(name, out result))
+                        return result;
+                    else
+                        return null;
+                }
+            }
+
+            return result;
+        }
+
+        /// <summary>
         /// Gets the corresponding <see cref="Expresso.Ast.Identifier"/> node to `name` in any parent scopes.
         /// </summary>
         public Identifier GetSymbolInAnyScope(string name)

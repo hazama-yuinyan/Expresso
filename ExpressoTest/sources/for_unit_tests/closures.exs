@@ -19,6 +19,9 @@ def main()
     let a = c(1);
     let b = c2(1);
     let d = addOneToOne(|x| x + 1);
+    let e = 2;
+    let c3 = |x (- int| x + e;
+    let f = c3(1);
 
-    println(a, b, d);
+    println(a, b, d, f);
 }

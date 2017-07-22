@@ -4,6 +4,10 @@ using ICSharpCode.NRefactory.PatternMatching;
 
 namespace Expresso.Ast.Analysis
 {
+    /// <summary>
+    /// The closure parameter inferencer.
+    /// A closure parameter inferencer works on ParameterDeclaration nodes and is responsible for inferring the parameter types.
+    /// </summary>
     public class ClosureParameterInferencer : IAstWalker
     {
         Parser parser;

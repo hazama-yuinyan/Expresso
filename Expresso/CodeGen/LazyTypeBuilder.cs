@@ -92,6 +92,7 @@ namespace Expresso.CodeGen
 
         /// <summary>
         /// Defines a new method on this type.
+        /// Returns a MethodBuilder that represents the interface method.
         /// </summary>
         /// <returns>The method.</returns>
         /// <param name="name">Name.</param>
@@ -193,6 +194,7 @@ namespace Expresso.CodeGen
                         p
                     );
                 }).OfType<Expression>().ToList();
+                // It's needed because the Ctor_Impl should return nothing
                 block_contents.Add(Expression.Empty());
 
                 parameters.Insert(0, self_param);
@@ -270,6 +272,15 @@ namespace Expresso.CodeGen
                 throw new InvalidOperationException("The interface type is yet to be defined");
 
             return type_cache.GetField(name, flags);
+        }
+
+        public ConstructorInfo GetConstructor(Type[] paramTypes)
+        {
+            return members.OfType<ConstructorBuilder>()
+                          .Where(cb => {
+                return cb.GetParameters().Zip(paramTypes, (arg1, arg2) => Tuple.Create(arg1, arg2))
+                         .All(t => t.Item1.ParameterType == t.Item2);
+            }).First();
         }
 
         public void SetBody(FieldBuilder field, Expression body)

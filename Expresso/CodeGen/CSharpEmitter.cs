@@ -38,12 +38,13 @@ namespace Expresso.CodeGen
         //# that identifies the symbol uniqueness within the whole program.
         //###################################################
         static Dictionary<uint, ExpressoSymbol> Symbols = new Dictionary<uint, ExpressoSymbol>();
-        static int LoopCounter = 1;
+        static int LoopCounter = 1, ClosureId = 0;
         static ExprTree.LabelTarget ReturnTarget = null;
         static CSharpExpr DefaultReturnValue = null;
         //static uint CountGlobalFunctions = 0;
         //static IdentifierSearcher IdentifierSearcher = new IdentifierSearcher();
 		
+        const string ClosureMethodName = "__Apply";
         bool has_continue;
 
         SymbolTable symbol_table;
@@ -610,10 +611,7 @@ namespace Expresso.CodeGen
 
         public CSharpExpr VisitCallExpression(CallExpression call, CSharpEmitterContext context)
         {
-            var compiled_args = new List<CSharpExpr>();
-            foreach(var arg in call.Arguments)
-                compiled_args.Add(arg.AcceptWalker(this, context));
-
+            var compiled_args = call.Arguments.Select(arg => arg.AcceptWalker(this, context));
             var inst = call.Target.AcceptWalker(this, context);
             return ConstructCallExpression((ExprTree.ParameterExpression)inst, context.Method, compiled_args);
         }
@@ -632,7 +630,64 @@ namespace Expresso.CodeGen
 
         public CSharpExpr VisitClosureLiteralExpression(ClosureLiteralExpression closure, CSharpEmitterContext context)
         {
-            return null;
+            var prev_additionals = context.Additionals;
+            context.Additionals = new List<object>();
+
+            int tmp_counter = sibling_count;
+            DescendScope();
+            sibling_count = 0;
+
+            var closure_type_builder = new LazyTypeBuilder(context.ModuleBuilder, "__Closure`" + ClosureId++, TypeAttributes.Class, Enumerable.Empty<Type>(), false);
+
+            var formal_parameters = closure.Parameters.Select(p => p.AcceptWalker(this, context))
+                                           .OfType<ExprTree.ParameterExpression>();
+            var param_types = formal_parameters.Select(p => p.Type)
+                                               .ToArray();
+
+            var prev_context_ast = context.ContextAst;
+            context.ContextAst = closure;
+
+            var return_type = CSharpCompilerHelper.GetNativeType(closure.ReturnType);
+            var prev_return_target = ReturnTarget;
+            var prev_default_return_value = DefaultReturnValue;
+            ReturnTarget = CSharpExpr.Label(return_type, "ReturnTarget");
+            DefaultReturnValue = CSharpExpr.Default(return_type);
+
+            var body = closure.Body.AcceptWalker(this, context);
+            context.Additionals = prev_additionals;
+            context.ContextAst = prev_context_ast;
+            ReturnTarget = prev_return_target;
+            DefaultReturnValue = prev_default_return_value;
+            var lambda = CSharpExpr.Lambda(body, formal_parameters);
+
+            closure_type_builder.DefineMethod(ClosureMethodName, MethodAttributes.Public, return_type, param_types, lambda);
+
+            var field_params = closure.LiftedIdentifiers.Select(ident => ident.AcceptWalker(this, context))
+                                     .OfType<ExprTree.ParameterExpression>();
+            foreach(var ctor_param in field_params)
+                closure_type_builder.DefineField(ctor_param.Name, ctor_param.Type, false);
+
+            var ctor_param_types = field_params.Select(p => p.Type)
+                                              .ToArray();
+            var ctor = closure_type_builder.GetConstructor(ctor_param_types);
+            var new_expr = CSharpExpr.New(ctor, field_params);
+
+            closure_type_builder.CreateInterfaceType();
+            var closure_type = closure_type_builder.CreateType();
+
+            var closure_call_target = closure_type.GetMethod(ClosureMethodName);
+            var member_access = CSharpExpr.MakeMemberAccess(new_expr, closure_call_target);
+
+            var param_ast_types = closure.Parameters.Select(p => p.ReturnType);
+            var closure_func_type = AstType.MakeFunctionType("closure", closure.ReturnType, param_ast_types);
+            var closure_native_type = CSharpCompilerHelper.GetNativeType(closure_func_type);
+
+            var delegate_ctor = closure_native_type.GetConstructors().First();
+
+            AscendScope();
+            sibling_count = tmp_counter = 1;
+
+            return CSharpExpr.New(delegate_ctor, member_access);
         }
 
         public CSharpExpr VisitComprehensionExpression(ComprehensionExpression comp, CSharpEmitterContext context)

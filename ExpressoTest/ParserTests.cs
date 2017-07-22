@@ -2571,6 +2571,7 @@ namespace Expresso.Test
                                         )
                                     ),
                                     TextLocation.Empty,
+                                    null,
                                     EntityDeclaration.MakeParameter(
                                         "x",
                                         Helpers.MakePrimitiveType("int")
@@ -2605,6 +2606,7 @@ namespace Expresso.Test
                                         )
                                     ),
                                     TextLocation.Empty,
+                                    null,
                                     EntityDeclaration.MakeParameter(
                                         "x",
                                         Helpers.MakePrimitiveType("int")
@@ -2656,6 +2658,7 @@ namespace Expresso.Test
                                             )
                                         ),
                                         TextLocation.Empty,
+                                        null,
                                         EntityDeclaration.MakeParameter(
                                             "x",
                                             Helpers.MakePlaceholderType()
@@ -2665,12 +2668,60 @@ namespace Expresso.Test
                             ),
                             Modifiers.Immutable
                         ),
+                        Statement.MakeVarDecl(
+                            Helpers.MakeSeq(
+                                Helpers.MakeSomeIdent("e")
+                            ),
+                            Helpers.MakeSeq(
+                                Expression.MakeConstant("int", 2)
+                            ),
+                            Modifiers.Immutable
+                        ),
+                        Statement.MakeVarDecl(
+                            Helpers.MakeSeq(
+                                Helpers.MakeSomeIdent("c3")
+                            ),
+                            Helpers.MakeSeq<Expression>(
+                                Expression.MakeClosureExpression(
+                                    Helpers.MakePlaceholderType(),
+                                    Statement.MakeBlock(
+                                        Helpers.MakeSingleItemReturnStatement(
+                                            Expression.MakeBinaryExpr(
+                                                OperatorType.Plus,
+                                                Helpers.MakeIdentifierPath("x"),
+                                                Helpers.MakeIdentifierPath("e")
+                                            )
+                                        )
+                                    ),
+                                    TextLocation.Empty,
+                                    null,
+                                    EntityDeclaration.MakeParameter(
+                                        "x",
+                                        Helpers.MakePrimitiveType("int")
+                                    )
+                                )
+                            ),
+                            Modifiers.Immutable
+                        ),
+                        Statement.MakeVarDecl(
+                            Helpers.MakeSeq(
+                                Helpers.MakeSomeIdent("f")
+                            ),
+                            Helpers.MakeSeq(
+                                Helpers.MakeCallExpression(
+                                    Helpers.MakeIdentifierPath("c3"),
+                                    Expression.MakeConstant("int", 1)
+                                )
+                            ),
+                            Modifiers.Immutable
+                        ),
                         Statement.MakeExprStmt(
                             Helpers.MakeCallExpression(
                                 Helpers.MakeIdentifierPath("println"),
                                 Helpers.MakeIdentifierPath("a"),
                                 Helpers.MakeIdentifierPath("b"),
-                                Helpers.MakeIdentifierPath("d")
+                                Helpers.MakeIdentifierPath("d"),
+                                Helpers.MakeIdentifierPath("f")
                             )
                         )
                     ),

@@ -11,6 +11,8 @@ using System.Text;
 
 namespace Expresso.CodeGen
 {
+    using CSharpExpr = System.Linq.Expressions.Expression;
+
     /// <summary>
     /// Contains helper methods for Expresso compilation.
     /// </summary>
@@ -210,6 +212,22 @@ namespace Expresso.CodeGen
             var member = astType as MemberType;
             if(member != null){
                 return null;
+            }
+
+            var func = astType as FunctionType;
+            if(func != null){
+                var param_types = func.Parameters
+                                      .Select(p => GetNativeType(p))
+                                      .ToArray();
+
+                var return_type = GetNativeType(func.ReturnType);
+                if(return_type == typeof(void)){
+                    return CSharpExpr.GetActionType(param_types);
+                }else{
+                    var type_args = param_types.Concat(new []{return_type})
+                                               .ToArray();
+                    return CSharpExpr.GetFuncType(type_args);
+                }
             }
 
             var placeholder = astType as PlaceholderType;
@@ -423,6 +441,125 @@ namespace Expresso.CodeGen
                 return Enumerable.Empty<Type>();
             }
         }
+
+        /*static Type CreateActionType(Type[] paramTypes)
+        {
+            switch(paramTypes.Length){
+            case 0:
+                return typeof(Action);
+
+            case 1:
+                return typeof(Action<>).MakeGenericType(paramTypes);
+
+            case 2:
+                return typeof(Action<,>).MakeGenericType(paramTypes);
+
+            case 3:
+                return typeof(Action<,,>).MakeGenericType(paramTypes);
+
+            case 4:
+                return typeof(Action<,,,>).MakeGenericType(paramTypes);
+
+            case 5:
+                return typeof(Action<,,,,>).MakeGenericType(paramTypes);
+
+            case 6:
+                return typeof(Action<,,,,,>).MakeGenericType(paramTypes);
+
+            case 7:
+                return typeof(Action<,,,,,,>).MakeGenericType(paramTypes);
+
+            case 8:
+                return typeof(Action<,,,,,,,>).MakeGenericType(paramTypes);
+
+            case 9:
+                return typeof(Action<,,,,,,,,>).MakeGenericType(paramTypes);
+
+            case 10:
+                return typeof(Action<,,,,,,,,,>).MakeGenericType(paramTypes);
+
+            case 11:
+                return typeof(Action<,,,,,,,,,,>).MakeGenericType(paramTypes);
+
+            case 12:
+                return typeof(Action<,,,,,,,,,,,>).MakeGenericType(paramTypes);
+
+            case 13:
+                return typeof(Action<,,,,,,,,,,,,>).MakeGenericType(paramTypes);
+
+            case 14:
+                return typeof(Action<,,,,,,,,,,,,,>).MakeGenericType(paramTypes);
+
+            case 15:
+                return typeof(Action<,,,,,,,,,,,,,,>).MakeGenericType(paramTypes);
+
+            case 16:
+                return typeof(Action<,,,,,,,,,,,,,,,>).MakeGenericType(paramTypes);
+
+            default:
+                throw new InvalidOperationException("Too many arguments on Action");
+            }
+        }
+
+        static Type CreateFuncType(Type[] paramTypes, Type returnType)
+        {
+            var real_types = paramTypes.Concat(new []{returnType}).ToArray();
+            switch(paramTypes.Length){
+            case 0:
+                return typeof(Func<>).MakeGenericType(real_types);
+
+            case 1:
+                return typeof(Func<,>).MakeGenericType(real_types);
+
+            case 2:
+                return typeof(Func<,,>).MakeGenericType(real_types);
+
+            case 3:
+                return typeof(Func<,,,>).MakeGenericType(real_types);
+
+            case 4:
+                return typeof(Func<,,,,>).MakeGenericType(real_types);
+
+            case 5:
+                return typeof(Func<,,,,,>).MakeGenericType(real_types);
+
+            case 6:
+                return typeof(Func<,,,,,,>).MakeGenericType(real_types);
+
+            case 7:
+                return typeof(Func<,,,,,,,>).MakeGenericType(real_types);
+
+            case 8:
+                return typeof(Func<,,,,,,,,>).MakeGenericType(real_types);
+
+            case 9:
+                return typeof(Func<,,,,,,,,,>).MakeGenericType(real_types);
+
+            case 10:
+                return typeof(Func<,,,,,,,,,,>).MakeGenericType(real_types);
+
+            case 11:
+                return typeof(Func<,,,,,,,,,,,>).MakeGenericType(real_types);
+
+            case 12:
+                return typeof(Func<,,,,,,,,,,,,>).MakeGenericType(real_types);
+
+            case 13:
+                return typeof(Func<,,,,,,,,,,,,,>).MakeGenericType(real_types);
+
+            case 14:
+                return typeof(Func<,,,,,,,,,,,,,,>).MakeGenericType(real_types);
+
+            case 15:
+                return typeof(Func<,,,,,,,,,,,,,,,>).MakeGenericType(real_types);
+
+            case 16:
+                return typeof(Func<,,,,,,,,,,,,,,,,>).MakeGenericType(real_types);
+
+            default:
+                throw new InvalidOperationException("Too many arguments on Func");
+            }
+        }*/
     }
 }
 

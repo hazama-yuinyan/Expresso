@@ -119,7 +119,8 @@ namespace Expresso.Ast.Analysis
                 target_type = forStmt.Target.AcceptWalker(this);
 
             if(!IsSequenceType(target_type)){
-                parser.ReportSemanticError("Error ES1300: `{0}` isn't a sequence type! A for statement can only be used for iterating over sequences",
+                parser.ReportSemanticError(
+                    "Error ES1300: `{0}` isn't a sequence type! A for statement can only be used for iterating over sequences",
                     forStmt.Target,
                     left_type
                 );
@@ -277,7 +278,8 @@ namespace Expresso.Ast.Analysis
                     }else if(IsCompatibleWith(left_types[i], TemporaryTypes[i]) == TriBool.False){
                         var lhs_seq = assignment.Left as SequenceExpression;
                         var rhs_seq = assignment.Right as SequenceExpression;
-                        parser.ReportSemanticErrorRegional("Error ES1100: There is a type mismatch; left=`{0}`, right=`{1}`",
+                        parser.ReportSemanticErrorRegional(
+                            "Error ES1100: There is a type mismatch; left=`{0}`, right=`{1}`",
                             lhs_seq.Items.ElementAt(i), rhs_seq.Items.ElementAt(i),
                             left_types[i], TemporaryTypes[i]
                         );
@@ -347,7 +349,8 @@ namespace Expresso.Ast.Analysis
             case OperatorType.Power:
             case OperatorType.Modulus:
                 if(!IsNumericalType(lhs_type) || !IsNumericalType(rhs_type)){
-                    parser.ReportSemanticErrorRegional("Error ES1003: Can not apply the operator '{0}' on `{1}` and `{2}`",
+                    parser.ReportSemanticErrorRegional(
+                        "Error ES1003: Can not apply the operator '{0}' on `{1}` and `{2}`",
                         binaryExpr.Left, binaryExpr.Right,
                         binaryExpr.OperatorToken, lhs_type, rhs_type
                     );
@@ -362,13 +365,15 @@ namespace Expresso.Ast.Analysis
             case OperatorType.BitwiseShiftRight:
             case OperatorType.ExclusiveOr:
                 if(lhs_primitive.KnownTypeCode == KnownTypeCode.Float || lhs_primitive.KnownTypeCode == KnownTypeCode.Double){
-                    parser.ReportSemanticError("Error ES1010: Can not apply the operator '{0}' on the left-hand-side '{1}'",
+                    parser.ReportSemanticError(
+                        "Error ES1010: Can not apply the operator '{0}' on the left-hand-side '{1}'",
                         binaryExpr.Left,
                         binaryExpr.OperatorToken, binaryExpr.Left
                     );
                     return null;
                 }else if(rhs_primitive.KnownTypeCode == KnownTypeCode.Float || rhs_primitive.KnownTypeCode == KnownTypeCode.Double){
-                    parser.ReportSemanticError("Error ES1010: Can not apply the operator '{0}' on the right-hand-side '{1}'",
+                    parser.ReportSemanticError(
+                        "Error ES1010: Can not apply the operator '{0}' on the right-hand-side '{1}'",
                         binaryExpr.Right,
                         binaryExpr.OperatorToken, binaryExpr.Right
                     );
@@ -414,12 +419,13 @@ namespace Expresso.Ast.Analysis
 
         public AstType VisitCatchClause(CatchClause catchClause)
         {
-            catchClause.Body.AcceptWalker(this);
+            VisitBlock(catchClause.Body);
             return null;
         }
 
         public AstType VisitClosureLiteralExpression(ClosureLiteralExpression closure)
         {
+            bool discovered_return_type = false;
             int tmp_counter = scope_counter;
             DescendScope();
             scope_counter = 0;
@@ -430,14 +436,15 @@ namespace Expresso.Ast.Analysis
                     closure_parameter_inferencer.VisitParameterDeclaration(param);
             }
 
-            closure.Body.AcceptWalker(this);
+            VisitBlock(closure.Body);
 
             // Delay discovering the return type because the body statements should be type-aware
             // before the return type is started to be inferred
             if(IsPlaceholderType(closure.ReturnType)){
+                // Because VisitBlock has made scope_counter one step forward
+                --scope_counter;
                 // Descend scopes 2 times because closure parameters have their own scope
                 int tmp_counter2 = scope_counter;
-                --scope_counter;
                 DescendScope();
                 scope_counter = 0;
 
@@ -447,6 +454,23 @@ namespace Expresso.Ast.Analysis
 
                 AscendScope();
                 scope_counter = tmp_counter2;
+                discovered_return_type = true;
+            }
+
+            if(closure.LiftedIdentifiers == null){
+                // The same reason as if(IsPlaceholderType(closure.ReturnType) block
+                if(!discovered_return_type)
+                    --scope_counter;
+
+                int tmp_counter3 = scope_counter;
+                DescendScope();
+                scope_counter = 0;
+
+                var inspecter = new ClosureInspecter(parser, this, closure);
+                inspecter.VisitClosureLiteralExpression(closure);
+
+                AscendScope();
+                scope_counter = tmp_counter3;
             }
 
             var param_types = 
@@ -549,7 +573,7 @@ namespace Expresso.Ast.Analysis
             if(simple_type != null){
                 if(simple_type.Name != "array" && simple_type.Name != "vector" && simple_type.Name != "dictionary"){
                     parser.ReportSemanticError(
-                        "Can not apply the indexer operator on type `{0}`",
+                        "Error ES3011: Can not apply the indexer operator on type `{0}`",
                         indexExpr,
                         simple_type
                     );
@@ -877,14 +901,15 @@ namespace Expresso.Ast.Analysis
 
             if(funcDecl.Name == "main"){
                 var next = funcDecl.GetNextNode();
-                if(next != null)
+                if(next != null){
                     parser.ReportSemanticError(
                         "Error ES1100: Can't define functions after the main function",
                         next
                     );
+                }
             }
 
-            funcDecl.Body.AcceptWalker(this);
+            VisitBlock(funcDecl.Body);
 
             // Delay discovering the return type because the body statements should be type-aware
             // before the return type is started to be inferred

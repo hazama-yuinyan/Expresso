@@ -355,15 +355,16 @@ namespace Expresso.Ast
         }
 
         public static ClosureLiteralExpression MakeClosureExpression(IEnumerable<ParameterDeclaration> parameters, AstType returnType,
-                                                                     BlockStatement body, TextLocation loc = default(TextLocation))
+                                                                     BlockStatement body, TextLocation loc = default(TextLocation), List<Identifier> liftedIdentifiers = null)
         {
-            return new ClosureLiteralExpression(parameters, returnType, body, loc);
+            return new ClosureLiteralExpression(parameters, returnType, body, loc, liftedIdentifiers);
         }
 
         public static ClosureLiteralExpression MakeClosureExpression(AstType returnType, BlockStatement body,
-                                                                     TextLocation loc = default(TextLocation), params ParameterDeclaration[] parameters)
+                                                                     TextLocation loc = default(TextLocation), List<Identifier> liftedIdentifiers = null,
+                                                                     params ParameterDeclaration[] parameters)
         {
-            return new ClosureLiteralExpression(parameters, returnType, body, loc);
+            return new ClosureLiteralExpression(parameters, returnType, body, loc, liftedIdentifiers);
         }
 
         public static bool IsNullNode(Expression node)
