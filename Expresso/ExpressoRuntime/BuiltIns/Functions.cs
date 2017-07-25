@@ -85,7 +85,7 @@ namespace Expresso.Runtime.Builtins
 		public static string Format(string str, params object[] vars)
 		{
 			if(str == null)
-				throw new ArgumentNullException("str");
+                throw new ArgumentNullException(nameof(str));
 
 			string tmp = str;
 			int i = 0;

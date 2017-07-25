@@ -61,6 +61,7 @@
     <Compile Include="Runtime\ExpressoRuntimeHelper.cs" />
     <Compile Include="Runtime\TypeMapper.cs" />
     <Compile Include="Runtime\Exceptions\PanickedException.cs" />
+    <Compile Include="BuiltIns\IClosure.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>

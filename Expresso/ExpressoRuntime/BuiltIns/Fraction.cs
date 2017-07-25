@@ -42,9 +42,6 @@ namespace Expresso.Runtime.Builtins
 		/// <param name='denominator'>
 		/// Denominator.
 		/// </param>
-		/// <param name='isPositive'>
-		/// Is positive.
-		/// </param>
 		public Fraction(BigInteger numerator, BigInteger denominator) : this()
 		{
 			var denom_is_negative = denominator < 0;
@@ -54,7 +51,7 @@ namespace Expresso.Runtime.Builtins
 		}
 		
 		/// <summary>
-		/// Initializes a new instance of the <see cref="Expresso.Builtins.Fraction"/> class with an integer.
+		/// Initializes a new instance of the <see cref="Expresso.Runtime.Builtins.Fraction"/> class with an integer.
 		/// </summary>
 		/// <param name='integer'>
 		/// Integer.
@@ -66,7 +63,7 @@ namespace Expresso.Runtime.Builtins
 		}
 		
 		/// <summary>
-		/// Initializes a new instance of the <see cref="Expresso.Builtins.Fraction"/> class with a floating-point value.
+		/// Initializes a new instance of the <see cref="Expresso.Runtime.Builtins.Fraction"/> class with a floating-point value.
 		/// </summary>
 		/// <param name='val'>
 		/// The value in double.

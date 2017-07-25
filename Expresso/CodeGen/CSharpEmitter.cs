@@ -667,15 +667,31 @@ namespace Expresso.CodeGen
             foreach(var ctor_param in field_params)
                 closure_type_builder.DefineField(ctor_param.Name, ctor_param.Type, false);
 
-            var ctor_param_types = field_params.Select(p => p.Type)
-                                              .ToArray();
-            var ctor = closure_type_builder.GetConstructor(ctor_param_types);
-            var new_expr = CSharpExpr.New(ctor, field_params);
-
             closure_type_builder.CreateInterfaceType();
             var closure_type = closure_type_builder.CreateType();
 
+            var ctor = closure_type.GetConstructors().First();
+            var new_expr = CSharpExpr.New(ctor, field_params);
+
             var closure_call_target = closure_type.GetMethod(ClosureMethodName);
+            CSharpExpr result;
+            if(closure_call_target.ReturnType == typeof(void)){
+                if(closure_call_target.GetParameters().Length == 0){
+                    var action_creator = typeof(CSharpEmitter).GetMethod("GetAction", new Type[]{typeof(MethodInfo), typeof(object)});
+                    result = CSharpExpr.Call(action_creator, CSharpExpr.Constant(closure_call_target), new_expr);
+                }else{
+                    var action_creator = typeof(CSharpEmitter).GetMethod("GetAction", new Type[]{typeof(MethodInfo), typeof(object), typeof(object[])});
+                    result = CSharpExpr.Call(action_creator, CSharpExpr.Constant(closure_call_target), new_expr);
+                }
+            }else{
+                if(closure_call_target.GetParameters().Length == 0){
+                    var func_creator = typeof(CSharpEmitter).GetMethod("GetFunc", new Type[]{typeof(MethodInfo), typeof(object)});
+                    result = CSharpExpr.Call(func_creator, CSharpExpr.Constant(closure_call_target), new_expr);
+                }else{
+                    var func_creator = typeof(CSharpEmitter).GetMethod("GetFunc", new Type[]{typeof(MethodInfo), typeof(object), typeof(object[])});
+                    result = CSharpExpr.Call(func_creator, CSharpExpr.Constant(closure_call_target), new_expr);
+                }
+            }
             var member_access = CSharpExpr.MakeMemberAccess(new_expr, closure_call_target);
 
             var param_ast_types = closure.Parameters.Select(p => p.ReturnType);
@@ -1702,7 +1718,9 @@ namespace Expresso.CodeGen
 
         CSharpExpr ConstructCallExpression(ExprTree.ParameterExpression inst, MethodInfo method, IEnumerable<CSharpExpr> args)
         {
-            if(method.Name == "Write" || method.Name == "WriteLine"){
+            if(method == null){
+                return CSharpExpr.Invoke(inst, args);
+            }else if(method.Name == "Write" || method.Name == "WriteLine"){
                 var first = args.First();
                 var expand_method = typeof(CSharpCompilerHelper).GetMethod("ExpandContainer");
                 if(first.Type == typeof(string)){
@@ -1785,6 +1803,52 @@ namespace Expresso.CodeGen
             sibling_count = tmp_counter + 1;
         }
 		#endregion
+
+        #region static methods
+        public static Action GetAction(MethodInfo method, object inst)
+        {
+            if(method.ReturnType != typeof(void))
+                throw new ArgumentException("An action method has to return void type", nameof(method));
+
+            if(method.GetParameters().Length != 0)
+                throw new ArgumentException("This method expects the method being called to have no parameters");
+
+            return () => method.Invoke(inst, new object[]{});
+        }
+
+        public static Action<object[]> GetAction(MethodInfo method, object inst, object[] parameters)
+        {
+            if(method.ReturnType != typeof(void))
+                throw new ArgumentException("An action method has to return void type", nameof(method));
+
+            if(method.GetParameters().Length == 0)
+                throw new ArgumentException("This method expects the method being called to have parameters");
+
+            return (objs) => method.Invoke(inst, objs);
+        }
+
+        public static Func<T> GetFunc<T>(MethodInfo method, object inst)
+        {
+            if(method.ReturnType == typeof(void))
+                throw new ArgumentException("A func method has to return some type", nameof(method));
+
+            if(method.GetParameters().Length != 0)
+                throw new ArgumentException("This method expects the method being called to have no parameters");
+
+            return () => (T)method.Invoke(inst, new object[]{});
+        }
+
+        public static Func<object[], T> GetFunc<T>(MethodInfo method, object inst, object[] parameters)
+        {
+            if(method.ReturnType == typeof(void))
+                throw new ArgumentException("A func method has to return some type", nameof(method));
+
+            if(method.GetParameters().Length == 0)
+                throw new ArgumentException("This method expects the method being called to have parameters");
+
+            return (objs) => (T)method.Invoke(inst, objs);
+        }
+        #endregion
 	}
 }
 
