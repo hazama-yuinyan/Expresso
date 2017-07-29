@@ -160,28 +160,26 @@ namespace Expresso.Ast.Analysis
 
 	        public void VisitIdentifier(Identifier ident)
 	        {
-                var local_symbol = checker.symbols.GetSymbol(ident.Name);
-                if(local_symbol == null){
-                    var parameter = checker.symbols.GetSymbolInNScopesAbove(ident.Name, 1);
-                    if(parameter == null){
-	                    var symbol = checker.symbols.GetSymbolInAnyScope(ident.Name);
-	                    if(symbol == null){
-	                        parser.ReportSemanticError(
-	                            "Error ES0100: '{0}' turns out not to be declared or accessible in the current scope {1}!",
-	                            ident,
-	                            ident.Name, checker.symbols.Name
-	                        );
-	                    }else{
-	                        LiftedIdentifiers.Add(symbol);
-
-                            var self_ref = Expression.MakeSelfRef(ident.StartLocation);
-                            var mem_ref = Expression.MakeMemRef(self_ref, (Identifier)ident.Clone());
-                            ident.ReplaceWith(mem_ref);
-	                    }
+                var parameter = checker.symbols.GetSymbolInNScopesAbove(ident.Name, 1);
+                if(parameter == null){
+                    var symbol = checker.symbols.GetSymbolInAnyScope(ident.Name);
+                    if(symbol == null){
+                        parser.ReportSemanticError(
+                            "Error ES0100: '{0}' turns out not to be declared or accessible in the current scope {1}!",
+                            ident,
+                            ident.Name, checker.symbols.Name
+                        );
                     }else{
-                        var self_ref = Expression.MakeSelfRef(ident.StartLocation);
+                        LiftedIdentifiers.Add(symbol);
+
+                        /*var self_ref = Expression.MakeSelfRef(ident.StartLocation);
                         var mem_ref = Expression.MakeMemRef(self_ref, (Identifier)ident.Clone());
-                        ident.ReplaceWith(mem_ref);
+                        var path_expr = ident.Parent as PathExpression;
+                        if(path_expr == null){
+                            ident.ReplaceWith(mem_ref);
+                        }else{
+                            path_expr.ReplaceWith(mem_ref);
+                        }*/
                     }
                 }
 	        }

@@ -367,9 +367,9 @@ namespace Expresso.Ast
             return new ClosureLiteralExpression(parameters, returnType, body, loc, liftedIdentifiers);
         }
 
-        public static bool IsNullNode(Expression node)
+        public static bool IsNullNode(Expression expr)
         {
-            return node == Null || node == null;
+            return expr == null || expr.IsNull;
         }
         #endregion
     }

@@ -132,6 +132,15 @@ namespace Expresso.CodeGen
         }
 
         /// <summary>
+        /// The current context closure block.
+        /// It is null if we are not inside a closure literal expression.
+        /// </summary>
+        /// <value>The context closure literal.</value>
+        public ClosureLiteralExpression ContextClosureLiteral{
+            get; set;
+        }
+
+        /// <summary>
         /// It will be set to a ParameterExpression that represents the temporary variable.
         /// </summary>
         public System.Linq.Expressions.ParameterExpression TemporaryVariable{

@@ -274,7 +274,7 @@ namespace Expresso.CodeGen
             return type_cache.GetField(name, flags);
         }
 
-        public ConstructorInfo GetConstructor(Type[] paramTypes)
+        public ConstructorBuilder GetConstructor(Type[] paramTypes)
         {
             return members.OfType<ConstructorBuilder>()
                           .Where(cb => {
@@ -294,6 +294,15 @@ namespace Expresso.CodeGen
             prologue_il.Emit(OpCodes.Call, impl_method);
             prologue_il.Emit(OpCodes.Stfld, field);
             AddImplementer(body, impl_method);
+        }
+
+        public void SetBody(FieldBuilder field, Action<ILGenerator, FieldBuilder> ilEmitter)
+        {
+            if(ilEmitter == null)
+                throw new ArgumentNullException(nameof(ilEmitter));
+
+            var prologue_il = prologue.GetILGenerator();
+            ilEmitter(prologue_il, field);
         }
 
         public void SetBody(MethodInfo method, Expression body)

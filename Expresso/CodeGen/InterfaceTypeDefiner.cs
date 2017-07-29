@@ -287,9 +287,9 @@ namespace Expresso.CodeGen
             public void VisitFunctionDeclaration(FunctionDeclaration funcDecl)
             {
                 context.Additionals = new List<object>();
-                int tmp_counter = emitter.sibling_count;
+                int tmp_counter = emitter.scope_counter;
                 emitter.DescendScope();
-                emitter.sibling_count = 0;
+                emitter.scope_counter = 0;
 
                 var context_ast = context.ContextAst;
                 context.ContextAst = funcDecl;
@@ -307,14 +307,14 @@ namespace Expresso.CodeGen
                 context.TypeBuilder.DefineMethod(CSharpCompilerHelper.ConvertToCLRFunctionName(funcDecl.Name), attr, return_type, param_types.ToArray());
 
                 emitter.AscendScope();
-                emitter.sibling_count = tmp_counter + 1;
+                emitter.scope_counter = tmp_counter + 1;
             }
 
             public void VisitTypeDeclaration(TypeDeclaration typeDecl)
             {
-                int tmp_counter = emitter.sibling_count;
+                int tmp_counter = emitter.scope_counter;
                 emitter.DescendScope();
-                emitter.sibling_count = 0;
+                emitter.scope_counter = 0;
 
                 var parent_type = context.TypeBuilder;
                 var attr = typeDecl.Modifiers.HasFlag(Modifiers.Export) ? TypeAttributes.Public : TypeAttributes.NotPublic;
@@ -338,7 +338,7 @@ namespace Expresso.CodeGen
                 }
 
                 emitter.AscendScope();
-                emitter.sibling_count = tmp_counter + 1;
+                emitter.scope_counter = tmp_counter + 1;
             }
 
             public void VisitAliasDeclaration(AliasDeclaration aliasDecl)
