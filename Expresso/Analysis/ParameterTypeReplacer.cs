@@ -5,6 +5,9 @@ using System.Linq;
 
 namespace Expresso.Ast
 {
+    /// <summary>
+    /// This class is responsible for 
+    /// </summary>
     public class ParameterTypeReplacer : IAstWalker
     {
         List<ParameterType> type_params;

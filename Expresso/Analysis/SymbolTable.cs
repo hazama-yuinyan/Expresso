@@ -372,6 +372,24 @@ namespace Expresso.Ast.Analysis
         }
 
         /// <summary>
+        /// Gets the corresponding <see cref="Expresso.Ast.Identifier"/> node to `name` except for the natives in any parent scopes.
+        /// </summary>
+        /// <returns>The symbol in any scope without native.</returns>
+        /// <param name="name">Name.</param>
+        public Identifier GetSymbolInAnyScopeWithoutNative(string name)
+        {
+            Identifier result;
+            if(!table.TryGetValue(name, out result)){
+                if(Parent != null)
+                    return Parent.GetSymbolInAnyScopeWithoutNative(name);
+                else
+                    return null;
+            }
+
+            return result;
+        }
+
+        /// <summary>
         /// Gets the number of variables declared in the current scope.
         /// </summary>
         public int CountNames(Func<Identifier, bool> pred)

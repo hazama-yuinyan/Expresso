@@ -7,7 +7,7 @@ namespace Expresso.Ast.Analysis
     partial class TypeChecker
     {
 	    /// <summary>
-	    /// This class is responsible for marking captured identifier nodes and replacing captured field access nodes with identifier nodes.
+	    /// This class is responsible for marking captured identifier nodes.
 	    /// </summary>
 	    public class ClosureInspecter : IAstWalker
 	    {
@@ -162,7 +162,7 @@ namespace Expresso.Ast.Analysis
 	        {
                 var parameter = checker.symbols.GetSymbolInNScopesAbove(ident.Name, 1);
                 if(parameter == null){
-                    var symbol = checker.symbols.GetSymbolInAnyScope(ident.Name);
+                    var symbol = checker.symbols.GetSymbolInAnyScopeWithoutNative(ident.Name);
                     if(symbol == null){
                         parser.ReportSemanticError(
                             "Error ES0100: '{0}' turns out not to be declared or accessible in the current scope {1}!",
@@ -171,15 +171,6 @@ namespace Expresso.Ast.Analysis
                         );
                     }else{
                         LiftedIdentifiers.Add(symbol);
-
-                        /*var self_ref = Expression.MakeSelfRef(ident.StartLocation);
-                        var mem_ref = Expression.MakeMemRef(self_ref, (Identifier)ident.Clone());
-                        var path_expr = ident.Parent as PathExpression;
-                        if(path_expr == null){
-                            ident.ReplaceWith(mem_ref);
-                        }else{
-                            path_expr.ReplaceWith(mem_ref);
-                        }*/
                     }
                 }
 	        }
