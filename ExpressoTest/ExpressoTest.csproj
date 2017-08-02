@@ -60,6 +60,7 @@
     <None Include="packages.config" />
     <None Include="sources\for_unit_tests\try_statements.exs" />
     <None Include="sources\for_unit_tests\closures.exs" />
+    <None Include="sources\for_unit_tests\closures_with_compound_statements.exs" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AnalyzerTests.cs" />

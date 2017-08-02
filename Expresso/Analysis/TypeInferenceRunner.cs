@@ -3,7 +3,6 @@ using System.Linq;
 using ICSharpCode.NRefactory;
 using ICSharpCode.NRefactory.PatternMatching;
 using Expresso.TypeSystem;
-using System.Collections.Generic;
 
 
 namespace Expresso.Ast.Analysis
@@ -167,7 +166,7 @@ namespace Expresso.Ast.Analysis
                 // Descend scopes 2 times because closure parameters also have thier own scope.
                 int tmp_counter = checker.scope_counter;
                 bool has_descended = false;
-                // This condition would cause a problem if the closure is surrounded by another closure
+                // FIXME: This condition would cause a problem if the closure is surrounded by another closure
                 if(!checker.symbols.Parent.Name.StartsWith("closure")){
                     checker.DescendScope();
                     checker.scope_counter = 0;
@@ -177,12 +176,7 @@ namespace Expresso.Ast.Analysis
                     has_descended = true;
                 }
 
-                AstType type = AstType.Null;
-                var last = closure.Body.Statements.Last() as ReturnStatement;
-                if(last != null)
-                    type = last.Expression.IsNull ? AstType.MakeSimpleType("tuple", TextLocation.Empty) : last.Expression.AcceptWalker(this);
-                else
-                    type = AstType.MakeSimpleType("tuple", TextLocation.Empty);
+                var type = FigureOutReturnType(closure.Body);
 
                 var param_types = 
                     from p in closure.Parameters
@@ -588,16 +582,7 @@ namespace Expresso.Ast.Analysis
 
             public AstType VisitFunctionDeclaration(FunctionDeclaration funcDecl)
             {
-                // TODO: Try to figure out the most common type between all the types that
-                // all code paths return
-                AstType type = AstType.Null;
-                var last = funcDecl.Body.Statements.Last() as ReturnStatement;
-                if(last != null)
-                    type = last.Expression.IsNull ? AstType.MakeSimpleType("tuple", TextLocation.Empty) : last.Expression.AcceptWalker(this);
-                else
-                    type = AstType.MakeSimpleType("tuple", TextLocation.Empty);
-
-                return type;
+                return FigureOutReturnType(funcDecl.Body);
             }
 
             public AstType VisitTypeDeclaration(TypeDeclaration typeDecl)
@@ -758,6 +743,39 @@ namespace Expresso.Ast.Analysis
             static bool IsIntSeqType(AstType type)
             {
                 return type is PrimitiveType && ((PrimitiveType)type).KnownTypeCode == KnownTypeCode.IntSeq;
+            }
+
+            AstType FigureOutReturnType(BlockStatement block)
+            {
+                var return_stmt = block.Statements.Last() as ReturnStatement;
+                if(return_stmt != null)
+                    return return_stmt.Expression.IsNull ? AstType.MakeSimpleType("tuple", TextLocation.Empty) : return_stmt.Expression.AcceptWalker(this);
+
+                var last_if = block.Statements.Last() as IfStatement;
+                if(last_if != null){
+                    if(last_if.FalseBlock.IsNull){
+                        var last_return = last_if.TrueBlock.Statements.Last() as ReturnStatement;
+                        if(last_return != null)
+                            return last_return.Expression.IsNull ? AstType.MakeSimpleType("tuple", last_return.StartLocation) : last_return.Expression.AcceptWalker(this);
+                    }else{
+                        // FIXME: This code can't take else if statements into account
+                        var true_return = last_if.TrueBlock.Statements.Last() as ReturnStatement;
+                        var false_return = last_if.FalseBlock.Statements.Last() as ReturnStatement;
+                        if(true_return != null && false_return != null){
+                            var true_return_type = true_return.Expression.IsNull ? AstType.MakeSimpleType("tuple", true_return.StartLocation) : true_return.Expression.AcceptWalker(this);
+                            var false_return_type = false_return.Expression.IsNull ? AstType.MakeSimpleType("tuple", false_return.StartLocation) : false_return.Expression.AcceptWalker(this);
+                            return checker.FigureOutCommonType(true_return_type, false_return_type);
+                        }else{
+                            checker.parser.ReportSemanticErrorRegional(
+                                "Error ES1800: All code paths must return something. {0} returns nothing.",
+                                last_if.TrueBlock, last_if.FalseBlock,
+                                true_return != null ? "The false block" : "The true block"
+                            );
+                        }
+                    }
+                }
+
+                return AstType.MakeSimpleType("tuple", TextLocation.Empty);
             }
         }
     }

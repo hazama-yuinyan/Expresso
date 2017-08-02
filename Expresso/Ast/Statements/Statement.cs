@@ -173,7 +173,7 @@ namespace Expresso.Ast
         public static IfStatement MakeIfStmt(PatternConstruct condition, BlockStatement trueBlock,
             BlockStatement falseBlock, TextLocation loc = default(TextLocation))
         {
-            return new IfStatement(condition, trueBlock, falseBlock, loc);
+            return new IfStatement(condition, trueBlock, falseBlock ?? BlockStatement.Null, loc);
         }
 
         public static WhileStatement MakeWhileStmt(Expression condition, BlockStatement body,

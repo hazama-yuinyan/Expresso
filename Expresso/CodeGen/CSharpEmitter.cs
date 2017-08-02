@@ -41,8 +41,6 @@ namespace Expresso.CodeGen
         static int LoopCounter = 1, ClosureId = 0;
         static ExprTree.LabelTarget ReturnTarget = null;
         static CSharpExpr DefaultReturnValue = null;
-        //static uint CountGlobalFunctions = 0;
-        //static IdentifierSearcher IdentifierSearcher = new IdentifierSearcher();
 		
         const string ClosureMethodName = "__Apply";
         const string ClosureDelegateName = "__ApplyMethod";

@@ -4058,7 +4058,7 @@ namespace Expresso.Test
 	                                    )
 	                                ),
 	                                TextLocation.Empty,
-	                                null,
+                                    new List<Identifier>(),
 	                                EntityDeclaration.MakeParameter(
 	                                    "f",
 	                                    Helpers.MakePrimitiveType("bool")
@@ -4145,7 +4145,7 @@ namespace Expresso.Test
                                                 Expression.MakeIntSeq(
                                                     Expression.MakeConstant("int", 0),
                                                     Helpers.MakeIdentifierPath(
-                                                        "j",
+                                                        "i",
                                                         Helpers.MakePrimitiveType("int")
                                                     ),
                                                     Expression.MakeConstant("int", 1),
@@ -4161,7 +4161,7 @@ namespace Expresso.Test
                                         )
                                     ),
                                     TextLocation.Empty,
-                                    null,
+                                    new List<Identifier>(),
                                     EntityDeclaration.MakeParameter(
                                         "i",
                                         Helpers.MakePrimitiveType("int")
@@ -4200,7 +4200,7 @@ namespace Expresso.Test
                                     "c3",
                                     AstType.MakeFunctionType(
                                         "closure",
-                                        Helpers.MakePrimitiveType("int"),
+                                        Helpers.MakeVoidType(),
                                         TextLocation.Empty,
                                         TextLocation.Empty,
                                         Helpers.MakePrimitiveType("int")
@@ -4283,7 +4283,7 @@ namespace Expresso.Test
                                         )
                                     ),
                                     TextLocation.Empty,
-                                    null,
+                                    new List<Identifier>(),
                                     EntityDeclaration.MakeParameter(
                                         "i",
                                         Helpers.MakePrimitiveType("int")
@@ -4303,7 +4303,8 @@ namespace Expresso.Test
                                         TextLocation.Empty,
                                         Helpers.MakePrimitiveType("int")
                                     )
-                                )
+                                ),
+                                Expression.MakeConstant("int", 3)
                             )
                         ),
                         Statement.MakeExprStmt(
