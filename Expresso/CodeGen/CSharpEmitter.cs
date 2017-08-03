@@ -240,7 +240,7 @@ namespace Expresso.CodeGen
             context.ContextAst = parent_block;
 
             var variables = ConvertSymbolsToParameters().ToList();
-            if(context.ContextAst is FunctionDeclaration || context.ContextClosureLiteral != null)
+            if(context.ContextAst is FunctionDeclaration || context.ContextClosureLiteral != null && block.Parent is ClosureLiteralExpression)
                 contents.Add(CSharpExpr.Label(ReturnTarget, DefaultReturnValue));
 
             AscendScope();
@@ -672,14 +672,14 @@ namespace Expresso.CodeGen
             var prev_self = context.ParameterSelf;
             context.ParameterSelf = CSharpExpr.Parameter(interface_type, "self");
 
-            var body = closure.Body.AcceptWalker(this, context);
+            var body = VisitBlock(closure.Body, context);
             var parameters = new []{context.ParameterSelf}.Concat(formal_parameters);
             var lambda = CSharpExpr.Lambda(body, parameters);
             closure_type_builder.SetBody(closure_method_buider, lambda);
 
             var lifted_params = closure.LiftedIdentifiers
-                                      .Select(ident => VisitIdentifier(ident, context))
-                                      .OfType<ExprTree.ParameterExpression>();
+                                       .Select(ident => VisitIdentifier(ident, context))
+                                       .OfType<ExprTree.ParameterExpression>();
 
             closure_type_builder.SetBody(closure_delegate_field, (il, field) => {
                 var closure_call_method = interface_type.GetMethod(ClosureMethodName);
@@ -706,7 +706,7 @@ namespace Expresso.CodeGen
             var member_access = CSharpExpr.Field(new_expr, closure_call_target);
 
             AscendScope();
-            scope_counter = tmp_counter = 1;
+            scope_counter = tmp_counter + 1;
 
             return member_access;
         }

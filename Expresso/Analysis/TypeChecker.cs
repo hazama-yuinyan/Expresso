@@ -462,15 +462,15 @@ namespace Expresso.Ast.Analysis
                 if(!discovered_return_type)
                     --scope_counter;
 
-                int tmp_counter3 = scope_counter;
+                /*int tmp_counter3 = scope_counter;
                 DescendScope();
-                scope_counter = 0;
+                scope_counter = 0;*/
 
                 var inspecter = new ClosureInspecter(parser, this, closure);
                 inspecter.VisitClosureLiteralExpression(closure);
 
-                AscendScope();
-                scope_counter = tmp_counter3;
+                /*AscendScope();
+                scope_counter = tmp_counter3;*/
             }
 
             var param_types = 

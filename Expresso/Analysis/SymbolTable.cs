@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
 using ICSharpCode.NRefactory;
-using Expresso.TypeSystem;
 
 
 namespace Expresso.Ast.Analysis
@@ -376,14 +375,17 @@ namespace Expresso.Ast.Analysis
         /// </summary>
         /// <returns>The symbol in any scope without native.</returns>
         /// <param name="name">Name.</param>
-        public Identifier GetSymbolInAnyScopeWithoutNative(string name)
+        public Identifier GetSymbolInAnyScopeWithoutNative(string name, out bool nativeSearched)
         {
+            nativeSearched = false;
             Identifier result;
             if(!table.TryGetValue(name, out result)){
-                if(Parent != null)
-                    return Parent.GetSymbolInAnyScopeWithoutNative(name);
-                else
+                if(Parent != null){
+                    return Parent.GetSymbolInAnyScopeWithoutNative(name, out nativeSearched);
+                }else{
+                    nativeSearched = true;
                     return null;
+                }
             }
 
             return result;

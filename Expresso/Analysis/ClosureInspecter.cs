@@ -47,7 +47,14 @@ namespace Expresso.Ast.Analysis
 
 	        public void VisitBlock(BlockStatement block)
 	        {
+                int tmp_counter = checker.scope_counter;
+                checker.DescendScope();
+                checker.scope_counter = 0;
+
 	            block.Statements.AcceptWalker(this);
+
+                checker.AscendScope();
+                checker.scope_counter = tmp_counter;
 	        }
 
 	        public void VisitBreakStatement(BreakStatement breakStmt)
@@ -72,7 +79,15 @@ namespace Expresso.Ast.Analysis
 
 	        public void VisitClosureLiteralExpression(ClosureLiteralExpression closure)
 	        {
+                // Don't descend scope because type checker already do that
+                //int tmp_counter = checker.scope_counter;
+                //checker.DescendScope();
+                //checker.scope_counter = 0;
+
                 VisitBlock(closure.Body);
+
+                //checker.AscendScope();
+                //checker.scope_counter = tmp_counter;
 	        }
 
 	        public void VisitCollectionPattern(CollectionPattern collectionPattern)
@@ -144,9 +159,16 @@ namespace Expresso.Ast.Analysis
 
 	        public void VisitForStatement(ForStatement forStmt)
 	        {
+                int tmp_counter = checker.scope_counter;
+                checker.DescendScope();
+                checker.scope_counter = 0;
+
 	            forStmt.Left.AcceptWalker(this);
 	            forStmt.Target.AcceptWalker(this);
                 VisitBlock(forStmt.Body);
+
+                checker.AscendScope();
+                checker.scope_counter = tmp_counter;
 	        }
 
 	        public void VisitFunctionDeclaration(FunctionDeclaration funcDecl)
@@ -160,15 +182,18 @@ namespace Expresso.Ast.Analysis
 
 	        public void VisitIdentifier(Identifier ident)
 	        {
-                var parameter = checker.symbols.GetSymbolInNScopesAbove(ident.Name, 1);
+                var table = AscendScopesUntil("closure");
+                var parameter = table.GetSymbolInNScopesAbove(ident.Name, 1);
                 if(parameter == null){
-                    var symbol = checker.symbols.GetSymbolInAnyScopeWithoutNative(ident.Name);
+                    var symbol = table.GetSymbolInAnyScopeWithoutNative(ident.Name, out var natives_searched);
                     if(symbol == null){
-                        parser.ReportSemanticError(
-                            "Error ES0100: '{0}' turns out not to be declared or accessible in the current scope {1}!",
-                            ident,
-                            ident.Name, checker.symbols.Name
-                        );
+                        if(!natives_searched){
+	                        parser.ReportSemanticError(
+	                            "Error ES0100: '{0}' turns out not to be declared or accessible in the current scope {1}!",
+	                            ident,
+	                            ident.Name, checker.symbols.Name
+	                        );
+                        }
                     }else{
                         LiftedIdentifiers.Add(symbol);
                     }
@@ -182,9 +207,16 @@ namespace Expresso.Ast.Analysis
 
 	        public void VisitIfStatement(IfStatement ifStmt)
 	        {
+                int tmp_counter = checker.scope_counter;
+                checker.DescendScope();
+                checker.scope_counter = 0;
+
                 ifStmt.Condition.AcceptWalker(this);
                 VisitBlock(ifStmt.TrueBlock);
                 VisitBlock(ifStmt.FalseBlock);
+
+                checker.AscendScope();
+                checker.scope_counter = tmp_counter;
 	        }
 
 	        public void VisitIgnoringRestPattern(IgnoringRestPattern restPattern)
@@ -226,8 +258,15 @@ namespace Expresso.Ast.Analysis
 
 	        public void VisitMatchStatement(MatchStatement matchStmt)
 	        {
+                int tmp_counter = checker.scope_counter;
+                checker.DescendScope();
+                checker.scope_counter = 0;
+
                 matchStmt.Target.AcceptWalker(this);
                 matchStmt.Clauses.AcceptWalker(this);
+
+                checker.AscendScope();
+                checker.scope_counter = tmp_counter;
 	        }
 
 	        public void VisitMemberReference(MemberReferenceExpression memRef)
@@ -352,8 +391,15 @@ namespace Expresso.Ast.Analysis
 
 	        public void VisitValueBindingForStatement(ValueBindingForStatement valueBindingForStmt)
 	        {
+                int tmp_counter = checker.scope_counter;
+                checker.DescendScope();
+                checker.scope_counter = 0;
+
                 valueBindingForStmt.Variables.AcceptWalker(this);
                 VisitBlock(valueBindingForStmt.Body);
+
+                checker.AscendScope();
+                checker.scope_counter = tmp_counter;
 	        }
 
 	        public void VisitValueBindingPattern(ValueBindingPattern valueBindingPattern)
@@ -373,8 +419,15 @@ namespace Expresso.Ast.Analysis
 
 	        public void VisitWhileStatement(WhileStatement whileStmt)
 	        {
+                int tmp_counter = checker.scope_counter;
+                checker.DescendScope();
+                checker.scope_counter = 0;
+
                 whileStmt.Condition.AcceptWalker(this);
                 VisitBlock(whileStmt.Body);
+
+                checker.AscendScope();
+                checker.scope_counter = tmp_counter;
 	        }
 
 	        public void VisitWhitespace(WhitespaceNode whitespaceNode)
@@ -389,6 +442,17 @@ namespace Expresso.Ast.Analysis
 	        {
                 yieldStmt.Expression.AcceptWalker(this);
 	        }
+
+            SymbolTable AscendScopesUntil(string parentName)
+            {
+                var table = checker.symbols;
+                while(!table.Parent.Name.StartsWith(parentName)){
+                    table = table.Parent;
+                    if(table.Parent == null)
+                        throw new Exception("table.Parent is null");
+                }
+                return table;
+            }
 	    }
     }
 }
