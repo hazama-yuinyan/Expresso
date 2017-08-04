@@ -645,12 +645,12 @@ namespace Expresso.Ast
 
         public void VisitCollectionPattern(CollectionPattern collectionPattern)
         {
-            var type = CSharpCompilerHelper.GetNativeType(collectionPattern.CollectionType);
-            if(type == typeof(Dictionary<,>)){
+            var type = collectionPattern.CollectionType;
+            if(type.Identifier == "dictionary"){
                 writer.Write("{");
                 PrintLongList(collectionPattern.Items);
                 writer.Write("}");
-            }else if(type == typeof(List<>) || type == typeof(Array)){
+            }else if(type.Identifier == "vector" || type.Identifier == "array"){
                 writer.Write("[");
                 PrintLongList(collectionPattern.Items);
                 writer.Write("]");
