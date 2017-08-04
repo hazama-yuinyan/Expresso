@@ -1108,6 +1108,8 @@ TupleElementPattern<out PatternConstruct pattern>   (. pattern = PatternConstruc
   ( WildcardPattern<out pattern>
   | ValueBindingPattern<out pattern>
   | TuplePattern<out pattern>
+  | IF(IsIdentifierPattern())
+    IdentifierPattern<out pattern>
   | DestructuringPattern<out pattern>
   | ExpressionPattern<out pattern>
   ).
@@ -1148,7 +1150,9 @@ DestructuringPattern<out PatternConstruct pattern>
     [ Pattern<out pattern>                  (. patterns.Add(pattern); .)
     ]
     { IF(NotFinalComma()) WEAK ','
-      Pattern<out pattern>                  (. patterns.Add(pattern); .)
+      ( Pattern<out pattern>                (. patterns.Add(pattern); .)
+      | ".."                                (. patterns.Add(PatternConstruct.MakeIgnoringRestPattern(CurrentLocation)); .)
+      )
     }
     [ ','
       "..."                                 (. is_vector = true; .)

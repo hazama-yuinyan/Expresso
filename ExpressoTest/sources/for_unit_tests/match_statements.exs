@@ -36,8 +36,14 @@ def main()
         [1, 2, 3, _, ...] => print("tmp4 is a vector");
     }
 
-    let tmp5 = (1, 2);
+    let tmp5 = [1, 2, 3, 4];
     match tmp5 {
+        [x, y, ..] => printFormat("x and y are both array's elements and the values are {0} and {1} respectively", x, y);,
+        [1, 2, 3, _] => print("tmp5 is an array");
+    }
+
+    let tmp6 = (1, 2);
+    match tmp6 {
         (x, ..) => printFormat("x is {0}", x);,
         (x, y) => printFormat("x is {0} and y is {1}", x, y);
     }

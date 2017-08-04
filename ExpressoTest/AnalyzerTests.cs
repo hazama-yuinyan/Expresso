@@ -3260,8 +3260,104 @@ namespace Expresso.Test
                         ),
                         Statement.MakeVarDecl(
                             Helpers.MakeSeq(
+                                AstNode.MakeIdentifier("tmp5", Helpers.MakeGenericType("array", Helpers.MakePrimitiveType("int")))
+                            ),
+                            Helpers.MakeSeq(
+                                Expression.MakeSequenceInitializer(
+                                    Helpers.MakeGenericType("array", Helpers.MakePrimitiveType("int")),
+                                    Expression.MakeConstant("int", 1),
+                                    Expression.MakeConstant("int", 2),
+                                    Expression.MakeConstant("int", 3),
+                                    Expression.MakeConstant("int", 4)
+                                )
+                            ),
+                            Modifiers.Immutable
+                        ),
+                        Statement.MakeMatchStmt(
+                            Helpers.MakeIdentifierPath(
+                                "tmp5",
+                                Helpers.MakeGenericType("array", Helpers.MakePrimitiveType("int"))
+                            ),
+                            Statement.MakeMatchClause(
+                                null,
+                                Statement.MakeExprStmt(
+                                    Expression.MakeSequenceExpression(
+                                        Helpers.MakeCallExpression(
+                                            Helpers.MakeIdentifierPath(
+                                                "printFormat",
+                                                AstType.MakeFunctionType(
+                                                    "printFormat",
+                                                    Helpers.MakeVoidType(),
+                                                    TextLocation.Empty,
+                                                    TextLocation.Empty,
+                                                    Helpers.MakePrimitiveType("string")
+                                                )
+                                            ),
+                                            Expression.MakeConstant("string", "x and y are both array's elements and the values are {0} and {1} respectively"),
+                                            Helpers.MakeIdentifierPath(
+                                                "x",
+                                                Helpers.MakePrimitiveType("int")
+                                            ),
+                                            Helpers.MakeIdentifierPath(
+                                                "y",
+                                                Helpers.MakePrimitiveType("int")
+                                            )
+                                        )
+                                    )
+                                ),
+                                PatternConstruct.MakeCollectionPattern(
+                                    false,
+                                    PatternConstruct.MakeIdentifierPattern(
+                                        "x",
+                                        Helpers.MakePrimitiveType("int"),
+                                        null
+                                    ),
+                                    PatternConstruct.MakeIdentifierPattern(
+                                        "y",
+                                        Helpers.MakePrimitiveType("int"),
+                                        null
+                                    ),
+                                    PatternConstruct.MakeIgnoringRestPattern()
+                                )
+                            ),
+                            Statement.MakeMatchClause(
+                                null,
+                                Statement.MakeExprStmt(
+                                    Expression.MakeSequenceExpression(
+                                        Helpers.MakeCallExpression(
+                                            Helpers.MakeIdentifierPath(
+                                                "print",
+                                                AstType.MakeFunctionType(
+                                                    "print",
+                                                    Helpers.MakeVoidType(),
+                                                    TextLocation.Empty,
+                                                    TextLocation.Empty,
+                                                    Helpers.MakePrimitiveType("string")
+                                                )
+                                            ),
+                                            Expression.MakeConstant("string", "tmp5 is an array")
+                                        )
+                                    )
+                                ),
+                                PatternConstruct.MakeCollectionPattern(
+                                    false,
+                                    PatternConstruct.MakeExpressionPattern(
+                                        Expression.MakeConstant("int", 1)
+                                    ),
+                                    PatternConstruct.MakeExpressionPattern(
+                                        Expression.MakeConstant("int", 2)
+                                    ),
+                                    PatternConstruct.MakeExpressionPattern(
+                                        Expression.MakeConstant("int", 3)
+                                    ),
+                                    PatternConstruct.MakeWildcardPattern()
+                                )
+                            )
+                        ),
+                        Statement.MakeVarDecl(
+                            Helpers.MakeSeq(
                                 AstNode.MakeIdentifier(
-                                    "tmp5",
+                                    "tmp6",
                                     Helpers.MakeGenericType(
                                         "tuple",
                                         Helpers.MakePrimitiveType("int"),
@@ -3281,7 +3377,7 @@ namespace Expresso.Test
                         ),
                         Statement.MakeMatchStmt(
                             Helpers.MakeIdentifierPath(
-                                "tmp5",
+                                "tmp6",
                                 Helpers.MakeGenericType(
                                     "tuple",
                                     Helpers.MakePrimitiveType("int"),

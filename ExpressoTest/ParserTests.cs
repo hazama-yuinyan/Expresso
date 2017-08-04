@@ -1427,6 +1427,75 @@ namespace Expresso.Test
                                 Helpers.MakeSomeIdent("tmp5")
                             ),
                             Helpers.MakeSeq(
+                                Expression.MakeSequenceInitializer(
+                                    Helpers.MakeGenericType("array", Helpers.MakePlaceholderType()),
+                                    Expression.MakeConstant("int", 1),
+                                    Expression.MakeConstant("int", 2),
+                                    Expression.MakeConstant("int", 3),
+                                    Expression.MakeConstant("int", 4)
+                                )
+                            ),
+                            Modifiers.Immutable
+                        ),
+                        Statement.MakeMatchStmt(
+                            Helpers.MakeIdentifierPath("tmp5"),
+                            Statement.MakeMatchClause(
+                                null,
+                                Statement.MakeExprStmt(
+                                    Expression.MakeSequenceExpression(
+                                        Helpers.MakeCallExpression(
+                                            Helpers.MakeIdentifierPath("printFormat"),
+                                            Expression.MakeConstant("string", "x and y are both array's elements and the values are {0} and {1} respectively"),
+                                            Helpers.MakeIdentifierPath("x"),
+                                            Helpers.MakeIdentifierPath("y")
+                                        )
+                                    )
+                                ),
+                                PatternConstruct.MakeCollectionPattern(
+                                    false,
+                                    PatternConstruct.MakeIdentifierPattern(
+                                        "x",
+                                        Helpers.MakePlaceholderType(),
+                                        null
+                                    ),
+                                    PatternConstruct.MakeIdentifierPattern(
+                                        "y",
+                                        Helpers.MakePlaceholderType(),
+                                        null
+                                    ),
+                                    PatternConstruct.MakeIgnoringRestPattern()
+                                )
+                            ),
+                            Statement.MakeMatchClause(
+                                null,
+                                Statement.MakeExprStmt(
+                                    Expression.MakeSequenceExpression(
+                                        Helpers.MakeCallExpression(
+                                            Helpers.MakeIdentifierPath("print"),
+                                            Expression.MakeConstant("string", "tmp5 is an array")
+                                        )
+                                    )
+                                ),
+                                PatternConstruct.MakeCollectionPattern(
+                                    false,
+                                    PatternConstruct.MakeExpressionPattern(
+                                        Expression.MakeConstant("int", 1)
+                                    ),
+                                    PatternConstruct.MakeExpressionPattern(
+                                        Expression.MakeConstant("int", 2)
+                                    ),
+                                    PatternConstruct.MakeExpressionPattern(
+                                        Expression.MakeConstant("int", 3)
+                                    ),
+                                    PatternConstruct.MakeWildcardPattern()
+                                )
+                            )
+                        ),
+                        Statement.MakeVarDecl(
+                            Helpers.MakeSeq(
+                                Helpers.MakeSomeIdent("tmp6")
+                            ),
+                            Helpers.MakeSeq(
                                 Expression.MakeParen(
                                     Expression.MakeSequenceExpression(
                                         Expression.MakeConstant("int", 1),
@@ -1437,7 +1506,7 @@ namespace Expresso.Test
                             Modifiers.Immutable
                         ),
                         Statement.MakeMatchStmt(
-                            Helpers.MakeIdentifierPath("tmp5"),
+                            Helpers.MakeIdentifierPath("tmp6"),
                             Statement.MakeMatchClause(
                                 null,
                                 Statement.MakeExprStmt(

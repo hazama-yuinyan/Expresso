@@ -1698,8 +1698,13 @@ string cur_class_name;
 			}
 			while (NotFinalComma()) {
 				ExpectWeak(12, 23);
-				Pattern(out pattern);
-				patterns.Add(pattern); 
+				if (StartOf(22)) {
+					Pattern(out pattern);
+					patterns.Add(pattern); 
+				} else if (la.kind == 1) {
+					Get();
+					patterns.Add(PatternConstruct.MakeIgnoringRestPattern(CurrentLocation)); 
+				} else SynErr(140);
 			}
 			if (la.kind == 12) {
 				Get();
@@ -1708,7 +1713,7 @@ string cur_class_name;
 			}
 			Expect(3);
 			pattern = PatternConstruct.MakeCollectionPattern(patterns, is_vector); 
-		} else SynErr(140);
+		} else SynErr(141);
 	}
 
 	void RValuePattern(out PatternConstruct pattern) {
@@ -1744,11 +1749,13 @@ string cur_class_name;
 			ValueBindingPattern(out pattern);
 		} else if (la.kind == 8) {
 			TuplePattern(out pattern);
+		} else if (IsIdentifierPattern()) {
+			IdentifierPattern(out pattern);
 		} else if (la.kind == 9 || la.kind == 14) {
 			DestructuringPattern(out pattern);
 		} else if (StartOf(17)) {
 			ExpressionPattern(out pattern);
-		} else SynErr(141);
+		} else SynErr(142);
 	}
 
 	void OrTest(out Expression expr) {
@@ -1800,7 +1807,7 @@ string cur_class_name;
 			var seq_expr = Expression.MakeSequenceExpression(body_expr);
 			body_block = Statement.MakeBlock(Statement.MakeReturnStmt(seq_expr, seq_expr.StartLocation));
 			
-		} else SynErr(142);
+		} else SynErr(143);
 		expr = Expression.MakeClosureExpression(parameters, return_type, body_block, start_loc);
 		if(t.val != "}")
 		   GoUpScope();
@@ -1882,7 +1889,7 @@ string cur_class_name;
 			opType = OperatorType.GreaterThanOrEqual; 
 			break;
 		}
-		default: SynErr(143); break;
+		default: SynErr(144); break;
 		}
 	}
 
@@ -1903,7 +1910,7 @@ string cur_class_name;
 		} else if (la.kind == 2) {
 			Get();
 			upper_inclusive = true; 
-		} else SynErr(144);
+		} else SynErr(145);
 	}
 
 	void BitXor(out Expression expr) {
@@ -1954,7 +1961,7 @@ string cur_class_name;
 		} else if (la.kind == 88) {
 			Get();
 			opType = OperatorType.BitwiseShiftRight; 
-		} else SynErr(145);
+		} else SynErr(146);
 	}
 
 	void Term(out Expression expr) {
@@ -1975,7 +1982,7 @@ string cur_class_name;
 		} else if (la.kind == 90) {
 			Get();
 			opType = OperatorType.Minus; 
-		} else SynErr(146);
+		} else SynErr(147);
 	}
 
 	void PowerOp(out Expression expr) {
@@ -1999,7 +2006,7 @@ string cur_class_name;
 		} else if (la.kind == 93) {
 			Get();
 			opType = OperatorType.Modulus; 
-		} else SynErr(147);
+		} else SynErr(148);
 	}
 
 	void Factor(out Expression expr) {
@@ -2010,7 +2017,7 @@ string cur_class_name;
 			UnaryOperator(out type);
 			Factor(out factor);
 			expr = Expression.MakeUnaryExpr(type, factor, start_loc); 
-		} else SynErr(148);
+		} else SynErr(149);
 	}
 
 	void Primary(out Expression expr) {
@@ -2024,7 +2031,7 @@ string cur_class_name;
 			}
 		} else if (StartOf(27)) {
 			Atom(out expr);
-		} else SynErr(149);
+		} else SynErr(150);
 		while (la.kind == 8 || la.kind == 9 || la.kind == 13) {
 			Trailer(ref expr);
 		}
@@ -2043,7 +2050,7 @@ string cur_class_name;
 		} else if (la.kind == 91) {
 			Get();
 			opType = OperatorType.Dereference; 
-		} else SynErr(150);
+		} else SynErr(151);
 	}
 
 	void PathExpression(out PathExpression path) {
@@ -2089,13 +2096,13 @@ string cur_class_name;
 				else
 				   expr = Expression.MakeParen(Expression.MakeSequenceExpression(exprs));
 				
-			} else SynErr(151);
+			} else SynErr(152);
 		} else if (la.kind == 9) {
 			Get();
 			if (StartOf(29)) {
 				SequenceMaker(out expr);
 			}
-			while (!(la.kind == 0 || la.kind == 3)) {SynErr(152); Get();}
+			while (!(la.kind == 0 || la.kind == 3)) {SynErr(153); Get();}
 			Expect(3);
 			if(expr == null){
 			                     var type = CreateTypeWithArgs("array", new PlaceholderType(TextLocation.Empty));
@@ -2107,14 +2114,14 @@ string cur_class_name;
 			if (StartOf(15)) {
 				DictMaker(out expr);
 			}
-			while (!(la.kind == 0 || la.kind == 11)) {SynErr(153); Get();}
+			while (!(la.kind == 0 || la.kind == 11)) {SynErr(154); Get();}
 			Expect(11);
 			if(expr == null){
 			   var type = CreateTypeWithArgs("dictionary", new PlaceholderType(TextLocation.Empty), new PlaceholderType(TextLocation.Empty));
 			   expr = Expression.MakeSequenceInitializer(type, Enumerable.Empty<Expression>());
 			}
 			
-		} else SynErr(154);
+		} else SynErr(155);
 	}
 
 	void Trailer(ref Expression expr) {
@@ -2135,7 +2142,7 @@ string cur_class_name;
 			Get();
 			Expect(14);
 			expr = Expression.MakeMemRef(expr, AstNode.MakeIdentifier(t.val, new PlaceholderType(TextLocation.Empty), start_loc, CurrentLocation)); 
-		} else SynErr(155);
+		} else SynErr(156);
 	}
 
 	void PatternAndTest(out Expression expr) {
@@ -2255,7 +2262,7 @@ string cur_class_name;
 			UnaryOperator(out type);
 			PatternFactor(out factor);
 			expr = Expression.MakeUnaryExpr(type, factor, start_loc); 
-		} else SynErr(156);
+		} else SynErr(157);
 	}
 
 	void PatternPrimary(out Expression expr) {
@@ -2265,7 +2272,7 @@ string cur_class_name;
 			expr = path; 
 		} else if (StartOf(19)) {
 			Literal(out expr);
-		} else SynErr(157);
+		} else SynErr(158);
 		while (la.kind == 8 || la.kind == 9 || la.kind == 13) {
 			Trailer(ref expr);
 		}
@@ -2314,8 +2321,8 @@ string cur_class_name;
 				GoUpScope();
 				is_first_comprehension_for_clause = true;
 				
-			} else SynErr(158);
-		} else SynErr(159);
+			} else SynErr(159);
+		} else SynErr(160);
 	}
 
 	void DictMaker(out Expression expr) {
@@ -2345,7 +2352,7 @@ string cur_class_name;
 			GoDownScope();
 			is_first_comprehension_for_clause = true;
 			
-		} else SynErr(160);
+		} else SynErr(161);
 	}
 
 	void CompFor(out ComprehensionIter expr) {
@@ -2374,7 +2381,7 @@ string cur_class_name;
 			CompFor(out expr);
 		} else if (la.kind == 22) {
 			CompIf(out expr);
-		} else SynErr(161);
+		} else SynErr(162);
 	}
 
 	void CompIf(out ComprehensionIter expr) {
@@ -2423,7 +2430,7 @@ string cur_class_name;
 		{_x,_x,_x,_x, _x,_x,_x,_x, _T,_T,_x,_x, _x,_x,_T,_T, _T,_T,_x,_T, _T,_T,_x,_x, _x,_x,_x,_T, _T,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _T,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_T,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_T,_T,_T, _x,_x,_x,_T, _T,_T,_T,_T, _x,_x},
 		{_x,_T,_x,_x, _x,_x,_x,_x, _T,_T,_x,_x, _x,_x,_T,_T, _T,_T,_x,_T, _T,_T,_x,_x, _x,_x,_x,_T, _T,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _T,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_T,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_T,_T,_T, _x,_x,_x,_T, _T,_T,_T,_T, _x,_x},
 		{_x,_x,_x,_x, _x,_x,_x,_x, _T,_T,_x,_x, _x,_x,_T,_T, _T,_T,_x,_T, _T,_T,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_T,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _T,_T,_T,_T, _x,_x},
-		{_T,_x,_x,_T, _x,_x,_T,_x, _T,_T,_x,_T, _x,_x,_T,_T, _T,_T,_x,_T, _T,_T,_x,_x, _x,_x,_x,_x, _x,_x,_x,_T, _x,_T,_x,_x, _x,_x,_T,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_T,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_T,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _T,_T,_T,_T, _x,_x},
+		{_T,_T,_x,_T, _x,_x,_T,_x, _T,_T,_x,_T, _x,_x,_T,_T, _T,_T,_x,_T, _T,_T,_x,_x, _x,_x,_x,_x, _x,_x,_x,_T, _x,_T,_x,_x, _x,_x,_T,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_T,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_T,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _T,_T,_T,_T, _x,_x},
 		{_x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_T,_T, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_T,_T, _T,_T,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x},
 		{_x,_x,_x,_x, _x,_x,_x,_T, _T,_T,_x,_x, _x,_x,_T,_T, _T,_T,_x,_T, _T,_T,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _T,_T,_T,_T, _x,_x},
 		{_x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _T,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_T,_T,_T, _x,_x,_x,_T, _x,_x,_x,_x, _x,_x},
@@ -2586,27 +2593,28 @@ public class Errors {
 			case 138: s = "invalid TuplePattern"; break;
 			case 139: s = "invalid DestructuringPattern"; break;
 			case 140: s = "invalid DestructuringPattern"; break;
-			case 141: s = "invalid TupleElementPattern"; break;
-			case 142: s = "invalid ClosureLiteral"; break;
-			case 143: s = "invalid ComparisonOperator"; break;
-			case 144: s = "invalid RangeOperator"; break;
-			case 145: s = "invalid ShiftOperator"; break;
-			case 146: s = "invalid AdditiveOperator"; break;
-			case 147: s = "invalid MultiplicativeOperator"; break;
-			case 148: s = "invalid Factor"; break;
-			case 149: s = "invalid Primary"; break;
-			case 150: s = "invalid UnaryOperator"; break;
-			case 151: s = "invalid Atom"; break;
-			case 152: s = "this symbol not expected in Atom"; break;
+			case 141: s = "invalid DestructuringPattern"; break;
+			case 142: s = "invalid TupleElementPattern"; break;
+			case 143: s = "invalid ClosureLiteral"; break;
+			case 144: s = "invalid ComparisonOperator"; break;
+			case 145: s = "invalid RangeOperator"; break;
+			case 146: s = "invalid ShiftOperator"; break;
+			case 147: s = "invalid AdditiveOperator"; break;
+			case 148: s = "invalid MultiplicativeOperator"; break;
+			case 149: s = "invalid Factor"; break;
+			case 150: s = "invalid Primary"; break;
+			case 151: s = "invalid UnaryOperator"; break;
+			case 152: s = "invalid Atom"; break;
 			case 153: s = "this symbol not expected in Atom"; break;
-			case 154: s = "invalid Atom"; break;
-			case 155: s = "invalid Trailer"; break;
-			case 156: s = "invalid PatternFactor"; break;
-			case 157: s = "invalid PatternPrimary"; break;
-			case 158: s = "invalid SequenceMaker"; break;
+			case 154: s = "this symbol not expected in Atom"; break;
+			case 155: s = "invalid Atom"; break;
+			case 156: s = "invalid Trailer"; break;
+			case 157: s = "invalid PatternFactor"; break;
+			case 158: s = "invalid PatternPrimary"; break;
 			case 159: s = "invalid SequenceMaker"; break;
-			case 160: s = "invalid DictMaker"; break;
-			case 161: s = "invalid CompIter"; break;
+			case 160: s = "invalid SequenceMaker"; break;
+			case 161: s = "invalid DictMaker"; break;
+			case 162: s = "invalid CompIter"; break;
 
 			default: s = "error " + n; break;
 		}
