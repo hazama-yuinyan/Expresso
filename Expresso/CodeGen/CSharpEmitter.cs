@@ -37,10 +37,11 @@ namespace Expresso.CodeGen
         //# because we have defined a symbol id on all the identifier nodes
         //# that identifies the symbol uniqueness within the whole program.
         //###################################################
-        static Dictionary<uint, ExpressoSymbol> Symbols = new Dictionary<uint, ExpressoSymbol>();
+        internal static Dictionary<uint, ExpressoSymbol> Symbols = new Dictionary<uint, ExpressoSymbol>();
         static int LoopCounter = 1, ClosureId = 0;
         static ExprTree.LabelTarget ReturnTarget = null;
         static CSharpExpr DefaultReturnValue = null;
+        static int VariableCount = 0;
 		
         const string ClosureMethodName = "__Apply";
         const string ClosureDelegateName = "__ApplyMethod";
@@ -48,6 +49,8 @@ namespace Expresso.CodeGen
 
         SymbolTable symbol_table;
         ExpressoCompilerOptions options;
+        MatchClauseIdentifierDefiner identifier_definer;
+        ItemTypeInferencer item_type_inferencer;
 
         List<ExprTree.LabelTarget> break_targets = new List<ExprTree.LabelTarget>();
         List<ExprTree.LabelTarget> continue_targets = new List<ExprTree.LabelTarget>();
@@ -87,6 +90,8 @@ namespace Expresso.CodeGen
         {
             symbol_table = parser.Symbols;
             this.options = options;
+            identifier_definer = new MatchClauseIdentifierDefiner();
+            item_type_inferencer = new ItemTypeInferencer(this);
         }
 
         static Type GuessEnumeratorType(Type type)
@@ -155,11 +160,6 @@ namespace Expresso.CodeGen
         void AscendScope()
         {
             symbol_table = symbol_table.Parent;
-        }
-
-        void ProceedToNextSibling()
-        {
-            symbol_table = symbol_table.Parent.Children[scope_counter++];
         }
 
         static bool CanReturn(ReturnStatement returnStmt)
@@ -406,8 +406,11 @@ namespace Expresso.CodeGen
             // we know that we're at least at the second branch.
             // If it is null, then we're at the first branch so just set it to the context expression.
             var target = matchStmt.Target.AcceptWalker(this, context);
-            var target_var = CSharpExpr.Parameter(target.Type, "match_target");
+            var target_var = CSharpExpr.Parameter(target.Type, "__match_target");
+
+            var block_contents = ExpandCollection(target.Type, target_var, out var parameters);
             context.TemporaryVariable = target_var;
+            context.TemporaryExpression = target_var;
             context.ContextExpression = null;
             var context_ast = context.ContextAst;
             context.ContextAst = matchStmt;
@@ -416,16 +419,38 @@ namespace Expresso.CodeGen
             DescendScope();
             scope_counter = 0;
 
+            //ExprTree.ConditionalExpression res = null, tmp_res = res;
+            var exprs = new List<ExprTree.ConditionalExpression>(matchStmt.Clauses.Count);
             foreach(var clause in matchStmt.Clauses){
-                var tmp = clause.AcceptWalker(this, context);
-                if(context.ContextExpression != null){
+                var tmp = clause.AcceptWalker(this, context) as ExprTree.ConditionalExpression;
+                /*if(tmp_res == null){
+                    tmp_res = tmp;
+                }else if(tmp == null){
+                    tmp_res = CSharpExpr.IfThenElse(tmp_res.Test, tmp_res.IfTrue, context.ContextExpression);
+                }else{
+                    tmp_res = CSharpExpr.IfThenElse(tmp_res.Test, tmp_res.IfTrue, tmp);
+                    if(res == null)
+                        res = tmp_res;
+                    
+                    tmp_res = (ExprTree.ConditionalExpression)tmp_res.IfFalse;
+                }*/
+                exprs.Add(tmp);
+                
+                /*if(context.ContextExpression != null){
                     var cond_expr = (ExprTree.ConditionalExpression)context.ContextExpression;
                     cond_expr.Update(cond_expr.Test, cond_expr.IfTrue, tmp);
                     context.ContextExpression = tmp;
                 }else{
                     context.ContextExpression = tmp;
-                }
+                }*/
             }
+
+            var res = ConstructConditionalExpressions(exprs, 0);
+
+            var target_var_assignment = CSharpExpr.Assign(target_var, target);
+            block_contents.Insert(0, target_var_assignment);
+            block_contents.Add(res);
+            parameters.Add(target_var);
 
             AscendScope();
             scope_counter = tmp_counter + 1;
@@ -433,12 +458,7 @@ namespace Expresso.CodeGen
             context.TemporaryVariable = null;
             context.ContextAst = context_ast;
 
-            return CSharpExpr.Block(new List<ExprTree.ParameterExpression>{
-                target_var
-            }, new List<CSharpExpr>{
-                CSharpExpr.Assign(target_var, target),
-                context.ContextExpression
-            });
+            return CSharpExpr.Block(parameters, block_contents);
         }
 
         public CSharpExpr VisitThrowStatement(ThrowStatement throwStmt, CSharpEmitterContext context)
@@ -836,6 +856,10 @@ namespace Expresso.CodeGen
                 intSeq.Step.AcceptWalker(this, context),
                 CSharpExpr.Constant(intSeq.UpperInclusive)
             };
+
+            if(context.RequestMethod && context.Method == null)
+                context.Method = typeof(ExpressoIntegerSequence).GetMethod("Includes");
+            
             return CSharpExpr.New(intseq_ctor, args);      //new ExpressoIntegerSequence(Start, End, Step, UpperInclusive)
         }
 
@@ -1065,19 +1089,17 @@ namespace Expresso.CodeGen
             //           Test{x, _} => print("{0}, y", x);,
             //           _          => ;
             //       }
-            // =>    if(t is Test){
-            //           var _0 = t.x, _1 = t.y;
-            //           if(_0 == 1){
-            //               Console.Write("1, x");
-            //           }else if(_0 == 2 && _1 == 2){
-            //               Console.Write("2, 2");
-            //           }else if(_0 == 3){
-            //               Console.Write("3, x");
-            //           }else{
-            //               int x = _0, y = _1;    //destructuring becomes inner scope variable declarations
-            //               if(y == 2 * x){          //a guard becomes an inner-scope if statement
-            //                   Console.Write("y == 2 * x");
-            //               }
+            // =>    var __0 = t.x, __1 = t.y;
+            //       if(__0 == 1){
+            //           Console.Write("1, x");
+            //       }else if(__0 == 2 && __1 == 2){
+            //           Console.Write("2, 2");
+            //       }else if(__0 == 3){
+            //           Console.Write("3, x");
+            //       }else{
+            //           int x = __0, y = __1;    //destructuring becomes inner scope variable declarations
+            //           if(y == 2 * x){          //a guard becomes an inner-scope if statement
+            //               Console.Write("y == 2 * x");
             //           }
             //       }else{                       // a wildcard pattern becomes the else clause
             //       }
@@ -1087,79 +1109,64 @@ namespace Expresso.CodeGen
             //           [_, 2, x] => println("x is {0}", x);,
             //           [x, ..]   => println("x is {0}", x);
             //       }
-            // =>    if(x is Array){
-            //           var _0 = x[0], _1 = x[1], _2 = x[2];  // in practice, the prefix is omitted
-            //           if(_0 == 1 && _1 == 2){
-            //               var x = _2;
-            //               Console.WriteLine("x is {0}", x);
-            //           }else if(_1 == 2){
-            //               var x = _2;
-            //               Console.WriteLine("x is {0}", x);
-            //           }else if(x.Length > 1){
-            //               var x = _0;
-            //               Console.WriteLine("x is {0}", x);
-            //           }
+            // =>    var __0 = x[0], __1 = x[1], __2 = x[2];  // in practice, the prefix is omitted
+            //       if(__0 == 1 && __1 == 2){
+            //           var x = __2;
+            //           Console.WriteLine("x is {0}", x);
+            //       }else if(__1 == 2){
+            //           var x = __2;
+            //           Console.WriteLine("x is {0}", x);
+            //       }else if(x.Length > 1){
+            //           var x = __0;
+            //           Console.WriteLine("x is {0}", x);
             //       }
             // e.g.4 let t = (1, 'a', true);
             //       match t {
             //           (1, x, y) => println("x is {0} and y is {1}", x, y);,
             //           (1, 'a', _) => println("t is (1, 'a', _)");
             //       }
-            // =>    if(t is Tuple)}
-            //           var _0 = t.Item0, _1 = t.Item1, _2 = t.Item2; // in practice, the prefix is omitted
-            //           if(_0 == 1){
-            //               var x = _1, y = _2;
-            //               Console.WriteLine("x is {0} and y is {1}", x, y);
-            //           }else if(_0 == 1 && _1 == 'a'){
-            //               Console.WriteLine("t is (1, 'a', _)");
-            //           }
+            // =>    var __0 = t.Item0, __1 = t.Item1, __2 = t.Item2; // in practice, the prefix is omitted
+            //       if(__0 == 1){
+            //           var x = __1, y = __2;
+            //           Console.WriteLine("x is {0} and y is {1}", x, y);
+            //       }else if(__0 == 1 && __1 == 'a'){
+            //           Console.WriteLine("t is (1, 'a', _)");
             //       }
             int tmp_counter = scope_counter;
             DescendScope();
             scope_counter = 0;
 
-            IEnumerable<ExprTree.ParameterExpression> destructuring_exprs = null;
+            // Define identifiers before inspecting the body statement.
+            matchClause.AcceptWalker(identifier_definer);
+
+            var body = matchClause.Body.AcceptWalker(this, context);
+            context.ContextExpression = body;
+
             CSharpExpr res = null;
-            var prev_additionals = context.Additionals;
             foreach(var pattern in matchClause.Patterns){
-                context.Additionals = null;
-
                 var pattern_cond = pattern.AcceptWalker(this, context);
-                if(context.Additionals != null){
-                    // If the pattern contains destructuring
-                    // then the first expression is the only source for the condition it explains.
-                    if(destructuring_exprs == null){
-                        destructuring_exprs = context.Additionals.Cast<ExprTree.ParameterExpression>();
-                    }
-                }
-
                 if(res == null)
                     res = pattern_cond;
                 else
                     res = CSharpExpr.OrElse(res, pattern_cond);
             }
 
-            if(destructuring_exprs.Count() != context.Additionals.Count()){
+            /*if(destructuring_exprs.Count() != context.Additionals.Count()){
                 // The number of destructured variables must match in every pattern
                 throw new EmitterException(
                     "Expected the pattern contains {0} variables, but it only contains {1}!",
                     destructuring_exprs.Count(), context.Additionals.Count()
                 );
-            }
+            }*/
 
-            context.Additionals = prev_additionals;
             var guard = matchClause.Guard.AcceptWalker(this, context);
             if(guard != null)
                 res = CSharpExpr.AndAlso(res, guard);
 
-            var body = matchClause.Body.AcceptWalker(this, context);
-            if(destructuring_exprs != null)
-                body = CSharpExpr.Block(destructuring_exprs, body);
-
             AscendScope();
             scope_counter = tmp_counter + 1;
 
-            return (res == null) ? null : CSharpExpr.IfThen(res, body);
+            return (res == null) ? null : CSharpExpr.IfThen(res, context.ContextExpression);
         }
 
         public CSharpExpr VisitSequenceExpression(SequenceExpression seqExpr, CSharpEmitterContext context)
@@ -1464,11 +1471,21 @@ namespace Expresso.CodeGen
         {
             // An identifier pattern can arise by itself or as a child
             var ident = identifierPattern.Identifier.AcceptWalker(this, context);
-            if(context.Additionals != null)
-                context.Additionals.Add(ident);
+            //if(context.Additionals != null){
+            //    context.AdditionalParameters.Add(ident);
+            //}
 
-            if(context.Field == null){
-                var field = context.TargetType.GetField(identifierPattern.Identifier.Name);
+            if(identifierPattern.Parent is MatchPatternClause){
+                // Set context.ContextExpression to a block
+                //var native_type = CSharpCompilerHelper.GetNativeType(identifierPattern.Identifier.Type);
+                var param = ident as ExprTree.ParameterExpression;
+                var assignment = CSharpExpr.Assign(ident, context.TemporaryVariable);
+                context.ContextExpression = CSharpExpr.Block(new []{param}, new []{assignment, context.ContextExpression});
+            }
+
+            if(context.Field == null && context.TargetType != null){
+                // context.TargetType is supposed to be set in CSharpEmitter.VisitIdentifier
+                var field = context.TargetType.GetField(identifierPattern.Identifier.Name, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static);
                 if(field == null){
                     throw new EmitterException(
                         "Type `{0}` doesn't have the field `{1}`",
@@ -1478,7 +1495,10 @@ namespace Expresso.CodeGen
                 context.Field = field;
             }
 
-            return ident;
+            if(!identifierPattern.InnerPattern.IsNull)
+                return identifierPattern.InnerPattern.AcceptWalker(this, context);
+            else
+                return ident;
         }
 
         public CSharpExpr VisitValueBindingPattern(ValueBindingPattern valueBindingPattern, CSharpEmitterContext context)
@@ -1498,27 +1518,69 @@ namespace Expresso.CodeGen
         {
             // First, make type validation expression
             var collection_type = CSharpCompilerHelper.GetContainerType(collectionPattern.CollectionType);
+            var item_type = CSharpCompilerHelper.GetNativeType(collectionPattern.CollectionType.TypeArguments.First());
+            var prev_additionals = context.Additionals;
+            context.Additionals = new List<object>();
+            var prev_additional_params = context.AdditionalParameters;
+            context.AdditionalParameters = new List<ExprTree.ParameterExpression>();
+
             CSharpExpr res = null;
             int i = 0;
             var block = new List<CSharpExpr>();
+            var block_params = new List<ExprTree.ParameterExpression>();
             foreach(var pattern in collectionPattern.Items){
-                var tmp = pattern.AcceptWalker(this, context);
                 var index = CSharpExpr.Constant(i++);
-                var elem_access = CSharpExpr.ArrayIndex(context.TemporaryVariable, index);
-                var param = tmp as ExprTree.ParameterExpression;
-                if(param != null){
-                    var assignment = CSharpExpr.Assign(param, elem_access);
-                    block.Add(assignment);
-                }
+                var elem_access = CSharpExpr.ArrayIndex(context.TemporaryExpression, index);
+                //var tmp_param = CSharpExpr.Parameter(item_type, "__" + VariableCount++);
+                //var assignment = CSharpExpr.Assign(tmp_param, elem_access);
+                //context.Additionals.Add(assignment);
+                //context.AdditionalParameters.Add(tmp_param);
+                //block.Add(assignment);
+                //block_params.Add(tmp_param);
 
-                if(res == null)
-                    res = tmp;
-                else
-                    res = CSharpExpr.AndAlso(res, elem_access);
+                var prev_tmp_expr = context.TemporaryExpression;
+                context.TemporaryExpression = elem_access;
+                var expr = pattern.AcceptWalker(this, context);
+                context.TemporaryExpression = prev_tmp_expr;
+
+                var param = expr as ExprTree.ParameterExpression;
+                if(param != null){
+                    var assignment2 = CSharpExpr.Assign(param, elem_access);
+                    block.Add(assignment2);
+                    block_params.Add(param);
+                }else{
+                    if(context.Additionals.Any()){
+                        var block_contents = context.Additionals.OfType<ExprTree.Expression>().ToList();
+                        if(expr != null){
+                            var if_content = CSharpExpr.IfThen(expr, context.ContextExpression);
+                            block_contents.Add(if_content);
+                        }
+                        context.ContextExpression = CSharpExpr.Block(context.AdditionalParameters, block_contents);
+                    }if(res == null){
+	                    res = expr;
+                    }else{
+	                    res = CSharpExpr.AndAlso(res, expr);
+                    }
+                }
             }
 
-            context.ContextExpression = CSharpExpr.Block(block);
-            return CSharpExpr.TypeIs(context.TemporaryVariable, collection_type);
+            if(res == null){
+                var native_type = CSharpCompilerHelper.GetNativeType(collectionPattern.CollectionType);
+                res = CSharpExpr.TypeIs(context.TemporaryVariable, native_type);
+            }
+
+            if(res != null)
+                block.Add(CSharpExpr.IfThen(res, context.ContextExpression));
+            else
+                block.Add(context.ContextExpression);
+
+            context.Additionals = prev_additionals;
+            context.AdditionalParameters = prev_additional_params;
+
+            if(block.Any())
+                context.ContextExpression = CSharpExpr.Block(block_params, block);
+
+            return res;//CSharpExpr.TypeIs(context.TemporaryVariable, collection_type);
         }
 
         public CSharpExpr VisitDestructuringPattern(DestructuringPattern destructuringPattern, CSharpEmitterContext context)
@@ -1526,40 +1588,149 @@ namespace Expresso.CodeGen
             context.TargetType = null;
             destructuringPattern.TypePath.AcceptWalker(this, context);
             var type = context.TargetType;
+            context.RequestField = true;
+            var prev_additionals = context.Additionals;
+            context.Additionals = new List<object>();
+            var prev_additional_params = context.AdditionalParameters;
+            context.AdditionalParameters = new List<ExprTree.ParameterExpression>();
 
-            var assigns = new List<CSharpExpr>();
-            var parameters = new List<ExprTree.ParameterExpression>();
+            CSharpExpr res = null;
+            var block = new List<CSharpExpr>();
+            var block_params = new List<ExprTree.ParameterExpression>();
             foreach(var pattern in destructuringPattern.Items){
+                var item_ast_type = pattern.AcceptWalker(item_type_inferencer);
+                if(item_ast_type == null)
+                    continue;
+                
+                var item_type = CSharpCompilerHelper.GetNativeType(item_ast_type);
+                //var tmp_param = CSharpExpr.Parameter(item_type, "__" + VariableCount++);
+
+                //var prev_tmp_variable = context.TemporaryVariable;
+                //context.TemporaryVariable = tmp_param;
                 context.Field = null;
-                var param = pattern.AcceptWalker(this, context) as ExprTree.ParameterExpression;
-                parameters.Add(param);
-                assigns.Add(CSharpExpr.Assign(param, CSharpExpr.Field(context.TemporaryVariable, context.Field)));
+                var expr = pattern.AcceptWalker(this, context);
+                //context.TemporaryVariable = prev_tmp_variable;
+
+                var field_access = CSharpExpr.Field(context.TemporaryExpression, context.Field);
+                //var assignment = CSharpExpr.Assign(tmp_param, field_access);
+                //context.Additionals.Add(assignment);
+                //context.AdditionalParameters.Add(tmp_param);
+                //block.Add(assignment);
+                //block_params.Add(tmp_param);
+
+                var param = expr as ExprTree.ParameterExpression;
+                if(param != null){
+                    var assignemnt2 = CSharpExpr.Assign(param, field_access);
+                    block_params.Add(param);
+                    block.Add(assignemnt2);
+                }else{
+                    if(context.Additionals.Any()){
+                        var block_contents = context.Additionals.OfType<ExprTree.Expression>().ToList();
+                        if(expr != null){
+                            var if_content = CSharpExpr.IfThen(expr, context.ContextExpression);
+                            block_contents.Add(if_content);
+                        }
+                        context.ContextExpression = CSharpExpr.Block(context.AdditionalParameters, block_contents);
+                    }else if(res == null){
+                        res = expr;
+                    }else{
+                        res = CSharpExpr.AndAlso(res, expr);
+                    }
+                }
             }
 
-            context.ContextExpression = CSharpExpr.Block(parameters, assigns);
-            return CSharpExpr.TypeIs(context.TemporaryVariable, type);
+            if(res == null){
+                var native_type = CSharpCompilerHelper.GetNativeType(destructuringPattern.TypePath);
+                res = CSharpExpr.TypeIs(context.TemporaryVariable, native_type);
+            }
+
+            if(res != null)
+                block.Add(CSharpExpr.IfThen(res, context.ContextExpression));
+            else
+                block.Add(context.ContextExpression);
+
+            context.Additionals = prev_additionals;
+            context.AdditionalParameters = prev_additional_params;
+            
+            context.RequestField = false;
+            if(block.Any())
+                context.ContextExpression = CSharpExpr.Block(block_params, block);
+
+            return res;//CSharpExpr.TypeIs(context.TemporaryVariable, type);
         }
 
         public CSharpExpr VisitTuplePattern(TuplePattern tuplePattern, CSharpEmitterContext context)
         {
             // Tuple patterns should always be combined with value binding patterns
+            var prev_additionals = context.Additionals;
+            context.Additionals = new List<object>();
+            var prev_addtional_params = context.AdditionalParameters;
+            context.AdditionalParameters = new List<ExprTree.ParameterExpression>();
+
             var element_types = new List<Type>();
-            var exprs = new List<CSharpExpr>();
+            var block_params = new List<ExprTree.ParameterExpression>();
+            var block = new List<CSharpExpr>();
+            CSharpExpr res = null;
             int i = 1;
             foreach(var pattern in tuplePattern.Patterns){
-                var tmp = pattern.AcceptWalker(this, context);
-                var param = tmp as ExprTree.ParameterExpression;
+                var item_ast_type = pattern.AcceptWalker(item_type_inferencer);
+                if(item_ast_type == null)
+                    continue;
+                
+                var item_type = CSharpCompilerHelper.GetNativeType(item_ast_type);
+                //var tmp_param = CSharpExpr.Parameter(item_type, "__" + VariableCount++);
+                var prop_name = "Item" + i++;
+                var property_access = CSharpExpr.Property(context.TemporaryExpression, prop_name);
+                //var assignment = CSharpExpr.Assign(tmp_param, property_access);
+                element_types.Add(item_type);
+                //context.Additionals.Add(assignment);
+                //context.AdditionalParameters.Add(tmp_param);
+                //block.Add(assignment);
+                //block_params.Add(tmp_param);
+
+                var prev_tmp_expr = context.TemporaryExpression;
+                context.TemporaryExpression = property_access;
+                var expr = pattern.AcceptWalker(this, context);
+                context.TemporaryExpression = prev_tmp_expr;
+
+                var param = expr as ExprTree.ParameterExpression;
                 if(param != null){
-                    var elem_name = "Item" + i.ToString();
-                    exprs.Add(CSharpExpr.Assign(param, CSharpExpr.PropertyOrField(context.TemporaryVariable, elem_name)));
+                    var assignment2 = CSharpExpr.Assign(param, property_access);
+                    block.Add(assignment2);
+                    block_params.Add(param);
+                }else{
+                    if(context.Additionals.Any()){
+                        var block_contents = context.Additionals.OfType<ExprTree.Expression>().ToList();
+                        if(expr != null){
+                            var if_content = CSharpExpr.IfThen(expr, context.ContextExpression);
+                            block_contents.Add(if_content);
+                        }
+                        context.ContextExpression = CSharpExpr.Block(context.AdditionalParameters, block_contents);
+                    }else if(res == null){
+                        res = expr;
+                    }else{
+                        res = CSharpExpr.AndAlso(res, expr);
+                    }
                 }
-                element_types.Add(tmp.Type);
-                ++i;
             }
 
-            var tuple_type = CSharpCompilerHelper.GuessTupleType(element_types);
-            context.ContextExpression = CSharpExpr.Block(exprs);
-            return CSharpExpr.TypeIs(context.TemporaryVariable, tuple_type);
+            if(res == null){
+                var tuple_type = CSharpCompilerHelper.GuessTupleType(element_types);
+                res = CSharpExpr.TypeIs(context.TemporaryVariable, tuple_type);
+            }
+
+            if(res != null)
+                block.Add(CSharpExpr.IfThen(res, context.ContextExpression));
+            else
+                block.Add(context.ContextExpression);
+
+            context.Additionals = prev_additionals;
+            context.AdditionalParameters = prev_addtional_params;
+            
+            if(block.Any())
+                context.ContextExpression = CSharpExpr.Block(block_params, block);
+
+            return res;//CSharpExpr.TypeIs(context.TemporaryVariable, tuple_type);
         }
 
         public CSharpExpr VisitExpressionPattern(ExpressionPattern exprPattern, CSharpEmitterContext context)
@@ -1568,15 +1739,32 @@ namespace Expresso.CodeGen
             // An integer sequence expression or a literal expression.
             // In the former case we should test an integer against an IntSeq type object using an IntSeq's method
             // while in the latter case we should just test the value against the literal
+            context.RequestMethod = true;
             context.Method = null;
             var expr = exprPattern.Expression.AcceptWalker(this, context);
-            return (context.Method != null) ? CSharpExpr.Call(context.Method, expr) as CSharpExpr :
+            context.RequestMethod = false;
+            return (context.Method != null) ? CSharpExpr.Call(expr, context.Method, context.TemporaryVariable) as CSharpExpr :
                 (context.ContextAst is MatchStatement) ? CSharpExpr.Equal(context.TemporaryVariable, expr) as CSharpExpr : expr;
         }
 
         public CSharpExpr VisitIgnoringRestPattern(IgnoringRestPattern restPattern, CSharpEmitterContext context)
         {
             return null;
+        }
+
+        public CSharpExpr VisitKeyValuePattern(KeyValuePattern keyValuePattern, CSharpEmitterContext context)
+        {
+            context.Field = null;
+            context.RequestField = true;
+            VisitIdentifier(keyValuePattern.KeyIdentifier, context);
+            var expr = keyValuePattern.Value.AcceptWalker(this, context);
+
+            var param = expr as ExprTree.ParameterExpression;
+            if(param != null){
+                var assignment = CSharpExpr.Assign(param, CSharpExpr.Field(context.TemporaryVariable, context.Field));
+                return assignment;
+            }
+            return expr;
         }
 
         public CSharpExpr VisitNullNode(AstNode nullNode, CSharpEmitterContext context)
@@ -1811,6 +1999,36 @@ namespace Expresso.CodeGen
 
             AscendScope();
             scope_counter = tmp_counter + 1;
+        }
+
+        List<ExprTree.Expression> ExpandCollection(Type collectionType, ExprTree.ParameterExpression param, out List<ExprTree.ParameterExpression> parameters)
+        {
+            parameters = new List<ExprTree.ParameterExpression>();
+            var out_parameters = parameters;
+            if(collectionType.Name.StartsWith("Tuple")){
+                var content = collectionType.GenericTypeArguments.Select((t, i) => {
+                    var tmp_param = CSharpExpr.Parameter(t, "__" + VariableCount++);
+                    out_parameters.Add(tmp_param);
+                    return CSharpExpr.Assign(tmp_param, CSharpExpr.Property(param, "Item" + (i + 1)));
+                }).OfType<ExprTree.Expression>()
+                  .ToList();
+                
+                return content;
+            }else{
+                return new List<CSharpExpr>();
+            }
+        }
+
+        ExprTree.ConditionalExpression ConstructConditionalExpressions(List<ExprTree.ConditionalExpression> exprs, int index)
+        {
+            if(index >= exprs.Count - 1)
+                return exprs[index];
+
+            var inner = ConstructConditionalExpressions(exprs, index + 1);
+            if(inner == null)
+                return exprs[index];
+            else
+                return CSharpExpr.IfThenElse(exprs[index].Test, exprs[index].IfTrue, inner);
         }
 		#endregion
 

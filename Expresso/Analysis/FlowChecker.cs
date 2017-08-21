@@ -599,6 +599,11 @@ namespace Expresso.Ast.Analysis
             throw new NotImplementedException();
         }
 
+        public void VisitKeyValuePattern(KeyValuePattern keyValuePattern)
+        {
+            throw new NotImplementedException();
+        }
+
         public void VisitNullNode(AstNode nullNode)
         {
             throw new NotImplementedException();

@@ -11,7 +11,7 @@ namespace Expresso.Ast
     public class IdentifierPattern : PatternConstruct
     {
         /// <summary>
-        /// The identifier.
+        /// The identifier that the pattern refers to.
         /// </summary>
         public Identifier Identifier{
             get{return GetChildByRole(Roles.Identifier);}

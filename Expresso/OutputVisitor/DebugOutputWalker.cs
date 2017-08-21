@@ -201,6 +201,11 @@ namespace Expresso.Ast
         {
             if(ident.Type.IsNull){
                 writer.Write(ident.Name);
+                writer.Write(" @ ");
+                if(ident.IdentifierId == 0)
+                    writer.Write("<invalid>");
+                else
+                    writer.Write("<id: {0}>", ident.IdentifierId);
             }else{
                 writer.Write(ident.Name);
                 writer.Write(" (- ");
@@ -226,7 +231,7 @@ namespace Expresso.Ast
         {
             memRef.Target.AcceptWalker(this);
             writer.Write(".");
-            memRef.Member.AcceptWalker(this);
+            VisitIdentifier(memRef.Member);
         }
 
         public void VisitAst(ExpressoAst ast)
@@ -285,7 +290,7 @@ namespace Expresso.Ast
         public void VisitTryStatement(TryStatement tryStmt)
         {
             writer.Write("try");
-            tryStmt.EnclosingBlock.AcceptWalker(this);
+            VisitBlock(tryStmt.EnclosingBlock);
             tryStmt.CatchClauses.AcceptWalker(this);
         }
 
@@ -372,7 +377,7 @@ namespace Expresso.Ast
         {
             writer.Write("[");
             comp.Item.AcceptWalker(this);
-            comp.Body.AcceptWalker(this);
+            VisitComprehensionForClause(comp.Body);
             writer.Write("]");
         }
 
@@ -491,7 +496,7 @@ namespace Expresso.Ast
 
         public void VisitSimpleType(SimpleType simpleType)
         {
-            writer.Write(simpleType.IdentifierNode);
+            VisitIdentifier(simpleType.IdentifierNode);
             if(simpleType.TypeArguments.Count > 0){
                 writer.Write("<");
                 PrintList(simpleType.TypeArguments);
@@ -602,7 +607,7 @@ namespace Expresso.Ast
 
         public void VisitParameterDeclaration(ParameterDeclaration parameterDecl)
         {
-            parameterDecl.NameToken.AcceptWalker(this);
+            VisitIdentifier(parameterDecl.NameToken);
             if(parameterDecl.IsVariadic)
                 writer.Write("...");
             
@@ -614,7 +619,7 @@ namespace Expresso.Ast
 
         public void VisitVariableInitializer(VariableInitializer initializer)
         {
-            initializer.NameToken.AcceptWalker(this);
+            VisitIdentifier(initializer.NameToken);
             writer.Write(" = ");
             initializer.Initializer.AcceptWalker(this);
         }
@@ -680,6 +685,13 @@ namespace Expresso.Ast
         public void VisitIgnoringRestPattern(IgnoringRestPattern restPattern)
         {
             writer.Write("..");
+        }
+
+        public void VisitKeyValuePattern(KeyValuePattern keyValuePattern)
+        {
+            VisitIdentifier(keyValuePattern.KeyIdentifier);
+            writer.Write(": ");
+            keyValuePattern.Value.AcceptWalker(this);
         }
 
         public void VisitNewLine(NewLineNode newlineNode)

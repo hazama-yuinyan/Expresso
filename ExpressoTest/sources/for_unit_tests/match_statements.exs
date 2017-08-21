@@ -20,7 +20,7 @@ def main()
     match tmp2 {
         0 => print("0");,
         1 | 2 => print("1 or 2");,
-        x @ 3...10 => printFormat("{0} is in the range of 3 to 10", x);,
+        i @ 3...10 => printFormat("{0} is in the range of 3 to 10", i);,
         _ => print("otherwise");
     }
 
@@ -30,7 +30,7 @@ def main()
         TestClass{x, y, _} => printFormat("x is {0} and y is {1}", x, y);
     }
 
-    let tmp4 = [1, 2, 3, 4, ...];
+    /*let tmp4 = [1, 2, 3, 4, ...];
     match tmp4 {
         [x, y, .., ...] => printFormat("x and y are both vector's elements and the values are {0} and {1} respectively", x, y);,
         [1, 2, 3, _, ...] => print("tmp4 is a vector");
@@ -40,7 +40,7 @@ def main()
     match tmp5 {
         [x, y, ..] => printFormat("x and y are both array's elements and the values are {0} and {1} respectively", x, y);,
         [1, 2, 3, _] => print("tmp5 is an array");
-    }
+    }*/
 
     let tmp6 = (1, 2);
     match tmp6 {

@@ -155,6 +155,22 @@ namespace Expresso.CodeGen
         }
 
         /// <summary>
+        /// It will be set to an Expression that represents the temporary expression.
+        /// </summary>
+        /// <value>The temporary expression.</value>
+        public System.Linq.Expressions.Expression TemporaryExpression{
+            get; set;
+        }
+
+        /// <summary>
+        /// Represents the parameters that expressions that additionals contain refer to.
+        /// </summary>
+        /// <value>The additional parameters.</value>
+        public List<System.Linq.Expressions.ParameterExpression> AdditionalParameters{
+            get; set;
+        }
+
+        /// <summary>
         /// Additional temporary expressions.
         /// Used in expressions that need complicated transformation.
         /// Usually set to null. Not being null indicates that the child nodes should add their results

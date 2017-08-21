@@ -246,6 +246,11 @@ namespace Expresso.Ast.Analysis
                 keyValue.ValueExpression.AcceptWalker(this);
 	        }
 
+            public void VisitKeyValuePattern(KeyValuePattern keyValuePattern)
+            {
+                keyValuePattern.Value.AcceptWalker(this);
+            }
+
 	        public void VisitLiteralExpression(LiteralExpression literal)
 	        {
 	        }

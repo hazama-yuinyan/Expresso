@@ -293,6 +293,14 @@ $namespace=Expresso
         return la.val == "{";
     }
 
+    bool IsStartOfKeyValuePair()
+    {
+        var t = la;
+        var token = scanner.Peek();
+        scanner.ResetPeek();
+        return t.kind == _ident && token.kind == _colon;
+    }
+
     bool CheckKeyword(string name)
     {
         if(KnownTypeReference.Keywords.Contains(name)){
@@ -1133,15 +1141,36 @@ TuplePattern<out PatternConstruct pattern>  (. var inners = new List<PatternCons
 /*------------------------------------------------------------------------*/
 DestructuringPattern<out PatternConstruct pattern>  
                 (. pattern = PatternConstruct.Null; AstType type_path;
-                   var patterns = new List<PatternConstruct>(); bool is_vector = false;
+                   var patterns = new List<PatternConstruct>(); bool is_vector = false; string key = null;
                 .)
 =
   ( TypePathExpression<out type_path>
     lcurly
-    [ Pattern<out pattern>                  (. patterns.Add(pattern); .)
+    [
+     [ IF(IsStartOfKeyValuePair())
+       ident                                (. key = t.val; .)
+       ':'
+     ]
+     Pattern<out pattern>                   (. if(key != null){
+                                                   pattern = PatternConstruct.MakeKeyValuePattern(key, pattern);
+                                                   key = null;
+                                               }
+
+                                               patterns.Add(pattern);
+                                            .)
     ]
     { ','
-      ( Pattern<out pattern>                (. patterns.Add(pattern); .)
+      [ IF(IsStartOfKeyValuePair())
+        ident                               (. key = t.val; .)
+        ':'
+      ]
+      ( Pattern<out pattern>                (. if(key != null){
+                                                   pattern = PatternConstruct.MakeKeyValuePattern(key, pattern);
+                                                   key = null;
+                                               }
+
+                                               patterns.Add(pattern);
+                                            .)
       | ".."                                (. patterns.Add(PatternConstruct.MakeIgnoringRestPattern(CurrentLocation)); .)
       )
     }

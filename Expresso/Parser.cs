@@ -341,6 +341,14 @@ string cur_class_name;
         return la.val == "{";
     }
 
+    bool IsStartOfKeyValuePair()
+    {
+        var t = la;
+        var token = scanner.Peek();
+        scanner.ResetPeek();
+        return t.kind == _ident && token.kind == _colon;
+    }
+
     bool CheckKeyword(string name)
     {
         if(KnownTypeReference.Keywords.Contains(name)){
@@ -1669,20 +1677,42 @@ string cur_class_name;
 
 	void DestructuringPattern(out PatternConstruct pattern) {
 		pattern = PatternConstruct.Null; AstType type_path;
-		var patterns = new List<PatternConstruct>(); bool is_vector = false;
+		var patterns = new List<PatternConstruct>(); bool is_vector = false; string key = null;
 		
 		if (la.kind == 14) {
 			TypePathExpression(out type_path);
 			Expect(7);
 			if (StartOf(22)) {
+				if (IsStartOfKeyValuePair()) {
+					Expect(14);
+					key = t.val; 
+					Expect(4);
+				}
 				Pattern(out pattern);
-				patterns.Add(pattern); 
+				if(key != null){
+				   pattern = PatternConstruct.MakeKeyValuePattern(key, pattern);
+				   key = null;
+				}
+				
+				patterns.Add(pattern);
+				
 			}
 			while (la.kind == 12) {
 				Get();
+				if (IsStartOfKeyValuePair()) {
+					Expect(14);
+					key = t.val; 
+					Expect(4);
+				}
 				if (StartOf(22)) {
 					Pattern(out pattern);
-					patterns.Add(pattern); 
+					if(key != null){
+					   pattern = PatternConstruct.MakeKeyValuePattern(key, pattern);
+					   key = null;
+					}
+					
+					patterns.Add(pattern);
+					
 				} else if (la.kind == 1) {
 					Get();
 					patterns.Add(PatternConstruct.MakeIgnoringRestPattern(CurrentLocation)); 

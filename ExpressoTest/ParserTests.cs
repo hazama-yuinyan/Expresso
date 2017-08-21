@@ -1353,7 +1353,7 @@ namespace Expresso.Test
                                 )
                             )
                         ),
-                        Statement.MakeVarDecl(
+                        /*Statement.MakeVarDecl(
                             Helpers.MakeSeq(
                                 Helpers.MakeSomeIdent("tmp4")
                             ),
@@ -1490,7 +1490,7 @@ namespace Expresso.Test
                                     PatternConstruct.MakeWildcardPattern()
                                 )
                             )
-                        ),
+                        ),*/
                         Statement.MakeVarDecl(
                             Helpers.MakeSeq(
                                 Helpers.MakeSomeIdent("tmp6")

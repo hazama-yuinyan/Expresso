@@ -1084,6 +1084,11 @@ namespace Expresso.Ast.Analysis
             return SimpleType.Null;
         }
 
+        public AstType VisitKeyValuePattern(KeyValuePattern keyValuePattern)
+        {
+            return keyValuePattern.Value.AcceptWalker(this);
+        }
+
         public AstType VisitNullNode(AstNode nullNode)
         {
             return null;

@@ -638,11 +638,13 @@ namespace Expresso.Ast.Analysis
                         var parent = identifierPattern.Parent;
                         int i = 0;
                         parent.Children.Any(node => {
-                            ++i;
-                            return node.IsMatch(identifierPattern);
+                            if(node.IsMatch(identifierPattern)){
+                                return true;
+                            }else{
+                                ++i;
+                                return false;
+                            }
                         });
-                        // decrement i before use because the above code always returns the index + 1
-                        --i;
                         type = ((SimpleType)type).TypeArguments.ElementAt(i);
                     }else if(IsContainerType(type)){
                         type = MakeOutElementType(type);
@@ -704,6 +706,11 @@ namespace Expresso.Ast.Analysis
             public AstType VisitIgnoringRestPattern(IgnoringRestPattern restPattern)
             {
                 return SimpleType.Null;
+            }
+
+            public AstType VisitKeyValuePattern(KeyValuePattern keyValuePattern)
+            {
+                return keyValuePattern.Value.AcceptWalker(this);
             }
 
             public AstType VisitNullNode(AstNode nullNode)

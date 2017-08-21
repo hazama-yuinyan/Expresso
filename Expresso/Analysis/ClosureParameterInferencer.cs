@@ -189,6 +189,11 @@ namespace Expresso.Ast.Analysis
             throw new InvalidOperationException("Can not work on that node");
         }
 
+        public void VisitKeyValuePattern(KeyValuePattern keyValuePattern)
+        {
+            throw new InvalidOperationException("Can not work on that node");
+        }
+
         public void VisitLiteralExpression(LiteralExpression literal)
         {
             throw new InvalidOperationException("Can not work on that node");

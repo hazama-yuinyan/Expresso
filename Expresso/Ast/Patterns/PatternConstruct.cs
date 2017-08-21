@@ -170,6 +170,16 @@ namespace Expresso.Ast
         {
             return new IgnoringRestPattern(loc);
         }
+
+        public static KeyValuePattern MakeKeyValuePattern(string key, PatternConstruct value)
+        {
+            return new KeyValuePattern(AstNode.MakeIdentifier(key, new PlaceholderType(TextLocation.Empty)), value);
+        }
+
+        public static KeyValuePattern MakeKeyValuePattern(Identifier key, PatternConstruct value)
+        {
+            return new KeyValuePattern(key, value);
+        }
         #endregion
     }
 }

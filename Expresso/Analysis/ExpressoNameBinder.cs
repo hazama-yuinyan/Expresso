@@ -612,6 +612,7 @@ namespace Expresso.Ast.Analysis
 
         public void VisitDestructuringPattern(DestructuringPattern destructuringPattern)
         {
+            destructuringPattern.TypePath.AcceptWalker(this);
             destructuringPattern.Items.AcceptWalker(this);
         }
 
@@ -628,6 +629,11 @@ namespace Expresso.Ast.Analysis
         public void VisitIgnoringRestPattern(IgnoringRestPattern restPattern)
         {
             // no op
+        }
+
+        public void VisitKeyValuePattern(KeyValuePattern keyValuePattern)
+        {
+            keyValuePattern.Value.AcceptWalker(this);
         }
 		#endregion
 

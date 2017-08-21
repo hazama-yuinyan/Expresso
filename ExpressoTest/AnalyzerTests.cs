@@ -3162,7 +3162,7 @@ namespace Expresso.Test
                                 )
                             )
                         ),
-                        Statement.MakeVarDecl(
+                        /*Statement.MakeVarDecl(
                             Helpers.MakeSeq(
                                 AstNode.MakeIdentifier("tmp4", Helpers.MakeGenericType("vector", Helpers.MakePrimitiveType("int")))
                             ),
@@ -3353,7 +3353,7 @@ namespace Expresso.Test
                                     PatternConstruct.MakeWildcardPattern()
                                 )
                             )
-                        ),
+                        ),*/
                         Statement.MakeVarDecl(
                             Helpers.MakeSeq(
                                 AstNode.MakeIdentifier(

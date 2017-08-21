@@ -84,6 +84,7 @@ namespace Expresso.Ast
         void VisitTuplePattern(TuplePattern tuplePattern);
         void VisitExpressionPattern(ExpressionPattern exprPattern);
         void VisitIgnoringRestPattern(IgnoringRestPattern restPattern);
+        void VisitKeyValuePattern(KeyValuePattern keyValuePattern);
 
         void VisitNullNode(AstNode nullNode);
         void VisitNewLine(NewLineNode newlineNode);
@@ -168,6 +169,7 @@ namespace Expresso.Ast
         TResult VisitTuplePattern(TuplePattern tuplePattern);
         TResult VisitExpressionPattern(ExpressionPattern exprPattern);
         TResult VisitIgnoringRestPattern(IgnoringRestPattern restPattern);
+        TResult VisitKeyValuePattern(KeyValuePattern keyValuePattern);
 
         TResult VisitNullNode(AstNode nullNode);
         TResult VisitNewLine(NewLineNode newlineNode);
@@ -262,6 +264,7 @@ namespace Expresso.Ast
         TResult VisitTuplePattern(TuplePattern tuplePattern, TData data);
         TResult VisitExpressionPattern(ExpressionPattern exprPattern, TData data);
         TResult VisitIgnoringRestPattern(IgnoringRestPattern restPattern, TData data);
+        TResult VisitKeyValuePattern(KeyValuePattern keyValuePattern, TData data);
 
         TResult VisitNullNode(AstNode nullNode, TData data);
         TResult VisitNewLine(NewLineNode newlineNode, TData data);
