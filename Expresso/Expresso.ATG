@@ -785,23 +785,24 @@ Stmt<out Statement stmt>			(. stmt = null; .)
   SimpleStmt<out stmt>
   | CompoundStmt<out stmt> .
 /*------------------------------------------------------------------------*/
-SimpleStmt<out Statement stmt>		(. stmt = null; BlockStatement block = null; .)
+/* We can't extract ;s into this construct because , splits either match arms and lvalues.*/
+SimpleStmt<out Statement stmt>		(. var start_loc = NextLocation; stmt = null; .)
 =
-  Block<out block>                  (. stmt = block; .)
-  | ExprStmt<out stmt>
+  ( ExprStmt<out stmt>
   | VarDeclStmt<out stmt>
   | ReturnStmt<out stmt>
   | BreakStmt<out stmt>
   | ContinueStmt<out stmt>
   | YieldStmt<out stmt>
   | ThrowStmt<out stmt>
-  | EmptyStmt<out stmt>.
+  | EmptyStmt<out stmt>
+  ).
 /*------------------------------------------------------------------------*/
 ReturnStmt<out Statement stmt>		(. SequenceExpression items = null; var start_loc = NextLocation; .)
 =
   "return"
   [RValueList<out items>]
-  SYNC ';'							(. stmt = Statement.MakeReturnStmt(items, start_loc); .).
+  SYNC ';'	                		(. stmt = Statement.MakeReturnStmt(items, start_loc); .).
 /*------------------------------------------------------------------------*/
 BreakStmt<out Statement stmt>		(. int count = 1; var start_loc = NextLocation; .)
 =
@@ -809,7 +810,7 @@ BreakStmt<out Statement stmt>		(. int count = 1; var start_loc = NextLocation; .
   [ "upto"
     integer							(. count = Convert.ToInt32(t.val); .)
   ]
-  SYNC ';' 							(. stmt = Statement.MakeBreakStmt(
+  SYNC ';'                          (. stmt = Statement.MakeBreakStmt(
                                            Expression.MakeConstant("int", count, start_loc), start_loc, CurrentLocation
                                        );
                                     .).
@@ -820,7 +821,7 @@ ContinueStmt<out Statement stmt>	(. int count = 1; var start_loc = NextLocation;
   [ "upto"
     integer							(. count = Convert.ToInt32(t.val); .)
   ]
-  SYNC ';' 							(. stmt = Statement.MakeContinueStmt(
+  SYNC ';'     						(. stmt = Statement.MakeContinueStmt(
                                            Expression.MakeConstant("int", count, start_loc), start_loc, CurrentLocation
                                        );
                                     .).
@@ -829,14 +830,14 @@ YieldStmt<out Statement stmt>		(. Expression expr; var start_loc = NextLocation;
 =
   "yield"
   CondExpr<out expr>
-  SYNC ';'							(. stmt = Statement.MakeYieldStmt(expr, start_loc, CurrentLocation); .).
+  SYNC ';'          				(. stmt = Statement.MakeYieldStmt(expr, start_loc, CurrentLocation); .).
 /*------------------------------------------------------------------------*/
-ThrowStmt<out Statement stmt>       (. Expression obj; var start_loc = NextLocation; AstType type_path; .)
+ThrowStmt<out Statement stmt>        (. Expression obj; var start_loc = NextLocation; AstType type_path; .)
 =
   "throw"
   Type<out type_path>
-  ObjectCreation<type_path, out obj>
-  SYNC ';'                          (. stmt = Statement.MakeThrowStmt((ObjectCreationExpression)obj, start_loc); .).
+  ObjectCreation<type_path, out obj> 
+  SYNC ';'                           (. stmt = Statement.MakeThrowStmt((ObjectCreationExpression)obj, start_loc); .).
 /*------------------------------------------------------------------------*/
 EmptyStmt<out Statement stmt>       (. var start_loc = NextLocation; .)
 =
@@ -877,7 +878,7 @@ ExprStmt<out Statement stmt>			(.  SequenceExpression lhs = null, seq = null;
       }								    (. stmt = Statement.MakeExprStmt(assign, start_loc, CurrentLocation); .)
     )
   ]
-  SYNC ';' 								(.  if(stmt == null)
+  SYNC ';'      						(.  if(stmt == null)
   												stmt = Statement.MakeExprStmt(lhs, start_loc, CurrentLocation);
   										.).
 /*------------------------------------------------------------------------*/
@@ -887,28 +888,30 @@ LValueList<out SequenceExpression lhs>   (. var lvalues = new List<Expression>()
   { WEAK ','
     LhsPrimary<out tmp>                  (. lvalues.Add(tmp); .)
   }                                      (. lhs = Expression.MakeSequenceExpression(lvalues); .).
+
 /*------------------------------------------------------------------------*/
-Block<out BlockStatement block>  (. List<Statement> stmts = new List<Statement>();
-                   					Statement stmt; var start_loc = NextLocation;
-                   					Symbols.AddScope();
-                				 .)
+CompoundStmt<out Statement stmt>	(. stmt = null; BlockStatement block = null; .)
 =
-  lcurly                    	 (. GoDownScope();
-                               		Symbols.Name = "block`" + ScopeId++;
-                            	 .)
-  Stmt<out stmt>				 (. stmts.Add(stmt); .)
-  { Stmt<out stmt>				 (. stmts.Add(stmt); .)
-  }
-  SYNC rcurly 					 (. block = Statement.MakeBlock(stmts, start_loc, CurrentLocation);
-                               	 	GoUpScope();
-                            	 .).
-/*------------------------------------------------------------------------*/
-CompoundStmt<out Statement stmt>	(. stmt = null; .)
-=
-    IfStmt<out stmt>					
+    Block<out block>                (. stmt = block; .)
+  | IfStmt<out stmt>					
   | WhileStmt<out stmt>
   | ForStmt<out stmt>
   | MatchStmt<out stmt>.
+/*------------------------------------------------------------------------*/
+Block<out BlockStatement block>  (. List<Statement> stmts = new List<Statement>();
+                                    Statement stmt; var start_loc = NextLocation;
+                                    Symbols.AddScope();
+                                 .)
+=
+  lcurly                         (. GoDownScope();
+                                    Symbols.Name = "block`" + ScopeId++;
+                                 .)
+  Stmt<out stmt>                 (. stmts.Add(stmt); .)
+  { Stmt<out stmt>               (. stmts.Add(stmt); .)
+  }
+  SYNC rcurly                    (. block = Statement.MakeBlock(stmts, start_loc, CurrentLocation);
+                                    GoUpScope();
+                                 .).
 /*------------------------------------------------------------------------*/
 IfStmt<out Statement stmt>			(. PatternConstruct pattern = null; BlockStatement true_block, false_block = null;
                                        var start_loc = NextLocation;
@@ -991,18 +994,30 @@ MatchPatternList<. out List<MatchPatternClause> clauses .>
                                              .)
 =
   PatternList<out pattern_list, out guard>
-  Stmt<out inner>					         (. clauses.Add(Statement.MakeMatchClause(pattern_list, guard, inner));
+  MatchArmStmt<out inner>		             (. clauses.Add(Statement.MakeMatchClause(pattern_list, guard, inner));
                                                 GoUpScope();
                                              .)
-  { ','                                      (. Symbols.AddScope();
+  { WEAK ','                                 (. Symbols.AddScope();
                                                 GoDownScope();
                                                 Symbols.Name = "arm`" + ScopeId++;
                                              .)
     PatternList<out pattern_list, out guard> 
-    Stmt<out inner>					         (. clauses.Add(Statement.MakeMatchClause(pattern_list, guard, inner));
+    MatchArmStmt<out inner>			         (. clauses.Add(Statement.MakeMatchClause(pattern_list, guard, inner));
                                                 GoUpScope();
                                              .)
   }.
+/*------------------------------------------------------------------------*/
+MatchArmStmt<out Statement stmt>        (. stmt = null; BlockStatement block = null; .)
+=
+  ( Block<out block>                    (. stmt = block; .)
+  | ExprStmt<out stmt>
+  | VarDeclStmt<out stmt>
+  | ReturnStmt<out stmt>
+  | BreakStmt<out stmt>
+  | ContinueStmt<out stmt>
+  | YieldStmt<out stmt>
+  | ThrowStmt<out stmt>
+  ).
 /*------------------------------------------------------------------------*/
 PatternList<. out List<PatternConstruct> patterns, out Expression guard .>
                         (. patterns = new List<PatternConstruct>(); PatternConstruct tmp; guard = null; .)
@@ -1034,7 +1049,7 @@ VarDeclStmt<out Statement stmt>        (. Expression rhs = null; var start_loc =
   									      rhs = null;
   								       .)
   }
-  SYNC ';'							   (. stmt = Statement.MakeVarDecl(idents, exprs, modifiers, start_loc, CurrentLocation); .).
+  SYNC ';'     						   (. stmt = Statement.MakeVarDecl(idents, exprs, modifiers, start_loc, CurrentLocation); .).
 /*------------------------------------------------------------------------*/
 VarDef<out Identifier ident, out Expression option> (. option = null; .)
 =

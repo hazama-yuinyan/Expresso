@@ -10,24 +10,24 @@ def main()
 {
 	let tmp = "akarichan";
 	match tmp {
-		"akarichan" => print("kawakawa");,
-		"chinatsu" if true => print("ankokuthunder!");,
-        "kyoko" => print("gaichiban!");,
-    	"yui" => print("doyaxtu!");
+		"akarichan" => println("kawakawa");,
+		"chinatsu" if true => println("ankokuthunder!");,
+        "kyoko" => println("gaichiban!");,
+    	"yui" => println("doyaxtu!");
 	}
 
     let tmp2 = 1;
     match tmp2 {
-        0 => print("0");,
-        1 | 2 => print("1 or 2");,
-        i @ 3...10 => printFormat("{0} is in the range of 3 to 10", i);,
-        _ => print("otherwise");
+        0 => println("0");,
+        1 | 2 => println("1 or 2");,
+        i @ 3...10 => printFormat("{0} is in the range of 3 to 10\n", i);,
+        _ => println("otherwise");
     }
 
     let tmp3 = TestClass{x: 1, y: 2, z: 3};
     match tmp3 {
-        TestClass{x, ..} => printFormat("x is {0}", x);,
-        TestClass{x, y, _} => printFormat("x is {0} and y is {1}", x, y);
+        TestClass{x, ..} => printFormat("x is {0}\n", x);,
+        TestClass{x, y, _} => printFormat("x is {0} and y is {1}\n", x, y);
     }
 
     /*let tmp4 = [1, 2, 3, 4, ...];
@@ -44,7 +44,7 @@ def main()
 
     let tmp6 = (1, 2);
     match tmp6 {
-        (x, ..) => printFormat("x is {0}", x);,
-        (x, y) => printFormat("x is {0} and y is {1}", x, y);
+        (x, ..) => printFormat("x is {0}\n", x);,
+        (x, y) => printFormat("x is {0} and y is {1}\n", x, y);
     }
 }

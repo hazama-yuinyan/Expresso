@@ -2856,9 +2856,9 @@ namespace Expresso.Test
                                 Statement.MakeExprStmt(
                                     Helpers.MakeCallExpression(
                                         Helpers.MakeIdentifierPath(
-                                            "print",
+                                            "println",
                                             AstType.MakeFunctionType(
-                                                "print",
+                                                "println",
                                                 Helpers.MakeVoidType(),
                                                 TextLocation.Empty,
                                                 TextLocation.Empty,
@@ -2880,9 +2880,9 @@ namespace Expresso.Test
                                 Statement.MakeExprStmt(
                                     Helpers.MakeCallExpression(
                                         Helpers.MakeIdentifierPath(
-                                            "print",
+                                            "println",
                                             AstType.MakeFunctionType(
-                                                "print",
+                                                "println",
                                                 Helpers.MakeVoidType(),
                                                 TextLocation.Empty,
                                                 TextLocation.Empty,
@@ -2904,9 +2904,9 @@ namespace Expresso.Test
                                 Statement.MakeExprStmt(
                                     Helpers.MakeCallExpression(
                                         Helpers.MakeIdentifierPath(
-                                            "print",
+                                            "println",
                                             AstType.MakeFunctionType(
-                                                "print",
+                                                "println",
                                                 Helpers.MakeVoidType(),
                                                 TextLocation.Empty,
                                                 TextLocation.Empty,
@@ -2928,9 +2928,9 @@ namespace Expresso.Test
                                 Statement.MakeExprStmt(
                                     Helpers.MakeCallExpression(
                                         Helpers.MakeIdentifierPath(
-                                            "print",
+                                            "println",
                                             AstType.MakeFunctionType(
-                                                "print",
+                                                "println",
                                                 Helpers.MakeVoidType(),
                                                 TextLocation.Empty,
                                                 TextLocation.Empty,
@@ -2965,9 +2965,9 @@ namespace Expresso.Test
                                     Expression.MakeSequenceExpression(
                                         Helpers.MakeCallExpression(
                                             Helpers.MakeIdentifierPath(
-                                                "print",
+                                                "println",
                                                 AstType.MakeFunctionType(
-                                                    "print",
+                                                    "println",
                                                     Helpers.MakeVoidType(),
                                                     TextLocation.Empty,
                                                     TextLocation.Empty,
@@ -2988,9 +2988,9 @@ namespace Expresso.Test
                                     Expression.MakeSequenceExpression(
                                         Helpers.MakeCallExpression(
                                             Helpers.MakeIdentifierPath(
-                                                "print",
+                                                "println",
                                                 AstType.MakeFunctionType(
-                                                    "print",
+                                                    "println",
                                                     Helpers.MakeVoidType(),
                                                     TextLocation.Empty,
                                                     TextLocation.Empty,
@@ -3023,13 +3023,13 @@ namespace Expresso.Test
                                                     Helpers.MakePrimitiveType("string")
                                                 )
                                             ),
-                                            Expression.MakeConstant("string", "{0} is in the range of 3 to 10"),
-                                            Helpers.MakeIdentifierPath("x", Helpers.MakePrimitiveType("int"))
+                                            Expression.MakeConstant("string", "{0} is in the range of 3 to 10\n"),
+                                            Helpers.MakeIdentifierPath("i", Helpers.MakePrimitiveType("int"))
                                         )
                                     )
                                 ),
                                 PatternConstruct.MakeIdentifierPattern(
-                                    "x",
+                                    "i",
                                     Helpers.MakePrimitiveType("int"),
                                     PatternConstruct.MakeExpressionPattern(
                                         Expression.MakeIntSeq(
@@ -3047,9 +3047,9 @@ namespace Expresso.Test
                                     Expression.MakeSequenceExpression(
                                         Helpers.MakeCallExpression(
                                             Helpers.MakeIdentifierPath(
-                                                "print",
+                                                "println",
                                                 AstType.MakeFunctionType(
-                                                    "print",
+                                                    "println",
                                                     Helpers.MakeVoidType(),
                                                     TextLocation.Empty,
                                                     TextLocation.Empty,
@@ -3101,7 +3101,7 @@ namespace Expresso.Test
                                                     Helpers.MakePrimitiveType("string")
                                                 )
                                             ),
-                                            Expression.MakeConstant("string", "x is {0}"),
+                                            Expression.MakeConstant("string", "x is {0}\n"),
                                             Helpers.MakeIdentifierPath(
                                                 "x",
                                                 Helpers.MakePrimitiveType("int")
@@ -3134,7 +3134,7 @@ namespace Expresso.Test
                                                     Helpers.MakePrimitiveType("string")
                                                 )
                                             ),
-                                            Expression.MakeConstant("string", "x is {0} and y is {1}"),
+                                            Expression.MakeConstant("string", "x is {0} and y is {1}\n"),
                                             Helpers.MakeIdentifierPath(
                                                 "x",
                                                 Helpers.MakePrimitiveType("int")
@@ -3399,7 +3399,7 @@ namespace Expresso.Test
                                                     Helpers.MakePrimitiveType("string")
                                                 )
                                             ),
-                                            Expression.MakeConstant("string", "x is {0}"),
+                                            Expression.MakeConstant("string", "x is {0}\n"),
                                             Helpers.MakeIdentifierPath(
                                                 "x",
                                                 Helpers.MakePrimitiveType("int")
@@ -3431,7 +3431,7 @@ namespace Expresso.Test
                                                     Helpers.MakePrimitiveType("string")
                                                 )
                                             ),
-                                            Expression.MakeConstant("string", "x is {0} and y is {1}"),
+                                            Expression.MakeConstant("string", "x is {0} and y is {1}\n"),
                                             Helpers.MakeIdentifierPath(
                                                 "x",
                                                 Helpers.MakePrimitiveType("int")
