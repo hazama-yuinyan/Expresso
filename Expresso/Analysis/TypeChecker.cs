@@ -513,6 +513,11 @@ namespace Expresso.Ast.Analysis
             return true_type;
         }
 
+        public AstType VisitFinallyClause(FinallyClause finallyClause)
+        {
+            return VisitBlock(finallyClause.Body);
+        }
+
         public AstType VisitKeyValueLikeExpression(KeyValueLikeExpression keyValue)
         {
             return null;

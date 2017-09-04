@@ -358,6 +358,11 @@ namespace Expresso.Ast.Analysis
         {
         }
 
+        public void VisitFinallyClause(FinallyClause finallyClause)
+        {
+            
+        }
+
         public void VisitKeyValueLikeExpression(KeyValueLikeExpression keyValue)
         {
             throw new NotImplementedException();

@@ -319,6 +319,11 @@ namespace Expresso.Ast.Analysis
             condExpr.FalseExpression.AcceptWalker(this);
         }
 
+        public void VisitFinallyClause(FinallyClause finallyClause)
+        {
+            VisitBlock(finallyClause.Body);
+        }
+
         public void VisitLiteralExpression(LiteralExpression literal)
         {
             //no op

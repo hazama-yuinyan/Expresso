@@ -785,7 +785,7 @@ Stmt<out Statement stmt>			(. stmt = null; .)
   SimpleStmt<out stmt>
   | CompoundStmt<out stmt> .
 /*------------------------------------------------------------------------*/
-/* We can't extract ;s into this construct because , splits either match arms and lvalues.*/
+/* We can't extract ';'s into this construct because ',' splits either match arms and lvalues.*/
 SimpleStmt<out Statement stmt>		(. var start_loc = NextLocation; stmt = null; .)
 =
   ( ExprStmt<out stmt>
@@ -896,7 +896,8 @@ CompoundStmt<out Statement stmt>	(. stmt = null; BlockStatement block = null; .)
   | IfStmt<out stmt>					
   | WhileStmt<out stmt>
   | ForStmt<out stmt>
-  | MatchStmt<out stmt>.
+  | MatchStmt<out stmt>
+  | TryStmt<out stmt>.
 /*------------------------------------------------------------------------*/
 Block<out BlockStatement block>  (. List<Statement> stmts = new List<Statement>();
                                     Statement stmt; var start_loc = NextLocation;
@@ -1030,6 +1031,39 @@ PatternList<. out List<PatternConstruct> patterns, out Expression guard .>
     CondExpr<out guard>
   ]
   "=>".
+/*------------------------------------------------------------------------*/
+TryStmt<out Statement stmt>            (. var start_loc = NextLocation; BlockStatement body; var catches = new List<CatchClause>(); FinallyClause @finally = null; .)
+=
+  "try"
+  Block<out body>
+  [CatchClauses<out catches>]
+  [FinallyClause<out @finally>]        (. if(catches.Count == 0 && @finally == null){
+                                              SemErr("A try statement must includes either a catch clause or the finally clause");
+                                          }
+                                          stmt = Statement.MakeTryStmt(body, catches, @finally, start_loc);
+                                       .).
+/*------------------------------------------------------------------------*/
+CatchClauses<. out List<CatchClause> catches .> (. catches = new List<CatchClause>(); CatchClause @catch; .)
+=
+  CatchClause<out @catch>                       (. catches.Add(@catch); .)
+  { CatchClause<out @catch>                     (. catches.Add(@catch); .)
+  }.
+/*------------------------------------------------------------------------*/
+CatchClause<out CatchClause @catch>     (. var start_loc = NextLocation; PatternConstruct ptn; BlockStatement body; .)
+=
+  "catch"                               (. Symbols.AddScope();
+                                           GoDownScope();
+                                           Symbols.Name = "catch`" + ScopeId++;
+                                        .)
+  Pattern<out ptn>
+  Block<out body>                       (. @catch = Statement.MakeCatchClause(ptn, body, start_loc);
+                                           GoUpScope();
+                                        .).
+/*------------------------------------------------------------------------*/
+FinallyClause<out FinallyClause @finally>   (. var start_loc = NextLocation; BlockStatement body; .)
+=
+  "finally"
+  Block<out body>                           (. @finally = Statement.MakeFinallyClause(body, start_loc); .).
 /*------------------------------------------------------------------------*/
 VarDeclStmt<out Statement stmt>        (. Expression rhs = null; var start_loc = NextLocation;
 								          Identifier ident; var modifiers = ExpressoModifiers.None;

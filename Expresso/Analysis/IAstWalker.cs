@@ -38,6 +38,7 @@ namespace Expresso.Ast
         void VisitComprehensionForClause(ComprehensionForClause compFor);
         void VisitComprehensionIfClause(ComprehensionIfClause compIf);
         void VisitConditionalExpression(ConditionalExpression condExpr);
+        void VisitFinallyClause(FinallyClause finallyClause);
         void VisitKeyValueLikeExpression(KeyValueLikeExpression keyValue);
         void VisitLiteralExpression(LiteralExpression literal);
         void VisitIdentifier(Identifier ident);
@@ -123,6 +124,7 @@ namespace Expresso.Ast
         TResult VisitComprehensionForClause(ComprehensionForClause compFor);
         TResult VisitComprehensionIfClause(ComprehensionIfClause compIf);
         TResult VisitConditionalExpression(ConditionalExpression condExpr);
+        TResult VisitFinallyClause(FinallyClause finallyClause);
         TResult VisitKeyValueLikeExpression(KeyValueLikeExpression keyValue);
         TResult VisitLiteralExpression(LiteralExpression literal);
         TResult VisitIdentifier(Identifier ident);
@@ -218,6 +220,7 @@ namespace Expresso.Ast
         TResult VisitComprehensionForClause(ComprehensionForClause compFor, TData data);
         TResult VisitComprehensionIfClause(ComprehensionIfClause compIf, TData data);
         TResult VisitConditionalExpression(ConditionalExpression condExpr, TData data);
+        TResult VisitFinallyClause(FinallyClause finallyClause, TData data);
         TResult VisitKeyValueLikeExpression(KeyValueLikeExpression keyValue, TData data);
         TResult VisitLiteralExpression(LiteralExpression literal, TData data);
         TResult VisitIdentifier(Identifier ident, TData data);

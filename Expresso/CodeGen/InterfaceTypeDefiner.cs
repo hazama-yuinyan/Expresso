@@ -154,6 +154,11 @@ namespace Expresso.CodeGen
                 throw new NotImplementedException();
             }
 
+            public void VisitFinallyClause(FinallyClause finallyClause)
+            {
+                throw new NotImplementedException();
+            }
+
             public void VisitKeyValueLikeExpression(KeyValueLikeExpression keyValue)
             {
                 throw new NotImplementedException();

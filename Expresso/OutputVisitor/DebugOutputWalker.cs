@@ -292,6 +292,7 @@ namespace Expresso.Ast
             writer.Write("try");
             VisitBlock(tryStmt.EnclosingBlock);
             tryStmt.CatchClauses.AcceptWalker(this);
+            tryStmt.FinallyClause.AcceptWalker(this);
         }
 
         public void VisitMatchPatternClause(MatchPatternClause clause)
@@ -406,6 +407,12 @@ namespace Expresso.Ast
             condExpr.TrueExpression.AcceptWalker(this);
             writer.Write(" : ");
             condExpr.FalseExpression.AcceptWalker(this);
+        }
+
+        public void VisitFinallyClause(FinallyClause finallyClause)
+        {
+            writer.Write("finally");
+            VisitBlock(finallyClause.Body);
         }
 
         public void VisitKeyValueLikeExpression(KeyValueLikeExpression keyValue)

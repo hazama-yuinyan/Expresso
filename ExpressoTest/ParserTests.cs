@@ -3002,5 +3002,202 @@ namespace Expresso.Test
             Assert.IsNotNull(ast);
             Helpers.AstStructuralEqual(ast, expected);
         }
+
+        [Test]
+        public void TryStatements()
+        {
+            var parser = new Parser(new Scanner("../../sources/for_unit_tests/try_statements.exs"));
+            parser.Parse();
+
+            var ast = parser.TopmostAst;
+
+            var expected = AstNode.MakeModuleDef("main", new List<EntityDeclaration>{
+                EntityDeclaration.MakeClassDecl(
+                    "ExsException",
+                    Enumerable.Empty<AstType>(),
+                    Helpers.MakeSeq<EntityDeclaration>(
+                        EntityDeclaration.MakeField(
+                            Helpers.MakeSeq(
+                                AstNode.MakeIdentifier("Message", AstType.MakePrimitiveType("string"))
+                            ),
+                            Helpers.MakeSeq<Expression>(
+                                Expression.Null
+                            ),
+                            Modifiers.Public | Modifiers.Immutable
+                        )
+                    ),
+                    Modifiers.None
+                ),
+                EntityDeclaration.MakeFunc(
+                    "throwException",
+                    Enumerable.Empty<ParameterDeclaration>(),
+                    Statement.MakeBlock(
+                        Statement.MakeThrowStmt(
+                            Expression.MakeObjectCreation(
+                                Helpers.MakeGenericType(
+                                    "ExsException"
+                                ),
+                                Helpers.MakeSeq(
+                                    AstNode.MakeIdentifier("Message")
+                                ),
+                                Helpers.MakeSeq(
+                                    Expression.MakeConstant("string", "An unknown error has occurred")
+                                )
+                            )
+                        )
+                    ),
+                    Helpers.MakePlaceholderType(),
+                    Modifiers.None
+                ),
+                EntityDeclaration.MakeFunc(
+                    "main",
+                    Enumerable.Empty<ParameterDeclaration>(),
+                    Statement.MakeBlock(
+                        Statement.MakeTryStmt(
+                            Statement.MakeBlock(
+                                Statement.MakeExprStmt(
+                                    Helpers.MakeCallExpression(
+                                        Helpers.MakeIdentifierPath("throwException")
+                                    )
+                                )
+                            ),
+                            null,
+                            TextLocation.Empty,
+                            Statement.MakeCatchClause(
+                                PatternConstruct.MakeDestructuringPattern(
+                                    Helpers.MakeGenericType("ExsException"),
+                                    PatternConstruct.MakeIdentifierPattern(
+                                        Helpers.MakeSomeIdent("Message"),
+                                        null
+                                    )
+                                ),
+                                Statement.MakeBlock(
+                                    Statement.MakeExprStmt(
+                                        Helpers.MakeCallExpression(
+                                            Helpers.MakeIdentifierPath("println"),
+                                            Helpers.MakeIdentifierPath("Message")
+                                        )
+                                    )
+                                )
+                            )
+                        ),
+                        Statement.MakeVarDecl(
+                            Helpers.MakeSeq(
+                                Helpers.MakeSomeIdent("tmp")
+                            ),
+                            Helpers.MakeSeq(
+                                Expression.MakeConstant("int", 1)
+                            ),
+                            Modifiers.None
+                        ),
+                        Statement.MakeTryStmt(
+                            Statement.MakeBlock(
+                                Statement.MakeExprStmt(
+                                    Helpers.MakeCallExpression(
+                                        Helpers.MakeIdentifierPath("printFormat"),
+                                        Expression.MakeConstant("string", "tmp is {0} at first\n"),
+                                        Helpers.MakeIdentifierPath("tmp")
+                                    )
+                                ),
+                                Statement.MakeExprStmt(
+                                    Helpers.MakeCallExpression(
+                                        Helpers.MakeIdentifierPath("throwException")
+                                    )
+                                )
+                            ),
+                            null,
+                            Statement.MakeFinallyClause(
+                                Statement.MakeBlock(
+                                    Statement.MakeExprStmt(
+                                        Expression.MakeSingleAssignment(
+                                            Helpers.MakeIdentifierPath("tmp"), 
+                                            Expression.MakeConstant("int", 2)
+                                        )
+                                    )
+                                )
+                            )
+                        ),
+                        Statement.MakeExprStmt(
+                            Helpers.MakeCallExpression(
+                                Helpers.MakeIdentifierPath("printFormat"),
+                                Expression.MakeConstant("string", "tmp is {0} at last\n"),
+                                Helpers.MakeIdentifierPath("tmp")
+                            )
+                        ),
+                        Statement.MakeVarDecl(
+                            Helpers.MakeSeq(
+                                Helpers.MakeSomeIdent("tmp2")
+                            ),
+                            Helpers.MakeSeq(
+                                Expression.MakeConstant("int", 1)
+                            ),
+                            Modifiers.None
+                        ),
+                        Statement.MakeTryStmt(
+                            Statement.MakeBlock(
+                                Statement.MakeExprStmt(
+                                    Helpers.MakeCallExpression(
+                                        Helpers.MakeIdentifierPath("printFormat"),
+                                        Expression.MakeConstant("string", "tmp2 is {0} at first\n"),
+                                        Helpers.MakeIdentifierPath("tmp2")
+                                    )
+                                ),
+                                Statement.MakeExprStmt(
+                                    Helpers.MakeCallExpression(
+                                        Helpers.MakeIdentifierPath("throwException")
+                                    )
+                                )
+                            ),
+                            Statement.MakeFinallyClause(
+                                Statement.MakeBlock(
+                                    Statement.MakeExprStmt(
+                                        Expression.MakeSingleAssignment(
+                                            Helpers.MakeIdentifierPath("tmp2"), 
+                                            Expression.MakeConstant("int", 3)
+                                        )
+                                    )
+                                )
+                            ),
+                            TextLocation.Empty,
+                            Statement.MakeCatchClause(
+                                PatternConstruct.MakeDestructuringPattern(
+                                    Helpers.MakeGenericType("ExsException"),
+                                    PatternConstruct.MakeIdentifierPattern(
+                                        Helpers.MakeSomeIdent("Message"),
+                                        null
+                                    )
+                                ),
+                                Statement.MakeBlock(
+                                    Statement.MakeExprStmt(
+                                        Expression.MakeSingleAssignment(
+                                            Helpers.MakeIdentifierPath("tmp2"),
+                                            Expression.MakeConstant("int", 2)
+                                        )
+                                    ),
+                                    Statement.MakeExprStmt(
+                                        Helpers.MakeCallExpression(
+                                            Helpers.MakeIdentifierPath("println"),
+                                            Helpers.MakeIdentifierPath("Message")
+                                        )
+                                    )
+                                )
+                            )
+                        ),
+                        Statement.MakeExprStmt(
+                            Helpers.MakeCallExpression(
+                                Helpers.MakeIdentifierPath("printFormat"),
+                                Expression.MakeConstant("string", "tmp2 is {0} at last\n"),
+                                Helpers.MakeIdentifierPath("tmp2")
+                            )
+                        )
+                    ),
+                    Helpers.MakePlaceholderType(),
+                    Modifiers.None
+                )
+            });
+
+            Assert.IsNotNull(ast);
+            Helpers.AstStructuralEqual(ast, expected);
+        }
 	}
 }

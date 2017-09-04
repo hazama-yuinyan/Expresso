@@ -274,6 +274,11 @@ namespace Expresso.Ast.Analysis
                 return checker.FigureOutCommonType(condExpr.TrueExpression.AcceptWalker(this), condExpr.FalseExpression.AcceptWalker(this));
             }
 
+            public AstType VisitFinallyClause(FinallyClause finallyClause)
+            {
+                return VisitBlock(finallyClause.Body);
+            }
+
             public AstType VisitKeyValueLikeExpression(KeyValueLikeExpression keyValue)
             {
                 throw new InvalidOperationException("Can not work on that node!");

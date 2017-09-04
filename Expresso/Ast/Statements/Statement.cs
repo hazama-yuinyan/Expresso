@@ -234,6 +234,26 @@ namespace Expresso.Ast
         {
             return new ThrowStatement(objExpr, loc);
         }
+
+        public static TryStatement MakeTryStmt(BlockStatement block, IEnumerable<CatchClause> catches, FinallyClause @finally, TextLocation loc = default(TextLocation))
+        {
+            return new TryStatement(block, catches, @finally, loc);
+        }
+
+        public static TryStatement MakeTryStmt(BlockStatement body, FinallyClause @finally, TextLocation loc, params CatchClause[] catches)
+        {
+            return new TryStatement(body, catches, @finally, loc);
+        }
+
+        public static CatchClause MakeCatchClause(PatternConstruct pattern, BlockStatement block, TextLocation loc = default(TextLocation))
+        {
+            return new CatchClause(pattern, block, loc);
+        }
+
+        public static FinallyClause MakeFinallyClause(BlockStatement body, TextLocation loc = default(TextLocation))
+        {
+            return new FinallyClause(body, loc);
+        }
         #endregion
     }
 }

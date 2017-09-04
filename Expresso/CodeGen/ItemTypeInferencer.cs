@@ -136,6 +136,11 @@ namespace Expresso.CodeGen
                 throw new NotImplementedException("Can not work on that node");
             }
 
+            public AstType VisitFinallyClause(FinallyClause finallyClause)
+            {
+                throw new NotImplementedException("Can not work on that node");
+            }
+
             public AstType VisitForStatement(ForStatement forStmt)
             {
                 throw new NotImplementedException("Can not work on that node");

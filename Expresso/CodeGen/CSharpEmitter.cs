@@ -764,6 +764,12 @@ namespace Expresso.CodeGen
             return CSharpExpr.Condition(cond, true_result, false_result);
         }
 
+        public CSharpExpr VisitFinallyClause(FinallyClause finallyClause, CSharpEmitterContext context)
+        {
+            var body = VisitBlock(finallyClause.Body, context);
+            return body;
+        }
+
         public CSharpExpr VisitKeyValueLikeExpression(KeyValueLikeExpression keyValue, CSharpEmitterContext context)
         {
             var ident = keyValue.KeyExpression as PathExpression;

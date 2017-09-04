@@ -157,6 +157,11 @@ namespace Expresso.Ast.Analysis
 	            throw new InvalidOperationException("Can not work on that node");
 	        }
 
+            public void VisitFinallyClause(FinallyClause finallyClause)
+            {
+                VisitBlock(finallyClause.Body);
+            }
+
 	        public void VisitForStatement(ForStatement forStmt)
 	        {
                 int tmp_counter = checker.scope_counter;

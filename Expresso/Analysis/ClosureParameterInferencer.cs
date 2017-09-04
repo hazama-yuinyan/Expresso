@@ -134,6 +134,11 @@ namespace Expresso.Ast.Analysis
             throw new InvalidOperationException("Can not work on that node");
         }
 
+        public void VisitFinallyClause(FinallyClause finallyClause)
+        {
+            throw new InvalidOperationException("Can not work on that node");
+        }
+
         public void VisitForStatement(ForStatement forStmt)
         {
             throw new InvalidOperationException("Can not work on that node");
