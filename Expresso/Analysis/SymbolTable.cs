@@ -15,8 +15,8 @@ namespace Expresso.Ast.Analysis
     /// </summary>
     public class SymbolTable : ISerializable, ICloneable<SymbolTable>
     {
-        static Dictionary<string, Identifier> NativeMapping;
-        static string TypeTablePrefix = "type_";
+        static readonly Dictionary<string, Identifier> NativeMapping;
+        static readonly string TypeTablePrefix = "type_";
         Dictionary<string, Identifier> type_table, table;
 
         /// <summary>

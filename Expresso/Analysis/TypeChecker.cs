@@ -228,6 +228,7 @@ namespace Expresso.Ast.Analysis
             foreach(var clause in tryStmt.CatchClauses)
                 clause.AcceptWalker(this);
 
+            VisitFinallyClause(tryStmt.FinallyClause);
             return null;
         }
 
@@ -419,7 +420,16 @@ namespace Expresso.Ast.Analysis
 
         public AstType VisitCatchClause(CatchClause catchClause)
         {
+            int tmp_counter = scope_counter;
+            DescendScope();
+            scope_counter = 0;
+
+            catchClause.Pattern.AcceptWalker(this);
             VisitBlock(catchClause.Body);
+
+            AscendScope();
+            scope_counter = tmp_counter;
+
             return null;
         }
 

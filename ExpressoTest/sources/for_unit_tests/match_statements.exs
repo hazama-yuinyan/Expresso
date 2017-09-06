@@ -1,3 +1,6 @@
+/**
+ * Test program for match statements in Expresso.
+ */
 module main;
 
 

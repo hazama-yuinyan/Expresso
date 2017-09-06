@@ -218,6 +218,7 @@ namespace Expresso.Ast.Analysis
         {
             tryStmt.EnclosingBlock.AcceptWalker(this);
             tryStmt.CatchClauses.AcceptWalker(this);
+            VisitFinallyClause(tryStmt.FinallyClause);
         }
 
         public void VisitWhileStatement(WhileStatement whileStmt)
