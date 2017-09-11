@@ -158,7 +158,7 @@ namespace Expresso.Ast.Analysis
 
             forStmt.Left.AcceptWalker(this);
             forStmt.Target.AcceptWalker(this);
-            forStmt.Body.AcceptWalker(this);
+            VisitBlock(forStmt.Body);
 
             AscendScope();
             scope_counter = tmp_counter + 1;
@@ -171,7 +171,7 @@ namespace Expresso.Ast.Analysis
             scope_counter = 0;
 
             valueBindingForStmt.Variables.AcceptWalker(this);
-            valueBindingForStmt.Body.AcceptWalker(this);
+            VisitBlock(valueBindingForStmt.Body);
 
             AscendScope();
             scope_counter = tmp_counter + 1;
@@ -184,7 +184,9 @@ namespace Expresso.Ast.Analysis
             scope_counter = 0;
 
             ifStmt.Condition.AcceptWalker(this);
-            ifStmt.TrueBlock.AcceptWalker(this);
+            VisitBlock(ifStmt.TrueBlock);
+            // We can't rewrite this to VisitBlock(ifStmt.FalseBlock);
+            // because doing so can continue execution even if the node is null
             ifStmt.FalseBlock.AcceptWalker(this);
 
             AscendScope();
@@ -216,9 +218,10 @@ namespace Expresso.Ast.Analysis
 
         public void VisitTryStatement(TryStatement tryStmt)
         {
-            tryStmt.EnclosingBlock.AcceptWalker(this);
+            VisitBlock(tryStmt.EnclosingBlock);
             tryStmt.CatchClauses.AcceptWalker(this);
-            VisitFinallyClause(tryStmt.FinallyClause);
+            // Directly calling VisitFinally continues execution even if the node is null.
+            tryStmt.FinallyClause.AcceptWalker(this);
         }
 
         public void VisitWhileStatement(WhileStatement whileStmt)
@@ -228,7 +231,7 @@ namespace Expresso.Ast.Analysis
             scope_counter = 0;
 
             whileStmt.Condition.AcceptWalker(this);
-            whileStmt.Body.AcceptWalker(this);
+            VisitBlock(whileStmt.Body);
 
             AscendScope();
             scope_counter = tmp_counter + 1;
@@ -270,8 +273,15 @@ namespace Expresso.Ast.Analysis
 
         public void VisitCatchClause(CatchClause catchClause)
         {
+            int tmp_counter = scope_counter;
+            DecendScope();
+            scope_counter = 0;
+
             catchClause.Pattern.AcceptWalker(this);
-            catchClause.Body.AcceptWalker(this);
+            VisitBlock(catchClause.Body);
+
+            AscendScope();
+            scope_counter = tmp_counter + 1;
         }
 
         public void VisitClosureLiteralExpression(ClosureLiteralExpression closure)
@@ -281,7 +291,7 @@ namespace Expresso.Ast.Analysis
             scope_counter = 0;
 
             closure.Parameters.AcceptWalker(this);
-            closure.Body.AcceptWalker(this);
+            VisitBlock(closure.Body);
 
             AscendScope();
             scope_counter = tmp_counter + 1;
@@ -467,7 +477,7 @@ namespace Expresso.Ast.Analysis
             scope_counter = 0;
 
             funcDecl.Parameters.AcceptWalker(this);
-            funcDecl.Body.AcceptWalker(this);
+            VisitBlock(funcDecl.Body);
 
             AscendScope();
             scope_counter = tmp_counter + 1;

@@ -129,7 +129,7 @@ namespace Expresso.Ast.Analysis
                 left_type.ReplaceWith(elem_type);
             }
 
-            forStmt.Body.AcceptWalker(this);
+            VisitBlock(forStmt.Body);
 
             AscendScope();
             scope_counter = tmp_counter + 1;
@@ -158,7 +158,7 @@ namespace Expresso.Ast.Analysis
                 }
             }
 
-            valueBindingForStatment.Body.AcceptWalker(this);
+            VisitBlock(valueBindingForStatment.Body);
 
             AscendScope();
             scope_counter = tmp_counter + 1;
@@ -178,7 +178,9 @@ namespace Expresso.Ast.Analysis
                     ifStmt.Condition
                 );
             }
-            ifStmt.TrueBlock.AcceptWalker(this);
+            VisitBlock(ifStmt.TrueBlock);
+            // We can't rewrite this to VisitBlock(ifStmt.FalseBlock);
+            // because doing so can continue execution even if it is null.
             ifStmt.FalseBlock.AcceptWalker(this);
 
             AscendScope();
@@ -228,7 +230,9 @@ namespace Expresso.Ast.Analysis
             foreach(var clause in tryStmt.CatchClauses)
                 clause.AcceptWalker(this);
 
-            VisitFinallyClause(tryStmt.FinallyClause);
+            // We can't rewrite this to directly calling VisitFinally
+            // because it can be null.
+            tryStmt.FinallyClause.AcceptWalker(this);
             return null;
         }
 
@@ -424,11 +428,17 @@ namespace Expresso.Ast.Analysis
             DescendScope();
             scope_counter = 0;
 
+            if(!(catchClause.Pattern is DestructuringPattern)){
+                parser.ReportSemanticError(
+                    "Error ES1005: The pattern in a catch clause must be a Destructuring pattern.",
+                    catchClause.Pattern
+                );
+            }
             catchClause.Pattern.AcceptWalker(this);
             VisitBlock(catchClause.Body);
 
             AscendScope();
-            scope_counter = tmp_counter;
+            scope_counter = tmp_counter + 1;
 
             return null;
         }

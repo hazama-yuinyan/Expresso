@@ -388,7 +388,8 @@ string cur_class_name;
     }
 
     /// <summary>
-    /// Reports a semantical error message 
+    /// Reports a semantical error message with a range information.
+    /// It is intended to be used from outside the Parser class.
     /// </summary>
     public void ReportSemanticErrorRegional(string format, AstNode start, AstNode end, params object[] objects)
     {
