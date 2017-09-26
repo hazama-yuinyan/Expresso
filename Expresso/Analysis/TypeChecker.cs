@@ -428,13 +428,13 @@ namespace Expresso.Ast.Analysis
             DescendScope();
             scope_counter = 0;
 
-            if(!(catchClause.Pattern is DestructuringPattern)){
+            /*if(!(catchClause.Identifier is DestructuringPattern)){
                 parser.ReportSemanticError(
                     "Error ES1005: The pattern in a catch clause must be a Destructuring pattern.",
-                    catchClause.Pattern
+                    catchClause.Identifier
                 );
-            }
-            catchClause.Pattern.AcceptWalker(this);
+            }*/
+            catchClause.Identifier.AcceptWalker(this);
             VisitBlock(catchClause.Body);
 
             AscendScope();

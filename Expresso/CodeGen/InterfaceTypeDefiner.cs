@@ -11,6 +11,9 @@ namespace Expresso.CodeGen
 
     public partial class CSharpEmitter : IAstWalker<CSharpEmitterContext, CSharpExpr>
     {
+        /// <summary>
+        /// An InterfaceTypeDefiner is responsible for inspecting types and defining the outlines of types.
+        /// </summary>
         public class InterfaceTypeDefiner : IAstWalker
         {
             CSharpEmitter emitter;

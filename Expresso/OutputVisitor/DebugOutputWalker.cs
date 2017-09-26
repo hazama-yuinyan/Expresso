@@ -129,7 +129,7 @@ namespace Expresso.Ast
         public void VisitCatchClause(CatchClause catchClause)
         {
             writer.Write("catch ");
-            catchClause.Pattern.AcceptWalker(this);
+            VisitIdentifier(catchClause.Identifier);
             writer.Write("{...}");
         }
 

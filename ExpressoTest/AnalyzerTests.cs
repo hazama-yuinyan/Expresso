@@ -4504,15 +4504,9 @@ namespace Expresso.Test
                             null,
                             TextLocation.Empty,
                             Statement.MakeCatchClause(
-                                PatternConstruct.MakeDestructuringPattern(
-                                    Helpers.MakeGenericType("ExsException"),
-                                    PatternConstruct.MakeIdentifierPattern(
-                                        AstNode.MakeIdentifier(
-                                            "Message",
-                                            Helpers.MakePrimitiveType("string")
-                                        ),
-                                        null
-                                    )
+                                AstNode.MakeIdentifier(
+                                    "e",
+                                    Helpers.MakeGenericType("ExsException")
                                 ),
                                 Statement.MakeBlock(
                                     Statement.MakeExprStmt(
@@ -4527,9 +4521,15 @@ namespace Expresso.Test
                                                     Helpers.MakePrimitiveType("string")
                                                 )
                                             ),
-                                            Helpers.MakeIdentifierPath(
-                                                "Message",
-                                                Helpers.MakePrimitiveType("string")
+                                            Expression.MakeMemRef(
+                                                Helpers.MakeIdentifierPath(
+                                                    "e",
+                                                    Helpers.MakeGenericType("ExsException")
+                                                ),
+                                                AstNode.MakeIdentifier(
+                                                    "Message",
+                                                    Helpers.MakePrimitiveType("string")
+                                                )
                                             )
                                         )
                                     )
@@ -4677,15 +4677,9 @@ namespace Expresso.Test
                             ),
                             TextLocation.Empty,
                             Statement.MakeCatchClause(
-                                PatternConstruct.MakeDestructuringPattern(
-                                    Helpers.MakeGenericType("ExsException"),
-                                    PatternConstruct.MakeIdentifierPattern(
-                                        AstNode.MakeIdentifier(
-                                            "Message",
-                                            Helpers.MakePrimitiveType("string")
-                                        ),
-                                        null
-                                    )
+                                AstNode.MakeIdentifier(
+                                    "e",
+                                    Helpers.MakeGenericType("ExsException")
                                 ),
                                 Statement.MakeBlock(
                                     Statement.MakeExprStmt(
@@ -4709,9 +4703,15 @@ namespace Expresso.Test
                                                     Helpers.MakePrimitiveType("string")
                                                 )
                                             ),
-                                            Helpers.MakeIdentifierPath(
-                                                "Message",
-                                                Helpers.MakePrimitiveType("string")
+                                            Expression.MakeMemRef(
+                                                Helpers.MakeIdentifierPath(
+                                                    "e",
+                                                    Helpers.MakeGenericType("ExsException")
+                                                ),
+                                                AstNode.MakeIdentifier(
+                                                    "Message",
+                                                    Helpers.MakePrimitiveType("string")
+                                                )
                                             )
                                         )
                                     )

@@ -245,9 +245,9 @@ namespace Expresso.Ast
             return new TryStatement(body, catches, @finally, loc);
         }
 
-        public static CatchClause MakeCatchClause(PatternConstruct pattern, BlockStatement block, TextLocation loc = default(TextLocation))
+        public static CatchClause MakeCatchClause(Identifier ident, BlockStatement block, TextLocation loc = default(TextLocation))
         {
-            return new CatchClause(pattern, block, loc);
+            return new CatchClause(ident, block, loc);
         }
 
         public static FinallyClause MakeFinallyClause(BlockStatement body, TextLocation loc = default(TextLocation))

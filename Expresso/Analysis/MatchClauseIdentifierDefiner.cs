@@ -1,7 +1,6 @@
 ﻿using System;
 using ICSharpCode.NRefactory.PatternMatching;
 using Expresso.Ast;
-using Expresso.CodeGen;
 
 namespace Expresso.CodeGen
 {

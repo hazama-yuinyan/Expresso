@@ -463,12 +463,26 @@ namespace Expresso.CodeGen
 
         public CSharpExpr VisitThrowStatement(ThrowStatement throwStmt, CSharpEmitterContext context)
         {
-            return null;
+            var thrown_value = throwStmt.CreationExpression.AcceptWalker(this, context);
+            return CSharpExpr.Throw(thrown_value);
         }
 
         public CSharpExpr VisitTryStatement(TryStatement tryStmt, CSharpEmitterContext context)
         {
-            return null;
+            var body_block = VisitBlock(tryStmt.EnclosingBlock, context);
+            var catches = new List<ExprTree.CatchBlock>();
+            foreach(var @catch in tryStmt.CatchClauses){
+                VisitCatchClause(@catch, context);
+                catches.Add(context.CatchBlock);
+            }
+
+            var finally_clause = tryStmt.FinallyClause.AcceptWalker(this, context);
+            if(finally_clause == null)
+                return CSharpExpr.TryCatch(body_block, catches.ToArray());
+            else if(!catches.Any())
+                return CSharpExpr.TryFinally(body_block, finally_clause);
+            else
+                return CSharpExpr.TryCatchFinally(body_block, finally_clause, catches.ToArray());
         }
 
         public CSharpExpr VisitWhileStatement(WhileStatement whileStmt, CSharpEmitterContext context)
@@ -646,6 +660,13 @@ namespace Expresso.CodeGen
 
         public CSharpExpr VisitCatchClause(CatchClause catchClause, CSharpEmitterContext context)
         {
+            var ident = catchClause.Identifier;
+            var exception_type = CSharpCompilerHelper.GetNativeType(ident.Type);
+            var param = CSharpExpr.Parameter(exception_type, ident.Name);
+            Symbols.Add(ident.IdentifierId, new ExpressoSymbol{Parameter = param});
+
+            var body = VisitBlock(catchClause.Body, context);
+            context.CatchBlock = CSharpExpr.Catch(param, body);
             return null;
         }
 

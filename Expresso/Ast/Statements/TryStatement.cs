@@ -108,9 +108,9 @@ namespace Expresso.Ast
         /// The pattern that is seen if it is matched.
         /// </summary>
         /// <value>The pattern.</value>
-        public PatternConstruct Pattern{
-            get{return GetChildByRole(Roles.Pattern);}
-            set{SetChildByRole(Roles.Pattern, value);}
+        public Identifier Identifier{
+            get{return GetChildByRole(Roles.Identifier);}
+            set{SetChildByRole(Roles.Identifier, value);}
         }
 
         /// <summary>
@@ -126,10 +126,10 @@ namespace Expresso.Ast
         {
         }
 
-        public CatchClause(PatternConstruct pattern, BlockStatement block, TextLocation loc)
+        public CatchClause(Identifier ident, BlockStatement block, TextLocation loc)
             : base(loc, block.EndLocation)
         {
-            Pattern = pattern;
+            Identifier = ident;
             Body = block;
         }
 
@@ -151,7 +151,7 @@ namespace Expresso.Ast
         protected internal override bool DoMatch(AstNode other, Match match)
         {
             var o = other as CatchClause;
-            return o != null && Pattern.DoMatch(o.Pattern, match) && Body.DoMatch(o.Body, match);
+            return o != null && Identifier.DoMatch(o.Identifier, match) && Body.DoMatch(o.Body, match);
         }
     }
 

@@ -3064,18 +3064,18 @@ namespace Expresso.Test
                             null,
                             TextLocation.Empty,
                             Statement.MakeCatchClause(
-                                PatternConstruct.MakeDestructuringPattern(
-                                    Helpers.MakeGenericType("ExsException"),
-                                    PatternConstruct.MakeIdentifierPattern(
-                                        Helpers.MakeSomeIdent("Message"),
-                                        null
-                                    )
+                                AstNode.MakeIdentifier(
+                                    "e",
+                                    Helpers.MakeGenericType("ExsException")
                                 ),
                                 Statement.MakeBlock(
                                     Statement.MakeExprStmt(
                                         Helpers.MakeCallExpression(
                                             Helpers.MakeIdentifierPath("println"),
-                                            Helpers.MakeIdentifierPath("Message")
+                                            Expression.MakeMemRef(
+                                                Helpers.MakeIdentifierPath("e"),
+                                                Helpers.MakeSomeIdent("Message")
+                                            )
                                         )
                                     )
                                 )
@@ -3160,12 +3160,9 @@ namespace Expresso.Test
                             ),
                             TextLocation.Empty,
                             Statement.MakeCatchClause(
-                                PatternConstruct.MakeDestructuringPattern(
-                                    Helpers.MakeGenericType("ExsException"),
-                                    PatternConstruct.MakeIdentifierPattern(
-                                        Helpers.MakeSomeIdent("Message"),
-                                        null
-                                    )
+                                AstNode.MakeIdentifier(
+                                    "e",
+                                    Helpers.MakeGenericType("ExsException")
                                 ),
                                 Statement.MakeBlock(
                                     Statement.MakeExprStmt(
@@ -3177,7 +3174,10 @@ namespace Expresso.Test
                                     Statement.MakeExprStmt(
                                         Helpers.MakeCallExpression(
                                             Helpers.MakeIdentifierPath("println"),
-                                            Helpers.MakeIdentifierPath("Message")
+                                            Expression.MakeMemRef(
+                                                Helpers.MakeIdentifierPath("e"),
+                                                Helpers.MakeSomeIdent("Message")
+                                            )
                                         )
                                     )
                                 )

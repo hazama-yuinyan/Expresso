@@ -20,8 +20,8 @@ def main()
     try{
         throwException();
     }
-    catch ExsException{Message} {
-        println(Message);
+    catch e (- ExsException {
+        println(e.Message);
     }
 
     var tmp = 1;
@@ -39,9 +39,9 @@ def main()
         printFormat("tmp2 is {0} at first\n", tmp2);
         throwException();
     }
-    catch ExsException{Message} {
+    catch e (- ExsException {
         tmp2 = 2;
-        println(Message);
+        println(e.Message);
     }
     finally{
         tmp2 = 3;

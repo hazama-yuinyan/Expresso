@@ -76,7 +76,7 @@ namespace Expresso.Test
         /// <summary>
         /// Makes a list from a sequence of some objects.
         /// </summary>
-        /// <returns>A <see cref="System.Generics.Collections.List"/> instance.</returns>
+        /// <returns>A <see cref="System.Collections.Generic.List"/> instance.</returns>
         /// <param name="objs">Objects.</param>
         /// <typeparam name="T">The type of the objects.</typeparam>
         public static List<T> MakeList<T>(params T[] objs)

@@ -181,6 +181,14 @@ namespace Expresso.CodeGen
         public List<object> Additionals{
             get; set;
         }
+
+        /// <summary>
+        /// It will be set to a <see cref="System.Linq.Expressions.CatchBlock"/>.
+        /// </summary>
+        /// <value>The catch block.</value>
+        public System.Linq.Expressions.CatchBlock CatchBlock{
+            get; set;
+        }
     }
 }
 

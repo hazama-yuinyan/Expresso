@@ -149,7 +149,7 @@ namespace Expresso.Ast.Analysis
 
             public AstType VisitCatchClause(CatchClause catchClause)
             {
-                return catchClause.Pattern.AcceptWalker(this);
+                return catchClause.Identifier.AcceptWalker(this);
             }
 
             public AstType VisitClosureLiteralExpression(ClosureLiteralExpression closure)

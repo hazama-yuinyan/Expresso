@@ -277,7 +277,7 @@ namespace Expresso.Ast.Analysis
             DecendScope();
             scope_counter = 0;
 
-            catchClause.Pattern.AcceptWalker(this);
+            UniqueIdGenerator.DefineNewId(catchClause.Identifier);
             VisitBlock(catchClause.Body);
 
             AscendScope();

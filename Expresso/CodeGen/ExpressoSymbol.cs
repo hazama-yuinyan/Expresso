@@ -8,7 +8,7 @@ namespace Expresso.CodeGen
 {
     /// <summary>
     /// Describes an entry to the emitter symbol table.
-    /// ExpressoSymbol binds Expresso world identifiers to CLR functions.
+    /// ExpressoSymbols bind Expresso world identifiers to CLR functions.
     /// </summary>
     public class ExpressoSymbol
     {
@@ -49,7 +49,7 @@ namespace Expresso.CodeGen
         }
 
         /// <summary>
-        /// Gets or sets the field.
+        /// Represents a field.
         /// </summary>
         public FieldInfo Field{
             get; set;
@@ -62,6 +62,10 @@ namespace Expresso.CodeGen
             get; set;
         }
 
+        /// <summary>
+        /// Represents a member.
+        /// </summary>
+        /// <value>The member.</value>
         public MemberExpression Member{
             get; set;
         }

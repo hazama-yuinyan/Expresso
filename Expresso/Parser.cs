@@ -1517,7 +1517,7 @@ string cur_class_name;
 			FinallyClause(out @finally);
 		}
 		if(catches.Count == 0 && @finally == null){
-		   SemErr("A try statement must includes either a catch clause or the finally clause");
+		   SemErr("Error ES0020: A try statement must include either a catch clause or the finally clause");
 		}
 		stmt = Statement.MakeTryStmt(body, catches, @finally, start_loc);
 		
@@ -1694,15 +1694,20 @@ string cur_class_name;
 	}
 
 	void CatchClause(out CatchClause @catch) {
-		var start_loc = NextLocation; PatternConstruct ptn; BlockStatement body; 
+		var start_loc = NextLocation; Identifier ident; BlockStatement body; 
 		Expect(78);
 		Symbols.AddScope();
 		GoDownScope();
 		Symbols.Name = "catch`" + ScopeId++;
 		
-		Pattern(out ptn);
+		Identifier(out ident);
+		if(ident.Type is PlaceholderType)
+		   SemanticError("Error ES0010: A CatchClause identifier has to be explicitly typed; {0}", ident.Name);
+		
+		Symbols.AddSymbol(ident.Name, ident);
+		
 		Block(out body);
-		@catch = Statement.MakeCatchClause(ptn, body, start_loc);
+		@catch = Statement.MakeCatchClause(ident, body, start_loc);
 		GoUpScope();
 		
 	}
