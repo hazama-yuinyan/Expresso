@@ -89,7 +89,7 @@ filled in with anything at any time as long as the shapes match.
 
 In Listing 3, we introduced a new let binding stating `let n (- int = 4 * 5;`. This reads: We'll introduce a new let binding named 'n' whose type is `int` and
 the value of it will be `4 * 5`. Note that we explicitly annotate the type here. Because Expresso has a strong type inference system, you woudln't usually need
-to do it. But we'll generally do that for clarity.
+to do it. But we'll generally do that here in the tutorial for clarity.
 
 By introducing let bindings, we can keep the results of some operations aside. And then we can perform other operations based on those values. I would suggest 
 you to prefer let bindings over variable declarations because let bindings tend to make the code clearer and more concise by making the code easier to read and

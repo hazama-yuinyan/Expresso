@@ -4447,7 +4447,9 @@ namespace Expresso.Test
             var expected = AstNode.MakeModuleDef("main", new List<EntityDeclaration>{
                 EntityDeclaration.MakeClassDecl(
                     "ExsException",
-                    Enumerable.Empty<AstType>(),
+                    Helpers.MakeSeq<AstType>(
+                        Helpers.MakeGenericType("Exception")
+                    ),
                     Helpers.MakeSeq<EntityDeclaration>(
                         EntityDeclaration.MakeField(
                             Helpers.MakeSeq(
@@ -4488,6 +4490,21 @@ namespace Expresso.Test
                     Statement.MakeBlock(
                         Statement.MakeTryStmt(
                             Statement.MakeBlock(
+                                Statement.MakeExprStmt(
+                                    Helpers.MakeCallExpression(
+                                        Helpers.MakeIdentifierPath(
+                                            "println",
+                                            AstType.MakeFunctionType(
+                                                "println",
+                                                Helpers.MakeVoidType(),
+                                                TextLocation.Empty,
+                                                TextLocation.Empty,
+                                                Helpers.MakePrimitiveType("string")
+                                            )
+                                        ),
+                                        Expression.MakeConstant("string", "First try block")
+                                    )
+                                ),
                                 Statement.MakeExprStmt(
                                     Helpers.MakeCallExpression(
                                         Helpers.MakeIdentifierPath(
