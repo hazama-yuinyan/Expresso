@@ -1,43 +1,43 @@
-* The reference for Expresso
+# The reference for Expresso
 
-** Basic concepts and terms
+## Basic concepts and terms
 
 First of all, I will define basic concepts and terms used throughout the reference.
 
-*** LValues, RValues
+### LValues, RValues
 
 Roughly speaking, a lvalue is a variable that can be assigned and referenced, while a rvalue is a value, meaning results of expressions.
 
-*** Equality and equivalence
+### Equality and equivalence
 
 Assume you would compare some objects to some other objects. How would you determine to say they are the same things?
 In the real world, we sometimes focus only on names or the kinds of things. 
 
-** Pattern matching
+## Pattern matching
 
 Pattern matching, which maybe sounds unfamiliar to those who are from imperative languages, is a powerful yet
 comprehensive tool considering its expressive-ness.
 
-** References
+## References
 
 Like the C or C++ language, Expresso has the pointer type. It is called a reference in Expresso, and its functionality
 and semantics are very close to that of references in C++. More precisely, a reference always refers to a valid memory
 location so Expresso has no null literal.
 
-** Built-in types
+## Built-in types
 
 Like most other programming languages, Expresso has a lot of useful built-in types. Among them are included primitive
 types like `int`, `bool`, etc. and complex types like `tuple`, `vector`, `dictionary` and types that need special care
 like `unit`, `string` etc. Most of them also exist in other major programming languages, so it's a good bet that
 you are already familiar with the concepts.
 
-*** Primitive types
+### Primitive types
 
 Expresso has several primitive types. Namely `bool` 
 
-*** Arrays
+### Arrays
 
-*** Tuples, vectors and dictionaries
+### Tuples, vectors and dictionaries
 
 Expresso supports 3 built-in data structures; tuples, vectors and dictionaries.
 Tuples are alike to arrays except that they can contain different types of objects in it.
@@ -77,7 +77,7 @@ Often tuples, vectors and dictionaries are called "containers" because they cont
 inside for later computation. In Expresso term, we also call those containers "sequence" in similarity to `intseq` type
 standing for integer sequence.
 
-**** Tips
+#### Tips
 
 Let's talk about those data structures more deeply. Imagine if you should create a new vector class of your own,
 what would you do? How would you design it? 
@@ -87,7 +87,7 @@ Each layer corresponds to one class so a container type usually has two classes 
 metadata on the data it holds like the number of elements and where the real data reside(as a pointer). The data layer
 literally holds data(usually as a node). 
 
-*** Strings
+### Strings
 
 Strings are always a big concern. Maybe most of the programmers coming from the scripting language background don't
 really care about them but you should keep several points in mind when you are manipulating strings in Expresso.
@@ -95,7 +95,7 @@ First, a string is essentialy an array of characters. So if you want to compare 
 is linear to the number of elements (O(N) in mathematical term). If you are concerned about only the equivalence, not the equality,
 you should consider using reference comparison, that is, apply the equal operator on the `&string` type.
 
-*** The IntSeq type and the integer sequence operator
+### The IntSeq type and the integer sequence operator
 
 One unique characteristic for Expresso is the built-in `IntSeq` type. As the name suggests, it produces a series of integers.
 The `IntSeq` type has 3 fields, `lower`, `upper` and `step`. `lower` represents the lower bound of the sequence,
@@ -156,18 +156,18 @@ But Expresso is smart enough to solve this problem. Instead of returning a new a
 the first half of the elements and the second half of the elements respectively. To understand what iterators are,
 we should proceed to the next chapter!
 
-*** Iterators
+### Iterators
 
 As I promised just a short period of time ago, let's take a closer look at iterators.
 As I've mentioned, `intseq` type itself is an iterator so take this as an example.
 
-*** .NET specific Runtime environment
+### .NET specific Runtime environment
 
 Our primary goal of teaching beginners the basics of programming leads us to the .NET environment.
 
-*** Some tips on general concepts
+### Some tips on general concepts
 
-**** --- Give things descriptive names ---
+#### --- Give things descriptive names ---
 
 For coders, source codes are another yourself. Once any part of source codes is available to the public, you will be valued at those.
 Having that said, names are important for humans in the real world and in the computer world. Humans make errors. But unfortunately
@@ -175,7 +175,7 @@ the computers are smarter than us. They don't care if the names are long or shor
 the less likely we are to make errors. Names describe their properties. So give things descriptive names as much as possible.
 Names in source codes are much like letters you write on paper. The more descriptive they get, the more beautifuly you write letters.
 Lazy and old-fashioned C programmers prefer shorter names and abbriviations. Think source codes as publications of coders for coders and by coders.
-They will be read by other coders and when that happens what they think if the publications look ugly. It doesn't only deteriorate readbility
+They will be read by other coders and when that happens what do they think if the publications look ugly? It doesn't only deteriorate readbility
 but their interests in your sorce codes, and which makes it harder to be maintained and therefore they will be replaced with other ones
 at some point in the future. Then your self is disappeared from that world. That's a sad story. Surely. Certainly. And I don't want
 to read those sad stories anymore.

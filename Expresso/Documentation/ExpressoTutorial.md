@@ -22,7 +22,7 @@ def main(){
 }
 ```
 
-<span class="caption">Listing 1: Traditional hello, world! program in Expresso</span>
+<span class="caption">Listing 1: A traditional hello, world! program in Expresso</span>
 
 This reads: Let's write an Expresso program where we're defining a module named "main" and a function also called "main".
 The program will start executing from the "main" function, and inside which we're outputing...
@@ -40,7 +40,7 @@ Let's dive into the Expresso world. Because I mentioned at the beginning of this
 we'll use Expresso as a simple calculator first. 
 Note that from now on we'll not be including the `module main; def main(){` part because with it the examples will be too complex. Since it's boring to repeat
 writing the same thing over and over and it's considered hard to see if we include the magic header every time, we won't do that.
-So if you follow this tutorial don't forget to include the magic header at the begining of a source file.
+So if you follow this tutorial don't forget to include the magic header at the beginning of source files.
 As the saying goes "A journey of a thousand miles begins with a single step", we'll be starting with a simple calculation.
 
 ```expresso
@@ -64,7 +64,7 @@ println(4 * 5 + 1);
 <span class="caption">Listing 2: An expression with multiplication and addition</span>
 
 This will print `21`.
-It's still a piece of cake. As you might see, the evalation will respect the mathematical operator precedences. That is, multiplication first and then addition.
+It's still a piece of cake. As you might see, the evaluation will respect the mathematical operator precedences. That is, multiplication first and then addition.
 Likewise, it will follow the same rules for other operators such as exponentiation.
 
 OK, then we'll be doing the above calculation in a slightly different way. By using a variable.
@@ -89,7 +89,11 @@ filled in with anything at any time as long as the shapes match.
 
 In Listing 3, we introduced a new let binding stating `let n (- int = 4 * 5;`. This reads: We'll introduce a new let binding named 'n' whose type is `int` and
 the value of it will be `4 * 5`. Note that we explicitly annotate the type here. Because Expresso has a strong type inference system, you woudln't usually need
-to do it.
+to do it. But we'll generally do that for clarity.
+
+By introducing let bindings, we can keep the results of some operations aside. And then we can perform other operations based on those values. I would suggest 
+you to prefer let bindings over variable declarations because let bindings tend to make the code clearer and more concise by making the code easier to read and
+to follow the logic.
 
 OK, next up is exponentiation. But we'll be doing it in a slightly different way. Even though Expresso has the operator for it, here we'll be doing it on our
 own, using while loop.

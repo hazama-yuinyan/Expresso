@@ -5,7 +5,7 @@ module main;
 
 
 
-class ExsException
+class ExsException : Exception
 {
     public let Message (- string;
 }
@@ -18,6 +18,7 @@ def throwException()
 def main()
 {
     try{
+        println("First try block");
         throwException();
     }
     catch e (- ExsException {

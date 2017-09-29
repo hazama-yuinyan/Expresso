@@ -17,7 +17,7 @@ namespace Expresso.Ast
 
         /// <summary>
         /// オブジェクトを生成するクラスの定義を参照する式。
-        /// The target object to be created.
+        /// The target object to be thrown.
         /// </summary>
         public ObjectCreationExpression CreationExpression{
             get{return GetChildByRole(ObjectCreationRole);}

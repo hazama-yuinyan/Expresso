@@ -463,8 +463,10 @@ namespace Expresso.CodeGen
 
         public CSharpExpr VisitThrowStatement(ThrowStatement throwStmt, CSharpEmitterContext context)
         {
-            var thrown_value = throwStmt.CreationExpression.AcceptWalker(this, context);
-            return CSharpExpr.Throw(thrown_value);
+            var thrown_value = VisitObjectCreationExpression(throwStmt.CreationExpression, context);
+            var lambda = CSharpExpr.Lambda<Func<Exception>>(thrown_value);
+            var delegate_method = lambda.Compile();
+            return CSharpExpr.Throw(CSharpExpr.Constant(delegate_method()));
         }
 
         public CSharpExpr VisitTryStatement(TryStatement tryStmt, CSharpEmitterContext context)
@@ -846,6 +848,9 @@ namespace Expresso.CodeGen
             var symbol = GetNativeSymbol(ident);
             if(symbol != null){
                 if(symbol.Parameter != null){
+                    if(context.RequestType)
+                        context.TargetType = symbol.Parameter.Type;
+                    
                     return symbol.Parameter;
                 }else if(context.RequestField && symbol.Field != null){
                     context.Field = symbol.Field;
