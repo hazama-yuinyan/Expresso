@@ -23,6 +23,10 @@ namespace Expresso.Ast
             get{return GetChildByRole(Roles.Identifier).Name;}
         }
 
+        /// <summary>
+        /// Represents the name as an identifier node.
+        /// </summary>
+        /// <value>The name token.</value>
         public Identifier NameToken{
             get{return GetChildByRole(Roles.Identifier);}
             set{SetChildByRole(Roles.Identifier, value);}
@@ -32,6 +36,10 @@ namespace Expresso.Ast
             get{return GetChildByRole(Roles.AssignToken);}
         }
 
+        /// <summary>
+        /// Represents the initialization code.
+        /// </summary>
+        /// <value>The initializer.</value>
         public Expression Initializer{
             get{return GetChildByRole(Roles.Expression);}
             set{SetChildByRole(Roles.Expression, value);}

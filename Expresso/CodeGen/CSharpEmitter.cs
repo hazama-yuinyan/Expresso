@@ -152,6 +152,14 @@ namespace Expresso.CodeGen
             return contents;
         }
 
+        internal static void AddSymbol(Identifier ident, ExpressoSymbol symbol)
+        {
+            if(ident.IdentifierId == 0)
+                throw new EmitterException("An invalid identifier is invalid because it can't be used for any purpose");
+
+            Symbols.Add(ident.IdentifierId, symbol);
+        }
+
         void DescendScope()
         {
             symbol_table = symbol_table.Children[scope_counter];
@@ -330,7 +338,7 @@ namespace Expresso.CodeGen
             var iterators = new List<CSharpExpr>();
             foreach(var variable in valueBindingForStatement.Variables){
                 var bound_variable = CSharpExpr.Variable(CSharpCompilerHelper.GetNativeType(variable.NameToken.Type), variable.Name);
-                Symbols.Add(variable.NameToken.IdentifierId, new ExpressoSymbol{Parameter = bound_variable});
+                AddSymbol(variable.NameToken, new ExpressoSymbol{Parameter = bound_variable});
                 bound_variables.Add(bound_variable);
                 iterators.Add(variable.Initializer.AcceptWalker(this, context));
             }
@@ -464,9 +472,10 @@ namespace Expresso.CodeGen
         public CSharpExpr VisitThrowStatement(ThrowStatement throwStmt, CSharpEmitterContext context)
         {
             var thrown_value = VisitObjectCreationExpression(throwStmt.CreationExpression, context);
-            var lambda = CSharpExpr.Lambda<Func<Exception>>(thrown_value);
-            var delegate_method = lambda.Compile();
-            return CSharpExpr.Throw(CSharpExpr.Constant(delegate_method()));
+            //var lambda = CSharpExpr.Lambda<Func<Exception>>(thrown_value);
+            //var delegate_method = lambda.Compile();
+            //return CSharpExpr.Throw(CSharpExpr.Constant(delegate_method(), thrown_value.Type));
+            return CSharpExpr.Throw(thrown_value);
         }
 
         public CSharpExpr VisitTryStatement(TryStatement tryStmt, CSharpEmitterContext context)
@@ -665,7 +674,7 @@ namespace Expresso.CodeGen
             var ident = catchClause.Identifier;
             var exception_type = CSharpCompilerHelper.GetNativeType(ident.Type);
             var param = CSharpExpr.Parameter(exception_type, ident.Name);
-            Symbols.Add(ident.IdentifierId, new ExpressoSymbol{Parameter = param});
+            AddSymbol(ident, new ExpressoSymbol{Parameter = param});
 
             var body = VisitBlock(catchClause.Body, context);
             context.CatchBlock = CSharpExpr.Catch(param, body);
@@ -869,13 +878,13 @@ namespace Expresso.CodeGen
                     throw new EmitterException("I can't guess what you want.");
                 }
             }else{
-                if(context.RequestField){
+                /*if(context.RequestField){
                     var field = (context.TargetType != null) ? context.TargetType.GetField(ident.Name) : context.TypeBuilder.GetField(ident.Name);
                     context.Field = field;
                     return null;
-                }else{
+                }else{*/
                     throw new EmitterException("It is found that the native symbol '{0}' isn't defined.", ident.Name);
-                }
+                //}
             }
         }
 
@@ -1301,7 +1310,7 @@ namespace Expresso.CodeGen
             if(context.Method == null && context.TargetType == null)
                 throw new EmitterException("`{0}` could not be resolved to an entity name!", aliasDecl.Path);
 
-            Symbols.Add(aliasDecl.AliasToken.IdentifierId, new ExpressoSymbol{
+            AddSymbol(aliasDecl.AliasToken, new ExpressoSymbol{
                 Type = context.TargetType,
                 Method = context.Method
             });
@@ -1310,7 +1319,7 @@ namespace Expresso.CodeGen
 
         public CSharpExpr VisitImportDeclaration(ImportDeclaration importDecl, CSharpEmitterContext context)
         {
-            if(importDecl.ImportedEntities.IsEmpty){
+            /*if(importDecl.ImportedEntities.IsEmpty){
                 context.RequestType = true;
                 context.RequestMethod = true;
                 context.RequestField = true;
@@ -1322,14 +1331,14 @@ namespace Expresso.CodeGen
                 if(importDecl.AliasName != null){
                     var type_symbol = symbol_table.GetTypeSymbol(importDecl.AliasName);
                     if(type_symbol != null){
-                        Symbols.Add(type_symbol.IdentifierId, new ExpressoSymbol{
+                        AddSymbol(type_symbol, new ExpressoSymbol{
                             Type = context.TargetType,
                             Field = context.Field,
                             Method = context.Method
                         });
                     }else{
                         var symbol = symbol_table.GetSymbol(importDecl.ModuleName);
-                        Symbols.Add(symbol.IdentifierId, new ExpressoSymbol{
+                        AddSymbol(symbol, new ExpressoSymbol{
                             Type = context.TargetType,
                             Method = context.Method,
                             Field = context.Field
@@ -1348,7 +1357,7 @@ namespace Expresso.CodeGen
                     // Walking through the path items registers the symbols in question
                     entity.AcceptWalker(this, context);
                 }
-            }
+            }*/
 
             return null;
         }
@@ -1384,7 +1393,7 @@ namespace Expresso.CodeGen
                 attrs |= BindingFlags.NonPublic;
 
             var interface_func = context.TypeBuilder.GetInterfaceMethod(CSharpCompilerHelper.ConvertToCLRFunctionName(funcDecl.Name), attrs);
-            Symbols[funcDecl.NameToken.IdentifierId] = new ExpressoSymbol{Method = interface_func};
+            AddSymbol(funcDecl.NameToken, new ExpressoSymbol{Method = interface_func});
 
             var body = funcDecl.Body.AcceptWalker(this, context);
             context.Additionals = null;
@@ -1440,12 +1449,12 @@ namespace Expresso.CodeGen
                 if(initializer != null)
                     context.TypeBuilder.SetBody(field_builder, initializer);
 
-                var flags = BindingFlags.Default;
+                /*var flags = BindingFlags.Default;
                 flags |= fieldDecl.Modifiers.HasFlag(Modifiers.Static) ? BindingFlags.Static : BindingFlags.Instance;
                 flags |= fieldDecl.Modifiers.HasFlag(Modifiers.Public) ? BindingFlags.Public : BindingFlags.NonPublic;
 
                 var field_info = context.TypeBuilder.GetField(init.Name, flags);
-                Symbols[init.NameToken.IdentifierId] = new ExpressoSymbol{Field = field_info};
+                AddSymbol(init.NameToken, new ExpressoSymbol{Field = field_info});*/
             }
 
             return null;
@@ -1457,7 +1466,7 @@ namespace Expresso.CodeGen
             if(!Symbols.ContainsKey(parameterDecl.NameToken.IdentifierId)){
                 var native_type = CSharpCompilerHelper.GetNativeType(parameterDecl.ReturnType);
                 param = CSharpExpr.Parameter(native_type, parameterDecl.Name);
-                Symbols.Add(parameterDecl.NameToken.IdentifierId, new ExpressoSymbol{Parameter = param});
+                AddSymbol(parameterDecl.NameToken, new ExpressoSymbol{Parameter = param});
             }else{
                 param = (ExprTree.ParameterExpression)VisitIdentifier(parameterDecl.NameToken, context);
             }
@@ -1472,7 +1481,7 @@ namespace Expresso.CodeGen
             var variable = CSharpExpr.Variable(CSharpCompilerHelper.GetNativeType(initializer.NameToken.Type), initializer.Name);
             var init = initializer.Initializer.AcceptWalker(this, context);
             if(context.ContextAst is VariableDeclarationStatement)
-                Symbols.Add(initializer.NameToken.IdentifierId, new ExpressoSymbol{Parameter = variable});
+                AddSymbol(initializer.NameToken, new ExpressoSymbol{Parameter = variable});
 
             var result = (init == null) ? variable as CSharpExpr : CSharpExpr.Assign(variable, init);
             if(context.Additionals != null)

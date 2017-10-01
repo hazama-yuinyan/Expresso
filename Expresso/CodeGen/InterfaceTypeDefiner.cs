@@ -328,6 +328,11 @@ namespace Expresso.CodeGen
                 var attr = typeDecl.Modifiers.HasFlag(Modifiers.Export) ? TypeAttributes.Public : TypeAttributes.NotPublic;
                 attr |= TypeAttributes.Class;
                 var name = typeDecl.Name;
+
+                foreach(var base_type in typeDecl.BaseTypes){
+                    var native_type = CSharpCompilerHelper.GetNativeType(base_type);
+                    AddSymbol(base_type.IdentifierNode, new ExpressoSymbol{Type = native_type});
+                }
                 // TODO: take 1 type from base_types.
                 var base_types = 
                     from bt in typeDecl.BaseTypes
@@ -339,7 +344,7 @@ namespace Expresso.CodeGen
                         member.AcceptWalker(this);
 
                     var type = context.TypeBuilder.CreateInterfaceType();
-                    Symbols.Add(typeDecl.NameToken.IdentifierId, new ExpressoSymbol{Type = type, TypeBuilder = context.TypeBuilder});
+                    AddSymbol(typeDecl.NameToken, new ExpressoSymbol{Type = type, TypeBuilder = context.TypeBuilder});
                 }
                 finally{
                     context.TypeBuilder = parent_type;
@@ -379,7 +384,7 @@ namespace Expresso.CodeGen
                 foreach(var init in fieldDecl.Initializers){
                     var type = CSharpCompilerHelper.GetNativeType(init.NameToken.Type);
                     var field_builder = context.TypeBuilder.DefineField(init.Name, type, !Expression.IsNullNode(init.Initializer), attr);
-                    Symbols.Add(init.NameToken.IdentifierId, new ExpressoSymbol{Field = field_builder});
+                    AddSymbol(init.NameToken, new ExpressoSymbol{Field = field_builder});
                 }
             }
 

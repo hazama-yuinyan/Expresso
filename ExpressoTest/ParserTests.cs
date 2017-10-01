@@ -2482,7 +2482,7 @@ namespace Expresso.Test
                                     ),
                                     Helpers.MakeSeq(
                                         Expression.MakeConstant("int", 1),
-                                        Expression.MakeConstant("int", 3)
+                                        Expression.MakeConstant("int", 2)
                                     )
                                 )
                             ),
@@ -2566,13 +2566,26 @@ namespace Expresso.Test
                             ),
                             Modifiers.Immutable
                         ),
+                        Statement.MakeVarDecl(
+                            Helpers.MakeSeq(
+                                Helpers.MakeSomeIdent("g")
+                            ),
+                            Helpers.MakeSeq(
+                                Expression.MakeMemRef(
+                                    Helpers.MakeIdentifierPath("a"),
+                                    Helpers.MakeSomeIdent("x")
+                                )
+                            ),
+                            Modifiers.Immutable
+                        ),
                         Statement.MakeExprStmt(
                             Helpers.MakeCallExpression(
                                 Helpers.MakeIdentifierPath("printFormat"),
-                                Expression.MakeConstant("string", "(a.x, a.y, a.z) = ({0}, {1}, {2})\n"),
+                                Expression.MakeConstant("string", "(a.x, a.y, a.z, x) = ({0}, {1}, {2}, {3})\n"),
                                 Helpers.MakeIdentifierPath("c"),
                                 Helpers.MakeIdentifierPath("d"),
-                                Helpers.MakeIdentifierPath("f")
+                                Helpers.MakeIdentifierPath("f"),
+                                Helpers.MakeIdentifierPath("g")
                             )
                         )
                     ),

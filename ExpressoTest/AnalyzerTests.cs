@@ -2354,7 +2354,7 @@ namespace Expresso.Test
                                     ),
                                     Helpers.MakeSeq(
                                         Expression.MakeConstant("int", 1),
-                                        Expression.MakeConstant("int", 3)
+                                        Expression.MakeConstant("int", 2)
                                     )
                                 )
                             ),
@@ -2482,6 +2482,24 @@ namespace Expresso.Test
                             ),
                             Modifiers.Immutable
                         ),
+                        Statement.MakeVarDecl(
+                            Helpers.MakeSeq(
+                                AstNode.MakeIdentifier("g", Helpers.MakePrimitiveType("int"))
+                            ),
+                            Helpers.MakeSeq(
+                                Expression.MakeMemRef(
+                                    Helpers.MakeIdentifierPath(
+                                        "a",
+                                        Helpers.MakeGenericType("TestClass")
+                                    ),
+                                    AstNode.MakeIdentifier(
+                                        "x",
+                                        Helpers.MakePrimitiveType("int")
+                                    )
+                                )
+                            ),
+                            Modifiers.Immutable
+                        ),
                         Statement.MakeExprStmt(
                             Helpers.MakeCallExpression(
                                 Helpers.MakeIdentifierPath(
@@ -2494,7 +2512,7 @@ namespace Expresso.Test
                                         Helpers.MakePrimitiveType("string")
                                     )
                                 ),
-                                Expression.MakeConstant("string", "(a.x, a.y, a.z) = ({0}, {1}, {2})\n"),
+                                Expression.MakeConstant("string", "(a.x, a.y, a.z, x) = ({0}, {1}, {2}, {3})\n"),
                                 Helpers.MakeIdentifierPath(
                                     "c",
                                     Helpers.MakePrimitiveType("int")
@@ -2505,6 +2523,10 @@ namespace Expresso.Test
                                 ),
                                 Helpers.MakeIdentifierPath(
                                     "f",
+                                    Helpers.MakePrimitiveType("int")
+                                ),
+                                Helpers.MakeIdentifierPath(
+                                    "g",
                                     Helpers.MakePrimitiveType("int")
                                 )
                             )
@@ -4453,7 +4475,7 @@ namespace Expresso.Test
                     Helpers.MakeSeq<EntityDeclaration>(
                         EntityDeclaration.MakeField(
                             Helpers.MakeSeq(
-                                AstNode.MakeIdentifier("Message", AstType.MakePrimitiveType("string"))
+                                AstNode.MakeIdentifier("ExsMessage", AstType.MakePrimitiveType("string"))
                             ),
                             Helpers.MakeSeq<Expression>(
                                 Expression.Null
@@ -4473,7 +4495,7 @@ namespace Expresso.Test
                                     "ExsException"
                                 ),
                                 Helpers.MakeSeq(
-                                    AstNode.MakeIdentifier("Message")
+                                    AstNode.MakeIdentifier("ExsMessage")
                                 ),
                                 Helpers.MakeSeq(
                                     Expression.MakeConstant("string", "An unknown error has occurred")
@@ -4538,13 +4560,28 @@ namespace Expresso.Test
                                                     Helpers.MakePrimitiveType("string")
                                                 )
                                             ),
+                                            Expression.MakeConstant("string", "First catch block")
+                                        )
+                                    ),
+                                    Statement.MakeExprStmt(
+                                        Helpers.MakeCallExpression(
+                                            Helpers.MakeIdentifierPath(
+                                                "println",
+                                                AstType.MakeFunctionType(
+                                                    "println",
+                                                    Helpers.MakeVoidType(),
+                                                    TextLocation.Empty,
+                                                    TextLocation.Empty,
+                                                    Helpers.MakePrimitiveType("string")
+                                                )
+                                            ),
                                             Expression.MakeMemRef(
                                                 Helpers.MakeIdentifierPath(
                                                     "e",
                                                     Helpers.MakeGenericType("ExsException")
                                                 ),
                                                 AstNode.MakeIdentifier(
-                                                    "Message",
+                                                    "ExsMessage",
                                                     Helpers.MakePrimitiveType("string")
                                                 )
                                             )
@@ -4602,6 +4639,21 @@ namespace Expresso.Test
                             null,
                             Statement.MakeFinallyClause(
                                 Statement.MakeBlock(
+                                    Statement.MakeExprStmt(
+                                        Helpers.MakeCallExpression(
+                                            Helpers.MakeIdentifierPath(
+                                                "println",
+                                                AstType.MakeFunctionType(
+                                                    "println",
+                                                    Helpers.MakeVoidType(),
+                                                    TextLocation.Empty,
+                                                    TextLocation.Empty,
+                                                    Helpers.MakePrimitiveType("string")
+                                                )
+                                            ),
+                                            Expression.MakeConstant("string", "First finally block")
+                                        )
+                                    ),
                                     Statement.MakeExprStmt(
                                         Expression.MakeSingleAssignment(
                                             Helpers.MakeIdentifierPath(
@@ -4682,6 +4734,21 @@ namespace Expresso.Test
                             Statement.MakeFinallyClause(
                                 Statement.MakeBlock(
                                     Statement.MakeExprStmt(
+                                        Helpers.MakeCallExpression(
+                                            Helpers.MakeIdentifierPath(
+                                                "println",
+                                                AstType.MakeFunctionType(
+                                                    "println",
+                                                    Helpers.MakeVoidType(),
+                                                    TextLocation.Empty,
+                                                    TextLocation.Empty,
+                                                    Helpers.MakePrimitiveType("string")
+                                                )
+                                            ),
+                                            Expression.MakeConstant("string", "Second finally block")
+                                        )
+                                    ),
+                                    Statement.MakeExprStmt(
                                         Expression.MakeSingleAssignment(
                                             Helpers.MakeIdentifierPath(
                                                 "tmp2",
@@ -4699,6 +4766,21 @@ namespace Expresso.Test
                                     Helpers.MakeGenericType("ExsException")
                                 ),
                                 Statement.MakeBlock(
+                                    Statement.MakeExprStmt(
+                                        Helpers.MakeCallExpression(
+                                            Helpers.MakeIdentifierPath(
+                                                "println",
+                                                AstType.MakeFunctionType(
+                                                    "println",
+                                                    Helpers.MakeVoidType(),
+                                                    TextLocation.Empty,
+                                                    TextLocation.Empty,
+                                                    Helpers.MakePrimitiveType("string")
+                                                )
+                                            ),
+                                            Expression.MakeConstant("string", "Second finally block")
+                                        )
+                                    ),
                                     Statement.MakeExprStmt(
                                         Expression.MakeSingleAssignment(
                                             Helpers.MakeIdentifierPath(

@@ -499,9 +499,9 @@ namespace Expresso.Ast.Analysis
         {
             // An import declaration always introduces new variable(s) into the module scope.
             if(importDecl.AliasNameToken.IsNull){
-                foreach(var entity in importDecl.ImportedEntities){
+                /*foreach(var entity in importDecl.ImportedEntities){
 
-                }
+                }*/
             }else{
                 if(importDecl.AliasNameToken.IsNull)
                     Define(importDecl.ModuleName);

@@ -3,16 +3,18 @@
  */
 module main;
 
+import "System.Exception" as Exception;
+
 
 
 class ExsException : Exception
 {
-    public let Message (- string;
+    public let ExsMessage (- string;
 }
 
 def throwException()
 {
-    throw ExsException{Message: "An unknown error has occurred"};
+    throw ExsException{ExsMessage: "An unknown error has occurred"};
 }
 
 def main()
@@ -22,7 +24,8 @@ def main()
         throwException();
     }
     catch e (- ExsException {
-        println(e.Message);
+        println("First catch block");
+        println(e.ExsMessage);
     }
 
     var tmp = 1;
@@ -31,6 +34,7 @@ def main()
         throwException();
     }
     finally{
+        println("First finally block");
         tmp = 2;
     }
     printFormat("tmp is {0} at last\n", tmp);
@@ -41,10 +45,12 @@ def main()
         throwException();
     }
     catch e (- ExsException {
+        println("Second catch block");
         tmp2 = 2;
-        println(e.Message);
+        println(e.ExsMessage);
     }
     finally{
+        println("Second finally block");
         tmp2 = 3;
     }
     printFormat("tmp2 is {0} at last\n", tmp2);

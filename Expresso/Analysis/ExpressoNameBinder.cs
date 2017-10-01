@@ -565,12 +565,14 @@ namespace Expresso.Ast.Analysis
         {
             // Here's the good place to import names from other files
             // All external names will be imported into the module scope we are currently compiling
-            var inner_parser = new Parser(parser.scanner.OpenChildFile(importDecl.ModuleName));
-            inner_parser.Parse();
+            if(importDecl.ModuleName.EndsWith(".exs")){
+                var inner_parser = new Parser(parser.scanner.OpenChildFile(importDecl.ModuleName));
+                inner_parser.Parse();
 
-            //importDecl.ModuleNameToken.AcceptWalker(this);
-            symbol_table.AddExternalSymbols(inner_parser.Symbols, importDecl.AliasName);
-            ExpressoNameBinder.NameBindAst(inner_parser);
+                //importDecl.ModuleNameToken.AcceptWalker(this);
+                symbol_table.AddExternalSymbols(inner_parser.Symbols, importDecl.AliasName);
+                ExpressoNameBinder.NameBindAst(inner_parser);
+            }
             UniqueIdGenerator.DefineNewId(importDecl.AliasNameToken);
             /*if(importDecl.AliasNameToken.IsNull){
                 importDecl.ModuleNameToken.AcceptWalker(this);

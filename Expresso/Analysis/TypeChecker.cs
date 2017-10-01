@@ -611,7 +611,7 @@ namespace Expresso.Ast.Analysis
 
         public AstType VisitMemberReference(MemberReferenceExpression memRef)
         {
-            memRef.AcceptWalker(inference_runner);
+            inference_runner.VisitMemberReference(memRef);
 
             var type = memRef.Target.AcceptWalker(this);
             if(IsPlaceholderType(type)){
@@ -629,7 +629,7 @@ namespace Expresso.Ast.Analysis
                     // Don't report field missing error because InferenceRunner has already done that
                 }else{
                     // Bind the name of the member here
-                    memRef.Member.IdentifierId = symbol.IdentifierId;
+                    //memRef.Member.IdentifierId = symbol.IdentifierId;
                     return symbol.Type;
                 }
             }

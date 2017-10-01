@@ -356,7 +356,9 @@ namespace Expresso.Ast.Analysis
                     }else{
                         var type = symbol.Type.Clone();
                         memRef.Member.Type.ReplaceWith(type);
-                        return type;
+                        // Resolve the name here because we defer it until this point
+                        memRef.Member.IdentifierId = symbol.IdentifierId;
+                        return type.Clone();
                     }
                 }
                 return null;

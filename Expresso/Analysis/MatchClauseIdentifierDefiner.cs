@@ -156,7 +156,7 @@ namespace Expresso.CodeGen
             {
                 var native_type = CSharpCompilerHelper.GetNativeType(identifierPattern.Identifier.Type);
                 var native_param = CSharpExpr.Parameter(native_type, identifierPattern.Identifier.Name);
-                CSharpEmitter.Symbols.Add(identifierPattern.Identifier.IdentifierId, new ExpressoSymbol{Parameter = native_param});
+                CSharpEmitter.AddSymbol(identifierPattern.Identifier, new ExpressoSymbol{Parameter = native_param});
             }
 
             public void VisitIfStatement(IfStatement ifStmt)
@@ -357,7 +357,7 @@ namespace Expresso.CodeGen
             {
                 var native_type = CSharpCompilerHelper.GetNativeType(initializer.NameToken.Type);
                 var native_param = CSharpExpr.Parameter(native_type, initializer.Name);
-                CSharpEmitter.Symbols.Add(initializer.NameToken.IdentifierId, new ExpressoSymbol{Parameter = native_param});
+                CSharpEmitter.AddSymbol(initializer.NameToken, new ExpressoSymbol{Parameter = native_param});
             }
 
             public void VisitWhileStatement(WhileStatement whileStmt)

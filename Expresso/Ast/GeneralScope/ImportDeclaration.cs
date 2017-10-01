@@ -13,12 +13,9 @@ namespace Expresso.Ast
     /// 1. Path resolving.
     /// 2. Name imports.
     /// Path resolving can be done as follows:
-    /// Above all, a path item can always be interpreted as a file name and since path items don't
-    /// have file extensions, ".exs" is appended if the item is being interpreted as a file name.
-    /// If there are no files matching to the path item being recognized as a file name,
-    /// it will try to match directory names.
-    /// "import" PathExpression [ "as" ident ] ';'
-    /// | "import" Identifier { ',' Identifier } "in" PathExpression ';' ;
+    /// Above all, the string literal should represent a full path to a source file or on .NET environment
+    /// a full path to a type provided by the standard library.
+    /// "import" string_literal [ "as" ident ] ';'
     /// </summary>
     public class ImportDeclaration : AstNode
     {
@@ -28,8 +25,8 @@ namespace Expresso.Ast
             new Role<Identifier>("ModuleName", Identifier.Null);
         public static readonly Role<Identifier> AliasNameRole =
             new Role<Identifier>("AliasName", Identifier.Null);
-        public static readonly Role<PathExpression> ImportedEntityRole =
-            new Role<PathExpression>("ImportedEntity", PathExpression.Null);
+        //public static readonly Role<PathExpression> ImportedEntityRole =
+        //    new Role<PathExpression>("ImportedEntity", PathExpression.Null);
 
         public ExpressoTokenNode ImportToken{
             get{return GetChildByRole(ImportKeyword);}
@@ -78,9 +75,9 @@ namespace Expresso.Ast
         /// An imported entity can be any static item.
         /// It can return an empty collection if the node represents the module-names-aliases pair.
         /// </summary>
-        public AstNodeCollection<PathExpression> ImportedEntities{
+        /*public AstNodeCollection<PathExpression> ImportedEntities{
             get{return GetChildrenByRole(ImportedEntityRole);}
-        }
+        }*/
 
         public ExpressoTokenNode SemicolonToken{
             get{return GetChildByRole(Roles.SemicolonToken);}
@@ -98,8 +95,8 @@ namespace Expresso.Ast
             if(alias != null)
                 AliasNameToken = alias;
 
-            if(importedEntities != null)
-                ImportedEntities.AddRange(importedEntities);
+            //if(importedEntities != null)
+            //    ImportedEntities.AddRange(importedEntities);
         }
 
         public override void AcceptWalker(IAstWalker walker)
@@ -123,8 +120,8 @@ namespace Expresso.Ast
         {
             var o = other as ImportDeclaration;
             return o != null && ModuleNameToken.DoMatch(o.ModuleNameToken, match)
-                && AliasNameToken.DoMatch(o.AliasNameToken, match)
-                && ImportedEntities.DoMatch(o.ImportedEntities, match);
+                && AliasNameToken.DoMatch(o.AliasNameToken, match);
+                //&& ImportedEntities.DoMatch(o.ImportedEntities, match);
         }
 
         #endregion

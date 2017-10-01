@@ -38,6 +38,7 @@ def main()
 	let d = a.getY();
 	let e = a.getXPlus(100);
     let f = a.getZ();
+    let g = a.x;
 	
-	printFormat("(a.x, a.y, a.z) = ({0}, {1}, {2})\n", c, d, f);
+	printFormat("(a.x, a.y, a.z, x) = ({0}, {1}, {2}, {3})\n", c, d, f, g);
 }
