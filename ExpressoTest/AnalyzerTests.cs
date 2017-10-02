@@ -4590,7 +4590,7 @@ namespace Expresso.Test
                                 )
                             )
                         ),
-                        Statement.MakeVarDecl(
+                        /*Statement.MakeVarDecl(
                             Helpers.MakeSeq(
                                 AstNode.MakeIdentifier(
                                     "tmp",
@@ -4684,7 +4684,7 @@ namespace Expresso.Test
                                     Helpers.MakePrimitiveType("int")
                                 )
                             )
-                        ),
+                        ),*/
                         Statement.MakeVarDecl(
                             Helpers.MakeSeq(
                                 AstNode.MakeIdentifier(

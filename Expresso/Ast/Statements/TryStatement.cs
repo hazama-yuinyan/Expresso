@@ -67,7 +67,7 @@ namespace Expresso.Ast
 
     /// <summary>
     /// Represents a catch clause.
-    /// A catch clause is a block that pattern-matches thrown objects and handles them.
+    /// A catch clause is a block that catches thrown objects and handles them.
     /// </summary>
     public class CatchClause : Expression
     {
@@ -105,7 +105,7 @@ namespace Expresso.Ast
         #endregion
 
         /// <summary>
-        /// The pattern that is seen if it is matched.
+        /// The identifier of the exception that this catch clause catches.
         /// </summary>
         /// <value>The pattern.</value>
         public Identifier Identifier{
@@ -114,7 +114,7 @@ namespace Expresso.Ast
         }
 
         /// <summary>
-        /// The body block that is executed if the pattern is matched.
+        /// The body block that is executed if an exception is catched.
         /// </summary>
         /// <value>The body.</value>
         public BlockStatement Body{

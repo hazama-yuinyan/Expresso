@@ -81,19 +81,24 @@ println(n + 1);
 In Expresso, there are 2 forms of variable binding. 
 Variables are useful considering the ability to keep track of values they hold. But sometimes we just want to give values descriptive names
 because we need the same values several times or because it is tedious to change all the literal values over and over when you try
-to guess the proper values for some programs. That's where constants come into play.
-As a general term, a constant is a constant value meaning that values that are bound to variables will never be changed during program execution.
-Let bindings introduce tags, and tags are names which you use in order to refer to the values later on.
+to guess the proper values for some programs. That's where immutable variables come into play.
+As a general term, an immutable variable is a constant value meaning that values that are bound to variables will never be changed during program execution.
+Let bindings introduce tags, and tags are names which you use in order to refer to the values later on and immutable variables are considered to be the tags.
 By contrast, variable declarations introduce boxes that have certain shapes, and those boxes can be
 filled in with anything at any time as long as the shapes match.
 
 In Listing 3, we introduced a new let binding stating `let n (- int = 4 * 5;`. This reads: We'll introduce a new let binding named 'n' whose type is `int` and
 the value of it will be `4 * 5`. Note that we explicitly annotate the type here. Because Expresso has a strong type inference system, you woudln't usually need
-to do it. But we'll generally do that here in the tutorial for clarity.
+to do so. But we'll generally do that here in the tutorial for clarity.
 
 By introducing let bindings, we can keep the results of some operations aside. And then we can perform other operations based on those values. I would suggest 
 you to prefer let bindings over variable declarations because let bindings tend to make the code clearer and more concise by making the code easier to read and
 to follow the logic.
+
+OK, enough with simple calculations. Next, let's look at the data types that variables are in.
+
+Like other programming languages, Expresso has some types built into it. Namely the `int`, `uint` types for signed and unsigned integers, the `bool` type for
+the booleans, the `float` and `double` types for single floating-point numbers and double floating-point numbers and the `char` for characters, etc.
 
 OK, next up is exponentiation. But we'll be doing it in a slightly different way. Even though Expresso has the operator for it, here we'll be doing it on our
 own, using while loop.
@@ -101,6 +106,7 @@ own, using while loop.
 
 The main policy for Expresso is that "Programming languages must allow programmers to write what it does, not how it does something".
 In traditional C, we often end up writing something like the following:
+
 ```c
 // construct some array of ints
 // and name it array
@@ -108,14 +114,17 @@ for(int i = 0; i < sizeof(array) / sizeof(int); ++i){
     // do something on each element
 }
 ```
+
 Even though the for loop has long long history, I think that it doesn't express one's intension very clearly especially
 when you want to process an array. Instead, I recommend you to use functional style. In functional programming languages,
 we define the work flow as a chain of functions. So in Expresso, you can rewrite the above example like this:
+
 ```expresso
 // construct some array
 // and assume the array is named "a"
 let mapped = a.map(|elem| => /* do something on each element */);
 ```
+
 This reads: We're assigining the value that will be computed by iterating through the array and doing some calculations on each element of
 the array to a variable. This sounds more straightforward and is easier to read, isn't it?
 

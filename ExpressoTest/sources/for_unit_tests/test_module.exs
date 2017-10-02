@@ -3,6 +3,8 @@
  */
 module TestModule;
 
+import "System.Math" as Math;
+
 
 export class TestClass
 {
@@ -24,4 +26,9 @@ export let pair = (200, 300);
 export def createTest(x (- int, y (- int) -> TestClass
 {
 	return TestClass{x : x, y : y};
+}
+
+export def mySin(x (- double) -> double
+{
+    return Math.Sin(x);
 }

@@ -248,6 +248,13 @@ namespace Expresso.CodeGen
             context.ContextAst = parent_block;
 
             var variables = ConvertSymbolsToParameters().ToList();
+            if(block.Parent is CatchClause){
+                var catch_clause = (CatchClause)block.Parent;
+                var identifier = catch_clause.Identifier;
+                variables = variables.Where(v => v.Name != identifier.Name)
+                                     .Select(v => v)
+                                     .ToList();
+            }
             if(context.ContextAst is FunctionDeclaration || context.ContextClosureLiteral != null && block.Parent is ClosureLiteralExpression)
                 contents.Add(CSharpExpr.Label(ReturnTarget, DefaultReturnValue));
 

@@ -28,7 +28,7 @@ def main()
         println(e.ExsMessage);
     }
 
-    var tmp = 1;
+    /*var tmp = 1;
     try{
         printFormat("tmp is {0} at first\n", tmp);
         throwException();
@@ -37,7 +37,7 @@ def main()
         println("First finally block");
         tmp = 2;
     }
-    printFormat("tmp is {0} at last\n", tmp);
+    printFormat("tmp is {0} at last\n", tmp);*/
 
     var tmp2 = 1;
     try{
