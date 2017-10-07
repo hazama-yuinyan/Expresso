@@ -2188,7 +2188,7 @@ namespace Expresso.Test
 
             var expected_ast = AstNode.MakeModuleDef("TestModule", new List<EntityDeclaration>{
                 EntityDeclaration.MakeClassDecl(
-                    "Test",
+                    "TestClass",
                     Enumerable.Empty<AstType>(),
                     Helpers.MakeSeq<EntityDeclaration>(
                         EntityDeclaration.MakeField(
@@ -2259,7 +2259,7 @@ namespace Expresso.Test
                     Statement.MakeBlock(
                         Helpers.MakeSingleItemReturnStatement(
                             Expression.MakeObjectCreation(
-                                Helpers.MakeGenericType("Test"),
+                                Helpers.MakeGenericType("TestClass"),
                                 Helpers.MakeSeq(
                                     AstNode.MakeIdentifier("x"),
                                     AstNode.MakeIdentifier("y")
@@ -2271,10 +2271,34 @@ namespace Expresso.Test
                             )
                         )
                     ),
-                    Helpers.MakeGenericType("Test"),
+                    Helpers.MakeGenericType("TestClass"),
+                    Modifiers.Export
+                ),
+                EntityDeclaration.MakeFunc(
+                    "mySin",
+                    Helpers.MakeSeq(
+                        EntityDeclaration.MakeParameter(
+                            "x",
+                            Helpers.MakePrimitiveType("double")
+                        )
+                    ),
+                    Statement.MakeBlock(
+                        Helpers.MakeSingleItemReturnStatement(
+                            Helpers.MakeCallExpression(
+                                Expression.MakeMemRef(
+                                    Helpers.MakeIdentifierPath("Math"),
+                                    Helpers.MakeSomeIdent("Sin")
+                                ),
+                                Helpers.MakeIdentifierPath("x")
+                            )
+                        )
+                    ),
+                    Helpers.MakePrimitiveType("double"),
                     Modifiers.Export
                 )
-            });
+            }, Helpers.MakeSeq(
+               AstNode.MakeImportDecl(AstNode.MakeIdentifier("System.Math"), "Math")
+            ));
 
             Assert.IsNotNull(ast);
 
@@ -2301,8 +2325,8 @@ namespace Expresso.Test
                             Helpers.MakeSeq(
                                 Expression.MakeObjectCreation(
                                     AstType.MakeMemberType(
-                                        Helpers.MakeGenericType("TestModule"),
-                                        Helpers.MakeGenericType("Test")
+                                        Helpers.MakeGenericPlaceholderType("TestModule"),
+                                        Helpers.MakeGenericPlaceholderType("TestClass")
                                     ),
                                     Helpers.MakeSeq(
                                         AstNode.MakeIdentifier("x"),
@@ -2344,12 +2368,28 @@ namespace Expresso.Test
                             ),
                             Modifiers.Immutable
                         ),
+                        Statement.MakeVarDecl(
+                            Helpers.MakeSeq(
+                                Helpers.MakeSomeIdent("d")
+                            ),
+                            Helpers.MakeSeq(
+                                Helpers.MakeCallExpression(
+                                    Expression.MakePath(
+                                        Helpers.MakeSomeIdent("TestModule"),
+                                        Helpers.MakeSomeIdent("mySin")
+                                    ),
+                                    Expression.MakeConstant("double", 0.0)
+                                )
+                            ),
+                            Modifiers.Immutable
+                        ),
                         Statement.MakeExprStmt(
                             Helpers.MakeCallExpression(
                                 Helpers.MakeIdentifierPath("println"),
                                 Helpers.MakeIdentifierPath("a"),
                                 Helpers.MakeIdentifierPath("b"),
-                                Helpers.MakeIdentifierPath("c")
+                                Helpers.MakeIdentifierPath("c"),
+                                Helpers.MakeIdentifierPath("d")
                             )
                         )
                     ),

@@ -99,6 +99,47 @@ OK, enough with simple calculations. Next, let's look at the data types that var
 
 Like other programming languages, Expresso has some types built into it. Namely the `int`, `uint` types for signed and unsigned integers, the `bool` type for
 the booleans, the `float` and `double` types for single floating-point numbers and double floating-point numbers and the `char` for characters, etc.
+Let's explore each type to see what it does.
+
+## Data types
+
+### The `int`, `uint` and `byte` types
+
+The first types that we'll look at is the `int`, `uint` and `byte` types. Expresso provides just these three types for integers because it's considered to be used as
+a scripting language rather than a type-strict language where would need more control over the size of integers.
+
+As internal representations, `int`, `uint` and `byte` use `int`, `uint` and `byte` types on C#, respectively, so see API documentations for more informations on those
+types.
+
+### The `float` and `double` types
+
+Next up is the `float` and `double` types. Like the above types, they are defined on C# as well.
+That's all for floating-point numbers.
+
+### The `bool` type
+
+Next, let's look at a simple type: the `bool` type. The `bool` represents the boolean and has two possible values: true and false.
+In Expresso, the `if` statement doesn't allow the conditional to have any types other than `bool`. If you are trying to do that,
+you'll see the following error:
+
+```
+Error ES4000: The condition expression has to be of type `bool`
+```
+
+The error message should tell the story.
+
+### The `char` type
+
+The `char` type represents a character. As usual, it is the same as the C#'s char type, so see the API documentation for more informations on the type.
+But it is worth noting that the C#'s char type (and thus the `char` type) is encoded in UTF-16. To put it simply, a `char` can represent any character in UTF-16.
+It's wonderful considering the fact that in the traditional C most of the characters aren't represented in one char.
+
+### The `bigint` type
+
+In the computer world, numbers are approximated using two's complement representation or are limited in size. For example, the `int` type can only represent integers
+from -(2<sup>31</sup>) to 2<sup>31</sup> - 1 inclusive.
+But in some fields, you'll need to represent numbers more properly, for example, when dealing with money. For those situations Expresso provides the `bigint` type.
+The `bigint` can store any arbitrary integers.
 
 OK, next up is exponentiation. But we'll be doing it in a slightly different way. Even though Expresso has the operator for it, here we'll be doing it on our
 own, using while loop.
