@@ -37,7 +37,7 @@ namespace Expresso.Ast
         /// The target module path to import names from or the target namespace name to import names from. 
         /// </summary>
         public string ModuleName{
-            get{return ModuleNameToken.ToString();}
+            get{return ModuleNameToken.Name;}
 		}
 
         public Identifier ModuleNameToken{

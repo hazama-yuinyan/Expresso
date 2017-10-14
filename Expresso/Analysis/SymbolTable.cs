@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
+using Expresso.CodeGen;
 using ICSharpCode.NRefactory;
 
 
@@ -118,7 +119,8 @@ namespace Expresso.Ast.Analysis
             table2.Children.Add(table);
 
             // TODO: Use reflection to add native symbols
-            var vector_table = new SymbolTable();
+            ExpressoCompilerHelpers.AddNativeSymbolTables(table2);
+            /*var vector_table = new SymbolTable();
             vector_table.Name = TypeTablePrefix + "vector`T";
             vector_table.AddSymbol("add", AstType.MakeFunctionType("add", AstType.MakeSimpleType("tuple", TextLocation.Empty), new List<AstType>{
                 AstType.MakeParameterType("T")
@@ -126,7 +128,7 @@ namespace Expresso.Ast.Analysis
             vector_table.GetSymbol("add").IdentifierId = 1000000003u;
             table2.Children.Add(vector_table);
             table2.AddTypeSymbol("vector", AstType.MakeSimpleType("vector", new List<AstType>{AstType.MakeParameterType("T")}));
-
+*/
             return table;
         }
 
@@ -163,6 +165,9 @@ namespace Expresso.Ast.Analysis
         /// <param name="name">Name.</param>
         public SymbolTable GetTypeTable(string name)
         {
+            if(name == null)
+                throw new ArgumentNullException();
+            
             var parent = Parent;
             var tmp = parent.Children[0];
             var class_name = TypeTablePrefix + name;
@@ -251,7 +256,7 @@ namespace Expresso.Ast.Analysis
         /// <param name="type">The type that corresponds to the name in the current or child scopes.</param>
         public void AddTypeSymbol(string name, AstType type)
         {
-            type_table.Add(name, AstNode.MakeIdentifier(name, type));
+            AddTypeSymbol(name, AstNode.MakeIdentifier(name, type));
         }
 
         /// <summary>
@@ -262,7 +267,12 @@ namespace Expresso.Ast.Analysis
         /// <param name="ident">Ident.</param>
         public void AddTypeSymbol(string name, Identifier ident)
         {
-            type_table.Add(name, ident);
+            try{
+                type_table.Add(name, ident);
+            }
+            catch(ArgumentException){
+                throw new ParserException("The name `{0}` is already defined in the type namespace in the current scope {1}.", ident, name, Name);
+            }
         }
 
         /// <summary>

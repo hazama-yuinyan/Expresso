@@ -678,13 +678,12 @@ string cur_class_name;
 		var path = t.val.Substring(1, t.val.Length - 2);
 		symbol = AstNode.MakeIdentifier(path, CurrentLocation);
 		Symbols.AddTypeSymbol(t.val, symbol);
-		//entities.Add(symbol);
 		
 		Expect(32);
 		Expect(14);
 		if(!CheckKeyword(t.val)){
 		   alias = AstNode.MakeIdentifier(t.val, CurrentLocation);
-		   Symbols.AddTypeSymbol(t.val, alias);
+		   Symbols.AddTypeSymbol(t.val, symbol);
 		}else{
 		   // Failed to parse an alias name.
 		   // Leave the parser to recover its state.

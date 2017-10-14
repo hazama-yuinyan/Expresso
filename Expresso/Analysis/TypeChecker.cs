@@ -882,9 +882,12 @@ namespace Expresso.Ast.Analysis
 
         public AstType VisitImportDeclaration(ImportDeclaration importDecl)
         {
+            var module_type = AstType.MakeSimpleType(importDecl.ModuleName);
+            importDecl.ModuleNameToken.Type.ReplaceWith(module_type);
+
             if(!importDecl.AliasNameToken.IsNull){
-                var module_type = importDecl.ModuleNameToken.AcceptWalker(this);
-                importDecl.AliasNameToken.IdentifierId = module_type.IdentifierNode.IdentifierId;
+                var module_type2 = importDecl.ModuleNameToken.AcceptWalker(this);
+                importDecl.AliasNameToken.IdentifierId = module_type2.IdentifierNode.IdentifierId;
             }
             return null;
         }

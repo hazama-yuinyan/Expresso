@@ -293,7 +293,14 @@ namespace Expresso.Ast.Analysis
             {
                 if(ident.Type is PlaceholderType){
                     var symbol = checker.symbols.GetSymbolInAnyScope(ident.Name);
-                    if(symbol == null){
+                    if(symbol != null){
+                        var cloned = symbol.Type.Clone();
+                        ident.Type.ReplaceWith(cloned);
+                        return symbol.Type.Clone();
+                    }
+
+                    var symbol2 = checker.symbols.GetTypeSymbolInAnyScope(ident.Name);
+                    if(symbol2 == null){
                         parser.ReportSemanticError(
                             "Error ES1000: The symbol '{0}' at {1} is not defined in the current scope {2}.",
                             ident,
@@ -301,9 +308,9 @@ namespace Expresso.Ast.Analysis
                         );
                         return null;
                     }else{
-                        var cloned = symbol.Type.Clone();
+                        var cloned = symbol2.Type.Clone();
                         ident.Type.ReplaceWith(cloned);
-                        return symbol.Type.Clone();
+                        return symbol2.Type.Clone();
                     }
                 }else{
                     return ident.Type.Clone();

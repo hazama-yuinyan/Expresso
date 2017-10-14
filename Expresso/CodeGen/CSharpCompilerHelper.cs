@@ -7,6 +7,7 @@ using System.Text.RegularExpressions;
 using Expresso.Ast;
 using Expresso.TypeSystem;
 using Expresso.Runtime.Builtins;
+using Expresso.Ast.Analysis;
 using System.Text;
 
 namespace Expresso.CodeGen
@@ -30,8 +31,11 @@ namespace Expresso.CodeGen
             {"bool", "Boolean"},
             {"int", "Int32"},
             {"uint", "UInt32"},     //
-            {"char", "UInt32"},     // In Expresso, char is encoded in UTF-8.
-            {"string", "UTF8String"},
+            {"float", "Float"},
+            {"double", "Double"},
+            {"char", "Char"},
+            {"byte", "Byte"},
+            {"string", "String"},
             {"array", "Array"},
             {"vector", "List"},
             {"tuple", "Tuple"},
@@ -48,7 +52,7 @@ namespace Expresso.CodeGen
         }
 
         /// <summary>
-        /// Helper method to convert a PrimitiveType to C#'s type.
+        /// Helper method to convert a PrimitiveType to a C#'s type.
         /// </summary>
         /// <returns>A <see cref="System.Type"/> object.</returns>
         /// <param name="type">Type.</param>
@@ -325,7 +329,7 @@ namespace Expresso.CodeGen
             if(results.Count() > 1)
                 throw new Exception("Ambiguous methods! Multiple candidates found!");
             else if(!results.Any())
-                throw new Exception("There is no candidate methods '" + methodName + "'");
+                throw new Exception("There is no candidate methods for '" + methodName + "'");
 
             return results.First().MakeGenericMethod(parameterTypes);
         }

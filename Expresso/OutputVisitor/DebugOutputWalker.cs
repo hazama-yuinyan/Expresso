@@ -514,7 +514,6 @@ namespace Expresso.Ast
         public void VisitPrimitiveType(PrimitiveType primitiveType)
         {
             writer.Write(primitiveType.KnownTypeCode);
-            //primitiveType.KeywordToken;
         }
 
         public void VisitReferenceType(ReferenceType referenceType)

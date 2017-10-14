@@ -218,6 +218,7 @@
     <Compile Include="Ast\Patterns\KeyValuePattern.cs" />
     <Compile Include="Analysis\MatchClauseIdentifierDefiner.cs" />
     <Compile Include="CodeGen\ItemTypeInferencer.cs" />
+    <Compile Include="CodeGen\ExpressoCompilerHelpers.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System" />

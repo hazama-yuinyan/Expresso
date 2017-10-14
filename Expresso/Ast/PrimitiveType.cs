@@ -25,37 +25,40 @@ namespace Expresso.Ast
     /// <item>dictionary</item>
     /// <item>function</item>
     /// <item>intseq</item>
-    /// <item>void</item>
     /// <item>array of the above types</item>
     /// </list>
     /// </summary>
     public class PrimitiveType : AstType
     {
-        public static readonly Role<ExpressoTokenNode> KeywordRole =
-            new Role<ExpressoTokenNode>("Keyword", ExpressoTokenNode.Null);
-
-        public ExpressoTokenNode KeywordToken{
-            get{return GetChildByRole(KeywordRole);}
-            set{SetChildByRole(KeywordRole, value);}
-        }
+        string keyword;
 
         public ExpressoTypeCode KnownTypeCode{
-            get{return GetKnownTypeCodeForPrimitiveType(KeywordToken.Token, this);}
+            get{return GetKnownTypeCodeForPrimitiveType(IdentifierNode.Name, this);}
         }
 
         public override string Name{
-            get{return KeywordToken.Token;}
+            get{return keyword;}
+        }
+
+        public string Keyword{
+            get{return keyword;}
+            set{
+                if(value == null)
+                    throw new ArgumentNullException();
+
+                ThrowIfFrozen();
+                keyword = value;
+            }
         }
 
         public override Identifier IdentifierNode{
-            get{return GetChildByRole(Roles.Identifier);}
+            get{return null;}
         }
 
         public PrimitiveType(string keyword, TextLocation location)
             : base(location, new TextLocation(location.Line, location.Column + keyword.Length))
         {
-            KeywordToken = new ExpressoTokenNode(location, new TokenRole(keyword, ExpressoTokenNode.Null));
-            SetChildByRole(Roles.Identifier, AstNode.MakeIdentifier(keyword));
+            Keyword = keyword;
         }
 
         public override void AcceptWalker(IAstWalker walker)
@@ -76,7 +79,7 @@ namespace Expresso.Ast
         internal protected override bool DoMatch(AstNode other, ICSharpCode.NRefactory.PatternMatching.Match match)
         {
             var o = other as PrimitiveType;
-            return o != null && KeywordToken.DoMatch(o.KeywordToken, match);
+            return o != null && Keyword == o.Keyword;
         }
 
         #region implemented abstract members of AstType
@@ -133,8 +136,8 @@ namespace Expresso.Ast
             case "intseq":
                 return ExpressoTypeCode.IntSeq;
 
-            case "void":
-                return ExpressoTypeCode.Void;
+            /*case "void":
+                return ExpressoTypeCode.Void;*/
 
             case "string":
                 return ExpressoTypeCode.String;

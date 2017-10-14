@@ -342,7 +342,7 @@ namespace Expresso.Ast.Analysis
 
         public void VisitIdentifier(Identifier ident)
         {
-            BindName(ident);
+            BindNameOrTypeName(ident);
         }
 
         public void VisitIntegerSequenceExpression(IntegerSequenceExpression intSeq)
@@ -573,6 +573,8 @@ namespace Expresso.Ast.Analysis
                 symbol_table.AddExternalSymbols(inner_parser.Symbols, importDecl.AliasName);
                 ExpressoNameBinder.NameBindAst(inner_parser);
             }
+            importDecl.ModuleNameToken.Type = AstType.MakeSimpleType(importDecl.ModuleName);
+            UniqueIdGenerator.DefineNewId(importDecl.ModuleNameToken);
             UniqueIdGenerator.DefineNewId(importDecl.AliasNameToken);
             /*if(importDecl.AliasNameToken.IsNull){
                 importDecl.ModuleNameToken.AcceptWalker(this);
@@ -684,6 +686,31 @@ namespace Expresso.Ast.Analysis
             if(ident.IdentifierId == 0){
                 parser.ReportSemanticError(
                     "Error ES0101: Type symbol '{0}' turns out not to be declared or accessible in the current scope {1}!",
+                    ident,
+                    ident.Name, symbol_table.Name
+                );
+            }
+        }
+
+        void BindNameOrTypeName(Identifier ident)
+        {
+            var referenced = symbol_table.GetSymbolInAnyScope(ident.Name);
+            if(referenced != null)
+                ident.IdentifierId = referenced.IdentifierId;
+
+            if(ident.IdentifierId == 0){
+                var native = SymbolTable.GetNativeSymbol(ident.Name);
+                if(native != null)
+                    ident.IdentifierId = native.IdentifierId;
+            }
+
+            var symbol = symbol_table.GetTypeSymbolInAnyScope(ident.Name);
+            if(symbol != null)
+                ident.IdentifierId = symbol.IdentifierId;
+
+            if(ident.IdentifierId == 0){
+                parser.ReportSemanticError(
+                    "Error ES0102: Symbol '{0}' turns out not to be declared or accessible in the current scope {1}!",
                     ident,
                     ident.Name, symbol_table.Name
                 );

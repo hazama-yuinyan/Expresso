@@ -3500,7 +3500,7 @@ namespace Expresso.Test
 
             var expected_ast = AstNode.MakeModuleDef("TestModule", new List<EntityDeclaration>{
                 EntityDeclaration.MakeClassDecl(
-                    "Test",
+                    "TestClass",
                     Enumerable.Empty<AstType>(),
                     Helpers.MakeSeq<EntityDeclaration>(
                         EntityDeclaration.MakeField(
@@ -3593,7 +3593,7 @@ namespace Expresso.Test
                     Statement.MakeBlock(
                         Helpers.MakeSingleItemReturnStatement(
                             Expression.MakeObjectCreation(
-                                Helpers.MakeGenericType("Test"),
+                                Helpers.MakeGenericType("TestClass"),
                                 Helpers.MakeSeq(
                                     AstNode.MakeIdentifier("x"),
                                     AstNode.MakeIdentifier("y")
@@ -3611,10 +3611,49 @@ namespace Expresso.Test
                             )
                         )
                     ),
-                    Helpers.MakeGenericType("Test"),
+                    Helpers.MakeGenericType("TestClass"),
+                    Modifiers.Export
+                ),
+                EntityDeclaration.MakeFunc(
+                    "mySin",
+                    Helpers.MakeSeq(
+                        EntityDeclaration.MakeParameter(
+                            "x",
+                            Helpers.MakePrimitiveType("double")
+                        )
+                    ),
+                    Statement.MakeBlock(
+                        Helpers.MakeSingleItemReturnStatement(
+                            Helpers.MakeCallExpression(
+                                Expression.MakeMemRef(
+                                    Helpers.MakeIdentifierPath(
+                                        "Math",
+                                        AstType.MakeSimpleType("System.Math")
+                                    ),
+                                    AstNode.MakeIdentifier(
+                                        "sin",
+                                        AstType.MakeFunctionType(
+                                            "sin",
+                                            Helpers.MakePrimitiveType("double"), 
+                                            TextLocation.Empty,
+                                            TextLocation.Empty,
+                                            Helpers.MakePrimitiveType("double")
+                                        )
+                                    )
+                                ),
+                                Helpers.MakeIdentifierPath(
+                                    "x",
+                                    Helpers.MakePrimitiveType("double")
+                                )
+                            )
+                        )
+                    ),
+                    Helpers.MakePrimitiveType("double"),
                     Modifiers.Export
                 )
-            });
+            }, Helpers.MakeSeq<ImportDeclaration>(
+                AstNode.MakeImportDecl(AstNode.MakeIdentifier("System.Math"), "Math")
+            ));
 
             Assert.IsNotNull(ast);
             Helpers.AstStructuralEqual(ast, expected_ast);
@@ -3640,7 +3679,7 @@ namespace Expresso.Test
                                     "a",
                                     AstType.MakeMemberType(
                                         Helpers.MakeGenericType("TestModule"),
-                                        Helpers.MakeGenericType("Test")
+                                        Helpers.MakeGenericType("TestClass")
                                     )
                                 )
                             ),
@@ -3648,7 +3687,7 @@ namespace Expresso.Test
                                 Expression.MakeObjectCreation(
                                     AstType.MakeMemberType(
                                         Helpers.MakeGenericType("TestModule"),
-                                        Helpers.MakeGenericType("Test")
+                                        Helpers.MakeGenericType("TestClass")
                                     ),
                                     Helpers.MakeSeq(
                                         AstNode.MakeIdentifier("x"),

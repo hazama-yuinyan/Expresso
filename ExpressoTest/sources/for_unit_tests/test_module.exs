@@ -30,5 +30,5 @@ export def createTest(x (- int, y (- int) -> TestClass
 
 export def mySin(x (- double) -> double
 {
-    return Math.Sin(x);
+    return Math.sin(x);
 }
