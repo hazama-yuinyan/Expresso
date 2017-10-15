@@ -386,7 +386,8 @@ namespace Expresso.Ast.Analysis
                     foreach(var item in pathExpr.Items){
                         if(table.HasTypeSymbolInAnyScope(item.Name)){
                             var tmp_type = table.GetTypeSymbolInAnyScope(item.Name);
-                            result = tmp_type.Type;
+                            result = tmp_type.Type.Clone();
+                            item.Type.ReplaceWith(result);
                             table = table.GetTypeTable(item.Name);
                         }else if(table.HasSymbolInAnyScope(item.Name)){
                             var tmp = table.GetSymbolInAnyScope(item.Name);

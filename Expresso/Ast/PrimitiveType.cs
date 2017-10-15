@@ -33,7 +33,7 @@ namespace Expresso.Ast
         string keyword;
 
         public ExpressoTypeCode KnownTypeCode{
-            get{return GetKnownTypeCodeForPrimitiveType(IdentifierNode.Name, this);}
+            get{return GetKnownTypeCodeForPrimitiveType(Keyword, this);}
         }
 
         public override string Name{

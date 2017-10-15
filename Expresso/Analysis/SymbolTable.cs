@@ -69,7 +69,7 @@ namespace Expresso.Ast.Analysis
                     AstType.MakeSimpleType("tuple", TextLocation.Empty),    //The void type
                     TextLocation.Empty,
                     TextLocation.Empty,
-                    AstType.MakePrimitiveType("String", TextLocation.Empty)
+                    AstType.MakePrimitiveType("string", TextLocation.Empty)
                 )
             );
             print_ident.IdentifierId = 1000000000u;
@@ -82,7 +82,7 @@ namespace Expresso.Ast.Analysis
                     AstType.MakeSimpleType("tuple", TextLocation.Empty),    //The void type
                     TextLocation.Empty,
                     TextLocation.Empty,
-                    AstType.MakePrimitiveType("String", TextLocation.Empty)
+                    AstType.MakePrimitiveType("string", TextLocation.Empty)
                 )
             );
             println_ident.IdentifierId = 1000000001u;
@@ -95,7 +95,7 @@ namespace Expresso.Ast.Analysis
                     AstType.MakeSimpleType("tuple", TextLocation.Empty),    // The void type
                     TextLocation.Empty,
                     TextLocation.Empty,
-                    AstType.MakePrimitiveType("String", TextLocation.Empty)
+                    AstType.MakePrimitiveType("string", TextLocation.Empty)
                 )
             );
             printformat_ident.IdentifierId = 1000000002u;
@@ -159,7 +159,7 @@ namespace Expresso.Ast.Analysis
         #endregion
 
         /// <summary>
-        /// Gets the type table named `name`.
+        /// Gets the type table named `name` in any parent scopes.
         /// </summary>
         /// <returns>The type table.</returns>
         /// <param name="name">Name.</param>
