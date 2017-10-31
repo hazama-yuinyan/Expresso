@@ -10,7 +10,7 @@ namespace Expresso.CodeGen
 {
     public static class ExpressoCompilerHelpers
     {
-        static uint IdentifierId = 1000000003u;
+        static uint IdentifierId = 1000000017u;
         static readonly string TypePrefix = "type_";
         static readonly string[] IgnoreList = new []{"equals", "getHashCode"};
 
@@ -67,7 +67,7 @@ namespace Expresso.CodeGen
                     var type_name = type.Name;
                     var expresso_type_name = GetExpressoTypeName(type.FullName);
                     var expresso_name_builder = new StringBuilder(expresso_type_name);
-                    if(type_name.StartsWith("<>")){
+                    if(type_name.StartsWith("<>", StringComparison.CurrentCulture)){
                         // ignore compiler-generated classes
                         continue;
                     }
@@ -102,7 +102,7 @@ namespace Expresso.CodeGen
                     foreach(var public_method in type.GetMethods()){
                         var method_name = public_method.Name;
                         method_name = ConvertToExpressoFunctionName(method_name);
-                        if(IgnoreList.Contains(method_name) || method_name.StartsWith("op_") || new_table.GetSymbol(method_name) != null)
+                        if(IgnoreList.Contains(method_name) || method_name.StartsWith("op_", StringComparison.CurrentCulture) || new_table.GetSymbol(method_name) != null)
                             continue;
                         
                         var return_type = GetExpressoType(public_method.ReturnType);
@@ -125,7 +125,7 @@ namespace Expresso.CodeGen
 
         static AstType GetExpressoType(Type type)
         {
-            var index = type.Name.IndexOf("`");
+            var index = type.Name.IndexOf("`", StringComparison.CurrentCulture);
             var actual_type_name = type.Name.Substring(0, index == -1 ? type.Name.Length : index);
             var type_name = SpecialNamesMapInverse.ContainsKey(actual_type_name) ? SpecialNamesMapInverse[actual_type_name] : type.Name;
             if(type_name == "void")

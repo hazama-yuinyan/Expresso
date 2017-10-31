@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
+using System.Diagnostics;
 using System.Linq;
 using System.Numerics;
 using System.Reflection;
 using System.Reflection.Emit;
-using System.Runtime.InteropServices;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
 using Expresso.Ast;
 using Expresso.Ast.Analysis;
@@ -64,34 +64,22 @@ namespace Expresso.CodeGen
             get; private set;
         }
 
-        static CSharpEmitter()
-        {
-            Symbols.Add(1000000000u, new ExpressoSymbol{
-                Method = typeof(Console).GetMethod("Write", new []{
-                    typeof(string), typeof(object[])
-                })
-            });
-            Symbols.Add(1000000001u, new ExpressoSymbol{
-                Method = typeof(Console).GetMethod("WriteLine", new []{
-                    typeof(string), typeof(object[])
-                })
-            });
-            Symbols.Add(1000000002u, new ExpressoSymbol{
-                Method = typeof(Console).GetMethod("Write", new []{
-                    typeof(string), typeof(object[])
-                })
-            });
-            Symbols.Add(1000000003u, new ExpressoSymbol{
-                Method = typeof(List<>).GetMethod("Add")
-            });
-        }
-
         public CSharpEmitter(Parser parser, ExpressoCompilerOptions options)
         {
             symbol_table = parser.Symbols;
             this.options = options;
             identifier_definer = new MatchClauseIdentifierDefiner();
             item_type_inferencer = new ItemTypeInferencer(this);
+
+            CSharpCompilerHelper.AddPrimitiveNativeSymbols();
+            AddNativeSymbols(parser.TopmostAst);
+        }
+
+        static void AddNativeSymbols(ExpressoAst astTree)
+        {
+            CSharpCompilerHelper.AddNativeSymbols(astTree.Imports);
+            foreach(var external_module in astTree.ExternalModules)
+                AddNativeSymbols(external_module);
         }
 
         static Type GuessEnumeratorType(Type type)
@@ -99,7 +87,7 @@ namespace Expresso.CodeGen
             var enumerator_type = type.GetNestedType("Enumerator");
             if(enumerator_type != null){
                 foreach(var interface_type in enumerator_type.GetInterfaces()){
-                    if(interface_type.FullName.StartsWith("System.Collections.Generic.IEnumerator")){
+                    if(interface_type.FullName.StartsWith("System.Collections.Generic.IEnumerator", StringComparison.CurrentCulture)){
                         if(interface_type.ContainsGenericParameters)
                             interface_type.MakeGenericType(type.GetGenericArguments());
                         else
@@ -200,11 +188,43 @@ namespace Expresso.CodeGen
             if(context == null)
                 context = new CSharpEmitterContext();
 
-            var name = new AssemblyName("exsAsm");
+            var name = new AssemblyName("exs_" + ast.Name);
 
             var asm_builder = Thread.GetDomain().DefineDynamicAssembly(name, AssemblyBuilderAccess.RunAndSave, options.OutputPath);
-            var mod_builder = asm_builder.DefineDynamicModule(ast.Name + ".exe");
-            var type_builder = new LazyTypeBuilder(mod_builder, "ExsMain", TypeAttributes.Class, Enumerable.Empty<Type>(), true);
+            var file_name = (ast.Name == "main") ? ast.Name + ".exe" : ast.Name + ".dll";
+            var mod_builder = asm_builder.DefineDynamicModule(file_name);
+            var type_builder = new LazyTypeBuilder(mod_builder, CSharpCompilerHelper.ConvertToPascalCase(ast.Name), TypeAttributes.Class, Enumerable.Empty<Type>(), true);
+            var root_symbol_table = symbol_table;
+            if(ast.ExternalModules.Any()){
+                context.CurrentModuleCount = ast.ExternalModules.Count;
+            }else{
+                Debug.Assert(symbol_table.Name == "programRoot", "The symbol_table should indicate 'programRoot' before generating codes.");
+                symbol_table = symbol_table.Parent.Children[symbol_table.Parent.Children.Count - context.CurrentModuleCount--];
+            }
+
+            context.AssemblyBuilder = asm_builder;
+            context.ModuleBuilder = mod_builder;
+            context.TypeBuilder = type_builder;
+
+            context.ExternalModuleType = null;
+            foreach(var external_module in ast.ExternalModules){
+                var external_module_count = context.CurrentModuleCount;
+                var tmp_counter = scope_counter;
+                VisitAst(external_module, context);
+                context.CurrentModuleCount = external_module_count;
+                scope_counter = tmp_counter;
+
+                var regexp = new Regex(external_module.Name);
+                var import = ast.Imports.Where(i => regexp.IsMatch(i.ModuleName))
+                                .FirstOrDefault();
+                if(import == null)
+                    throw new EmitterException("'{0}' isn't a module name", external_module.Name);
+
+                Symbols.Add(import.ModuleNameToken.IdentifierId, new ExpressoSymbol{
+                    Type = context.ExternalModuleType
+                });
+                context.ExternalModuleType = null;
+            }
 
             context.AssemblyBuilder = asm_builder;
             context.ModuleBuilder = mod_builder;
@@ -213,14 +233,17 @@ namespace Expresso.CodeGen
             foreach(var import in ast.Imports)
                 import.AcceptWalker(this, context);
 
-            DefineFunctionSignatures(ast.Declarations, context);
-            foreach(var decl in ast.Declarations)
+            foreach(var decl in ast.Declarations){
+                // Define only the function signatures here so that these functions or methods can call themselves
+                DefineFunctionSignatures(ast.Declarations, decl, context);
                 decl.AcceptWalker(this, context);
+            }
 
-            type_builder.CreateType();
+            context.ExternalModuleType = type_builder.CreateType();
             asm_builder.Save(GetModuleName(ast));
 
             AssemblyBuilder = asm_builder;
+            symbol_table = root_symbol_table;
 
             return null;
         }
@@ -873,7 +896,11 @@ namespace Expresso.CodeGen
                     return null;
                 }else if(context.RequestType && symbol.Type != null){
                     context.TargetType = symbol.Type;
-                    context.Constructor = context.TargetType.GetConstructors().Last();
+                    if(context.TargetType.GetConstructors().Any()){
+                        // context.TargetType could be a static type
+                        context.Constructor = context.TargetType.GetConstructors().Last();
+                    }
+
                     return symbol.Parameter;
                 }else if(context.RequestMethod){
                     if(symbol.Method == null)
@@ -885,13 +912,20 @@ namespace Expresso.CodeGen
                     throw new EmitterException("I can't guess what you want.");
                 }
             }else{
-                /*if(context.RequestField){
-                    var field = (context.TargetType != null) ? context.TargetType.GetField(ident.Name) : context.TypeBuilder.GetField(ident.Name);
-                    context.Field = field;
+                if(context.TargetType != null && context.RequestMethod){
+                    // For methods or functions in external modules
+                    var method_name = context.TargetType.FullName.StartsWith("System", StringComparison.CurrentCulture) ? CSharpCompilerHelper.ConvertToPascalCase(ident.Name)
+                                             : ident.Name;
+                    var method = context.TargetType.GetMethod(method_name);
+                    if(method == null)
+                        throw new EmitterException("It is found that the native symbol '{0}' doesn't represent a method", ident.Name);
+                    
+                    context.Method = method;
+                    Symbols.Add(ident.IdentifierId, new ExpressoSymbol{Method = method});
                     return null;
-                }else{*/
+                }else{
                     throw new EmitterException("It is found that the native symbol '{0}' isn't defined.", ident.Name);
-                //}
+                }
             }
         }
 
@@ -1028,7 +1062,7 @@ namespace Expresso.CodeGen
             context.Constructor = null;
             creation.TypePath.AcceptWalker(this, context);
             if(context.Constructor == null)
-                throw new EmitterException("No constructor found for the path `{0}`", creation, creation.TypePath);
+                throw new EmitterException("No constructors found for the path `{0}`", creation, creation.TypePath);
 
             var formal_params = context.Constructor.GetParameters();
             // TODO: make object creation arguments pair to constructor parameters
@@ -1291,6 +1325,11 @@ namespace Expresso.CodeGen
 
         public CSharpExpr VisitMemberType(MemberType memberType, CSharpEmitterContext context)
         {
+            // We don't need to inspect memberType.Target because memberType.IdentifierNode is already binded
+            //memberType.Target.AcceptWalker(this, context);
+            context.RequestType = true;
+            VisitIdentifier(memberType.IdentifierNode, context);
+            context.RequestType = false;
             return null;
         }
 
@@ -1326,45 +1365,45 @@ namespace Expresso.CodeGen
 
         public CSharpExpr VisitImportDeclaration(ImportDeclaration importDecl, CSharpEmitterContext context)
         {
-            /*if(importDecl.ImportedEntities.IsEmpty){
-                context.RequestType = true;
-                context.RequestMethod = true;
-                context.RequestField = true;
-                context.TargetType = null;
-                context.Method = null;
-                context.Field = null;
+            context.RequestType = true;
+            context.RequestMethod = true;
+            context.RequestField = true;
+            context.TargetType = null;
+            context.Method = null;
+            context.Field = null;
 
+            try{
                 importDecl.ModuleNameToken.AcceptWalker(this, context);
-                if(importDecl.AliasName != null){
-                    var type_symbol = symbol_table.GetTypeSymbol(importDecl.AliasName);
-                    if(type_symbol != null){
-                        AddSymbol(type_symbol, new ExpressoSymbol{
-                            Type = context.TargetType,
-                            Field = context.Field,
-                            Method = context.Method
-                        });
-                    }else{
-                        var symbol = symbol_table.GetSymbol(importDecl.ModuleName);
-                        AddSymbol(symbol, new ExpressoSymbol{
-                            Type = context.TargetType,
-                            Method = context.Method,
-                            Field = context.Field
-                        });
-                    }
-                }
-            }else{
-                foreach(var entity in importDecl.ImportedEntities){
-                    context.RequestType = true;
-                    context.RequestMethod = true;
-                    context.RequestField = true;
-                    context.TargetType = null;
-                    context.Method = null;
-                    context.Field = null;
+            }
+            catch(EmitterException ex){
+                if(!importDecl.ModuleName.EndsWith(".exs", StringComparison.CurrentCulture))
+                    throw ex;
+            }
+            if(importDecl.ModuleName.EndsWith(".exs", StringComparison.CurrentCulture) && importDecl.AliasName != null){
+                // For importing external modules
+                /*var type_symbol = symbol_table.GetTypeSymbol(importDecl.AliasName);
+                if(type_symbol != null){
+                    AddSymbol(type_symbol, new ExpressoSymbol{
+                        Type = context.TargetType,
+                        Field = context.Field,
+                        Method = context.Method
+                    });
+                }else{
+                    var symbol = symbol_table.GetSymbol(importDecl.ModuleName);
+                    AddSymbol(symbol, new ExpressoSymbol{
+                        Type = context.TargetType,
+                        Method = context.Method,
+                        Field = context.Field
+                    });
+                }*/
+                AddSymbol(importDecl.AliasNameToken, new ExpressoSymbol{
+                    Type = context.TargetType
+                });
+            }
 
-                    // Walking through the path items registers the symbols in question
-                    entity.AcceptWalker(this, context);
-                }
-            }*/
+            context.RequestType = false;
+            context.RequestMethod = false;
+            context.RequestField = false;
 
             return null;
         }
@@ -1399,7 +1438,7 @@ namespace Expresso.CodeGen
             else
                 attrs |= BindingFlags.NonPublic;
 
-            var interface_func = context.TypeBuilder.GetInterfaceMethod(CSharpCompilerHelper.ConvertToCLRFunctionName(funcDecl.Name), attrs);
+            var interface_func = context.TypeBuilder.GetInterfaceMethod(CSharpCompilerHelper.ConvertToPascalCase(funcDecl.Name), attrs);
             AddSymbol(funcDecl.NameToken, new ExpressoSymbol{Method = interface_func});
 
             var body = funcDecl.Body.AcceptWalker(this, context);
@@ -1455,13 +1494,6 @@ namespace Expresso.CodeGen
                 var initializer = init.Initializer.AcceptWalker(this, context);
                 if(initializer != null)
                     context.TypeBuilder.SetBody(field_builder, initializer);
-
-                /*var flags = BindingFlags.Default;
-                flags |= fieldDecl.Modifiers.HasFlag(Modifiers.Static) ? BindingFlags.Static : BindingFlags.Instance;
-                flags |= fieldDecl.Modifiers.HasFlag(Modifiers.Public) ? BindingFlags.Public : BindingFlags.NonPublic;
-
-                var field_info = context.TypeBuilder.GetField(init.Name, flags);
-                AddSymbol(init.NameToken, new ExpressoSymbol{Field = field_info});*/
             }
 
             return null;
@@ -2007,13 +2039,28 @@ namespace Expresso.CodeGen
             }
         }
 
-        void DefineFunctionSignatures(IEnumerable<EntityDeclaration> entities, CSharpEmitterContext context)
+        void DefineFunctionSignatures(IEnumerable<EntityDeclaration> entities, EntityDeclaration startingPoint, CSharpEmitterContext context)
         {
             var tmp_counter = scope_counter;
-            foreach(var func_decl in entities.OfType<FunctionDeclaration>())
-                DefineFunctionSignature(func_decl, context);
+            bool is_broken = false;
+            var interface_definer = new InterfaceTypeDefiner(this, context);
+            foreach(var entity in entities.SkipWhile(e => e != startingPoint)){
+                if(entity is TypeDeclaration){
+                    is_broken = true;
+                    break;
+                }
 
-            context.TypeBuilder.CreateInterfaceType();
+                if(entity is FunctionDeclaration 
+                   && context.TypeBuilder.GetMethod(CSharpCompilerHelper.ConvertToPascalCase(entity.Name)) == null)
+                    DefineFunctionSignature((FunctionDeclaration)entity, context);
+                else if(entity is FieldDeclaration
+                        && context.TypeBuilder.GetField(entity.Name) == null)
+                    DefineField((FieldDeclaration)entity, context);
+            }
+
+            if(!is_broken)
+                context.TypeBuilder.CreateInterfaceType();
+            
             scope_counter = tmp_counter;
         }
 
@@ -2043,17 +2090,37 @@ namespace Expresso.CodeGen
             var param_types =
                 from param in parameters
                 select param.Type;
-            context.TypeBuilder.DefineMethod(CSharpCompilerHelper.ConvertToCLRFunctionName(funcDecl.Name), attrs, return_type, param_types.ToArray());
+            context.TypeBuilder.DefineMethod(CSharpCompilerHelper.ConvertToPascalCase(funcDecl.Name), attrs, return_type, param_types.ToArray());
 
             AscendScope();
             scope_counter = tmp_counter + 1;
+        }
+
+        void DefineField(FieldDeclaration fieldDecl, CSharpEmitterContext context)
+        {
+            FieldAttributes attr = FieldAttributes.Private | FieldAttributes.Static;
+
+            // Don't set InitOnly flag or we'll fail to initialize the fields
+            //if(fieldDecl.Modifiers.HasFlag(Modifiers.Immutable))
+            //    attr |= FieldAttributes.InitOnly;
+
+            if(fieldDecl.Modifiers.HasFlag(Modifiers.Export)){
+                attr |= FieldAttributes.Public;
+                attr ^= FieldAttributes.Private;
+            }
+
+            foreach(var init in fieldDecl.Initializers){
+                var type = CSharpCompilerHelper.GetNativeType(init.NameToken.Type);
+                var field_builder = context.TypeBuilder.DefineField(init.Name, type, !Expression.IsNullNode(init.Initializer), attr);
+                AddSymbol(init.NameToken, new ExpressoSymbol{Field = field_builder});
+            }
         }
 
         List<ExprTree.Expression> ExpandCollection(Type collectionType, ExprTree.ParameterExpression param, out List<ExprTree.ParameterExpression> parameters)
         {
             parameters = new List<ExprTree.ParameterExpression>();
             var out_parameters = parameters;
-            if(collectionType.Name.StartsWith("Tuple")){
+            if(collectionType.Name.StartsWith("Tuple", StringComparison.CurrentCulture)){
                 var content = collectionType.GenericTypeArguments.Select((t, i) => {
                     var tmp_param = CSharpExpr.Parameter(t, "__" + VariableCount++);
                     out_parameters.Add(tmp_param);

@@ -8,7 +8,7 @@ namespace Expresso.Ast
 {
     /// <summary>
     /// Represents a nested type.
-    /// A nested type is notated as a path like "std::collections::vector".
+    /// A nested type is notated as a path like "TestModule::TestClass".
     /// </summary>
     public class MemberType : AstType
     {

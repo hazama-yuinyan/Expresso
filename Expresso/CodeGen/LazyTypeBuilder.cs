@@ -258,12 +258,28 @@ namespace Expresso.CodeGen
             return type_cache.GetMethod(name, flags);
         }
 
+        /// <summary>
+        /// Gets a method defined on this type. Note that it searches for non-public methods.
+        /// </summary>
+        /// <returns>The method.</returns>
+        /// <param name="name">Name.</param>
+        public MethodBuilder GetMethod(string name)
+        {
+            return members.OfType<MethodBuilder>()
+                          .Where(mb => mb.Name == name)
+                          .FirstOrDefault();
+        }
+
+        /// <summary>
+        /// Gets a field defined on this type. Note that it searches for non-public fields.
+        /// </summary>
+        /// <returns>The field.</returns>
+        /// <param name="name">Name.</param>
         public FieldBuilder GetField(string name)
         {
             return members.OfType<FieldBuilder>()
                           .Where(fb => fb.Name == name)
-                          .Select(fb => fb)
-                          .First();
+                          .FirstOrDefault();
         }
 
         public FieldInfo GetField(string name, BindingFlags flags)

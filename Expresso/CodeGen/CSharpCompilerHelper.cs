@@ -25,22 +25,21 @@ namespace Expresso.CodeGen
         static List<string> _AssemblyNames =
             new List<string>{"mscorlib", "System", "System.Core", "System.Numerics", "ExpressoRuntime"};
 
-        static Dictionary<string, string> SpecialNamesMap = new Dictionary<string, string>{
-            {"intseq", "ExpressoIntegerSequence"},
-            {"function", "Func"},
-            {"bool", "Boolean"},
-            {"int", "Int32"},
-            {"uint", "UInt32"},     //
-            {"float", "Float"},
-            {"double", "Double"},
-            {"char", "Char"},
-            {"byte", "Byte"},
-            {"string", "String"},
-            {"array", "Array"},
-            {"vector", "List"},
-            {"tuple", "Tuple"},
-            {"dictionary", "Dictionary"},
-            {"void", "Void"}
+        static Dictionary<string, Tuple<string, uint>> SpecialNamesMap = new Dictionary<string, Tuple<string, uint>>{
+            {"intseq", Tuple.Create("Expresso.Runtime.Builtins.ExpressoIntegerSequence", 1_000_000_003u)},
+            {"function", Tuple.Create("System.Func", 1_000_000_004u)},
+            {"bool", Tuple.Create("System.Boolean", 1_000_000_005u)},
+            {"int", Tuple.Create("System.Int32", 1_000_000_006u)},
+            {"uint", Tuple.Create("System.UInt32", 1_000_000_007u)},
+            {"float", Tuple.Create("System.Float", 1_000_000_008u)},
+            {"double", Tuple.Create("System.Double", 1_000_000_009u)},
+            {"char", Tuple.Create("System.Char", 1_000_000_010u)},
+            {"byte", Tuple.Create("System.Byte", 1_000_000_011u)},
+            {"string", Tuple.Create("System.String", 1_000_000_012u)},
+            {"array", Tuple.Create("System.Array", 1_000_000_013u)},
+            {"vector", Tuple.Create("System.Collections.Generic.List", 1_000_000_014u)},
+            {"tuple", Tuple.Create("System.Tuple", 1_000_000_015u)},
+            {"dictionary", Tuple.Create("System.Collections.Generic.Dictionary", 1_000_000_016u)}
         };
 
         /// <summary>
@@ -136,17 +135,38 @@ namespace Expresso.CodeGen
 
         public static Type GetNativeType(AstType astType)
         {
-            var primitive = astType as PrimitiveType;
-            if(primitive != null)
+            if(astType is PrimitiveType primitive)
                 return GetPrimitiveType(primitive);
 
-            var simple = astType as SimpleType;
-            if(simple != null){
+            if(astType is SimpleType simple){
                 var name = ConvertToDotNetTypeName(simple.Identifier);
                 Type type = null;
-                foreach(var asm in AppDomain.CurrentDomain.GetAssemblies()){
+                if(simple.Identifier == "tuple" && !simple.TypeArguments.Any())
+                    return typeof(void);
+                
+                if(simple.TypeArguments.Any()){
+                    name += "`" + simple.TypeArguments.Count + "[";
+                    bool first = true;
+                    foreach(var type_arg in simple.TypeArguments){
+                        if(first)
+                            first = false;
+                        else
+                            name += ",";
+
+                        name += GetNativeType(type_arg).FullName;
+                    }
+                    name += "]";
+                }
+
+                var asms = AppDomain.CurrentDomain.GetAssemblies();
+                foreach(var asm in asms){
+                    type = asm.GetType(name);
+                    if(type != null)
+                        break;
+                }
+                /*foreach(var asm in asms){
                     var types = GetTypes(asm);
-                    type = types.Where(t => t.Name.StartsWith(name) && t.Name.IndexOf('`') != -1 && t.Name.IndexOf('`') == name.Length || t.Name == name)
+                    type = types.Where(t => t.Name.StartsWith(name, StringComparison.CurrentCulture) && t.Name.IndexOf('`') != -1 && t.Name.IndexOf('`') == name.Length || t.Name == name)
                         .FirstOrDefault();
 
                     if(type != null)
@@ -158,7 +178,7 @@ namespace Expresso.CodeGen
                         .Select(ta => GetNativeType(ta))
                         .First();
 
-                    var array = System.Array.CreateInstance(type_arg, 1);
+                    var array = Array.CreateInstance(type_arg, 1);
                     return array.GetType();
                 }else if(simple.Identifier == "dictionary" || simple.Identifier == "vector"){
                     var generic_type = GetContainerType(simple);
@@ -208,18 +228,26 @@ namespace Expresso.CodeGen
                     }
 
                     return substituted;
-                }
+                }*/
+
+                if(type == null)
+                    throw new EmitterException("Type `{0}` is not found!", simple.Identifier);
 
                 return type;
             }
 
-            var member = astType as MemberType;
-            if(member != null){
+            if(astType is MemberType member){
+                foreach(var asm in AppDomain.CurrentDomain.GetAssemblies()){
+                    var types = GetTypes(asm);
+                    var type = types.Where(t => t.Name.StartsWith(member.MemberName, StringComparison.CurrentCulture)).FirstOrDefault();
+                    if(type != null)
+                        return type;
+                }
+
                 return null;
             }
 
-            var func = astType as FunctionType;
-            if(func != null){
+            if(astType is FunctionType func){
                 var param_types = func.Parameters
                                       .Select(p => GetNativeType(p))
                                       .ToArray();
@@ -234,8 +262,7 @@ namespace Expresso.CodeGen
                 }
             }
 
-            var placeholder = astType as PlaceholderType;
-            if(placeholder != null)
+            if(astType is PlaceholderType placeholder)
                 throw new EmitterException("Unknown placeholder!");
 
             throw new EmitterException("Unknown AstType!");
@@ -282,7 +309,7 @@ namespace Expresso.CodeGen
                 return typeof(Tuple<,,,,,,,>).MakeGenericType(types);
             
             default:
-                throw new EmitterException("Expresso in .NET doesn't support that many tuple elements");
+                throw new EmitterException("Expresso on .NET doesn't support that many tuple elements");
             }
         }
 
@@ -337,7 +364,7 @@ namespace Expresso.CodeGen
         public static string ConvertToDotNetTypeName(string originalName)
         {
             if(SpecialNamesMap.ContainsKey(originalName))
-                return SpecialNamesMap[originalName];
+                return SpecialNamesMap[originalName].Item1;
             else
                 return originalName;
         }
@@ -348,7 +375,7 @@ namespace Expresso.CodeGen
                 AppDomain.CurrentDomain.Load(name);
         }
 
-        public static string ConvertToCLRFunctionName(string name)
+        public static string ConvertToPascalCase(string name)
         {
             return name.Substring(0, 1).ToUpper() + name.Substring(1);
         }
@@ -399,7 +426,71 @@ namespace Expresso.CodeGen
             return obj.ToString();
         }
 
-        private static string ExpandList<T>(IEnumerable<T> enumerable)
+        public static void AddPrimitiveNativeSymbols()
+        {
+            CSharpEmitter.Symbols.Add(1000000000u, new ExpressoSymbol{
+                Method = typeof(Console).GetMethod("Write", new []{
+                    typeof(string), typeof(object[])
+                })
+            });
+            CSharpEmitter.Symbols.Add(1000000001u, new ExpressoSymbol{
+                Method = typeof(Console).GetMethod("WriteLine", new []{
+                    typeof(string), typeof(object[])
+                })
+            });
+            CSharpEmitter.Symbols.Add(1000000002u, new ExpressoSymbol{
+                Method = typeof(Console).GetMethod("Write", new []{
+                    typeof(string), typeof(object[])
+                })
+            });
+
+            foreach(var builtin_pair in SpecialNamesMap){
+                var primitive = AstType.MakePrimitiveType(builtin_pair.Key);
+                var type = GetPrimitiveType(primitive);
+
+                CSharpEmitter.Symbols.Add(builtin_pair.Value.Item2, new ExpressoSymbol{
+                    Type = type
+                });
+                /*foreach(var method in type.GetMethods()){
+                    CSharpEmitter.Symbols.Add(IdentifierId++, new ExpressoSymbol{
+                        Method = method
+                    });
+                }*/
+            }
+        }
+
+        public static void AddNativeSymbols(AstNodeCollection<ImportDeclaration> imports)
+        {
+            foreach(var import in imports){
+                if(import.ModuleName.EndsWith(".exs", StringComparison.CurrentCulture)){
+                    /*var module_name = import.ModuleName;
+                    var start_index = module_name.LastIndexOf("/", StringComparison.CurrentCulture);
+                    var actual_module_name = module_name.Substring(start_index + 1, module_name.LastIndexOf(".", StringComparison.CurrentCulture) - start_index - 1);
+                    var simple_type = AstType.MakeSimpleType(actual_module_name);
+                    var type = GetNativeType(simple_type);
+
+                    CSharpEmitter.Symbols.Add(import.ModuleNameToken.IdentifierId, new ExpressoSymbol{
+                        Type = type
+                    });*/
+                }else{
+                //var start_index = (import.ModuleName.LastIndexOf('.') != -1) ? import.ModuleName.LastIndexOf('.') : 0;
+                //var type_name = import.ModuleName.Substring(start_index);
+                    var simple_type = AstType.MakeSimpleType(import.ModuleName);
+                    var type = GetNativeType(simple_type);
+
+                    CSharpEmitter.Symbols.Add(import.ModuleNameToken.IdentifierId, new ExpressoSymbol{
+                        Type = type
+                    });
+                /*foreach(var method in type.GetMethods()){
+                    CSharpEmitter.Symbols.Add(IdentifierId++, new ExpressoSymbol{
+                        Method = method
+                    });
+                }*/
+                }
+            }
+        }
+
+        static string ExpandList<T>(IEnumerable<T> enumerable)
         {
             var builder = new StringBuilder();
             var type = enumerable.GetType();
@@ -421,7 +512,7 @@ namespace Expresso.CodeGen
             return builder.ToString();
         }
 
-        private static string ExpandDictionary<T, S>(Dictionary<T, S> dict)
+        static string ExpandDictionary<T, S>(Dictionary<T, S> dict)
         {
             var builder = new StringBuilder();
             if(dict.Any()){
@@ -440,6 +531,12 @@ namespace Expresso.CodeGen
         {
             try{
                 return asm.GetTypes();
+            }
+            catch(ReflectionTypeLoadException ex){
+                foreach(var e in ex.LoaderExceptions)
+                    Console.WriteLine(e.Message);
+
+                return Enumerable.Empty<Type>();
             }
             catch(Exception){
                 return Enumerable.Empty<Type>();

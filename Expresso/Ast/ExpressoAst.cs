@@ -14,6 +14,7 @@ namespace Expresso.Ast
 	/// </summary>
     public class ExpressoAst : AstNode
 	{
+        public static readonly Role<ExpressoAst> ModuleRole = new Role<ExpressoAst>("Module");
         public static readonly Role<EntityDeclaration> MemberRole = new Role<EntityDeclaration>("Member");
         public static readonly Role<ImportDeclaration> ImportRole = new Role<ImportDeclaration>("Import");
 
@@ -30,6 +31,12 @@ namespace Expresso.Ast
 		public string Name{
             get{return NameToken.Name;}
 		}
+
+        /// <summary>
+        /// Gets the external modules.
+        /// It can be an empty collection if there is no external modules.
+        /// </summary>
+        public AstNodeCollection<ExpressoAst> ExternalModules => GetChildrenByRole(ModuleRole);
 
         /// <summary>
         /// インポート宣言。

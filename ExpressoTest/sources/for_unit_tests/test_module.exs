@@ -1,7 +1,7 @@
 /**
  * Test module
  */
-module TestModule;
+module test_module;
 
 import "System.Math" as Math;
 

@@ -312,7 +312,7 @@ namespace Expresso.CodeGen
                     attr ^= MethodAttributes.Private;
                 }
 
-                context.TypeBuilder.DefineMethod(CSharpCompilerHelper.ConvertToCLRFunctionName(funcDecl.Name), attr, return_type, param_types.ToArray());
+                context.TypeBuilder.DefineMethod(CSharpCompilerHelper.ConvertToPascalCase(funcDecl.Name), attr, return_type, param_types.ToArray());
 
                 emitter.AscendScope();
                 emitter.scope_counter = tmp_counter + 1;
@@ -337,7 +337,8 @@ namespace Expresso.CodeGen
                 var base_types = 
                     from bt in typeDecl.BaseTypes
                     select Symbols[bt.IdentifierNode.IdentifierId].Type;
-                context.TypeBuilder = (parent_type != null && parent_type.Name != "ExsMain") ? parent_type.DefineNestedType(name, attr, base_types) : new LazyTypeBuilder(context.ModuleBuilder, name, attr, base_types, false);
+                //parent_type.DefineNestedType(name, attr, base_types);
+                context.TypeBuilder = new LazyTypeBuilder(context.ModuleBuilder, name, attr, base_types, false);
 
                 try{
                     foreach(var member in typeDecl.Members)

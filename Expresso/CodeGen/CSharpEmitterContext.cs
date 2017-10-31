@@ -189,6 +189,22 @@ namespace Expresso.CodeGen
         public System.Linq.Expressions.CatchBlock CatchBlock{
             get; set;
         }
+
+        /// <summary>
+        /// The number of the current external module being inspected.
+        /// </summary>
+        /// <value>The current module count.</value>
+        public int CurrentModuleCount{
+            get; set;
+        }
+
+        /// <summary>
+        /// Represents a <see cref="System.Type"/> instance that represents an external module type. 
+        /// </summary>
+        /// <value>The type of the external module.</value>
+        public Type ExternalModuleType{
+            get; set;
+        }
     }
 }
 

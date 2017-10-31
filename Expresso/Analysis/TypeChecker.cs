@@ -628,7 +628,7 @@ namespace Expresso.Ast.Analysis
                 if(symbol == null){
                     // Don't report field missing error because InferenceRunner has already done that
                 }else{
-                    // Bind the name of the member here
+                    // Don't bind the name of the member here because InferenceRunner has already done that
                     //memRef.Member.IdentifierId = symbol.IdentifierId;
                     return symbol.Type;
                 }
@@ -932,7 +932,7 @@ namespace Expresso.Ast.Analysis
 
             if(funcDecl.Name == "main"){
                 var next = funcDecl.GetNextNode();
-                if(next != null){
+                if(next != null && next is FunctionDeclaration){
                     parser.ReportSemanticError(
                         "Error ES1100: Can't define functions after the main function",
                         next
@@ -958,6 +958,21 @@ namespace Expresso.Ast.Analysis
 
                 AscendScope();
                 scope_counter = tmp_counter2;
+            }
+
+            if(funcDecl.Parent is TypeDeclaration){
+                var type_name = ((TypeDeclaration)funcDecl.Parent).Name;
+                if(funcDecl.Parameters.Any(p => p.ReturnType is SimpleType && ((SimpleType)p.ReturnType).Name == type_name)){
+                    parser.ReportSemanticError(
+                        "Error ES1020: In Expresso you can't define a method that takes the self class that contains the method.\n Use module-level functions instead",
+                        funcDecl.Parameters.Where(p => p.ReturnType is SimpleType && ((SimpleType)p.ReturnType).Name == type_name).First()
+                    );
+                }else if(funcDecl.ReturnType is SimpleType && ((SimpleType)funcDecl.ReturnType).Name == type_name){
+                    parser.ReportSemanticError(
+                        "Error ES1021: In Expresso you can't define a method that returns the self class that contains the method.\n Use module-level functions instead",
+                        funcDecl.ReturnType
+                    );
+                }
             }
 
             AscendScope();

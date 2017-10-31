@@ -467,7 +467,7 @@ namespace Expresso.Ast.Analysis
         }
 
         /// <summary>
-        /// Clones this instance as it has the same values as this instance.
+        /// Clones this instance so it has the same values as this instance.
         /// </summary>
         /// <returns>The clone.</returns>
         public SymbolTable Clone()
@@ -488,6 +488,12 @@ namespace Expresso.Ast.Analysis
                     return null;
                 else
                     cloned.type_table.Add(key, value);
+            }
+
+            foreach(var child in Children){
+                var cloned_child = child.Clone();
+                cloned_child.Parent = cloned;
+                cloned.Children.Add(cloned_child);
             }
 
             return cloned;

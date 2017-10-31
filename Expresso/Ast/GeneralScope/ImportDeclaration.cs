@@ -34,7 +34,8 @@ namespace Expresso.Ast
 
         /// <summary>
         /// インポート対象となるモジュールパス。
-        /// The target module path to import names from or the target namespace name to import names from. 
+        /// The target module path to import names from or the target namespace name to import names from.
+        /// The file path has to contain the module name that it refers to.
         /// </summary>
         public string ModuleName{
             get{return ModuleNameToken.Name;}

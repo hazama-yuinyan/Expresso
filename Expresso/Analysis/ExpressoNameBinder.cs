@@ -72,6 +72,11 @@ namespace Expresso.Ast.Analysis
             #endif
 		}
 
+        /// <summary>
+        /// The public surface of post-parse processing if it is compiling an external module.
+        /// In this method, we are only binding names and checking type validity.
+        /// </summary>
+        /// <param name="parser">Parser.</param>
         internal static void NameBindAst(Parser parser)
         {
             ExpressoNameBinder binder = new ExpressoNameBinder(parser);
@@ -443,7 +448,11 @@ namespace Expresso.Ast.Analysis
 
         public void VisitMemberType(MemberType memberType)
         {
-            // no op
+            var original_type_table = symbol_table;
+            var type_table = symbol_table.GetTypeTable(memberType.Target.Name);
+            symbol_table = type_table;
+            VisitIdentifier(memberType.IdentifierNode);
+            symbol_table = original_type_table;
         }
 
         public void VisitFunctionType(FunctionType funcType)
@@ -536,18 +545,31 @@ namespace Expresso.Ast.Analysis
 
         public void VisitPathExpression(PathExpression pathExpr)
         {
-            // Side effect: After exiting this method, the symbol_table field will be set to
+            // Side effect: Inside this method, the symbol_table field will be set to
             // the type table corresponding to the most descendant type the path represents.
             if(pathExpr.Items.Count == 1){
-                pathExpr.AsIdentifier.AcceptWalker(this);
+                VisitIdentifier(pathExpr.AsIdentifier);
             }else{
                 var old_table = symbol_table;
                 foreach(var ident in pathExpr.Items){
                     var tmp_table = symbol_table.GetTypeTable(ident.Name);
-                    if(tmp_table == null)
+                    if(tmp_table == null){
                         VisitIdentifier(ident);
-                    else
+                    }else{
+                        var type_symbol = symbol_table.GetTypeSymbolInAnyScope(ident.Name);
+                        if(type_symbol == null){
+                            parser.ReportSemanticError(
+                                "Error ES1500: `{0}` in the path doesn't represent a type or a module. You misspelled it?",
+                                ident,
+                                ident.Name
+                            );
+                            return;
+                        }
+                        // MAYBE This part is not the bussiness of it. Move it to TypeChecker?
+                        ident.IdentifierId = type_symbol.IdentifierId;
+                        ident.Type = type_symbol.Type.Clone();
                         symbol_table = tmp_table;
+                    }
                 }
 
                 symbol_table = old_table;
@@ -565,14 +587,15 @@ namespace Expresso.Ast.Analysis
         {
             // Here's the good place to import names from other files
             // All external names will be imported into the module scope we are currently compiling
-            if(importDecl.ModuleName.EndsWith(".exs")){
+            if(importDecl.ModuleName.EndsWith(".exs", StringComparison.CurrentCulture)){
                 var inner_parser = new Parser(parser.scanner.OpenChildFile(importDecl.ModuleName));
                 inner_parser.Parse();
 
-                //importDecl.ModuleNameToken.AcceptWalker(this);
                 symbol_table.AddExternalSymbols(inner_parser.Symbols, importDecl.AliasName);
-                ExpressoNameBinder.NameBindAst(inner_parser);
+                ExpressoNameBinder.BindAst(inner_parser.TopmostAst, inner_parser);
+                ((ExpressoAst)importDecl.Parent).ExternalModules.Add(inner_parser.TopmostAst);
             }
+            // Make the module name type-aware
             importDecl.ModuleNameToken.Type = AstType.MakeSimpleType(importDecl.ModuleName);
             UniqueIdGenerator.DefineNewId(importDecl.ModuleNameToken);
             UniqueIdGenerator.DefineNewId(importDecl.AliasNameToken);

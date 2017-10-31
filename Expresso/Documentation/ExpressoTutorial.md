@@ -139,11 +139,11 @@ It's wonderful considering the fact that in the traditional C most of the charac
 In the computer world, numbers are approximated using two's complement representation or are limited in size. For example, the `int` type can only represent integers
 from -(2<sup>31</sup>) to 2<sup>31</sup> - 1 inclusive.
 But in some fields, you'll need to represent numbers more properly, for example, when dealing with money. For those situations Expresso provides the `bigint` type.
-The `bigint` can store any arbitrary integers.
+A `bigint` can store any arbitrary integer. This makes the `bigint` type suitable for dealing with money.
 
-OK, next up is exponentiation. But we'll be doing it in a slightly different way. Even though Expresso has the operator for it, here we'll be doing it on our
-own, using while loop.
+### The `string` type
 
+### The `intseq` type
 
 The main policy for Expresso is that "Programming languages must allow programmers to write what it does, not how it does something".
 In traditional C, we often end up writing something like the following:
@@ -152,7 +152,7 @@ In traditional C, we often end up writing something like the following:
 // construct some array of ints
 // and name it array
 for(int i = 0; i < sizeof(array) / sizeof(int); ++i){
-    // do something on each element
+    // do something on each element to transform them
 }
 ```
 
@@ -168,6 +168,17 @@ let mapped = a.map(|elem| => /* do something on each element */);
 
 This reads: We're assigining the value that will be computed by iterating through the array and doing some calculations on each element of
 the array to a variable. This sounds more straightforward and is easier to read, isn't it?
+
+### The `tuple` type
+
+### The `vector` type
+
+### The `dictionary` type
+
+### The `array` type
+
+OK, next up is exponentiation. But we'll be doing it in a slightly different way. Even though Expresso has the operator for it, here we'll be doing it on our
+own, using while loop.
 
 ## Main philosophies
 
