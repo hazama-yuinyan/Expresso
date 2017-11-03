@@ -7,7 +7,7 @@ using System.Diagnostics;
 namespace Expresso.Ast
 {
     /// <summary>
-    /// Represents Expresso's modifier.
+    /// Represents an Expresso's modifier.
     /// </summary>
     public class ExpressoModifierToken : ExpressoTokenNode
     {
@@ -37,6 +37,7 @@ namespace Expresso.Ast
         static readonly Modifiers[] allModifiers = {
             Modifiers.Public, Modifiers.Protected, Modifiers.Private,
             Modifiers.Abstract, Modifiers.Virtual, Modifiers.Static, Modifiers.Override,
+            Modifiers.Export,
             Modifiers.Immutable,
             Modifiers.Any
         };

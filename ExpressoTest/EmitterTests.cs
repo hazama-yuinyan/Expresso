@@ -28,8 +28,8 @@ namespace Expresso.Test
 
             var asm = emitter.AssemblyBuilder;
             var main_method = asm.GetModule("main.exe")
-                .GetType("ExsMain")
-                .GetMethod("Main", BindingFlags.NonPublic | BindingFlags.Static);
+                                 .GetType("ExsMain")
+                                 .GetMethod("Main", BindingFlags.NonPublic | BindingFlags.Static);
             Assert.AreEqual(main_method.Name, "Main");
             Assert.IsTrue(main_method.IsStatic);
             Assert.AreEqual(typeof(void), main_method.ReturnType);
@@ -56,8 +56,8 @@ namespace Expresso.Test
 
             var asm = emitter.AssemblyBuilder;
             var main_method = asm.GetModule("main.exe")
-                .GetType("ExsMain")
-                .GetMethod("Main", BindingFlags.NonPublic | BindingFlags.Static);
+                                 .GetType("ExsMain")
+                                 .GetMethod("Main", BindingFlags.NonPublic | BindingFlags.Static);
             Assert.AreEqual(main_method.Name, "Main");
             Assert.IsTrue(main_method.IsStatic);
             Assert.AreEqual(typeof(void), main_method.ReturnType);
@@ -87,8 +87,8 @@ namespace Expresso.Test
 
             var asm = emitter.AssemblyBuilder;
             var main_method = asm.GetModule("main.exe")
-                .GetType("ExsMain")
-                .GetMethod("Main", BindingFlags.NonPublic | BindingFlags.Static);
+                                 .GetType("Main")
+                                 .GetMethod("Main", BindingFlags.NonPublic | BindingFlags.Static);
             Assert.AreEqual(main_method.Name, "Main");
             Assert.IsTrue(main_method.IsStatic);
             Assert.AreEqual(typeof(void), main_method.ReturnType);
@@ -118,8 +118,8 @@ namespace Expresso.Test
 
             var asm = emitter.AssemblyBuilder;
             var main_method = asm.GetModule("main.exe")
-                .GetType("ExsMain")
-                .GetMethod("Main", BindingFlags.NonPublic | BindingFlags.Static);
+                                 .GetType("Main")
+                                 .GetMethod("Main", BindingFlags.NonPublic | BindingFlags.Static);
             Assert.AreEqual(main_method.Name, "Main");
             Assert.IsTrue(main_method.IsStatic);
             Assert.AreEqual(typeof(void), main_method.ReturnType);
@@ -149,7 +149,7 @@ namespace Expresso.Test
 
             var asm = emitter.AssemblyBuilder;
             var main_method = asm.GetModule("main.exe")
-                                 .GetType("ExsMain")
+                                 .GetType("Main")
                                  .GetMethod("Main", BindingFlags.NonPublic | BindingFlags.Static);
             Assert.AreEqual(main_method.Name, "Main");
             Assert.IsTrue(main_method.IsStatic);
@@ -180,8 +180,8 @@ namespace Expresso.Test
 
             var asm = emitter.AssemblyBuilder;
             var main_method = asm.GetModule("main.exe")
-                .GetType("ExsMain")
-                .GetMethod("Main", BindingFlags.NonPublic | BindingFlags.Static);
+                                 .GetType("Main")
+                                 .GetMethod("Main", BindingFlags.NonPublic | BindingFlags.Static);
             Assert.AreEqual(main_method.Name, "Main");
             Assert.IsTrue(main_method.IsStatic);
             Assert.AreEqual(typeof(void), main_method.ReturnType);
@@ -211,8 +211,8 @@ namespace Expresso.Test
 
             var asm = emitter.AssemblyBuilder;
             var main_method = asm.GetModule("main.exe")
-                .GetType("ExsMain")
-                .GetMethod("Main", BindingFlags.NonPublic | BindingFlags.Static);
+                                 .GetType("Main")
+                                 .GetMethod("Main", BindingFlags.NonPublic | BindingFlags.Static);
             Assert.AreEqual(main_method.Name, "Main");
             Assert.IsTrue(main_method.IsStatic);
             Assert.AreEqual(typeof(void), main_method.ReturnType);
@@ -248,8 +248,8 @@ namespace Expresso.Test
 
             var asm = emitter.AssemblyBuilder;
             var main_method = asm.GetModule("main.exe")
-                .GetType("ExsMain")
-                .GetMethod("Main", BindingFlags.NonPublic | BindingFlags.Static);
+                                 .GetType("Main")
+                                 .GetMethod("Main", BindingFlags.NonPublic | BindingFlags.Static);
             Assert.AreEqual(main_method.Name, "Main");
             Assert.IsTrue(main_method.IsStatic);
             Assert.AreEqual(typeof(void), main_method.ReturnType);
@@ -280,8 +280,8 @@ namespace Expresso.Test
 
             var asm = emitter.AssemblyBuilder;
             var main_method = asm.GetModule("main.exe")
-                             .GetType("ExsMain")
-                             .GetMethod("Main", BindingFlags.NonPublic | BindingFlags.Static);
+                                 .GetType("Main")
+                                 .GetMethod("Main", BindingFlags.NonPublic | BindingFlags.Static);
             Assert.AreEqual(main_method.Name, "Main");
             Assert.IsTrue(main_method.IsStatic);
             Assert.AreEqual(typeof(void), main_method.ReturnType);
@@ -309,7 +309,7 @@ namespace Expresso.Test
 
             var asm = emitter.AssemblyBuilder;
             var main_method = asm.GetModule("main.exe")
-                                 .GetType("ExsMain")
+                                 .GetType("Main")
                                  .GetMethod("Main", BindingFlags.NonPublic | BindingFlags.Static);
             Assert.AreEqual(main_method.Name, "Main");
             Assert.IsTrue(main_method.IsStatic);
@@ -338,7 +338,7 @@ namespace Expresso.Test
 
             var asm = emitter.AssemblyBuilder;
             var main_method = asm.GetModule("main.exe")
-                                 .GetType("ExsMain")
+                                 .GetType("Main")
                                  .GetMethod("Main", BindingFlags.NonPublic | BindingFlags.Static);
             Assert.AreEqual(main_method.Name, "Main");
             Assert.IsTrue(main_method.IsStatic);
@@ -367,7 +367,7 @@ namespace Expresso.Test
 
             var asm = emitter.AssemblyBuilder;
             var main_method = asm.GetModule("main.exe")
-                                 .GetType("ExsMain")
+                                 .GetType("Main")
                                  .GetMethod("Main", BindingFlags.NonPublic | BindingFlags.Static);
             Assert.AreEqual(main_method.Name, "Main");
             Assert.IsTrue(main_method.IsStatic);

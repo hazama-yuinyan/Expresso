@@ -14,5 +14,5 @@ def main()
 	let c = TestModule::pair;
     let d = TestModule::mySin(0.0);
 	
-	println(a, b, c, d);
+	println(a, b/*, c*/, d);
 }

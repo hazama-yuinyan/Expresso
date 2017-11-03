@@ -382,6 +382,9 @@ namespace Expresso.CodeGen
 
         public static string ExpandContainer(object obj)
         {
+            if(obj == null)
+                throw new ArgumentNullException(nameof(obj));
+            
             var type = obj.GetType();
             if(type.IsGenericType){
 	            var type_def = type.GetGenericTypeDefinition();

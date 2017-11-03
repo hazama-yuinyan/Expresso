@@ -193,13 +193,14 @@ namespace Expresso.CodeGen
             var asm_builder = Thread.GetDomain().DefineDynamicAssembly(name, AssemblyBuilderAccess.RunAndSave, options.OutputPath);
             var file_name = (ast.Name == "main") ? ast.Name + ".exe" : ast.Name + ".dll";
             var mod_builder = asm_builder.DefineDynamicModule(file_name);
-            var type_builder = new LazyTypeBuilder(mod_builder, CSharpCompilerHelper.ConvertToPascalCase(ast.Name), TypeAttributes.Class, Enumerable.Empty<Type>(), true);
+            var type_builder = new LazyTypeBuilder(mod_builder, CSharpCompilerHelper.ConvertToPascalCase(ast.Name), TypeAttributes.Class | TypeAttributes.Public, Enumerable.Empty<Type>(), true);
             var root_symbol_table = symbol_table;
             if(ast.ExternalModules.Any()){
                 context.CurrentModuleCount = ast.ExternalModules.Count;
             }else{
                 Debug.Assert(symbol_table.Name == "programRoot", "The symbol_table should indicate 'programRoot' before generating codes.");
-                symbol_table = symbol_table.Parent.Children[symbol_table.Parent.Children.Count - context.CurrentModuleCount--];
+                if(context.CurrentModuleCount > 0)
+                    symbol_table = symbol_table.Parent.Children[symbol_table.Parent.Children.Count - context.CurrentModuleCount--];
             }
 
             context.AssemblyBuilder = asm_builder;
@@ -991,51 +992,56 @@ namespace Expresso.CodeGen
 
         public CSharpExpr VisitPathExpression(PathExpression pathExpr, CSharpEmitterContext context)
         {
-            if(pathExpr.AsIdentifier != null){
+            if(pathExpr.Items.Count == 1){
                 context.RequestType = true;
                 context.RequestMethod = true;
                 context.TargetType = null;
                 context.Method = null;
 
-                var item = pathExpr.AsIdentifier.AcceptWalker(this, context);
+                var item = VisitIdentifier(pathExpr.AsIdentifier, context);
                 context.RequestType = false;
                 context.RequestMethod = false;
                 return item;
             }
 
+            context.TargetType = null;
+            // We do this because the items in a path would already be resolved
+            // and a path only can refer to an external module's method
+            var last_item = pathExpr.Items.Last();
+            var native_symbol = GetNativeSymbol(last_item);
+            if(native_symbol != null){
+                context.TargetType = native_symbol.Type;
+                context.Method = native_symbol.Method;
+                context.Field = native_symbol.Field;
+            }else{
+                throw new EmitterException("It is found that the native symbol '{0}' doesn't represents anything", last_item.Name);
+            }
+
+            if(native_symbol.Field != null)
+                return CSharpExpr.Field(null, context.Field);
             // On .NET environment, a path item is mapped to
             // Assembly::[Module]::{Class}
             // In reverse, an Expresso item can be mapped to the .NET type system as
             // Module.{Class}
             // Usually modules are converted to assemblies on themselves
-            foreach(var ident in pathExpr.Items){
-                if(context.Assembly == null){
-                    Assembly asm = null;
-                    foreach(var tmp in AppDomain.CurrentDomain.GetAssemblies()){
-                        if(tmp.FullName == ident.Name){
-                            asm = tmp;
-                            break;
-                        }
-                    }
-                    if(asm == null)
-                        throw new EmitterException("Assembly `{0}` not found!", ident.Name);
-
-                    context.Assembly = asm;
-                }else if(context.Module == null){
-                    var module = context.Assembly.GetModule(ident.Name);
-                    if(module != null)
-                        context.Module = module;
+            /*foreach(var ident in pathExpr.Items){
+                if(context.TargetType == null){
+                    var native_symbol = GetNativeSymbol(ident);
+                    if(native_symbol != null)
+                        context.TargetType = native_symbol.Type;
                     else
-                        throw new EmitterException("Module `{0}` isn't defined in Assembly `{1}`", ident.Name, context.Assembly.FullName);
-                }else if(context.TargetType == null){
-                    var type = context.Assembly.GetType(ident.Name);
-                    if(type != null){
-                        context.TargetType = type;
-                        if(context.Constructor == null)
-                            context.Constructor = type.GetConstructors().Last();
-                    }else{
-                        throw new EmitterException("Type `{0}` isn't defined in Assembly `{1}`", ident.Name, context.Assembly.FullName);
-                    }
+                        throw new EmitterException("Type `{0}` isn't defined!", ident.Name);
+                }else if(context.TargetType != null){
+                    // For methods or functions in external modules
+                    var method_name = /*context.TargetType.FullName.StartsWith("System", StringComparison.CurrentCulture) ? CSharpCompilerHelper.ConvertToPascalCase(ident.Name);
+                                             //: ident.Name;
+                    var method = context.TargetType.GetMethod(method_name, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static);
+                    if(method == null)
+                        throw new EmitterException("It is found that the native symbol '{0}' doesn't represent a method", ident.Name);
+
+                    context.Method = method;
+                    Symbols.Add(ident.IdentifierId, new ExpressoSymbol{Method = method});
+                    return null;
                 }else{
                     var type = context.TargetType.GetNestedType(ident.Name);
                     if(type != null){
@@ -1046,7 +1052,8 @@ namespace Expresso.CodeGen
                         throw new EmitterException("A nested type `{0}` isn't defined in Type `{1}`", ident.Name, context.TargetType.FullName);
                     }
                 }
-            }
+            }*/
+            context.Assembly = null;
 
             return null;
         }
