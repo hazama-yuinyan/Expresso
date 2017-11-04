@@ -17,7 +17,7 @@ namespace Expresso.CodeGen
         readonly TypeBuilder interface_type;
         readonly Type[] types;
         readonly TypeBuilder impl_type;
-        readonly MethodBuilder prologue;
+        readonly MethodBuilder prologue, static_prologue;
         readonly List<Tuple<Expression, MethodBuilder>> implementers;
         readonly List<MemberInfo> members;
         readonly List<string> has_initializer_list = new List<string>();
@@ -53,6 +53,14 @@ namespace Expresso.CodeGen
             }
         }
 
+        public bool HasStaticFields{
+            get{
+                return members.OfType<FieldBuilder>()
+                              .Where(fb => fb.IsStatic)
+                              .Any();
+            }
+        }
+
         public LazyTypeBuilder(ModuleBuilder module, string name, TypeAttributes attr, IEnumerable<Type> baseTypes, bool isGlobalFunctions)
             : this(module.DefineType(name, attr, baseTypes.Any() ? baseTypes.First() : typeof(object), baseTypes.Skip(1).ToArray()), isGlobalFunctions)
         {
@@ -64,6 +72,7 @@ namespace Expresso.CodeGen
             types = isGlobalFunctions ? new Type[]{} : new []{ builder };
             impl_type = interface_type.DefineNestedType("<Impl>", TypeAttributes.NestedPrivate);
             prologue = impl_type.DefineMethod("Prologue", MethodAttributes.Assembly | MethodAttributes.Static, typeof(void), types);
+            static_prologue = impl_type.DefineMethod("StaticPrologue", MethodAttributes.Assembly | MethodAttributes.Static, typeof(void), null);
             implementers = new List<Tuple<Expression, MethodBuilder>>();
             members = new List<MemberInfo>();
             is_created = false;
@@ -128,7 +137,7 @@ namespace Expresso.CodeGen
         {
             var ctor = interface_type.DefineConstructor(
                 MethodAttributes.Public | MethodAttributes.HideBySig | MethodAttributes.SpecialName | MethodAttributes.RTSpecialName,
-                CallingConventions.Standard, parameterTypes.ToArray()
+                CallingConventions.Standard, parameterTypes
             );
             var il = ctor.GetILGenerator();
             var real_params = types.Concat(parameterTypes).ToArray();
@@ -178,6 +187,9 @@ namespace Expresso.CodeGen
                 ctor = DefineConstructor(param_types);
             }
 
+            if(HasStaticFields)
+                DefineStaticConstructor();
+
             if(type_cache == null)
                 type_cache = interface_type.CreateType();
 
@@ -224,6 +236,7 @@ namespace Expresso.CodeGen
             }
 
             prologue.GetILGenerator().Emit(OpCodes.Ret);
+            static_prologue.GetILGenerator().Emit(OpCodes.Ret);
 
             var type = impl_type.CreateType();
             is_created = true;
@@ -305,10 +318,16 @@ namespace Expresso.CodeGen
                 throw new ArgumentNullException(nameof(body));
             
             var impl_method = impl_type.DefineMethod(field.Name + "_Init", MethodAttributes.Assembly | MethodAttributes.Static, field.FieldType, types);
-            var prologue_il = prologue.GetILGenerator();
-            prologue_il.Emit(OpCodes.Ldarg_0);
-            prologue_il.Emit(OpCodes.Call, impl_method);
-            prologue_il.Emit(OpCodes.Stfld, field);
+            if(field.IsStatic){
+                var static_prologue_il = static_prologue.GetILGenerator();
+                static_prologue_il.Emit(OpCodes.Call, impl_method);
+                static_prologue_il.Emit(OpCodes.Stsfld, field);
+            }else{
+                var prologue_il = prologue.GetILGenerator();
+                prologue_il.Emit(OpCodes.Ldarg_0);
+                prologue_il.Emit(OpCodes.Call, impl_method);
+                prologue_il.Emit(OpCodes.Stfld, field);
+            }
             AddImplementer(body, impl_method);
         }
 
@@ -352,6 +371,21 @@ namespace Expresso.CodeGen
         public override string ToString()
         {
             return string.Format("[LazyTypeBuilder: Name={0}, BaseType={1}]", interface_type.Name, BaseType);
+        }
+
+        ConstructorBuilder DefineStaticConstructor()
+        {
+            var cctor = interface_type.DefineConstructor(
+                MethodAttributes.Public | MethodAttributes.Static | MethodAttributes.HideBySig | MethodAttributes.SpecialName | MethodAttributes.RTSpecialName,
+                CallingConventions.Standard, null
+            );
+            var il = cctor.GetILGenerator();
+
+            il.Emit(OpCodes.Call, static_prologue);
+
+            il.Emit(OpCodes.Ret);
+            members.Add(cctor);
+            return cctor;
         }
 
         void AddImplementer(Expression body, MethodBuilder impl)

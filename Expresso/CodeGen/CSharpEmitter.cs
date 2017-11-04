@@ -2065,7 +2065,7 @@ namespace Expresso.CodeGen
                     DefineField((FieldDeclaration)entity, context);
             }
 
-            if(!is_broken)
+            if(!context.TypeBuilder.IsInterfaceDefined && !is_broken)
                 context.TypeBuilder.CreateInterfaceType();
             
             scope_counter = tmp_counter;
