@@ -86,7 +86,7 @@ namespace Expresso.Ast.Analysis
 		
 		void Bind(ExpressoAst unboundAst)
 		{
-            Debug.Assert(unboundAst != null);
+            Debug.Assert(unboundAst != null, "We have to have something to bind to");
 			
 			// Find all scopes and variables
             unboundAst.AcceptWalker(this);
@@ -98,7 +98,7 @@ namespace Expresso.Ast.Analysis
 
         void OnlyBind(ExpressoAst unboundAst)
         {
-            Debug.Assert(unboundAst != null);
+            Debug.Assert(unboundAst != null, "We have to have something to bind to");
 
             // Find all scopes and variables
             unboundAst.AcceptWalker(this);

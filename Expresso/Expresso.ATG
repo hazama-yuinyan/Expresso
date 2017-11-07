@@ -56,6 +56,7 @@ $namespace=Expresso
 	Parser()
 	{
         DoPostParseProcessing = false;
+        CSharpCompilerHelper.Prepare();
         Symbols = SymbolTable.Create();
 	}
 	
@@ -427,10 +428,8 @@ Expresso                    		(. ExpressoAst module_decl = null;
 = 
   ModuleBody<out module_decl>		(.
                                             Debug.Assert(Symbols.Parent.Name == "root", "The symbol table should indicate \"programRoot\" before name binding ");
-                                            if(DoPostParseProcessing){
-                                                CSharpCompilerHelper.Prepare();
+                                            if(DoPostParseProcessing)
                                                 ExpressoNameBinder.BindAst(module_decl, this); //Here's the start of post-parse processing
-                                            }
                                         }
                                         catch(ParserException e){
                                             SemanticError(e.Message);
@@ -494,7 +493,9 @@ ImportDecl<out ImportDeclaration decl>
   string_literal                (.
                                    var path = t.val.Substring(1, t.val.Length - 2);
   								   symbol = AstNode.MakeIdentifier(path, CurrentLocation);
-  								   Symbols.AddTypeSymbol(t.val, symbol);
+  								   Symbols.AddTypeSymbol(path, symbol);
+                                   if(!symbol.Name.EndsWith(".exs"))
+                                       Symbols.AddNativeSymbolTable(symbol);
   								.)
   ( "as"
     ident						(.

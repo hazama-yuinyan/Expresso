@@ -109,6 +109,10 @@ namespace Expresso.Ast.Analysis
             Children = new List<SymbolTable>();
         }
 
+        /// <summary>
+        /// Creates a new instance of the SymbolTable class.
+        /// </summary>
+        /// <returns>The create.</returns>
         public static SymbolTable Create()
         {
             var table = new SymbolTable();
@@ -118,8 +122,7 @@ namespace Expresso.Ast.Analysis
             table.Parent = table2;
             table2.Children.Add(table);
 
-            // TODO: Use reflection to add native symbols
-            ExpressoCompilerHelpers.AddNativeSymbolTables(table2);
+            ExpressoCompilerHelpers.AddPrimitiveTypesSymbolTables(table2);
             /*var vector_table = new SymbolTable();
             vector_table.Name = TypeTablePrefix + "vector`T";
             vector_table.AddSymbol("add", AstType.MakeFunctionType("add", AstType.MakeSimpleType("tuple", TextLocation.Empty), new List<AstType>{
@@ -173,7 +176,7 @@ namespace Expresso.Ast.Analysis
             var class_name = TypeTablePrefix + name;
             int child_counter = 1;
             while(tmp != null){
-                if(tmp.Name.StartsWith(class_name))
+                if(tmp.Name.StartsWith(class_name, StringComparison.CurrentCulture))
                     return tmp;
 
                 if(child_counter >= parent.Children.Count){
@@ -271,7 +274,7 @@ namespace Expresso.Ast.Analysis
                 type_table.Add(name, ident);
             }
             catch(ArgumentException){
-                throw new ParserException("The name `{0}` is already defined in the type namespace in the current scope {1}.", ident, name, Name);
+                throw new ParserException("The name `{0}` is already defined in the type namespace in the current scope '{1}'.", ident, name, Name);
             }
         }
 
@@ -459,6 +462,18 @@ namespace Expresso.Ast.Analysis
 
             cloned.Parent = tmp;
             tmp.Children.Add(cloned);
+        }
+
+        /// <summary>
+        /// Adds a native symbol's table.
+        /// </summary>
+        /// <param name="symbol">Symbol.</param>
+        public void AddNativeSymbolTable(Identifier symbol)
+        {
+            if(Parent.Name != "root")
+                throw new ParserException("Expected to call this method on programRoot but you called it on `{0}`", symbol, Name);
+            
+            ExpressoCompilerHelpers.AddNativeSymbolTable(symbol, Parent);
         }
 
         public override string ToString()

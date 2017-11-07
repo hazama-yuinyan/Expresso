@@ -30,6 +30,8 @@ The program will start executing from the "main" function, and inside which we'r
 Every Expresso program consists of at least one module and every module must be explicitly named.
 Here, we name the module `main` because we usually call the top-level module that is the entry point for a program `main`. As
 you progress reading the tutorial, you will see different names used for the module names.
+In Expresso the naming convention for modules is the snake case. In other words, you name a module "test_module" rather than
+"testModule" or "TestModule". This is not a strict rule that the compiler enforces but it's considered a good style to keep that rule.
 In `main` function, which is the entry point for the program, we `println'ed` a string. `println` is a function that outputs
 some string to the console. There are also the single line version, `print`, that doesn't output a line break at the end and
 the format string version, `printFormat`, that formats the string according to the first argument given to that function.

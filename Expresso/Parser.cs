@@ -104,6 +104,7 @@ string cur_class_name;
 	Parser()
 	{
         DoPostParseProcessing = false;
+        CSharpCompilerHelper.Prepare();
         Symbols = SymbolTable.Create();
 	}
 	
@@ -463,10 +464,8 @@ string cur_class_name;
 		  
 		ModuleBody(out module_decl);
 		Debug.Assert(Symbols.Parent.Name == "root", "The symbol table should indicate \"programRoot\" before name binding ");
-		if(DoPostParseProcessing){
-		   CSharpCompilerHelper.Prepare();
+		if(DoPostParseProcessing)
 		   ExpressoNameBinder.BindAst(module_decl, this); //Here's the start of post-parse processing
-		}
 		}
 		catch(ParserException e){
 		SemanticError(e.Message);
@@ -677,7 +676,9 @@ string cur_class_name;
 		Expect(20);
 		var path = t.val.Substring(1, t.val.Length - 2);
 		symbol = AstNode.MakeIdentifier(path, CurrentLocation);
-		Symbols.AddTypeSymbol(t.val, symbol);
+		Symbols.AddTypeSymbol(path, symbol);
+		if(!symbol.Name.EndsWith(".exs"))
+		   Symbols.AddNativeSymbolTable(symbol);
 		
 		Expect(32);
 		Expect(14);

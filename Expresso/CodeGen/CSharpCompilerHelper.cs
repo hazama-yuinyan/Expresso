@@ -23,7 +23,7 @@ namespace Expresso.CodeGen
             new Regex(@"%([a-zA-Z_][a-zA-Z_0-9]*)");
 
         static List<string> _AssemblyNames =
-            new List<string>{"mscorlib", "System", "System.Core", "System.Numerics", "ExpressoRuntime"};
+            new List<string>{"mscorlib", "System", "System.Core", "System.Numerics, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089", "ExpressoRuntime"};
 
         static Dictionary<string, Tuple<string, uint>> SpecialNamesMap = new Dictionary<string, Tuple<string, uint>>{
             {"intseq", Tuple.Create("Expresso.Runtime.Builtins.ExpressoIntegerSequence", 1_000_000_003u)},
@@ -31,7 +31,7 @@ namespace Expresso.CodeGen
             {"bool", Tuple.Create("System.Boolean", 1_000_000_005u)},
             {"int", Tuple.Create("System.Int32", 1_000_000_006u)},
             {"uint", Tuple.Create("System.UInt32", 1_000_000_007u)},
-            {"float", Tuple.Create("System.Float", 1_000_000_008u)},
+            {"float", Tuple.Create("System.Single", 1_000_000_008u)},
             {"double", Tuple.Create("System.Double", 1_000_000_009u)},
             {"char", Tuple.Create("System.Char", 1_000_000_010u)},
             {"byte", Tuple.Create("System.Byte", 1_000_000_011u)},
@@ -39,7 +39,8 @@ namespace Expresso.CodeGen
             {"array", Tuple.Create("System.Array", 1_000_000_013u)},
             {"vector", Tuple.Create("System.Collections.Generic.List", 1_000_000_014u)},
             {"tuple", Tuple.Create("System.Tuple", 1_000_000_015u)},
-            {"dictionary", Tuple.Create("System.Collections.Generic.Dictionary", 1_000_000_016u)}
+            {"dictionary", Tuple.Create("System.Collections.Generic.Dictionary", 1_000_000_016u)},
+            {"bigint", Tuple.Create("System.Numerics.BigInteger", 1_000_000_017u)}
         };
 
         /// <summary>
@@ -371,8 +372,11 @@ namespace Expresso.CodeGen
 
         public static void Prepare()
         {
-            foreach(var name in _AssemblyNames)
-                AppDomain.CurrentDomain.Load(name);
+            foreach(var name in _AssemblyNames){
+                var am = new AssemblyName(name);
+                //AppDomain.CurrentDomain.Load(name);
+                Assembly.Load(am);
+            }
         }
 
         public static string ConvertToPascalCase(string name)
