@@ -144,6 +144,15 @@ namespace Expresso.CodeGen
                 Type type = null;
                 if(simple.Identifier == "tuple" && !simple.TypeArguments.Any())
                     return typeof(void);
+
+                if(simple.Identifier == "array"){
+                    var type_arg = simple.TypeArguments
+                                         .Select(ta => GetNativeType(ta))
+                                         .First();
+
+                    var array = Array.CreateInstance(type_arg, 1);
+                    return array.GetType();
+                }
                 
                 if(simple.TypeArguments.Any()){
                     name += "`" + simple.TypeArguments.Count + "[";
@@ -165,71 +174,6 @@ namespace Expresso.CodeGen
                     if(type != null)
                         break;
                 }
-                /*foreach(var asm in asms){
-                    var types = GetTypes(asm);
-                    type = types.Where(t => t.Name.StartsWith(name, StringComparison.CurrentCulture) && t.Name.IndexOf('`') != -1 && t.Name.IndexOf('`') == name.Length || t.Name == name)
-                        .FirstOrDefault();
-
-                    if(type != null)
-                        break;
-                }
-
-                if(simple.Identifier == "array"){
-                    var type_arg = simple.TypeArguments
-                        .Select(ta => GetNativeType(ta))
-                        .First();
-
-                    var array = Array.CreateInstance(type_arg, 1);
-                    return array.GetType();
-                }else if(simple.Identifier == "dictionary" || simple.Identifier == "vector"){
-                    var generic_type = GetContainerType(simple);
-                    var type_args =
-                        from ta in simple.TypeArguments
-                        select GetNativeType(ta);
-
-                    var substituted = generic_type.MakeGenericType(type_args.ToArray());
-                    if(substituted == null){
-                        throw new EmitterException("Type `{0}` is expected to have {1} type arguments, but it actually has {2}",
-                            type, type_args.Count(), type.GenericTypeArguments.Length
-                        );
-                    }
-                    return substituted;
-                }else if(simple.Identifier == "tuple"){
-                    if(!simple.TypeArguments.Any())
-                        return typeof(void);
-
-                    var type_args =
-                        from ta in simple.TypeArguments
-                        select GetNativeType(ta);
-
-                    var tuple = GuessTupleType(type_args);
-                    return tuple;
-                }else if(simple.Identifier == "void"){
-                    return typeof(void);
-                }else if(type == null){
-                    throw new EmitterException("Type `{0}` is not found!", simple.Identifier);
-                }
-
-                if(simple.TypeArguments.Count > 0){
-                    if(!type.IsGenericType){
-                        throw new EmitterException("Type `{0}` is used as a generic type but native type `{1}` is not",
-                            simple.Identifier, type.Name
-                        );
-                    }
-
-                    var type_args =
-                        from ta in simple.TypeArguments
-                        select GetNativeType(ta);
-
-                    var substituted = type.MakeGenericType(type_args.ToArray());
-                    if(substituted == null){
-                        throw new EmitterException("Type `{0}` is expected to have {1} type arguments, but it acutually has {2}",
-                            type, type_args.Count(), type.GenericTypeArguments.Length
-                        );
-                    }
-
-                    return substituted;
-                }*/
 
                 if(type == null)
                     throw new EmitterException("Type `{0}` is not found!", simple.Identifier);
