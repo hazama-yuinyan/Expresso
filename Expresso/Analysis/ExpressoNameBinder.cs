@@ -51,10 +51,10 @@ namespace Expresso.Ast.Analysis
 			parser = parentParser;
             symbol_table = parentParser.Symbols;
 
-            foreach(var pair in ExpressoSymbol.Identifiers){
+            /*foreach(var pair in ExpressoSymbol.Identifiers){
                 if(pair.Value.IdentifierId == 0)
                     UniqueIdGenerator.DefineNewId(pair.Value);
-            }
+            }*/
 		}
 		
 		#region Public surface

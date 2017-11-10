@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Text.RegularExpressions;
 using Expresso.Ast;
 using Expresso.Ast.Analysis;
 
@@ -17,22 +18,22 @@ namespace Expresso.CodeGen
         static readonly string TypePrefix = "type_";
         static readonly string[] IgnoreList = new []{"equals", "getHashCode"};
 
-        static Dictionary<string, string> SpecialNamesMapInverse = new Dictionary<string, string>{
-            {"Expresso.Runtime.Builtins.ExpressoIntegerSequence", "intseq"},
-            {"System.Func", "function"},
-            {"System.Boolean", "bool"},
-            {"System.Int32", "int"},
-            {"System.UInt32", "uint"},
-            {"System.Single", "float"},
-            {"System.Double", "double"},
-            {"System.Char", "char"},
-            {"System.Byte", "byte"},
-            {"System.String", "string"},
-            {"System.Array", "array"},
-            {"System.Collections.Generic.List", "vector"},
-            {"System.Tuple", "tuple"},
-            {"System.Collections.Generic.Dictionary", "dictionary"},
-            {"System.Numerics.BigInteger", "bigint"}
+        static Dictionary<string, Tuple<string, uint>> SpecialNamesMapInverse = new Dictionary<string, Tuple<string, uint>>{
+            {"Expresso.Runtime.Builtins.ExpressoIntegerSequence", Tuple.Create("intseq", 1_000_000_003u)},
+            {"System.Func", Tuple.Create("function", 1_000_000_004u)},
+            {"System.Boolean", Tuple.Create("bool", 1_000_000_005u)},
+            {"System.Int32", Tuple.Create("int", 1_000_000_006u)},
+            {"System.UInt32", Tuple.Create("uint", 1_000_000_007u)},
+            {"System.Single", Tuple.Create("float", 1_000_000_008u)},
+            {"System.Double", Tuple.Create("double", 1_000_000_009u)},
+            {"System.Char", Tuple.Create("char", 1_000_000_010u)},
+            {"System.Byte", Tuple.Create("byte", 1_000_000_011u)},
+            {"System.String", Tuple.Create("string", 1_000_000_012u)},
+            {"System.Array", Tuple.Create("array", 1_000_000_013u)},
+            {"System.Collections.Generic.List", Tuple.Create("vector", 1_000_000_014u)},
+            {"System.Tuple", Tuple.Create("tuple", 1_000_000_015u)},
+            {"System.Collections.Generic.Dictionary", Tuple.Create("dictionary", 1_000_000_016u)},
+            {"System.Numerics.BigInteger", Tuple.Create("bigint", 1_000_000_017u)}
         };
 
         public static string ConvertToExpressoFunctionName(string name)
@@ -46,7 +47,7 @@ namespace Expresso.CodeGen
             var backquote_index = csharpFullName.IndexOf('`');
             var csharp_name = csharpFullName.Substring(/*start_index*/ 0, (backquote_index == -1) ? csharpFullName.Length/* - start_index*/ : backquote_index/* - start_index*/);
             if(SpecialNamesMapInverse.ContainsKey(csharp_name))
-                return SpecialNamesMapInverse[csharp_name];
+                return SpecialNamesMapInverse[csharp_name].Item1;
             else
                 return csharpFullName;
         }
@@ -64,17 +65,20 @@ namespace Expresso.CodeGen
 
         public static void AddPrimitiveTypesSymbolTables(SymbolTable table)
         {
-            foreach(var primitive in SpecialNamesMapInverse)
+            foreach(var primitive in SpecialNamesMapInverse){
+                table.AddTypeSymbol(primitive.Value.Item1, AstType.MakePrimitiveType(primitive.Value.Item1));
                 AddNativeSymbolTable(AstNode.MakeIdentifier(primitive.Key), table);
+            }
         }
 
         public static void AddNativeSymbolTable(Identifier identifier, SymbolTable table)
         {
             Type type = null;
             var asms = AppDomain.CurrentDomain.GetAssemblies();
+            var regex = new Regex($"{identifier.Name}(?![a-zA-Z0-9])");
             foreach(var asm in asms){
                 var types = GetTypes(asm);
-                type = types.Where(t => t.FullName.StartsWith(identifier.Name, StringComparison.CurrentCulture))
+                type = types.Where(t => regex.IsMatch(t.FullName))
                             .FirstOrDefault();
                 if(type != null)
                     break;
@@ -139,6 +143,8 @@ namespace Expresso.CodeGen
                 table.Children.Add(new_table);
                 // Don't add a type symbol here bacause Parser has already done that
                 //table.AddTypeSymbol(expresso_type_name_full, AstType.MakeSimpleType(expresso_type_name, type_args));
+                if(SpecialNamesMapInverse.ContainsKey(identifier.Name))
+                    table.GetTypeSymbol(expresso_type_name).IdentifierId = IdentifierId++;
             }
         }
 
@@ -147,7 +153,7 @@ namespace Expresso.CodeGen
             var name = type.FullName ?? type.Name;
             var index = name.IndexOf("`", StringComparison.CurrentCulture);
             var actual_type_name = name.Substring(0, index == -1 ? name.Length : index);
-            var type_name = SpecialNamesMapInverse.ContainsKey(actual_type_name) ? SpecialNamesMapInverse[actual_type_name] : type.Name;
+            var type_name = SpecialNamesMapInverse.ContainsKey(actual_type_name) ? SpecialNamesMapInverse[actual_type_name].Item1 : type.Name;
             if(type_name == "Void")
                 return AstType.MakeSimpleType("tuple");
             
