@@ -1864,6 +1864,7 @@ namespace Expresso.Test
                                     )
                                 )
                             ),
+                            TextLocation.Empty,
                             AstNode.MakeVariableInitializer(
                                 AstNode.MakeIdentifier("p", Helpers.MakePrimitiveType("int")),
                                 Expression.MakeIntSeq(
@@ -2126,6 +2127,7 @@ namespace Expresso.Test
                                             )
                                         )
                                     ),
+                                    TextLocation.Empty,
                                     AstNode.MakeVariableInitializer(
                                         AstNode.MakeIdentifier(
                                             "j",
@@ -2140,6 +2142,7 @@ namespace Expresso.Test
                                     )
                                 )
                             ),
+                            TextLocation.Empty,
                             AstNode.MakeVariableInitializer(
                                 AstNode.MakeIdentifier(
                                     "i",
@@ -4330,6 +4333,7 @@ namespace Expresso.Test
                                                     )
                                                 )
                                             ),
+                                            TextLocation.Empty,
                                             AstNode.MakeVariableInitializer(
                                                 AstNode.MakeIdentifier(
                                                     "j",
@@ -4913,6 +4917,366 @@ namespace Expresso.Test
                         )
                     ),
                     Helpers.MakeVoidType(),
+                    Modifiers.None
+                )
+            });
+
+            Assert.IsNotNull(ast);
+            Helpers.AstStructuralEqual(ast, expected);
+        }
+
+        [Test]
+        public void BuiltinObjects()
+        {
+            var parser = new Parser(new Scanner("../../sources/for_unit_tests/builtin_objects.exs"));
+            parser.DoPostParseProcessing = true;
+            parser.Parse();
+
+            var ast = parser.TopmostAst;
+
+            var expected = AstNode.MakeModuleDef("main", new List<EntityDeclaration>{
+                EntityDeclaration.MakeFunc(
+                    "main",
+                    Enumerable.Empty<ParameterDeclaration>(),
+                    Statement.MakeBlock(
+                        Statement.MakeVarDecl(
+                            Helpers.MakeSeq(
+                                AstNode.MakeIdentifier(
+                                    "a",
+                                    Helpers.MakeGenericType(
+                                        "array",
+                                        Helpers.MakePrimitiveType("int")
+                                    )
+                                )
+                            ),
+                            Helpers.MakeSeq(
+                                Expression.MakeSequenceInitializer(
+                                    Helpers.MakeGenericType(
+                                        "array",
+                                        Helpers.MakePrimitiveType("int")
+                                    ),
+                                    Expression.MakeConstant(
+                                        "int",
+                                        1
+                                    ),
+                                    Expression.MakeConstant(
+                                        "int",
+                                        2
+                                    ),
+                                    Expression.MakeConstant(
+                                        "int",
+                                        3
+                                    ),
+                                    Expression.MakeConstant(
+                                        "int",
+                                        4
+                                    ),
+                                    Expression.MakeConstant(
+                                        "int",
+                                        5
+                                    ),
+                                    Expression.MakeConstant(
+                                        "int",
+                                        6
+                                    ),
+                                    Expression.MakeConstant(
+                                        "int",
+                                        7
+                                    ),
+                                    Expression.MakeConstant(
+                                        "int",
+                                        8
+                                    )
+                                )
+                            ),
+                            Modifiers.Immutable
+                        ),
+                        Statement.MakeVarDecl(
+                            Helpers.MakeSeq(
+                                AstNode.MakeIdentifier(
+                                    "b",
+                                    Helpers.MakeGenericType(
+                                        "dictionary",
+                                        Helpers.MakePrimitiveType("string"),
+                                        Helpers.MakePrimitiveType("int")
+                                    )
+                                )
+                            ),
+                            Helpers.MakeSeq(
+                                Expression.MakeSequenceInitializer(
+                                    Helpers.MakeGenericType(
+                                        "dictionary",
+                                        Helpers.MakePrimitiveType("string"),
+                                        Helpers.MakePrimitiveType("int")
+                                    ),
+                                    Expression.MakeKeyValuePair(
+                                        Expression.MakeConstant(
+                                            "string",
+                                            "akari"
+                                        ),
+                                        Expression.MakeConstant(
+                                            "int",
+                                            13
+                                        )
+                                    ),
+                                    Expression.MakeKeyValuePair(
+                                        Expression.MakeConstant(
+                                            "string",
+                                            "chinatsu"
+                                        ),
+                                        Expression.MakeConstant(
+                                            "int",
+                                            13
+                                        )
+                                    ),
+                                    Expression.MakeKeyValuePair(
+                                        Expression.MakeConstant(
+                                            "string",
+                                            "kyoko"
+                                        ),
+                                        Expression.MakeConstant(
+                                            "int",
+                                            14
+                                        )
+                                    ),
+                                    Expression.MakeKeyValuePair(
+                                        Expression.MakeConstant(
+                                            "string",
+                                            "yui"
+                                        ),
+                                        Expression.MakeConstant(
+                                            "int",
+                                            14
+                                        )
+                                    )
+                                )
+                            ),
+                            Modifiers.Immutable
+                        ),
+                        Statement.MakeVarDecl(
+                            Helpers.MakeSeq(
+                                AstNode.MakeIdentifier(
+                                    "c",
+                                    Helpers.MakeGenericType(
+                                        "tuple",
+                                        Helpers.MakePrimitiveType("string"),
+                                        Helpers.MakePrimitiveType("string"),
+                                        Helpers.MakePrimitiveType("string"),
+                                        Helpers.MakePrimitiveType("int")
+                                    )
+                                )
+                            ),
+                            Helpers.MakeSeq(
+                                Expression.MakeParen(
+                                    Expression.MakeSequenceExpression(
+                                        Expression.MakeConstant(
+                                            "string",
+                                            "akarichan"
+                                        ),
+                                        Expression.MakeConstant(
+                                            "string",
+                                            "kawakawa"
+                                        ),
+                                        Expression.MakeConstant(
+                                            "string",
+                                            "chinatsuchan"
+                                        ),
+                                        Expression.MakeConstant(
+                                            "int",
+                                            2424
+                                        )
+                                    )
+                                )
+                            ),
+                            Modifiers.Immutable
+                        ),
+                        Statement.MakeVarDecl(
+                            Helpers.MakeSeq(
+                                AstNode.MakeIdentifier(
+                                    "d",
+                                    Helpers.MakeGenericType(
+                                        "slice",
+                                        Helpers.MakeGenericType(
+                                            "array",
+                                            Helpers.MakePrimitiveType("int")
+                                        )
+                                    )
+                                )
+                            ),
+                            Helpers.MakeSeq(
+                                Expression.MakeIndexer(
+                                    Helpers.MakeIdentifierPath(
+                                        "a",
+                                        Helpers.MakeGenericType(
+                                            "array",
+                                            Helpers.MakePrimitiveType("int")
+                                        )
+                                    ),
+                                    TextLocation.Empty,
+                                    Expression.MakeIntSeq(
+                                        Expression.MakeConstant(
+                                            "int",
+                                            0
+                                        ),
+                                        Expression.MakeConstant(
+                                            "int",
+                                            3
+                                        ),
+                                        Expression.MakeConstant(
+                                            "int",
+                                            1
+                                        ),
+                                        false
+                                    )
+                                )
+                            ),
+                            Modifiers.Immutable
+                        ),
+                        Statement.MakeVarDecl(
+                            Helpers.MakeSeq(
+                                AstNode.MakeIdentifier(
+                                    "y",
+                                    Helpers.MakeGenericType(
+                                        "vector",
+                                        Helpers.MakePrimitiveType("int")
+                                    )
+                                )
+                            ),
+                            Helpers.MakeSeq(
+                                Expression.MakeSequenceInitializer(
+                                    Helpers.MakeGenericType(
+                                        "vector",
+                                        Helpers.MakePlaceholderType()
+                                    )
+                                )
+                            ),
+                            Modifiers.None
+                        ),
+                        Statement.MakeValueBindingForStmt(
+                            Modifiers.Immutable,
+                            Statement.MakeBlock(
+                                Statement.MakeExprStmt(
+                                    Helpers.MakeCallExpression(
+                                        Helpers.MakeIdentifierPath(
+                                            "print",
+                                            AstType.MakeFunctionType(
+                                                "print",
+                                                Helpers.MakeVoidType(),
+                                                TextLocation.Empty,
+                                                TextLocation.Empty,
+                                                Helpers.MakePrimitiveType("string")
+                                            )
+                                        ),
+                                        Helpers.MakeIdentifierPath(
+                                            "x",
+                                            Helpers.MakePrimitiveType("int")
+                                        )
+                                    )
+                                ),
+                                Statement.MakeExprStmt(
+                                    Helpers.MakeCallExpression(
+                                        Expression.MakeMemRef(
+                                            Helpers.MakeIdentifierPath(
+                                                "y",
+                                                Helpers.MakeGenericType(
+                                                    "vector",
+                                                    Helpers.MakePrimitiveType("int")
+                                                )
+                                            ),
+                                            AstNode.MakeIdentifier(
+                                                "add",
+                                                AstType.MakeFunctionType(
+                                                    "add",
+                                                    Helpers.MakeVoidType(),
+                                                    TextLocation.Empty,
+                                                    TextLocation.Empty,
+                                                    AstType.MakeParameterType("T")
+                                                )
+                                            )
+                                        ),
+                                        Helpers.MakeIdentifierPath(
+                                            "x",
+                                            Helpers.MakePrimitiveType("int")
+                                        )
+                                    )
+                                )
+                            ),
+                            TextLocation.Empty,
+                            AstNode.MakeVariableInitializer(
+                                AstNode.MakeIdentifier(
+                                    "x",
+                                    Helpers.MakePrimitiveType("int")
+                                ),
+                                Helpers.MakeIdentifierPath(
+                                    "d",
+                                    Helpers.MakeGenericType(
+                                        "slice",
+                                        Helpers.MakeGenericType(
+                                            "array",
+                                            Helpers.MakePrimitiveType("int")
+                                        )
+                                    )
+                                )
+                            )
+                        ),
+                        Statement.MakeExprStmt(
+                            Helpers.MakeCallExpression(
+                                Helpers.MakeIdentifierPath(
+                                    "println",
+                                    AstType.MakeFunctionType(
+                                        "println",
+                                        Helpers.MakeVoidType(),
+                                        TextLocation.Empty,
+                                        TextLocation.Empty,
+                                        Helpers.MakePrimitiveType("string")
+                                    )
+                                ),
+                                Helpers.MakeIdentifierPath(
+                                    "a",
+                                    Helpers.MakeGenericType(
+                                        "array",
+                                        Helpers.MakePrimitiveType("int")
+                                    )
+                                ),
+                                Helpers.MakeIdentifierPath(
+                                    "b",
+                                    Helpers.MakeGenericType(
+                                        "dictionary",
+                                        Helpers.MakePrimitiveType("string"),
+                                        Helpers.MakePrimitiveType("int")
+                                    )
+                                ),
+                                Helpers.MakeIdentifierPath(
+                                    "c",
+                                    Helpers.MakeGenericType(
+                                        "tuple",
+                                        Helpers.MakePrimitiveType("string"),
+                                        Helpers.MakePrimitiveType("string"),
+                                        Helpers.MakePrimitiveType("string"),
+                                        Helpers.MakePrimitiveType("int")
+                                    )
+                                ),
+                                Helpers.MakeIdentifierPath(
+                                    "d",
+                                    Helpers.MakeGenericType(
+                                        "slice",
+                                        Helpers.MakeGenericType(
+                                            "array",
+                                            Helpers.MakePrimitiveType("int")
+                                        )
+                                    )
+                                ),
+                                Helpers.MakeIdentifierPath(
+                                    "y",
+                                    Helpers.MakeGenericType(
+                                        "vector",
+                                        Helpers.MakePrimitiveType("int")
+                                    )
+                                )
+                            )
+                        )
+                    ),
+                    Helpers.MakePlaceholderType(),
                     Modifiers.None
                 )
             });

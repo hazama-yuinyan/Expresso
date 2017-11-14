@@ -25,6 +25,7 @@ namespace Expresso.Ast
     /// <item>dictionary</item>
     /// <item>function</item>
     /// <item>intseq</item>
+    /// <item>slice</item>
     /// <item>array of the above types</item>
     /// </list>
     /// </summary>
@@ -141,6 +142,9 @@ namespace Expresso.Ast
 
             case "string":
                 return ExpressoTypeCode.String;
+
+            case "slice":
+                return ExpressoTypeCode.Slice;
 
             default:
                 throw new ParserException("{0} is an unknown primitive type!", node, keyword);

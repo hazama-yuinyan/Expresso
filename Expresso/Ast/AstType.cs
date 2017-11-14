@@ -247,6 +247,11 @@ namespace Expresso.Ast
         }
 
         #region Factory methods
+        public static PlaceholderType MakePlaceholderType(TextLocation loc)
+        {
+            return new PlaceholderType(loc);
+        }
+
         public static PrimitiveType MakePrimitiveType(string name, TextLocation loc = default(TextLocation))
         {
             return new PrimitiveType(name, loc);
@@ -294,7 +299,7 @@ namespace Expresso.Ast
         public static ParameterType MakeParameterType(string name, TextLocation loc = default(TextLocation))
         {
             return new ParameterType(
-                AstNode.MakeIdentifier(name, new PlaceholderType(TextLocation.Empty), loc, new TextLocation(loc.Line, loc.Column + name.Length))
+                AstNode.MakeIdentifier(name, new PlaceholderType(new TextLocation(loc.Line, loc.Column + name.Length)), loc)
             );
         }
 

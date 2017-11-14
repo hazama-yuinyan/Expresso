@@ -53,6 +53,8 @@ namespace Expresso.TypeSystem
         Function,
         /// <summary>The integer sequence type</summary>
         IntSeq,
+        /// <summary>The slice type</summary>
+        Slice,
         /// <summary><c>The iterator type in the Expresso's standard library</c></summary>
         Iterator
     }
@@ -102,7 +104,8 @@ namespace Expresso.TypeSystem
             "char",
             "string",
             "function",
-            "intseq"
+            "intseq",
+            "slice"
         };
 
         public static HashSet<string> Keywords{

@@ -194,9 +194,9 @@ namespace Expresso.Ast
             return new ValueBindingForStatement(modifiers, initializers, body, loc);
         }
 
-        public static ValueBindingForStatement MakeValueBindingForStmt(Modifiers modifiers, BlockStatement body, params VariableInitializer[] initializers)
+        public static ValueBindingForStatement MakeValueBindingForStmt(Modifiers modifiers, BlockStatement body, TextLocation loc, params VariableInitializer[] initializers)
         {
-            return new ValueBindingForStatement(modifiers, initializers, body, TextLocation.Empty);
+            return new ValueBindingForStatement(modifiers, initializers, body, loc);
         }
 
         public static EmptyStatement MakeEmptyStmt(TextLocation loc = default(TextLocation))

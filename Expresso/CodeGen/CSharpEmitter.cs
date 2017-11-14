@@ -503,9 +503,6 @@ namespace Expresso.CodeGen
         public CSharpExpr VisitThrowStatement(ThrowStatement throwStmt, CSharpEmitterContext context)
         {
             var thrown_value = VisitObjectCreationExpression(throwStmt.CreationExpression, context);
-            //var lambda = CSharpExpr.Lambda<Func<Exception>>(thrown_value);
-            //var delegate_method = lambda.Compile();
-            //return CSharpExpr.Throw(CSharpExpr.Constant(delegate_method(), thrown_value.Type));
             return CSharpExpr.Throw(thrown_value);
         }
 
@@ -949,10 +946,14 @@ namespace Expresso.CodeGen
         public CSharpExpr VisitIndexerExpression(IndexerExpression indexExpr, CSharpEmitterContext context)
         {
             var target = indexExpr.Target.AcceptWalker(this, context);
-            var args = new List<CSharpExpr>();
-            foreach(var arg_expr in indexExpr.Arguments){
-                var tmp = arg_expr.AcceptWalker(this, context);
-                args.Add(tmp);
+            var args = indexExpr.Arguments.Select(a => a.AcceptWalker(this, context));
+
+            if(args.Count() == 1 && args.First().Type.Name == "ExpressoIntegerSequence"){
+                var seq_type = target.Type;
+                var elem_type = seq_type.IsArray ? seq_type.GetElementType() : seq_type.GenericTypeArguments[0];
+                var ctor = typeof(Slice<,>).MakeGenericType(new []{seq_type, elem_type})
+                                           .GetConstructor(new []{seq_type, typeof(ExpressoIntegerSequence)});
+                return CSharpExpr.New(ctor, new []{target}.Concat(args));   // a[ExpressoIntegerSequence]
             }
 
             var type = target.Type;

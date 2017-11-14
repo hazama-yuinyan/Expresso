@@ -147,6 +147,86 @@ A `bigint` can store any arbitrary integer. This makes the `bigint` type suitabl
 
 ### The `intseq` type
 
+One unique characteristic for Expresso is the built-in `intseq` type. As the name suggests, it produces a series of integers.
+The `intseq` type has 3 fields, `lower`, `upper` and `step`. `lower` represents the lower bound of the sequence,
+`upper` the upper bound and `step` the step by which an iteration proceeds at a time.
+The `intseq` type has the corresponding literal form and it is written as follows:
+`lower(..|...)upper[:step]`
+
+```Expresso
+    let seq = 1..10;    // `step` can be omitted and 1 is assumed if ommited and the double dots mean that the lower bound is
+                        // inclusive but the upper bound is exclusive
+    let series = seq.collect();
+    for let elem in seq {  // print "123456789"
+        print(elem);
+    }
+    println(series); // print "[1,2,3,4,5,6,7,8,9...]"
+```
+
+An integer sequence expression does not create a vector of integers by itself. Instead, it creates a new object that is ready
+to produce integers that are in the range specified in the expression.
+
+```Expresso
+    let negative_seq = -10..0;
+    let to_negative = 0..-10:-1;
+    println("Legend: (f(x) = x - 10, g(x) = -x)");
+    for let (n, to_n) in negative_seq.zip(to_negative) {
+        print("(f(x), g(x)) = ({0}, {1}),", n, to_n);  // print "(f(x), g(x)) = (-10, 0),(f(x), g(x)) = (-9, -1)" and so on
+        if n == to_n {      // and when it reaches (5, 5), it also prints "Crossed over!"
+            println("Crossed over!");
+        }
+    }
+```
+
+We call such objects iterators because they iterate through a sequence-like object and yields an element at a time.
+It's very useful and it's one of the reasons that gives Expresso the power of expressive-ness.
+An integer sequence expression can take negative values in any of its operands as long as they fit in the range of
+the built-in `int` type(which corresponds to [-2<sup>31</sup>, 2<sup>31</sup> - 1]).
+You may notice that the integer sequence expression looks like something, say, the conditional operator. And yes, that's right! 
+In Expresso, we have 2 types of ternary operators. One is the conditional operator(often called "the ternary operator"
+since most programming languages does have only one ternary operator) and the other is the integer sequence operator we have just introduced.
+
+### The `slice` type
+
+So far you may be sick of the tiring and boring explanations. But when combined with sequence types such as arrays or vectors,
+the `intseq` type reveals its funny yet powerful potential out to the public.
+
+```Expresso
+    let some_array = (0..10).toList();
+    let first_half = some_array[0..5];
+    let second_half = some_array[5..10];
+    for let (a, b) in first_half.zip(second_half) {
+        print("({0}, {1}),", a, b);   // print "(0, 5),(1, 6),(2, 7)" and so on
+    }
+```
+
+In the above example, it seems that the latter 2 intseq objects extract elements from the same array object.
+You may be wondering that it is inefficient because it seems that we have 3 arrays in the end. Having 3 arrays means that
+Expresso first allocates 3 chunks of memory and fills the first chunk of memory with integers from 0 to 10. And then it copies
+the first half of elements of the previous array to the second chunk of memory and the second half of elements to the last chunk of memory.
+But Expresso is smart enough to solve this problem. Instead of returning a new array, it returns iterators that goes through
+the first half of the elements and the second half of the elements respectively.
+Note that the chunks of memory(`first_half` and `second_half` variables in this snippet) are called `slice` in Expresso and that `slice` is another iterator
+(in .NET term it also called an `enumerator`).
+
+Sometimes, it's useful to view into some sequence. That's the time when the `slice` type comes into play. The `slice` type, as the name implies,
+slices some sequence and allows you to view a portion of that sequence. Combining some sequence with an `intseq` using the indexer syntax
+creates a new `slice` object. The slice object, then, can be used to iterate through some portion of the sequence.
+Note that the `slice` is just an iterator(in .NET term it also called an `enumerator`) of the sequence. Thus the `slice` object doesn't create
+a new copy of the original sequence.
+
+### The `tuple` type
+
+### The `vector` type
+
+### The `dictionary` type
+
+### The `array` type
+
+
+OK, next up is exponentiation. But we'll be doing it in a slightly different way. Even though Expresso has the operator for it, here we'll be doing it on our
+own, using while loop.
+
 The main policy for Expresso is that "Programming languages must allow programmers to write what it does, not how it does something".
 In traditional C, we often end up writing something like the following:
 
@@ -170,17 +250,6 @@ let mapped = a.map(|elem| => /* do something on each element */);
 
 This reads: We're assigining the value that will be computed by iterating through the array and doing some calculations on each element of
 the array to a variable. This sounds more straightforward and is easier to read, isn't it?
-
-### The `tuple` type
-
-### The `vector` type
-
-### The `dictionary` type
-
-### The `array` type
-
-OK, next up is exponentiation. But we'll be doing it in a slightly different way. Even though Expresso has the operator for it, here we'll be doing it on our
-own, using while loop.
 
 ## Main philosophies
 

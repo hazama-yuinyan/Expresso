@@ -27,20 +27,21 @@ namespace Expresso.CodeGen
 
         static Dictionary<string, Tuple<string, uint>> SpecialNamesMap = new Dictionary<string, Tuple<string, uint>>{
             {"intseq", Tuple.Create("Expresso.Runtime.Builtins.ExpressoIntegerSequence", 1_000_000_003u)},
-            {"function", Tuple.Create("System.Func", 1_000_000_004u)},
-            {"bool", Tuple.Create("System.Boolean", 1_000_000_005u)},
-            {"int", Tuple.Create("System.Int32", 1_000_000_006u)},
-            {"uint", Tuple.Create("System.UInt32", 1_000_000_007u)},
-            {"float", Tuple.Create("System.Single", 1_000_000_008u)},
-            {"double", Tuple.Create("System.Double", 1_000_000_009u)},
-            {"char", Tuple.Create("System.Char", 1_000_000_010u)},
-            {"byte", Tuple.Create("System.Byte", 1_000_000_011u)},
-            {"string", Tuple.Create("System.String", 1_000_000_012u)},
-            {"array", Tuple.Create("System.Array", 1_000_000_013u)},
-            {"vector", Tuple.Create("System.Collections.Generic.List", 1_000_000_014u)},
-            {"tuple", Tuple.Create("System.Tuple", 1_000_000_015u)},
-            {"dictionary", Tuple.Create("System.Collections.Generic.Dictionary", 1_000_000_016u)},
-            {"bigint", Tuple.Create("System.Numerics.BigInteger", 1_000_000_017u)}
+            {"slice", Tuple.Create("Expresso.Runtime.Builtins.Slice", 1_000_000_004u)},
+            {"function", Tuple.Create("System.Func", 1_000_000_005u)},
+            {"bool", Tuple.Create("System.Boolean", 1_000_000_006u)},
+            {"int", Tuple.Create("System.Int32", 1_000_000_007u)},
+            {"uint", Tuple.Create("System.UInt32", 1_000_000_008u)},
+            {"float", Tuple.Create("System.Single", 1_000_000_009u)},
+            {"double", Tuple.Create("System.Double", 1_000_000_010u)},
+            {"char", Tuple.Create("System.Char", 1_000_000_011u)},
+            {"byte", Tuple.Create("System.Byte", 1_000_000_012u)},
+            {"string", Tuple.Create("System.String", 1_000_000_013u)},
+            {"array", Tuple.Create("System.Array", 1_000_000_014u)},
+            {"vector", Tuple.Create("System.Collections.Generic.List", 1_000_000_015u)},
+            {"tuple", Tuple.Create("System.Tuple", 1_000_000_016u)},
+            {"dictionary", Tuple.Create("System.Collections.Generic.Dictionary", 1_000_000_017u)},
+            {"bigint", Tuple.Create("System.Numerics.BigInteger", 1_000_000_018u)}
         };
 
         /// <summary>
@@ -100,6 +101,9 @@ namespace Expresso.CodeGen
 
             case KnownTypeCode.IntSeq:
                 return typeof(ExpressoIntegerSequence);
+
+            case KnownTypeCode.Slice:
+                return typeof(Slice<,>);
 
             default:
                 return typeof(object);
@@ -318,7 +322,6 @@ namespace Expresso.CodeGen
         {
             foreach(var name in _AssemblyNames){
                 var am = new AssemblyName(name);
-                //AppDomain.CurrentDomain.Load(name);
                 Assembly.Load(am);
             }
         }

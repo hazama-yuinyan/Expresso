@@ -120,7 +120,7 @@ namespace Expresso.Ast.Analysis
 
             if(!IsSequenceType(target_type)){
                 parser.ReportSemanticError(
-                    "Error ES1300: `{0}` isn't a sequence type! A for statement can only be used for iterating over sequences",
+                    "Error ES1301: `{0}` isn't a sequence type! A for statement can only be used for iterating over sequences",
                     forStmt.Target,
                     left_type
                 );
@@ -146,7 +146,7 @@ namespace Expresso.Ast.Analysis
                 var target_type = variable.Initializer.AcceptWalker(this);
                 if(!IsSequenceType(target_type)){
                     parser.ReportSemanticError(
-                        "Error ES1300: `{0}` isn't a sequence type! A for statemant can only be used for iterating over sequences.",
+                        "Error ES1301: `{0}` isn't a sequence type! A for statemant can only be used for iterating over sequences.",
                         variable.Initializer,
                         target_type
                     );
@@ -1319,7 +1319,7 @@ namespace Expresso.Ast.Analysis
         {
             var simple = type as SimpleType;
             if(simple != null)
-                return simple.Identifier == "array" || simple.Identifier == "vector" || simple.Identifier == "dictionary" || simple.Identifier == "tuple";
+                return simple.Identifier == "array" || simple.Identifier == "vector" || simple.Identifier == "dictionary" || simple.Identifier == "tuple" || simple.Identifier == "slice";
             else
                 return false;
         }
@@ -1396,7 +1396,9 @@ namespace Expresso.Ast.Analysis
 
             var simple = type as SimpleType;
             if(simple != null){
-                if(simple.TypeArguments.Count == 1)
+                if(simple.Identifier == "slice")
+                    return simple.TypeArguments.Last().Clone();
+                else if(simple.TypeArguments.Count == 1)
                     return simple.TypeArguments.FirstOrNullObject().Clone();
                 else
                     return AstType.MakeSimpleType("tuple", simple.TypeArguments);

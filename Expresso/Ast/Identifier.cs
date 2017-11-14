@@ -97,8 +97,8 @@ namespace Expresso.Ast
             IdentifierId = 0;
 		}
 
-        public Identifier(string name, AstType type, TextLocation start, TextLocation end)
-            : base(start, end)
+        public Identifier(string name, AstType type, TextLocation loc)
+            : base(loc, type.EndLocation)
         {
             this.name = name;
             Type = type;

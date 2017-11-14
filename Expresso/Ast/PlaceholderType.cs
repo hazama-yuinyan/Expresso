@@ -19,8 +19,8 @@ namespace Expresso.Ast
             get{return Identifier.Null;}
         }
 
-        public PlaceholderType(TextLocation start)
-            : base(start, TextLocation.Empty)
+        public PlaceholderType(TextLocation loc)
+            : base(loc, loc)
         {
         }
 

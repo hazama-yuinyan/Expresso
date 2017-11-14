@@ -46,6 +46,7 @@ namespace Expresso.Ast
         }
 
         public VariableInitializer(Identifier name, Expression initializer = null)
+            : base(name.StartLocation, initializer == null ? name.EndLocation : initializer.EndLocation)
         {
             NameToken = name;
             Initializer = initializer ?? Expression.Null;

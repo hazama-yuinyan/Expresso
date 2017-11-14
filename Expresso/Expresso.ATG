@@ -497,10 +497,10 @@ ImportDecl<out ImportDeclaration decl>
                                    if(!symbol.Name.EndsWith(".exs"))
                                        Symbols.AddNativeSymbolTable(symbol);
   								.)
-  ( "as"
+  ( "as"                        (. var alias_start_loc = CurrentLocation; .)
     ident						(.
     							   if(!CheckKeyword(t.val)){
-    							       alias = AstNode.MakeIdentifier(t.val, CurrentLocation);
+    							       alias = AstNode.MakeIdentifier(t.val, alias_start_loc);
     							       Symbols.AddTypeSymbol(t.val, symbol);
     							   }else{
     							       // Failed to parse an alias name.
@@ -538,10 +538,12 @@ ClassDecl<out EntityDeclaration decl, Modifiers modifiers>
   .)
 =
   SYNC
-  "class"                               (. Symbols.AddScope(); .)
+  "class"                               (. Symbols.AddScope();
+                                           var ident_start_loc = CurrentLocation;
+                                        .)
   ident				    				(. name = t.val;
                                            if(!CheckKeyword(name)){
-                                               ident = AstNode.MakeIdentifier(name, CurrentLocation);
+                                               ident = AstNode.MakeIdentifier(name, ident_start_loc);
                                                Symbols.AddTypeSymbol(name, ident);
                                                cur_class_name = name;
                                            }else{
@@ -595,11 +597,13 @@ FuncDecl<out EntityDeclaration decl, Modifiers modifiers>
 								.)
 =
   SYNC
-  "def"                         (. Symbols.AddScope(); .)
+  "def"                         (. Symbols.AddScope();
+                                   var ident_start_loc = CurrentLocation;
+                                .)
   ident							(.
                                    name = t.val;
                                    if(!CheckKeyword(name)){
-                                       ident = AstNode.MakeIdentifier(name, new PlaceholderType(TextLocation.Empty), CurrentLocation); 
+                                       ident = AstNode.MakeIdentifier(name, AstType.MakePlaceholderType(CurrentLocation), ident_start_loc); 
                                        Symbols.AddSymbol(name, ident);
                                    }else{
                                        // The name is unsuitable for a method or a function name.
@@ -965,7 +969,7 @@ ForStmt<out Statement stmt>			(. PatternConstruct left = null; Expression rvalue
   Block<out body>					(.
   									   if(ident != null){
   									       var initializer = AstNode.MakeVariableInitializer(ident, rvalue);
-  									       stmt = Statement.MakeValueBindingForStmt(modifiers, body, initializer);
+  									       stmt = Statement.MakeValueBindingForStmt(modifiers, body, start_loc, initializer);
   									   }else{
   									       stmt = Statement.MakeForStmt(left, rvalue, body, start_loc);
   									   }
@@ -1154,11 +1158,11 @@ WildcardPattern<out PatternConstruct pattern>
 =
   '_'                               (. pattern = PatternConstruct.MakeWildcardPattern(); .).
 /*------------------------------------------------------------------------*/
-IdentifierPattern<out PatternConstruct pattern> (. PatternConstruct inner = null; string name; AstType type = new PlaceholderType(TextLocation.Empty); .)
+IdentifierPattern<out PatternConstruct pattern> (. PatternConstruct inner = null; string name; AstType type = new PlaceholderType(TextLocation.Empty); var loc = CurrentLocation; .)
 =
   ident                             (.
                                        name = t.val;
-                                       var ident = AstNode.MakeIdentifier(name, type, CurrentLocation);
+                                       var ident = AstNode.MakeIdentifier(name, type, loc);
                                        Symbols.AddSymbol(name, ident);
                                     .)
   [ '@'
@@ -1254,9 +1258,8 @@ CondExpr<out Expression expr>		(. Expression true_expr, false_expr; expr = null;
   | ClosureLiteral<out expr>
   ).
 /*------------------------------------------------------------------------*/
-ClosureLiteral<out Expression expr>     (. AstType return_type = new PlaceholderType(default(TextLocation)); var parameters = new List<ParameterDeclaration>();
+ClosureLiteral<out Expression expr>     (. var parameters = new List<ParameterDeclaration>(); BlockStatement body_block = null;
                                            var empty_params = new List<ParameterType>(); Expression body_expr; var start_loc = NextLocation;
-                                           BlockStatement body_block = null;
                                         .)
 =
   '|'                                   (. Symbols.AddScope();
@@ -1271,6 +1274,7 @@ ClosureLiteral<out Expression expr>     (. AstType return_type = new Placeholder
                                                Symbols.Name = "block`" + ScopeId++;
                                            }
                                            defining_closure_parameters = false;
+                                           AstType return_type = AstType.MakePlaceholderType(CurrentLocation);
                                         .)
   [ "->"
     Type<out return_type>               (. if(la.val != "{"){
@@ -1579,7 +1583,7 @@ ObjectCreation<AstType typePath, out Expression expr>
                                            //GoUpScope();
                                         .).
 /*------------------------------------------------------------------------*/
-Trailer<ref Expression expr>	(. var args = new List<Expression>(); var start_loc = CurrentLocation; .)
+Trailer<ref Expression expr>	(. var args = new List<Expression>(); var loc = CurrentLocation; .)
 =
   '('
   [ArgList<out args>]
@@ -1588,7 +1592,7 @@ Trailer<ref Expression expr>	(. var args = new List<Expression>(); var start_loc
     ArgList<out args>
     ']'							(. expr = Expression.MakeIndexer(expr, args, CurrentLocation); .)
   | '.'
-    ident						(. expr = Expression.MakeMemRef(expr, AstNode.MakeIdentifier(t.val, new PlaceholderType(TextLocation.Empty), start_loc, CurrentLocation)); .).
+    ident						(. expr = Expression.MakeMemRef(expr, AstNode.MakeIdentifier(t.val, AstType.MakePlaceholderType(new TextLocation(loc.Line, loc.Column + t.val.Length)), loc)); .).
 /*------------------------------------------------------------------------*/
 ArgList<. out List<Expression> args .>		(. args = new List<Expression>(); Expression expr; .)
 =
@@ -1597,7 +1601,7 @@ ArgList<. out List<Expression> args .>		(. args = new List<Expression>(); Expres
     CondExpr<out expr>						(. args.Add(expr); .)
   }.
 /*------------------------------------------------------------------------*/
-Atom<out Expression expr>			(. var exprs = new List<Expression>(); expr = null; bool seen_trailing_comma = false; .)
+Atom<out Expression expr>			(. var exprs = new List<Expression>(); expr = null; bool seen_trailing_comma = false; var loc = CurrentLocation; .)
 =
   Literal<out expr>
   | '('
@@ -1617,14 +1621,14 @@ Atom<out Expression expr>			(. var exprs = new List<Expression>(); expr = null; 
   | '['
     [SequenceMaker<out expr>]
     SYNC ']'						(.  if(expr == null){
-                                            var type = CreateTypeWithArgs("array", new PlaceholderType(TextLocation.Empty));
+                                            var type = CreateTypeWithArgs("array", AstType.MakePlaceholderType(loc));
     										expr = Expression.MakeSequenceInitializer(type, Enumerable.Empty<Expression>());
                                         }
     								.)
   | lcurly
     [DictMaker<out expr>]
     SYNC rcurly                     (. if(expr == null){
-                                           var type = CreateTypeWithArgs("dictionary", new PlaceholderType(TextLocation.Empty), new PlaceholderType(TextLocation.Empty));
+                                           var type = CreateTypeWithArgs("dictionary", AstType.MakePlaceholderType(loc), AstType.MakePlaceholderType(loc));
                                            expr = Expression.MakeSequenceInitializer(type, Enumerable.Empty<Expression>());
                                        }
                                     .).
@@ -1638,35 +1642,37 @@ TypePathExpression<out AstType type>
                .)
   }.
 /*------------------------------------------------------------------------*/
-PathExpression<out PathExpression path> (. var paths = new List<Identifier>(); .)
+PathExpression<out PathExpression path> (. var paths = new List<Identifier>(); var loc = CurrentLocation; .)
 =
   ident                                 (.
-  										   var ident = AstNode.MakeIdentifier(t.val, new PlaceholderType(TextLocation.Empty), CurrentLocation);
+                                           var name = t.val;
+  										   var ident = AstNode.MakeIdentifier(name, AstType.MakePlaceholderType(new TextLocation(loc.Line, loc.Column + name.Length)), loc);
   										   paths.Add(ident);
   										.)
-  { "::"
+  { "::"                                (. loc = CurrentLocation; .)
     ident                               (.
-    									   var ident2 = AstNode.MakeIdentifier(t.val, new PlaceholderType(TextLocation.Empty), CurrentLocation);
+                                           name = t.val;
+    									   var ident2 = AstNode.MakeIdentifier(name, AstType.MakePlaceholderType(new TextLocation(loc.Line, loc.Column + name.Length)), loc);
     									   paths.Add(ident2);
     									.)
   }                                     (. path = Expression.MakePath(paths); .).
 /*------------------------------------------------------------------------*/
 SequenceMaker<out Expression expr>	(.  var exprs = new List<Expression>();
 										expr = null; ComprehensionIter comp = null;
-                                        string seq_type_name = "array";
+                                        string seq_type_name = "array"; var loc = CurrentLocation;
 									.)
 =
-  "..."                                 (. expr = Expression.MakeSequenceInitializer(CreateTypeWithArgs("vector", new PlaceholderType(TextLocation.Empty)), Enumerable.Empty<Expression>()); .)
+  "..."                                 (. expr = Expression.MakeSequenceInitializer(CreateTypeWithArgs("vector", AstType.MakePlaceholderType(loc)), Enumerable.Empty<Expression>()); .)
   | CondExpr<out expr>                  (. exprs.Add(expr); .)
   ( { IF(NotFinalComma()) WEAK ','
       CondExpr<out expr>                (. exprs.Add(expr); .)
     }
     [ ','
       "..."                             (. seq_type_name = "vector"; .)
-    ]                                   (. var type = CreateTypeWithArgs(seq_type_name, new PlaceholderType(TextLocation.Empty));
+    ]                                   (. var type = CreateTypeWithArgs(seq_type_name, AstType.MakePlaceholderType(loc));
                                            expr = Expression.MakeSequenceInitializer(type, exprs);
                                         .)
-  | CompFor<out comp>                   (. var type = CreateTypeWithArgs("vector", new PlaceholderType(TextLocation.Empty));
+  | CompFor<out comp>                   (. var type = CreateTypeWithArgs("vector", AstType.MakePlaceholderType(loc));
                                            expr = Expression.MakeComp(expr, (ComprehensionForClause)comp, type);
                                            GoUpScope();
                                            is_first_comprehension_for_clause = true;
@@ -1675,7 +1681,7 @@ SequenceMaker<out Expression expr>	(.  var exprs = new List<Expression>();
 /*------------------------------------------------------------------------*/
 DictMaker<out Expression expr>			(. Expression key, val; var list = new List<KeyValueLikeExpression>();
                                            KeyValueLikeExpression pair; ComprehensionIter comp; expr = null;
-                                           var type = CreateTypeWithArgs("dictionary", new PlaceholderType(TextLocation.Empty), new PlaceholderType(TextLocation.Empty));
+                                           var type = CreateTypeWithArgs("dictionary", AstType.MakePlaceholderType(CurrentLocation), AstType.MakePlaceholderType(CurrentLocation));
                                         .)
 =
   BitOr<out key>
@@ -1725,7 +1731,7 @@ CompIf<out ComprehensionIter expr>		(. Expression tmp; ComprehensionIter body = 
   										   expr = Expression.MakeCompIf(tmp, body);
   										.).
 /*------------------------------------------------------------------------*/
-Identifier<out Identifier ident>    (. string name; AstType type = new PlaceholderType(TextLocation.Empty); var start_loc = CurrentLocation;.)
+Identifier<out Identifier ident>    (. string name; var loc = CurrentLocation; .)
 =
   ident                             (.
                                         name = t.val;
@@ -1733,10 +1739,11 @@ Identifier<out Identifier ident>    (. string name; AstType type = new Placehold
                                             ident = null;
                                             return;
                                         }
+                                        AstType type = AstType.MakePlaceholderType(CurrentLocation);
                                     .)
   [ "(-"
     Type<out type>
-  ]                                 (. ident = AstNode.MakeIdentifier(name, type, start_loc, CurrentLocation); .).
+  ]                                 (. ident = AstNode.MakeIdentifier(name, type, loc); .).
 /*------------------------------------------------------------------------*/
 Literal<out Expression expr>	(. expr = null; string tmp;
                                    var start_loc = NextLocation;

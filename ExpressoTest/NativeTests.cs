@@ -96,6 +96,27 @@ namespace Expresso.Test
             Assert.IsTrue(seq3_list.SequenceEqual(expected3));
             Assert.IsTrue(seq4_list.SequenceEqual(expected4));
         }
+
+        [Test]
+        public void Slice()
+        {
+            var list = new List<int>{1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
+            var slice = new Slice<List<int>, int>(list, new ExpressoIntegerSequence(2, 4, 1, false));
+            var slice2 = new Slice<List<int>, int>(list, new ExpressoIntegerSequence(2, 4, 1, true));
+
+            var expected = new List<int>{3, 4};
+            var expected2 = new List<int>{3, 4, 5};
+
+            var slice1_list = 
+                from i in slice
+                select i;
+            var slice2_list =
+                from j in slice2
+                select j;
+
+            Assert.IsTrue(slice1_list.SequenceEqual(expected));
+            Assert.IsTrue(slice2_list.SequenceEqual(expected2));
+        }
     }
 }
 

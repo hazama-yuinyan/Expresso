@@ -924,6 +924,7 @@ namespace Expresso.Test
                                     )
                                 )
                             ),
+                            TextLocation.Empty,
                             AstNode.MakeVariableInitializer(
                                 Helpers.MakeSomeIdent("p"),
                                 Expression.MakeIntSeq(
@@ -1074,6 +1075,7 @@ namespace Expresso.Test
                                             )
                                         )
                                     ),
+                                    TextLocation.Empty,
                                     AstNode.MakeVariableInitializer(
                                         Helpers.MakeSomeIdent("j"),
                                         Expression.MakeIntSeq(
@@ -1085,6 +1087,7 @@ namespace Expresso.Test
                                     )
                                 )
                             ),
+                            TextLocation.Empty,
                             AstNode.MakeVariableInitializer(
                                 Helpers.MakeSomeIdent("i"),
                                 Expression.MakeSequenceInitializer(
@@ -2941,6 +2944,7 @@ namespace Expresso.Test
                                                     )
                                                 )
                                             ),
+                                            TextLocation.Empty,
                                             AstNode.MakeVariableInitializer(
                                                 Helpers.MakeSomeIdent("j"),
 	                                            Expression.MakeIntSeq(
@@ -3481,6 +3485,7 @@ namespace Expresso.Test
                                     )
                                 )
                             ),
+                            TextLocation.Empty,
                             AstNode.MakeVariableInitializer(
                                 Helpers.MakeSomeIdent("x"),
                                 Helpers.MakeIdentifierPath("d")

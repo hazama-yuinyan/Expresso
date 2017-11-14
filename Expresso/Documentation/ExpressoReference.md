@@ -97,10 +97,10 @@ you should consider using reference comparison, that is, apply the equal operato
 
 ### The IntSeq type and the integer sequence operator
 
-One unique characteristic for Expresso is the built-in `IntSeq` type. As the name suggests, it produces a series of integers.
-The `IntSeq` type has 3 fields, `lower`, `upper` and `step`. `lower` represents the lower bound of the sequence,
+One unique characteristic for Expresso is the built-in `intseq` type. As the name suggests, it produces a series of integers.
+The `intseq` type has 3 fields, `lower`, `upper` and `step`. `lower` represents the lower bound of the sequence,
 `upper` the upper bound and `step` the step by which an iteration proceeds at a time.
-The `IntSeq` type has the corresponding literal form and it is written as follows:
+The `intseq` type has the corresponding literal form and it is written as follows:
 `lower(..|...)upper[:step]`
 
 ```Expresso
@@ -121,7 +121,7 @@ to produce integers that are in the range specified in the expression.
     let to_negative = 0..-10:-1;
     println("Legend: (f(x) = x - 10, g(x) = -x)");
     for let (n, to_n) in negative_seq.zip(to_negative) {
-        print("(f(x), g(x)) = ({}, {}),", n, to_n);  // print "(f(x), g(x)) = (-10, 0),(f(x), g(x)) = (-9, -1)" and so on
+        print("(f(x), g(x)) = ({0}, {1}),", n, to_n);  // print "(f(x), g(x)) = (-10, 0),(f(x), g(x)) = (-9, -1)" and so on
         if n == to_n {      // and when it reaches (5, 5), it also prints "Crossed over!"
             println("Crossed over!");
         }
@@ -131,7 +131,7 @@ to produce integers that are in the range specified in the expression.
 We call such objects iterators because they iterate through a sequence-like object and yields an element at a time.
 It's very useful and it's one of the reasons that gives Expresso the power of expressive-ness.
 An integer sequence expression can take negative values in any of its operands as long as they fit in the range of
-the built-in `int` type(which corresponds to [-2 ^ 31, 2 ^ 31 - 1]).
+the built-in `int` type(which corresponds to [-2<sup>31</sup>, 2<sup>31</sup> - 1]).
 You may notice that the integer sequence expression looks like something, say, the conditional operator. And yes, that's right! 
 In Expresso, we have 2 types of ternary operators. One is the conditional operator(often called "the ternary operator"
 since most programming languages does have only one ternary operator) and the other is the integer sequence operator we have just introduced.
@@ -144,11 +144,11 @@ the `intseq` type reveals its funny yet powerful potential out to the public.
     let first_half = some_array[0..5];
     let second_half = some_array[5..10];
     for let (a, b) in first_half.zip(second_half) {
-        print("({}, {}),", a, b);   // print "(0, 5),(1, 6),(2, 7)" and so on
+        print("({0}, {1}),", a, b);   // print "(0, 5),(1, 6),(2, 7)" and so on
     }
 ```
 
-In the above example, it seems that the latter 2 intseq objects extracts elements from the same array object.
+In the above example, it seems that the latter 2 intseq objects extract elements from the same array object.
 You may be wondering that it is inefficient because it seems that we have 3 arrays in the end. Having 3 arrays means that
 Expresso first allocates 3 chunks of memory and fills the first chunk of memory with integers from 0 to 10. And then it copies
 the first half elements of the previous array to the second chunk of memory and the second half of elements to the last chunk of memory.

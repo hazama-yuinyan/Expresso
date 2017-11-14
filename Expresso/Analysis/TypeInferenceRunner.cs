@@ -325,17 +325,23 @@ namespace Expresso.Ast.Analysis
             public AstType VisitIndexerExpression(IndexerExpression indexExpr)
             {
                 var target_type = indexExpr.Target.AcceptWalker(this);
-                var simple_type = target_type as SimpleType;
-                if(simple_type != null){
+                if(target_type is SimpleType simple_type){
                     //TODO: get it to work for more general types 
-                    if(simple_type.Identifier != "array" && simple_type.Identifier != "dictionary" && simple_type.Identifier != "vector"){
-                        parser.ReportSemanticErrorRegional(
-                            "Can not apply the indexer expression on type `{0}`",
-                            indexExpr.Target, indexExpr,
-                            target_type
-                        );
-                    }
+                    if(indexExpr.Arguments.Count == 1){
+                        var arg_type = indexExpr.Arguments.First().AcceptWalker(this);
+                        if(arg_type is PrimitiveType primitive && primitive.KnownTypeCode == KnownTypeCode.IntSeq){
+                            if(simple_type.Identifier == "dictionary"){
+                                parser.ReportSemanticError(
+                                    "Error ES3012: Can not apply the indexer operator on a dictionary with an `intseq`",
+                                    indexExpr
+                                );
+                                return null;
+                            }
 
+                            // simple_type doesn't need to be cloned because it's already cloned
+                            return AstType.MakeSimpleType("slice", new []{simple_type, simple_type.TypeArguments.First().Clone()});
+                        }
+                    }
                     return simple_type.TypeArguments.LastOrNullObject().Clone();
                 }
 
