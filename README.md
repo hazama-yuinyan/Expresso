@@ -11,3 +11,8 @@ The language name __Expresso__ is coined as a mixture of __Espresso__ and __expr
 * Builtin support for many useful types such as bigint, intseq, function
 * No traditional for statements
 * Type-strict 
+
+## How to compile
+
+First, `git clone` the repository and run `git submodule --init --recursive`. Then you should be ready to compile the projects.
+Just open up the solution on VS or whatever IDE you're using and build the 'ExpressoConsole' project. Since this project contains the front end executable you can compile and run Expresso's source codes using the `exsc` command after that.
