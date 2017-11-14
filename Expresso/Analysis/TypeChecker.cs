@@ -591,17 +591,34 @@ namespace Expresso.Ast.Analysis
         public AstType VisitIndexerExpression(IndexerExpression indexExpr)
         {
             var type = indexExpr.Target.AcceptWalker(this);
-            if(IsPlaceholderType(type))
-                inference_runner.VisitIndexerExpression(indexExpr);
+            if(IsPlaceholderType(type)){
+                var return_type = inference_runner.VisitIndexerExpression(indexExpr);
+                return return_type;
+            }
 
-            var simple_type = type as SimpleType;
-            if(simple_type != null){
+            if(type is SimpleType simple_type){
                 if(simple_type.Name != "array" && simple_type.Name != "vector" && simple_type.Name != "dictionary"){
                     parser.ReportSemanticError(
                         "Error ES3011: Can not apply the indexer operator on type `{0}`",
                         indexExpr,
                         simple_type
                     );
+                }
+
+                if(indexExpr.Arguments.Count == 1){
+                    var arg_type = indexExpr.Arguments.First().AcceptWalker(this);
+                    if(arg_type is PrimitiveType primitive && primitive.KnownTypeCode == KnownTypeCode.IntSeq){
+                        if(simple_type.Identifier == "dictionary"){
+                            parser.ReportSemanticError(
+                                "Error ES3012: Can not apply the indexer operator on a dictionary with an `intseq`",
+                                indexExpr
+                            );
+                            return null;
+                        }
+
+                        // simple_type doesn't need to be cloned because it's already cloned
+                        return AstType.MakeSimpleType("slice", new []{simple_type.Clone(), simple_type.TypeArguments.First().Clone()});
+                    }
                 }
 
                 return simple_type.TypeArguments.Last();
@@ -1037,7 +1054,7 @@ namespace Expresso.Ast.Analysis
                 inference_runner.InspectsClosure = true;
                 if(IsCollectionType(inferred_type) && ((SimpleType)inferred_type).TypeArguments.Any(t => t is PlaceholderType)){
                     parser.ReportSemanticErrorRegional(
-                        "The left-hand-side lacks the inner type of the container `{0}`",
+                        "Error ES1302: The left-hand-side lacks the inner type of the container `{0}`",
                         initializer.NameToken,
                         initializer.Initializer,
                         inferred_type.Name

@@ -299,7 +299,7 @@ namespace Expresso.Ast
         public static ParameterType MakeParameterType(string name, TextLocation loc = default(TextLocation))
         {
             return new ParameterType(
-                AstNode.MakeIdentifier(name, new PlaceholderType(new TextLocation(loc.Line, loc.Column + name.Length)), loc)
+                AstNode.MakeIdentifier(name, loc)
             );
         }
 

@@ -5099,7 +5099,8 @@ namespace Expresso.Test
                                         Helpers.MakeGenericType(
                                             "array",
                                             Helpers.MakePrimitiveType("int")
-                                        )
+                                        ),
+                                        Helpers.MakePrimitiveType("int")
                                     )
                                 )
                             ),
@@ -5146,7 +5147,7 @@ namespace Expresso.Test
                                 Expression.MakeSequenceInitializer(
                                     Helpers.MakeGenericType(
                                         "vector",
-                                        Helpers.MakePlaceholderType()
+                                        Helpers.MakePrimitiveType("int")
                                     )
                                 )
                             ),
@@ -5214,7 +5215,8 @@ namespace Expresso.Test
                                         Helpers.MakeGenericType(
                                             "array",
                                             Helpers.MakePrimitiveType("int")
-                                        )
+                                        ),
+                                        Helpers.MakePrimitiveType("int")
                                     )
                                 )
                             )
@@ -5263,7 +5265,8 @@ namespace Expresso.Test
                                         Helpers.MakeGenericType(
                                             "array",
                                             Helpers.MakePrimitiveType("int")
-                                        )
+                                        ),
+                                        Helpers.MakePrimitiveType("int")
                                     )
                                 ),
                                 Helpers.MakeIdentifierPath(
@@ -5276,7 +5279,7 @@ namespace Expresso.Test
                             )
                         )
                     ),
-                    Helpers.MakePlaceholderType(),
+                    Helpers.MakeVoidType(),
                     Modifiers.None
                 )
             });

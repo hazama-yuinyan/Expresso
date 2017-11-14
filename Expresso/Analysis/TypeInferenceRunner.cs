@@ -326,7 +326,16 @@ namespace Expresso.Ast.Analysis
             {
                 var target_type = indexExpr.Target.AcceptWalker(this);
                 if(target_type is SimpleType simple_type){
-                    //TODO: get it to work for more general types 
+                    if(simple_type.Name != "array" && simple_type.Name != "vector" && simple_type.Name != "dictionary"){
+                        // We need to duplicate the following error messages on InferenceRunner and TypeChecker
+                        // because we won't be reaching some code paths
+                        parser.ReportSemanticError(
+                            "Error ES3011: Can not apply the indexer operator on type `{0}`",
+                            indexExpr,
+                            simple_type
+                        );
+                    }
+
                     if(indexExpr.Arguments.Count == 1){
                         var arg_type = indexExpr.Arguments.First().AcceptWalker(this);
                         if(arg_type is PrimitiveType primitive && primitive.KnownTypeCode == KnownTypeCode.IntSeq){
@@ -401,7 +410,7 @@ namespace Expresso.Ast.Analysis
                             item.Type.ReplaceWith(result);
                         }else{
                             throw new ParserException(
-                                "Type or symbol name '{0}' is not declared",
+                                "Error ES1700: Type or symbol name '{0}' is not declared",
                                 item,
                                 item.Name
                             );
@@ -452,9 +461,9 @@ namespace Expresso.Ast.Analysis
                     seqInitializer.ObjectType.TypeArguments.FirstOrNullObject().ReplaceWith(key_type);
                     seqInitializer.ObjectType.TypeArguments.LastOrNullObject().ReplaceWith(value_type);
 
-                    return new SimpleType("dictionary", new []{
+                    return AstType.MakeSimpleType("dictionary", new []{
                         key_type.Clone(), value_type.Clone()
-                    }, TextLocation.Empty, TextLocation.Empty);
+                    });
                 }else{
                     AstType first = seqInitializer.Items.FirstOrNullObject().AcceptWalker(this);
                     var result = seqInitializer.Items.Skip(1)
@@ -478,7 +487,7 @@ namespace Expresso.Ast.Analysis
                     from item in seqExpr.Items
                     select item.AcceptWalker(this).Clone();
 
-                return (seqExpr.Items.Count == 1) ? types.First() : new SimpleType("tuple", types, seqExpr.StartLocation, seqExpr.EndLocation);
+                return (seqExpr.Items.Count == 1) ? types.First() : AstType.MakeSimpleType("tuple", types, seqExpr.StartLocation, seqExpr.EndLocation);
             }
 
             public AstType VisitUnaryExpression(UnaryExpression unaryExpr)
@@ -506,7 +515,7 @@ namespace Expresso.Ast.Analysis
                         }
 
                         parser.ReportSemanticError(
-                            "Can not apply operators '+' or '-' on type `{0}`.",
+                            "Error ES3200: Can not apply operators '+' or '-' on type `{0}`.",
                             unaryExpr,
                             tmp.Name
                         );

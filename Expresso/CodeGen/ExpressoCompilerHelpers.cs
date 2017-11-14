@@ -162,6 +162,9 @@ namespace Expresso.CodeGen
             if(primitive != null)
                 return primitive;
 
+            if(type.IsGenericParameter)
+                return AstType.MakeParameterType(AstNode.MakeIdentifier(type.Name));
+            
             var type_args =
                 from arg in type.GetGenericArguments()
                                 select AstType.MakeSimpleType(arg.Name);
