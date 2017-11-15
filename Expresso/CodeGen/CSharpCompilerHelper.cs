@@ -7,7 +7,6 @@ using System.Text.RegularExpressions;
 using Expresso.Ast;
 using Expresso.TypeSystem;
 using Expresso.Runtime.Builtins;
-using Expresso.Ast.Analysis;
 using System.Text;
 
 namespace Expresso.CodeGen
@@ -23,7 +22,7 @@ namespace Expresso.CodeGen
             new Regex(@"%([a-zA-Z_][a-zA-Z_0-9]*)");
 
         static List<string> _AssemblyNames =
-            new List<string>{"mscorlib", "System", "System.Core", "System.Numerics, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089", "ExpressoRuntime"};
+            new List<string>{"System.Numerics, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089", "ExpressoRuntime"};
 
         static Dictionary<string, Tuple<string, uint>> SpecialNamesMap = new Dictionary<string, Tuple<string, uint>>{
             {"intseq", Tuple.Create("Expresso.Runtime.Builtins.ExpressoIntegerSequence", 1_000_000_003u)},

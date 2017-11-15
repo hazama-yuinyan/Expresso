@@ -8,11 +8,11 @@ The language name __Expresso__ is coined as a mixture of __Espresso__ and __expr
 
 * Object-oriented(not mandatory, but highly recommended)
 * Module based
-* Builtin support for many useful types such as bigint, intseq, function
+* Builtin support for many useful types such as bigint, intseq, function and slice
 * No traditional for statements
 * Type-strict 
 
 ## How to compile
 
-First, `git clone` the repository and run `git submodule update --init`. Then you should be ready to compile the projects.
-Just open up the solution on VS or whatever IDE you're using and build the 'ExpressoConsole' project. Since this project contains the front end executable you can compile and run Expresso's source codes using the `exsc` command after that.
+First, `git clone` the repository and run `git submodule update --init`. Next download and move Coco(a Parser Generator for C#). In order to download Coco, go to [here][http://www.ssw.uni-linz.ac.at/Coco/] and download `Coco.exe` in "Coco/R for C#" section. Unzip the downloaded file and move Coco.exe file to the root directory of Expresso. Note that we're generating the parser using a shell script. So if you are on Windows, you will have to write a batch file or something for parser generation. Then you should be ready to compile the projects.   
+Just open up the solution on VS or whatever IDE you're using and build the 'ExpressoConsole' project. Since this project contains the front end executable, you can compile and run Expresso's source codes using the `exsc` command after that.
