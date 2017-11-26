@@ -10,6 +10,8 @@ using Expresso.Formatting;
 
 namespace Expresso.Ast
 {
+    using ExpressoModifiers = Expresso.Ast.Modifiers;
+
     /// <summary>
     /// 抽象構文木のノードの共通基底。
     /// The base class for all the abstract syntax trees.
@@ -324,20 +326,20 @@ namespace Expresso.Ast
         public void AddChild<T>(T child, Role<T> role) where T : AstNode
         {
             if(role == null)
-                throw new ArgumentNullException("role");
+                throw new ArgumentNullException(nameof(role));
 
             if(child == null || child.IsNull)
                 return;
 
             ThrowIfFrozen();
             if(child == this)
-                throw new ArgumentException("Can not add a node to itself as a child", "child");
+                throw new ArgumentException("Can not add a node to itself as a child", nameof(child));
 
             if(child.parent != null)
-                throw new ArgumentException("Node is already used in another tree.", "child");
+                throw new ArgumentException("Node is already used in another tree.", nameof(child));
 
             if(child.IsFrozen)
-                throw new ArgumentException("Can not add a frozen node.", "child");
+                throw new ArgumentException("Can not add a frozen node.", nameof(child));
 
             AddChildUnsafe(child, role);
         }
@@ -349,13 +351,13 @@ namespace Expresso.Ast
 
             ThrowIfFrozen();
             if(child == this)
-                throw new ArgumentException("Can not add a node to itself as a child", "child");
+                throw new ArgumentException("Can not add a node to itself as a child", nameof(child));
 
             if(child.parent != null)
-                throw new ArgumentException("Node is already used in another truee.", "child");
+                throw new ArgumentException("Node is already used in another truee.", nameof(child));
 
             if(child.IsFrozen)
-                throw new ArgumentException("Can not add a frozen node.", "child");
+                throw new ArgumentException("Can not add a frozen node.", nameof(child));
 
             AddChildUnsafe(child, child.Role);
         }
@@ -387,7 +389,7 @@ namespace Expresso.Ast
         public void InsertChildBefore<T>(AstNode nextSibling, T child, Role<T> role) where T : AstNode
         {
             if(role == null)
-                throw new ArgumentNullException("role");
+                throw new ArgumentNullException(nameof(role));
 
             if(nextSibling == null || nextSibling.IsNull){
                 AddChild(child, role);
@@ -399,13 +401,13 @@ namespace Expresso.Ast
 
             ThrowIfFrozen();
             if(child.parent != null)
-                throw new ArgumentException("Node is already used in another tree.", "child");
+                throw new ArgumentException("Node is already used in another tree.", nameof(child));
 
             if(child.IsFrozen)
-                throw new ArgumentException("Can not add a frozen node", "child");
+                throw new ArgumentException("Can not add a frozen node", nameof(child));
 
             if(nextSibling.parent == null)
-                throw new ArgumentException("NextSibling is not a child of this node.", "nextSibling");
+                throw new ArgumentException("NextSibling is not a child of this node.", nameof(nextSibling));
 
             // No need to test for "Can not add children to null nodes",
             // as there isn't any valid nextSibling in null nodes.
@@ -492,7 +494,7 @@ namespace Expresso.Ast
             if(!Role.IsValid(newNode)){
                 throw new ArgumentException(
                     string.Format("The new node '{0}' is not valid in the role {1}",
-                    newNode.GetType().Name, Role.ToString()), "newNode");
+                                  newNode.GetType().Name, Role.ToString()), nameof(newNode));
             }
 
             if(newNode.parent != null){
@@ -502,12 +504,12 @@ namespace Expresso.Ast
                     // enable automatic removal
                     newNode.Remove();
                 }else{
-                    throw new ArgumentException("Node is already used in another tree.", "newNode");
+                    throw new ArgumentException("Node is already used in another tree.", nameof(newNode));
                 }
             }
 
             if(newNode.IsFrozen)
-                throw new ArgumentException("Can not add a frozen node", "newNode");
+                throw new ArgumentException("Can not add a frozen node", nameof(newNode));
 
             newNode.parent = parent;
             newNode.SetRole(Role);
@@ -752,7 +754,7 @@ namespace Expresso.Ast
         public T GetChildByRole<T>(Role<T> role) where T : AstNode
         {
             if(role == null)
-                throw new ArgumentNullException("role");
+                throw new ArgumentNullException(nameof(role));
 
             uint role_index = role.Index;
             for(var cur = first_child; cur != null; cur = cur.next_sibling){
@@ -1259,14 +1261,14 @@ namespace Expresso.Ast
 
 		#region AST node factory methods
 		
-        public static Identifier MakeIdentifier(string name, TextLocation loc = default(TextLocation))
+        public static Identifier MakeIdentifier(string name, ExpressoModifiers modifiers = ExpressoModifiers.None, TextLocation loc = default(TextLocation))
 		{
-            return new Identifier(name, loc);
+            return new Identifier(name, modifiers, loc);
 		}
 
-        public static Identifier MakeIdentifier(string name, AstType type, TextLocation loc = default(TextLocation))
+        public static Identifier MakeIdentifier(string name, AstType type, ExpressoModifiers modifiers = ExpressoModifiers.None, TextLocation loc = default(TextLocation))
         {
-            return new Identifier(name, type, loc);
+            return new Identifier(name, type, modifiers, loc);
         }
 
         public static ExpressoAst MakeModuleDef(string moduleName,

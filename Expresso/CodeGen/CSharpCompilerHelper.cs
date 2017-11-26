@@ -340,11 +340,11 @@ namespace Expresso.CodeGen
 	            var type_def = type.GetGenericTypeDefinition();
 	            if(type_def == typeof(List<>)){
                     if(obj is IEnumerable<int> enumerable)
-	                    return ExpandList(enumerable);
+	                    return ExpandSequence(enumerable);
                     else if(obj is IEnumerable<uint> eumerable2)
-	                    return ExpandList(eumerable2);
+	                    return ExpandSequence(eumerable2);
 	                else
-                        return ExpandList((IEnumerable<object>)obj);
+                        return ExpandSequence((IEnumerable<object>)obj);
 	            }
 
 	            if(type_def == typeof(Dictionary<,>)){
@@ -369,11 +369,11 @@ namespace Expresso.CodeGen
 	            }
             }else if(type.IsArray){
                 if(obj is IEnumerable<int> enumerable)
-                    return ExpandList(enumerable);
+                    return ExpandSequence(enumerable);
                 else if(obj is IEnumerable<uint> enumerable2)
-                    return ExpandList(enumerable2);
+                    return ExpandSequence(enumerable2);
                 else
-                    return ExpandList((IEnumerable<object>)obj);
+                    return ExpandSequence((IEnumerable<object>)obj);
             }
 
             return obj.ToString();
@@ -443,7 +443,7 @@ namespace Expresso.CodeGen
             }
         }
 
-        static string ExpandList<T>(IEnumerable<T> enumerable)
+        static string ExpandSequence<T>(IEnumerable<T> enumerable)
         {
             var builder = new StringBuilder();
             var type = enumerable.GetType();

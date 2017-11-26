@@ -553,7 +553,7 @@ string cur_class_name;
 		Expect(14);
 		name = t.val;
 		if(!CheckKeyword(name)){
-		   ident = AstNode.MakeIdentifier(name, AstType.MakePlaceholderType(CurrentLocation), ident_start_loc); 
+		   ident = AstNode.MakeIdentifier(name, AstType.MakePlaceholderType(CurrentLocation), ExpressoModifiers.None, ident_start_loc); 
 		   Symbols.AddSymbol(name, ident);
 		}else{
 		   // The name is unsuitable for a method or a function name.
@@ -596,13 +596,13 @@ string cur_class_name;
 		} else if (la.kind == 28) {
 			Get();
 		} else SynErr(108);
-		VarDef(out ident, out rhs);
+		VarDef(modifiers, out ident, out rhs);
 		idents.Add(ident);
 		exprs.Add(rhs);
 		
 		while (la.kind == 12) {
 			Get();
-			VarDef(out ident, out rhs);
+			VarDef(modifiers, out ident, out rhs);
 			idents.Add(ident);
 			exprs.Add(rhs);
 			
@@ -625,7 +625,7 @@ string cur_class_name;
 		Expect(14);
 		name = t.val;
 		                    if(!CheckKeyword(name)){
-		                        ident = AstNode.MakeIdentifier(name, ident_start_loc);
+		                        ident = AstNode.MakeIdentifier(name, ExpressoModifiers.None, ident_start_loc);
 		                        Symbols.AddTypeSymbol(name, ident);
 		                        cur_class_name = name;
 		                    }else{
@@ -679,16 +679,16 @@ string cur_class_name;
 		Expect(31);
 		Expect(20);
 		var path = t.val.Substring(1, t.val.Length - 2);
-		symbol = AstNode.MakeIdentifier(path, CurrentLocation);
+		symbol = AstNode.MakeIdentifier(path, ExpressoModifiers.None, CurrentLocation);
 		Symbols.AddTypeSymbol(path, symbol);
-		if(!symbol.Name.EndsWith(".exs"))
+		if(!symbol.Name.EndsWith(".exs", StringComparison.CurrentCulture))
 		   Symbols.AddNativeSymbolTable(symbol);
 		
 		Expect(32);
 		var alias_start_loc = CurrentLocation; 
 		Expect(14);
 		if(!CheckKeyword(t.val)){
-		   alias = AstNode.MakeIdentifier(t.val, alias_start_loc);
+		   alias = AstNode.MakeIdentifier(t.val, ExpressoModifiers.None, alias_start_loc);
 		   Symbols.AddTypeSymbol(t.val, symbol);
 		}else{
 		   // Failed to parse an alias name.
@@ -1008,9 +1008,9 @@ string cur_class_name;
 		}
 	}
 
-	void VarDef(out Identifier ident, out Expression option) {
+	void VarDef(ExpressoModifiers modifiers, out Identifier ident, out Expression option) {
 		option = null; 
-		Identifier(out ident);
+		Identifier(modifiers, out ident);
 		Symbols.AddSymbol(ident.Name, ident); 
 		if (la.kind == 40) {
 			Get();
@@ -1204,13 +1204,13 @@ string cur_class_name;
 		} else if (la.kind == 28) {
 			Get();
 		} else SynErr(124);
-		VarDef(out ident, out rhs);
+		VarDef(modifiers, out ident, out rhs);
 		idents.Add(ident);
 		exprs.Add(rhs ?? Expression.Null);
 		rhs = null;
 		
 		while (WeakSeparator(12,5,13) ) {
-			VarDef(out ident, out rhs);
+			VarDef(modifiers, out ident, out rhs);
 			idents.Add(ident);
 			exprs.Add(rhs ?? Expression.Null);
 			rhs = null;
@@ -1326,14 +1326,14 @@ string cur_class_name;
 		
 		Expect(7);
 		Expect(14);
-		fields.Add(AstNode.MakeIdentifier(t.val, CurrentLocation)); 
+		fields.Add(AstNode.MakeIdentifier(t.val, ExpressoModifiers.None, CurrentLocation)); 
 		Expect(4);
 		CondExpr(out expr);
 		values.Add(expr); 
 		while (la.kind == 12) {
 			Get();
 			Expect(14);
-			fields.Add(AstNode.MakeIdentifier(t.val, CurrentLocation)); 
+			fields.Add(AstNode.MakeIdentifier(t.val, ExpressoModifiers.None, CurrentLocation)); 
 			Expect(4);
 			CondExpr(out expr);
 			values.Add(expr); 
@@ -1475,7 +1475,7 @@ string cur_class_name;
 			} else {
 				Get();
 			}
-			Identifier(out ident);
+			Identifier(modifiers, out ident);
 			Symbols.AddSymbol(ident.Name, ident); 
 		} else if (StartOf(18)) {
 			LhsPattern(out left);
@@ -1535,25 +1535,25 @@ string cur_class_name;
 	}
 
 	void ValueBindingPattern(out PatternConstruct pattern) {
-		VariableInitializer init; var modifier = ExpressoModifiers.None; 
+		VariableInitializer init; var modifiers = ExpressoModifiers.None; 
 		if (la.kind == 27) {
 			Get();
-			modifier = ExpressoModifiers.Immutable; 
+			modifiers = ExpressoModifiers.Immutable; 
 		} else if (la.kind == 28) {
 			Get();
 		} else SynErr(137);
 		var inits = new List<VariableInitializer>(); 
-		PatternVarDef(out init);
+		PatternVarDef(modifiers, out init);
 		inits.Add(init); 
 		while (la.kind == 12) {
 			Get();
-			PatternVarDef(out init);
+			PatternVarDef(modifiers, out init);
 			inits.Add(init); 
 		}
-		pattern = PatternConstruct.MakeValueBindingPattern(inits, modifier); 
+		pattern = PatternConstruct.MakeValueBindingPattern(inits, modifiers); 
 	}
 
-	void Identifier(out Identifier ident) {
+	void Identifier(ExpressoModifiers modifiers, out Identifier ident) {
 		string name; var loc = CurrentLocation; 
 		Expect(14);
 		name = t.val;
@@ -1567,7 +1567,7 @@ string cur_class_name;
 			Get();
 			Type(out type);
 		}
-		ident = AstNode.MakeIdentifier(name, type, loc); 
+		ident = AstNode.MakeIdentifier(name, type, modifiers, loc); 
 	}
 
 	void LhsPattern(out PatternConstruct pattern) {
@@ -1706,7 +1706,7 @@ string cur_class_name;
 		GoDownScope();
 		Symbols.Name = "catch`" + ScopeId++;
 		
-		Identifier(out ident);
+		Identifier(ExpressoModifiers.None, out ident);
 		if(ident.Type is PlaceholderType)
 		   SemanticError("Error ES0010: A CatchClause identifier has to be explicitly typed; {0}", ident.Name);
 		
@@ -1718,9 +1718,9 @@ string cur_class_name;
 		
 	}
 
-	void PatternVarDef(out VariableInitializer init) {
+	void PatternVarDef(ExpressoModifiers modifiers, out VariableInitializer init) {
 		Identifier ident; Expression expr = null; 
-		Identifier(out ident);
+		Identifier(modifiers, out ident);
 		if (la.kind == 40) {
 			Get();
 			PatternOrTest(out expr);
@@ -1778,7 +1778,7 @@ string cur_class_name;
 		PatternConstruct inner = null; string name; AstType type = new PlaceholderType(TextLocation.Empty); var loc = CurrentLocation; 
 		Expect(14);
 		name = t.val;
-		var ident = AstNode.MakeIdentifier(name, type, loc);
+		var ident = AstNode.MakeIdentifier(name, type, ExpressoModifiers.None, loc);
 		Symbols.AddSymbol(name, ident);
 		
 		if (la.kind == 81) {
@@ -2200,7 +2200,7 @@ string cur_class_name;
 		var paths = new List<Identifier>(); var loc = CurrentLocation; 
 		Expect(14);
 		var name = t.val;
-		var ident = AstNode.MakeIdentifier(name, AstType.MakePlaceholderType(new TextLocation(loc.Line, loc.Column + name.Length)), loc);
+		var ident = AstNode.MakeIdentifier(name, AstType.MakePlaceholderType(new TextLocation(loc.Line, loc.Column + name.Length)), ExpressoModifiers.None, loc);
 		paths.Add(ident);
 		
 		while (la.kind == 5) {
@@ -2208,7 +2208,7 @@ string cur_class_name;
 			loc = CurrentLocation; 
 			Expect(14);
 			name = t.val;
-			var ident2 = AstNode.MakeIdentifier(name, AstType.MakePlaceholderType(new TextLocation(loc.Line, loc.Column + name.Length)), loc);
+			var ident2 = AstNode.MakeIdentifier(name, AstType.MakePlaceholderType(new TextLocation(loc.Line, loc.Column + name.Length)), ExpressoModifiers.None, loc);
 			paths.Add(ident2);
 			
 		}
@@ -2287,7 +2287,7 @@ string cur_class_name;
 		} else if (la.kind == 13) {
 			Get();
 			Expect(14);
-			expr = Expression.MakeMemRef(expr, AstNode.MakeIdentifier(t.val, AstType.MakePlaceholderType(new TextLocation(loc.Line, loc.Column + t.val.Length)), loc)); 
+			expr = Expression.MakeMemRef(expr, AstNode.MakeIdentifier(t.val, AstType.MakePlaceholderType(new TextLocation(loc.Line, loc.Column + t.val.Length)), ExpressoModifiers.None, loc)); 
 		} else SynErr(160);
 	}
 

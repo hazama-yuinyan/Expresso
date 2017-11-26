@@ -683,8 +683,10 @@ namespace Expresso.Ast.Analysis
         void BindName(Identifier ident)
         {
             var referenced = symbol_table.GetSymbolInAnyScope(ident.Name);
-            if(referenced != null)
+            if(referenced != null){
                 ident.IdentifierId = referenced.IdentifierId;
+                ident.Modifiers = referenced.Modifiers;
+            }
 
             if(ident.IdentifierId == 0){
                 var native = SymbolTable.GetNativeSymbol(ident.Name);
@@ -718,8 +720,10 @@ namespace Expresso.Ast.Analysis
         void BindNameOrTypeName(Identifier ident)
         {
             var referenced = symbol_table.GetSymbolInAnyScope(ident.Name);
-            if(referenced != null)
+            if(referenced != null){
                 ident.IdentifierId = referenced.IdentifierId;
+                ident.Modifiers = referenced.Modifiers;
+            }
 
             if(ident.IdentifierId == 0){
                 var native = SymbolTable.GetNativeSymbol(ident.Name);

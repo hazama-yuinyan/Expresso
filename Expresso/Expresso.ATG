@@ -492,15 +492,15 @@ ImportDecl<out ImportDeclaration decl>
   "import"
   string_literal                (.
                                    var path = t.val.Substring(1, t.val.Length - 2);
-  								   symbol = AstNode.MakeIdentifier(path, CurrentLocation);
+  								   symbol = AstNode.MakeIdentifier(path, ExpressoModifiers.None, CurrentLocation);
   								   Symbols.AddTypeSymbol(path, symbol);
-                                   if(!symbol.Name.EndsWith(".exs"))
+                                   if(!symbol.Name.EndsWith(".exs", StringComparison.CurrentCulture))
                                        Symbols.AddNativeSymbolTable(symbol);
   								.)
   ( "as"                        (. var alias_start_loc = CurrentLocation; .)
     ident						(.
     							   if(!CheckKeyword(t.val)){
-    							       alias = AstNode.MakeIdentifier(t.val, alias_start_loc);
+    							       alias = AstNode.MakeIdentifier(t.val, ExpressoModifiers.None, alias_start_loc);
     							       Symbols.AddTypeSymbol(t.val, symbol);
     							   }else{
     							       // Failed to parse an alias name.
@@ -512,7 +512,7 @@ ImportDecl<out ImportDeclaration decl>
   ( "as"
     ident						(.
                                    if(!CheckKeyword(t.val)){
-                                       alias = AstNode.MakeIdentifier(t.val, CurrentLocation);
+                                       alias = AstNode.MakeIdentifier(t.val, ExpressoModifiers.None, CurrentLocation);
                                        Symbols.AddTypeSymbol(t.val, alias);
                                    }else{
                                        // Failed to parse an alias name.
@@ -543,7 +543,7 @@ ClassDecl<out EntityDeclaration decl, Modifiers modifiers>
                                         .)
   ident				    				(. name = t.val;
                                            if(!CheckKeyword(name)){
-                                               ident = AstNode.MakeIdentifier(name, ident_start_loc);
+                                               ident = AstNode.MakeIdentifier(name, ExpressoModifiers.None, ident_start_loc);
                                                Symbols.AddTypeSymbol(name, ident);
                                                cur_class_name = name;
                                            }else{
@@ -603,7 +603,7 @@ FuncDecl<out EntityDeclaration decl, Modifiers modifiers>
   ident							(.
                                    name = t.val;
                                    if(!CheckKeyword(name)){
-                                       ident = AstNode.MakeIdentifier(name, AstType.MakePlaceholderType(CurrentLocation), ident_start_loc); 
+                                       ident = AstNode.MakeIdentifier(name, AstType.MakePlaceholderType(CurrentLocation), ExpressoModifiers.None, ident_start_loc); 
                                        Symbols.AddSymbol(name, ident);
                                    }else{
                                        // The name is unsuitable for a method or a function name.
@@ -685,20 +685,20 @@ FieldDecl<out EntityDeclaration field, Modifiers modifiers>
      var idents = new List<Identifier>(); var exprs = new List<Expression>();
   .)
 = 
-  ( keyword_let                     (. modifiers |= ExpressoModifiers.Immutable; .)
+  ( keyword_let                           (. modifiers |= ExpressoModifiers.Immutable; .)
   | keyword_var
   )
-  VarDef<out ident, out rhs>        (.  
-                                       idents.Add(ident);
-                                       exprs.Add(rhs);
-                                    .)  
+  VarDef<modifiers, out ident, out rhs>   (.  
+                                            idents.Add(ident);
+                                            exprs.Add(rhs);
+                                          .)  
   { ','
-    VarDef<out ident, out rhs>      (.
-                                       idents.Add(ident);
-                                       exprs.Add(rhs);
-                                    .)
+    VarDef<modifiers, out ident, out rhs> (.
+                                            idents.Add(ident);
+                                            exprs.Add(rhs);
+                                          .)
   }
-  SYNC ';'							(. field = EntityDeclaration.MakeField(idents, exprs, modifiers, start_loc, CurrentLocation); .).
+  SYNC ';'							      (. field = EntityDeclaration.MakeField(idents, exprs, modifiers, start_loc, CurrentLocation); .).
 /*------------------------------------------------------------------------*/
 GenericTypeParameters<. ref List<ParameterType> types .>
 =
@@ -950,31 +950,31 @@ WhileStmt<out Statement stmt>		(. Expression cond; BlockStatement body; var star
                                        GoUpScope();
                                     .).
 /*------------------------------------------------------------------------*/
-ForStmt<out Statement stmt>			(. PatternConstruct left = null; Expression rvalue; BlockStatement body; Identifier ident = null; Modifiers modifiers = ExpressoModifiers.None;
-                                       var start_loc = NextLocation;
-									.)
+ForStmt<out Statement stmt>			 (. PatternConstruct left = null; Expression rvalue; BlockStatement body; Identifier ident = null; Modifiers modifiers = ExpressoModifiers.None;
+                                        var start_loc = NextLocation;
+									 .)
 =
-  keyword_for                       (. Symbols.AddScope();
-                                       GoDownScope();
-                                       Symbols.Name = "for`" + ScopeId++;
-                                    .)
-  ( ( keyword_let					(. modifiers = ExpressoModifiers.Immutable; .)
+  keyword_for                        (. Symbols.AddScope();
+                                        GoDownScope();
+                                        Symbols.Name = "for`" + ScopeId++;
+                                     .)
+  ( ( keyword_let					 (. modifiers = ExpressoModifiers.Immutable; .)
     | keyword_var
     )
-    Identifier<out ident>			(. Symbols.AddSymbol(ident.Name, ident); .)
+    Identifier<modifiers, out ident> (. Symbols.AddSymbol(ident.Name, ident); .)
   | LhsPattern<out left>
   )
   keyword_in
   CondExpr<out rvalue>
-  Block<out body>					(.
-  									   if(ident != null){
-  									       var initializer = AstNode.MakeVariableInitializer(ident, rvalue);
-  									       stmt = Statement.MakeValueBindingForStmt(modifiers, body, start_loc, initializer);
-  									   }else{
-  									       stmt = Statement.MakeForStmt(left, rvalue, body, start_loc);
-  									   }
-                                       GoUpScope();
-                                    .).
+  Block<out body>					 (.
+  									    if(ident != null){
+  									        var initializer = AstNode.MakeVariableInitializer(ident, rvalue);
+  									        stmt = Statement.MakeValueBindingForStmt(modifiers, body, start_loc, initializer);
+  									    }else{
+  									        stmt = Statement.MakeForStmt(left, rvalue, body, start_loc);
+  									    }
+                                        GoUpScope();
+                                     .).
 /*------------------------------------------------------------------------*/
 MatchStmt<out Statement stmt>		(. Expression target; List<MatchPatternClause> matches;
                                        var start_loc = NextLocation;
@@ -1054,58 +1054,58 @@ CatchClauses<. out List<CatchClause> catches .> (. catches = new List<CatchClaus
   { CatchClause<out @catch>                     (. catches.Add(@catch); .)
   }.
 /*------------------------------------------------------------------------*/
-CatchClause<out CatchClause @catch>     (. var start_loc = NextLocation; Identifier ident; BlockStatement body; .)
+CatchClause<out CatchClause @catch>             (. var start_loc = NextLocation; Identifier ident; BlockStatement body; .)
 =
-  "catch"                               (. Symbols.AddScope();
-                                           GoDownScope();
-                                           Symbols.Name = "catch`" + ScopeId++;
-                                        .)
-  Identifier<out ident>                 (. if(ident.Type is PlaceholderType)
-                                               SemanticError("Error ES0010: A CatchClause identifier has to be explicitly typed; {0}", ident.Name);
+  "catch"                                       (. Symbols.AddScope();
+                                                   GoDownScope();
+                                                   Symbols.Name = "catch`" + ScopeId++;
+                                                .)
+  Identifier<ExpressoModifiers.None, out ident> (. if(ident.Type is PlaceholderType)
+                                                       SemanticError("Error ES0010: A CatchClause identifier has to be explicitly typed; {0}", ident.Name);
 
-                                           Symbols.AddSymbol(ident.Name, ident);
-                                        .)
-  Block<out body>                       (. @catch = Statement.MakeCatchClause(ident, body, start_loc);
-                                           GoUpScope();
-                                        .).
+                                                   Symbols.AddSymbol(ident.Name, ident);
+                                                .)
+  Block<out body>                               (. @catch = Statement.MakeCatchClause(ident, body, start_loc);
+                                                   GoUpScope();
+                                                .).
 /*------------------------------------------------------------------------*/
 FinallyClause<out FinallyClause @finally>   (. var start_loc = NextLocation; BlockStatement body; .)
 =
   "finally"
   Block<out body>                           (. @finally = Statement.MakeFinallyClause(body, start_loc); .).
 /*------------------------------------------------------------------------*/
-VarDeclStmt<out Statement stmt>        (. Expression rhs = null; var start_loc = NextLocation;
-								          Identifier ident; var modifiers = ExpressoModifiers.None;
-								          var idents = new List<Identifier>(); var exprs = new List<Expression>();
-								       .)
+VarDeclStmt<out Statement stmt>           (. Expression rhs = null; var start_loc = NextLocation;
+								             Identifier ident; var modifiers = ExpressoModifiers.None;
+								             var idents = new List<Identifier>(); var exprs = new List<Expression>();
+								          .)
 = 
-  ( "let"                              (. modifiers = ExpressoModifiers.Immutable; .)
+  ( "let"                                 (. modifiers = ExpressoModifiers.Immutable; .)
   | "var"
   )
-  VarDef<out ident, out rhs>	       (. idents.Add(ident);
-  						 			      exprs.Add(rhs ?? Expression.Null);
-  						 			      rhs = null;
-  						 		       .)
+  VarDef<modifiers, out ident, out rhs>   (. idents.Add(ident);
+  						 			         exprs.Add(rhs ?? Expression.Null);
+  						 			         rhs = null;
+  						 		          .)
   { WEAK ','
-    VarDef<out ident, out rhs>         (. idents.Add(ident);
-  									      exprs.Add(rhs ?? Expression.Null);
-  									      rhs = null;
-  								       .)
+    VarDef<modifiers, out ident, out rhs> (. idents.Add(ident);
+  									         exprs.Add(rhs ?? Expression.Null);
+  									         rhs = null;
+  								          .)
   }
-  SYNC ';'     						   (. stmt = Statement.MakeVarDecl(idents, exprs, modifiers, start_loc, CurrentLocation); .).
+  SYNC ';'     						      (. stmt = Statement.MakeVarDecl(idents, exprs, modifiers, start_loc, CurrentLocation); .).
 /*------------------------------------------------------------------------*/
-VarDef<out Identifier ident, out Expression option> (. option = null; .)
+VarDef<ExpressoModifiers modifiers, out Identifier ident, out Expression option> (. option = null; .)
 =
-  Identifier<out ident>			(. Symbols.AddSymbol(ident.Name, ident); .)
+  Identifier<modifiers, out ident>	(. Symbols.AddSymbol(ident.Name, ident); .)
   [ '='
     CondExpr<out option>
-  ]                            (. if(ident.Type is PlaceholderType && option == null)
-                                      SemanticError("Error ES0003: Give me some context or I can't infer the type of {0}", ident.Name);
-                               .).
+  ]                                 (. if(ident.Type is PlaceholderType && option == null)
+                                           SemanticError("Error ES0003: Give me some context or I can't infer the type of {0}", ident.Name);
+                                    .).
 /*------------------------------------------------------------------------*/
-PatternVarDef<out VariableInitializer init> (. Identifier ident; Expression expr = null; .)
+PatternVarDef<ExpressoModifiers modifiers, out VariableInitializer init> (. Identifier ident; Expression expr = null; .)
 =
-  Identifier<out ident>
+  Identifier<modifiers, out ident>
   [ '='
     PatternOrTest<out expr>
   ]                                         (. init = AstNode.MakeVariableInitializer(ident, expr); .).
@@ -1127,15 +1127,15 @@ Pattern<out PatternConstruct pattern>       (. pattern = null; .)
   | RValuePattern<out pattern>.
 /*------------------------------------------------------------------------*/
 ValueBindingPattern<out PatternConstruct pattern>
-                                (. VariableInitializer init; var modifier = ExpressoModifiers.None; .)
+                                        (. VariableInitializer init; var modifiers = ExpressoModifiers.None; .)
 =
-  ( keyword_let                 (. modifier = ExpressoModifiers.Immutable; .)
+  ( keyword_let                         (. modifiers = ExpressoModifiers.Immutable; .)
   | keyword_var
-  )                             (. var inits = new List<VariableInitializer>(); .)
-  PatternVarDef<out init>       (. inits.Add(init); .)
+  )                                     (. var inits = new List<VariableInitializer>(); .)
+  PatternVarDef<modifiers, out init>    (. inits.Add(init); .)
   { ','
-    PatternVarDef<out init>     (. inits.Add(init); .)
-  }                             (. pattern = PatternConstruct.MakeValueBindingPattern(inits, modifier); .).
+    PatternVarDef<modifiers, out init>  (. inits.Add(init); .)
+  }                                     (. pattern = PatternConstruct.MakeValueBindingPattern(inits, modifiers); .).
 /*------------------------------------------------------------------------*/
 ExpressionPattern<out PatternConstruct pattern> (. Expression expr; .)
 =
@@ -1162,7 +1162,7 @@ IdentifierPattern<out PatternConstruct pattern> (. PatternConstruct inner = null
 =
   ident                             (.
                                        name = t.val;
-                                       var ident = AstNode.MakeIdentifier(name, type, loc);
+                                       var ident = AstNode.MakeIdentifier(name, type, ExpressoModifiers.None, loc);
                                        Symbols.AddSymbol(name, ident);
                                     .)
   [ '@'
@@ -1570,11 +1570,11 @@ ObjectCreation<AstType typePath, out Expression expr>
                                         .)
 =
   lcurly
-  ident                                 (. fields.Add(AstNode.MakeIdentifier(t.val, CurrentLocation)); .)
+  ident                                 (. fields.Add(AstNode.MakeIdentifier(t.val, ExpressoModifiers.None, CurrentLocation)); .)
   ':'
   CondExpr<out expr>                    (. values.Add(expr); .)
   { ','
-    ident                               (. fields.Add(AstNode.MakeIdentifier(t.val, CurrentLocation)); .)
+    ident                               (. fields.Add(AstNode.MakeIdentifier(t.val, ExpressoModifiers.None, CurrentLocation)); .)
     ':'
     CondExpr<out expr>                  (. values.Add(expr); .)
   }
@@ -1592,7 +1592,7 @@ Trailer<ref Expression expr>	(. var args = new List<Expression>(); var loc = Cur
     ArgList<out args>
     ']'							(. expr = Expression.MakeIndexer(expr, args, CurrentLocation); .)
   | '.'
-    ident						(. expr = Expression.MakeMemRef(expr, AstNode.MakeIdentifier(t.val, AstType.MakePlaceholderType(new TextLocation(loc.Line, loc.Column + t.val.Length)), loc)); .).
+    ident						(. expr = Expression.MakeMemRef(expr, AstNode.MakeIdentifier(t.val, AstType.MakePlaceholderType(new TextLocation(loc.Line, loc.Column + t.val.Length)), ExpressoModifiers.None, loc)); .).
 /*------------------------------------------------------------------------*/
 ArgList<. out List<Expression> args .>		(. args = new List<Expression>(); Expression expr; .)
 =
@@ -1646,13 +1646,13 @@ PathExpression<out PathExpression path> (. var paths = new List<Identifier>(); v
 =
   ident                                 (.
                                            var name = t.val;
-  										   var ident = AstNode.MakeIdentifier(name, AstType.MakePlaceholderType(new TextLocation(loc.Line, loc.Column + name.Length)), loc);
+  										   var ident = AstNode.MakeIdentifier(name, AstType.MakePlaceholderType(new TextLocation(loc.Line, loc.Column + name.Length)), ExpressoModifiers.None, loc);
   										   paths.Add(ident);
   										.)
   { "::"                                (. loc = CurrentLocation; .)
     ident                               (.
                                            name = t.val;
-    									   var ident2 = AstNode.MakeIdentifier(name, AstType.MakePlaceholderType(new TextLocation(loc.Line, loc.Column + name.Length)), loc);
+    									   var ident2 = AstNode.MakeIdentifier(name, AstType.MakePlaceholderType(new TextLocation(loc.Line, loc.Column + name.Length)), ExpressoModifiers.None, loc);
     									   paths.Add(ident2);
     									.)
   }                                     (. path = Expression.MakePath(paths); .).
@@ -1731,7 +1731,7 @@ CompIf<out ComprehensionIter expr>		(. Expression tmp; ComprehensionIter body = 
   										   expr = Expression.MakeCompIf(tmp, body);
   										.).
 /*------------------------------------------------------------------------*/
-Identifier<out Identifier ident>    (. string name; var loc = CurrentLocation; .)
+Identifier<ExpressoModifiers modifiers, out Identifier ident>    (. string name; var loc = CurrentLocation; .)
 =
   ident                             (.
                                         name = t.val;
@@ -1743,7 +1743,7 @@ Identifier<out Identifier ident>    (. string name; var loc = CurrentLocation; .
                                     .)
   [ "(-"
     Type<out type>
-  ]                                 (. ident = AstNode.MakeIdentifier(name, type, loc); .).
+  ]                                 (. ident = AstNode.MakeIdentifier(name, type, modifiers, loc); .).
 /*------------------------------------------------------------------------*/
 Literal<out Expression expr>	(. expr = null; string tmp;
                                    var start_loc = NextLocation;

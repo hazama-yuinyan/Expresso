@@ -17,6 +17,7 @@ namespace Expresso.Ast.Analysis
     {
         static PlaceholderType PlaceholderTypeNode = new PlaceholderType(TextLocation.Empty);
         static List<AstType> TemporaryTypes = new List<AstType>();
+        bool inspecting_immutability = false;
         int scope_counter;
         Parser parser;
         SymbolTable symbols;  //keep a SymbolTable reference in a private field for convenience
@@ -269,7 +270,9 @@ namespace Expresso.Ast.Analysis
             TemporaryTypes.Clear();
             assignment.AcceptWalker(inference_runner);
 
+            inspecting_immutability = true;
             var left_type = assignment.Left.AcceptWalker(this);
+            inspecting_immutability = false;
             if(left_type == SimpleType.Null){
                 // We see the left-hand-side is a sequence expression so validate each item on both sides.
                 var left_types = TemporaryTypes.ToList();
@@ -552,6 +555,13 @@ namespace Expresso.Ast.Analysis
         {
             // Infer and spread the type of the identifier to this node
             inference_runner.VisitIdentifier(ident);
+            if(inspecting_immutability && ident.Modifiers.HasFlag(Modifiers.Immutable)){
+                parser.ReportSemanticError(
+                    "Error ES1900: Re-assignment on an immutable variable '{0}'",
+                    ident,
+                    ident.Name
+                );
+            }
             return ident.Type;
         }
 
@@ -700,7 +710,7 @@ namespace Expresso.Ast.Analysis
             var type_table = symbols.GetTypeTable(creation.TypePath.IdentifierNode.Name);
             if(type_table == null){
                 parser.ReportSemanticError(
-                    "Type `{0}` isn't found or accessible from the scope {1}.",
+                    "Error ES1500: Type `{0}` isn't found or accessible from the scope {1}.",
                     creation,
                     creation.TypePath, symbols.Name
                 );
@@ -715,7 +725,7 @@ namespace Expresso.Ast.Analysis
                 var key = type_table.GetSymbol(key_path.AsIdentifier.Name);
                 if(key == null){
                     parser.ReportSemanticError(
-                        "Type `{0}` doesn't have a field '{1}'.",
+                        "Error ES1501: Type `{0}` doesn't have a field named '{1}'.",
                         key_value.KeyExpression,
                         creation.TypePath, key_path.AsIdentifier.Name
                     );
@@ -723,7 +733,7 @@ namespace Expresso.Ast.Analysis
                     var value_type = key_value.ValueExpression.AcceptWalker(this);
                     if(IsCastable(value_type, key.Type) == TriBool.False){
                         parser.ReportSemanticErrorRegional(
-                            "The field {0} expects the value to be of type `{1}`, but it actually is `{2}`.",
+                            "Error ES2000: The field {0} expects the value to be of type `{1}`, but it actually is `{2}`.",
                             key_value.KeyExpression, key_value.ValueExpression,
                             key_path.AsIdentifier.Name, key.Type, value_type
                         );
@@ -856,7 +866,7 @@ namespace Expresso.Ast.Analysis
         {
             BindTypeName(simpleType.IdentifierToken);
             // If the type arguments contain any unsubstituted arguments(placeholder nodes)
-            // return the statically defined placeholder type node to indicate that it needs to be inferenced
+            // return the statically defined placeholder type node to indicate that it needs to be inferred
             if(simpleType.TypeArguments.HasChildren && IsPlaceholderType(simpleType.TypeArguments.FirstOrNullObject()))
                 return PlaceholderTypeNode.Clone();
             else

@@ -199,6 +199,9 @@ namespace Expresso.Ast
 
         public void VisitIdentifier(Identifier ident)
         {
+            if(ident.Modifiers.HasFlag(Modifiers.Immutable))
+                writer.Write("Immutable ");
+            
             if(ident.Type.IsNull){
                 writer.Write(ident.Name);
                 writer.Write(" @ ");

@@ -287,19 +287,19 @@ namespace Expresso.Ast
         public static FunctionType MakeFunctionType(string name, AstType returnType, IEnumerable<AstType> parameters,
             TextLocation start = default(TextLocation), TextLocation end = default(TextLocation))
         {
-            return new FunctionType(AstNode.MakeIdentifier(name, start), returnType, parameters, start, end);
+            return new FunctionType(AstNode.MakeIdentifier(name, Modifiers.None, start), returnType, parameters, start, end);
         }
 
         public static FunctionType MakeFunctionType(string name, AstType returnType, TextLocation start, TextLocation end,
             params AstType[] parameters)
         {
-            return new FunctionType(AstNode.MakeIdentifier(name, start), returnType, parameters, start, end);
+            return new FunctionType(AstNode.MakeIdentifier(name, Modifiers.None, start), returnType, parameters, start, end);
         }
 
         public static ParameterType MakeParameterType(string name, TextLocation loc = default(TextLocation))
         {
             return new ParameterType(
-                AstNode.MakeIdentifier(name, loc)
+                AstNode.MakeIdentifier(name, Modifiers.None, loc)
             );
         }
 

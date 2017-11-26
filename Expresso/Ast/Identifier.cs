@@ -1,10 +1,10 @@
-﻿using System;
-using ICSharpCode.NRefactory;
-using System.Diagnostics;
+﻿using ICSharpCode.NRefactory;
 
 
 namespace Expresso.Ast
 {
+    using ExpressoModifiers = Expresso.Ast.Modifiers;
+
     /// <summary>
     /// 識別子。
 	/// Reperesents a symbol.
@@ -81,6 +81,15 @@ namespace Expresso.Ast
             set{SetChildByRole(Roles.Type, value);}
 		}
 
+        /// <summary>
+        /// The modifiers this identifier has.
+        /// </summary>
+        /// <value>The modifiers.</value>
+        public ExpressoModifiers Modifiers{
+            get{return EntityDeclaration.GetModifiers(this);}
+            set{EntityDeclaration.SetModifiers(this, value);}
+        }
+
         public override NodeType NodeType{
             get{return NodeType.Unknown;}
         }
@@ -90,17 +99,19 @@ namespace Expresso.Ast
             IdentifierId = 0;
         }
 
-        public Identifier(string name, TextLocation loc)
+        public Identifier(string name, ExpressoModifiers modifiers, TextLocation loc)
             : base(loc, new TextLocation(loc.Line, loc.Column + name.Length))
 		{
             this.name = name;
+            Modifiers = modifiers;
             IdentifierId = 0;
 		}
 
-        public Identifier(string name, AstType type, TextLocation loc)
+        public Identifier(string name, AstType type, ExpressoModifiers modifiers, TextLocation loc)
             : base(loc, type.EndLocation)
         {
             this.name = name;
+            Modifiers = modifiers;
             Type = type;
             IdentifierId = 0;
         }
