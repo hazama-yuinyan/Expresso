@@ -62,6 +62,7 @@
     <None Include="sources\for_unit_tests\closures.exs" />
     <None Include="sources\for_unit_tests\closures_with_compound_statements.exs" />
     <None Include="sources\for_unit_tests\erroneous\reassignment.exs" />
+    <None Include="sources\for_unit_tests\interface.exs" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AnalyzerTests.cs" />

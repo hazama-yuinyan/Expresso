@@ -112,14 +112,40 @@ namespace Expresso.Ast
             IEnumerable<EntityDeclaration> decls, Modifiers modifiers,
             TextLocation start = default(TextLocation), TextLocation end = default(TextLocation))
         {
-            return new TypeDeclaration(AstNode.MakeIdentifier(className), bases, decls, modifiers, start, end);
+            return new TypeDeclaration(ClassType.Class, AstNode.MakeIdentifier(className), bases, decls, modifiers, start, end);
         }
 
         public static TypeDeclaration MakeClassDecl(Identifier ident, IEnumerable<AstType> bases,
             IEnumerable<EntityDeclaration> decls, Modifiers modifiers,
             TextLocation start = default(TextLocation), TextLocation end = default(TextLocation))
         {
-            return new TypeDeclaration(ident, bases, decls, modifiers, start, end);
+            return new TypeDeclaration(ClassType.Class, ident, bases, decls, modifiers, start, end);
+        }
+
+        public static TypeDeclaration MakeClassDecl(string name, IEnumerable<AstType> bases,
+                                                    Modifiers modifiers, TextLocation start, TextLocation end, params EntityDeclaration[] decls)
+        {
+            return new TypeDeclaration(ClassType.Class, AstNode.MakeIdentifier(name), bases, decls, modifiers, start, end);
+        }
+
+        public static TypeDeclaration MakeInterfaceDecl(string interfaceName, IEnumerable<AstType> bases,
+                                                        IEnumerable<EntityDeclaration> decls, Modifiers modifiers,
+                                                        TextLocation start = default(TextLocation), TextLocation end = default(TextLocation))
+        {
+            return new TypeDeclaration(ClassType.Interface, AstNode.MakeIdentifier(interfaceName), bases, decls, modifiers, start, end);
+        }
+
+        public static TypeDeclaration MakeInterfaceDecl(Identifier ident, IEnumerable<AstType> bases,
+                                                        IEnumerable<EntityDeclaration> decls, Modifiers modifiers,
+                                                        TextLocation start = default(TextLocation), TextLocation end = default(TextLocation))
+        {
+            return new TypeDeclaration(ClassType.Interface, ident, bases, decls, modifiers, start, end);
+        }
+
+        public static TypeDeclaration MakeInterfaceDecl(string name, IEnumerable<AstType> bases,
+                                                        Modifiers modifiers, TextLocation start, TextLocation end, params EntityDeclaration[] decls)
+        {
+            return new TypeDeclaration(ClassType.Interface, AstNode.MakeIdentifier(name), bases, decls, modifiers, start, end);
         }
 
         public static FunctionDeclaration MakeFunc(string name, IEnumerable<ParameterDeclaration> parameters, BlockStatement body,

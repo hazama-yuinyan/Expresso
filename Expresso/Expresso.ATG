@@ -451,6 +451,7 @@ ModuleBody<out ExpressoAst ast>	    (.  var decls = new List<EntityDeclaration>(
   ( FuncDecl<out decl, modifiers>
   | FieldDecl<out decl, modifiers>
   | ClassDecl<out decl, modifiers>
+  | InterfaceDecl<out decl, modifiers>
   )									(.  decls.Add(decl);
 										modifiers = ExpressoModifiers.None;
 									.)
@@ -460,6 +461,7 @@ ModuleBody<out ExpressoAst ast>	    (.  var decls = new List<EntityDeclaration>(
     ( FuncDecl<out decl, modifiers>
     | FieldDecl<out decl, modifiers>
     | ClassDecl<out decl, modifiers>
+    | InterfaceDecl<out decl, modifiers>
     )								(.  decls.Add(decl);
     									modifiers = ExpressoModifiers.None;
     								.)
@@ -531,6 +533,76 @@ ImportDecl<out ImportDeclaration decl>
                                        decl = AstNode.MakeImportDecl(symbol, alias);
                                 .).
 /*------------------------------------------------------------------------*/
+InterfaceDecl<out EntityDeclaration decl, Modifiers modifiers>
+                                        (.
+                                            string name = null; Identifier ident = null;
+                                            AstType type_path = null;
+                                            EntityDeclaration method = null;
+                                            var bases = new List<AstType>();
+                                            var decls = new List<EntityDeclaration>();
+                                            var start_loc = CurrentLocation;
+                                        .)
+=
+  SYNC
+  "interface"                           (. Symbols.AddScope();
+                                           var ident_start_loc = CurrentLocation;
+                                        .)
+  ident                                 (. name = t.val;
+                                           if(!CheckKeyword(name)){
+                                               ident = AstNode.MakeIdentifier(name, modifiers, ident_start_loc);
+                                               Symbols.AddTypeSymbol(name, ident);
+
+                                           }
+                                        .)
+  [ ':'
+    Type<out type_path>                 (. bases.Add(type_path); .)
+    { ','
+      Type<out type_path>               (. bases.Add(type_path); .)
+    }
+  ]
+  lcurly                                (. GoDownScope();
+                                           Symbols.Name = "interface " + name + "`" + ScopeId++;
+                                        .)
+  MethodSignature<out method>           (. decls.Add(method); .)
+  rcurly                                (.
+                                           decl = EntityDeclaration.MakeInterfaceDecl(ident, bases, decls, modifiers, start_loc, CurrentLocation);
+                                           GoUpScope();
+                                        .).
+/*------------------------------------------------------------------------*/
+MethodSignature<out EntityDeclaration method>
+                                (. Identifier ident = null;
+                                   string name = null; AstType type = null;
+                                   var type_params = new List<ParameterType>();
+                                   var @params = new List<ParameterDeclaration>();
+                                   var start_loc = CurrentLocation;
+                                .)
+=
+  SYNC
+  "def"                         (. Symbols.AddScope();
+                                   var ident_start_loc = CurrentLocation;
+                                .)
+  ident                         (.
+                                   name = t.val;
+                                   if(!CheckKeyword(name)){
+                                       ident = AstNode.MakeIdentifier(name, AstType.MakePlaceholderType(CurrentLocation), ExpressoModifiers.None, ident_start_loc); 
+                                       Symbols.AddSymbol(name, ident);
+                                   }else{
+                                       // The name is unsuitable for a method or a function name.
+                                       // Leave the parser to recover its state.
+                                   }
+                                .)
+ [ GenericTypeParameters<ref type_params> ]
+  '('                           (. GoDownScope();
+                                   Symbols.Name = "func " + name + "`" + ScopeId++;
+                                .)
+  [ParamList<type_params, ref @params>]
+  ')'
+  "->"
+  Type<out type>
+  ';'                           (. method = EntityDeclaration.MakeFunc(ident, @params, null, type, ExpressoModifiers.Public, start_loc);
+                                   GoUpScope();
+                                .).
+/*------------------------------------------------------------------------*/
 ClassDecl<out EntityDeclaration decl, Modifiers modifiers>   
   (.  EntityDeclaration entity = null; var decls = new List<EntityDeclaration>(); AstType type_path;
       string name; var bases = new List<AstType>(); Modifiers cur_flag; var start_loc = NextLocation;
@@ -538,42 +610,43 @@ ClassDecl<out EntityDeclaration decl, Modifiers modifiers>
   .)
 =
   SYNC
-  "class"                               (. Symbols.AddScope();
-                                           var ident_start_loc = CurrentLocation;
-                                        .)
-  ident				    				(. name = t.val;
-                                           if(!CheckKeyword(name)){
-                                               ident = AstNode.MakeIdentifier(name, ExpressoModifiers.None, ident_start_loc);
-                                               Symbols.AddTypeSymbol(name, ident);
-                                               cur_class_name = name;
-                                           }else{
-                                               // Failed to parse an identifier.
-                                               // Leave the parser to recover its state.
-                                           }
-                                        .)
+  "class"                                 (. Symbols.AddScope();
+                                             var ident_start_loc = CurrentLocation;
+                                          .)
+  ident				    				  (. name = t.val;
+                                             if(!CheckKeyword(name)){
+                                                 ident = AstNode.MakeIdentifier(name, modifiers, ident_start_loc);
+                                                 Symbols.AddTypeSymbol(name, ident);
+                                                 cur_class_name = name;
+                                             }else{
+                                                 // Failed to parse an identifier.
+                                                 // Leave the parser to recover its state.
+                                             }
+                                          .)
   [ ':'
-    Type<out type_path>	                (. bases.Add(type_path); .)
+    Type<out type_path>	                  (. bases.Add(type_path); .)
     { ','
-      Type<out type_path>	            (. bases.Add(type_path); .)
+      Type<out type_path>	              (. bases.Add(type_path); .)
     }
   ]
-  lcurly                                (. GoDownScope();
-                                           Symbols.Name = "type_" + name + "`" + ScopeId++;
-                                        .)
-  {                                     (. cur_flag = ExpressoModifiers.Private; .)
+  lcurly                                  (. GoDownScope();
+                                             Symbols.Name = "type_" + name + "`" + ScopeId++;
+                                          .)
+  {                                       (. cur_flag = ExpressoModifiers.Private; .)
     { Modifiers<ref cur_flag>
-    }                                   (. //var tmp = cur_flag ^ ExpressoModifiers.Static;
-                                           //tmp = tmp ^ ExpressoModifiers.VisibilityMask & ~ExpressoModifiers.Export;
-                                           //if(tmp
-                                        .)
-    ( FuncDecl<out entity, cur_flag>    (. decls.Add(entity); .)
-    | FieldDecl<out entity, cur_flag>	(. decls.Add(entity); .)
-    | ClassDecl<out entity, cur_flag>   (. decls.Add(entity); .)
+    }                                     (. //var tmp = cur_flag ^ ExpressoModifiers.Static;
+                                             //tmp = tmp ^ ExpressoModifiers.VisibilityMask & ~ExpressoModifiers.Export;
+                                             //if(tmp
+                                          .)
+    ( FuncDecl<out entity, cur_flag>      (. decls.Add(entity); .)
+    | FieldDecl<out entity, cur_flag>	  (. decls.Add(entity); .)
+    | ClassDecl<out entity, cur_flag>     (. decls.Add(entity); .)
+    | InterfaceDecl<out entity, cur_flag> (. decls.Add(entity); .)
     )
   }
-  SYNC rcurly							(. decl = EntityDeclaration.MakeClassDecl(ident, bases, decls, modifiers, start_loc, CurrentLocation);
-                                           GoUpScope();
-                                        .) .
+  SYNC rcurly							  (. decl = EntityDeclaration.MakeClassDecl(ident, bases, decls, modifiers, start_loc, CurrentLocation);
+                                             GoUpScope();
+                                          .) .
 /*------------------------------------------------------------------------*/
 Modifiers<ref Modifiers modifiers>
 =

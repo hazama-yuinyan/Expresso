@@ -63,7 +63,7 @@ namespace Expresso.Ast
 
         public FunctionDeclaration(Identifier ident, IEnumerable<ParameterDeclaration> formalParameters,
             BlockStatement body, AstType returnType, Modifiers modifiers, TextLocation loc)
-            : base(loc, body.EndLocation)
+            : base(loc, body == null ? returnType.EndLocation : body.EndLocation)
 		{
             SetChildByRole(Roles.Identifier, ident);
             if(formalParameters != null)

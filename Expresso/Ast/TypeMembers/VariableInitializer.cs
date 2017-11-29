@@ -7,7 +7,7 @@ namespace Expresso.Ast
 {
     /// <summary>
     /// Represents a variable initialization.
-    /// A variable initialization represents a variable and initialization.
+    /// A variable initialization represents a variable and an initialization.
     /// Note that the syntax itself is the same as that of ParameterDeclaration.
     /// Identifier ( [ "(-" Type ] [ '=' Expression ] ) ;
     /// </summary>

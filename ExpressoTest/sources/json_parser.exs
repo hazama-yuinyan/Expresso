@@ -31,7 +31,7 @@ export class Json
 {
     public static parse(src (- &string) -> JsonData
 	{
-		var parsed = new JsonData{};
+		var parsed = JsonData{};
 		var focused (- Option<JsonElement> = None, parent (- Option<JsonElement> = None;
         var buffer = "";
 

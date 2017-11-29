@@ -7,6 +7,9 @@ using ICSharpCode.NRefactory.TypeSystem;
 
 namespace Expresso.Ast
 {
+    /// <summary>
+    /// Represents the kind of the type.
+    /// </summary>
     public enum ClassType
     {
         Class,
@@ -106,10 +109,11 @@ namespace Expresso.Ast
             get{return GetChildByRole(Roles.RBraceToken);}
         }
 
-        public TypeDeclaration(Identifier ident, IEnumerable<AstType> supers,
+        public TypeDeclaration(ClassType classType, Identifier ident, IEnumerable<AstType> supers,
             IEnumerable<EntityDeclaration> decls, Modifiers modifiers, TextLocation start, TextLocation end)
             : base(start, end)
         {
+            ClassType = classType;
             SetChildByRole(Roles.Identifier, ident);
             BaseTypes.AddRange(supers);
             Members.AddRange(decls);

@@ -111,7 +111,7 @@ namespace Expresso.Ast
         public Statement ReplaceWith(Func<Statement, Statement> replaceFunction)
         {
             if(replaceFunction == null)
-                throw new ArgumentNullException("replaceFunction");
+                throw new ArgumentNullException(nameof(replaceFunction));
 
             return (Statement)base.ReplaceWith(node => replaceFunction((Statement)node));
         }
@@ -144,7 +144,7 @@ namespace Expresso.Ast
 
         public static BlockStatement MakeBlock(params Statement[] stmts)
         {
-            return new BlockStatement(stmts, stmts[0].StartLocation, stmts[stmts.Length - 1].EndLocation);
+            return new BlockStatement(stmts, stmts.First().StartLocation, stmts.Last().EndLocation);
         }
 
         public static VariableDeclarationStatement MakeVarDecl(IEnumerable<Identifier> lhs, IEnumerable<Expression> rhs,

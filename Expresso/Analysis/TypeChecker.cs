@@ -570,7 +570,6 @@ namespace Expresso.Ast.Analysis
             var lower_type = intSeq.Lower.AcceptWalker(inference_runner);
             var upper_type = intSeq.Upper.AcceptWalker(inference_runner);
             var step_type = intSeq.Step.AcceptWalker(inference_runner);
-            // TODO: implement uint and bigint version of the intseq type
             if(!IsSmallIntegerType(lower_type)){
                 parser.ReportSemanticError(
                     "Error ES4001: `{0}` is not an `int` type! An integer sequence expression expects an `int`.",
@@ -595,7 +594,7 @@ namespace Expresso.Ast.Analysis
                 );
             }
 
-            return new PrimitiveType("intseq", TextLocation.Empty);
+            return AstType.MakePrimitiveType("intseq", intSeq.StartLocation);
         }
 
         public AstType VisitIndexerExpression(IndexerExpression indexExpr)
@@ -733,7 +732,7 @@ namespace Expresso.Ast.Analysis
                     var value_type = key_value.ValueExpression.AcceptWalker(this);
                     if(IsCastable(value_type, key.Type) == TriBool.False){
                         parser.ReportSemanticErrorRegional(
-                            "Error ES2000: The field {0} expects the value to be of type `{1}`, but it actually is `{2}`.",
+                            "Error ES2000: The field '{0}' expects the value to be of type `{1}`, but it actually is `{2}`.",
                             key_value.KeyExpression, key_value.ValueExpression,
                             key_path.AsIdentifier.Name, key.Type, value_type
                         );
@@ -813,7 +812,7 @@ namespace Expresso.Ast.Analysis
                     var primitive_type = tmp as PrimitiveType;
                     if(primitive_type == null || tmp.IsNull || primitive_type.KnownTypeCode == KnownTypeCode.Char){
                         parser.ReportSemanticError(
-                            "Can not apply the operator '{0}' on type `{1}`.",
+                            "Error ES1201: Can not apply the operator '{0}' on type `{1}`.",
                             unaryExpr,
                             unaryExpr.OperatorToken, tmp.Name
                         );
@@ -825,7 +824,7 @@ namespace Expresso.Ast.Analysis
                 var operand_type = unaryExpr.Operand.AcceptWalker(this);
                 if(!(operand_type is PrimitiveType) || ((PrimitiveType)operand_type).KnownTypeCode != Expresso.TypeSystem.KnownTypeCode.Bool){
                     parser.ReportSemanticError(
-                        "Can not apply the '!' operator on type `{0}`!\nThe operand must be of type `bool`.",
+                        "Error ES1200: Can not apply the '!' operator on type `{0}`!\nThe operand must be of type `bool`.",
                         operand_type
                     );
                 }
@@ -1193,6 +1192,7 @@ namespace Expresso.Ast.Analysis
         /// In Expresso, there are 3 valid cast cases.
         /// The first is the identity cast. An identity cast casts itself to itself.
         /// The second is the up cast. Up casts are usually valid as long as the types are derived.
+        /// And the third is the down cast. Down casts are valid if and only if the target type is derived from the current type.
         /// </summary>
         /// <returns><c>true</c> if <c>fromType</c> can be casted to <c>totype</c>; otherwise, <c>false</c>.</returns>
         static TriBool IsCastable(AstType fromType, AstType toType)

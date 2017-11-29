@@ -3510,5 +3510,118 @@ namespace Expresso.Test
             Assert.IsNotNull(ast);
             Helpers.AstStructuralEqual(ast, expected);
         }
+
+        [Test]
+        public void Interface()
+        {
+            var parser = new Parser(new Scanner("../../sources/for_unit_tests/interface.exs"));
+            parser.Parse();
+
+            var ast = parser.TopmostAst;
+
+            var expected = AstNode.MakeModuleDef("main", new List<EntityDeclaration>{
+                EntityDeclaration.MakeInterfaceDecl(
+                    "IInterface",
+                    Enumerable.Empty<AstType>(),
+                    Modifiers.None,
+                    TextLocation.Empty,
+                    TextLocation.Empty,
+                    EntityDeclaration.MakeFunc(
+                        "doSomeBehavior",
+                        Enumerable.Empty<ParameterDeclaration>(),
+                        null,
+                        Helpers.MakePrimitiveType("int"),
+                        Modifiers.Public
+                    )
+                ),
+                EntityDeclaration.MakeClassDecl(
+                    "TestClass", 
+                    Helpers.MakeSeq<AstType>(
+                        Helpers.MakeGenericType("IInterface")
+                    ),
+                    Modifiers.None,
+                    TextLocation.Empty,
+                    TextLocation.Empty,
+                    EntityDeclaration.MakeField(
+                        Helpers.MakeSeq(
+                            AstNode.MakeIdentifier(
+                                "x",
+                                Helpers.MakePrimitiveType("int")
+                            )
+                        ),
+                        Helpers.MakeSeq<Expression>(
+                            Expression.Null
+                        ),
+                        Modifiers.Private | Modifiers.Immutable
+                    ),
+                    EntityDeclaration.MakeFunc(
+                        "doSomeBehavior",
+                        Enumerable.Empty<ParameterDeclaration>(),
+                        Statement.MakeBlock(
+                            Helpers.MakeSingleItemReturnStatement(
+                                Expression.MakeMemRef(
+                                    Expression.MakeSelfRef(),
+                                    Helpers.MakeSomeIdent("x")
+                                )
+                            )
+                        ),
+                        Helpers.MakePrimitiveType("int"),
+                        Modifiers.None
+                    )
+                ),
+                EntityDeclaration.MakeFunc(
+                    "main",
+                    Enumerable.Empty<ParameterDeclaration>(),
+                    Statement.MakeBlock(
+                        Statement.MakeVarDecl(
+                            Helpers.MakeSeq(
+                                Helpers.MakeSomeIdent("t")
+                            ),
+                            Helpers.MakeSeq(
+                                Expression.MakeObjectCreation(
+                                    Helpers.MakeGenericType("TestClass"),
+                                    Helpers.MakeSeq(
+                                        AstNode.MakeIdentifier("x")
+                                    ),
+                                    Helpers.MakeSeq<Expression>(
+                                        Expression.MakeConstant("int", 1)
+                                    )
+                                )
+                            ),
+                            Modifiers.Immutable
+                        ),
+                        Statement.MakeVarDecl(
+                            Helpers.MakeSeq(
+                                Helpers.MakeSomeIdent("a")
+                            ),
+                            Helpers.MakeSeq(
+                                Helpers.MakeCallExpression(
+                                    Expression.MakeMemRef(
+                                        Helpers.MakeIdentifierPath("t"),
+                                        Helpers.MakeSomeIdent("doSomeBehavior")
+                                    )
+                                )
+                            ),
+                            Modifiers.Immutable
+                        ),
+                        Statement.MakeExprStmt(
+                            Helpers.MakeCallExpression(
+                                Helpers.MakeIdentifierPath("printFormat"),
+                                Expression.MakeConstant(
+                                    "string",
+                                    "t.x = {0}"
+                                ),
+                                Helpers.MakeIdentifierPath("a")
+                            )
+                        )
+                    ),
+                    Helpers.MakePlaceholderType(),
+                    Modifiers.None
+                )
+            });
+
+            Assert.IsNotNull(ast);
+            Helpers.AstStructuralEqual(ast, expected);
+        }
     }
 }
