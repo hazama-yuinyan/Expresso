@@ -367,7 +367,7 @@ string cur_class_name;
 	public void SemanticError(string format, params object[] args)
 	{
 		//Convenient method for printing a semantic error with a format string
-		SemErr(string.Format(format, args));
+		errors.SemErr(string.Format(format, args));
 	}
 
     /// <summary>
@@ -623,7 +623,7 @@ string cur_class_name;
 		
 		while (!(la.kind == 0 || la.kind == 36)) {SynErr(111); Get();}
 		Expect(36);
-		Symbols.AddScope();
+		Symbols.AddScope(ClassType.Class);
 		var ident_start_loc = CurrentLocation;
 		
 		Expect(14);
@@ -688,7 +688,7 @@ string cur_class_name;
 		
 		while (!(la.kind == 0 || la.kind == 33)) {SynErr(114); Get();}
 		Expect(33);
-		Symbols.AddScope();
+		Symbols.AddScope(ClassType.Interface);
 		var ident_start_loc = CurrentLocation;
 		
 		Expect(14);
@@ -711,7 +711,7 @@ string cur_class_name;
 		}
 		Expect(7);
 		GoDownScope();
-		Symbols.Name = "interface " + name + "`" + ScopeId++;
+		Symbols.Name = "type_" + name + "`" + ScopeId++;
 		
 		MethodSignature(out method);
 		decls.Add(method); 
@@ -887,7 +887,7 @@ string cur_class_name;
 		}
 		Expect(8);
 		GoDownScope();
-		Symbols.Name = "func " + name + "`" + ScopeId++;
+		Symbols.Name = "method_signature " + name + "`" + ScopeId++;
 		
 		if (la.kind == 14) {
 			ParamList(type_params, ref @params);

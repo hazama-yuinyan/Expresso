@@ -60,6 +60,9 @@ namespace Expresso.Ast.Analysis
 
         public AstType VisitBlock(BlockStatement block)
         {
+            if(block.IsNull)
+                return null;
+            
             int tmp_counter = scope_counter;
             DescendScope();
             scope_counter = 0;
@@ -971,6 +974,13 @@ namespace Expresso.Ast.Analysis
             // Delay discovering the return type because the body statements should be type-aware
             // before the return type is started to be inferred
             if(IsPlaceholderType(funcDecl.ReturnType)){
+                if(funcDecl.Parent is TypeDeclaration type_decl && type_decl.TypeKind == ClassType.Interface){
+                    throw new ParserException(
+                        "Error ES1602: The method signature '{0}' in an interface must make return types explicit",
+                        funcDecl,
+                        funcDecl.Name
+                    );
+                }
                 // Descend scopes 2 times because a function name has its own scope
                 int tmp_counter2 = scope_counter;
                 --scope_counter;
@@ -1012,11 +1022,35 @@ namespace Expresso.Ast.Analysis
             DescendScope();
             scope_counter = 0;
 
-            foreach(var super_type in typeDecl.BaseTypes)
-                super_type.AcceptWalker(this);
+            var require_methods = new List<string>();
 
-            foreach(var member in typeDecl.Members)
+            foreach(var super_type in typeDecl.BaseTypes){
+                var super_type_table = symbols.GetTypeTable(super_type.Name);
+                if(super_type_table.TypeKind == ClassType.Interface)
+                    require_methods.AddRange(super_type_table.Symbols.Select(s => s.Name));
+                
+                super_type.AcceptWalker(this);
+            }
+
+            while(require_methods.Contains("self"))
+                require_methods.Remove("self");
+
+            foreach(var member in typeDecl.Members){
+                if(member is FunctionDeclaration method)
+                    require_methods.Remove(method.Name);
+                
                 member.AcceptWalker(this);
+            }
+
+            if(require_methods.Any()){
+                foreach(var require_method_name in require_methods){
+                    parser.ReportSemanticError(
+                        "Error ES1900: The class '{0}' doesn't implement '{1}' but an interface requires you to implement it.",
+                        typeDecl,
+                        typeDecl.Name, require_method_name
+                    );
+                }                          
+            }
 
             AscendScope();
             scope_counter = tmp_counter + 1;

@@ -319,7 +319,7 @@ $namespace=Expresso
 	public void SemanticError(string format, params object[] args)
 	{
 		//Convenient method for printing a semantic error with a format string
-		SemErr(string.Format(format, args));
+		errors.SemErr(string.Format(format, args));
 	}
 
     /// <summary>
@@ -544,7 +544,7 @@ InterfaceDecl<out EntityDeclaration decl, Modifiers modifiers>
                                         .)
 =
   SYNC
-  "interface"                           (. Symbols.AddScope();
+  "interface"                           (. Symbols.AddScope(ClassType.Interface);
                                            var ident_start_loc = CurrentLocation;
                                         .)
   ident                                 (. name = t.val;
@@ -561,7 +561,7 @@ InterfaceDecl<out EntityDeclaration decl, Modifiers modifiers>
     }
   ]
   lcurly                                (. GoDownScope();
-                                           Symbols.Name = "interface " + name + "`" + ScopeId++;
+                                           Symbols.Name = "type_" + name + "`" + ScopeId++;
                                         .)
   MethodSignature<out method>           (. decls.Add(method); .)
   rcurly                                (.
@@ -593,7 +593,7 @@ MethodSignature<out EntityDeclaration method>
                                 .)
  [ GenericTypeParameters<ref type_params> ]
   '('                           (. GoDownScope();
-                                   Symbols.Name = "func " + name + "`" + ScopeId++;
+                                   Symbols.Name = "method_signature " + name + "`" + ScopeId++;
                                 .)
   [ParamList<type_params, ref @params>]
   ')'
@@ -610,7 +610,7 @@ ClassDecl<out EntityDeclaration decl, Modifiers modifiers>
   .)
 =
   SYNC
-  "class"                                 (. Symbols.AddScope();
+  "class"                                 (. Symbols.AddScope(ClassType.Class);
                                              var ident_start_loc = CurrentLocation;
                                           .)
   ident				    				  (. name = t.val;

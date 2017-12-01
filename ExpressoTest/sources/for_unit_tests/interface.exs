@@ -1,7 +1,15 @@
+/**
+ * Test program for an interface
+ */
 module main;
 
 
 
+// interface IInterface
+// {
+//     doSomeBehavior() -> int;
+// }
+// I wonder if we can write like above
 interface IInterface
 {
 	def doSomeBehavior() -> int;

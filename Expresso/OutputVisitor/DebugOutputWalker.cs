@@ -588,7 +588,7 @@ namespace Expresso.Ast
 
         public void VisitTypeDeclaration(TypeDeclaration typeDecl)
         {
-            writer.Write("{0} ", typeDecl.ClassType.ToString());
+            writer.Write("{0} ", typeDecl.TypeKind.ToString());
             writer.Write(typeDecl.Name);
             if(typeDecl.BaseTypes.HasChildren){
                 writer.Write(" : ");

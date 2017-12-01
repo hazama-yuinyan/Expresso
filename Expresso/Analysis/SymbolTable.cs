@@ -59,6 +59,14 @@ namespace Expresso.Ast.Analysis
             get{return Symbols.Count();}
         }
 
+        /// <summary>
+        /// Represents the kind of the type.
+        /// </summary>
+        /// <value>The kind of the type.</value>
+        public ClassType TypeKind{
+            get;
+        }
+
         static SymbolTable()
         {
             NativeMapping = new Dictionary<string, Identifier>();
@@ -102,11 +110,12 @@ namespace Expresso.Ast.Analysis
             NativeMapping.Add("printFormat", printformat_ident);
         }
 
-        public SymbolTable()
+        public SymbolTable(ClassType typeKind = ClassType.NotType)
         {
             type_table = new Dictionary<string, Identifier>();
             table = new Dictionary<string, Identifier>();
             Children = new List<SymbolTable>();
+            TypeKind = typeKind;
         }
 
         /// <summary>
@@ -123,15 +132,6 @@ namespace Expresso.Ast.Analysis
             table2.Children.Add(table);
 
             ExpressoCompilerHelpers.AddPrimitiveTypesSymbolTables(table2);
-            /*var vector_table = new SymbolTable();
-            vector_table.Name = TypeTablePrefix + "vector`T";
-            vector_table.AddSymbol("add", AstType.MakeFunctionType("add", AstType.MakeSimpleType("tuple", TextLocation.Empty), new List<AstType>{
-                AstType.MakeParameterType("T")
-            }));
-            vector_table.GetSymbol("add").IdentifierId = 1000000003u;
-            table2.Children.Add(vector_table);
-            table2.AddTypeSymbol("vector", AstType.MakeSimpleType("vector", new List<AstType>{AstType.MakeParameterType("T")}));
-*/
             return table;
         }
 
@@ -439,9 +439,9 @@ namespace Expresso.Ast.Analysis
             return Count(null);
         }
 
-        public void AddScope()
+        public void AddScope(ClassType typeKind = ClassType.NotType)
         {
-            var child = new SymbolTable();
+            var child = new SymbolTable(typeKind);
             child.Parent = this;
             Children.Add(child);
         }

@@ -130,6 +130,9 @@ namespace Expresso.Ast.Analysis
 
         public void VisitBlock(BlockStatement block)
         {
+            if(block.IsNull)
+                return;
+            
             int tmp_counter = scope_counter;
             DecendScope();
             scope_counter = 0;

@@ -14,7 +14,8 @@ namespace Expresso.Ast
     {
         Class,
         Interface,
-        Enum
+        Enum,
+        NotType
     }
 
     /// <summary>
@@ -44,7 +45,7 @@ namespace Expresso.Ast
 
         public ExpressoTokenNode TypeKindToken{
             get{
-                switch(class_type){
+                switch(type_kind){
                 case ClassType.Class:
                     return GetChildByRole(ClassKeywordRole);
 
@@ -60,16 +61,16 @@ namespace Expresso.Ast
             }
         }
 
-        ClassType class_type;
+        ClassType type_kind;
 
-        public ClassType ClassType{
+        public ClassType TypeKind{
             get{
-                return class_type;
+                return type_kind;
             }
 
             set{
                 ThrowIfFrozen();
-                class_type = value;
+                type_kind = value;
             }
         }
 
@@ -113,7 +114,7 @@ namespace Expresso.Ast
             IEnumerable<EntityDeclaration> decls, Modifiers modifiers, TextLocation start, TextLocation end)
             : base(start, end)
         {
-            ClassType = classType;
+            TypeKind = classType;
             SetChildByRole(Roles.Identifier, ident);
             BaseTypes.AddRange(supers);
             Members.AddRange(decls);
@@ -140,7 +141,7 @@ namespace Expresso.Ast
         protected internal override bool DoMatch(AstNode other, ICSharpCode.NRefactory.PatternMatching.Match match)
         {
             var o = other as TypeDeclaration;
-            return o != null && ClassType == o.ClassType && BaseTypes.DoMatch(o.BaseTypes, match)
+            return o != null && TypeKind == o.TypeKind && BaseTypes.DoMatch(o.BaseTypes, match)
                 && Members.DoMatch(o.Members, match);
         }
 

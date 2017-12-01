@@ -251,6 +251,9 @@ namespace Expresso.CodeGen
 
         public CSharpExpr VisitBlock(BlockStatement block, CSharpEmitterContext context)
         {
+            if(block.IsNull)
+                return null;
+            
             int tmp_counter = scope_counter;
             DescendScope();
             scope_counter = 0;
