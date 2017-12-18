@@ -1,3 +1,7 @@
+/**
+ * Test program for not implementing an interface method.
+ */
+
 module main;
 
 

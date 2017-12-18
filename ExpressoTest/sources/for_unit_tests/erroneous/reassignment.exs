@@ -1,3 +1,7 @@
+/**
+ * Test program for re-assignment on an immutable variable.
+ */
+
 module main;
 
 

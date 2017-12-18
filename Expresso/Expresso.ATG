@@ -275,10 +275,11 @@ $namespace=Expresso
             return false;
         }
 
-        var key = scanner.Peek();
+        return true;
+        /*var key = scanner.Peek();
         var tt = scanner.Peek();
         scanner.ResetPeek();
-        return key.kind == _ident && tt.kind == _colon;
+        return key.kind == _ident && tt.kind == _colon;*/
     }
 
     bool IsStartOfAnotherType()
@@ -1643,9 +1644,10 @@ ObjectCreation<AstType typePath, out Expression expr>
                                         .)
 =
   lcurly
-  ident                                 (. fields.Add(AstNode.MakeIdentifier(t.val, ExpressoModifiers.None, CurrentLocation)); .)
-  ':'
-  CondExpr<out expr>                    (. values.Add(expr); .)
+  [ ident                               (. fields.Add(AstNode.MakeIdentifier(t.val, ExpressoModifiers.None, CurrentLocation)); .)
+    ':'
+    CondExpr<out expr>                  (. values.Add(expr); .)
+  ]
   { ','
     ident                               (. fields.Add(AstNode.MakeIdentifier(t.val, ExpressoModifiers.None, CurrentLocation)); .)
     ':'

@@ -323,10 +323,11 @@ string cur_class_name;
             return false;
         }
 
-        var key = scanner.Peek();
+        return true;
+        /*var key = scanner.Peek();
         var tt = scanner.Peek();
         scanner.ResetPeek();
-        return key.kind == _ident && tt.kind == _colon;
+        return key.kind == _ident && tt.kind == _colon;*/
     }
 
     bool IsStartOfAnotherType()
@@ -1416,11 +1417,13 @@ string cur_class_name;
 		Symbols.Name = "ObjectCreation`" + ScopeId++;*/
 		
 		Expect(7);
-		Expect(14);
-		fields.Add(AstNode.MakeIdentifier(t.val, ExpressoModifiers.None, CurrentLocation)); 
-		Expect(4);
-		CondExpr(out expr);
-		values.Add(expr); 
+		if (la.kind == 14) {
+			Get();
+			fields.Add(AstNode.MakeIdentifier(t.val, ExpressoModifiers.None, CurrentLocation)); 
+			Expect(4);
+			CondExpr(out expr);
+			values.Add(expr); 
+		}
 		while (la.kind == 12) {
 			Get();
 			Expect(14);

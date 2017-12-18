@@ -562,9 +562,9 @@ namespace Expresso.Ast.Analysis
                         var type_symbol = symbol_table.GetTypeSymbolInAnyScope(ident.Name);
                         if(type_symbol == null){
                             parser.ReportSemanticError(
-                                "Error ES1500: `{0}` in the path doesn't represent a type or a module. You misspelled it?",
+                                "Error ES1500: `{0}` in the path '{1}' doesn't represent a type or a module. You misspelled it?",
                                 ident,
-                                ident.Name
+                                ident.Name, pathExpr
                             );
                             return;
                         }

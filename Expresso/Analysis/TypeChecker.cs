@@ -976,7 +976,15 @@ namespace Expresso.Ast.Analysis
             if(IsPlaceholderType(funcDecl.ReturnType)){
                 if(funcDecl.Parent is TypeDeclaration type_decl && type_decl.TypeKind == ClassType.Interface){
                     throw new ParserException(
-                        "Error ES1602: The method signature '{0}' in an interface must make return types explicit",
+                        "Error ES1602: The method signature '{0}' in an interface must make the return type explicit",
+                        funcDecl,
+                        funcDecl.Name
+                    );
+                }
+
+                if(funcDecl.Body.Statements.Count == 0){
+                    throw new ParserException(
+                        "Error ES1901: Can not infer the return type of '{0}' because the body is empty!",
                         funcDecl,
                         funcDecl.Name
                     );
@@ -998,12 +1006,12 @@ namespace Expresso.Ast.Analysis
 
             if(funcDecl.Parent is TypeDeclaration){
                 var type_name = ((TypeDeclaration)funcDecl.Parent).Name;
-                if(funcDecl.Parameters.Any(p => p.ReturnType is SimpleType && ((SimpleType)p.ReturnType).Name == type_name)){
+                if(funcDecl.Parameters.Any(p => p.ReturnType is SimpleType simple_type && simple_type.Name == type_name)){
                     parser.ReportSemanticError(
                         "Error ES1020: In Expresso you can't define a method that takes the self class that contains the method.\n Use module-level functions instead",
                         funcDecl.Parameters.Where(p => p.ReturnType is SimpleType && ((SimpleType)p.ReturnType).Name == type_name).First()
                     );
-                }else if(funcDecl.ReturnType is SimpleType && ((SimpleType)funcDecl.ReturnType).Name == type_name){
+                }else if(funcDecl.ReturnType is SimpleType simple_type && simple_type.Name == type_name){
                     parser.ReportSemanticError(
                         "Error ES1021: In Expresso you can't define a method that returns the self class that contains the method.\n Use module-level functions instead",
                         funcDecl.ReturnType
