@@ -1008,12 +1008,12 @@ namespace Expresso.Ast.Analysis
                 var type_name = ((TypeDeclaration)funcDecl.Parent).Name;
                 if(funcDecl.Parameters.Any(p => p.ReturnType is SimpleType simple_type && simple_type.Name == type_name)){
                     parser.ReportSemanticError(
-                        "Error ES1020: In Expresso you can't define a method that takes the self class that contains the method.\n Use module-level functions instead",
-                        funcDecl.Parameters.Where(p => p.ReturnType is SimpleType && ((SimpleType)p.ReturnType).Name == type_name).First()
+                        "Error ES1020: In Expresso you can't define a method that takes the self class as a parameter that contains the method.\nUse module-level functions instead.",
+                        funcDecl.Parameters.Where(p => p.ReturnType is SimpleType simple_type && simple_type.Name == type_name).First()
                     );
                 }else if(funcDecl.ReturnType is SimpleType simple_type && simple_type.Name == type_name){
                     parser.ReportSemanticError(
-                        "Error ES1021: In Expresso you can't define a method that returns the self class that contains the method.\n Use module-level functions instead",
+                        "Error ES1021: In Expresso you can't define a method that returns the self class that contains the method.\nUse module-level functions instead.",
                         funcDecl.ReturnType
                     );
                 }

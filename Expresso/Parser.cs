@@ -965,8 +965,10 @@ string cur_class_name;
 		GoDownScope();
 		Symbols.Name = "block`" + ScopeId++;
 		
-		Stmt(out stmt);
-		stmts.Add(stmt); 
+		if (StartOf(7)) {
+			Stmt(out stmt);
+			stmts.Add(stmt); 
+		}
 		while (StartOf(7)) {
 			Stmt(out stmt);
 			stmts.Add(stmt); 
@@ -979,7 +981,7 @@ string cur_class_name;
 	}
 
 	void Parameter(out ParameterDeclaration param) {
-		string name; Identifier identifier; Expression option = null; AstType type = null; bool is_variadic = false; 
+		string name; Identifier identifier; Expression option = null; AstType type = null; bool is_variadic = false; var start_loc = CurrentLocation; 
 		Expect(14);
 		name = t.val;
 		if(CheckKeyword(name)){
@@ -1012,7 +1014,7 @@ string cur_class_name;
 		SemanticError("Error ES0004: You can't omit both the type annotation and the default value in a function parameter definition!");
 		
 		Symbols.AddSymbol(name, identifier);
-		param = EntityDeclaration.MakeParameter(identifier, option, is_variadic);
+		param = EntityDeclaration.MakeParameter(identifier, option, is_variadic, start_loc);
 		
 	}
 

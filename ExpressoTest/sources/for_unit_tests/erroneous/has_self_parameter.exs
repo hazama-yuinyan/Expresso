@@ -7,7 +7,7 @@ module main;
 
 class TestClass
 {
-	def static hasSelfParameter(self (- TestClass)
+	static def hasSelfParameter(this (- TestClass) -> void
 	{
 	}
 }

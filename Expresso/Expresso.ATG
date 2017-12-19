@@ -723,7 +723,7 @@ ParamList<. List<ParameterType> typeParams, ref List<ParameterDeclaration> @para
                                 .)
   }.
 /*------------------------------------------------------------------------*/
-Parameter<out ParameterDeclaration param>   (. string name; Identifier identifier; Expression option = null; AstType type = null; bool is_variadic = false; .)
+Parameter<out ParameterDeclaration param>   (. string name; Identifier identifier; Expression option = null; AstType type = null; bool is_variadic = false; var start_loc = CurrentLocation; .)
 =
   ident										(.
   												name = t.val;
@@ -751,7 +751,7 @@ Parameter<out ParameterDeclaration param>   (. string name; Identifier identifie
   													SemanticError("Error ES0004: You can't omit both the type annotation and the default value in a function parameter definition!");
 
   												Symbols.AddSymbol(name, identifier);
-  												param = EntityDeclaration.MakeParameter(identifier, option, is_variadic);
+  												param = EntityDeclaration.MakeParameter(identifier, option, is_variadic, start_loc);
   											.).
 /*------------------------------------------------------------------------*/
 FieldDecl<out EntityDeclaration field, Modifiers modifiers>
@@ -986,7 +986,8 @@ Block<out BlockStatement block>  (. List<Statement> stmts = new List<Statement>(
   lcurly                         (. GoDownScope();
                                     Symbols.Name = "block`" + ScopeId++;
                                  .)
-  Stmt<out stmt>                 (. stmts.Add(stmt); .)
+  [ Stmt<out stmt>               (. stmts.Add(stmt); .)
+  ]
   { Stmt<out stmt>               (. stmts.Add(stmt); .)
   }
   SYNC rcurly                    (. block = Statement.MakeBlock(stmts, start_loc, CurrentLocation);

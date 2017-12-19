@@ -1,4 +1,5 @@
 using System;
+using ICSharpCode.NRefactory;
 using ICSharpCode.NRefactory.TypeSystem;
 
 
@@ -48,7 +49,8 @@ namespace Expresso.Ast
 
         #endregion
 
-        public ParameterDeclaration(Identifier identifier, Expression option, bool isVariadic)
+        public ParameterDeclaration(Identifier identifier, Expression option, bool isVariadic, TextLocation loc)
+            : base(loc, option != null ? option.EndLocation : identifier.EndLocation)
         {
             SetChildByRole(Roles.Identifier, identifier);
             Option = option;
