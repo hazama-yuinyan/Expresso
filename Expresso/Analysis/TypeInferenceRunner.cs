@@ -133,8 +133,13 @@ namespace Expresso.Ast.Analysis
             public AstType VisitCallExpression(CallExpression callExpr)
             {
                 var func_type = callExpr.Target.AcceptWalker(this) as FunctionType;
-                if(func_type == null)
-                    throw new InvalidOperationException("func_type turns out not to be a FunctionType");
+                if(func_type == null){
+                    throw new ParserException(
+                        "{0} turns out not to be a function.",
+                        callExpr,
+                        callExpr.Target.ToString()
+                    );
+                }
                 
                 foreach(var arg in callExpr.Arguments)
                     arg.AcceptWalker(this);

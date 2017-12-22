@@ -469,7 +469,7 @@ string cur_class_name;
 		   ExpressoNameBinder.BindAst(module_decl, this); //Here's the start of post-parse processing
 		}
 		catch(ParserException e){
-		SemanticError(e.Message);
+		SemanticError(e.ToString());
 		}
 		this.TopmostAst = module_decl;	//Currently there is not so much code out there, though...
 		

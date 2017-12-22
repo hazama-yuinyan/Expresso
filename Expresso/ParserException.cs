@@ -31,6 +31,11 @@ namespace Expresso.Ast.Analysis
         {
             this.node = node;
         }
+
+        public override string ToString()
+        {
+            return string.Format("{0} -- {1}", node.StartLocation, Message);
+        }
     }
 }
 

@@ -963,7 +963,7 @@ namespace Expresso.Ast.Analysis
                 var next = funcDecl.GetNextNode();
                 if(next != null && next is FunctionDeclaration){
                     parser.ReportSemanticError(
-                        "Error ES1100: Can't define functions after the main function",
+                        "Error ES1100: Can't define functions after the main function.",
                         next
                     );
                 }
