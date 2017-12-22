@@ -73,7 +73,7 @@ namespace Expresso.Test
             parser.DoPostParseProcessing = true;
             parser.Parse();
 
-            Assert.AreEqual(1, parser.errors.count);
+            Assert.AreEqual(2, parser.errors.count);
         }
 
         [Test]

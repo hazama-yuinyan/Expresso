@@ -976,7 +976,7 @@ namespace Expresso.Ast.Analysis
             if(IsPlaceholderType(funcDecl.ReturnType)){
                 if(funcDecl.Parent is TypeDeclaration type_decl && type_decl.TypeKind == ClassType.Interface){
                     throw new ParserException(
-                        "Error ES1602: The method signature '{0}' in an interface must make the return type explicit",
+                        "Error ES1602: The method signature '{0}' in an interface must make the return type explicit.",
                         funcDecl,
                         funcDecl.Name
                     );
