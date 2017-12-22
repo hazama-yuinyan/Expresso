@@ -400,16 +400,26 @@ namespace Expresso.Ast.Analysis
 
         public AstType VisitCallExpression(CallExpression callExpr)
         {
-            var func_type = callExpr.Target.AcceptWalker(this);
-            if(IsPlaceholderType(func_type)){
+            var func_type = callExpr.Target.AcceptWalker(this) as FunctionType;
+            // Don't call inference_runner.VisitCallExpression here
+            // because doing so causes VisitIdentifier to be invoked two times
+            // and show the same messages twice
+            /*if(IsPlaceholderType(func_type)){
                 var inferred = inference_runner.VisitCallExpression(callExpr);
                 // Don't replace nodes here because the above code does that
                 //func_type.ReplaceWith(inferred);
                 return inferred;
-            }
+            }*/
 
             // TODO: implement the type check on arguments.
-            inference_runner.VisitCallExpression(callExpr);
+            //inference_runner.VisitCallExpression(callExpr);
+            if(func_type == null){
+                throw new ParserException(
+                    "Error ES1805: {0} turns out not to be a function.",
+                    callExpr,
+                    callExpr.Target.ToString()
+                );
+            }
             return ((FunctionType)func_type).ReturnType;
         }
 

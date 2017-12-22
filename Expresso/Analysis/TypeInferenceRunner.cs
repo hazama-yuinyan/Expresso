@@ -135,7 +135,7 @@ namespace Expresso.Ast.Analysis
                 var func_type = callExpr.Target.AcceptWalker(this) as FunctionType;
                 if(func_type == null){
                     throw new ParserException(
-                        "{0} turns out not to be a function.",
+                        "Error ES1805: {0} turns out not to be a function.",
                         callExpr,
                         callExpr.Target.ToString()
                     );
