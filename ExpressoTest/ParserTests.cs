@@ -3623,5 +3623,183 @@ namespace Expresso.Test
             Assert.IsNotNull(ast);
             Helpers.AstStructuralEqual(ast, expected);
         }
+
+        [Test]
+        public void Slices()
+        {
+            var parser = new Parser(new Scanner("../../sources/for_unit_tests/slices.exs"));
+            parser.Parse();
+
+            var ast = parser.TopmostAst;
+
+            var expected = AstNode.MakeModuleDef("main", new List<EntityDeclaration>{
+                EntityDeclaration.MakeFunc(
+                    "main",
+                    Enumerable.Empty<ParameterDeclaration>(),
+                    Statement.MakeBlock(
+                        Statement.MakeVarDecl(
+                            Helpers.MakeSeq(
+                                Helpers.MakeSomeIdent("a")
+                            ),
+                            Helpers.MakeSeq(
+                                Expression.MakeSequenceInitializer(
+                                    Helpers.MakeGenericType(
+                                        "array",
+                                        Helpers.MakePlaceholderType()
+                                    ),
+                                    Helpers.MakeSeq(
+                                        Expression.MakeConstant(
+                                            "int",
+                                            0
+                                        ),
+                                        Expression.MakeConstant(
+                                            "int",
+                                            1
+                                        ),
+                                        Expression.MakeConstant(
+                                            "int",
+                                            2
+                                        ),
+                                        Expression.MakeConstant(
+                                            "int",
+                                            3
+                                        ),
+                                        Expression.MakeConstant(
+                                            "int",
+                                            4
+                                        ),
+                                        Expression.MakeConstant(
+                                            "int",
+                                            5
+                                        ),
+                                        Expression.MakeConstant(
+                                            "int",
+                                            6
+                                        ),
+                                        Expression.MakeConstant(
+                                            "int",
+                                            7
+                                        ),
+                                        Expression.MakeConstant(
+                                            "int",
+                                            8
+                                        ),
+                                        Expression.MakeConstant(
+                                            "int",
+                                            9
+                                        )
+                                    )
+                                )
+                            ),
+                            Modifiers.Immutable
+                        ),
+                        Statement.MakeVarDecl(
+                            Helpers.MakeSeq(
+                                Helpers.MakeSomeIdent("b")
+                            ),
+                            Helpers.MakeSeq(
+                                Expression.MakeIndexer(
+                                    Helpers.MakeIdentifierPath("a"),
+                                    TextLocation.Empty,
+                                    Expression.MakeIntSeq(
+                                        Expression.MakeConstant("int", 2),
+                                        Expression.MakeConstant("int", 4),
+                                        Expression.MakeConstant("int", 1),
+                                        true
+                                    )
+                                )
+                            ),
+                            Modifiers.Immutable
+                        ),
+                        Statement.MakeVarDecl(
+                            Helpers.MakeSeq(
+                                Helpers.MakeSomeIdent("c")
+                            ),
+                            Helpers.MakeSeq(
+                                Expression.MakeSequenceInitializer(
+                                    Helpers.MakeGenericType(
+                                        "vector",
+                                        Helpers.MakePlaceholderType()
+                                    ),
+                                    Helpers.MakeSeq(
+                                        Expression.MakeConstant(
+                                            "int",
+                                            0
+                                        ),
+                                        Expression.MakeConstant(
+                                            "int",
+                                            1
+                                        ),
+                                        Expression.MakeConstant(
+                                            "int",
+                                            2
+                                        ),
+                                        Expression.MakeConstant(
+                                            "int",
+                                            3
+                                        ),
+                                        Expression.MakeConstant(
+                                            "int",
+                                            4
+                                        ),
+                                        Expression.MakeConstant(
+                                            "int",
+                                            5
+                                        ),
+                                        Expression.MakeConstant(
+                                            "int",
+                                            6
+                                        ),
+                                        Expression.MakeConstant(
+                                            "int",
+                                            7
+                                        ),
+                                        Expression.MakeConstant(
+                                            "int",
+                                            8
+                                        ),
+                                        Expression.MakeConstant(
+                                            "int",
+                                            9
+                                        )
+                                    )
+                                )
+                            ),
+                            Modifiers.Immutable
+                        ),
+                        Statement.MakeVarDecl(
+                            Helpers.MakeSeq(
+                                Helpers.MakeSomeIdent("d")
+                            ),
+                            Helpers.MakeSeq(
+                                Expression.MakeIndexer(
+                                    Helpers.MakeIdentifierPath("c"),
+                                    TextLocation.Empty,
+                                    Expression.MakeIntSeq(
+                                        Expression.MakeConstant("int", 2),
+                                        Expression.MakeConstant("int", 4),
+                                        Expression.MakeConstant("int", 1),
+                                        true
+                                    )
+                                )
+                            ),
+                            Modifiers.Immutable
+                        ),
+                        Statement.MakeExprStmt(
+                            Helpers.MakeCallExpression(
+                                Helpers.MakeIdentifierPath("println"),
+                                Helpers.MakeIdentifierPath("b"),
+                                Helpers.MakeIdentifierPath("d")
+                            )
+                        )
+                    ),
+                    Helpers.MakePlaceholderType(),
+                    Modifiers.None
+                )
+            });
+
+            Assert.IsNotNull(ast);
+            Helpers.AstStructuralEqual(ast, expected);
+        }
     }
 }
