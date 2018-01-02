@@ -70,7 +70,7 @@
             "name" : "keyword.other.source.exs"
         },
         {
-            "match" : "\\b(internal|public|protected|private|static|const|new|abstract|override|export|readonly|volatile|operator)\\b",
+            "match" : "\\b(internal|public|protected|private|static|const|new|abstract|override|export|readonly)\\b",
             "name" : "storage.modifier.source.exs"
         },
         {
@@ -214,7 +214,7 @@
         {
             "patterns" : [
                 {
-                    "match" : "\\b(bool|byte|float|int|bigint|vector|dictionary|tuple|intseq|string|function|void|class|interface)\\b",
+                    "match" : "\\b(bool|byte|float|double|int|bigint|vector|dictionary|tuple|intseq|char|string|array|slice|function|void|class|interface)\\b",
                     "name" : "storage.type.exs"
                 }
             ]
