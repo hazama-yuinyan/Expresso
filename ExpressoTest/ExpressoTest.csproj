@@ -70,6 +70,8 @@
     <None Include="sources\for_unit_tests\erroneous\has_no_return_type_in_interface.exs" />
     <None Include="sources\for_unit_tests\erroneous\function_after_main_function.exs" />
     <None Include="sources\for_unit_tests\slices.exs" />
+    <None Include="sources\for_unit_tests\erroneous\invalid_iterable.exs" />
+    <None Include="sources\for_unit_tests\erroneous\non_boolean_condition_expression.exs" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AnalyzerTests.cs" />

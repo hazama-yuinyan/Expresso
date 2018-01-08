@@ -3,14 +3,14 @@
  */
 module main; 
  
-import sqrt in math;
+import "System.Math" in Math;
  
 def main()
 {
 	let n = 100000;
     var results = [...];
 	for let i in 2...n {
-		let SQRT_I = (sqrt(i as float) + 1.0) as int;
+		let SQRT_I = (Math.sqrt(i as float) + 1.0) as int;
 		for let j in 2...SQRT_I {
 			if j == SQRT_I {
 				results.add(i);

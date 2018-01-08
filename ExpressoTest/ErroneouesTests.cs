@@ -85,6 +85,26 @@ namespace Expresso.Test
 
             Assert.AreEqual(3, parser.errors.count);
         }
+
+        [Test]
+        public void InvalidIterable()
+        {
+            var parser = new Parser(new Scanner("../../sources/for_unit_tests/erroneous/invalid_iterable.exs"));
+            parser.DoPostParseProcessing = true;
+            parser.Parse();
+
+            Assert.AreEqual(1, parser.errors.count);
+        }
+
+        [Test]
+        public void NonBooleanConditionExpression()
+        {
+            var parser = new Parser(new Scanner("../../sources/for_unit_tests/erroneous/non_boolean_condition_expression.exs"));
+            parser.DoPostParseProcessing = true;
+            parser.Parse();
+
+            Assert.AreEqual(1, parser.errors.count);
+        }
     }
 }
 
