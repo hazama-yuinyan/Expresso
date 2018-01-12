@@ -214,7 +214,7 @@ Note that the chunks of memory(`first_half` and `second_half` variables in this 
 Sometimes, it's useful to view into some sequence. That's the time when the `slice` type comes into play. The `slice` type, as the name implies,
 slices some sequence and allows you to view a portion of that sequence. Combining some sequence with an `intseq` using the indexer syntax
 creates a new `slice` object. The slice object, then, can be used to iterate through some portion of the sequence.
-Note that the `slice` is just an iteratorof the sequence. Thus the `slice` object doesn't create a new copy of the original sequence.
+Note that the `slice` is just an iterator of the sequence. Thus the `slice` object doesn't create a new copy of the original sequence.
 
 ### The `tuple` type
 

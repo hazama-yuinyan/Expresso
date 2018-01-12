@@ -275,11 +275,10 @@ $namespace=Expresso
             return false;
         }
 
-        return true;
-        /*var key = scanner.Peek();
+        var key = scanner.Peek();
         var tt = scanner.Peek();
         scanner.ResetPeek();
-        return key.kind == _ident && tt.kind == _colon;*/
+        return key.kind == _ident && tt.kind == _colon;
     }
 
     bool IsStartOfAnotherType()
@@ -986,8 +985,7 @@ Block<out BlockStatement block>  (. List<Statement> stmts = new List<Statement>(
   lcurly                         (. GoDownScope();
                                     Symbols.Name = "block`" + ScopeId++;
                                  .)
-  [ Stmt<out stmt>               (. stmts.Add(stmt); .)
-  ]
+  Stmt<out stmt>                 (. stmts.Add(stmt); .)
   { Stmt<out stmt>               (. stmts.Add(stmt); .)
   }
   SYNC rcurly                    (. block = Statement.MakeBlock(stmts, start_loc, CurrentLocation);
@@ -1654,7 +1652,7 @@ ObjectCreation<AstType typePath, out Expression expr>
     ':'
     CondExpr<out expr>                  (. values.Add(expr); .)
   }
-  SYNC '}'                              (.
+  SYNC rcurly                           (.
                                            expr = Expression.MakeObjectCreation(typePath, fields, values, start_loc, CurrentLocation);
                                            //GoUpScope();
                                         .).

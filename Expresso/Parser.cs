@@ -323,11 +323,10 @@ string cur_class_name;
             return false;
         }
 
-        return true;
-        /*var key = scanner.Peek();
+        var key = scanner.Peek();
         var tt = scanner.Peek();
         scanner.ResetPeek();
-        return key.kind == _ident && tt.kind == _colon;*/
+        return key.kind == _ident && tt.kind == _colon;
     }
 
     bool IsStartOfAnotherType()
@@ -965,10 +964,8 @@ string cur_class_name;
 		GoDownScope();
 		Symbols.Name = "block`" + ScopeId++;
 		
-		if (StartOf(7)) {
-			Stmt(out stmt);
-			stmts.Add(stmt); 
-		}
+		Stmt(out stmt);
+		stmts.Add(stmt); 
 		while (StartOf(7)) {
 			Stmt(out stmt);
 			stmts.Add(stmt); 

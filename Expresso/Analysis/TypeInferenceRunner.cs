@@ -172,7 +172,7 @@ namespace Expresso.Ast.Analysis
                 int tmp_counter = checker.scope_counter;
                 bool has_descended = false;
                 // FIXME: This condition would cause a problem if the closure is surrounded by another closure
-                if(!checker.symbols.Parent.Name.StartsWith("closure")){
+                if(!checker.symbols.Parent.Name.StartsWith("closure", StringComparison.CurrentCulture)){
                     checker.DescendScope();
                     checker.scope_counter = 0;
 
@@ -233,7 +233,7 @@ namespace Expresso.Ast.Analysis
                     // See if it is a IntSeq object
                     if(inferred_primitive.KnownTypeCode != KnownTypeCode.IntSeq){
                         parser.ReportSemanticError(
-                            "Error ES1301: '{0}' isn't a sequence type! A comprehension expects a sequence object.",
+                            "Error ES1302: '{0}' isn't a sequence type! A comprehension expects a sequence object.",
                             inferred_primitive,
                             inferred_primitive
                         );
@@ -247,7 +247,7 @@ namespace Expresso.Ast.Analysis
                     // See if it is a sequence object like array or vector
                     if(inferred_simple.Name != "array" && inferred_simple.Name != "vector"){
                         parser.ReportSemanticError(
-                            "Error ES1301: '{0}' isn't a sequence type! A comprehension expects a sequence object.",
+                            "Error ES1302: '{0}' isn't a sequence type! A comprehension expects a sequence object.",
                             inferred_simple,
                             inferred_simple
                         );
@@ -634,7 +634,7 @@ namespace Expresso.Ast.Analysis
             {
                 if(parameterDecl.Option.IsNull){
                     parser.ReportSemanticErrorRegional(
-                        "Error ES1301: Can not infer the expression '{0}' because it doesn't have any context.",
+                        "Error ES1310: Can not infer the expression '{0}' because it doesn't have any context.",
                         parameterDecl.NameToken, parameterDecl.Option,
                         parameterDecl
                     );
@@ -649,7 +649,7 @@ namespace Expresso.Ast.Analysis
             {
                 if(initializer.Initializer.IsNull){
                     parser.ReportSemanticErrorRegional(
-                        "Error ES1301: Can not infer the expression '{0}' because it doesn't have any context.",
+                        "Error ES1310: Can not infer the expression '{0}' because it doesn't have any context.",
                         initializer.NameToken, initializer.Initializer,
                         initializer
                     );
@@ -791,23 +791,37 @@ namespace Expresso.Ast.Analysis
             {
                 var return_stmt = block.Statements.Last() as ReturnStatement;
                 if(return_stmt != null)
-                    return return_stmt.Expression.IsNull ? AstType.MakeSimpleType("tuple", TextLocation.Empty) : return_stmt.Expression.AcceptWalker(this);
+                    return return_stmt.Expression.IsNull ? AstType.MakeSimpleType("tuple") : return_stmt.Expression.AcceptWalker(this);
 
                 var last_if = block.Statements.Last() as IfStatement;
                 if(last_if != null){
+                    var func = block.Parent as FunctionDeclaration;
+                    var closure = block.Parent as ClosureLiteralExpression;
+                    if(func != null && IsVoidType(func.ReturnType)){
+                        return func.ReturnType.Clone();
+                    }else if(closure != null && IsVoidType(closure.ReturnType)){
+                        return closure.ReturnType.Clone();
+                    }
+
                     if(last_if.FalseBlock.IsNull){
                         var last_return = last_if.TrueBlock.Statements.Last() as ReturnStatement;
                         if(last_return != null)
                             return last_return.Expression.IsNull ? AstType.MakeSimpleType("tuple", last_return.StartLocation) : last_return.Expression.AcceptWalker(this);
                     }else{
                         // FIXME: This code can't take else if statements into account
+                        // REVISE: A series of if statements becomes a tree construct
+                        // so we may ignore the above statement
                         var true_return = last_if.TrueBlock.Statements.Last() as ReturnStatement;
                         var false_return = last_if.FalseBlock.Statements.Last() as ReturnStatement;
                         if(true_return != null && false_return != null){
                             var true_return_type = true_return.Expression.IsNull ? AstType.MakeSimpleType("tuple", true_return.StartLocation) : true_return.Expression.AcceptWalker(this);
                             var false_return_type = false_return.Expression.IsNull ? AstType.MakeSimpleType("tuple", false_return.StartLocation) : false_return.Expression.AcceptWalker(this);
                             return checker.FigureOutCommonType(true_return_type, false_return_type);
-                        }else{
+                        }else if(func != null && IsPlaceholderType(func.ReturnType) ||
+                                 closure != null && IsPlaceholderType(closure.ReturnType)){
+                            if(true_return == null && false_return == null)
+                                return AstType.MakeSimpleType("tuple");
+                            
                             checker.parser.ReportSemanticErrorRegional(
                                 "Error ES1800: All code paths must return something. {0} returns nothing.",
                                 last_if.TrueBlock, last_if.FalseBlock,
@@ -817,7 +831,7 @@ namespace Expresso.Ast.Analysis
                     }
                 }
 
-                return AstType.MakeSimpleType("tuple", TextLocation.Empty);
+                return AstType.MakeSimpleType("tuple"); // The void type
             }
         }
     }

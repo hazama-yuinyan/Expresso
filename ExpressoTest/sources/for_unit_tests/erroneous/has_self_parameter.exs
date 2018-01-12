@@ -9,5 +9,6 @@ class TestClass
 {
 	static def hasSelfParameter(this (- TestClass) -> void
 	{
+        ;
 	}
 }

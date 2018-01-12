@@ -124,7 +124,7 @@ namespace Expresso.Ast.Analysis
 
             if(!IsSequenceType(target_type)){
                 parser.ReportSemanticError(
-                    "Error ES1301: `{0}` isn't a sequence type! A for statement can only be used for iterating over sequences",
+                    "Error ES1301: `{0}` isn't a sequence type! A for statement can only be used for iterating over a sequence.",
                     forStmt.Target,
                     left_type
                 );
@@ -150,7 +150,7 @@ namespace Expresso.Ast.Analysis
                 var target_type = variable.Initializer.AcceptWalker(this);
                 if(!IsSequenceType(target_type)){
                     parser.ReportSemanticError(
-                        "Error ES1301: `{0}` isn't a sequence type! A for statemant can only be used for iterating over sequences.",
+                        "Error ES1301: `{0}` isn't a sequence type! A for statemant can only be used for iterating over a sequence.",
                         variable.Initializer,
                         target_type
                     );
@@ -1448,7 +1448,7 @@ namespace Expresso.Ast.Analysis
         /// <summary>
         /// Determines whether `type` is a container type and whether it contains a placeholder type.
         /// </summary>
-        /// <returns><c>true</c>, if placeholder type was containsed, <c>false</c> otherwise.</returns>
+        /// <returns><c>true</c>, if placeholder type was contained, <c>false</c> otherwise.</returns>
         /// <param name="type">Type.</param>
         static bool ContainsPlaceholderType(SimpleType type)
         {
@@ -1456,6 +1456,19 @@ namespace Expresso.Ast.Analysis
                 return false;
             
             return type.TypeArguments.Any(t => IsPlaceholderType(t));
+        }
+
+        /// <summary>
+        /// Determines whether `type` is the void type.
+        /// </summary>
+        /// <returns><c>true</c>, if `type` is the void type, <c>false</c> otherwise.</returns>
+        /// <param name="type">Type.</param>
+        static bool IsVoidType(AstType type)
+        {
+            if(type is SimpleType simple)
+                return simple.Name == "tuple" && !simple.TypeArguments.Any();
+            else
+                return false;
         }
 
         static bool IsSequenceType(AstType type)

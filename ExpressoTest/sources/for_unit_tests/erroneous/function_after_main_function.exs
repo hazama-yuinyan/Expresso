@@ -12,4 +12,5 @@ def main()
 
 def test()
 {
+    ;
 }
