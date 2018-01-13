@@ -218,6 +218,10 @@ Note that the `slice` is just an iterator of the sequence. Thus the `slice` obje
 
 ### The `tuple` type
 
+Sometimes, you may want to return more than 1 variable from functions. In other times, you may want to combine two values into some grouped construct.
+For those situations, we have the `tuple` type as a builtin type. The `tuple` type conceptually groups more than 1 value into one construct and allows you to
+move it around and pass it around.
+
 ### The `vector` type
 
 ### The `dictionary` type

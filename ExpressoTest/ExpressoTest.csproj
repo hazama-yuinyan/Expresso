@@ -72,6 +72,7 @@
     <None Include="sources\for_unit_tests\slices.exs" />
     <None Include="sources\for_unit_tests\erroneous\invalid_iterable.exs" />
     <None Include="sources\for_unit_tests\erroneous\non_boolean_condition_expression.exs" />
+    <None Include="sources\for_unit_tests\erroneous\reassign_different_type.exs" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AnalyzerTests.cs" />
