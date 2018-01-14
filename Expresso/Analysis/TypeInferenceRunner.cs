@@ -519,13 +519,11 @@ namespace Expresso.Ast.Analysis
                                 return primitive_type;
                         }
 
-                        parser.ReportSemanticError(
+                        throw new ParserException(
                             "Error ES3200: Can not apply operators '+' or '-' on type `{0}`.",
                             unaryExpr,
                             tmp.Name
                         );
-
-                        return AstType.Null;
                     }
 
                 case OperatorType.Not:
