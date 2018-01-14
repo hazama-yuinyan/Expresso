@@ -838,6 +838,7 @@ namespace Expresso.Ast.Analysis
                 if(!(operand_type is PrimitiveType) || ((PrimitiveType)operand_type).KnownTypeCode != Expresso.TypeSystem.KnownTypeCode.Bool){
                     parser.ReportSemanticError(
                         "Error ES1200: Can not apply the '!' operator on type `{0}`!\nThe operand must be of type `bool`.",
+                        unaryExpr,
                         operand_type
                     );
                 }
