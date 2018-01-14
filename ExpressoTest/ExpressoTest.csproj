@@ -74,6 +74,7 @@
     <None Include="sources\for_unit_tests\erroneous\non_boolean_condition_expression.exs" />
     <None Include="sources\for_unit_tests\erroneous\reassign_different_type.exs" />
     <None Include="sources\for_unit_tests\erroneous\invalid_intseq_expressions.exs" />
+    <None Include="sources\for_unit_tests\erroneous\Invalid_optional_value.exs" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AnalyzerTests.cs" />

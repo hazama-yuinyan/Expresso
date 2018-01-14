@@ -125,6 +125,16 @@ namespace Expresso.Test
 
             Assert.AreEqual(3, parser.errors.count);
         }
+
+        [Test]
+        public void InvalidOptionalValue()
+        {
+            var parser = new Parser(new Scanner("../../sources/for_unit_tests/erroneous/invalid_optional_value.exs"));
+            parser.DoPostParseProcessing = true;
+            parser.Parse();
+
+            Assert.AreEqual(1, parser.errors.count);
+        }
     }
 }
 

@@ -733,10 +733,7 @@ Parameter<out ParameterDeclaration param>   (. string name; Identifier identifie
   													return;
   												}
   											.)
-  [ '='
-    Literal<out option>                     
-  | "..."									(. is_variadic = true; .)
-  ]
+  
   [ "(-"
     Type<out type>							(.
     										    if(is_variadic && la.kind == _ident)
@@ -744,6 +741,10 @@ Parameter<out ParameterDeclaration param>   (. string name; Identifier identifie
     										  	else if(is_variadic && (type == null || !(type is SimpleType) || ((SimpleType)type).Name != "array"))
     										  		SemanticError("Error ES0001: The variadic parameter must be an array!");
     										.)
+  ]
+  [ '='
+    Literal<out option>                     
+  | "..."                                   (. is_variadic = true; .)
   ]											(.
   												identifier = AstNode.MakeIdentifier(name, type ?? new PlaceholderType(default(TextLocation)));
   												if(!defining_closure_parameters && type == null && option == null)

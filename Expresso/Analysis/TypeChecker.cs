@@ -949,7 +949,7 @@ namespace Expresso.Ast.Analysis
                         var option_type = param.Option.AcceptWalker(this);
                         if(IsCastable(option_type, param_type) == TriBool.False){
                             parser.ReportSemanticErrorRegional(
-                                "Error ES1100: Type mismatch; `{0}` is not compatible with `{1}`.",
+                                "Error ES1110: Invalid optional value; `{0}` is not compatible with `{1}`.",
                                 param.NameToken, param.Option,
                                 option_type, param_type
                             );
