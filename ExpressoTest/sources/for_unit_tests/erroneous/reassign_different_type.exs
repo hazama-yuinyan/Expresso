@@ -1,3 +1,6 @@
+/**
+ * Test for reassigning a value of a different type
+ */
 module main;
 
 

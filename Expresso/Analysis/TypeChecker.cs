@@ -585,7 +585,7 @@ namespace Expresso.Ast.Analysis
             var step_type = intSeq.Step.AcceptWalker(inference_runner);
             if(!IsSmallIntegerType(lower_type)){
                 parser.ReportSemanticError(
-                    "Error ES4001: `{0}` is not an `int` type! An integer sequence expression expects an `int`.",
+                    "Error ES4001: `{0}` is not an `Int` type! An integer sequence expression expects an `Int`.",
                     intSeq.Lower,
                     lower_type
                 );
@@ -593,7 +593,7 @@ namespace Expresso.Ast.Analysis
 
             if(!IsSmallIntegerType(upper_type)){
                 parser.ReportSemanticError(
-                    "Error ES4001: `{0}` is not an `int` type! An integer sequence expression expects an `int`.",
+                    "Error ES4001: `{0}` is not an `Int` type! An integer sequence expression expects an `Int`.",
                     intSeq.Upper,
                     upper_type
                 );
@@ -601,7 +601,7 @@ namespace Expresso.Ast.Analysis
 
             if(!IsSmallIntegerType(step_type)){
                 parser.ReportSemanticError(
-                    "Error ES4001: `{0}` is not an `int` type! An integer sequence expression expects an `int`.",
+                    "Error ES4001: `{0}` is not an `Int` type! An integer sequence expression expects an `Int`.",
                     intSeq.Step,
                     step_type
                 );
@@ -665,7 +665,7 @@ namespace Expresso.Ast.Analysis
             if(type_table != null){
                 var symbol = type_table.GetSymbol(memRef.Member.Name);
                 if(symbol == null){
-                    // Don't report field missing error because InferenceRunner has already done that
+                    // Don't report field missing error here because InferenceRunner has already done that
                 }else{
                     // Don't bind the name of the member here because InferenceRunner has already done that
                     //memRef.Member.IdentifierId = symbol.IdentifierId;
@@ -973,7 +973,7 @@ namespace Expresso.Ast.Analysis
                 var next = funcDecl.GetNextNode();
                 if(next != null && next is FunctionDeclaration){
                     parser.ReportSemanticError(
-                        "Error ES1100: Can't define functions after the main function.",
+                        "Error ES1101: Can't define functions after the main function.",
                         next
                     );
                 }
