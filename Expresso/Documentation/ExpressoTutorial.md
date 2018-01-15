@@ -93,6 +93,9 @@ In Listing 3, we introduced a new let binding stating `let n (- int = 4 * 5;`. T
 the value of it will be `4 * 5`. Note that we explicitly annotate the type here. Because Expresso has a strong type inference system, you woudln't usually need
 to do so. But we'll generally do that here in the tutorial for clarity.
 
+Note that we use `(-` for separating the variable name and the type. It represents `∈` in ASCII-compatible characters and means exactly the `∈`. In other words,
+the right hand side includes the left hand side.
+
 By introducing let bindings, we can keep the results of some operations aside. And then we can perform other operations based on those values. I would suggest 
 you to prefer let bindings over variable declarations because let bindings tend to make the code clearer and more concise by making the code easier to read and
 to follow the logic.
@@ -145,7 +148,8 @@ A `bigint` can store any arbitrary integer. This makes the `bigint` type suitabl
 
 ### The `string` type
 
-I relalize that `char` and `string` types are the fundamental types 
+I realize that `char` and `string` types are the fundamental types because sometimes you would even need more string manipulations than you would integers.
+As with the `char` type, the `string` type also is in UTF-16. See the C#'s documantation for other details on the `string` type.
 
 ### The `intseq` type
 
@@ -155,7 +159,7 @@ The `intseq` type has 3 fields, `lower`, `upper` and `step`. `lower` represents 
 The `intseq` type has the corresponding literal form and it is written as follows:
 `lower(..|...)upper[:step]`
 
-```Expresso
+```expresso
     let seq = 1..10;    // `step` can be omitted and 1 is assumed if ommited and the double dots mean that the lower bound is
                         // inclusive but the upper bound is exclusive
     let series = seq.collect();
@@ -168,7 +172,7 @@ The `intseq` type has the corresponding literal form and it is written as follow
 An integer sequence expression does not create a vector of integers by itself. Instead, it creates a new object that is ready
 to produce integers that are in the range specified in the expression.
 
-```Expresso
+```expresso
     let negative_seq = -10..0;
     let to_negative = 0..-10:-1;
     println("Legend: (f(x) = x - 10, g(x) = -x)");
@@ -193,7 +197,7 @@ since most programming languages does have only one ternary operator) and the ot
 So far you may be sick of the tiring and boring explanations. But when combined with sequence types such as arrays or vectors,
 the `intseq` type reveals its funny yet powerful potential out to the public.
 
-```Expresso
+```expresso
     let some_array = (0..10).toList();
     let first_half = some_array[0..5];
     let second_half = some_array[5..10];

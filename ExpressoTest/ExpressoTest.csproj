@@ -77,6 +77,7 @@
     <None Include="sources\for_unit_tests\erroneous\Invalid_optional_value.exs" />
     <None Include="sources\for_unit_tests\erroneous\invalid_use_of_not_operator.exs" />
     <None Include="sources\for_unit_tests\erroneous\invalid_use_of_plus_operator.exs" />
+    <None Include="sources\for_unit_tests\erroneous\type_mismatch_on_value_of_object_creation.exs" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AnalyzerTests.cs" />

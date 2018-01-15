@@ -155,6 +155,16 @@ namespace Expresso.Test
 
             Assert.AreEqual(1, parser.errors.count);
         }
+
+        [Test]
+        public void TypeMismatchOnValueOfObjectCreation()
+        {
+            var parser = new Parser(new Scanner("../../sources/for_unit_tests/erroneous/type_mismatch_on_value_of_object_creation.exs"));
+            parser.DoPostParseProcessing = true;
+            parser.Parse();
+
+            Assert.AreEqual(2, parser.errors.count);
+        }
     }
 }
 
