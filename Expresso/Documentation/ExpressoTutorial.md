@@ -69,11 +69,14 @@ This will print `21`.
 It's still a piece of cake. As you might see, the evaluation will respect the mathematical operator precedences. That is, multiplication first and then addition.
 Likewise, it will follow the same rules for other operators such as exponentiation.
 
+> About exponentiation
+> In Expresso, you can calculate the exponentiation with `**`. The result of executing `let a = 2 ** 10` will be `1024`.
+
 OK, then we'll be doing the above calculation in a slightly different way. By using a variable.
 
 ```expresso
-let n (- int = 4 * 5;
-println(n + 1);
+let a (- int = 4 * 5;
+println(a + 1);
 ```
 
 <span class="caption">Listing 3: Expressing Listing 2 in another way</span>
@@ -169,6 +172,8 @@ The `intseq` type has the corresponding literal form and it is written as follow
     println(series); // print "[1,2,3,4,5,6,7,8,9...]"
 ```
 
+<span class="caption">Listing4: An intseq turns into a vector</span>
+
 An integer sequence expression does not create a vector of integers by itself. Instead, it creates a new object that is ready
 to produce integers that are in the range specified in the expression.
 
@@ -183,6 +188,8 @@ to produce integers that are in the range specified in the expression.
         }
     }
 ```
+
+<span class="caption">Listing5: Two graphs crossed over</span>
 
 We call such objects iterators because they iterate through a sequence-like object and yields an element at a time.
 It's very useful and it's one of the reasons that gives Expresso the power of expressive-ness.
@@ -206,6 +213,8 @@ the `intseq` type reveals its funny yet powerful potential out to the public.
     }
 ```
 
+<span class="caption">Listing6: Spliting into 2 slices</span>
+
 In the above example, it seems that the latter 2 intseq objects extract elements from the same array object.
 You may be wondering that it is inefficient because it seems that we have 3 arrays in the end. Having 3 arrays means that
 Expresso first allocates 3 chunks of memory and fills the first chunk of memory with integers from 0 to 10. And then it copies
@@ -228,9 +237,37 @@ move it around and pass it around.
 
 ### The `vector` type
 
-### The `dictionary` type
+In programs, you would often want to store multiple values of one type in one place. That's the time when the `vector` type comes into play. The `vector` type 
+allows you to put multiple values of one type in an object like the following.
+
+```expresso
+var natural_numbers = [0, 1, 2, 3, 4, 5, ...];
+```
+
+<span class="caption">Listing 7: Initializing a vector of natural numbers</span>
+
+Note the trailing periods. If you forget them, the object will be an array, which doesn't allow you to grow or shrink its size. As you can see,
+Expresso allows you to construct an vector object in literal form, which most other type-strict programming languages don't.   
+You can add or remove an item from the vector.
+
+```expresso
+natural_numbers.add(6);
+println(natural_numbers);
+natural_numbers.remove(6);
+println(natural_numbers);
+```
+
+<span class="caption">Listing 8: Several uses of the vector's methods</span>
+
+For other methods available, see the API documentation for the .NET's List<T> class. Note that we still can't call extension methods.
 
 ### The `array` type
+
+The `array` type is another sequence type, which doesn't allow you to grow or shrink its size. Thus the compiler already knows the size of an array object
+when compiling.
+
+### The `dictionary` type
+
 
 
 OK, next up is exponentiation. But we'll be doing it in a slightly different way. Even though Expresso has the operator for it, here we'll be doing it on our

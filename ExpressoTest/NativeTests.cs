@@ -64,7 +64,9 @@ namespace Expresso.Test
         [Test]
         public void IntegerSequence()
         {
-            ExpressoIntegerSequence seq1 = new ExpressoIntegerSequence(0, 10, 1, false), seq2 = new ExpressoIntegerSequence(0, -10, -1, false), seq3 = new ExpressoIntegerSequence(0, 100, 2, true);
+            var seq1 = new ExpressoIntegerSequence(0, 10, 1, false);
+            var seq2 = new ExpressoIntegerSequence(0, -10, -1, false);
+            var seq3 = new ExpressoIntegerSequence(0, 100, 2, true);
             var seq4 = new ExpressoIntegerSequence(5, 15, 2, false);
 
             List<int> expected = new List<int>{0, 1, 2, 3, 4, 5, 6, 7, 8, 9}, expected2 = new List<int>{0, -1, -2, -3, -4, -5, -6, -7, -8, -9};
@@ -103,9 +105,11 @@ namespace Expresso.Test
             var list = new List<int>{1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
             var slice = new Slice<List<int>, int>(list, new ExpressoIntegerSequence(2, 4, 1, false));
             var slice2 = new Slice<List<int>, int>(list, new ExpressoIntegerSequence(2, 4, 1, true));
+            var slice3 = new Slice<List<int>, int>(list, new ExpressoIntegerSequence(0, 9, 2, true));
 
             var expected = new List<int>{3, 4};
             var expected2 = new List<int>{3, 4, 5};
+            var expected3 = new List<int>{1, 3, 5, 7, 9};
 
             var slice1_list = 
                 from i in slice
@@ -113,9 +117,13 @@ namespace Expresso.Test
             var slice2_list =
                 from j in slice2
                 select j;
+            var slice3_list =
+                from k in slice3
+                select k;
 
             Assert.IsTrue(slice1_list.SequenceEqual(expected));
             Assert.IsTrue(slice2_list.SequenceEqual(expected2));
+            Assert.IsTrue(slice3_list.SequenceEqual(expected3));
         }
     }
 }

@@ -1123,7 +1123,7 @@ namespace Expresso.Ast.Analysis
                     );
                 }
                 left_type.ReplaceWith(inferred_type);
-                //left_type = inferred_type;
+                left_type = inferred_type;
             }
 
             var rhs_type = initializer.Initializer.AcceptWalker(this);

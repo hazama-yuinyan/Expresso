@@ -142,7 +142,7 @@ namespace Expresso.CodeGen
             if(!table_was_created){
                 new_table.Parent = table;
                 table.Children.Add(new_table);
-                // Don't add a type symbol here bacause Parser has already done that
+                // Don't add a type symbol here bacause the Parser class has already done that
                 //table.AddTypeSymbol(expresso_type_name_full, AstType.MakeSimpleType(expresso_type_name, type_args));
                 if(SpecialNamesMapInverse.ContainsKey(identifier.Name))
                     table.GetTypeSymbol(expresso_type_name).IdentifierId = IdentifierId++;

@@ -165,6 +165,26 @@ namespace Expresso.Test
 
             Assert.AreEqual(2, parser.errors.count);
         }
+
+        [Test]
+        public void MissingField()
+        {
+            var parser = new Parser(new Scanner("../../sources/for_unit_tests/erroneous/missing_field.exs"));
+            parser.DoPostParseProcessing = true;
+            parser.Parse();
+
+            Assert.AreEqual(1, parser.errors.count);
+        }
+
+        [Test]
+        public void MissingType()
+        {
+            var parser = new Parser(new Scanner("../../sources/for_unit_tests/erroneous/missing_type.exs"));
+            parser.DoPostParseProcessing = true;
+            parser.Parse();
+
+            Assert.AreEqual(2, parser.errors.count);
+        }
     }
 }
 
