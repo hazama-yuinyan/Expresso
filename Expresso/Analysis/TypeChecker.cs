@@ -620,8 +620,8 @@ namespace Expresso.Ast.Analysis
 
             if(type is SimpleType simple_type){
                 if(simple_type.Name != "array" && simple_type.Name != "vector" && simple_type.Name != "dictionary"){
-                    parser.ReportSemanticError(
-                        "Error ES3011: Can not apply the indexer operator on type `{0}`",
+                    throw new ParserException(
+                        "Error ES3011: Can not apply the indexer operator on the type `{0}`.",
                         indexExpr,
                         simple_type
                     );
@@ -631,11 +631,10 @@ namespace Expresso.Ast.Analysis
                     var arg_type = indexExpr.Arguments.First().AcceptWalker(this);
                     if(arg_type is PrimitiveType primitive && primitive.KnownTypeCode == KnownTypeCode.IntSeq){
                         if(simple_type.Identifier == "dictionary"){
-                            parser.ReportSemanticError(
-                                "Error ES3012: Can not apply the indexer operator on a dictionary with an `intseq`",
+                            throw new ParserException(
+                                "Error ES3012: Can not apply the indexer operator on a dictionary with an `intseq`.",
                                 indexExpr
                             );
-                            return null;
                         }
 
                         // simple_type doesn't need to be cloned because it's already cloned

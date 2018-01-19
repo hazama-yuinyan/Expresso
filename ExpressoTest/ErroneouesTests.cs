@@ -185,6 +185,26 @@ namespace Expresso.Test
 
             Assert.AreEqual(2, parser.errors.count);
         }
+
+        [Test]
+        public void InvalidSliceOnDictionary()
+        {
+            var parser = new Parser(new Scanner("../../sources/for_unit_tests/erroneous/invalid_slice_on_dictionary.exs"));
+            parser.DoPostParseProcessing = true;
+            parser.Parse();
+
+            Assert.AreEqual(1, parser.errors.count);
+        }
+
+        [Test]
+        public void InvalidSliceOnCustomType()
+        {
+            var parser = new Parser(new Scanner("../../sources/for_unit_tests/erroneous/invalid_slice_on_custom_type.exs"));
+            parser.DoPostParseProcessing = true;
+            parser.Parse();
+
+            Assert.AreEqual(1, parser.errors.count);
+        }
     }
 }
 

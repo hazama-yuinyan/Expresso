@@ -334,7 +334,7 @@ namespace Expresso.Ast.Analysis
                     if(simple_type.Name != "array" && simple_type.Name != "vector" && simple_type.Name != "dictionary"){
                         // We need to duplicate the following error messages on InferenceRunner and TypeChecker
                         // because we won't be reaching some code paths
-                        parser.ReportSemanticError(
+                        throw new ParserException(
                             "Error ES3011: Can not apply the indexer operator on type `{0}`",
                             indexExpr,
                             simple_type
