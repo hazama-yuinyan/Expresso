@@ -3801,5 +3801,49 @@ namespace Expresso.Test
             Assert.IsNotNull(ast);
             Helpers.AstStructuralEqual(ast, expected);
         }
+
+        [Test]
+        public void TypeCast()
+        {
+            var parser = new Parser(new Scanner("../../sources/for_unit_tests/type_cast.exs"));
+            parser.Parse();
+
+            var ast = parser.TopmostAst;
+
+            var expected = EntityDeclaration.MakeModuleDef("main", new List<EntityDeclaration>{
+                EntityDeclaration.MakeFunc(
+                    "main",
+                    Enumerable.Empty<ParameterDeclaration>(),
+                    Statement.MakeBlock(
+                        Statement.MakeVarDecl(
+                            Helpers.MakeSeq(
+                                Helpers.MakeSomeIdent("a")
+                            ),
+                            Helpers.MakeSeq(
+                                Expression.MakeConstant("int", 10)
+                            ),
+                            Modifiers.Immutable
+                        ),
+                        Statement.MakeVarDecl(
+                            Helpers.MakeSeq(
+                                Helpers.MakeSomeIdent("b")
+                            ),
+                            Helpers.MakeSeq(
+                                Expression.MakeCastExpr(
+                                    Helpers.MakeIdentifierPath("a"),
+                                    AstType.MakePrimitiveType("byte")
+                                )
+                            ),
+                            Modifiers.Immutable
+                        )
+                    ),
+                    Helpers.MakePlaceholderType(),
+                    Modifiers.None
+                )
+            });
+
+            Assert.IsNotNull(ast);
+            Helpers.AstStructuralEqual(ast, expected);
+        }
     }
 }
