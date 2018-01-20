@@ -3810,7 +3810,7 @@ namespace Expresso.Test
 
             var ast = parser.TopmostAst;
 
-            var expected = EntityDeclaration.MakeModuleDef("main", new List<EntityDeclaration>{
+            var expected = AstNode.MakeModuleDef("main", new List<EntityDeclaration>{
                 EntityDeclaration.MakeFunc(
                     "main",
                     Enumerable.Empty<ParameterDeclaration>(),
@@ -3835,6 +3835,13 @@ namespace Expresso.Test
                                 )
                             ),
                             Modifiers.Immutable
+                        ),
+                        Statement.MakeExprStmt(
+                            Helpers.MakeCallExpression(
+                                Helpers.MakeIdentifierPath("println"),
+                                Helpers.MakeIdentifierPath("a"),
+                                Helpers.MakeIdentifierPath("b")
+                            )
                         )
                     ),
                     Helpers.MakePlaceholderType(),

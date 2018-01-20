@@ -5539,6 +5539,82 @@ namespace Expresso.Test
             Assert.IsNotNull(ast);
             Helpers.AstStructuralEqual(ast, expected);
         }
+
+        [Test]
+        public void TypeCast()
+        {
+            var parser = new Parser(new Scanner("../../sources/for_unit_tests/type_cast.exs"));
+            parser.DoPostParseProcessing = true;
+            parser.Parse();
+
+            var ast = parser.TopmostAst;
+
+            var expected = AstNode.MakeModuleDef("main", new List<EntityDeclaration>{
+                EntityDeclaration.MakeFunc(
+                    "main",
+                    Enumerable.Empty<ParameterDeclaration>(),
+                    Statement.MakeBlock(
+                        Statement.MakeVarDecl(
+                            Helpers.MakeSeq(
+                                AstNode.MakeIdentifier(
+                                    "a",
+                                    Helpers.MakePrimitiveType("int")
+                                )
+                            ),
+                            Helpers.MakeSeq(
+                                Expression.MakeConstant("int", 10)
+                            ),
+                            Modifiers.Immutable
+                        ),
+                        Statement.MakeVarDecl(
+                            Helpers.MakeSeq(
+                                AstNode.MakeIdentifier(
+                                    "b",
+                                    Helpers.MakePrimitiveType("byte")
+                                )
+                            ),
+                            Helpers.MakeSeq(
+                                Expression.MakeCastExpr(
+                                    Helpers.MakeIdentifierPath(
+                                        "a",
+                                        Helpers.MakePrimitiveType("int")
+                                    ),
+                                    Helpers.MakePrimitiveType("byte")
+                                )
+                            ),
+                            Modifiers.Immutable
+                        ),
+                        Statement.MakeExprStmt(
+                            Helpers.MakeCallExpression(
+                                Helpers.MakeIdentifierPath(
+                                    "println",
+                                    AstType.MakeFunctionType(
+                                        "println",
+                                        Helpers.MakeVoidType(),
+                                        TextLocation.Empty,
+                                        TextLocation.Empty,
+                                        Helpers.MakePrimitiveType("string")
+                                    )
+                                ),
+                                Helpers.MakeIdentifierPath(
+                                    "a",
+                                    Helpers.MakePrimitiveType("int")
+                                ),
+                                Helpers.MakeIdentifierPath(
+                                    "b",
+                                    Helpers.MakePrimitiveType("byte")
+                                )
+                            )
+                        )
+                    ),
+                    Helpers.MakeVoidType(),
+                    Modifiers.None
+                )
+            });
+
+            Assert.IsNotNull(ast);
+            Helpers.AstStructuralEqual(ast, expected);
+        }
     }
 }
 
