@@ -697,7 +697,7 @@ namespace Expresso.CodeGen
         {
             var target = castExpr.Target.AcceptWalker(this, context);
             var to_type = CSharpCompilerHelper.GetNativeType(castExpr.ToExpression);
-            return CSharpExpr.TypeAs(target, to_type);
+            return CSharpExpr.Convert(target, to_type);
         }
 
         public CSharpExpr VisitCatchClause(CatchClause catchClause, CSharpEmitterContext context)
