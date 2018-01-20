@@ -570,7 +570,7 @@ namespace Expresso.Ast.Analysis
             inference_runner.VisitIdentifier(ident);
             if(inspecting_immutability && ident.Modifiers.HasFlag(Modifiers.Immutable)){
                 parser.ReportSemanticError(
-                    "Error ES1900: Re-assignment on an immutable variable '{0}'",
+                    "Error ES1900: Re-assignment on an immutable variable '{0}'.",
                     ident,
                     ident.Name
                 );

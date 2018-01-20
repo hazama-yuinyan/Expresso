@@ -344,13 +344,12 @@ namespace Expresso.Ast.Analysis
                     if(indexExpr.Arguments.Count == 1){
                         var arg_type = indexExpr.Arguments.First().AcceptWalker(this);
                         if(arg_type is PrimitiveType primitive && primitive.KnownTypeCode == KnownTypeCode.IntSeq){
-                            if(simple_type.Identifier == "dictionary"){
-                                parser.ReportSemanticError(
+                            /*if(simple_type.Identifier == "dictionary"){
+                                throw new ParserException(
                                     "Error ES3012: Can not apply the indexer operator on a dictionary with an `intseq`",
                                     indexExpr
                                 );
-                                return null;
-                            }
+                            }*/
 
                             // simple_type doesn't need to be cloned because it's already cloned
                             return AstType.MakeSimpleType("slice", new []{simple_type, simple_type.TypeArguments.First().Clone()});
