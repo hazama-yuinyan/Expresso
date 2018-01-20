@@ -381,10 +381,10 @@ public class Scanner {
 			case "match": t.kind = 26; break;
 			case "let": t.kind = 27; break;
 			case "var": t.kind = 28; break;
-			case "export": t.kind = 29; break;
-			case "module": t.kind = 30; break;
-			case "import": t.kind = 31; break;
-			case "as": t.kind = 32; break;
+			case "as": t.kind = 29; break;
+			case "export": t.kind = 30; break;
+			case "module": t.kind = 31; break;
+			case "import": t.kind = 32; break;
 			case "interface": t.kind = 33; break;
 			case "def": t.kind = 34; break;
 			case "class": t.kind = 36; break;

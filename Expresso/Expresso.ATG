@@ -412,6 +412,7 @@ TOKENS
   keyword_match = "match".
   keyword_let = "let".
   keyword_var = "var".
+  keyword_as = "as".
 
 COMMENTS FROM "/*" TO "*/" NESTED
 COMMENTS FROM "//" TO lf
@@ -1514,7 +1515,10 @@ Primary<out Expression expr>		    (. expr = null; PathExpression path; AstType t
   | Atom<out expr>
   )
   { Trailer<ref expr>
-  }.
+  }
+  [ "as"
+    Type<out type_path>                 (. expr = Expression.MakeCastExpr(expr, type_path); .)
+  ].
 /*------------------------------------------------------------------------*/
 PatternOrTest<out Expression expr>    (. Expression rhs; .)
 =
@@ -1721,12 +1725,20 @@ PathExpression<out PathExpression path> (. var paths = new List<Identifier>(); v
 =
   ident                                 (.
                                            var name = t.val;
+                                           if(CheckKeyword(name)){
+                                               path = null;
+                                               return;
+                                           }
   										   var ident = AstNode.MakeIdentifier(name, AstType.MakePlaceholderType(new TextLocation(loc.Line, loc.Column + name.Length)), ExpressoModifiers.None, loc);
   										   paths.Add(ident);
   										.)
   { "::"                                (. loc = CurrentLocation; .)
     ident                               (.
                                            name = t.val;
+                                           if(CheckKeyword(name)){
+                                               path = null;
+                                               return;
+                                           }
     									   var ident2 = AstNode.MakeIdentifier(name, AstType.MakePlaceholderType(new TextLocation(loc.Line, loc.Column + name.Length)), ExpressoModifiers.None, loc);
     									   paths.Add(ident2);
     									.)

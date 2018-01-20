@@ -1,5 +1,5 @@
 ﻿using System;
-
+using ICSharpCode.NRefactory;
 
 namespace Expresso.Ast
 {
@@ -32,6 +32,7 @@ namespace Expresso.Ast
 		}
 
         public CastExpression(AstType toExpr, Expression targetExpr)
+            : base(targetExpr.StartLocation, toExpr.EndLocation)
 		{
             Target = targetExpr;
             ToExpression = toExpr;
