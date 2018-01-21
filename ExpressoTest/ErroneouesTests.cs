@@ -215,6 +215,16 @@ namespace Expresso.Test
 
             Assert.AreEqual(1, parser.errors.count);
         }
+
+        [Test]
+        public void CallAVariable()
+        {
+            var parser = new Parser(new Scanner("../../sources/for_unit_tests/erroneous/call_a_variable.exs"));
+            parser.DoPostParseProcessing = true;
+            parser.Parse();
+
+            Assert.AreEqual(1, parser.errors.count);
+        }
     }
 }
 
