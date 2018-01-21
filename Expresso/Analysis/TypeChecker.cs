@@ -333,6 +333,7 @@ namespace Expresso.Ast.Analysis
             }
 
             if(IsCompatibleWith(lhs_type, rhs_type) == TriBool.False){
+                // Invalid operators must lead to this code path
                 parser.ReportSemanticErrorRegional(
                     "Error ES1003: Can not apply the operator '{0}' on `{1}` and `{2}`.",
                     binaryExpr.Left, binaryExpr.Right,
@@ -361,7 +362,7 @@ namespace Expresso.Ast.Analysis
             case OperatorType.Modulus:
                 if(!IsNumericalType(lhs_type) || !IsNumericalType(rhs_type)){
                     parser.ReportSemanticErrorRegional(
-                        "Error ES1003: Can not apply the operator '{0}' on `{1}` and `{2}`",
+                        "Error ES1004: Can not apply the operator '{0}' on `{1}` and `{2}`",
                         binaryExpr.Left, binaryExpr.Right,
                         binaryExpr.OperatorToken, lhs_type, rhs_type
                     );
@@ -384,7 +385,7 @@ namespace Expresso.Ast.Analysis
                     return null;
                 }else if(rhs_primitive.KnownTypeCode == KnownTypeCode.Float || rhs_primitive.KnownTypeCode == KnownTypeCode.Double){
                     parser.ReportSemanticError(
-                        "Error ES1010: Can not apply the operator '{0}' on the right-hand-side '{1}'",
+                        "Error ES1011: Can not apply the operator '{0}' on the right-hand-side '{1}'",
                         binaryExpr.Right,
                         binaryExpr.OperatorToken, binaryExpr.Right
                     );
