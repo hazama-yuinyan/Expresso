@@ -87,7 +87,7 @@
     <None Include="sources\for_unit_tests\erroneous\call_a_variable.exs" />
     <None Include="sources\for_unit_tests\erroneous\invalid_operator.exs" />
     <None Include="sources\for_unit_tests\erroneous\not_compatible.exs" />
-    <None Include="sources\for_unit_tests\erroneous\not_compatible_on_element_type.exs" />
+    <None Include="sources\for_unit_tests\erroneous\not_compatible_with_right_hand_side.exs" />
     <None Include="sources\for_unit_tests\erroneous\not_compatible_on_conditional_expression.exs" />
   </ItemGroup>
   <ItemGroup>

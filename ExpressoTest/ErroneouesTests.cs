@@ -247,9 +247,9 @@ namespace Expresso.Test
         }
 
         [Test]
-        public void NotCompatibleOnElementType()
+        public void NotCompatibleWithRightHandSide()
         {
-            var parser = new Parser(new Scanner("../../sources/for_unit_tests/erroneous/not_compatible_on_element_type.exs"));
+            var parser = new Parser(new Scanner("../../sources/for_unit_tests/erroneous/not_compatible_with_right_hand_side.exs"));
             parser.DoPostParseProcessing = true;
             parser.Parse();
 
