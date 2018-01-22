@@ -245,6 +245,26 @@ namespace Expresso.Test
 
             Assert.AreEqual(1, parser.errors.count);
         }
+
+        [Test]
+        public void NotCompatibleOnElementType()
+        {
+            var parser = new Parser(new Scanner("../../sources/for_unit_tests/erroneous/not_compatible_on_element_type.exs"));
+            parser.DoPostParseProcessing = true;
+            parser.Parse();
+
+            Assert.AreEqual(1, parser.errors.count);
+        }
+
+        [Test]
+        public void NotCompatibleOnConditionalExpression()
+        {
+            var parser = new Parser(new Scanner("../../sources/for_unit_tests/erroneous/not_compatible_on_conditional_expression.exs"));
+            parser.DoPostParseProcessing = true;
+            parser.Parse();
+
+            Assert.AreEqual(2, parser.errors.count);
+        }
     }
 }
 

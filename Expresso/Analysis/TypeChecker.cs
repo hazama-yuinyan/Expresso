@@ -541,7 +541,7 @@ namespace Expresso.Ast.Analysis
             var false_type = condExpr.FalseExpression.AcceptWalker(this);
             if(IsCompatibleWith(true_type, false_type) == TriBool.False){
                 parser.ReportSemanticErrorRegional(
-                    "Error ES1005: `{0}` is not compatible with `{1}`.",
+                    "Error ES1005: An conditional expression must return one type! But `{0}` is not compatible with `{1}`.",
                     condExpr.Condition, condExpr.FalseExpression,
                     true_type, false_type
                 );

@@ -12,8 +12,8 @@ namespace Expresso.Ast
     /// </summary>
     public class ConditionalExpression : Expression
     {
-        public static readonly Role<Expression> TrueExpressionRole = new Role<Expression>("TrueExpr");
-        public static readonly Role<Expression> FalseExpressionRole = new Role<Expression>("FalseExpr");
+        public static readonly Role<Expression> TrueExpressionRole = new Role<Expression>("TrueExpr", Expression.Null);
+        public static readonly Role<Expression> FalseExpressionRole = new Role<Expression>("FalseExpr", Expression.Null);
 
         /// <summary>
         /// 条件式。
