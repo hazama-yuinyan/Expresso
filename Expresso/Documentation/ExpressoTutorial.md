@@ -131,7 +131,7 @@ In Expresso, the `if` statement doesn't allow the conditional to have any types 
 you'll see the following error:
 
 ```
-Error ES4000: The condition expression has to be of type `bool`
+Error ES4000: The conditional expression has to be of type `bool`
 ```
 
 The error message should tell the story.

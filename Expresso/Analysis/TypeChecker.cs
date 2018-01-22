@@ -178,7 +178,7 @@ namespace Expresso.Ast.Analysis
             var condition_type = ifStmt.Condition.AcceptWalker(this) as PrimitiveType;
             if(condition_type == null || condition_type.KnownTypeCode != KnownTypeCode.Bool){
                 parser.ReportSemanticError(
-                    "Error ES4000: The condition expression has to be of type `bool`",
+                    "Error ES4000: The conditional expression has to be of type `bool`.",
                     ifStmt.Condition
                 );
             }
