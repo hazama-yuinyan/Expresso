@@ -285,6 +285,26 @@ namespace Expresso.Test
 
             Assert.AreEqual(1, parser.errors.count);
         }
+
+        [Test]
+        public void InvalidBreakStatement()
+        {
+            var parser = new Parser(new Scanner("../../sources/for_unit_tests/erroneous/invalid_break_statement.exs"));
+            parser.DoPostParseProcessing = true;
+            parser.Parse();
+
+            Assert.AreEqual(1, parser.errors.count);
+        }
+
+        [Test]
+        public void InvalidContinueStatement()
+        {
+            var parser = new Parser(new Scanner("../../sources/for_unit_tests/erroneous/invalid_continue_statement.exs"));
+            parser.DoPostParseProcessing = true;
+            parser.Parse();
+
+            Assert.AreEqual(1, parser.errors.count);
+        }
     }
 }
 

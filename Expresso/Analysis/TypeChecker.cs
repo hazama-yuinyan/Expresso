@@ -77,10 +77,12 @@ namespace Expresso.Ast.Analysis
 
         public AstType VisitBreakStatement(BreakStatement breakStmt)
         {
-            if(breakStmt.Count.Value.GetType() != typeof(int) || (int)breakStmt.Count.Value < 0){
-                parser.ReportSemanticError(
-                    "Error ES4000: `count` expression in a break statement has to be a positive integer",
-                    breakStmt
+            int loop_count = (int)breakStmt.Count.Value;
+            if(breakStmt.Ancestors.Count(node => node is WhileStatement || node is ForStatement || node is ValueBindingForStatement) < loop_count){
+                throw new ParserException(
+                    "Error ES4000: If we break out of loops {0} times with the break statement, we'll enter into nothing.",
+                    breakStmt,
+                    loop_count
                 );
             }
 
@@ -89,10 +91,12 @@ namespace Expresso.Ast.Analysis
 
         public AstType VisitContinueStatement(ContinueStatement continueStmt)
         {
-            if(continueStmt.Count.Value.GetType() != typeof(int) || (int)continueStmt.Count.Value < 0){
-                parser.ReportSemanticError(
-                    "Error ES4001: `count` expression in a continue statement has to be a positive integer",
-                    continueStmt
+            int loop_count = (int)continueStmt.Count.Value;
+            if(continueStmt.Ancestors.Count(node => node is WhileStatement || node is ForStatement || node is ValueBindingForStatement) < loop_count){
+                throw new ParserException(
+                    "Error ES4001: If we break out of loops {0} times with the continue statement, we'll enter into nothing.",
+                    continueStmt,
+                    loop_count
                 );
             }
 

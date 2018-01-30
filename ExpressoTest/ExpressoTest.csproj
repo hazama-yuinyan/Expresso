@@ -91,6 +91,8 @@
     <None Include="sources\for_unit_tests\erroneous\not_compatible_on_conditional_expression.exs" />
     <None Include="sources\for_unit_tests\erroneous\types_mismatched_on_match_statement.exs" />
     <None Include="sources\for_unit_tests\erroneous\invalid_conditional_on_if_statement.exs" />
+    <None Include="sources\for_unit_tests\erroneous\invalid_continue_statement.exs" />
+    <None Include="sources\for_unit_tests\erroneous\invalid_break_statement.exs" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AnalyzerTests.cs" />
