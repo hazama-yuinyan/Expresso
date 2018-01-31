@@ -241,14 +241,15 @@ namespace Expresso.Ast
             return new BinaryExpression(lhs, rhs, op);
         }
 
-        public static SequenceInitializer MakeSequenceInitializer(SimpleType type, IEnumerable<Expression> initializers)
+        public static SequenceInitializer MakeSequenceInitializer(SimpleType type, IEnumerable<Expression> initializers, TextLocation start = default(TextLocation),
+                                                                  TextLocation end = default(TextLocation))
         {
-            return new SequenceInitializer(type, initializers);
+            return new SequenceInitializer(type, initializers, start, end);
         }
 
-        public static SequenceInitializer MakeSequenceInitializer(SimpleType type, params Expression[] initializers)
+        public static SequenceInitializer MakeSequenceInitializer(SimpleType type, TextLocation start, TextLocation end, params Expression[] initializers)
         {
-            return new SequenceInitializer(type, initializers);
+            return new SequenceInitializer(type, initializers, start, end);
         }
 
         public static ObjectCreationExpression MakeObjectCreation(AstType path, IEnumerable<Identifier> names,

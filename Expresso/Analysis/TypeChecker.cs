@@ -1120,13 +1120,13 @@ namespace Expresso.Ast.Analysis
                 inference_runner.InspectsClosure = true;
                 if(IsCollectionType(inferred_type) && ((SimpleType)inferred_type).TypeArguments.Any(t => t is PlaceholderType)){
                     parser.ReportSemanticErrorRegional(
-                        "Error ES1302: The left-hand-side lacks the inner type of the container `{0}`",
+                        "Error ES1302: Can not infer the inner type of the container `{0}` because it lacks initial values.",
                         initializer.NameToken,
                         initializer.Initializer,
                         inferred_type.Name
                     );
                 }
-                left_type.ReplaceWith(inferred_type);
+                left_type.ReplaceWith(inferred_type.Clone());
                 left_type = inferred_type;
             }
 

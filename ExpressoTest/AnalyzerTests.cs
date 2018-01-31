@@ -2153,6 +2153,8 @@ namespace Expresso.Test
                                         "vector",
                                         Helpers.MakePrimitiveType("int")
                                     ),
+                                    TextLocation.Empty,
+                                    TextLocation.Empty,
                                     Expression.MakeConstant("int", 0),
                                     Expression.MakeConstant("int", 1),
                                     Expression.MakeConstant("int", 2),
@@ -4955,6 +4957,8 @@ namespace Expresso.Test
                                         "array",
                                         Helpers.MakePrimitiveType("int")
                                     ),
+                                    TextLocation.Empty,
+                                    TextLocation.Empty,
                                     Expression.MakeConstant(
                                         "int",
                                         1
@@ -5009,6 +5013,8 @@ namespace Expresso.Test
                                         Helpers.MakePrimitiveType("string"),
                                         Helpers.MakePrimitiveType("int")
                                     ),
+                                    TextLocation.Empty,
+                                    TextLocation.Empty,
                                     Expression.MakeKeyValuePair(
                                         Expression.MakeConstant(
                                             "string",
@@ -5148,7 +5154,8 @@ namespace Expresso.Test
                                     Helpers.MakeGenericType(
                                         "vector",
                                         Helpers.MakePrimitiveType("int")
-                                    )
+                                    ),
+                                    Enumerable.Empty<Expression>()
                                 )
                             ),
                             Modifiers.None

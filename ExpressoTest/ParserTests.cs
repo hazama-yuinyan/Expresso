@@ -949,7 +949,8 @@ namespace Expresso.Test
                             ),
                             Helpers.MakeSeq<Expression>(
                                 Expression.MakeSequenceInitializer(
-                                    Helpers.MakeGenericType("vector", Helpers.MakePlaceholderType())
+                                    Helpers.MakeGenericType("vector", Helpers.MakePlaceholderType()),
+                                    Enumerable.Empty<Expression>()
                                 ),
                                 Expression.MakeConstant("int", 0),
                                 Expression.MakeConstant("int", 1)
@@ -1004,7 +1005,8 @@ namespace Expresso.Test
                             ),
                             Helpers.MakeSeq(
                                 Expression.MakeSequenceInitializer(
-                                    Helpers.MakeGenericType("vector", Helpers.MakePlaceholderType())
+                                    Helpers.MakeGenericType("vector", Helpers.MakePlaceholderType()),
+                                    Enumerable.Empty<Expression>()
                                 )
                             ),
                             Modifiers.None
@@ -1092,6 +1094,8 @@ namespace Expresso.Test
                                 Helpers.MakeSomeIdent("i"),
                                 Expression.MakeSequenceInitializer(
                                     Helpers.MakeGenericType("vector", Helpers.MakePlaceholderType()),
+                                    TextLocation.Empty,
+                                    TextLocation.Empty,
                                     Expression.MakeConstant("int", 0),
                                     Expression.MakeConstant("int", 1),
                                     Expression.MakeConstant("int", 2),
@@ -2127,6 +2131,8 @@ namespace Expresso.Test
                                 Expression.MakeMemRef(
                                     Expression.MakeSequenceInitializer(
                                         Helpers.MakeGenericType("vector", Helpers.MakePlaceholderType()),
+                                        TextLocation.Empty,
+                                        TextLocation.Empty,
                                         Helpers.MakeIdentifierPath("a"),
                                         Helpers.MakeIdentifierPath("b")
                                     ),
@@ -3300,6 +3306,8 @@ namespace Expresso.Test
                                         "array",
                                         Helpers.MakePlaceholderType()
                                     ),
+                                    TextLocation.Empty,
+                                    TextLocation.Empty,
                                     Expression.MakeConstant(
                                         "int",
                                         1
@@ -3347,6 +3355,8 @@ namespace Expresso.Test
                                         Helpers.MakePlaceholderType(),
                                         Helpers.MakePlaceholderType()
                                     ),
+                                    TextLocation.Empty,
+                                    TextLocation.Empty,
                                     Expression.MakeKeyValuePair(
                                         Expression.MakeConstant(
                                             "string",
@@ -3461,7 +3471,8 @@ namespace Expresso.Test
                                     Helpers.MakeGenericType(
                                         "vector",
                                         Helpers.MakePlaceholderType()
-                                    )
+                                    ),
+                                    Enumerable.Empty<Expression>()
                                 )
                             ),
                             Modifiers.None

@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using ICSharpCode.NRefactory.PatternMatching;
 using System.Linq;
-
+using ICSharpCode.NRefactory;
 
 namespace Expresso.Ast
 {
@@ -11,7 +11,7 @@ namespace Expresso.Ast
 	/// </summary>
     public class SequenceInitializer : Expression
 	{
-        public override ICSharpCode.NRefactory.TextLocation StartLocation{
+        /*public override ICSharpCode.NRefactory.TextLocation StartLocation{
             get{
                 var first_item = Items.FirstOrDefault();
                 return (first_item != null) ? first_item.StartLocation : base.StartLocation;
@@ -23,7 +23,7 @@ namespace Expresso.Ast
                 var last_item = Items.LastOrDefault();
                 return (last_item != null) ? last_item.EndLocation : base.EndLocation;
             }
-        }
+        }*/
 
 		/// <summary>
         /// シーケンス生成に使用する式群。
@@ -44,7 +44,8 @@ namespace Expresso.Ast
             set{SetChildByRole(Roles.GenericType, value);}
 		}
 
-        public SequenceInitializer(SimpleType objType, IEnumerable<Expression> seqItems)
+        public SequenceInitializer(SimpleType objType, IEnumerable<Expression> seqItems, TextLocation start, TextLocation end)
+            : base(start, end)
 		{
             ObjectType = objType;
             if(seqItems != null)

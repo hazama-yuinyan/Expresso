@@ -2549,7 +2549,7 @@ string cur_class_name;
 		
 		if (la.kind == 2) {
 			Get();
-			expr = Expression.MakeSequenceInitializer(CreateTypeWithArgs("vector", AstType.MakePlaceholderType(loc)), Enumerable.Empty<Expression>()); 
+			expr = Expression.MakeSequenceInitializer(CreateTypeWithArgs("vector", AstType.MakePlaceholderType(loc)), Enumerable.Empty<Expression>(), loc, CurrentLocation); 
 		} else if (StartOf(14)) {
 			CondExpr(out expr);
 			exprs.Add(expr); 
@@ -2565,7 +2565,7 @@ string cur_class_name;
 					seq_type_name = "vector"; 
 				}
 				var type = CreateTypeWithArgs(seq_type_name, AstType.MakePlaceholderType(loc));
-				expr = Expression.MakeSequenceInitializer(type, exprs);
+				expr = Expression.MakeSequenceInitializer(type, exprs, loc, CurrentLocation);
 				
 			} else if (la.kind == 23) {
 				CompFor(out comp);

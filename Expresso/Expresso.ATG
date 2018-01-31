@@ -1749,7 +1749,7 @@ SequenceMaker<out Expression expr>	(.  var exprs = new List<Expression>();
                                         string seq_type_name = "array"; var loc = CurrentLocation;
 									.)
 =
-  "..."                                 (. expr = Expression.MakeSequenceInitializer(CreateTypeWithArgs("vector", AstType.MakePlaceholderType(loc)), Enumerable.Empty<Expression>()); .)
+  "..."                                 (. expr = Expression.MakeSequenceInitializer(CreateTypeWithArgs("vector", AstType.MakePlaceholderType(loc)), Enumerable.Empty<Expression>(), loc, CurrentLocation); .)
   | CondExpr<out expr>                  (. exprs.Add(expr); .)
   ( { IF(NotFinalComma()) WEAK ','
       CondExpr<out expr>                (. exprs.Add(expr); .)
@@ -1757,7 +1757,7 @@ SequenceMaker<out Expression expr>	(.  var exprs = new List<Expression>();
     [ ','
       "..."                             (. seq_type_name = "vector"; .)
     ]                                   (. var type = CreateTypeWithArgs(seq_type_name, AstType.MakePlaceholderType(loc));
-                                           expr = Expression.MakeSequenceInitializer(type, exprs);
+                                           expr = Expression.MakeSequenceInitializer(type, exprs, loc, CurrentLocation);
                                         .)
   | CompFor<out comp>                   (. var type = CreateTypeWithArgs("vector", AstType.MakePlaceholderType(loc));
                                            expr = Expression.MakeComp(expr, (ComprehensionForClause)comp, type);
