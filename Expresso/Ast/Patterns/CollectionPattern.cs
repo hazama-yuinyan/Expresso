@@ -31,7 +31,7 @@ namespace Expresso.Ast
         public CollectionPattern(IEnumerable<PatternConstruct> patterns, bool isVector)
             : base(patterns.First().StartLocation, patterns.Last().EndLocation)
         {
-            CollectionType = AstType.MakeSimpleType(isVector ? "vector" : "array", new List<AstType>{
+            CollectionType = AstType.MakeSimpleType(isVector ? "vector" : "array", new []{
                 new PlaceholderType(TextLocation.Empty)
             });
 

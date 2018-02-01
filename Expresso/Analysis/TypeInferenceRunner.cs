@@ -414,7 +414,7 @@ namespace Expresso.Ast.Analysis
                             item.Type.ReplaceWith(result);
                         }else{
                             throw new ParserException(
-                                "Error ES1700: Type or symbol name '{0}' is not declared",
+                                "Error ES1700: Type or symbol name '{0}' is not declared.",
                                 item,
                                 item.Name
                             );
@@ -631,9 +631,9 @@ namespace Expresso.Ast.Analysis
             {
                 if(parameterDecl.Option.IsNull){
                     parser.ReportSemanticErrorRegional(
-                        "Error ES1310: Can not infer the expression '{0}' because it doesn't have any context.",
-                        parameterDecl.NameToken, parameterDecl.Option,
-                        parameterDecl
+                        "Error ES1310: Can not infer the type of the prameter '{0}' because it doesn't have an optional value.",
+                        parameterDecl.NameToken, parameterDecl.NameToken,
+                        parameterDecl.Name
                     );
                 }
 
@@ -646,7 +646,7 @@ namespace Expresso.Ast.Analysis
             {
                 if(initializer.Initializer.IsNull){
                     parser.ReportSemanticErrorRegional(
-                        "Error ES1310: Can not infer the expression '{0}' because it doesn't have any context.",
+                        "Error ES1311: Can not infer the expression '{0}' because it doesn't have any context.",
                         initializer.NameToken, initializer.Initializer,
                         initializer
                     );

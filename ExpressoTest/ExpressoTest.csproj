@@ -94,6 +94,7 @@
     <None Include="sources\for_unit_tests\erroneous\invalid_continue_statement.exs" />
     <None Include="sources\for_unit_tests\erroneous\invalid_break_statement.exs" />
     <None Include="sources\for_unit_tests\erroneous\missing_element_type.exs" />
+    <None Include="sources\for_unit_tests\erroneous\function_without_options.exs" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AnalyzerTests.cs" />

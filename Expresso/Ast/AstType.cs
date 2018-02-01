@@ -273,6 +273,11 @@ namespace Expresso.Ast
             return new SimpleType(name, typeArgs, start, end);
         }
 
+        public static SimpleType MakeSimpleType(string name, TextLocation start, TextLocation end, params AstType[] typeArgs)
+        {
+            return new SimpleType(name, typeArgs, start, end);
+        }
+
         public static ReferenceType MakeReferenceType(AstType baseType, TextLocation start = default(TextLocation))
         {
             return new ReferenceType(baseType, start);

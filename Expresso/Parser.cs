@@ -362,14 +362,23 @@ string cur_class_name;
     }
 
     /// <summary>
-    /// Reports a semantical error message.
+    /// Reports a semantic error message.
     /// It is intended to be used inside the Parser class.
     /// </summary>
 	public void SemanticError(string format, params object[] args)
 	{
 		//Convenient method for printing a semantic error with a format string
-		errors.SemErr(string.Format(format, args));
+		errors.SemErr(string.Format("{0} -- {1}", CurrentLocation, string.Format(format, args)));
 	}
+
+    /// <summary>
+    /// Reports a semantic error message with a range.
+    /// It is intended to be used inside the Parser class.
+    /// </summary>
+    public void SemanticError(TextLocation loc, string format, params object[] args)
+    {
+        errors.SemErr(string.Format("{0} ~ {1} -- {2}", loc, CurrentLocation, string.Format(format, args)));
+    }
 
     /// <summary>
     /// Reports a warning message.
@@ -381,7 +390,7 @@ string cur_class_name;
     }
 
     /// <summary>
-    /// Reports a semantical error message.
+    /// Reports a semantic error message.
     /// It is intended to be used from outside the Parser class.
     /// </summary>
     public void ReportSemanticError(string format, AstNode node, params object[] objects)
@@ -390,7 +399,7 @@ string cur_class_name;
     }
 
     /// <summary>
-    /// Reports a semantical error message with a range information.
+    /// Reports a semantic error message with a range information.
     /// It is intended to be used from outside the Parser class.
     /// </summary>
     public void ReportSemanticErrorRegional(string format, AstNode start, AstNode end, params object[] objects)
@@ -853,7 +862,7 @@ string cur_class_name;
 				if(type.IsNull)
 				   SemanticError("Error ES0007: Array of unknown type is specified. Unknown type is just unknown!");
 				
-				type = AstType.MakeSimpleType("array", new []{type}, start_loc, CurrentLocation);
+				type = AstType.MakeSimpleType("array", start_loc, CurrentLocation, type);
 				
 			}
 		} else if (la.kind == 59) {
@@ -1007,7 +1016,7 @@ string cur_class_name;
 				is_variadic = true; 
 			}
 		}
-		identifier = AstNode.MakeIdentifier(name, type ?? new PlaceholderType(default(TextLocation)));
+		identifier = AstNode.MakeIdentifier(name, type ?? new PlaceholderType(CurrentLocation), ExpressoModifiers.None, start_loc);
 		if(!defining_closure_parameters && type == null && option == null)
 		SemanticError("Error ES0004: You can't omit both the type annotation and the default value in a function parameter definition!");
 		
@@ -1101,7 +1110,7 @@ string cur_class_name;
 	}
 
 	void VarDef(ExpressoModifiers modifiers, out Identifier ident, out Expression option) {
-		option = null; 
+		option = null; var loc = NextLocation; 
 		Identifier(modifiers, out ident);
 		Symbols.AddSymbol(ident.Name, ident); 
 		if (la.kind == 42) {
@@ -1109,7 +1118,7 @@ string cur_class_name;
 			CondExpr(out option);
 		}
 		if(ident.Type is PlaceholderType && option == null)
-		   SemanticError("Error ES0003: Give me some context or I can't infer the type of {0}", ident.Name);
+		   SemanticError(loc, "Error ES0003: Give me some context or I can't infer the type of {0}", ident.Name);
 		
 	}
 
@@ -1802,7 +1811,7 @@ string cur_class_name;
 		
 		Identifier(ExpressoModifiers.None, out ident);
 		if(ident.Type is PlaceholderType)
-		   SemanticError("Error ES0010: A CatchClause identifier has to be explicitly typed; {0}", ident.Name);
+		   SemanticError(start_loc, "Error ES0010: A CatchClause identifier has to be explicitly type annotated; {0}", ident.Name);
 		
 		Symbols.AddSymbol(ident.Name, ident);
 		

@@ -24,7 +24,7 @@ namespace Expresso.Ast
 
         /// <summary>
         /// この引数のデフォルト値。
-        /// The optional value for this argument. It would be a null node if none is specified.
+        /// The optional value for this parameter. It would be a null node if none is specified.
         /// </summary>
         public Expression Option{
             get{return GetChildByRole(Roles.Expression);}
