@@ -335,6 +335,16 @@ namespace Expresso.Test
 
             Assert.AreEqual(4, parser.errors.count);
         }
+
+        [Test]
+        public void InvalidUnaryNotOperator()
+        {
+            var parser = new Parser(new Scanner("../../sources/for_unit_tests/erroneous/invalid_unary_not_operator.exs"));
+            parser.DoPostParseProcessing = true;
+            parser.Parse();
+
+            Assert.AreEqual(2, parser.errors.count);
+        }
     }
 }
 
