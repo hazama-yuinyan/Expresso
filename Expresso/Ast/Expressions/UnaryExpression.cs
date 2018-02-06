@@ -28,6 +28,7 @@ namespace Expresso.Ast
 
         public ExpressoTokenNode OperatorToken{
             get{return GetChildByRole(GetOperatorRole(op));}
+            set{SetChildByRole(GetOperatorRole(op), value);}
         }
 
 		/// <summary>
@@ -44,6 +45,7 @@ namespace Expresso.Ast
 		{
 			op = opType;
             Operand = target;
+            OperatorToken = new ExpressoTokenNode(TextLocation.Empty, GetOperatorRole(op));
 		}
 
         public override void AcceptWalker(IAstWalker walker)

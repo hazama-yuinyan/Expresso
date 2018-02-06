@@ -1252,7 +1252,7 @@ namespace Expresso.Ast
         public sealed override string ToString()
         {
             if(IsNull)
-                return "";
+                return "<null>";
 
             var sw = new StringWriter();
             AcceptWalker(new DebugOutputWalker(sw));
