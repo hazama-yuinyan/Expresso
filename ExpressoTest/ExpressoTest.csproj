@@ -97,6 +97,7 @@
     <None Include="sources\for_unit_tests\erroneous\function_without_options.exs" />
     <None Include="sources\for_unit_tests\erroneous\invalid_unary_minus_plus_operators.exs" />
     <None Include="sources\for_unit_tests\erroneous\invalid_unary_not_operator.exs" />
+    <None Include="sources\for_unit_tests\erroneous\unknown_field.exs" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AnalyzerTests.cs" />

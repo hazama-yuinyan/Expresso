@@ -366,7 +366,7 @@ namespace Expresso.Ast.Analysis
                 var target_type = memRef.Target.AcceptWalker(this);
                 var type_table = checker.symbols.GetTypeTable(target_type.Name);
                 if(type_table == null){
-                    parser.ReportSemanticError(
+                    throw new ParserException(
                         "Error ES2000: Although the expression '{0}' is evaluated to the type `{1}`, there isn't any type with that name.",
                         memRef.Target,
                         memRef.Target, target_type.Name
@@ -374,8 +374,8 @@ namespace Expresso.Ast.Analysis
                 }else{
                     var symbol = type_table.GetSymbol(memRef.Member.Name);
                     if(symbol == null){
-                        parser.ReportSemanticError(
-                            "Error ES2001: Type `{0}` doesn't have a field {1}!",
+                        throw new ParserException(
+                            "Error ES2001: Type `{0}` doesn't have a field '{1}'!",
                             memRef.Member,
                             target_type.Name, memRef.Member.Name
                         );
@@ -387,7 +387,6 @@ namespace Expresso.Ast.Analysis
                         return type.Clone();
                     }
                 }
-                return null;
             }
 
             public AstType VisitNewExpression(NewExpression newExpr)
