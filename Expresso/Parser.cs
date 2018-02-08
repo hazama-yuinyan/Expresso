@@ -480,6 +480,10 @@ string cur_class_name;
 		catch(ParserException e){
 		SemanticError(e.ToString());
 		}
+		catch(FatalError e){
+		// Do nothing with a FatalError
+		// It only signals that the program should immediately exit
+		}
 		this.TopmostAst = module_decl;	//Currently there is not so much code out there, though...
 		
 	}

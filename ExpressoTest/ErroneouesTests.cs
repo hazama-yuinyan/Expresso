@@ -355,6 +355,36 @@ namespace Expresso.Test
 
             Assert.AreEqual(1, parser.errors.count);
         }
+
+        [Test]
+        public void PrivateAccessibility()
+        {
+            var parser = new Parser(new Scanner("../../sources/for_unit_tests/erroneous/private_accessibility.exs"));
+            parser.DoPostParseProcessing = true;
+            parser.Parse();
+
+            Assert.AreEqual(1, parser.errors.count);
+        }
+
+        [Test]
+        public void ProtectedAccessibility()
+        {
+            var parser = new Parser(new Scanner("../../sources/for_unit_tests/erroneous/protected_accessibility.exs"));
+            parser.DoPostParseProcessing = true;
+            parser.Parse();
+
+            Assert.AreEqual(1, parser.errors.count);
+        }
+
+        [Test]
+        public void MemberImmutability()
+        {
+            var parser = new Parser(new Scanner("../../sources/for_unit_tests/erroneous/member_immutability.exs"));
+            parser.DoPostParseProcessing = true;
+            parser.Parse();
+
+            Assert.AreEqual(1, parser.errors.count);
+        }
     }
 }
 

@@ -380,6 +380,42 @@ namespace Expresso.Ast.Analysis
                             target_type.Name, memRef.Member.Name
                         );
                     }else{
+                        var modifiers = symbol.Modifiers;
+                        bool reported_error = false;
+                        if(modifiers.HasFlag(Modifiers.Private)){
+                            if(!(memRef.Target is SelfReferenceExpression)){
+                                parser.ReportSemanticError(
+                                    "Error ES3300: A private field can't be accessed from outside its surrounding scope: `{0}`.",
+                                    memRef.Member,
+                                    memRef
+                                );
+                                reported_error = true;
+                            }
+                        }
+
+                        if(modifiers.HasFlag(Modifiers.Protected)){
+                            if(!(memRef.Target is SelfReferenceExpression) && !(memRef.Target is SuperReferenceExpression)){
+                                parser.ReportSemanticError(
+                                    "Error ES3301: A protected field can't be accessed from outside its surrounding or derived classes: `{0}`.",
+                                    memRef.Member,
+                                    memRef
+                                );
+                                reported_error = true;
+                            }
+                        }
+
+                        if(checker.inspecting_immutability && modifiers.HasFlag(Modifiers.Immutable)){
+                            parser.ReportSemanticError(
+                                "Error ES1901: Re-assignment on an immutable field: `{0}`.",
+                                memRef.Member,
+                                memRef
+                            );
+                            reported_error = true;
+                        }
+
+                        if(reported_error)
+                            throw new FatalError("Accessibility or immutablity error");
+                        
                         var type = symbol.Type.Clone();
                         memRef.Member.Type.ReplaceWith(type);
                         // Resolve the name here because we defer it until this point
