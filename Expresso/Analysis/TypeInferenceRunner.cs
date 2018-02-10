@@ -690,14 +690,10 @@ namespace Expresso.Ast.Analysis
                 }
 
                 var init_type = initializer.Initializer.AcceptWalker(this);
-                if(initializer.Pattern is IdentifierPattern ident_pat){
-                    ident_pat.Identifier.Type.ReplaceWith(init_type);
-                }else if(initializer.Pattern is TuplePattern tuple_pat && init_type is SimpleType tuple_type){
-                    foreach(var pair in tuple_pat.Patterns.Zip(tuple_type.TypeArguments, (l, r) => new Tuple<PatternConstruct, AstType>(l, r))){
-                        if(pair.Item1 is IdentifierPattern ident_pat2)
-                            ident_pat2.Identifier.Type.ReplaceWith(pair.Item2);
-                    }
-                }
+                if(initializer.Pattern is PatternWithType pattern)
+                    MakePatternTypeAware(pattern.Pattern, init_type);
+                else
+                    MakePatternTypeAware(initializer.Pattern, init_type);
                 
                 return init_type;
             }
@@ -734,7 +730,7 @@ namespace Expresso.Ast.Analysis
                         var table = checker.symbols.GetTypeTable(type.Name);
                         if(table == null){
                             parser.ReportSemanticError(
-                                "Error ES0101: Type symbol '{0}' turns out not to be declared or accessible in the current scope {1}!",
+                                "Error ES0101: The type symbol '{0}' turns out not to be declared or accessible in the current scope {1}!",
                                 identifierPattern,
                                 type.Name, checker.symbols.Name
                             );
@@ -879,6 +875,18 @@ namespace Expresso.Ast.Analysis
                 }
 
                 return AstType.MakeSimpleType("tuple"); // The void type
+            }
+
+            void MakePatternTypeAware(PatternConstruct pattern, AstType type)
+            {
+                if(pattern is IdentifierPattern ident_pat){
+                    ident_pat.Identifier.Type.ReplaceWith(type);
+                }else if(pattern is TuplePattern tuple_pat && type is SimpleType tuple_type){
+                    foreach(var pair in tuple_pat.Patterns.Zip(tuple_type.TypeArguments, (l, r) => new Tuple<PatternConstruct, AstType>(l, r))){
+                        if(pair.Item1 is IdentifierPattern ident_pat2)
+                            ident_pat2.Identifier.Type.ReplaceWith(pair.Item2);
+                    }
+                }
             }
         }
     }

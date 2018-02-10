@@ -1540,14 +1540,10 @@ namespace Expresso.CodeGen
 
             var init = initializer.Initializer.AcceptWalker(this, context);
             if(context.ContextAst is VariableDeclarationStatement){
-                if(initializer.Pattern is IdentifierPattern ident_pat3){
-                    AddSymbol(ident_pat3.Identifier, new ExpressoSymbol{Parameter = variables[0]});
-                }else if(initializer.Pattern is TuplePattern tuple_pat2){
-                    foreach(var pair in tuple_pat2.Patterns.Zip(variables, (l, r) => new Tuple<PatternConstruct, ExprTree.ParameterExpression>(l, r))){
-                        if(pair.Item1 is IdentifierPattern ident_pat4)
-                            AddSymbol(ident_pat4.Identifier, new ExpressoSymbol{Parameter = pair.Item2});
-                    }
-                }
+                if(initializer.Pattern is PatternWithType pattern)
+                    MakePatternAddSymbols(pattern.Pattern, variables);
+                else
+                    MakePatternAddSymbols(initializer.Pattern, variables);
             }
 
             CSharpExpr result;
@@ -2190,6 +2186,18 @@ namespace Expresso.CodeGen
                 return exprs[index];
             else
                 return CSharpExpr.IfThenElse(exprs[index].Test, exprs[index].IfTrue, inner);
+        }
+
+        void MakePatternAddSymbols(PatternConstruct pattern, IList<ExprTree.ParameterExpression> variables)
+        {
+            if(pattern is IdentifierPattern ident_pat3){
+                AddSymbol(ident_pat3.Identifier, new ExpressoSymbol{Parameter = variables[0]});
+            }else if(pattern is TuplePattern tuple_pat2){
+                foreach(var pair in tuple_pat2.Patterns.Zip(variables, (l, r) => new Tuple<PatternConstruct, ExprTree.ParameterExpression>(l, r))){
+                    if(pair.Item1 is IdentifierPattern ident_pat4)
+                        AddSymbol(ident_pat4.Identifier, new ExpressoSymbol{Parameter = pair.Item2});
+                }
+            }
         }
 		#endregion
 

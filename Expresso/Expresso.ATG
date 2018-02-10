@@ -1261,8 +1261,8 @@ PatternWithType<out PatternConstruct pattern>    (. pattern = PatternConstruct.N
   | DestructuringPattern<out pattern>
   )
   [ "(-"
-    Type<out type>                              (. pattern = PatternConstruct.MakePatternWithType(pattern, type); .)
-  ].
+    Type<out type>
+  ]                                             (. pattern = PatternConstruct.MakePatternWithType(pattern, type); .).
 /*------------------------------------------------------------------------*/
 WildcardPattern<out PatternConstruct pattern>
 =

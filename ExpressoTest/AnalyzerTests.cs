@@ -38,7 +38,15 @@ namespace Expresso.Test
                                 Modifiers.Immutable
                             ),
                             Statement.MakeVarDecl(
-                                Helpers.MakeSeq(PatternConstruct.MakeIdentifierPattern("h_a_", Helpers.MakePrimitiveType("int"))),
+                                Helpers.MakeSeq(
+                                    PatternConstruct.MakePatternWithType(
+                                        PatternConstruct.MakeIdentifierPattern(
+                                            "h_a_",
+                                            Helpers.MakePrimitiveType("int")
+                                        ),
+                                        Helpers.MakePrimitiveType("int")
+                                    )
+                                ),
                                 Helpers.MakeSeq(Expression.MakeConstant("int", 0xff)),
                                 Modifiers.Immutable
                             ),
@@ -53,7 +61,15 @@ namespace Expresso.Test
                                 Modifiers.Immutable
                             ),
                             Statement.MakeVarDecl(
-                                Helpers.MakeSeq(PatternConstruct.MakeIdentifierPattern("f_b_", Helpers.MakePrimitiveType("double"))),
+                                Helpers.MakeSeq(
+                                    PatternConstruct.MakePatternWithType(
+                                        PatternConstruct.MakeIdentifierPattern(
+                                            "f_b_",
+                                            Helpers.MakePrimitiveType("double")
+                                        ),
+                                        Helpers.MakePrimitiveType("double")
+                                    )
+                                ),
                                 Helpers.MakeSeq(Expression.MakeConstant("double", 1.0e4)),
                                 Modifiers.Immutable
                             ),
@@ -78,7 +94,15 @@ namespace Expresso.Test
                                 Modifiers.Immutable
                             ),
                             Statement.MakeVarDecl(
-                                Helpers.MakeSeq(PatternConstruct.MakeIdentifierPattern("d_", Helpers.MakePrimitiveType("bigint"))),
+                                Helpers.MakeSeq(
+                                    PatternConstruct.MakePatternWithType(
+                                        PatternConstruct.MakeIdentifierPattern(
+                                            "d_",
+                                            Helpers.MakePrimitiveType("bigint")
+                                        ),
+                                        Helpers.MakePrimitiveType("bigint")
+                                    )
+                                ),
                                 Helpers.MakeSeq(Expression.MakeConstant("bigint", BigInteger.Parse("10000000"))),
                                 Modifiers.Immutable
                             ),
@@ -108,14 +132,28 @@ namespace Expresso.Test
                                 Modifiers.Immutable
                             ),
                             Statement.MakeVarDecl(
-                                Helpers.MakeSeq(PatternConstruct.MakeIdentifierPattern("f_a_", Helpers.MakePrimitiveType("float"))),
+                                Helpers.MakeSeq(
+                                    PatternConstruct.MakePatternWithType(
+                                        PatternConstruct.MakeIdentifierPattern(
+                                            "f_a_",
+                                            Helpers.MakePrimitiveType("float")
+                                        ),
+                                        Helpers.MakePrimitiveType("float")
+                                    )
+                                ),
                                 Helpers.MakeSeq(Expression.MakeConstant("float", 1.0e4f)),
                                 Modifiers.Immutable
                             ),
                             Statement.MakeVarDecl(
                                 Helpers.MakeSeq(
-                                    PatternConstruct.MakeIdentifierPattern(
-                                        "f",
+                                    PatternConstruct.MakePatternWithType(
+                                        PatternConstruct.MakeIdentifierPattern(
+                                            "f",
+                                            Helpers.MakeGenericType(
+                                                "array",
+                                                Helpers.MakePrimitiveType("int")
+                                            )
+                                        ),
                                         Helpers.MakeGenericType(
                                             "array",
                                             Helpers.MakePrimitiveType("int")
@@ -152,8 +190,14 @@ namespace Expresso.Test
                             ),
                             Statement.MakeVarDecl(
                                 Helpers.MakeSeq(
-                                    PatternConstruct.MakeIdentifierPattern(
-                                        "f2",
+                                    PatternConstruct.MakePatternWithType(
+                                        PatternConstruct.MakeIdentifierPattern(
+                                            "f2",
+                                            Helpers.MakeGenericType(
+                                                "vector",
+                                                Helpers.MakePrimitiveType("int")
+                                            )
+                                        ),
                                         Helpers.MakeGenericType(
                                             "vector",
                                             Helpers.MakePrimitiveType("int")
@@ -257,8 +301,15 @@ namespace Expresso.Test
                             ),
                             Statement.MakeVarDecl(
                                 Helpers.MakeSeq(
-                                    PatternConstruct.MakeIdentifierPattern(
-                                        "g",
+                                    PatternConstruct.MakePatternWithType(
+                                        PatternConstruct.MakeIdentifierPattern(
+                                            "g",
+                                            Helpers.MakeGenericType(
+                                                "dictionary",
+                                                Helpers.MakePrimitiveType("string"),
+                                                Helpers.MakePrimitiveType("int")
+                                            )
+                                        ),
                                         Helpers.MakeGenericType(
                                             "dictionary",
                                             Helpers.MakePrimitiveType("string"),
@@ -381,7 +432,15 @@ namespace Expresso.Test
                                 Modifiers.Immutable
                             ),
                             Statement.MakeVarDecl(
-                                Helpers.MakeSeq(PatternConstruct.MakeIdentifierPattern("j3", Helpers.MakePrimitiveType("intseq"))),
+                                Helpers.MakeSeq(
+                                    PatternConstruct.MakePatternWithType(
+                                        PatternConstruct.MakeIdentifierPattern(
+                                            "j3",
+                                            Helpers.MakePrimitiveType("intseq")
+                                        ),
+                                        Helpers.MakePrimitiveType("intseq")
+                                    )
+                                ),
                                 Helpers.MakeSeq(
                                     Expression.MakeIntSeq(
                                         Expression.MakeConstant("int", 1),

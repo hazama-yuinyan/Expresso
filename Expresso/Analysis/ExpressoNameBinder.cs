@@ -507,15 +507,7 @@ namespace Expresso.Ast.Analysis
 
         public void VisitVariableInitializer(VariableInitializer initializer)
         {
-            if(initializer.Pattern is IdentifierPattern ident_pat){
-                UniqueIdGenerator.DefineNewId(ident_pat.Identifier);
-            }else if(initializer.Pattern is TuplePattern tuple_pat){
-                foreach(var pat in tuple_pat.Patterns){
-                    if(pat is IdentifierPattern ident_pat2)
-                        UniqueIdGenerator.DefineNewId(ident_pat2.Identifier);
-                }
-            }
-
+            initializer.Pattern.AcceptWalker(this);
             initializer.Initializer.AcceptWalker(this);
         }
 
@@ -753,7 +745,7 @@ namespace Expresso.Ast.Analysis
 
             if(ident.IdentifierId == 0){
                 parser.ReportSemanticError(
-                    "Error ES0102: Symbol '{0}' turns out not to be declared or accessible in the current scope {1}!",
+                    "Error ES0102: The symbol '{0}' turns out not to be declared or accessible in the current scope {1}!",
                     ident,
                     ident.Name, symbol_table.Name
                 );

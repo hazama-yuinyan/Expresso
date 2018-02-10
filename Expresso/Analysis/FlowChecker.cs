@@ -559,17 +559,10 @@ namespace Expresso.Ast.Analysis
         public void VisitVariableInitializer(VariableInitializer initializer)
         {
             if(!initializer.Initializer.IsNull){
-                if(initializer.Pattern is IdentifierPattern ident_pat){
-                    SetAssigned(ident_pat.Identifier, true);
-                    SetInitialized(ident_pat.Identifier, true);
-                }else if(initializer.Pattern is TuplePattern tuple_pat){
-                    foreach(var pat in tuple_pat.Patterns){
-                        if(pat is IdentifierPattern ident_pat2){
-                            SetAssigned(ident_pat2.Identifier, true);
-                            SetInitialized(ident_pat2.Identifier, true);
-                        }
-                    }
-                }
+                if(initializer.Pattern is PatternWithType pattern)
+                    MakePatternSet(pattern.Pattern);
+                else
+                    MakePatternSet(initializer.Pattern);
             }
         }
 
@@ -649,6 +642,21 @@ namespace Expresso.Ast.Analysis
         }
 
         #endregion
+
+        void MakePatternSet(PatternConstruct pattern)
+        {
+            if(pattern is IdentifierPattern ident_pat){
+                SetAssigned(ident_pat.Identifier, true);
+                SetInitialized(ident_pat.Identifier, true);
+            }else if(pattern is TuplePattern tuple_pat){
+                foreach(var pat in tuple_pat.Patterns){
+                    if(pat is IdentifierPattern ident_pat2){
+                        SetAssigned(ident_pat2.Identifier, true);
+                        SetInitialized(ident_pat2.Identifier, true);
+                    }
+                }
+            }
+        }
 	}
 }
 
