@@ -238,6 +238,11 @@ namespace Expresso.CodeGen
                 throw new NotImplementedException("Can not work on that node");
             }
 
+            public void VisitPatternWithType(PatternWithType pattern)
+            {
+                throw new NotImplementedException("Can not work on that node");
+            }
+
             public void VisitParameterDeclaration(ParameterDeclaration parameterDecl)
             {
                 throw new NotImplementedException("Can not work on that node");
@@ -355,9 +360,19 @@ namespace Expresso.CodeGen
 
             public void VisitVariableInitializer(VariableInitializer initializer)
             {
-                var native_type = CSharpCompilerHelper.GetNativeType(initializer.NameToken.Type);
-                var native_param = CSharpExpr.Parameter(native_type, initializer.Name);
-                CSharpEmitter.AddSymbol(initializer.NameToken, new ExpressoSymbol{Parameter = native_param});
+                if(initializer.Pattern is IdentifierPattern ident_pat){
+                    var native_type = CSharpCompilerHelper.GetNativeType(ident_pat.Identifier.Type);
+                    var native_param = CSharpExpr.Parameter(native_type, initializer.Name);
+                    CSharpEmitter.AddSymbol(ident_pat.Identifier, new ExpressoSymbol{Parameter = native_param});
+                }else if(initializer.Pattern is TuplePattern tuple_pat){
+                    foreach(var pat in tuple_pat.Patterns){
+                        if(pat is IdentifierPattern ident_pat2){
+                            var native_type = CSharpCompilerHelper.GetNativeType(ident_pat2.Identifier.Type);
+                            var native_param = CSharpExpr.Parameter(native_type, ident_pat2.Identifier.Name);
+                            CSharpEmitter.AddSymbol(ident_pat2.Identifier, new ExpressoSymbol{Parameter = native_param});
+                        }
+                    }
+                }
             }
 
             public void VisitWhileStatement(WhileStatement whileStmt)

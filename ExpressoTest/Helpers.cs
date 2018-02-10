@@ -96,13 +96,23 @@ namespace Expresso.Test
         }
 
         /// <summary>
-        /// Makes an identifier instance.
+        /// Makes an identifier instance with a placeholder type.
         /// </summary>
-        /// <returns>An Identifier instance. The type is set to PlaceholderType.</returns>
+        /// <returns>An Identifier instance. The type will be set to PlaceholderType.</returns>
         /// <param name="name">The name of the identifier.</param>
         public static Identifier MakeSomeIdent(string name)
         {
             return AstNode.MakeIdentifier(name, new PlaceholderType(TextLocation.Empty));
+        }
+
+        /// <summary>
+        /// Makes an identifier pattern with a placeholder type.
+        /// </summary>
+        /// <returns>An identifier pattern. The type will be set to a PlaceholderType.</returns>
+        /// <param name="name">Name.</param>
+        public static IdentifierPattern MakeSomeIdentifierPattern(string name)
+        {
+            return PatternConstruct.MakeIdentifierPattern(name, new PlaceholderType(TextLocation.Empty));
         }
 
         /// <summary>
@@ -204,15 +214,15 @@ namespace Expresso.Test
         /// Makes a variable declaration that contains as many null expressions as the identifiers.
         /// </summary>
         /// <returns>A variable declaration.</returns>
-        /// <param name="identifiers">Identifiers.</param>
+        /// <param name="patterns">Identifiers.</param>
         /// <param name="modifiers">Modifiers.</param>
-        public static VariableDeclarationStatement MakeVariableDeclaration(IEnumerable<Identifier> identifiers, Modifiers modifiers)
+        public static VariableDeclarationStatement MakeVariableDeclaration(IEnumerable<PatternConstruct> patterns, Modifiers modifiers)
         {
             var exprs =
-                from ident in identifiers
+                from ident in patterns
                 select Expression.Null;
 
-            return Statement.MakeVarDecl(identifiers, exprs, modifiers);
+            return Statement.MakeVarDecl(patterns, exprs, modifiers);
         }
 
         /// <summary>

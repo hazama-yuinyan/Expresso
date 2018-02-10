@@ -114,12 +114,12 @@ namespace Expresso.Ast
         }
 
         public static IdentifierPattern MakeIdentifierPattern(string name, AstType type,
-            PatternConstruct inner, TextLocation loc = default(TextLocation))
+                                                              PatternConstruct inner = null, TextLocation loc = default(TextLocation))
         {
             return new IdentifierPattern(AstNode.MakeIdentifier(name, type, Modifiers.None, loc), inner);
         }
 
-        public static IdentifierPattern MakeIdentifierPattern(Identifier ident, PatternConstruct inner)
+        public static IdentifierPattern MakeIdentifierPattern(Identifier ident, PatternConstruct inner = null)
         {
             return new IdentifierPattern(ident, inner);
         }
@@ -179,6 +179,11 @@ namespace Expresso.Ast
         public static KeyValuePattern MakeKeyValuePattern(Identifier key, PatternConstruct value)
         {
             return new KeyValuePattern(key, value);
+        }
+
+        public static PatternWithType MakePatternWithType(PatternConstruct pattern, AstType type)
+        {
+            return new PatternWithType(pattern, type);
         }
         #endregion
     }

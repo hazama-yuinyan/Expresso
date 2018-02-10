@@ -47,7 +47,7 @@ namespace Expresso.Ast
         {
             rhs = rhs ?? lhs.Select(arg => Expression.Null);
             foreach(var variable in lhs.Zip(rhs, (ident, expr) => new Tuple<Identifier, Expression>(ident, expr)))
-                Initializers.Add(new VariableInitializer(variable.Item1, variable.Item2));
+                Initializers.Add(new VariableInitializer(PatternConstruct.MakeIdentifierPattern(variable.Item1, null), variable.Item2));
 
             EntityDeclaration.SetModifiers(this, modifiers);
         }

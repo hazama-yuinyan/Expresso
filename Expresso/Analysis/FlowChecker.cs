@@ -202,7 +202,7 @@ namespace Expresso.Ast.Analysis
         public void VisitValueBindingForStatement(ValueBindingForStatement valueBindingForStmt)
         {
             // Walk the expression
-            valueBindingForStmt.Variables.FirstOrNullObject().NameToken.AcceptWalker(this);
+            valueBindingForStmt.Variables.FirstOrNullObject().Pattern.AcceptWalker(this);
 
             BitArray opte = new BitArray(bits);
             BitArray exit = new BitArray(bits.Length, true);
@@ -559,8 +559,17 @@ namespace Expresso.Ast.Analysis
         public void VisitVariableInitializer(VariableInitializer initializer)
         {
             if(!initializer.Initializer.IsNull){
-                SetAssigned(initializer.NameToken, true);
-                SetInitialized(initializer.NameToken, true);
+                if(initializer.Pattern is IdentifierPattern ident_pat){
+                    SetAssigned(ident_pat.Identifier, true);
+                    SetInitialized(ident_pat.Identifier, true);
+                }else if(initializer.Pattern is TuplePattern tuple_pat){
+                    foreach(var pat in tuple_pat.Patterns){
+                        if(pat is IdentifierPattern ident_pat2){
+                            SetAssigned(ident_pat2.Identifier, true);
+                            SetInitialized(ident_pat2.Identifier, true);
+                        }
+                    }
+                }
             }
         }
 
@@ -605,6 +614,11 @@ namespace Expresso.Ast.Analysis
         }
 
         public void VisitKeyValuePattern(KeyValuePattern keyValuePattern)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void VisitPatternWithType(PatternWithType pattern)
         {
             throw new NotImplementedException();
         }

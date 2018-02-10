@@ -160,7 +160,7 @@ namespace Expresso.Ast.Analysis
                     );
                 }else{
                     var elem_type = MakeOutElementType(target_type);
-                    var left_type = variable.NameToken.AcceptWalker(this);
+                    var left_type = variable.Pattern.AcceptWalker(this);
                     if(IsPlaceholderType(left_type))
                         left_type.ReplaceWith(elem_type);
                 }
@@ -1093,7 +1093,7 @@ namespace Expresso.Ast.Analysis
                         if(IsCastable(init_type, field_type) == TriBool.False){
                             parser.ReportSemanticErrorRegional(
                                 "Error ES0110: Can not implicitly cast type `{0}` to type `{1}`.",
-                                field.NameToken, field.Initializer,
+                                field.Pattern, field.Initializer,
                                 init_type, field_type
                             );
                         }
@@ -1113,7 +1113,7 @@ namespace Expresso.Ast.Analysis
 
         public AstType VisitVariableInitializer(VariableInitializer initializer)
         {
-            var left_type = initializer.NameToken.AcceptWalker(this);
+            var left_type = initializer.Pattern.AcceptWalker(this);
             if(IsPlaceholderType(left_type)){
                 inference_runner.InspectsClosure = true;
                 var inferred_type = initializer.Initializer.AcceptWalker(inference_runner);
@@ -1121,7 +1121,7 @@ namespace Expresso.Ast.Analysis
                 if(IsCollectionType(inferred_type) && ((SimpleType)inferred_type).TypeArguments.Any(t => t is PlaceholderType)){
                     parser.ReportSemanticErrorRegional(
                         "Error ES1302: Can not infer the inner type of the container `{0}` because it lacks initial values.",
-                        initializer.NameToken,
+                        initializer.Pattern,
                         initializer.Initializer,
                         inferred_type.Name
                     );
@@ -1143,7 +1143,7 @@ namespace Expresso.Ast.Analysis
             }else if(rhs_type != null && IsCompatibleWith(left_type, rhs_type) == TriBool.False){
                 parser.ReportSemanticErrorRegional(
                     "Error ES1300: Type `{0}` on the left-hand-side is not compatible with `{1}` on the right-hand-side.",
-                    initializer.NameToken,
+                    initializer.Pattern,
                     initializer.Initializer,
                     left_type, rhs_type
                 );
@@ -1216,6 +1216,11 @@ namespace Expresso.Ast.Analysis
         public AstType VisitKeyValuePattern(KeyValuePattern keyValuePattern)
         {
             return keyValuePattern.Value.AcceptWalker(this);
+        }
+
+        public AstType VisitPatternWithType(PatternWithType pattern)
+        {
+            return pattern.Pattern.AcceptWalker(this);
         }
 
         public AstType VisitNullNode(AstNode nullNode)

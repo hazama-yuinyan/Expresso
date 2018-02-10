@@ -244,6 +244,11 @@ namespace Expresso.Ast.Analysis
             throw new InvalidOperationException("Can not work on that node");
         }
 
+        public void VisitPatternWithType(PatternWithType pattern)
+        {
+            throw new InvalidOperationException("Can not work on that node");
+        }
+
         public void VisitParameterDeclaration(ParameterDeclaration parameterDecl)
         {
             var closure_expr = parameterDecl.Parent as ClosureLiteralExpression;

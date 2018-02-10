@@ -628,7 +628,7 @@ namespace Expresso.Ast
 
         public void VisitVariableInitializer(VariableInitializer initializer)
         {
-            VisitIdentifier(initializer.NameToken);
+            initializer.Pattern.AcceptWalker(this);
             writer.Write(" = ");
             initializer.Initializer.AcceptWalker(this);
         }
@@ -701,6 +701,13 @@ namespace Expresso.Ast
             VisitIdentifier(keyValuePattern.KeyIdentifier);
             writer.Write(": ");
             keyValuePattern.Value.AcceptWalker(this);
+        }
+
+        public void VisitPatternWithType(PatternWithType pattern)
+        {
+            pattern.Pattern.AcceptWalker(this);
+            writer.Write(" (- ");
+            pattern.Type.AcceptWalker(this);
         }
 
         public void VisitNewLine(NewLineNode newlineNode)

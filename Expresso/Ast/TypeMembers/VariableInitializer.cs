@@ -9,7 +9,7 @@ namespace Expresso.Ast
     /// Represents a variable initialization.
     /// A variable initialization represents a variable and an initialization.
     /// Note that the syntax itself is the same as that of ParameterDeclaration.
-    /// Identifier ( [ "(-" Type ] [ '=' Expression ] ) ;
+    /// Pattern ( [ "(-" Type ] [ '=' Expression ] ) ;
     /// </summary>
     public class VariableInitializer : AstNode
     {
@@ -19,17 +19,37 @@ namespace Expresso.Ast
             }
         }
 
+        /// <summary>
+        /// Convenient property for retrieving the inner identifier pattern.
+        /// </summary>
+        /// <value>The name.</value>
         public string Name{
-            get{return GetChildByRole(Roles.Identifier).Name;}
+            get{
+                var pattern = Pattern;
+                if(pattern is IdentifierPattern ident_pat)
+                    return ident_pat.Identifier.Name;
+                else
+                    return null;
+            }
+        }
+
+        public Identifier NameToken{
+            get{
+                var pattern = Pattern;
+                if(pattern is IdentifierPattern ident_pat)
+                    return ident_pat.Identifier;
+                else
+                    return null;
+            }
         }
 
         /// <summary>
         /// Represents the name as an identifier node.
         /// </summary>
         /// <value>The name token.</value>
-        public Identifier NameToken{
-            get{return GetChildByRole(Roles.Identifier);}
-            set{SetChildByRole(Roles.Identifier, value);}
+        public PatternConstruct Pattern{
+            get{return GetChildByRole(Roles.Pattern);}
+            set{SetChildByRole(Roles.Pattern, value);}
         }
 
         public ExpressoTokenNode AssignToken{
@@ -45,10 +65,10 @@ namespace Expresso.Ast
             set{SetChildByRole(Roles.Expression, value);}
         }
 
-        public VariableInitializer(Identifier name, Expression initializer = null)
-            : base(name.StartLocation, initializer == null ? name.EndLocation : initializer.EndLocation)
+        public VariableInitializer(PatternConstruct pattern, Expression initializer = null)
+            : base(pattern.StartLocation, initializer == null ? pattern.EndLocation : initializer.EndLocation)
         {
-            NameToken = name;
+            Pattern = pattern;
             Initializer = initializer ?? Expression.Null;
         }
 
@@ -70,7 +90,7 @@ namespace Expresso.Ast
         internal protected override bool DoMatch(AstNode other, Match match)
         {
             var o = other as VariableInitializer;
-            return o != null && NameToken.DoMatch(o.NameToken, match)
+            return o != null && Pattern.DoMatch(o.Pattern, match)
                 && Initializer.DoMatch(o.Initializer, match);
         }
     }

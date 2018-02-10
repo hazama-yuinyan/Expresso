@@ -507,7 +507,15 @@ namespace Expresso.Ast.Analysis
 
         public void VisitVariableInitializer(VariableInitializer initializer)
         {
-            UniqueIdGenerator.DefineNewId(initializer.NameToken);
+            if(initializer.Pattern is IdentifierPattern ident_pat){
+                UniqueIdGenerator.DefineNewId(ident_pat.Identifier);
+            }else if(initializer.Pattern is TuplePattern tuple_pat){
+                foreach(var pat in tuple_pat.Patterns){
+                    if(pat is IdentifierPattern ident_pat2)
+                        UniqueIdGenerator.DefineNewId(ident_pat2.Identifier);
+                }
+            }
+
             initializer.Initializer.AcceptWalker(this);
         }
 
@@ -680,6 +688,11 @@ namespace Expresso.Ast.Analysis
         public void VisitKeyValuePattern(KeyValuePattern keyValuePattern)
         {
             keyValuePattern.Value.AcceptWalker(this);
+        }
+
+        public void VisitPatternWithType(PatternWithType pattern)
+        {
+            pattern.Pattern.AcceptWalker(this);
         }
 		#endregion
 

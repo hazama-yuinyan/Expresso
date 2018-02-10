@@ -307,6 +307,11 @@ namespace Expresso.Ast.Analysis
                 creation.Items.AcceptWalker(this);
 	        }
 
+            public void VisitPatternWithType(PatternWithType pattern)
+            {
+                pattern.Pattern.AcceptWalker(this);
+            }
+
 	        public void VisitParameterDeclaration(ParameterDeclaration parameterDecl)
 	        {
                 throw new InvalidOperationException("Can not work on that node");

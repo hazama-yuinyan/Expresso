@@ -444,6 +444,11 @@ namespace Expresso.CodeGen
                 throw new NotImplementedException();
             }
 
+            public void VisitPatternWithType(PatternWithType pattern)
+            {
+                throw new NotImplementedException();
+            }
+
             public void VisitNullNode(AstNode nullNode)
             {
                 throw new NotImplementedException();

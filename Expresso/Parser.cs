@@ -69,6 +69,7 @@ public class Parser {
 	int errDist = minErrDist;
 
 string cur_class_name;
+    ExpressoModifiers cur_modifiers;
 	bool is_first_comprehension_for_clause = true, defining_closure_parameters = false;
     static uint ScopeId = 1;
     static Regex UnicodeEscapeFinder = new Regex(@"\\[uU]([\dA-Fa-f]{4}|[\dA-Fa-f]{6})", RegexOptions.Compiled);
@@ -480,7 +481,7 @@ string cur_class_name;
 		catch(ParserException e){
 		SemanticError(e.ToString());
 		}
-		catch(FatalError e){
+		catch(FatalError){
 		// Do nothing with a FatalError
 		// It only signals that the program should immediately exit
 		}
@@ -490,7 +491,7 @@ string cur_class_name;
 
 	void ModuleBody(out ExpressoAst ast) {
 		var decls = new List<EntityDeclaration>();
-		string module_name; Modifiers modifiers = ExpressoModifiers.None;
+		string module_name;
 		List<ImportDeclaration> prog_defs = null; EntityDeclaration decl = null;
 		
 		ModuleNameDefinition(out module_name);
@@ -499,36 +500,36 @@ string cur_class_name;
 		}
 		if (la.kind == 30) {
 			Get();
-			modifiers = ExpressoModifiers.Export; 
+			cur_modifiers = ExpressoModifiers.Export; 
 		}
 		if (la.kind == 34) {
-			FuncDecl(out decl, modifiers);
+			FuncDecl(out decl, cur_modifiers);
 		} else if (la.kind == 27 || la.kind == 28) {
-			FieldDecl(out decl, modifiers);
+			FieldDecl(out decl);
 		} else if (la.kind == 36) {
-			ClassDecl(out decl, modifiers);
+			ClassDecl(out decl, cur_modifiers);
 		} else if (la.kind == 33) {
-			InterfaceDecl(out decl, modifiers);
+			InterfaceDecl(out decl, cur_modifiers);
 		} else SynErr(105);
 		decls.Add(decl);
-		modifiers = ExpressoModifiers.None;
+		cur_modifiers = ExpressoModifiers.None;
 		
 		while (StartOf(1)) {
 			if (la.kind == 30) {
 				Get();
-				modifiers = ExpressoModifiers.Export; 
+				cur_modifiers = ExpressoModifiers.Export; 
 			}
 			if (la.kind == 34) {
-				FuncDecl(out decl, modifiers);
+				FuncDecl(out decl, cur_modifiers);
 			} else if (la.kind == 27 || la.kind == 28) {
-				FieldDecl(out decl, modifiers);
+				FieldDecl(out decl);
 			} else if (la.kind == 36) {
-				ClassDecl(out decl, modifiers);
+				ClassDecl(out decl, cur_modifiers);
 			} else if (la.kind == 33) {
-				InterfaceDecl(out decl, modifiers);
+				InterfaceDecl(out decl, cur_modifiers);
 			} else SynErr(106);
 			decls.Add(decl);
-			modifiers = ExpressoModifiers.None;
+			cur_modifiers = ExpressoModifiers.None;
 			
 		}
 		ast = AstNode.MakeModuleDef(module_name, decls, prog_defs); 
@@ -604,35 +605,37 @@ string cur_class_name;
 		     
 	}
 
-	void FieldDecl(out EntityDeclaration field, Modifiers modifiers) {
+	void FieldDecl(out EntityDeclaration field) {
 		Expression rhs; Identifier ident; var start_loc = NextLocation;
 		var idents = new List<Identifier>(); var exprs = new List<Expression>();
 		
 		if (la.kind == 27) {
 			Get();
-			modifiers |= ExpressoModifiers.Immutable; 
+			cur_modifiers |= ExpressoModifiers.Immutable; 
 		} else if (la.kind == 28) {
 			Get();
 		} else SynErr(109);
-		VarDef(modifiers, out ident, out rhs);
+		SimpleVarDef(out ident, out rhs);
 		idents.Add(ident);
 		exprs.Add(rhs);
 		
 		while (la.kind == 12) {
 			Get();
-			VarDef(modifiers, out ident, out rhs);
+			SimpleVarDef(out ident, out rhs);
 			idents.Add(ident);
 			exprs.Add(rhs);
 			
 		}
 		while (!(la.kind == 0 || la.kind == 6)) {SynErr(110); Get();}
 		Expect(6);
-		field = EntityDeclaration.MakeField(idents, exprs, modifiers, start_loc, CurrentLocation); 
+		field = EntityDeclaration.MakeField(idents, exprs, cur_modifiers, start_loc, CurrentLocation);
+		                  cur_modifiers = ExpressoModifiers.None; 
+		               
 	}
 
 	void ClassDecl(out EntityDeclaration decl, Modifiers modifiers) {
 		EntityDeclaration entity = null; var decls = new List<EntityDeclaration>(); AstType type_path;
-		string name; var bases = new List<AstType>(); Modifiers cur_flag; var start_loc = NextLocation;
+		string name; var bases = new List<AstType>(); var start_loc = NextLocation;
 		Identifier ident = null;
 		
 		while (!(la.kind == 0 || la.kind == 36)) {SynErr(111); Get();}
@@ -647,8 +650,8 @@ string cur_class_name;
 		                        Symbols.AddTypeSymbol(name, ident);
 		                        cur_class_name = name;
 		                    }else{
-		                        // Failed to parse an identifier.
-		                        // Leave the parser to recover its state.
+		                      // Failed to parse an identifier.
+		                      // Leave the parser to recover its state.
 		                    }
 		                 
 		if (la.kind == 4) {
@@ -666,22 +669,22 @@ string cur_class_name;
 		Symbols.Name = "type_" + name + "`" + ScopeId++;
 		
 		while (StartOf(2)) {
-			cur_flag = ExpressoModifiers.Private; 
+			cur_modifiers = ExpressoModifiers.Private; 
 			while (StartOf(3)) {
-				Modifiers(ref cur_flag);
+				Modifiers();
 			}
 			
 			if (la.kind == 34) {
-				FuncDecl(out entity, cur_flag);
+				FuncDecl(out entity, cur_modifiers);
 				decls.Add(entity); 
 			} else if (la.kind == 27 || la.kind == 28) {
-				FieldDecl(out entity, cur_flag);
+				FieldDecl(out entity);
 				decls.Add(entity); 
 			} else if (la.kind == 36) {
-				ClassDecl(out entity, cur_flag);
+				ClassDecl(out entity, cur_modifiers);
 				decls.Add(entity); 
 			} else if (la.kind == 33) {
-				InterfaceDecl(out entity, cur_flag);
+				InterfaceDecl(out entity, cur_modifiers);
 				decls.Add(entity); 
 			} else SynErr(112);
 		}
@@ -689,6 +692,7 @@ string cur_class_name;
 		Expect(11);
 		decl = EntityDeclaration.MakeClassDecl(ident, bases, decls, modifiers, start_loc, CurrentLocation);
 		                   GoUpScope();
+		                   cur_modifiers = ExpressoModifiers.None;
 		                
 	}
 
@@ -949,23 +953,23 @@ string cur_class_name;
 		}
 	}
 
-	void Modifiers(ref Modifiers modifiers) {
+	void Modifiers() {
 		if (la.kind == 37) {
 			Get();
-			modifiers &= ~ExpressoModifiers.Private;
-			modifiers |= ExpressoModifiers.Public;
+			cur_modifiers &= ~ExpressoModifiers.Private;
+			cur_modifiers |= ExpressoModifiers.Public;
 			
 		} else if (la.kind == 38) {
 			Get();
-			modifiers &= ~ExpressoModifiers.Private;
-			modifiers |= ExpressoModifiers.Protected;
+			cur_modifiers &= ~ExpressoModifiers.Private;
+			cur_modifiers |= ExpressoModifiers.Protected;
 			
 		} else if (la.kind == 39) {
 			Get();
-			modifiers |= ExpressoModifiers.Private; 
+			cur_modifiers |= ExpressoModifiers.Private; 
 		} else if (la.kind == 40) {
 			Get();
-			modifiers |= ExpressoModifiers.Static; 
+			cur_modifiers |= ExpressoModifiers.Static; 
 		} else SynErr(120);
 	}
 
@@ -1113,9 +1117,9 @@ string cur_class_name;
 		}
 	}
 
-	void VarDef(ExpressoModifiers modifiers, out Identifier ident, out Expression option) {
+	void SimpleVarDef(out Identifier ident, out Expression option) {
 		option = null; var loc = NextLocation; 
-		Identifier(modifiers, out ident);
+		Identifier(out ident);
 		Symbols.AddSymbol(ident.Name, ident); 
 		if (la.kind == 42) {
 			Get();
@@ -1300,36 +1304,38 @@ string cur_class_name;
 
 	void VarDeclStmt(out Statement stmt) {
 		Expression rhs = null; var start_loc = NextLocation;
-		Identifier ident; var modifiers = ExpressoModifiers.None;
-		var idents = new List<Identifier>(); var exprs = new List<Expression>();
+		PatternConstruct pattern; 
+		var patterns = new List<PatternConstruct>(); var exprs = new List<Expression>();
 		
 		if (la.kind == 27) {
 			Get();
-			modifiers = ExpressoModifiers.Immutable; 
+			cur_modifiers = ExpressoModifiers.Immutable; 
 		} else if (la.kind == 28) {
 			Get();
 		} else SynErr(127);
-		VarDef(modifiers, out ident, out rhs);
-		idents.Add(ident);
+		VarDef(out pattern, out rhs);
+		patterns.Add(pattern);
 		exprs.Add(rhs ?? Expression.Null);
 		rhs = null;
 		
-		while (WeakSeparator(12,5,13) ) {
-			VarDef(modifiers, out ident, out rhs);
-			idents.Add(ident);
+		while (WeakSeparator(12,13,14) ) {
+			VarDef(out pattern, out rhs);
+			patterns.Add(pattern);
 			exprs.Add(rhs ?? Expression.Null);
 			rhs = null;
 			
 		}
 		while (!(la.kind == 0 || la.kind == 6)) {SynErr(128); Get();}
 		Expect(6);
-		stmt = Statement.MakeVarDecl(idents, exprs, modifiers, start_loc, CurrentLocation); 
+		stmt = Statement.MakeVarDecl(patterns, exprs, cur_modifiers, start_loc, CurrentLocation);
+		              cur_modifiers = ExpressoModifiers.None;
+		           
 	}
 
 	void ReturnStmt(out Statement stmt) {
 		SequenceExpression items = null; var start_loc = NextLocation; 
 		Expect(60);
-		if (StartOf(14)) {
+		if (StartOf(15)) {
 			RValueList(out items);
 		}
 		while (!(la.kind == 0 || la.kind == 6)) {SynErr(129); Get();}
@@ -1409,7 +1415,7 @@ string cur_class_name;
 
 	void CondExpr(out Expression expr) {
 		Expression true_expr, false_expr; expr = null; 
-		if (StartOf(15)) {
+		if (StartOf(16)) {
 			OrTest(out expr);
 			if (la.kind == 83) {
 				Get();
@@ -1512,7 +1518,7 @@ string cur_class_name;
 		var lvalues = new List<Expression>(); Expression tmp; 
 		LhsPrimary(out tmp);
 		lvalues.Add(tmp); 
-		while (WeakSeparator(12,5,16) ) {
+		while (WeakSeparator(12,5,17) ) {
 			LhsPrimary(out tmp);
 			lvalues.Add(tmp); 
 		}
@@ -1537,7 +1543,7 @@ string cur_class_name;
 		GoDownScope();
 		Symbols.Name = "if`" + ScopeId++;
 		
-		if (StartOf(17)) {
+		if (StartOf(18)) {
 			ExpressionPattern(out pattern);
 		} else if (la.kind == 27 || la.kind == 28) {
 			ValueBindingPattern(out pattern);
@@ -1567,7 +1573,7 @@ string cur_class_name;
 	}
 
 	void ForStmt(out Statement stmt) {
-		PatternConstruct left = null; Expression rvalue; BlockStatement body; Identifier ident = null; Modifiers modifiers = ExpressoModifiers.None;
+		PatternConstruct left = null; Expression rvalue; BlockStatement body; Identifier ident = null; cur_modifiers = ExpressoModifiers.None;
 		     var start_loc = NextLocation;
 		
 		Expect(23);
@@ -1578,25 +1584,26 @@ string cur_class_name;
 		if (la.kind == 27 || la.kind == 28) {
 			if (la.kind == 27) {
 				Get();
-				modifiers = ExpressoModifiers.Immutable; 
+				cur_modifiers = ExpressoModifiers.Immutable; 
 			} else {
 				Get();
 			}
-			Identifier(modifiers, out ident);
+			Identifier(out ident);
 			Symbols.AddSymbol(ident.Name, ident); 
-		} else if (StartOf(18)) {
-			LhsPattern(out left);
+		} else if (StartOf(13)) {
+			PatternWithType(out left);
 		} else SynErr(139);
 		Expect(24);
 		CondExpr(out rvalue);
 		Block(out body);
 		if(ident != null){
-		   var initializer = AstNode.MakeVariableInitializer(ident, rvalue);
-		   stmt = Statement.MakeValueBindingForStmt(modifiers, body, start_loc, initializer);
+		   var initializer = AstNode.MakeVariableInitializer(PatternConstruct.MakeIdentifierPattern(ident, null), rvalue);
+		   stmt = Statement.MakeValueBindingForStmt(cur_modifiers, body, start_loc, initializer);
 		}else{
 		   stmt = Statement.MakeForStmt(left, rvalue, body, start_loc);
 		}
 		                        GoUpScope();
+		                        cur_modifiers = ExpressoModifiers.None;
 		                     
 	}
 
@@ -1650,17 +1657,17 @@ string cur_class_name;
 			Get();
 		} else SynErr(140);
 		var inits = new List<VariableInitializer>(); 
-		PatternVarDef(modifiers, out init);
+		PatternVarDef(out init);
 		inits.Add(init); 
 		while (la.kind == 12) {
 			Get();
-			PatternVarDef(modifiers, out init);
+			PatternVarDef(out init);
 			inits.Add(init); 
 		}
 		pattern = PatternConstruct.MakeValueBindingPattern(inits, modifiers); 
 	}
 
-	void Identifier(ExpressoModifiers modifiers, out Identifier ident) {
+	void Identifier(out Identifier ident) {
 		string name; var loc = CurrentLocation; 
 		Expect(14);
 		name = t.val;
@@ -1674,15 +1681,13 @@ string cur_class_name;
 			Get();
 			Type(out type);
 		}
-		ident = AstNode.MakeIdentifier(name, type, modifiers, loc); 
+		ident = AstNode.MakeIdentifier(name, type, cur_modifiers, loc); 
 	}
 
-	void LhsPattern(out PatternConstruct pattern) {
-		pattern = PatternConstruct.Null; 
+	void PatternWithType(out PatternConstruct pattern) {
+		pattern = PatternConstruct.Null; AstType type = null; 
 		if (la.kind == 81) {
 			WildcardPattern(out pattern);
-		} else if (la.kind == 27 || la.kind == 28) {
-			ValueBindingPattern(out pattern);
 		} else if (IsIdentifierPattern()) {
 			IdentifierPattern(out pattern);
 		} else if (la.kind == 8) {
@@ -1690,6 +1695,11 @@ string cur_class_name;
 		} else if (la.kind == 9 || la.kind == 14) {
 			DestructuringPattern(out pattern);
 		} else SynErr(141);
+		if (la.kind == 41) {
+			Get();
+			Type(out type);
+			pattern = PatternConstruct.MakePatternWithType(pattern, type); 
+		}
 	}
 
 	void MatchPatternList(out List<MatchPatternClause> clauses ) {
@@ -1812,8 +1822,9 @@ string cur_class_name;
 		Symbols.AddScope();
 		GoDownScope();
 		Symbols.Name = "catch`" + ScopeId++;
+		cur_modifiers = ExpressoModifiers.None;
 		
-		Identifier(ExpressoModifiers.None, out ident);
+		Identifier(out ident);
 		if(ident.Type is PlaceholderType)
 		   SemanticError(start_loc, "Error ES0010: A CatchClause identifier has to be explicitly type annotated; {0}", ident.Name);
 		
@@ -1825,14 +1836,28 @@ string cur_class_name;
 		
 	}
 
-	void PatternVarDef(ExpressoModifiers modifiers, out VariableInitializer init) {
+	void VarDef(out PatternConstruct pattern, out Expression option) {
+		option = null; var loc = NextLocation; 
+		PatternWithType(out pattern);
+		if (la.kind == 42) {
+			Get();
+			CondExpr(out option);
+		}
+		if(pattern is IdentifierPattern ident_pat){
+		   if(ident_pat.Identifier.Type is PlaceholderType && option == null)
+		       SemanticError(loc, "Error ES0003: Give me some context or I can't infer the type of {0}", ident_pat.Identifier.Name);
+		}
+		
+	}
+
+	void PatternVarDef(out VariableInitializer init) {
 		Identifier ident; Expression expr = null; 
-		Identifier(modifiers, out ident);
+		Identifier(out ident);
 		if (la.kind == 42) {
 			Get();
 			PatternOrTest(out expr);
 		}
-		init = AstNode.MakeVariableInitializer(ident, expr); 
+		init = AstNode.MakeVariableInitializer(PatternConstruct.MakeIdentifierPattern(ident, null), expr); 
 	}
 
 	void PatternOrTest(out Expression expr) {
@@ -1885,7 +1910,7 @@ string cur_class_name;
 		PatternConstruct inner = null; string name; AstType type = new PlaceholderType(TextLocation.Empty); var loc = CurrentLocation; 
 		Expect(14);
 		name = t.val;
-		var ident = AstNode.MakeIdentifier(name, type, ExpressoModifiers.None, loc);
+		var ident = AstNode.MakeIdentifier(name, type, cur_modifiers, loc);
 		Symbols.AddSymbol(name, ident);
 		
 		if (la.kind == 82) {
@@ -2003,7 +2028,7 @@ string cur_class_name;
 			IdentifierPattern(out pattern);
 		} else if (la.kind == 9 || la.kind == 14) {
 			DestructuringPattern(out pattern);
-		} else if (StartOf(17)) {
+		} else if (StartOf(18)) {
 			ExpressionPattern(out pattern);
 		} else SynErr(149);
 	}
@@ -2052,7 +2077,7 @@ string cur_class_name;
 		}
 		if (IsStartOfBlockScope()) {
 			Block(out body_block);
-		} else if (StartOf(14)) {
+		} else if (StartOf(15)) {
 			CondExpr(out body_expr);
 			var seq_expr = Expression.MakeSequenceExpression(body_expr);
 			body_block = Statement.MakeBlock(Statement.MakeReturnStmt(seq_expr, seq_expr.StartLocation));
@@ -2344,7 +2369,7 @@ string cur_class_name;
 			if (la.kind == 10) {
 				Get();
 				expr = Expression.MakeParen(Expression.MakeSequenceExpression(null)); 
-			} else if (StartOf(14)) {
+			} else if (StartOf(15)) {
 				CondExpr(out expr);
 				exprs.Add(expr); 
 				while (NotFinalComma()) {
@@ -2377,7 +2402,7 @@ string cur_class_name;
 			
 		} else if (la.kind == 7) {
 			Get();
-			if (StartOf(15)) {
+			if (StartOf(16)) {
 				DictMaker(out expr);
 			}
 			while (!(la.kind == 0 || la.kind == 11)) {SynErr(161); Get();}
@@ -2394,7 +2419,7 @@ string cur_class_name;
 		var args = new List<Expression>(); var loc = CurrentLocation; 
 		if (la.kind == 8) {
 			Get();
-			if (StartOf(14)) {
+			if (StartOf(15)) {
 				ArgList(out args);
 			}
 			Expect(10);
@@ -2563,7 +2588,7 @@ string cur_class_name;
 		if (la.kind == 2) {
 			Get();
 			expr = Expression.MakeSequenceInitializer(CreateTypeWithArgs("vector", AstType.MakePlaceholderType(loc)), Enumerable.Empty<Expression>(), loc, CurrentLocation); 
-		} else if (StartOf(14)) {
+		} else if (StartOf(15)) {
 			CondExpr(out expr);
 			exprs.Add(expr); 
 			if (la.kind == 3 || la.kind == 12) {
@@ -2603,7 +2628,7 @@ string cur_class_name;
 		list.Add(pair);
 		
 		if (la.kind == 11 || la.kind == 12) {
-			while (WeakSeparator(12,15,20) ) {
+			while (WeakSeparator(12,16,20) ) {
 				BitOr(out key);
 				Expect(4);
 				CondExpr(out val);
@@ -2631,7 +2656,7 @@ string cur_class_name;
 		is_first_comprehension_for_clause = false;
 		}
 		
-		LhsPattern(out target);
+		PatternWithType(out target);
 		Expect(24);
 		CondExpr(out rvalue);
 		if (la.kind == 22 || la.kind == 23) {
@@ -2686,12 +2711,12 @@ string cur_class_name;
 		{_x,_x,_x,_x, _x,_x,_x,_T, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_T,_T, _x,_T,_T,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_T,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x},
 		{_x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_T,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x},
 		{_x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x},
+		{_x,_x,_x,_x, _x,_x,_x,_x, _T,_T,_x,_x, _x,_x,_T,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_T,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x},
 		{_x,_x,_x,_x, _x,_x,_T,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x},
 		{_x,_x,_x,_x, _x,_x,_x,_T, _T,_T,_x,_x, _x,_x,_T,_T, _T,_T,_x,_T, _T,_T,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_T,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_T, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_T,_T,_T, _x,_x,_x,_T, _T,_T,_T,_T, _x,_x},
 		{_x,_x,_x,_x, _x,_x,_x,_T, _T,_T,_x,_x, _x,_x,_T,_T, _T,_T,_x,_T, _T,_T,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_T,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_T,_T,_T, _x,_x,_x,_T, _T,_T,_T,_T, _x,_x},
 		{_x,_x,_x,_x, _x,_x,_T,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_T,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x},
 		{_x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_T,_T, _T,_T,_x,_T, _T,_T,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_T,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_T,_T,_T, _x,_x,_x,_T, _T,_T,_T,_T, _x,_x},
-		{_x,_x,_x,_x, _x,_x,_x,_x, _T,_T,_x,_x, _x,_x,_T,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_T, _T,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_T,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x},
 		{_x,_x,_x,_x, _x,_x,_x,_x, _T,_T,_x,_x, _x,_x,_T,_T, _T,_T,_x,_T, _T,_T,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_T,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _T,_T,_T,_T, _x,_x},
 		{_x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_T, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x},
 		{_x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_T, _T,_T,_x,_T, _T,_T,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _T,_T,_T,_T, _x,_x},
@@ -2859,7 +2884,7 @@ public class Errors {
 			case 138: s = "invalid IfStmt"; break;
 			case 139: s = "invalid ForStmt"; break;
 			case 140: s = "invalid ValueBindingPattern"; break;
-			case 141: s = "invalid LhsPattern"; break;
+			case 141: s = "invalid PatternWithType"; break;
 			case 142: s = "this symbol not expected in PatternList"; break;
 			case 143: s = "invalid MatchArmStmt"; break;
 			case 144: s = "invalid Pattern"; break;

@@ -147,7 +147,7 @@ namespace Expresso.Ast
             return new BlockStatement(stmts, stmts.First().StartLocation, stmts.Last().EndLocation);
         }
 
-        public static VariableDeclarationStatement MakeVarDecl(IEnumerable<Identifier> lhs, IEnumerable<Expression> rhs,
+        public static VariableDeclarationStatement MakeVarDecl(IEnumerable<PatternConstruct> lhs, IEnumerable<Expression> rhs,
             Modifiers modifiers, TextLocation start = default(TextLocation), TextLocation end = default(TextLocation))
         {
             return new VariableDeclarationStatement(lhs, rhs, modifiers, start, end);

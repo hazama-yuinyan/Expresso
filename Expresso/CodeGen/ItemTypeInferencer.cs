@@ -276,6 +276,11 @@ namespace Expresso.CodeGen
                 throw new NotImplementedException("Can not work on that node");
             }
 
+            public AstType VisitPatternWithType(PatternWithType pattern)
+            {
+                throw new NotImplementedException("Can not work on that node");
+            }
+
             public AstType VisitParameterDeclaration(ParameterDeclaration parameterDecl)
             {
                 throw new NotImplementedException("Can not work on that node");

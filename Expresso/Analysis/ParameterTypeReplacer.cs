@@ -242,6 +242,11 @@ namespace Expresso.Ast
             throw new InvalidOperationException("Can not work on that node");
         }
 
+        public void VisitPatternWithType(PatternWithType pattern)
+        {
+            throw new InvalidOperationException("Can not work on that node");
+        }
+
         public void VisitParameterDeclaration (ParameterDeclaration parameterDecl)
         {
             throw new InvalidOperationException("Can not work on that node");

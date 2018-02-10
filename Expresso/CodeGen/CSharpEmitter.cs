@@ -1501,7 +1501,7 @@ namespace Expresso.CodeGen
         public CSharpExpr VisitFieldDeclaration(FieldDeclaration fieldDecl, CSharpEmitterContext context)
         {
             foreach(var init in fieldDecl.Initializers){
-                var field_builder = Symbols[init.NameToken.IdentifierId].Field as FieldBuilder;
+                var field_builder = init.Pattern is IdentifierPattern ident_pat ? Symbols[ident_pat.Identifier.IdentifierId].Field as FieldBuilder : throw new EmitterException("Invalid field: {0}", init.Pattern);
                 var initializer = init.Initializer.AcceptWalker(this, context);
                 if(initializer != null)
                     context.TypeBuilder.SetBody(field_builder, initializer);
@@ -1528,12 +1528,40 @@ namespace Expresso.CodeGen
 
         public CSharpExpr VisitVariableInitializer(VariableInitializer initializer, CSharpEmitterContext context)
         {
-            var variable = CSharpExpr.Variable(CSharpCompilerHelper.GetNativeType(initializer.NameToken.Type), initializer.Name);
-            var init = initializer.Initializer.AcceptWalker(this, context);
-            if(context.ContextAst is VariableDeclarationStatement)
-                AddSymbol(initializer.NameToken, new ExpressoSymbol{Parameter = variable});
+            var variables = new List<ExprTree.ParameterExpression>();
+            if(initializer.Pattern is IdentifierPattern ident_pat){
+                variables.Add(CSharpExpr.Variable(CSharpCompilerHelper.GetNativeType(ident_pat.Identifier.Type), ident_pat.Identifier.Name));
+            }else if(initializer.Pattern is TuplePattern tuple_pat){
+                foreach(var pat in tuple_pat.Patterns){
+                    if(pat is IdentifierPattern ident_pat2)
+                        variables.Add(CSharpExpr.Variable(CSharpCompilerHelper.GetNativeType(ident_pat2.Identifier.Type), ident_pat2.Identifier.Name));
+                }                            
+            }
 
-            var result = (init == null) ? variable as CSharpExpr : CSharpExpr.Assign(variable, init);
+            var init = initializer.Initializer.AcceptWalker(this, context);
+            if(context.ContextAst is VariableDeclarationStatement){
+                if(initializer.Pattern is IdentifierPattern ident_pat3){
+                    AddSymbol(ident_pat3.Identifier, new ExpressoSymbol{Parameter = variables[0]});
+                }else if(initializer.Pattern is TuplePattern tuple_pat2){
+                    foreach(var pair in tuple_pat2.Patterns.Zip(variables, (l, r) => new Tuple<PatternConstruct, ExprTree.ParameterExpression>(l, r))){
+                        if(pair.Item1 is IdentifierPattern ident_pat4)
+                            AddSymbol(ident_pat4.Identifier, new ExpressoSymbol{Parameter = pair.Item2});
+                    }
+                }
+            }
+
+            CSharpExpr result;
+            if(init == null){
+                result = CSharpExpr.Block(variables);
+            }else{
+                if(init is ExprTree.MethodCallExpression call_expr && call_expr.Method.Name == "Create"){
+                    result = CSharpExpr.Block(variables.Zip(call_expr.Arguments, (l, r) => new Tuple<ExprTree.ParameterExpression, CSharpExpr>(l, r))
+                                              .Select(pair => CSharpExpr.Assign(pair.Item1, pair.Item2)));
+                }else{
+                    result = CSharpExpr.Assign(variables[0], init);
+                }
+            }
+
             if(context.Additionals != null)
                 context.Additionals.Add(result);
             
@@ -1858,6 +1886,11 @@ namespace Expresso.CodeGen
             return expr;
         }
 
+        public CSharpExpr VisitPatternWithType(PatternWithType pattern, CSharpEmitterContext context)
+        {
+            return pattern.Pattern.AcceptWalker(this, context);
+        }
+
         public CSharpExpr VisitNullNode(AstNode nullNode, CSharpEmitterContext context)
         {
             // Just ignore null nodes...
@@ -2121,9 +2154,11 @@ namespace Expresso.CodeGen
             }
 
             foreach(var init in fieldDecl.Initializers){
-                var type = CSharpCompilerHelper.GetNativeType(init.NameToken.Type);
-                var field_builder = context.TypeBuilder.DefineField(init.Name, type, !Expression.IsNullNode(init.Initializer), attr);
-                AddSymbol(init.NameToken, new ExpressoSymbol{Field = field_builder});
+                if(init.Pattern is IdentifierPattern ident_pat){
+                    var type = CSharpCompilerHelper.GetNativeType(ident_pat.Identifier.Type);
+                    var field_builder = context.TypeBuilder.DefineField(init.Name, type, !Expression.IsNullNode(init.Initializer), attr);
+                    AddSymbol(ident_pat.Identifier, new ExpressoSymbol{Field = field_builder});
+                }
             }
         }
 

@@ -684,13 +684,21 @@ namespace Expresso.Ast.Analysis
                 if(initializer.Initializer.IsNull){
                     parser.ReportSemanticErrorRegional(
                         "Error ES1311: Can not infer the expression '{0}' because it doesn't have any context.",
-                        initializer.NameToken, initializer.Initializer,
+                        initializer.Pattern, initializer.Initializer,
                         initializer
                     );
                 }
 
                 var init_type = initializer.Initializer.AcceptWalker(this);
-                initializer.NameToken.Type.ReplaceWith(init_type);
+                if(initializer.Pattern is IdentifierPattern ident_pat){
+                    ident_pat.Identifier.Type.ReplaceWith(init_type);
+                }else if(initializer.Pattern is TuplePattern tuple_pat && init_type is SimpleType tuple_type){
+                    foreach(var pair in tuple_pat.Patterns.Zip(tuple_type.TypeArguments, (l, r) => new Tuple<PatternConstruct, AstType>(l, r))){
+                        if(pair.Item1 is IdentifierPattern ident_pat2)
+                            ident_pat2.Identifier.Type.ReplaceWith(pair.Item2);
+                    }
+                }
+                
                 return init_type;
             }
 
@@ -780,6 +788,11 @@ namespace Expresso.Ast.Analysis
             public AstType VisitKeyValuePattern(KeyValuePattern keyValuePattern)
             {
                 return keyValuePattern.Value.AcceptWalker(this);
+            }
+
+            public AstType VisitPatternWithType(PatternWithType pattern)
+            {
+                return pattern.Pattern.AcceptWalker(this);
             }
 
             public AstType VisitNullNode(AstNode nullNode)

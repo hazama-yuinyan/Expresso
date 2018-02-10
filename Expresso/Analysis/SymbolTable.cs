@@ -441,8 +441,9 @@ namespace Expresso.Ast.Analysis
 
         public void AddScope(ClassType typeKind = ClassType.NotType)
         {
-            var child = new SymbolTable(typeKind);
-            child.Parent = this;
+            var child = new SymbolTable(typeKind){
+                Parent = this
+            };
             Children.Add(child);
         }
 
