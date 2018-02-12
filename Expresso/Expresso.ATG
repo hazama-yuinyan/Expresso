@@ -1252,7 +1252,7 @@ RValuePattern<out PatternConstruct pattern>     (. Expression expr; .)
 =
   LiteralIntSeqExpr<out expr>                   (. pattern = PatternConstruct.MakeExpressionPattern(expr); .).
 /*------------------------------------------------------------------------*/
-PatternWithType<out PatternConstruct pattern>    (. pattern = PatternConstruct.Null; AstType type = null; .)
+PatternWithType<out PatternConstruct pattern>    (. pattern = PatternConstruct.Null; AstType type = new PlaceholderType(NextLocation); .)
 =
   ( WildcardPattern<out pattern>
   | IF(IsIdentifierPattern())

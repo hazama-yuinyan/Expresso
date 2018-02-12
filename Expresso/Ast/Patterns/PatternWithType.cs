@@ -20,7 +20,7 @@ namespace Expresso.Ast
         }
 
         public PatternWithType(PatternConstruct pattern, AstType type)
-            : base(pattern.StartLocation, type.EndLocation)
+            : base(pattern.StartLocation, (type == null) ? pattern.EndLocation : type.EndLocation)
         {
             Pattern = pattern;
             Type = type;

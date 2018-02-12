@@ -1685,7 +1685,7 @@ string cur_class_name;
 	}
 
 	void PatternWithType(out PatternConstruct pattern) {
-		pattern = PatternConstruct.Null; AstType type = null; 
+		pattern = PatternConstruct.Null; AstType type = new PlaceholderType(NextLocation); 
 		if (la.kind == 81) {
 			WildcardPattern(out pattern);
 		} else if (IsIdentifierPattern()) {
@@ -1698,8 +1698,8 @@ string cur_class_name;
 		if (la.kind == 41) {
 			Get();
 			Type(out type);
-			pattern = PatternConstruct.MakePatternWithType(pattern, type); 
 		}
+		pattern = PatternConstruct.MakePatternWithType(pattern, type); 
 	}
 
 	void MatchPatternList(out List<MatchPatternClause> clauses ) {

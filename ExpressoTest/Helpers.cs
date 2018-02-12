@@ -110,9 +110,34 @@ namespace Expresso.Test
         /// </summary>
         /// <returns>An identifier pattern. The type will be set to a PlaceholderType.</returns>
         /// <param name="name">Name.</param>
-        public static IdentifierPattern MakeSomeIdentifierPattern(string name)
+        public static PatternWithType MakeSomePatternWithType(string name)
         {
-            return PatternConstruct.MakeIdentifierPattern(name, new PlaceholderType(TextLocation.Empty));
+            return PatternConstruct.MakePatternWithType(
+                PatternConstruct.MakeIdentifierPattern(name, new PlaceholderType(TextLocation.Empty)),
+                new PlaceholderType(TextLocation.Empty)
+            );
+        }
+
+        /// <summary>
+        /// Makes an PatternWithType node with type.
+        /// </summary>
+        /// <returns>The some identifier pattern.</returns>
+        /// <param name="name">Name.</param>
+        /// <param name="type">Type.</param>
+        public static PatternWithType MakeSomePatternWithType(string name, AstType type)
+        {
+            return PatternConstruct.MakePatternWithType(
+                PatternConstruct.MakeIdentifierPattern(name, new PlaceholderType(TextLocation.Empty)),
+                type
+            );
+        }
+
+        public static PatternWithType MakeSomeTuplePatternWithType(params string[] names)
+        {
+            return PatternConstruct.MakePatternWithType(
+                PatternConstruct.MakeTuplePattern(names.Select(n => PatternConstruct.MakeIdentifierPattern(n, new PlaceholderType(TextLocation.Empty)))),
+                new PlaceholderType(TextLocation.Empty)
+            );
         }
 
         /// <summary>
