@@ -267,7 +267,7 @@ namespace Expresso.Ast.Analysis
         public AstType VisitVariableDeclarationStatement(VariableDeclarationStatement varDecl)
         {
             foreach(var variable in varDecl.Variables)
-                variable.AcceptWalker(this);
+                VisitVariableInitializer(variable);
 
             return null;
         }
@@ -1114,10 +1114,11 @@ namespace Expresso.Ast.Analysis
         public AstType VisitVariableInitializer(VariableInitializer initializer)
         {
             var left_type = initializer.Pattern.AcceptWalker(this);
-            if(IsPlaceholderType(left_type)){
+            var tuple = left_type as SimpleType;
+            if(IsPlaceholderType(left_type) || tuple != null && ContainsPlaceholderType(tuple)){
                 inference_runner.InspectsClosure = true;
                 var inferred_type = initializer.Initializer.AcceptWalker(inference_runner);
-                inference_runner.InspectsClosure = true;
+                inference_runner.InspectsClosure = false;
                 if(IsCollectionType(inferred_type) && ((SimpleType)inferred_type).TypeArguments.Any(t => t is PlaceholderType)){
                     parser.ReportSemanticErrorRegional(
                         "Error ES1302: Can not infer the inner type of the container `{0}` because it lacks initial values.",
@@ -1126,23 +1127,39 @@ namespace Expresso.Ast.Analysis
                         inferred_type.Name
                     );
                 }
+
+                if(tuple != null){
+                    var right_simple = inferred_type as SimpleType;
+                    // Don't report an error here because we will catch it later in this method
+                    var tuple_pat = (TuplePattern)((PatternWithType)initializer.Pattern).Pattern;
+                    foreach(var pair in tuple_pat.Patterns.OfType<IdentifierPattern>().Zip(right_simple.TypeArguments,
+                                                                                          (l, r) => new Tuple<IdentifierPattern, AstType>(l, r))){
+                        pair.Item1.Identifier.Type.ReplaceWith(pair.Item2.Clone());
+                    }
+                }
                 left_type.ReplaceWith(inferred_type.Clone());
                 left_type = inferred_type;
             }
 
             var rhs_type = initializer.Initializer.AcceptWalker(this);
-            if(IsCollectionType(left_type) && ContainsPlaceholderType(left_type as SimpleType) || IsCollectionType(rhs_type) && ContainsPlaceholderType(rhs_type as SimpleType)){
+            if(IsCollectionType(left_type) && ContainsPlaceholderType(left_type as SimpleType)){
                 // The laft-hand-side lacks the types of the contents so infer them from the right-hand-side
-                // Or the right-hand-side contains some placeholders, so infer them
                 var lhs_simple = left_type as SimpleType;
                 var rhs_simple = rhs_type as SimpleType;
-                foreach(var pair in rhs_simple.TypeArguments.Zip(lhs_simple.TypeArguments,
+                foreach(var pair in lhs_simple.TypeArguments.Zip(rhs_simple.TypeArguments,
                     (l, r) => new Tuple<AstType, AstType>(l, r))){
                     pair.Item1.ReplaceWith(pair.Item2.Clone());
                 }
+            }else if(IsCollectionType(rhs_type) && ContainsPlaceholderType(rhs_type as SimpleType)){
+                // The right-hand-side contains some placeholders, so infer them
+                var lhs_simple = left_type as SimpleType;
+                var rhs_simple = rhs_type as SimpleType;
+                foreach(var pair in lhs_simple.TypeArguments.Zip(rhs_simple.TypeArguments,(l, r) => new Tuple<AstType, AstType>(l, r))){
+                    pair.Item2.ReplaceWith(pair.Item1.Clone());
+                }
             }else if(rhs_type != null && IsCompatibleWith(left_type, rhs_type) == TriBool.False){
                 parser.ReportSemanticErrorRegional(
-                    "Error ES1300: Type `{0}` on the left-hand-side is not compatible with `{1}` on the right-hand-side.",
+                    "Error ES1300: The type `{0}` on the left-hand-side is not compatible with `{1}` on the right-hand-side.",
                     initializer.Pattern,
                     initializer.Initializer,
                     left_type, rhs_type
@@ -1158,10 +1175,15 @@ namespace Expresso.Ast.Analysis
 
         public AstType VisitIdentifierPattern(IdentifierPattern identifierPattern)
         {
-            var type = identifierPattern.AcceptWalker(inference_runner);
-            identifierPattern.Identifier.Type.ReplaceWith(type);
-            identifierPattern.InnerPattern.AcceptWalker(this);
-            return type;
+            if(identifierPattern.Ancestors.Any(a => a is PatternWithType)){
+                VisitIdentifier(identifierPattern.Identifier);
+                return identifierPattern.Identifier.Type.Clone();
+            }else{
+                var type = identifierPattern.AcceptWalker(inference_runner);
+                identifierPattern.Identifier.Type.ReplaceWith(type);
+                identifierPattern.InnerPattern.AcceptWalker(this);
+                return type;
+            }
         }
 
         public AstType VisitValueBindingPattern(ValueBindingPattern valueBindingPattern)
@@ -1198,7 +1220,7 @@ namespace Expresso.Ast.Analysis
         {
             var types = 
                 from p in tuplePattern.Patterns
-                select p.AcceptWalker(this).Clone();
+                select p.AcceptWalker(this);
             // TODO: consider the case that the tuple contains an IgnoringRestPattern
             return AstType.MakeSimpleType("tuple", types, tuplePattern.StartLocation, tuplePattern.EndLocation);
         }
@@ -1220,7 +1242,16 @@ namespace Expresso.Ast.Analysis
 
         public AstType VisitPatternWithType(PatternWithType pattern)
         {
-            return pattern.Pattern.AcceptWalker(this);
+            // We need to replace pattern.Type because every AstType nodes that will be replaced
+            // have to have a parent
+            // tuple nodes has been created on their own
+            var type = inference_runner.VisitPatternWithType(pattern);
+            if(pattern.Type is PlaceholderType && type is SimpleType tuple && tuple.Name == "tuple"){
+                pattern.Type.ReplaceWith(type.Clone());
+                return pattern.Type;
+            }else{
+                return type;
+            }
         }
 
         public AstType VisitNullNode(AstNode nullNode)

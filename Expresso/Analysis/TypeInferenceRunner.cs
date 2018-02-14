@@ -13,6 +13,7 @@ namespace Expresso.Ast.Analysis
         /// The type inference runner is responsible for inferring types when asked.
         /// It does the job by inferring and replacing old nodes with the calculated type nodes
         /// in the symbol table. 
+        /// Note that the AstType nodes returned won't be cloned. So be careful when using it.
         /// </summary>
         /// <remarks>
         /// Currently, I must say it's just a temporal implementation since it messes around the AST itself
@@ -301,7 +302,7 @@ namespace Expresso.Ast.Analysis
                     if(symbol != null){
                         var cloned = symbol.Type.Clone();
                         ident.Type.ReplaceWith(cloned);
-                        return symbol.Type.Clone();
+                        return symbol.Type;
                     }
 
                     var symbol2 = checker.symbols.GetTypeSymbolInAnyScope(ident.Name);
@@ -315,10 +316,10 @@ namespace Expresso.Ast.Analysis
                     }else{
                         var cloned = symbol2.Type.Clone();
                         ident.Type.ReplaceWith(cloned);
-                        return symbol2.Type.Clone();
+                        return symbol2.Type;
                     }
                 }else{
-                    return ident.Type.Clone();
+                    return ident.Type;
                 }
             }
 
@@ -705,7 +706,9 @@ namespace Expresso.Ast.Analysis
 
             public AstType VisitIdentifierPattern(IdentifierPattern identifierPattern)
             {
-                if(identifierPattern.InnerPattern.IsNull){
+                if(identifierPattern.Ancestors.Any(a => a is PatternWithType)){
+                    return VisitIdentifier(identifierPattern.Identifier);
+                }else if(identifierPattern.InnerPattern.IsNull){
                     var type = identifierPattern.Parent.AcceptWalker(this);
                     if(IsTupleType(type)){
                         var parent = identifierPattern.Parent;
@@ -758,7 +761,14 @@ namespace Expresso.Ast.Analysis
 
             public AstType VisitTuplePattern(TuplePattern tuplePattern)
             {
-                return tuplePattern.Parent.AcceptWalker(this);
+                if(tuplePattern.Ancestors.Any(a => a is PatternWithType)){
+                    var elem_types =
+                        from elem in tuplePattern.Patterns
+                                                 select elem.AcceptWalker(this).Clone();
+                    return AstType.MakeSimpleType("tuple", elem_types);
+                }else{
+                    return tuplePattern.Parent.AcceptWalker(this);
+                }
             }
 
             public AstType VisitCollectionPattern(CollectionPattern collectionPattern)
@@ -788,7 +798,27 @@ namespace Expresso.Ast.Analysis
 
             public AstType VisitPatternWithType(PatternWithType pattern)
             {
-                return pattern.Pattern.AcceptWalker(this);
+                //TODO: consider the match statement
+                var type = pattern.Pattern.AcceptWalker(this);
+                if(pattern.Type is PlaceholderType)
+                    return type;
+
+                if(type is SimpleType val_tuple && pattern.Type is SimpleType tuple){
+                    foreach(var pair in tuple.TypeArguments.Zip(val_tuple.TypeArguments, (l, r) => new Tuple<AstType, AstType>(l, r)))
+                        pair.Item2.ReplaceWith(pair.Item1.Clone());
+
+                    return pattern.Type;
+                }else if(type is SimpleType val_tuple2 && !(pattern.Type is PlaceholderType) || pattern.Type is SimpleType tuple2 && !(type is PlaceholderType)){
+                    throw new ParserException(
+                        "Error ES1306: The type in the type annotation `{0}` conflicts with the expression type `{1}`",
+                        pattern,
+                        pattern.Type,
+                        type
+                    );
+                }else{
+                    type.ReplaceWith(pattern.Type.Clone());
+                    return pattern.Type;
+                }
             }
 
             public AstType VisitNullNode(AstNode nullNode)

@@ -132,11 +132,39 @@ namespace Expresso.Test
             );
         }
 
+        public static PatternWithType MakePaticularPatternWithType(string name, AstType type)
+        {
+            return PatternConstruct.MakePatternWithType(
+                PatternConstruct.MakeIdentifierPattern(name, type),
+                new PlaceholderType(TextLocation.Empty)
+            );
+        }
+
+        public static PatternWithType MakeExactPatternWithType(string name, AstType type)
+        {
+            return PatternConstruct.MakePatternWithType(
+                PatternConstruct.MakeIdentifierPattern(name, type),
+                type.Clone()
+            );
+        }
+
         public static PatternWithType MakeSomeTuplePatternWithType(params string[] names)
         {
             return PatternConstruct.MakePatternWithType(
                 PatternConstruct.MakeTuplePattern(names.Select(n => PatternConstruct.MakeIdentifierPattern(n, new PlaceholderType(TextLocation.Empty)))),
                 new PlaceholderType(TextLocation.Empty)
+            );
+        }
+
+        public static PatternWithType MakePaticularTuplePatternWithType(IEnumerable<string> names, params AstType[] types)
+        {
+            return PatternConstruct.MakePatternWithType(
+                PatternConstruct.MakeTuplePattern(names.Zip(types, (l, r) => new Tuple<string, AstType>(l, r))
+                                                  .Select(pair => PatternConstruct.MakeIdentifierPattern(pair.Item1, pair.Item2))),
+                Helpers.MakeGenericType(
+                    "tuple",
+                    types.Select(t => t.Clone())
+                )
             );
         }
 
@@ -169,7 +197,12 @@ namespace Expresso.Test
         /// <param name="typeArgs">Type arguments.</param>
         public static SimpleType MakeGenericType(string identifier, params AstType[] typeArgs)
         {
-            return new SimpleType(identifier, typeArgs, TextLocation.Empty, TextLocation.Empty);
+            return AstType.MakeSimpleType(identifier, typeArgs);
+        }
+
+        public static SimpleType MakeGenericType(string identifier, IEnumerable<AstType> typeArgs)
+        {
+            return AstType.MakeSimpleType(identifier, typeArgs);
         }
 
         public static SimpleType MakeGenericPlaceholderType(string identifier)

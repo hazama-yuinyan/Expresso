@@ -44,7 +44,7 @@ namespace Expresso.Ast
         }
 
         /// <summary>
-        /// Represents the name as an identifier node.
+        /// Represents the pattern.
         /// </summary>
         /// <value>The name token.</value>
         public PatternConstruct Pattern{

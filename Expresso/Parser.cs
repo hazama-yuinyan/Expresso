@@ -485,6 +485,10 @@ string cur_class_name;
 		// Do nothing with a FatalError
 		// It only signals that the program should immediately exit
 		}
+		catch(StackOverflowException e){
+		Console.WriteLine(e.Message);
+		}
+		
 		this.TopmostAst = module_decl;	//Currently there is not so much code out there, though...
 		
 	}
