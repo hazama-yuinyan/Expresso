@@ -247,7 +247,7 @@ namespace Expresso.Ast
         }
 
         #region Factory methods
-        public static PlaceholderType MakePlaceholderType(TextLocation loc)
+        public static PlaceholderType MakePlaceholderType(TextLocation loc = default(TextLocation))
         {
             return new PlaceholderType(loc);
         }

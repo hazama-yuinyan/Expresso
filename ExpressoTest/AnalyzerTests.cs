@@ -3234,8 +3234,221 @@ namespace Expresso.Test
         }
 
         [Test]
-        public void GeneralParams()
+        public void GenericParams()
         {
+            var parser = new Parser(new Scanner("../../sources/for_unit_tests/generic_params.exs"));
+            parser.DoPostParseProcessing = true;
+            parser.Parse();
+
+            var ast = parser.TopmostAst;
+
+            var expected_ast = AstNode.MakeModuleDef("main", new List<EntityDeclaration>{
+                EntityDeclaration.MakeFunc(
+                    "createList", 
+                    Helpers.MakeSeq(
+                        EntityDeclaration.MakeParameter("a", AstType.MakeParameterType("T")),
+                        EntityDeclaration.MakeParameter("b", AstType.MakeParameterType("T")),
+                        EntityDeclaration.MakeParameter(
+                            "rest",
+                            Helpers.MakeGenericType(
+                                "array",
+                                AstType.MakeParameterType("T")
+                            ),
+                            null,
+                            true
+                        )
+                    ),
+                    Statement.MakeBlock(
+                        Statement.MakeVarDecl(
+                            Helpers.MakeSeq(
+                                Helpers.MakePaticularPatternWithType(
+                                    "tmp_vec",
+                                    Helpers.MakeGenericType(
+                                        "vector",
+                                        AstType.MakeParameterType("T")
+                                    )
+                                )
+                            ),
+                            Helpers.MakeSeq(
+                                Expression.MakeSequenceInitializer(
+                                    Helpers.MakeGenericType(
+                                        "vector",
+                                        AstType.MakeParameterType("T")
+                                    ),
+                                    TextLocation.Empty,
+                                    TextLocation.Empty,
+                                    Helpers.MakeIdentifierPath(
+                                        "a",
+                                        AstType.MakeParameterType("T")
+                                    ),
+                                    Helpers.MakeIdentifierPath(
+                                        "b",
+                                        AstType.MakeParameterType("T")
+                                    )
+                                )
+                            ),
+                            Modifiers.None
+                        ),
+                        Statement.MakeValueBindingForStmt(
+                            Modifiers.Immutable,
+                            Statement.MakeBlock(
+                                Statement.MakeExprStmt(
+                                    Helpers.MakeCallExpression(
+                                        Expression.MakeMemRef(
+                                            Helpers.MakeIdentifierPath(
+                                                "tmp_vec",
+                                                Helpers.MakeGenericType(
+                                                    "vector",
+                                                    AstType.MakeParameterType("T")
+                                                )
+                                            ),
+                                            AstNode.MakeIdentifier(
+                                                "add",
+                                                AstType.MakeFunctionType(
+                                                    "add",
+                                                    Helpers.MakeVoidType(),
+                                                    TextLocation.Empty,
+                                                    TextLocation.Empty,
+                                                    AstType.MakeParameterType("T")
+                                                )
+                                            )
+                                        ),
+                                        Helpers.MakeIdentifierPath(
+                                            "tmp",
+                                            AstType.MakeParameterType("T")
+                                        )
+                                    )
+                                )
+                            ),
+                            TextLocation.Empty,
+                            AstNode.MakeVariableInitializer(
+                                Helpers.MakePaticularPatternWithType(
+                                    "tmp",
+                                    AstType.MakeParameterType("T")
+                                ),
+                                Helpers.MakeIdentifierPath(
+                                    "rest",
+                                    Helpers.MakeGenericType(
+                                        "array",
+                                        AstType.MakeParameterType("T")
+                                    )
+                                )
+                            )
+                        ),
+                        Helpers.MakeSingleItemReturnStatement(
+                            Helpers.MakeIdentifierPath(
+                                "tmp_vec",
+                                Helpers.MakeGenericType(
+                                    "vector",
+                                    AstType.MakeParameterType("T")
+                                )
+                            )
+                        )
+                    ),
+                    Helpers.MakeGenericType("vector", AstType.MakeParameterType("T")),
+                    Modifiers.None
+                ),
+                EntityDeclaration.MakeFunc(
+                    "main",
+                    Enumerable.Empty<ParameterDeclaration>(),
+                    Statement.MakeBlock(
+                        Statement.MakeVarDecl(
+                            Helpers.MakeSeq(
+                                Helpers.MakePaticularPatternWithType(
+                                    "a",
+                                    Helpers.MakePrimitiveType("int")
+                                ),
+                                Helpers.MakePaticularPatternWithType(
+                                    "b",
+                                    Helpers.MakePrimitiveType("int")
+                                ),
+                                Helpers.MakePaticularPatternWithType(
+                                    "c",
+                                    Helpers.MakePrimitiveType("int")
+                                )
+                            ),
+                            Helpers.MakeSeq(
+                                Expression.MakeConstant("int", 1),
+                                Expression.MakeConstant("int", 2),
+                                Expression.MakeConstant("int", 3)
+                            ),
+                            Modifiers.Immutable
+                        ),
+                        Statement.MakeVarDecl(
+                            Helpers.MakeSeq(
+                                Helpers.MakePaticularPatternWithType(
+                                    "vec",
+                                    Helpers.MakeGenericType(
+                                        "vector",
+                                        Helpers.MakePrimitiveType("int")
+                                    )
+                                )
+                            ),
+                            Helpers.MakeSeq(
+                                Helpers.MakeCallExpression(
+                                    Helpers.MakeIdentifierPath(
+                                        "createList",
+                                        AstType.MakeFunctionType(
+                                            "createList",
+                                            Helpers.MakeGenericType(
+                                                "vector",
+                                                AstType.MakeParameterType("T")
+                                            ),
+                                            TextLocation.Empty,
+                                            TextLocation.Empty,
+                                            AstType.MakeParameterType("T"),
+                                            AstType.MakeParameterType("T"),
+                                            Helpers.MakeGenericType(
+                                                "array",
+                                                AstType.MakeParameterType("T")
+                                            )
+                                        )
+                                    ),
+                                    Helpers.MakeIdentifierPath(
+                                        "a",
+                                        Helpers.MakePrimitiveType("int")
+                                    ),
+                                    Helpers.MakeIdentifierPath(
+                                        "b",
+                                        Helpers.MakePrimitiveType("int")
+                                    ),
+                                    Helpers.MakeIdentifierPath(
+                                        "c",
+                                        Helpers.MakePrimitiveType("int")
+                                    )
+                                )
+                            ),
+                            Modifiers.Immutable
+                        ),
+                        Statement.MakeExprStmt(
+                            Helpers.MakeCallExpression(
+                                Helpers.MakeIdentifierPath(
+                                    "println",
+                                    AstType.MakeFunctionType(
+                                        "println",
+                                        Helpers.MakeVoidType(),
+                                        TextLocation.Empty,
+                                        TextLocation.Empty,
+                                        Helpers.MakePrimitiveType("string")
+                                    )
+                                ),
+                                Helpers.MakeIdentifierPath(
+                                    "vec",
+                                    Helpers.MakeGenericType(
+                                        "vector",
+                                        Helpers.MakePrimitiveType("int")
+                                    )
+                                )
+                            )
+                        )
+                    ),
+                    Helpers.MakeVoidType(),
+                    Modifiers.None
+                )
+            });
+
+            Assert.IsNotNull(ast);
+            Helpers.AstStructuralEqual(ast, expected_ast);
         }
 
         [Test]

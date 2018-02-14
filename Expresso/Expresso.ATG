@@ -753,6 +753,8 @@ Parameter<out ParameterDeclaration param>   (. string name; Identifier identifie
   													return;
   												}
   											.)
+  [ "..."                                   (. is_variadic = true; .)
+  ]
   
   [ "(-"
     Type<out type>							(.
@@ -764,11 +766,10 @@ Parameter<out ParameterDeclaration param>   (. string name; Identifier identifie
   ]
   [ '='
     Literal<out option>                     
-  | "..."                                   (. is_variadic = true; .)
   ]											(.
   												identifier = AstNode.MakeIdentifier(name, type ?? new PlaceholderType(CurrentLocation), ExpressoModifiers.None, start_loc);
   												if(!defining_closure_parameters && type == null && option == null)
-  													SemanticError("Error ES0004: You can't omit both the type annotation and the default value in a function parameter definition!");
+  													SemanticError("Error ES0004: You can't omit both the type annotation and the default value in a function parameter definition!; `{0}`", name);
 
   												Symbols.AddSymbol(name, identifier);
   												param = EntityDeclaration.MakeParameter(identifier, option, is_variadic, start_loc);

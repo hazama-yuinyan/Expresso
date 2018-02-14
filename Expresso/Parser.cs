@@ -1010,6 +1010,10 @@ string cur_class_name;
 		return;
 		}
 		
+		if (la.kind == 2) {
+			Get();
+			is_variadic = true; 
+		}
 		if (la.kind == 41) {
 			Get();
 			Type(out type);
@@ -1019,18 +1023,13 @@ string cur_class_name;
 			SemanticError("Error ES0001: The variadic parameter must be an array!");
 			
 		}
-		if (la.kind == 2 || la.kind == 42) {
-			if (la.kind == 42) {
-				Get();
-				Literal(out option);
-			} else {
-				Get();
-				is_variadic = true; 
-			}
+		if (la.kind == 42) {
+			Get();
+			Literal(out option);
 		}
 		identifier = AstNode.MakeIdentifier(name, type ?? new PlaceholderType(CurrentLocation), ExpressoModifiers.None, start_loc);
 		if(!defining_closure_parameters && type == null && option == null)
-		SemanticError("Error ES0004: You can't omit both the type annotation and the default value in a function parameter definition!");
+		SemanticError("Error ES0004: You can't omit both the type annotation and the default value in a function parameter definition!; `{0}`", name);
 		
 		Symbols.AddSymbol(name, identifier);
 		param = EntityDeclaration.MakeParameter(identifier, option, is_variadic, start_loc);

@@ -1367,15 +1367,13 @@ namespace Expresso.Ast.Analysis
             if(rhs.IsNull)
                 return lhs;
 
-            var lhs_primitive = lhs as PrimitiveType;
-            var rhs_primitive = rhs as PrimitiveType;
-            if(lhs_primitive != null && rhs_primitive != null){
+            if(lhs is PrimitiveType primitive1 && rhs is PrimitiveType primitive2){
                 // If both are primitives, check first if both are exactly the same type
-                if(lhs_primitive.KnownTypeCode == rhs_primitive.KnownTypeCode){
-                    return lhs_primitive;
-                }else if(IsNumericalType(lhs_primitive) && IsNumericalType(rhs_primitive)){
+                if(primitive1.KnownTypeCode == primitive2.KnownTypeCode){
+                    return primitive1;
+                }else if(IsNumericalType(primitive1) && IsNumericalType(primitive2)){
                     // If not, then check if both are numeric types or not
-                    var common_typecode = lhs_primitive.KnownTypeCode | rhs_primitive.KnownTypeCode;
+                    var common_typecode = primitive1.KnownTypeCode | primitive2.KnownTypeCode;
                     return new PrimitiveType(common_typecode.ToString().ToLower(), TextLocation.Empty);
                 }else{
                     // If both aren't the case, then we must say there is no common types between these 2 expressions
@@ -1383,12 +1381,16 @@ namespace Expresso.Ast.Analysis
                 }
             }
 
-            var lhs_simple = lhs as SimpleType;
-            var rhs_simple = rhs as SimpleType;
-            if(lhs_simple != null && rhs_simple != null){
-                if(lhs_simple.IsMatch(rhs_simple)){
-                    return lhs_simple;
-                }
+            if(lhs is SimpleType simple1 && rhs is SimpleType simple2){
+                if(simple1.IsMatch(simple2))
+                    return simple1;
+
+                //TODO: implement the subclass case
+            }
+
+            if(lhs is ParameterType param1 && rhs is ParameterType param2){
+                if(param1.Name == param2.Name)
+                    return param1;
             }
 
             parser.ReportWarning(

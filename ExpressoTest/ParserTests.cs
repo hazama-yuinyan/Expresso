@@ -2145,21 +2145,44 @@ namespace Expresso.Test
                         )
                     ),
                     Statement.MakeBlock(
-                        Helpers.MakeSingleItemReturnStatement(
-                            Helpers.MakeCallExpression(
-                                Expression.MakeMemRef(
-                                    Expression.MakeSequenceInitializer(
-                                        Helpers.MakeGenericType("vector", Helpers.MakePlaceholderType()),
-                                        TextLocation.Empty,
-                                        TextLocation.Empty,
-                                        Helpers.MakeIdentifierPath("a"),
-                                        Helpers.MakeIdentifierPath("b")
+                        Statement.MakeVarDecl(
+                            Helpers.MakeSeq(
+                                Helpers.MakeSomePatternWithType("tmp_vec")
+                            ),
+                            Helpers.MakeSeq(
+                                Expression.MakeSequenceInitializer(
+                                    Helpers.MakeGenericType(
+                                        "vector",
+                                        AstType.MakePlaceholderType()
                                     ),
-                                    Helpers.MakeSomeIdent("join")
-                                ),
+                                    TextLocation.Empty,
+                                    TextLocation.Empty,
+                                    Helpers.MakeIdentifierPath("a"),
+                                    Helpers.MakeIdentifierPath("b")
+                                )
+                            ),
+                            Modifiers.None
+                        ),
+                        Statement.MakeValueBindingForStmt(
+                            Modifiers.Immutable,
+                            Statement.MakeBlock(
+                                Statement.MakeExprStmt(
+                                    Helpers.MakeCallExpression(
+                                        Expression.MakeMemRef(
+                                            Helpers.MakeIdentifierPath("tmp_vec"),
+                                            Helpers.MakeSomeIdent("add")
+                                        ),
+                                        Helpers.MakeIdentifierPath("tmp")
+                                    )
+                                )
+                            ),
+                            TextLocation.Empty,
+                            AstNode.MakeVariableInitializer(
+                                Helpers.MakeSomePatternWithType("tmp"),
                                 Helpers.MakeIdentifierPath("rest")
                             )
-                        )
+                        ),
+                        Helpers.MakeSingleItemReturnStatement(Helpers.MakeIdentifierPath("tmp_vec"))
                     ),
                     Helpers.MakeGenericType("vector", AstType.MakeParameterType("T")),
                     Modifiers.None
@@ -2194,6 +2217,12 @@ namespace Expresso.Test
                                 )
                             ),
                             Modifiers.Immutable
+                        ),
+                        Statement.MakeExprStmt(
+                            Helpers.MakeCallExpression(
+                                Helpers.MakeIdentifierPath("println"),
+                                Helpers.MakeIdentifierPath("vec")
+                            )
                         )
                     ),
                     Helpers.MakePlaceholderType(),
