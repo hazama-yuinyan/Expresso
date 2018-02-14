@@ -856,7 +856,7 @@ namespace Expresso.CodeGen
                 // to a hashable object.
                 var key_expr = keyValue.KeyExpression.AcceptWalker(this, context);
                 var value_expr = keyValue.ValueExpression.AcceptWalker(this, context);
-                if(!context.TargetType.Name.StartsWith("Dictionary"))
+                if(context.TargetType == null || !context.TargetType.Name.StartsWith("Dictionary", StringComparison.CurrentCulture))
                     context.TargetType = typeof(Dictionary<,>).MakeGenericType(key_expr.Type, value_expr.Type);
 
                 var add_method = context.TargetType.GetMethod("Add");

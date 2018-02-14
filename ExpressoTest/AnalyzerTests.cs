@@ -656,6 +656,239 @@ namespace Expresso.Test
         }
 
         [Test]
+        public void SimpleArithmetic()
+        {
+            var parser = new Parser(new Scanner("../../sources/for_unit_tests/simple_arithmetic.exs"));
+            parser.DoPostParseProcessing = true;
+            parser.Parse();
+
+            var ast = parser.TopmostAst;
+
+            var expected_ast = AstNode.MakeModuleDef("main", new List<EntityDeclaration>{
+                EntityDeclaration.MakeFunc(
+                    "main",
+                    Helpers.MakeSeq(
+                        EntityDeclaration.MakeParameter("args", Helpers.MakeGenericType("array", Helpers.MakePrimitiveType("string")))
+                    ),
+                    Statement.MakeBlock(new List<Statement>{
+                    Statement.MakeVarDecl(
+                        Helpers.MakeSeq(
+                            Helpers.MakePaticularPatternWithType("x", Helpers.MakePrimitiveType("int")),
+                            Helpers.MakePaticularPatternWithType("xp", Helpers.MakePrimitiveType("int")),
+                            Helpers.MakePaticularPatternWithType("xm", Helpers.MakePrimitiveType("int")),
+                            Helpers.MakePaticularPatternWithType("xt", Helpers.MakePrimitiveType("int")),
+                            Helpers.MakePaticularPatternWithType("xd", Helpers.MakePrimitiveType("int")),
+                            Helpers.MakePaticularPatternWithType("xmod", Helpers.MakePrimitiveType("int")),
+                            Helpers.MakePaticularPatternWithType("xpower", Helpers.MakePrimitiveType("int"))
+                        ),
+                        Helpers.MakeSeq(
+                            Expression.MakeConstant("int", 3),
+                            Expression.MakeConstant("int", 3),
+                            Expression.MakeConstant("int", 3),
+                            Expression.MakeConstant("int", 3),
+                            Expression.MakeConstant("int", 4),
+                            Expression.MakeConstant("int", 4),
+                            Expression.MakeConstant("int", 3)
+                        ),
+                        Modifiers.None
+                    ),
+                    Statement.MakeVarDecl(
+                        Helpers.MakeSeq(
+                            Helpers.MakePaticularPatternWithType("a", Helpers.MakePrimitiveType("int"))
+                        ),
+                        Helpers.MakeSeq(
+                            Expression.MakeBinaryExpr(
+                                OperatorType.Plus,
+                                Helpers.MakeIdentifierPath("x", Helpers.MakePrimitiveType("int")),
+                                Expression.MakeConstant("int", 4)
+                            )
+                        ),
+                        Modifiers.Immutable
+                    ),
+                    Statement.MakeVarDecl(
+                        Helpers.MakeSeq(
+                            Helpers.MakePaticularPatternWithType("b", Helpers.MakePrimitiveType("int"))
+                        ),
+                        Helpers.MakeSeq(
+                            Expression.MakeBinaryExpr(
+                                OperatorType.Minus,
+                                Helpers.MakeIdentifierPath("x", Helpers.MakePrimitiveType("int")),
+                                Expression.MakeConstant("int", 4)
+                            )
+                        ),
+                        Modifiers.Immutable
+                    ),
+                    Statement.MakeVarDecl(
+                        Helpers.MakeSeq(
+                            Helpers.MakePaticularPatternWithType("c", Helpers.MakePrimitiveType("int"))
+                        ),
+                        Helpers.MakeSeq(
+                            Expression.MakeBinaryExpr(
+                                OperatorType.Times,
+                                Helpers.MakeIdentifierPath("x", Helpers.MakePrimitiveType("int")),
+                                Expression.MakeConstant("int", 4)
+                            )
+                        ),
+                        Modifiers.Immutable
+                    ),
+                    Statement.MakeVarDecl(
+                        Helpers.MakeSeq(
+                            Helpers.MakePaticularPatternWithType("d", Helpers.MakePrimitiveType("int"))
+                        ),
+                        Helpers.MakeSeq(
+                            Expression.MakeBinaryExpr(
+                                OperatorType.Divide,
+                                Expression.MakeConstant("int", 4),
+                                Expression.MakeConstant("int", 2)
+                            )
+                        ),
+                        Modifiers.Immutable
+                    ),
+                    Statement.MakeVarDecl(
+                        Helpers.MakeSeq(
+                            Helpers.MakePaticularPatternWithType("e", Helpers.MakePrimitiveType("int"))
+                        ),
+                        Helpers.MakeSeq(
+                            Expression.MakeBinaryExpr(
+                                OperatorType.Modulus,
+                                Expression.MakeConstant("int", 4),
+                                Expression.MakeConstant("int", 2)
+                            )
+                        ),
+                        Modifiers.Immutable
+                    ),
+                    Statement.MakeVarDecl(
+                        Helpers.MakeSeq(
+                            Helpers.MakePaticularPatternWithType("f", Helpers.MakePrimitiveType("int"))
+                        ),
+                        Helpers.MakeSeq(
+                            Expression.MakeBinaryExpr(
+                                OperatorType.Power,
+                                Helpers.MakeIdentifierPath("x", Helpers.MakePrimitiveType("int")),
+                                Expression.MakeConstant("int", 2)
+                            )
+                        ),
+                        Modifiers.Immutable
+                    ),
+                    Statement.MakeExprStmt(
+                        Expression.MakeSingleAugmentedAssignment(
+                            OperatorType.Plus,
+                            Helpers.MakeIdentifierPath("xp", Helpers.MakePrimitiveType("int")),
+                            Expression.MakeConstant("int", 4)
+                        )
+                    ),
+                    Statement.MakeExprStmt(
+                        Expression.MakeSingleAugmentedAssignment(
+                            OperatorType.Minus,
+                            Helpers.MakeIdentifierPath("xm", Helpers.MakePrimitiveType("int")),
+                            Expression.MakeConstant("int", 4)
+                        )
+                    ),
+                    Statement.MakeExprStmt(
+                        Expression.MakeSingleAugmentedAssignment(
+                            OperatorType.Times,
+                            Helpers.MakeIdentifierPath("xt", Helpers.MakePrimitiveType("int")),
+                            Expression.MakeConstant("int", 4)
+                        )
+                    ),
+                    Statement.MakeExprStmt(
+                        Expression.MakeSingleAugmentedAssignment(
+                            OperatorType.Divide,
+                            Helpers.MakeIdentifierPath("xd", Helpers.MakePrimitiveType("int")),
+                            Expression.MakeConstant("int", 2)
+                        )
+                    ),
+                    Statement.MakeExprStmt(
+                        Expression.MakeSingleAugmentedAssignment(
+                            OperatorType.Modulus,
+                            Helpers.MakeIdentifierPath("xmod", Helpers.MakePrimitiveType("int")),
+                            Expression.MakeConstant("int", 2)
+                        )
+                    ),
+                    Statement.MakeExprStmt(
+                        Expression.MakeSingleAugmentedAssignment(
+                            OperatorType.Power,
+                            Helpers.MakeIdentifierPath("xpower", Helpers.MakePrimitiveType("int")),
+                            Expression.MakeConstant("int", 2)
+                        )
+                    ),
+                    Statement.MakeExprStmt(
+                        Helpers.MakeCallExpression(
+                            Helpers.MakeIdentifierPath(
+                                "println",
+                                AstType.MakeFunctionType(
+                                    "println",
+                                    Helpers.MakeVoidType(),
+                                    default(TextLocation),
+                                    default(TextLocation),
+                                    Helpers.MakePrimitiveType("string")
+                                )
+                            ),
+                            Helpers.MakeIdentifierPath(
+                                "x",
+                                Helpers.MakePrimitiveType("int")
+                            ),
+                            Helpers.MakeIdentifierPath(
+                                "a",
+                                Helpers.MakePrimitiveType("int")
+                            ),
+                            Helpers.MakeIdentifierPath(
+                                "b",
+                                Helpers.MakePrimitiveType("int")
+                            ),
+                            Helpers.MakeIdentifierPath(
+                                "c",
+                                Helpers.MakePrimitiveType("int")
+                            ),
+                            Helpers.MakeIdentifierPath(
+                                "d",
+                                Helpers.MakePrimitiveType("int")
+                            ),
+                            Helpers.MakeIdentifierPath(
+                                "e",
+                                Helpers.MakePrimitiveType("int")
+                            ),
+                            Helpers.MakeIdentifierPath(
+                                "f",
+                                Helpers.MakePrimitiveType("int")
+                            ),
+                            Helpers.MakeIdentifierPath(
+                                "xp",
+                                Helpers.MakePrimitiveType("int")
+                            ),
+                            Helpers.MakeIdentifierPath(
+                                "xm",
+                                Helpers.MakePrimitiveType("int")
+                            ),
+                            Helpers.MakeIdentifierPath(
+                                "xt",
+                                Helpers.MakePrimitiveType("int")
+                            ),
+                            Helpers.MakeIdentifierPath(
+                                "xd",
+                                Helpers.MakePrimitiveType("int")
+                            ),
+                            Helpers.MakeIdentifierPath(
+                                "xmod",
+                                Helpers.MakePrimitiveType("int")
+                            ),
+                            Helpers.MakeIdentifierPath(
+                                "xpower",
+                                Helpers.MakePrimitiveType("int")
+                            )
+                        )
+                    )
+                }),
+                    Helpers.MakeVoidType(),
+                    Modifiers.None
+                )
+            });
+
+            Assert.IsNotNull(ast);
+            Helpers.AstStructuralEqual(ast, expected_ast);
+        }
+
+        [Test]
         public void GeneralExpressions()
         {
             var parser = new Parser(new Scanner("../../sources/for_unit_tests/general_expressions.exs"));
@@ -672,7 +905,7 @@ namespace Expresso.Test
                         Enumerable.Empty<ParameterDeclaration>(),
                         Statement.MakeBlock(
                             Statement.MakeVarDecl(
-                                Helpers.MakeSeq(PatternConstruct.MakeIdentifierPattern("ary", Helpers.MakeGenericType("array", Helpers.MakePrimitiveType("int")))),
+                                Helpers.MakeSeq(Helpers.MakePaticularPatternWithType("ary", Helpers.MakeGenericType("array", Helpers.MakePrimitiveType("int")))),
                                 Helpers.MakeSeq(
                                     Expression.MakeSequenceInitializer(
                                         Helpers.MakeGenericType("array", Helpers.MakePrimitiveType("int")),
@@ -687,7 +920,7 @@ namespace Expresso.Test
                             ),
                             Statement.MakeVarDecl(
                                 Helpers.MakeSeq(
-                                    PatternConstruct.MakeIdentifierPattern(
+                                    Helpers.MakePaticularPatternWithType(
                                         "d",
                                         Helpers.MakeGenericType(
                                             "dictionary",
@@ -709,7 +942,7 @@ namespace Expresso.Test
                                 Modifiers.Immutable
                             ),
                             Statement.MakeVarDecl(
-                                Helpers.MakeSeq(PatternConstruct.MakeIdentifierPattern("m", Helpers.MakePrimitiveType("int"))),
+                                Helpers.MakeSeq(Helpers.MakePaticularPatternWithType("m", Helpers.MakePrimitiveType("int"))),
                                 Helpers.MakeSeq(
                                     Helpers.MakeIndexerExpression(
                                         Helpers.MakeIdentifierPath(
@@ -722,7 +955,7 @@ namespace Expresso.Test
                                 Modifiers.Immutable
                             ),
                             Statement.MakeVarDecl(
-                                Helpers.MakeSeq(PatternConstruct.MakeIdentifierPattern("m2", Helpers.MakePrimitiveType("int"))),
+                                Helpers.MakeSeq(Helpers.MakePaticularPatternWithType("m2", Helpers.MakePrimitiveType("int"))),
                                 Helpers.MakeSeq(
                                     Helpers.MakeIndexerExpression(
                                         Helpers.MakeIdentifierPath(
@@ -735,12 +968,12 @@ namespace Expresso.Test
                                 Modifiers.Immutable
                             ),
                             Statement.MakeVarDecl(
-                                Helpers.MakeSeq(PatternConstruct.MakeIdentifierPattern("x", Helpers.MakePrimitiveType("int"))),
+                                Helpers.MakeSeq(Helpers.MakePaticularPatternWithType("x", Helpers.MakePrimitiveType("int"))),
                                 Helpers.MakeSeq(Expression.MakeConstant("int", 100)),
                                 Modifiers.Immutable
                             ),
                             Statement.MakeVarDecl(
-                                Helpers.MakeSeq(PatternConstruct.MakeIdentifierPattern("p", Helpers.MakePrimitiveType("int"))),
+                                Helpers.MakeSeq(Helpers.MakePaticularPatternWithType("p", Helpers.MakePrimitiveType("int"))),
                                 Helpers.MakeSeq(
                                     Expression.MakeBinaryExpr(
                                         OperatorType.Plus,
@@ -773,7 +1006,7 @@ namespace Expresso.Test
                                 Modifiers.Immutable
                             ),
                             Statement.MakeVarDecl(
-                                Helpers.MakeSeq(PatternConstruct.MakeIdentifierPattern("q", Helpers.MakePrimitiveType("int"))),
+                                Helpers.MakeSeq(Helpers.MakePaticularPatternWithType("q", Helpers.MakePrimitiveType("int"))),
                                 Helpers.MakeSeq(
                                     Expression.MakeBinaryExpr(
                                         OperatorType.Plus,
@@ -806,7 +1039,7 @@ namespace Expresso.Test
                                 Modifiers.Immutable
                             ),
                             Statement.MakeVarDecl(
-                                Helpers.MakeSeq(PatternConstruct.MakeIdentifierPattern("r", Helpers.MakePrimitiveType("int"))),
+                                Helpers.MakeSeq(Helpers.MakePaticularPatternWithType("r", Helpers.MakePrimitiveType("int"))),
                                 Helpers.MakeSeq(
                                     Expression.MakeBinaryExpr(
                                         OperatorType.BitwiseShiftRight,
@@ -817,7 +1050,7 @@ namespace Expresso.Test
                                 Modifiers.Immutable
                             ),
                             Statement.MakeVarDecl(
-                                Helpers.MakeSeq(PatternConstruct.MakeIdentifierPattern("s", Helpers.MakePrimitiveType("int"))),
+                                Helpers.MakeSeq(Helpers.MakePaticularPatternWithType("s", Helpers.MakePrimitiveType("int"))),
                                 Helpers.MakeSeq(
                                     Expression.MakeBinaryExpr(
                                         OperatorType.BitwiseShiftLeft,
@@ -828,7 +1061,7 @@ namespace Expresso.Test
                                 Modifiers.Immutable
                             ),
                             Statement.MakeVarDecl(
-                                Helpers.MakeSeq(PatternConstruct.MakeIdentifierPattern("t", Helpers.MakePrimitiveType("int"))),
+                                Helpers.MakeSeq(Helpers.MakePaticularPatternWithType("t", Helpers.MakePrimitiveType("int"))),
                                 Helpers.MakeSeq(
                                     Expression.MakeBinaryExpr(
                                         OperatorType.BitwiseAnd,
@@ -839,7 +1072,7 @@ namespace Expresso.Test
                                 Modifiers.Immutable
                             ),
                             Statement.MakeVarDecl(
-                                Helpers.MakeSeq(PatternConstruct.MakeIdentifierPattern("v", Helpers.MakePrimitiveType("int"))),
+                                Helpers.MakeSeq(Helpers.MakePaticularPatternWithType("v", Helpers.MakePrimitiveType("int"))),
                                 Helpers.MakeSeq(
                                     Expression.MakeBinaryExpr(
                                         OperatorType.BitwiseOr,
@@ -850,7 +1083,7 @@ namespace Expresso.Test
                                 Modifiers.Immutable
                             ),
                             Statement.MakeVarDecl(
-                                Helpers.MakeSeq(PatternConstruct.MakeIdentifierPattern("w", Helpers.MakePrimitiveType("int"))),
+                                Helpers.MakeSeq(Helpers.MakePaticularPatternWithType("w", Helpers.MakePrimitiveType("int"))),
                                 Helpers.MakeSeq(
                                     Expression.MakeBinaryExpr(
                                         OperatorType.Plus,
@@ -861,7 +1094,7 @@ namespace Expresso.Test
                                 Modifiers.Immutable
                             ),
                             Statement.MakeVarDecl(
-                                Helpers.MakeSeq(PatternConstruct.MakeIdentifierPattern("y", Helpers.MakePrimitiveType("int"))),
+                                Helpers.MakeSeq(Helpers.MakePaticularPatternWithType("y", Helpers.MakePrimitiveType("int"))),
                                 Helpers.MakeSeq(
                                     Expression.MakeBinaryExpr(
                                         OperatorType.Plus,
@@ -885,7 +1118,7 @@ namespace Expresso.Test
                                 Modifiers.Immutable
                             ),
                             Statement.MakeVarDecl(
-                                Helpers.MakeSeq(PatternConstruct.MakeIdentifierPattern("z", Helpers.MakePrimitiveType("int"))),
+                                Helpers.MakeSeq(Helpers.MakePaticularPatternWithType("z", Helpers.MakePrimitiveType("int"))),
                                 Helpers.MakeSeq(
                                     Expression.MakeBinaryExpr(
                                         OperatorType.Times,
@@ -984,239 +1217,6 @@ namespace Expresso.Test
         }
 
         [Test]
-        public void SimpleArithmetic()
-        {
-            var parser = new Parser(new Scanner("../../sources/for_unit_tests/simple_arithmetic.exs"));
-            parser.DoPostParseProcessing = true;
-            parser.Parse();
-
-            var ast = parser.TopmostAst;
-
-            var expected_ast = AstNode.MakeModuleDef("main", new List<EntityDeclaration>{
-                EntityDeclaration.MakeFunc(
-                    "main",
-                    Helpers.MakeSeq(
-                        EntityDeclaration.MakeParameter("args", Helpers.MakeGenericType("array", Helpers.MakePrimitiveType("string")))
-                    ),
-                    Statement.MakeBlock(new List<Statement>{
-                        Statement.MakeVarDecl(
-                            Helpers.MakeSeq(
-                                PatternConstruct.MakeIdentifierPattern("x", Helpers.MakePrimitiveType("int")),
-                                PatternConstruct.MakeIdentifierPattern("xp", Helpers.MakePrimitiveType("int")),
-                                PatternConstruct.MakeIdentifierPattern("xm", Helpers.MakePrimitiveType("int")),
-                                PatternConstruct.MakeIdentifierPattern("xt", Helpers.MakePrimitiveType("int")),
-                                PatternConstruct.MakeIdentifierPattern("xd", Helpers.MakePrimitiveType("int")),
-                                PatternConstruct.MakeIdentifierPattern("xmod", Helpers.MakePrimitiveType("int")),
-                                PatternConstruct.MakeIdentifierPattern("xpower", Helpers.MakePrimitiveType("int"))
-                            ),
-                            Helpers.MakeSeq(
-                                Expression.MakeConstant("int", 3),
-                                Expression.MakeConstant("int", 3),
-                                Expression.MakeConstant("int", 3),
-                                Expression.MakeConstant("int", 3),
-                                Expression.MakeConstant("int", 4),
-                                Expression.MakeConstant("int", 4),
-                                Expression.MakeConstant("int", 3)
-                            ),
-                            Modifiers.None
-                        ),
-                        Statement.MakeVarDecl(
-                            Helpers.MakeSeq(
-                                PatternConstruct.MakeIdentifierPattern("a", Helpers.MakePrimitiveType("int"))
-                            ),
-                            Helpers.MakeSeq(
-                                Expression.MakeBinaryExpr(
-                                    OperatorType.Plus,
-                                    Helpers.MakeIdentifierPath("x", Helpers.MakePrimitiveType("int")),
-                                    Expression.MakeConstant("int", 4)
-                                )
-                            ),
-                            Modifiers.Immutable
-                        ),
-                        Statement.MakeVarDecl(
-                            Helpers.MakeSeq(
-                                PatternConstruct.MakeIdentifierPattern("b", Helpers.MakePrimitiveType("int"))
-                            ),
-                            Helpers.MakeSeq(
-                                Expression.MakeBinaryExpr(
-                                    OperatorType.Minus,
-                                    Helpers.MakeIdentifierPath("x", Helpers.MakePrimitiveType("int")),
-                                    Expression.MakeConstant("int", 4)
-                                )
-                            ),
-                            Modifiers.Immutable
-						),
-                        Statement.MakeVarDecl(
-                            Helpers.MakeSeq(
-                                PatternConstruct.MakeIdentifierPattern("c", Helpers.MakePrimitiveType("int"))
-                            ),
-                            Helpers.MakeSeq(
-                                Expression.MakeBinaryExpr(
-                                    OperatorType.Times,
-                                    Helpers.MakeIdentifierPath("x", Helpers.MakePrimitiveType("int")),
-                                    Expression.MakeConstant("int", 4)
-                                )
-                            ),
-                            Modifiers.Immutable
-                        ),
-                        Statement.MakeVarDecl(
-                            Helpers.MakeSeq(
-                                PatternConstruct.MakeIdentifierPattern("d", Helpers.MakePrimitiveType("int"))
-                            ),
-                            Helpers.MakeSeq(
-                                Expression.MakeBinaryExpr(
-                                    OperatorType.Divide,
-                                    Expression.MakeConstant("int", 4),
-                                    Expression.MakeConstant("int", 2)
-                                )
-                            ),
-                            Modifiers.Immutable
-                        ),
-                        Statement.MakeVarDecl(
-                            Helpers.MakeSeq(
-                                PatternConstruct.MakeIdentifierPattern("e", Helpers.MakePrimitiveType("int"))
-                            ),
-                            Helpers.MakeSeq(
-                                Expression.MakeBinaryExpr(
-                                    OperatorType.Modulus,
-                                    Expression.MakeConstant("int", 4),
-                                    Expression.MakeConstant("int", 2)
-                                )
-                            ),
-                            Modifiers.Immutable
-                        ),
-                        Statement.MakeVarDecl(
-                            Helpers.MakeSeq(
-                                PatternConstruct.MakeIdentifierPattern("f", Helpers.MakePrimitiveType("int"))
-                            ),
-                            Helpers.MakeSeq(
-                                Expression.MakeBinaryExpr(
-                                    OperatorType.Power,
-                                    Helpers.MakeIdentifierPath("x", Helpers.MakePrimitiveType("int")),
-                                    Expression.MakeConstant("int", 2)
-                                )
-                            ),
-                            Modifiers.Immutable
-                        ),
-                        Statement.MakeExprStmt(
-                            Expression.MakeSingleAugmentedAssignment(
-                                OperatorType.Plus,
-                                Helpers.MakeIdentifierPath("xp", Helpers.MakePrimitiveType("int")),
-                                Expression.MakeConstant("int", 4)
-                            )
-                        ),
-                        Statement.MakeExprStmt(
-                            Expression.MakeSingleAugmentedAssignment(
-                                OperatorType.Minus,
-                                Helpers.MakeIdentifierPath("xm", Helpers.MakePrimitiveType("int")),
-                                Expression.MakeConstant("int", 4)
-                            )
-                        ),
-                        Statement.MakeExprStmt(
-                            Expression.MakeSingleAugmentedAssignment(
-                                OperatorType.Times,
-                                Helpers.MakeIdentifierPath("xt", Helpers.MakePrimitiveType("int")),
-                                Expression.MakeConstant("int", 4)
-                            )
-                        ),
-                        Statement.MakeExprStmt(
-                            Expression.MakeSingleAugmentedAssignment(
-                                OperatorType.Divide,
-								Helpers.MakeIdentifierPath("xd", Helpers.MakePrimitiveType("int")),
-                                Expression.MakeConstant("int", 2)
-                            )
-                        ),
-                        Statement.MakeExprStmt(
-                            Expression.MakeSingleAugmentedAssignment(
-                                OperatorType.Modulus,
-                                Helpers.MakeIdentifierPath("xmod", Helpers.MakePrimitiveType("int")),
-                                Expression.MakeConstant("int", 2)
-                            )
-                        ),
-                        Statement.MakeExprStmt(
-                            Expression.MakeSingleAugmentedAssignment(
-                                OperatorType.Power,
-                                Helpers.MakeIdentifierPath("xpower", Helpers.MakePrimitiveType("int")),
-                                Expression.MakeConstant("int", 2)
-                            )
-                        ),
-                        Statement.MakeExprStmt(
-                            Helpers.MakeCallExpression(
-                                Helpers.MakeIdentifierPath(
-                                    "println",
-                                    AstType.MakeFunctionType(
-                                        "println",
-                                        Helpers.MakeVoidType(),
-                                        default(TextLocation),
-                                        default(TextLocation),
-                                        Helpers.MakePrimitiveType("string")
-                                    )
-                                ),
-                                Helpers.MakeIdentifierPath(
-                                    "x",
-                                    Helpers.MakePrimitiveType("int")
-                                ),
-                                Helpers.MakeIdentifierPath(
-                                    "a",
-                                    Helpers.MakePrimitiveType("int")
-                                ),
-                                Helpers.MakeIdentifierPath(
-                                    "b",
-                                    Helpers.MakePrimitiveType("int")
-                                ),
-                                Helpers.MakeIdentifierPath(
-                                    "c",
-                                    Helpers.MakePrimitiveType("int")
-                                ),
-                                Helpers.MakeIdentifierPath(
-                                    "d",
-                                    Helpers.MakePrimitiveType("int")
-                                ),
-                                Helpers.MakeIdentifierPath(
-                                    "e",
-                                    Helpers.MakePrimitiveType("int")
-                                ),
-                                Helpers.MakeIdentifierPath(
-                                    "f",
-                                    Helpers.MakePrimitiveType("int")
-                                ),
-                                Helpers.MakeIdentifierPath(
-                                    "xp",
-                                    Helpers.MakePrimitiveType("int")
-                                ),
-                                Helpers.MakeIdentifierPath(
-                                    "xm",
-                                    Helpers.MakePrimitiveType("int")
-                                ),
-                                Helpers.MakeIdentifierPath(
-                                    "xt",
-                                    Helpers.MakePrimitiveType("int")
-                                ),
-                                Helpers.MakeIdentifierPath(
-                                    "xd",
-                                    Helpers.MakePrimitiveType("int")
-                                ),
-                                Helpers.MakeIdentifierPath(
-                                    "xmod",
-                                    Helpers.MakePrimitiveType("int")
-                                ),
-                                Helpers.MakeIdentifierPath(
-                                    "xpower",
-                                    Helpers.MakePrimitiveType("int")
-                                )
-                            )
-                        )
-                    }),
-                    Helpers.MakeVoidType(),
-                    Modifiers.None
-                )
-            });
-
-            Assert.IsNotNull(ast);
-            Helpers.AstStructuralEqual(ast, expected_ast);
-        }
-
-        [Test]
         public void ComplexExpressions()
         {
             var parser = new Parser(new Scanner("../../sources/for_unit_tests/complex_expressions.exs"));
@@ -1232,7 +1232,7 @@ namespace Expresso.Test
                     Statement.MakeBlock(
                         Statement.MakeVarDecl(
                             Helpers.MakeSeq(
-                                PatternConstruct.MakeIdentifierPattern(
+                                Helpers.MakePaticularPatternWithType(
                                     "x", 
                                     Helpers.MakeGenericType("vector", Helpers.MakePrimitiveType("int"))
                                 )
@@ -1261,7 +1261,7 @@ namespace Expresso.Test
                         ),
                         Statement.MakeVarDecl(
                             Helpers.MakeSeq(
-                                PatternConstruct.MakeIdentifierPattern(
+                                Helpers.MakePaticularPatternWithType(
                                     "y", 
                                     Helpers.MakeGenericType("vector", Helpers.MakePrimitiveType("int"))
                                 )
@@ -1301,7 +1301,7 @@ namespace Expresso.Test
                         ),
                         Statement.MakeVarDecl(
                             Helpers.MakeSeq(
-                                PatternConstruct.MakeIdentifierPattern(
+                                Helpers.MakePaticularPatternWithType(
                                     "z", 
                                     Helpers.MakeGenericType(
                                         "vector",
@@ -1366,7 +1366,7 @@ namespace Expresso.Test
                         ),
                         Statement.MakeVarDecl(
                             Helpers.MakeSeq(
-                                PatternConstruct.MakeIdentifierPattern(
+                                Helpers.MakePaticularPatternWithType(
                                     "triangles", 
                                     Helpers.MakeGenericType(
                                         "vector",
@@ -1458,7 +1458,7 @@ namespace Expresso.Test
 						),
                         Statement.MakeVarDecl(
                             Helpers.MakeSeq(
-                                PatternConstruct.MakeIdentifierPattern(
+                                Helpers.MakePaticularPatternWithType(
                                     "specific_triangles", 
                                     Helpers.MakeGenericType(
                                         "vector",
@@ -1566,15 +1566,15 @@ namespace Expresso.Test
                         ),
                         Helpers.MakeVariableDeclaration(
                             Helpers.MakeSeq(
-                                PatternConstruct.MakeIdentifierPattern(
+                                Helpers.MakePaticularPatternWithType(
                                     "a",
                                     Helpers.MakePrimitiveType("int")
                                 ),
-                                PatternConstruct.MakeIdentifierPattern(
+                                Helpers.MakePaticularPatternWithType(
                                     "b",
                                     Helpers.MakePrimitiveType("int")
                                 ),
-                                PatternConstruct.MakeIdentifierPattern(
+                                Helpers.MakePaticularPatternWithType(
                                     "c",
                                     Helpers.MakePrimitiveType("int")
                                 )
@@ -1609,7 +1609,7 @@ namespace Expresso.Test
                         ),
                         Statement.MakeVarDecl(
                             Helpers.MakeSeq(
-                                PatternConstruct.MakeIdentifierPattern(
+                                Helpers.MakePaticularPatternWithType(
                                     "vec",
                                     Helpers.MakeGenericType(
                                         "vector",
@@ -1638,7 +1638,7 @@ namespace Expresso.Test
                         ),
                         Statement.MakeVarDecl(
                             Helpers.MakeSeq(
-                                PatternConstruct.MakeIdentifierPattern(
+                                Helpers.MakePaticularPatternWithType(
                                     "t",
                                     Helpers.MakeGenericType(
                                         "tuple",
@@ -1793,10 +1793,10 @@ namespace Expresso.Test
                     Statement.MakeBlock(
                         Statement.MakeVarDecl(
                             Helpers.MakeSeq(
-                                PatternConstruct.MakeIdentifierPattern("x", Helpers.MakePrimitiveType("int")),
-                                PatternConstruct.MakeIdentifierPattern("y", Helpers.MakePrimitiveType("int")),
-                                PatternConstruct.MakeIdentifierPattern("z", Helpers.MakePrimitiveType("int")),
-                                PatternConstruct.MakeIdentifierPattern("w", Helpers.MakePrimitiveType("int"))
+                                Helpers.MakePaticularPatternWithType("x", Helpers.MakePrimitiveType("int")),
+                                Helpers.MakePaticularPatternWithType("y", Helpers.MakePrimitiveType("int")),
+                                Helpers.MakePaticularPatternWithType("z", Helpers.MakePrimitiveType("int")),
+                                Helpers.MakePaticularPatternWithType("w", Helpers.MakePrimitiveType("int"))
                             ),
                             Helpers.MakeSeq(
                                 Expression.MakeConstant("int", 100),
@@ -1808,7 +1808,7 @@ namespace Expresso.Test
                         ),
                         Helpers.MakeVariableDeclaration(
                             Helpers.MakeSeq(
-                                PatternConstruct.MakeIdentifierPattern("flag", Helpers.MakePrimitiveType("bool"))
+                                Helpers.MakePaticularPatternWithType("flag", Helpers.MakePrimitiveType("bool"))
                             ),
                             Modifiers.None
                         ),
@@ -1878,7 +1878,7 @@ namespace Expresso.Test
                         ),
                         Statement.MakeVarDecl(
                             Helpers.MakeSeq(
-                                PatternConstruct.MakeIdentifierPattern(
+                                Helpers.MakePaticularPatternWithType(
                                     "sum",
                                     Helpers.MakePrimitiveType("int")
                                 )
@@ -1940,18 +1940,18 @@ namespace Expresso.Test
                         ),
                         Statement.MakeVarDecl(
                             Helpers.MakeSeq(
-                                PatternConstruct.MakeIdentifierPattern(
+                                Helpers.MakePaticularPatternWithType(
                                     "fibs",
                                     Helpers.MakeGenericType(
                                         "vector",
                                         Helpers.MakePrimitiveType("int")
                                     )
                                 ),
-                                PatternConstruct.MakeIdentifierPattern(
+                                Helpers.MakePaticularPatternWithType(
                                     "a",
                                     Helpers.MakePrimitiveType("int")
                                 ),
-                                PatternConstruct.MakeIdentifierPattern(
+                                Helpers.MakePaticularPatternWithType(
                                     "b",
                                     Helpers.MakePrimitiveType("int")
                                 )
@@ -2041,7 +2041,7 @@ namespace Expresso.Test
                         ),
                         Statement.MakeVarDecl(
                             Helpers.MakeSeq(
-                                PatternConstruct.MakeIdentifierPattern(
+                                Helpers.MakePaticularPatternWithType(
                                     "vec",
                                     Helpers.MakeGenericType(
                                         "vector",
@@ -2411,7 +2411,7 @@ namespace Expresso.Test
                     Statement.MakeBlock(
                         Statement.MakeVarDecl(
                             Helpers.MakeSeq(
-                                PatternConstruct.MakeIdentifierPattern("a", Helpers.MakeGenericType("TestClass"))
+                                Helpers.MakePaticularPatternWithType("a", Helpers.MakeGenericType("TestClass"))
                             ),
                             Helpers.MakeSeq(
                                 Expression.MakeObjectCreation(
@@ -2451,7 +2451,7 @@ namespace Expresso.Test
                         ),*/
                         Statement.MakeVarDecl(
                             Helpers.MakeSeq(
-                                PatternConstruct.MakeIdentifierPattern("c", Helpers.MakePrimitiveType("int"))
+                                Helpers.MakePaticularPatternWithType("c", Helpers.MakePrimitiveType("int"))
                             ),
                             Helpers.MakeSeq(
                                 Expression.MakeCallExpr(
@@ -2476,7 +2476,7 @@ namespace Expresso.Test
                         ),
                         Statement.MakeVarDecl(
                             Helpers.MakeSeq(
-                                PatternConstruct.MakeIdentifierPattern("d", Helpers.MakePrimitiveType("int"))
+                                Helpers.MakePaticularPatternWithType("d", Helpers.MakePrimitiveType("int"))
                             ),
                             Helpers.MakeSeq(
                                 Expression.MakeCallExpr(
@@ -2501,7 +2501,7 @@ namespace Expresso.Test
                         ),
                         Statement.MakeVarDecl(
                             Helpers.MakeSeq(
-                                PatternConstruct.MakeIdentifierPattern("e", Helpers.MakePrimitiveType("int"))
+                                Helpers.MakePaticularPatternWithType("e", Helpers.MakePrimitiveType("int"))
                             ),
                             Helpers.MakeSeq(
                                 Helpers.MakeCallExpression(
@@ -2528,7 +2528,7 @@ namespace Expresso.Test
                         ),
                         Statement.MakeVarDecl(
                             Helpers.MakeSeq(
-                                PatternConstruct.MakeIdentifierPattern("f", Helpers.MakePrimitiveType("int"))
+                                Helpers.MakePaticularPatternWithType("f", Helpers.MakePrimitiveType("int"))
                             ),
                             Helpers.MakeSeq(
                                 Helpers.MakeCallExpression(
@@ -2552,7 +2552,7 @@ namespace Expresso.Test
                         ),
                         Statement.MakeVarDecl(
                             Helpers.MakeSeq(
-                                PatternConstruct.MakeIdentifierPattern("g", Helpers.MakePrimitiveType("int"))
+                                Helpers.MakePaticularPatternWithType("g", Helpers.MakePrimitiveType("int"))
                             ),
                             Helpers.MakeSeq(
                                 Expression.MakeMemRef(
@@ -2625,7 +2625,7 @@ namespace Expresso.Test
                     Statement.MakeBlock(
                         Statement.MakeVarDecl(
                             Helpers.MakeSeq(
-                                PatternConstruct.MakeIdentifierPattern(
+                                Helpers.MakePaticularPatternWithType(
                                     "a",
                                     Helpers.MakePrimitiveType("int")
                                 )
@@ -2756,7 +2756,7 @@ namespace Expresso.Test
                     Statement.MakeBlock(
                         Statement.MakeVarDecl(
                             Helpers.MakeSeq(
-                                PatternConstruct.MakeIdentifierPattern(
+                                Helpers.MakePaticularPatternWithType(
                                     "a",
                                     Helpers.MakePrimitiveType("int")
                                 )
@@ -2777,7 +2777,7 @@ namespace Expresso.Test
                         ),
                         Statement.MakeVarDecl(
                             Helpers.MakeSeq(
-                                PatternConstruct.MakeIdentifierPattern(
+                                Helpers.MakePaticularPatternWithType(
                                     "b",
                                     Helpers.MakePrimitiveType("int")
                                 )
@@ -2801,7 +2801,7 @@ namespace Expresso.Test
                         ),
                         Statement.MakeVarDecl(
                             Helpers.MakeSeq(
-                                PatternConstruct.MakeIdentifierPattern(
+                                Helpers.MakePaticularPatternWithType(
                                     "c",
                                     Helpers.MakePrimitiveType("int")
                                 )
@@ -2825,7 +2825,7 @@ namespace Expresso.Test
                         ),
                         Statement.MakeVarDecl(
                             Helpers.MakeSeq(
-                                PatternConstruct.MakeIdentifierPattern(
+                                Helpers.MakePaticularPatternWithType(
                                     "d",
                                     Helpers.MakePrimitiveType("int")
                                 )
@@ -2923,7 +2923,7 @@ namespace Expresso.Test
                     Statement.MakeBlock(
                         Statement.MakeVarDecl(
                             Helpers.MakeSeq(
-                                PatternConstruct.MakeIdentifierPattern(
+                                Helpers.MakePaticularPatternWithType(
                                     "tmp",
                                     Helpers.MakePrimitiveType("string")
                                 )
@@ -3040,7 +3040,7 @@ namespace Expresso.Test
                         ),
                         Statement.MakeVarDecl(
                             Helpers.MakeSeq(
-                                PatternConstruct.MakeIdentifierPattern("tmp2", Helpers.MakePrimitiveType("int"))
+                                Helpers.MakePaticularPatternWithType("tmp2", Helpers.MakePrimitiveType("int"))
                             ),
                             Helpers.MakeSeq(
                                 Expression.MakeConstant("int", 1)
@@ -3155,7 +3155,7 @@ namespace Expresso.Test
                         ),
                         Statement.MakeVarDecl(
                             Helpers.MakeSeq(
-                                PatternConstruct.MakeIdentifierPattern("tmp3", Helpers.MakeGenericType("TestClass"))
+                                Helpers.MakePaticularPatternWithType("tmp3", Helpers.MakeGenericType("TestClass"))
                             ),
                             Helpers.MakeSeq(
                                 Expression.MakeObjectCreation(
@@ -3446,7 +3446,7 @@ namespace Expresso.Test
                         ),*/
                         Statement.MakeVarDecl(
                             Helpers.MakeSeq(
-                                PatternConstruct.MakeIdentifierPattern(
+                                Helpers.MakePaticularPatternWithType(
                                     "tmp6",
                                     Helpers.MakeGenericType(
                                         "tuple",
@@ -3743,7 +3743,7 @@ namespace Expresso.Test
                     Statement.MakeBlock(
                         Statement.MakeVarDecl(
                             Helpers.MakeSeq(
-                                PatternConstruct.MakeIdentifierPattern(
+                                Helpers.MakePaticularPatternWithType(
                                     "a",
                                     AstType.MakeMemberType(
                                         Helpers.MakeGenericType("TestModule"),
@@ -3771,7 +3771,7 @@ namespace Expresso.Test
                         ),
                         Statement.MakeVarDecl(
                             Helpers.MakeSeq(
-                                PatternConstruct.MakeIdentifierPattern(
+                                Helpers.MakePaticularPatternWithType(
                                     "b",
                                     Helpers.MakeGenericType("TestClass")
                                 )
@@ -3803,7 +3803,7 @@ namespace Expresso.Test
                         ),
                         Statement.MakeVarDecl(
                             Helpers.MakeSeq(
-                                PatternConstruct.MakeIdentifierPattern(
+                                Helpers.MakePaticularPatternWithType(
                                     "c",
                                     Helpers.MakeGenericType(
                                         "tuple",
@@ -3832,7 +3832,7 @@ namespace Expresso.Test
                         ),
                         Statement.MakeVarDecl(
                             Helpers.MakeSeq(
-                                PatternConstruct.MakeIdentifierPattern(
+                                Helpers.MakePaticularPatternWithType(
                                     "d",
                                     Helpers.MakePrimitiveType("double")
                                 )
@@ -3959,7 +3959,7 @@ namespace Expresso.Test
                     Statement.MakeBlock(
                         Statement.MakeVarDecl(
                             Helpers.MakeSeq(
-                                PatternConstruct.MakeIdentifierPattern(
+                                Helpers.MakePaticularPatternWithType(
                                     "c",
                                     AstType.MakeFunctionType(
                                         "closure",
@@ -3997,7 +3997,7 @@ namespace Expresso.Test
                         ),
                         Statement.MakeVarDecl(
                             Helpers.MakeSeq(
-                                PatternConstruct.MakeIdentifierPattern(
+                                Helpers.MakePaticularPatternWithType(
                                     "c2",
                                     AstType.MakeFunctionType(
                                         "closure",
@@ -4014,7 +4014,7 @@ namespace Expresso.Test
                                     Statement.MakeBlock(
                                         Statement.MakeVarDecl(
                                             Helpers.MakeSeq(
-                                                PatternConstruct.MakeIdentifierPattern(
+                                                Helpers.MakePaticularPatternWithType(
                                                     "y",
                                                     Helpers.MakePrimitiveType("int")
                                                 )
@@ -4050,7 +4050,7 @@ namespace Expresso.Test
                         ),
                         Statement.MakeVarDecl(
                             Helpers.MakeSeq(
-                                PatternConstruct.MakeIdentifierPattern(
+                                Helpers.MakePaticularPatternWithType(
                                     "a",
                                     Helpers.MakePrimitiveType("int")
                                 )
@@ -4074,7 +4074,7 @@ namespace Expresso.Test
                         ),
                         Statement.MakeVarDecl(
                             Helpers.MakeSeq(
-                                PatternConstruct.MakeIdentifierPattern(
+                                Helpers.MakePaticularPatternWithType(
                                     "b",
                                     Helpers.MakePrimitiveType("int")
                                 )
@@ -4098,7 +4098,7 @@ namespace Expresso.Test
                         ),
                         Statement.MakeVarDecl(
                             Helpers.MakeSeq(
-                                PatternConstruct.MakeIdentifierPattern(
+                                Helpers.MakePaticularPatternWithType(
                                     "d",
                                     Helpers.MakePrimitiveType("int")
                                 )
@@ -4148,7 +4148,7 @@ namespace Expresso.Test
                         ),
                         Statement.MakeVarDecl(
                             Helpers.MakeSeq(
-                                PatternConstruct.MakeIdentifierPattern(
+                                Helpers.MakePaticularPatternWithType(
                                     "e",
                                     Helpers.MakePrimitiveType("int")
                                 )
@@ -4160,7 +4160,7 @@ namespace Expresso.Test
                         ),
                         Statement.MakeVarDecl(
                             Helpers.MakeSeq(
-                                PatternConstruct.MakeIdentifierPattern(
+                                Helpers.MakePaticularPatternWithType(
                                     "c3",
                                     AstType.MakeFunctionType(
                                         "closure",
@@ -4206,7 +4206,7 @@ namespace Expresso.Test
                         ),
                         Statement.MakeVarDecl(
                             Helpers.MakeSeq(
-                                PatternConstruct.MakeIdentifierPattern(
+                                Helpers.MakePaticularPatternWithType(
                                     "f",
                                     Helpers.MakePrimitiveType("int")
                                 )
@@ -4284,7 +4284,7 @@ namespace Expresso.Test
                     Statement.MakeBlock(
                         Statement.MakeVarDecl(
                             Helpers.MakeSeq(
-	                            PatternConstruct.MakeIdentifierPattern(
+	                            Helpers.MakePaticularPatternWithType(
 	                                "c",
 	                                AstType.MakeFunctionType(
 	                                    "closure",
@@ -4330,7 +4330,7 @@ namespace Expresso.Test
                         ),
                         Statement.MakeVarDecl(
                             Helpers.MakeSeq(
-                                PatternConstruct.MakeIdentifierPattern(
+                                Helpers.MakePaticularPatternWithType(
                                     "a",
                                     Helpers.MakePrimitiveType("int")
                                 )
@@ -4354,7 +4354,7 @@ namespace Expresso.Test
                         ),
                         Statement.MakeVarDecl(
                             Helpers.MakeSeq(
-                                PatternConstruct.MakeIdentifierPattern(
+                                Helpers.MakePaticularPatternWithType(
                                     "c2",
                                     AstType.MakeFunctionType(
                                         "closure",
@@ -4371,7 +4371,7 @@ namespace Expresso.Test
                                     Statement.MakeBlock(
                                         Statement.MakeVarDecl(
                                             Helpers.MakeSeq(
-                                                PatternConstruct.MakeIdentifierPattern(
+                                                Helpers.MakePaticularPatternWithType(
                                                     "result",
                                                     Helpers.MakePrimitiveType("int")
                                                 )
@@ -4434,7 +4434,7 @@ namespace Expresso.Test
                         ),
                         Statement.MakeVarDecl(
                             Helpers.MakeSeq(
-                                PatternConstruct.MakeIdentifierPattern(
+                                Helpers.MakePaticularPatternWithType(
                                     "b",
                                     Helpers.MakePrimitiveType("int")
                                 )
@@ -4458,7 +4458,7 @@ namespace Expresso.Test
                         ),
                         Statement.MakeVarDecl(
                             Helpers.MakeSeq(
-                                PatternConstruct.MakeIdentifierPattern(
+                                Helpers.MakePaticularPatternWithType(
                                     "c3",
                                     AstType.MakeFunctionType(
                                         "closure",
@@ -4475,7 +4475,7 @@ namespace Expresso.Test
                                     Statement.MakeBlock(
                                         Statement.MakeVarDecl(
                                             Helpers.MakeSeq(
-                                                PatternConstruct.MakeIdentifierPattern(
+                                                Helpers.MakePaticularPatternWithType(
                                                     "j",
                                                     Helpers.MakePrimitiveType("int")
                                                 )
@@ -4831,7 +4831,7 @@ namespace Expresso.Test
                         ),*/
                         Statement.MakeVarDecl(
                             Helpers.MakeSeq(
-                                PatternConstruct.MakeIdentifierPattern(
+                                Helpers.MakePaticularPatternWithType(
                                     "tmp2",
                                     Helpers.MakePrimitiveType("int")
                                 )
@@ -5006,7 +5006,7 @@ namespace Expresso.Test
                     Statement.MakeBlock(
                         Statement.MakeVarDecl(
                             Helpers.MakeSeq(
-                                PatternConstruct.MakeIdentifierPattern(
+                                Helpers.MakePaticularPatternWithType(
                                     "a",
                                     Helpers.MakeGenericType(
                                         "array",
@@ -5060,7 +5060,7 @@ namespace Expresso.Test
                         ),
                         Statement.MakeVarDecl(
                             Helpers.MakeSeq(
-                                PatternConstruct.MakeIdentifierPattern(
+                                Helpers.MakePaticularPatternWithType(
                                     "b",
                                     Helpers.MakeGenericType(
                                         "dictionary",
@@ -5124,7 +5124,7 @@ namespace Expresso.Test
                         ),
                         Statement.MakeVarDecl(
                             Helpers.MakeSeq(
-                                PatternConstruct.MakeIdentifierPattern(
+                                Helpers.MakePaticularPatternWithType(
                                     "c",
                                     Helpers.MakeGenericType(
                                         "tuple",
@@ -5161,7 +5161,7 @@ namespace Expresso.Test
                         ),
                         Statement.MakeVarDecl(
                             Helpers.MakeSeq(
-                                PatternConstruct.MakeIdentifierPattern(
+                                Helpers.MakePaticularPatternWithType(
                                     "d",
                                     Helpers.MakeGenericType(
                                         "slice",
@@ -5204,7 +5204,7 @@ namespace Expresso.Test
                         ),
                         Statement.MakeVarDecl(
                             Helpers.MakeSeq(
-                                PatternConstruct.MakeIdentifierPattern(
+                                Helpers.MakePaticularPatternWithType(
                                     "y",
                                     Helpers.MakeGenericType(
                                         "vector",
@@ -5374,7 +5374,7 @@ namespace Expresso.Test
                     Statement.MakeBlock(
                         Statement.MakeVarDecl(
                             Helpers.MakeSeq(
-                                PatternConstruct.MakeIdentifierPattern(
+                                Helpers.MakePaticularPatternWithType(
                                     "a",
                                     Helpers.MakeGenericType(
                                         "array",
@@ -5436,7 +5436,7 @@ namespace Expresso.Test
                         ),
                         Statement.MakeVarDecl(
                             Helpers.MakeSeq(
-                                PatternConstruct.MakeIdentifierPattern(
+                                Helpers.MakePaticularPatternWithType(
                                     "b",
                                     Helpers.MakeGenericType(
                                         "slice",
@@ -5470,7 +5470,7 @@ namespace Expresso.Test
                         ),
                         Statement.MakeVarDecl(
                             Helpers.MakeSeq(
-                                PatternConstruct.MakeIdentifierPattern(
+                                Helpers.MakePaticularPatternWithType(
                                     "c",
                                     Helpers.MakeGenericType(
                                         "vector",
@@ -5532,7 +5532,7 @@ namespace Expresso.Test
                         ),
                         Statement.MakeVarDecl(
                             Helpers.MakeSeq(
-                                PatternConstruct.MakeIdentifierPattern(
+                                Helpers.MakePaticularPatternWithType(
                                     "d",
                                     Helpers.MakeGenericType(
                                         "slice",
@@ -5626,7 +5626,7 @@ namespace Expresso.Test
                     Statement.MakeBlock(
                         Statement.MakeVarDecl(
                             Helpers.MakeSeq(
-                                PatternConstruct.MakeIdentifierPattern(
+                                Helpers.MakePaticularPatternWithType(
                                     "a",
                                     Helpers.MakePrimitiveType("int")
                                 )
@@ -5638,7 +5638,7 @@ namespace Expresso.Test
                         ),
                         Statement.MakeVarDecl(
                             Helpers.MakeSeq(
-                                PatternConstruct.MakeIdentifierPattern(
+                                Helpers.MakePaticularPatternWithType(
                                     "b",
                                     Helpers.MakePrimitiveType("byte")
                                 )
