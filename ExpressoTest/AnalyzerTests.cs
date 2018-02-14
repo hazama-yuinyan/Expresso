@@ -1725,6 +1725,954 @@ namespace Expresso.Test
         }
 
         [Test]
+        public void MatchStatements()
+        {
+            var parser = new Parser(new Scanner("../../sources/for_unit_tests/match_statements.exs"));
+            parser.DoPostParseProcessing = true;
+            parser.Parse();
+
+            var ast = parser.TopmostAst;
+
+            var expected_ast = AstNode.MakeModuleDef("main", new List<EntityDeclaration>{
+                EntityDeclaration.MakeClassDecl(
+                    "TestClass",
+                    Enumerable.Empty<AstType>(),
+                    Helpers.MakeSeq<EntityDeclaration>(
+                        EntityDeclaration.MakeField(
+                            Helpers.MakeSeq(
+                                AstNode.MakeIdentifier("x", Helpers.MakePrimitiveType("int")),
+                                AstNode.MakeIdentifier("y", Helpers.MakePrimitiveType("int")),
+                                AstNode.MakeIdentifier("z", Helpers.MakePrimitiveType("int"))
+                            ),
+                            Helpers.MakeSeq(
+                                Expression.Null,
+                                Expression.Null,
+                                Expression.Null
+                            ),
+                            Modifiers.Public | Modifiers.Immutable
+                        )
+                    ),
+                    Modifiers.None
+                ),
+                EntityDeclaration.MakeFunc(
+                    "main",
+                    Enumerable.Empty<ParameterDeclaration>(),
+                    Statement.MakeBlock(
+                        Statement.MakeVarDecl(
+                            Helpers.MakeSeq(
+                                Helpers.MakePaticularPatternWithType(
+                                    "tmp",
+                                    Helpers.MakePrimitiveType("string")
+                                )
+                            ),
+                            Helpers.MakeSeq(
+                                Expression.MakeConstant(
+                                    "string",
+                                    "akarichan"
+                                )
+                            ),
+                            Modifiers.Immutable
+                        ),
+                        Statement.MakeMatchStmt(
+                            Helpers.MakeIdentifierPath(
+                                "tmp",
+                                Helpers.MakePrimitiveType("string")
+                            ),
+                            Statement.MakeMatchClause(
+                                null,
+                                Statement.MakeExprStmt(
+                                    Helpers.MakeCallExpression(
+                                        Helpers.MakeIdentifierPath(
+                                            "println",
+                                            AstType.MakeFunctionType(
+                                                "println",
+                                                Helpers.MakeVoidType(),
+                                                TextLocation.Empty,
+                                                TextLocation.Empty,
+                                                Helpers.MakePrimitiveType("string")
+                                            )
+                                        ),
+                                        Expression.MakeConstant(
+                                            "string",
+                                            "kawakawa"
+                                        )
+                                    )
+                                ),
+                                PatternConstruct.MakeExpressionPattern(
+                                    Expression.MakeConstant("string", "akarichan")
+                                )
+                            ),
+                            Statement.MakeMatchClause(
+                                Expression.MakeConstant("bool", true),
+                                Statement.MakeExprStmt(
+                                    Helpers.MakeCallExpression(
+                                        Helpers.MakeIdentifierPath(
+                                            "println",
+                                            AstType.MakeFunctionType(
+                                                "println",
+                                                Helpers.MakeVoidType(),
+                                                TextLocation.Empty,
+                                                TextLocation.Empty,
+                                                Helpers.MakePrimitiveType("string")
+                                            )
+                                        ),
+                                        Expression.MakeConstant(
+                                            "string",
+                                            "ankokuthunder!"
+                                        )
+                                    )
+                                ),
+                                PatternConstruct.MakeExpressionPattern(
+                                    Expression.MakeConstant("string", "chinatsu")
+                                )
+                            ),
+                            Statement.MakeMatchClause(
+                                null,
+                                Statement.MakeExprStmt(
+                                    Helpers.MakeCallExpression(
+                                        Helpers.MakeIdentifierPath(
+                                            "println",
+                                            AstType.MakeFunctionType(
+                                                "println",
+                                                Helpers.MakeVoidType(),
+                                                TextLocation.Empty,
+                                                TextLocation.Empty,
+                                                Helpers.MakePrimitiveType("string")
+                                            )
+                                        ),
+                                        Expression.MakeConstant(
+                                            "string",
+                                            "gaichiban!"
+                                        )
+                                    )
+                                ),
+                                PatternConstruct.MakeExpressionPattern(
+                                    Expression.MakeConstant("string", "kyoko")
+                                )
+                            ),
+                            Statement.MakeMatchClause(
+                                null,
+                                Statement.MakeExprStmt(
+                                    Helpers.MakeCallExpression(
+                                        Helpers.MakeIdentifierPath(
+                                            "println",
+                                            AstType.MakeFunctionType(
+                                                "println",
+                                                Helpers.MakeVoidType(),
+                                                TextLocation.Empty,
+                                                TextLocation.Empty,
+                                                Helpers.MakePrimitiveType("string")
+                                            )
+                                        ),
+                                        Expression.MakeConstant(
+                                            "string",
+                                            "doyaxtu!"
+                                        )
+                                    )
+                                ),
+                                PatternConstruct.MakeExpressionPattern(
+                                    Expression.MakeConstant("string", "yui")
+                                )
+                            )
+                        ),
+                        Statement.MakeVarDecl(
+                            Helpers.MakeSeq(
+                                Helpers.MakePaticularPatternWithType("tmp2", Helpers.MakePrimitiveType("int"))
+                            ),
+                            Helpers.MakeSeq(
+                                Expression.MakeConstant("int", 1)
+                            ),
+                            Modifiers.Immutable
+                        ),
+                        Statement.MakeMatchStmt(
+                            Helpers.MakeIdentifierPath("tmp2", Helpers.MakePrimitiveType("int")),
+                            Statement.MakeMatchClause(
+                                null,
+                                Statement.MakeExprStmt(
+                                    Expression.MakeSequenceExpression(
+                                        Helpers.MakeCallExpression(
+                                            Helpers.MakeIdentifierPath(
+                                                "println",
+                                                AstType.MakeFunctionType(
+                                                    "println",
+                                                    Helpers.MakeVoidType(),
+                                                    TextLocation.Empty,
+                                                    TextLocation.Empty,
+                                                    Helpers.MakePrimitiveType("string")
+                                                )
+                                            ),
+                                            Expression.MakeConstant("string", "0")
+                                        )
+                                    )
+                                ),
+                                PatternConstruct.MakeExpressionPattern(
+                                    Expression.MakeConstant("int", 0)
+                                )
+                            ),
+                            Statement.MakeMatchClause(
+                                null,
+                                Statement.MakeExprStmt(
+                                    Expression.MakeSequenceExpression(
+                                        Helpers.MakeCallExpression(
+                                            Helpers.MakeIdentifierPath(
+                                                "println",
+                                                AstType.MakeFunctionType(
+                                                    "println",
+                                                    Helpers.MakeVoidType(),
+                                                    TextLocation.Empty,
+                                                    TextLocation.Empty,
+                                                    Helpers.MakePrimitiveType("string")
+                                                )
+                                            ),
+                                            Expression.MakeConstant("string", "1 or 2")
+                                        )
+                                    )
+                                ),
+                                PatternConstruct.MakeExpressionPattern(
+                                    Expression.MakeConstant("int", 1)
+                                ),
+                                PatternConstruct.MakeExpressionPattern(
+                                    Expression.MakeConstant("int", 2)
+                                )
+                            ),
+                            Statement.MakeMatchClause(
+                                null,
+                                Statement.MakeExprStmt(
+                                    Expression.MakeSequenceExpression(
+                                        Helpers.MakeCallExpression(
+                                            Helpers.MakeIdentifierPath(
+                                                "printFormat",
+                                                AstType.MakeFunctionType(
+                                                    "printFormat",
+                                                    Helpers.MakeVoidType(),
+                                                    TextLocation.Empty,
+                                                    TextLocation.Empty,
+                                                    Helpers.MakePrimitiveType("string")
+                                                )
+                                            ),
+                                            Expression.MakeConstant("string", "{0} is in the range of 3 to 10\n"),
+                                            Helpers.MakeIdentifierPath("i", Helpers.MakePrimitiveType("int"))
+                                        )
+                                    )
+                                ),
+                                PatternConstruct.MakeIdentifierPattern(
+                                    "i",
+                                    Helpers.MakePrimitiveType("int"),
+                                    PatternConstruct.MakeExpressionPattern(
+                                        Expression.MakeIntSeq(
+                                            Expression.MakeConstant("int", 3),
+                                            Expression.MakeConstant("int", 10),
+                                            Expression.MakeConstant("int", 1),
+                                            true
+                                        )
+                                    )
+                                )
+                            ),
+                            Statement.MakeMatchClause(
+                                null,
+                                Statement.MakeExprStmt(
+                                    Expression.MakeSequenceExpression(
+                                        Helpers.MakeCallExpression(
+                                            Helpers.MakeIdentifierPath(
+                                                "println",
+                                                AstType.MakeFunctionType(
+                                                    "println",
+                                                    Helpers.MakeVoidType(),
+                                                    TextLocation.Empty,
+                                                    TextLocation.Empty,
+                                                    Helpers.MakePrimitiveType("string")
+                                                )
+                                            ),
+                                            Expression.MakeConstant("string", "otherwise")
+                                        )
+                                    )
+                                ),
+                                PatternConstruct.MakeWildcardPattern()
+                            )
+                        ),
+                        Statement.MakeVarDecl(
+                            Helpers.MakeSeq(
+                                Helpers.MakePaticularPatternWithType("tmp3", Helpers.MakeGenericType("TestClass"))
+                            ),
+                            Helpers.MakeSeq(
+                                Expression.MakeObjectCreation(
+                                    Helpers.MakeGenericType("TestClass"),
+                                    Helpers.MakeSeq(
+                                        AstNode.MakeIdentifier("x"),
+                                        AstNode.MakeIdentifier("y"),
+                                        AstNode.MakeIdentifier("z")
+                                    ),
+                                    Helpers.MakeSeq(
+                                        Expression.MakeConstant("int", 1),
+                                        Expression.MakeConstant("int", 2),
+                                        Expression.MakeConstant("int", 3)
+                                    )
+                                )
+                            ),
+                            Modifiers.Immutable
+                        ),
+                        Statement.MakeMatchStmt(
+                            Helpers.MakeIdentifierPath("tmp3", Helpers.MakeGenericType("TestClass")),
+                            Statement.MakeMatchClause(
+                                null,
+                                Statement.MakeExprStmt(
+                                    Expression.MakeSequenceExpression(
+                                        Helpers.MakeCallExpression(
+                                            Helpers.MakeIdentifierPath(
+                                                "printFormat",
+                                                AstType.MakeFunctionType(
+                                                    "printFormat",
+                                                    Helpers.MakeVoidType(),
+                                                    TextLocation.Empty,
+                                                    TextLocation.Empty,
+                                                    Helpers.MakePrimitiveType("string")
+                                                )
+                                            ),
+                                            Expression.MakeConstant("string", "x is {0}\n"),
+                                            Helpers.MakeIdentifierPath(
+                                                "x",
+                                                Helpers.MakePrimitiveType("int")
+                                            )
+                                        )
+                                    )
+                                ),
+                                PatternConstruct.MakeDestructuringPattern(
+                                    Helpers.MakeGenericType("TestClass"),
+                                    PatternConstruct.MakeIdentifierPattern(
+                                        "x",
+                                        Helpers.MakePrimitiveType("int"),
+                                        null
+                                    ),
+                                    PatternConstruct.MakeIgnoringRestPattern()
+                                )
+                            ),
+                            Statement.MakeMatchClause(
+                                null,
+                                Statement.MakeExprStmt(
+                                    Expression.MakeSequenceExpression(
+                                        Helpers.MakeCallExpression(
+                                            Helpers.MakeIdentifierPath(
+                                                "printFormat",
+                                                AstType.MakeFunctionType(
+                                                    "printFormat",
+                                                    Helpers.MakeVoidType(),
+                                                    TextLocation.Empty,
+                                                    TextLocation.Empty,
+                                                    Helpers.MakePrimitiveType("string")
+                                                )
+                                            ),
+                                            Expression.MakeConstant("string", "x is {0} and y is {1}\n"),
+                                            Helpers.MakeIdentifierPath(
+                                                "x",
+                                                Helpers.MakePrimitiveType("int")
+                                            ),
+                                            Helpers.MakeIdentifierPath(
+                                                "y",
+                                                Helpers.MakePrimitiveType("int")
+                                            )
+                                        )
+                                    )
+                                ),
+                                PatternConstruct.MakeDestructuringPattern(
+                                    Helpers.MakeGenericType("TestClass"),
+                                    PatternConstruct.MakeIdentifierPattern(
+                                        "x",
+                                        Helpers.MakePrimitiveType("int"),
+                                        null
+                                    ),
+                                    PatternConstruct.MakeIdentifierPattern(
+                                        "y",
+                                        Helpers.MakePrimitiveType("int"),
+                                        null
+                                    ),
+                                    PatternConstruct.MakeWildcardPattern()
+                                )
+                            )
+                        ),
+                        /*Statement.MakeVarDecl(
+                            Helpers.MakeSeq(
+                                AstNode.MakeIdentifier("tmp4", Helpers.MakeGenericType("vector", Helpers.MakePrimitiveType("int")))
+                            ),
+                            Helpers.MakeSeq(
+                                Expression.MakeSequenceInitializer(
+                                    Helpers.MakeGenericType("vector", Helpers.MakePrimitiveType("int")),
+                                    Expression.MakeConstant("int", 1),
+                                    Expression.MakeConstant("int", 2),
+                                    Expression.MakeConstant("int", 3),
+                                    Expression.MakeConstant("int", 4)
+                                )
+                            ),
+                            Modifiers.Immutable
+                        ),
+                        Statement.MakeMatchStmt(
+                            Helpers.MakeIdentifierPath(
+                                "tmp4",
+                                Helpers.MakeGenericType("vector", Helpers.MakePrimitiveType("int"))
+                            ),
+                            Statement.MakeMatchClause(
+                                null,
+                                Statement.MakeExprStmt(
+                                    Expression.MakeSequenceExpression(
+                                        Helpers.MakeCallExpression(
+                                            Helpers.MakeIdentifierPath(
+                                                "printFormat",
+                                                AstType.MakeFunctionType(
+                                                    "printFormat",
+                                                    Helpers.MakeVoidType(),
+                                                    TextLocation.Empty,
+                                                    TextLocation.Empty,
+                                                    Helpers.MakePrimitiveType("string")
+                                                )
+                                            ),
+                                            Expression.MakeConstant("string", "x and y are both vector's elements and the values are {0} and {1} respectively"),
+                                            Helpers.MakeIdentifierPath(
+                                                "x",
+                                                Helpers.MakePrimitiveType("int")
+                                            ),
+                                            Helpers.MakeIdentifierPath(
+                                                "y",
+                                                Helpers.MakePrimitiveType("int")
+                                            )
+                                        )
+                                    )
+                                ),
+                                PatternConstruct.MakeCollectionPattern(
+                                    true,
+                                    PatternConstruct.MakeIdentifierPattern(
+                                        "x",
+                                        Helpers.MakePrimitiveType("int"),
+                                        null
+                                    ),
+                                    PatternConstruct.MakeIdentifierPattern(
+                                        "y",
+                                        Helpers.MakePrimitiveType("int"),
+                                        null
+                                    ),
+                                    PatternConstruct.MakeIgnoringRestPattern()
+                                )
+                            ),
+                            Statement.MakeMatchClause(
+                                null,
+                                Statement.MakeExprStmt(
+                                    Expression.MakeSequenceExpression(
+                                        Helpers.MakeCallExpression(
+                                            Helpers.MakeIdentifierPath(
+                                                "print",
+                                                AstType.MakeFunctionType(
+                                                    "print",
+                                                    Helpers.MakeVoidType(),
+                                                    TextLocation.Empty,
+                                                    TextLocation.Empty,
+                                                    Helpers.MakePrimitiveType("string")
+                                                )
+                                            ),
+                                            Expression.MakeConstant("string", "tmp4 is a vector")
+                                        )
+                                    )
+                                ),
+                                PatternConstruct.MakeCollectionPattern(
+                                    true,
+                                    PatternConstruct.MakeExpressionPattern(
+                                        Expression.MakeConstant("int", 1)
+                                    ),
+                                    PatternConstruct.MakeExpressionPattern(
+                                        Expression.MakeConstant("int", 2)
+                                    ),
+                                    PatternConstruct.MakeExpressionPattern(
+                                        Expression.MakeConstant("int", 3)
+                                    ),
+                                    PatternConstruct.MakeWildcardPattern()
+                                )
+                            )
+                        ),
+                        Statement.MakeVarDecl(
+                            Helpers.MakeSeq(
+                                AstNode.MakeIdentifier("tmp5", Helpers.MakeGenericType("array", Helpers.MakePrimitiveType("int")))
+                            ),
+                            Helpers.MakeSeq(
+                                Expression.MakeSequenceInitializer(
+                                    Helpers.MakeGenericType("array", Helpers.MakePrimitiveType("int")),
+                                    Expression.MakeConstant("int", 1),
+                                    Expression.MakeConstant("int", 2),
+                                    Expression.MakeConstant("int", 3),
+                                    Expression.MakeConstant("int", 4)
+                                )
+                            ),
+                            Modifiers.Immutable
+                        ),
+                        Statement.MakeMatchStmt(
+                            Helpers.MakeIdentifierPath(
+                                "tmp5",
+                                Helpers.MakeGenericType("array", Helpers.MakePrimitiveType("int"))
+                            ),
+                            Statement.MakeMatchClause(
+                                null,
+                                Statement.MakeExprStmt(
+                                    Expression.MakeSequenceExpression(
+                                        Helpers.MakeCallExpression(
+                                            Helpers.MakeIdentifierPath(
+                                                "printFormat",
+                                                AstType.MakeFunctionType(
+                                                    "printFormat",
+                                                    Helpers.MakeVoidType(),
+                                                    TextLocation.Empty,
+                                                    TextLocation.Empty,
+                                                    Helpers.MakePrimitiveType("string")
+                                                )
+                                            ),
+                                            Expression.MakeConstant("string", "x and y are both array's elements and the values are {0} and {1} respectively"),
+                                            Helpers.MakeIdentifierPath(
+                                                "x",
+                                                Helpers.MakePrimitiveType("int")
+                                            ),
+                                            Helpers.MakeIdentifierPath(
+                                                "y",
+                                                Helpers.MakePrimitiveType("int")
+                                            )
+                                        )
+                                    )
+                                ),
+                                PatternConstruct.MakeCollectionPattern(
+                                    false,
+                                    PatternConstruct.MakeIdentifierPattern(
+                                        "x",
+                                        Helpers.MakePrimitiveType("int"),
+                                        null
+                                    ),
+                                    PatternConstruct.MakeIdentifierPattern(
+                                        "y",
+                                        Helpers.MakePrimitiveType("int"),
+                                        null
+                                    ),
+                                    PatternConstruct.MakeIgnoringRestPattern()
+                                )
+                            ),
+                            Statement.MakeMatchClause(
+                                null,
+                                Statement.MakeExprStmt(
+                                    Expression.MakeSequenceExpression(
+                                        Helpers.MakeCallExpression(
+                                            Helpers.MakeIdentifierPath(
+                                                "print",
+                                                AstType.MakeFunctionType(
+                                                    "print",
+                                                    Helpers.MakeVoidType(),
+                                                    TextLocation.Empty,
+                                                    TextLocation.Empty,
+                                                    Helpers.MakePrimitiveType("string")
+                                                )
+                                            ),
+                                            Expression.MakeConstant("string", "tmp5 is an array")
+                                        )
+                                    )
+                                ),
+                                PatternConstruct.MakeCollectionPattern(
+                                    false,
+                                    PatternConstruct.MakeExpressionPattern(
+                                        Expression.MakeConstant("int", 1)
+                                    ),
+                                    PatternConstruct.MakeExpressionPattern(
+                                        Expression.MakeConstant("int", 2)
+                                    ),
+                                    PatternConstruct.MakeExpressionPattern(
+                                        Expression.MakeConstant("int", 3)
+                                    ),
+                                    PatternConstruct.MakeWildcardPattern()
+                                )
+                            )
+                        ),*/
+                        Statement.MakeVarDecl(
+                            Helpers.MakeSeq(
+                                Helpers.MakePaticularPatternWithType(
+                                    "tmp6",
+                                    Helpers.MakeGenericType(
+                                        "tuple",
+                                        Helpers.MakePrimitiveType("int"),
+                                        Helpers.MakePrimitiveType("int")
+                                    )
+                                )
+                            ),
+                            Helpers.MakeSeq(
+                                Expression.MakeParen(
+                                    Expression.MakeSequenceExpression(
+                                        Expression.MakeConstant("int", 1),
+                                        Expression.MakeConstant("int", 2)
+                                    )
+                                )
+                            ),
+                            Modifiers.Immutable
+                        ),
+                        Statement.MakeMatchStmt(
+                            Helpers.MakeIdentifierPath(
+                                "tmp6",
+                                Helpers.MakeGenericType(
+                                    "tuple",
+                                    Helpers.MakePrimitiveType("int"),
+                                    Helpers.MakePrimitiveType("int")
+                                )
+                            ),
+                            Statement.MakeMatchClause(
+                                null,
+                                Statement.MakeExprStmt(
+                                    Expression.MakeSequenceExpression(
+                                        Helpers.MakeCallExpression(
+                                            Helpers.MakeIdentifierPath(
+                                                "printFormat",
+                                                AstType.MakeFunctionType(
+                                                    "printFormat",
+                                                    Helpers.MakeVoidType(),
+                                                    TextLocation.Empty,
+                                                    TextLocation.Empty,
+                                                    Helpers.MakePrimitiveType("string")
+                                                )
+                                            ),
+                                            Expression.MakeConstant("string", "x is {0}\n"),
+                                            Helpers.MakeIdentifierPath(
+                                                "x",
+                                                Helpers.MakePrimitiveType("int")
+                                            )
+                                        ) 
+                                    )
+                                ),
+                                PatternConstruct.MakeTuplePattern(
+                                    PatternConstruct.MakeIdentifierPattern(
+                                        "x",
+                                        Helpers.MakePrimitiveType("int"),
+                                        null
+                                    ),
+                                    PatternConstruct.MakeIgnoringRestPattern()
+                                )
+                            ),
+                            Statement.MakeMatchClause(
+                                null,
+                                Statement.MakeExprStmt(
+                                    Expression.MakeSequenceExpression(
+                                        Helpers.MakeCallExpression(
+                                            Helpers.MakeIdentifierPath(
+                                                "printFormat",
+                                                AstType.MakeFunctionType(
+                                                    "printFormat",
+                                                    Helpers.MakeVoidType(),
+                                                    TextLocation.Empty,
+                                                    TextLocation.Empty,
+                                                    Helpers.MakePrimitiveType("string")
+                                                )
+                                            ),
+                                            Expression.MakeConstant("string", "x is {0} and y is {1}\n"),
+                                            Helpers.MakeIdentifierPath(
+                                                "x",
+                                                Helpers.MakePrimitiveType("int")
+                                            ),
+                                            Helpers.MakeIdentifierPath(
+                                                "y",
+                                                Helpers.MakePrimitiveType("int")
+                                            )
+                                        )
+                                    )
+                                ),
+                                PatternConstruct.MakeTuplePattern(
+                                    PatternConstruct.MakeIdentifierPattern(
+                                        "x",
+                                        Helpers.MakePrimitiveType("int"),
+                                        null
+                                    ),
+                                    PatternConstruct.MakeIdentifierPattern(
+                                        "y",
+                                        Helpers.MakePrimitiveType("int"),
+                                        null
+                                    )
+                                )
+                            )
+                        )
+                    ),
+                    Helpers.MakeVoidType(),
+                    Modifiers.None
+                )
+            });
+
+            Assert.IsNotNull(ast);
+            Helpers.AstStructuralEqual(ast, expected_ast);
+        }
+
+        [Test]
+        public void Functions()
+        {
+            var parser = new Parser(new Scanner("../../sources/for_unit_tests/functions.exs"));
+            parser.DoPostParseProcessing = true;
+            parser.Parse();
+
+            var ast = parser.TopmostAst;
+
+            var expected_ast = AstNode.MakeModuleDef("main", new List<EntityDeclaration>{
+                EntityDeclaration.MakeFunc(
+                    "test",
+                    Enumerable.Empty<ParameterDeclaration>(),
+                    Statement.MakeBlock(
+                        Statement.MakeVarDecl(
+                            Helpers.MakeSeq(
+                                Helpers.MakePaticularPatternWithType(
+                                    "a",
+                                    Helpers.MakePrimitiveType("int")
+                                )
+                            ),
+                            Helpers.MakeSeq(
+                                Expression.MakeConstant("int", 10)
+                            ),
+                            Modifiers.Immutable
+                        ),
+                        Helpers.MakeSingleItemReturnStatement(
+                            Expression.MakeBinaryExpr(
+                                OperatorType.Plus,
+                                Helpers.MakeIdentifierPath(
+                                    "a",
+                                    Helpers.MakePrimitiveType("int")
+                                ),
+                                Expression.MakeConstant("int", 10)
+                            )
+                        )
+                    ),
+                    Helpers.MakePrimitiveType("int"),
+                    Modifiers.None
+                ),
+                EntityDeclaration.MakeFunc(
+                    "test2",
+                    Helpers.MakeSeq(
+                        EntityDeclaration.MakeParameter(
+                            "n",
+                            Helpers.MakePrimitiveType("int")
+                        )
+                    ),
+                    Statement.MakeBlock(
+                        Helpers.MakeSingleItemReturnStatement(
+                            Expression.MakeBinaryExpr(
+                                OperatorType.Plus,
+                                Helpers.MakeIdentifierPath(
+                                    "n",
+                                    Helpers.MakePrimitiveType("int")
+                                ),
+                                Expression.MakeConstant("int", 10)
+                            )
+                        )
+                    ),
+                    Helpers.MakePrimitiveType("int"),
+                    Modifiers.None
+                ),
+                EntityDeclaration.MakeFunc(
+                    "test3",
+                    Helpers.MakeSeq(
+                        EntityDeclaration.MakeParameter(
+                            "n",
+                            Helpers.MakePrimitiveType("int")
+                        )
+                    ),
+                    Statement.MakeBlock(
+                        Helpers.MakeSingleItemReturnStatement(
+                            Expression.MakeBinaryExpr(
+                                OperatorType.Plus,
+                                Helpers.MakeIdentifierPath(
+                                    "n",
+                                    Helpers.MakePrimitiveType("int")
+                                ),
+                                Expression.MakeConstant("int", 20)
+                            )
+                        )
+                    ),
+                    Helpers.MakePrimitiveType("int"),
+                    Modifiers.None
+                ),
+                EntityDeclaration.MakeFunc(
+                    "test4",
+                    Helpers.MakeSeq(
+                        EntityDeclaration.MakeParameter("n", Helpers.MakePrimitiveType("int"))
+                    ),
+                    Statement.MakeBlock(
+                        Statement.MakeIfStmt(
+                            PatternConstruct.MakeExpressionPattern(
+                                Expression.MakeBinaryExpr(
+                                    OperatorType.GreaterThanOrEqual,
+                                    Helpers.MakeIdentifierPath(
+                                        "n",
+                                        Helpers.MakePrimitiveType("int")
+                                    ),
+                                    Expression.MakeConstant("int", 100)
+                                )
+                            ),
+                            Statement.MakeBlock(
+                                Helpers.MakeSingleItemReturnStatement(
+                                    Helpers.MakeIdentifierPath(
+                                        "n",
+                                        Helpers.MakePrimitiveType("int")
+                                    )
+                                )
+                            ),
+                            Statement.MakeBlock(
+                                Helpers.MakeSingleItemReturnStatement(
+                                    Expression.MakeCallExpr(
+                                        Helpers.MakeIdentifierPath(
+                                            "test4",
+                                            AstType.MakeFunctionType(
+                                                "test4",
+                                                Helpers.MakePrimitiveType("int"),
+                                                TextLocation.Empty,
+                                                TextLocation.Empty,
+                                                Helpers.MakePrimitiveType("int")
+                                            )
+                                        ),
+                                        TextLocation.Empty,
+                                        Expression.MakeBinaryExpr(
+                                            OperatorType.Plus,
+                                            Helpers.MakeIdentifierPath(
+                                                "n",
+                                                Helpers.MakePrimitiveType("int")
+                                            ),
+                                            Expression.MakeConstant("int", 10)
+                                        )
+                                    )
+                                )
+                            )
+                        )
+                    ),
+                    Helpers.MakePrimitiveType("int"),
+                    Modifiers.None
+                ),
+                EntityDeclaration.MakeFunc(
+                    "main",
+                    Enumerable.Empty<ParameterDeclaration>(),
+                    Statement.MakeBlock(
+                        Statement.MakeVarDecl(
+                            Helpers.MakeSeq(
+                                Helpers.MakePaticularPatternWithType(
+                                    "a",
+                                    Helpers.MakePrimitiveType("int")
+                                )
+                            ),
+                            Helpers.MakeSeq(
+                                Helpers.MakeCallExpression(
+                                    Helpers.MakeIdentifierPath(
+                                        "test",
+                                        AstType.MakeFunctionType(
+                                            "test",
+                                            Helpers.MakePrimitiveType("int"),
+                                            Enumerable.Empty<AstType>()
+                                        )
+                                    )
+                                )
+                            ),
+                            Modifiers.Immutable
+                        ),
+                        Statement.MakeVarDecl(
+                            Helpers.MakeSeq(
+                                Helpers.MakePaticularPatternWithType(
+                                    "b",
+                                    Helpers.MakePrimitiveType("int")
+                                )
+                            ),
+                            Helpers.MakeSeq(
+                                Helpers.MakeCallExpression(
+                                    Helpers.MakeIdentifierPath(
+                                        "test2",
+                                        AstType.MakeFunctionType(
+                                            "test2",
+                                            Helpers.MakePrimitiveType("int"),
+                                            TextLocation.Empty,
+                                            TextLocation.Empty,
+                                            Helpers.MakePrimitiveType("int")
+                                        )
+                                    ),
+                                    Expression.MakeConstant("int", 20)
+                                )
+                            ),
+                            Modifiers.Immutable
+                        ),
+                        Statement.MakeVarDecl(
+                            Helpers.MakeSeq(
+                                Helpers.MakePaticularPatternWithType(
+                                    "c",
+                                    Helpers.MakePrimitiveType("int")
+                                )
+                            ),
+                            Helpers.MakeSeq(
+                                Helpers.MakeCallExpression(
+                                    Helpers.MakeIdentifierPath(
+                                        "test3",
+                                        AstType.MakeFunctionType(
+                                            "test3",
+                                            Helpers.MakePrimitiveType("int"),
+                                            TextLocation.Empty,
+                                            TextLocation.Empty,
+                                            Helpers.MakePrimitiveType("int")
+                                        )
+                                    ),
+                                    Expression.MakeConstant("int", 20)
+                                )
+                            ),
+                            Modifiers.Immutable
+                        ),
+                        Statement.MakeVarDecl(
+                            Helpers.MakeSeq(
+                                Helpers.MakePaticularPatternWithType(
+                                    "d",
+                                    Helpers.MakePrimitiveType("int")
+                                )
+                            ),
+                            Helpers.MakeSeq(
+                                Helpers.MakeCallExpression(
+                                    Helpers.MakeIdentifierPath(
+                                        "test4",
+                                        AstType.MakeFunctionType(
+                                            "test4",
+                                            Helpers.MakePrimitiveType("int"),
+                                            TextLocation.Empty,
+                                            TextLocation.Empty,
+                                            Helpers.MakePrimitiveType("int")
+                                        )
+                                    ),
+                                    Expression.MakeConstant("int", 80)
+                                )
+                            ),
+                            Modifiers.Immutable
+                        ),
+                        Statement.MakeExprStmt(
+                            Helpers.MakeCallExpression(
+                                Helpers.MakeIdentifierPath(
+                                    "println",
+                                    AstType.MakeFunctionType(
+                                        "println",
+                                        Helpers.MakeVoidType(),
+                                        TextLocation.Empty,
+                                        TextLocation.Empty,
+                                        Helpers.MakePrimitiveType("string")
+                                    )
+                                ),
+                                Helpers.MakeIdentifierPath(
+                                    "a",
+                                    Helpers.MakePrimitiveType("int")
+                                ),
+                                Helpers.MakeIdentifierPath(
+                                    "b",
+                                    Helpers.MakePrimitiveType("int")
+                                ),
+                                Helpers.MakeIdentifierPath(
+                                    "c",
+                                    Helpers.MakePrimitiveType("int")
+                                ),
+                                Helpers.MakeIdentifierPath(
+                                    "d",
+                                    Helpers.MakePrimitiveType("int")
+                                )
+                            )
+                        )
+                    ),
+                    Helpers.MakeVoidType(),
+                    Modifiers.None
+                )
+            });
+
+            Assert.IsNotNull(ast);
+            Helpers.AstStructuralEqual(ast, expected_ast);
+        }
+
+        [Test]
         public void ComplexExpressions()
         {
             var parser = new Parser(new Scanner("../../sources/for_unit_tests/complex_expressions.exs"));
@@ -2286,6 +3234,11 @@ namespace Expresso.Test
         }
 
         [Test]
+        public void GeneralParams()
+        {
+        }
+
+        [Test]
         public void Class()
         {
             var parser = new Parser(new Scanner("../../sources/for_unit_tests/class.exs"));
@@ -2596,954 +3549,6 @@ namespace Expresso.Test
                                 Helpers.MakeIdentifierPath(
                                     "g",
                                     Helpers.MakePrimitiveType("int")
-                                )
-                            )
-                        )
-                    ),
-                    Helpers.MakeVoidType(),
-                    Modifiers.None
-                )
-            });
-
-            Assert.IsNotNull(ast);
-            Helpers.AstStructuralEqual(ast, expected_ast);
-        }
-
-        [Test]
-        public void Functions()
-        {
-            var parser = new Parser(new Scanner("../../sources/for_unit_tests/functions.exs"));
-            parser.DoPostParseProcessing = true;
-            parser.Parse();
-
-            var ast = parser.TopmostAst;
-
-            var expected_ast = AstNode.MakeModuleDef("main", new List<EntityDeclaration>{
-                EntityDeclaration.MakeFunc(
-                    "test",
-                    Enumerable.Empty<ParameterDeclaration>(),
-                    Statement.MakeBlock(
-                        Statement.MakeVarDecl(
-                            Helpers.MakeSeq(
-                                Helpers.MakePaticularPatternWithType(
-                                    "a",
-                                    Helpers.MakePrimitiveType("int")
-                                )
-                            ),
-                            Helpers.MakeSeq(
-                                Expression.MakeConstant("int", 10)
-                            ),
-                            Modifiers.Immutable
-                        ),
-                        Helpers.MakeSingleItemReturnStatement(
-                            Expression.MakeBinaryExpr(
-                                OperatorType.Plus,
-                                Helpers.MakeIdentifierPath(
-                                    "a",
-                                    Helpers.MakePrimitiveType("int")
-                                ),
-                                Expression.MakeConstant("int", 10)
-                            )
-                        )
-                    ),
-                    Helpers.MakePrimitiveType("int"),
-                    Modifiers.None
-                ),
-                EntityDeclaration.MakeFunc(
-                    "test2",
-                    Helpers.MakeSeq(
-                        EntityDeclaration.MakeParameter(
-                            "n",
-                            Helpers.MakePrimitiveType("int")
-                        )
-                    ),
-                    Statement.MakeBlock(
-                        Helpers.MakeSingleItemReturnStatement(
-                            Expression.MakeBinaryExpr(
-                                OperatorType.Plus,
-                                Helpers.MakeIdentifierPath(
-                                    "n",
-                                    Helpers.MakePrimitiveType("int")
-                                ),
-                                Expression.MakeConstant("int", 10)
-                            )
-                        )
-                    ),
-                    Helpers.MakePrimitiveType("int"),
-                    Modifiers.None
-                ),
-                EntityDeclaration.MakeFunc(
-                    "test3",
-                    Helpers.MakeSeq(
-                        EntityDeclaration.MakeParameter(
-                            "n",
-                            Helpers.MakePrimitiveType("int")
-                        )
-                    ),
-                    Statement.MakeBlock(
-                        Helpers.MakeSingleItemReturnStatement(
-                            Expression.MakeBinaryExpr(
-                                OperatorType.Plus,
-                                Helpers.MakeIdentifierPath(
-                                    "n",
-                                    Helpers.MakePrimitiveType("int")
-                                ),
-                                Expression.MakeConstant("int", 20)
-                            )
-                        )
-                    ),
-                    Helpers.MakePrimitiveType("int"),
-                    Modifiers.None
-                ),
-                EntityDeclaration.MakeFunc(
-                    "test4",
-                    Helpers.MakeSeq(
-                        EntityDeclaration.MakeParameter("n", Helpers.MakePrimitiveType("int"))
-                    ),
-                    Statement.MakeBlock(
-                        Statement.MakeIfStmt(
-                            PatternConstruct.MakeExpressionPattern(
-                                Expression.MakeBinaryExpr(
-                                    OperatorType.GreaterThanOrEqual,
-                                    Helpers.MakeIdentifierPath(
-                                        "n",
-                                        Helpers.MakePrimitiveType("int")
-                                    ),
-                                    Expression.MakeConstant("int", 100)
-                                )
-                            ),
-                            Statement.MakeBlock(
-                                Helpers.MakeSingleItemReturnStatement(
-                                    Helpers.MakeIdentifierPath(
-                                        "n",
-                                        Helpers.MakePrimitiveType("int")
-                                    )
-                                )
-                            ),
-                            Statement.MakeBlock(
-                                Helpers.MakeSingleItemReturnStatement(
-                                    Expression.MakeCallExpr(
-                                        Helpers.MakeIdentifierPath(
-                                            "test4",
-                                            AstType.MakeFunctionType(
-                                                "test4",
-                                                Helpers.MakePrimitiveType("int"),
-                                                TextLocation.Empty,
-                                                TextLocation.Empty,
-                                                Helpers.MakePrimitiveType("int")
-                                            )
-                                        ),
-                                        TextLocation.Empty,
-                                        Expression.MakeBinaryExpr(
-                                            OperatorType.Plus,
-                                            Helpers.MakeIdentifierPath(
-                                                "n",
-                                                Helpers.MakePrimitiveType("int")
-                                            ),
-                                            Expression.MakeConstant("int", 10)
-                                        )
-                                    )
-                                )
-                            )
-                        )
-                    ),
-                    Helpers.MakePrimitiveType("int"),
-                    Modifiers.None
-                ),
-                EntityDeclaration.MakeFunc(
-                    "main",
-                    Enumerable.Empty<ParameterDeclaration>(),
-                    Statement.MakeBlock(
-                        Statement.MakeVarDecl(
-                            Helpers.MakeSeq(
-                                Helpers.MakePaticularPatternWithType(
-                                    "a",
-                                    Helpers.MakePrimitiveType("int")
-                                )
-                            ),
-                            Helpers.MakeSeq(
-                                Helpers.MakeCallExpression(
-                                    Helpers.MakeIdentifierPath(
-                                        "test",
-                                        AstType.MakeFunctionType(
-                                            "test",
-                                            Helpers.MakePrimitiveType("int"),
-                                            Enumerable.Empty<AstType>()
-                                        )
-                                    )
-                                )
-                            ),
-                            Modifiers.Immutable
-                        ),
-                        Statement.MakeVarDecl(
-                            Helpers.MakeSeq(
-                                Helpers.MakePaticularPatternWithType(
-                                    "b",
-                                    Helpers.MakePrimitiveType("int")
-                                )
-                            ),
-                            Helpers.MakeSeq(
-                                Helpers.MakeCallExpression(
-                                    Helpers.MakeIdentifierPath(
-                                        "test2",
-                                        AstType.MakeFunctionType(
-                                            "test2",
-                                            Helpers.MakePrimitiveType("int"),
-                                            TextLocation.Empty,
-                                            TextLocation.Empty,
-                                            Helpers.MakePrimitiveType("int")
-                                        )
-                                    ),
-                                    Expression.MakeConstant("int", 20)
-                                )
-                            ),
-                            Modifiers.Immutable
-                        ),
-                        Statement.MakeVarDecl(
-                            Helpers.MakeSeq(
-                                Helpers.MakePaticularPatternWithType(
-                                    "c",
-                                    Helpers.MakePrimitiveType("int")
-                                )
-                            ),
-                            Helpers.MakeSeq(
-                                Helpers.MakeCallExpression(
-                                    Helpers.MakeIdentifierPath(
-                                        "test3",
-                                        AstType.MakeFunctionType(
-                                            "test3",
-                                            Helpers.MakePrimitiveType("int"),
-                                            TextLocation.Empty,
-                                            TextLocation.Empty,
-                                            Helpers.MakePrimitiveType("int")
-                                        )
-                                    ),
-                                    Expression.MakeConstant("int", 20)
-                                )
-                            ),
-                            Modifiers.Immutable
-                        ),
-                        Statement.MakeVarDecl(
-                            Helpers.MakeSeq(
-                                Helpers.MakePaticularPatternWithType(
-                                    "d",
-                                    Helpers.MakePrimitiveType("int")
-                                )
-                            ),
-                            Helpers.MakeSeq(
-                                Helpers.MakeCallExpression(
-                                    Helpers.MakeIdentifierPath(
-                                        "test4",
-                                        AstType.MakeFunctionType(
-                                            "test4",
-                                            Helpers.MakePrimitiveType("int"),
-                                            TextLocation.Empty,
-                                            TextLocation.Empty,
-                                            Helpers.MakePrimitiveType("int")
-                                        )
-                                    ),
-                                    Expression.MakeConstant("int", 80)
-                                )
-                            ),
-                            Modifiers.Immutable
-                        ),
-                        Statement.MakeExprStmt(
-                            Helpers.MakeCallExpression(
-                                Helpers.MakeIdentifierPath(
-                                    "println",
-                                    AstType.MakeFunctionType(
-                                        "println",
-                                        Helpers.MakeVoidType(),
-                                        TextLocation.Empty,
-                                        TextLocation.Empty,
-                                        Helpers.MakePrimitiveType("string")
-                                    )
-                                ),
-                                Helpers.MakeIdentifierPath(
-                                    "a",
-                                    Helpers.MakePrimitiveType("int")
-                                ),
-                                Helpers.MakeIdentifierPath(
-                                    "b",
-                                    Helpers.MakePrimitiveType("int")
-                                ),
-                                Helpers.MakeIdentifierPath(
-                                    "c",
-                                    Helpers.MakePrimitiveType("int")
-                                ),
-                                Helpers.MakeIdentifierPath(
-                                    "d",
-                                    Helpers.MakePrimitiveType("int")
-                                )
-                            )
-                        )
-                    ),
-                    Helpers.MakeVoidType(),
-                    Modifiers.None
-                )
-            });
-
-            Assert.IsNotNull(ast);
-            Helpers.AstStructuralEqual(ast, expected_ast);
-        }
-
-        [Test]
-        public void MatchStatements()
-        {
-            var parser = new Parser(new Scanner("../../sources/for_unit_tests/match_statements.exs"));
-            parser.DoPostParseProcessing = true;
-            parser.Parse();
-
-            var ast = parser.TopmostAst;
-
-            var expected_ast = AstNode.MakeModuleDef("main", new List<EntityDeclaration>{
-                EntityDeclaration.MakeClassDecl(
-                    "TestClass",
-                    Enumerable.Empty<AstType>(),
-                    Helpers.MakeSeq<EntityDeclaration>(
-                        EntityDeclaration.MakeField(
-                            Helpers.MakeSeq(
-                                AstNode.MakeIdentifier("x", Helpers.MakePrimitiveType("int")),
-                                AstNode.MakeIdentifier("y", Helpers.MakePrimitiveType("int")),
-                                AstNode.MakeIdentifier("z", Helpers.MakePrimitiveType("int"))
-                            ),
-                            Helpers.MakeSeq(
-                                Expression.Null,
-                                Expression.Null,
-                                Expression.Null
-                            ),
-                            Modifiers.Public | Modifiers.Immutable
-                        )
-                    ),
-                    Modifiers.None
-                ),
-                EntityDeclaration.MakeFunc(
-                    "main",
-                    Enumerable.Empty<ParameterDeclaration>(),
-                    Statement.MakeBlock(
-                        Statement.MakeVarDecl(
-                            Helpers.MakeSeq(
-                                Helpers.MakePaticularPatternWithType(
-                                    "tmp",
-                                    Helpers.MakePrimitiveType("string")
-                                )
-                            ),
-                            Helpers.MakeSeq(
-                                Expression.MakeConstant(
-                                    "string",
-                                    "akarichan"
-                                )
-                            ),
-                            Modifiers.Immutable
-                        ),
-                        Statement.MakeMatchStmt(
-                            Helpers.MakeIdentifierPath(
-                                "tmp",
-                                Helpers.MakePrimitiveType("string")
-                            ),
-                            Statement.MakeMatchClause(
-                                null,
-                                Statement.MakeExprStmt(
-                                    Helpers.MakeCallExpression(
-                                        Helpers.MakeIdentifierPath(
-                                            "println",
-                                            AstType.MakeFunctionType(
-                                                "println",
-                                                Helpers.MakeVoidType(),
-                                                TextLocation.Empty,
-                                                TextLocation.Empty,
-                                                Helpers.MakePrimitiveType("string")
-                                            )
-                                        ),
-                                        Expression.MakeConstant(
-                                            "string",
-                                            "kawakawa"
-                                        )
-                                    )
-                                ),
-                                PatternConstruct.MakeExpressionPattern(
-                                    Expression.MakeConstant("string", "akarichan")
-                                )
-                            ),
-                            Statement.MakeMatchClause(
-                                Expression.MakeConstant("bool", true),
-                                Statement.MakeExprStmt(
-                                    Helpers.MakeCallExpression(
-                                        Helpers.MakeIdentifierPath(
-                                            "println",
-                                            AstType.MakeFunctionType(
-                                                "println",
-                                                Helpers.MakeVoidType(),
-                                                TextLocation.Empty,
-                                                TextLocation.Empty,
-                                                Helpers.MakePrimitiveType("string")
-                                            )
-                                        ),
-                                        Expression.MakeConstant(
-                                            "string",
-                                            "ankokuthunder!"
-                                        )
-                                    )
-                                ),
-                                PatternConstruct.MakeExpressionPattern(
-                                    Expression.MakeConstant("string", "chinatsu")
-                                )
-                            ),
-                            Statement.MakeMatchClause(
-                                null,
-                                Statement.MakeExprStmt(
-                                    Helpers.MakeCallExpression(
-                                        Helpers.MakeIdentifierPath(
-                                            "println",
-                                            AstType.MakeFunctionType(
-                                                "println",
-                                                Helpers.MakeVoidType(),
-                                                TextLocation.Empty,
-                                                TextLocation.Empty,
-                                                Helpers.MakePrimitiveType("string")
-                                            )
-                                        ),
-                                        Expression.MakeConstant(
-                                            "string",
-                                            "gaichiban!"
-                                        )
-                                    )
-                                ),
-                                PatternConstruct.MakeExpressionPattern(
-                                    Expression.MakeConstant("string", "kyoko")
-                                )
-                            ),
-                            Statement.MakeMatchClause(
-                                null,
-                                Statement.MakeExprStmt(
-                                    Helpers.MakeCallExpression(
-                                        Helpers.MakeIdentifierPath(
-                                            "println",
-                                            AstType.MakeFunctionType(
-                                                "println",
-                                                Helpers.MakeVoidType(),
-                                                TextLocation.Empty,
-                                                TextLocation.Empty,
-                                                Helpers.MakePrimitiveType("string")
-                                            )
-                                        ),
-                                        Expression.MakeConstant(
-                                            "string",
-                                            "doyaxtu!"
-                                        )
-                                    )
-                                ),
-                                PatternConstruct.MakeExpressionPattern(
-                                    Expression.MakeConstant("string", "yui")
-                                )
-                            )
-                        ),
-                        Statement.MakeVarDecl(
-                            Helpers.MakeSeq(
-                                Helpers.MakePaticularPatternWithType("tmp2", Helpers.MakePrimitiveType("int"))
-                            ),
-                            Helpers.MakeSeq(
-                                Expression.MakeConstant("int", 1)
-                            ),
-                            Modifiers.Immutable
-                        ),
-                        Statement.MakeMatchStmt(
-                            Helpers.MakeIdentifierPath("tmp2", Helpers.MakePrimitiveType("int")),
-                            Statement.MakeMatchClause(
-                                null,
-                                Statement.MakeExprStmt(
-                                    Expression.MakeSequenceExpression(
-                                        Helpers.MakeCallExpression(
-                                            Helpers.MakeIdentifierPath(
-                                                "println",
-                                                AstType.MakeFunctionType(
-                                                    "println",
-                                                    Helpers.MakeVoidType(),
-                                                    TextLocation.Empty,
-                                                    TextLocation.Empty,
-                                                    Helpers.MakePrimitiveType("string")
-                                                )
-                                            ),
-                                            Expression.MakeConstant("string", "0")
-                                        )
-                                    )
-                                ),
-                                PatternConstruct.MakeExpressionPattern(
-                                    Expression.MakeConstant("int", 0)
-                                )
-                            ),
-                            Statement.MakeMatchClause(
-                                null,
-                                Statement.MakeExprStmt(
-                                    Expression.MakeSequenceExpression(
-                                        Helpers.MakeCallExpression(
-                                            Helpers.MakeIdentifierPath(
-                                                "println",
-                                                AstType.MakeFunctionType(
-                                                    "println",
-                                                    Helpers.MakeVoidType(),
-                                                    TextLocation.Empty,
-                                                    TextLocation.Empty,
-                                                    Helpers.MakePrimitiveType("string")
-                                                )
-                                            ),
-                                            Expression.MakeConstant("string", "1 or 2")
-                                        )
-                                    )
-                                ),
-                                PatternConstruct.MakeExpressionPattern(
-                                    Expression.MakeConstant("int", 1)
-                                ),
-                                PatternConstruct.MakeExpressionPattern(
-                                    Expression.MakeConstant("int", 2)
-                                )
-                            ),
-                            Statement.MakeMatchClause(
-                                null,
-                                Statement.MakeExprStmt(
-                                    Expression.MakeSequenceExpression(
-                                        Helpers.MakeCallExpression(
-                                            Helpers.MakeIdentifierPath(
-                                                "printFormat",
-                                                AstType.MakeFunctionType(
-                                                    "printFormat",
-                                                    Helpers.MakeVoidType(),
-                                                    TextLocation.Empty,
-                                                    TextLocation.Empty,
-                                                    Helpers.MakePrimitiveType("string")
-                                                )
-                                            ),
-                                            Expression.MakeConstant("string", "{0} is in the range of 3 to 10\n"),
-                                            Helpers.MakeIdentifierPath("i", Helpers.MakePrimitiveType("int"))
-                                        )
-                                    )
-                                ),
-                                PatternConstruct.MakeIdentifierPattern(
-                                    "i",
-                                    Helpers.MakePrimitiveType("int"),
-                                    PatternConstruct.MakeExpressionPattern(
-                                        Expression.MakeIntSeq(
-                                            Expression.MakeConstant("int", 3),
-                                            Expression.MakeConstant("int", 10),
-                                            Expression.MakeConstant("int", 1),
-                                            true
-                                        )
-                                    )
-                                )
-                            ),
-                            Statement.MakeMatchClause(
-                                null,
-                                Statement.MakeExprStmt(
-                                    Expression.MakeSequenceExpression(
-                                        Helpers.MakeCallExpression(
-                                            Helpers.MakeIdentifierPath(
-                                                "println",
-                                                AstType.MakeFunctionType(
-                                                    "println",
-                                                    Helpers.MakeVoidType(),
-                                                    TextLocation.Empty,
-                                                    TextLocation.Empty,
-                                                    Helpers.MakePrimitiveType("string")
-                                                )
-                                            ),
-                                            Expression.MakeConstant("string", "otherwise")
-                                        )
-                                    )
-                                ),
-                                PatternConstruct.MakeWildcardPattern()
-                            )
-                        ),
-                        Statement.MakeVarDecl(
-                            Helpers.MakeSeq(
-                                Helpers.MakePaticularPatternWithType("tmp3", Helpers.MakeGenericType("TestClass"))
-                            ),
-                            Helpers.MakeSeq(
-                                Expression.MakeObjectCreation(
-                                    Helpers.MakeGenericType("TestClass"),
-                                    Helpers.MakeSeq(
-                                        AstNode.MakeIdentifier("x"),
-                                        AstNode.MakeIdentifier("y"),
-                                        AstNode.MakeIdentifier("z")
-                                    ),
-                                    Helpers.MakeSeq(
-                                        Expression.MakeConstant("int", 1),
-                                        Expression.MakeConstant("int", 2),
-                                        Expression.MakeConstant("int", 3)
-                                    )
-                                )
-                            ),
-                            Modifiers.Immutable
-                        ),
-                        Statement.MakeMatchStmt(
-                            Helpers.MakeIdentifierPath("tmp3", Helpers.MakeGenericType("TestClass")),
-                            Statement.MakeMatchClause(
-                                null,
-                                Statement.MakeExprStmt(
-                                    Expression.MakeSequenceExpression(
-                                        Helpers.MakeCallExpression(
-                                            Helpers.MakeIdentifierPath(
-                                                "printFormat",
-                                                AstType.MakeFunctionType(
-                                                    "printFormat",
-                                                    Helpers.MakeVoidType(),
-                                                    TextLocation.Empty,
-                                                    TextLocation.Empty,
-                                                    Helpers.MakePrimitiveType("string")
-                                                )
-                                            ),
-                                            Expression.MakeConstant("string", "x is {0}\n"),
-                                            Helpers.MakeIdentifierPath(
-                                                "x",
-                                                Helpers.MakePrimitiveType("int")
-                                            )
-                                        )
-                                    )
-                                ),
-                                PatternConstruct.MakeDestructuringPattern(
-                                    Helpers.MakeGenericType("TestClass"),
-                                    PatternConstruct.MakeIdentifierPattern(
-                                        "x",
-                                        Helpers.MakePrimitiveType("int"),
-                                        null
-                                    ),
-                                    PatternConstruct.MakeIgnoringRestPattern()
-                                )
-                            ),
-                            Statement.MakeMatchClause(
-                                null,
-                                Statement.MakeExprStmt(
-                                    Expression.MakeSequenceExpression(
-                                        Helpers.MakeCallExpression(
-                                            Helpers.MakeIdentifierPath(
-                                                "printFormat",
-                                                AstType.MakeFunctionType(
-                                                    "printFormat",
-                                                    Helpers.MakeVoidType(),
-                                                    TextLocation.Empty,
-                                                    TextLocation.Empty,
-                                                    Helpers.MakePrimitiveType("string")
-                                                )
-                                            ),
-                                            Expression.MakeConstant("string", "x is {0} and y is {1}\n"),
-                                            Helpers.MakeIdentifierPath(
-                                                "x",
-                                                Helpers.MakePrimitiveType("int")
-                                            ),
-                                            Helpers.MakeIdentifierPath(
-                                                "y",
-                                                Helpers.MakePrimitiveType("int")
-                                            )
-                                        )
-                                    )
-                                ),
-                                PatternConstruct.MakeDestructuringPattern(
-                                    Helpers.MakeGenericType("TestClass"),
-                                    PatternConstruct.MakeIdentifierPattern(
-                                        "x",
-                                        Helpers.MakePrimitiveType("int"),
-                                        null
-                                    ),
-                                    PatternConstruct.MakeIdentifierPattern(
-                                        "y",
-                                        Helpers.MakePrimitiveType("int"),
-                                        null
-                                    ),
-                                    PatternConstruct.MakeWildcardPattern()
-                                )
-                            )
-                        ),
-                        /*Statement.MakeVarDecl(
-                            Helpers.MakeSeq(
-                                AstNode.MakeIdentifier("tmp4", Helpers.MakeGenericType("vector", Helpers.MakePrimitiveType("int")))
-                            ),
-                            Helpers.MakeSeq(
-                                Expression.MakeSequenceInitializer(
-                                    Helpers.MakeGenericType("vector", Helpers.MakePrimitiveType("int")),
-                                    Expression.MakeConstant("int", 1),
-                                    Expression.MakeConstant("int", 2),
-                                    Expression.MakeConstant("int", 3),
-                                    Expression.MakeConstant("int", 4)
-                                )
-                            ),
-                            Modifiers.Immutable
-                        ),
-                        Statement.MakeMatchStmt(
-                            Helpers.MakeIdentifierPath(
-                                "tmp4",
-                                Helpers.MakeGenericType("vector", Helpers.MakePrimitiveType("int"))
-                            ),
-                            Statement.MakeMatchClause(
-                                null,
-                                Statement.MakeExprStmt(
-                                    Expression.MakeSequenceExpression(
-                                        Helpers.MakeCallExpression(
-                                            Helpers.MakeIdentifierPath(
-                                                "printFormat",
-                                                AstType.MakeFunctionType(
-                                                    "printFormat",
-                                                    Helpers.MakeVoidType(),
-                                                    TextLocation.Empty,
-                                                    TextLocation.Empty,
-                                                    Helpers.MakePrimitiveType("string")
-                                                )
-                                            ),
-                                            Expression.MakeConstant("string", "x and y are both vector's elements and the values are {0} and {1} respectively"),
-                                            Helpers.MakeIdentifierPath(
-                                                "x",
-                                                Helpers.MakePrimitiveType("int")
-                                            ),
-                                            Helpers.MakeIdentifierPath(
-                                                "y",
-                                                Helpers.MakePrimitiveType("int")
-                                            )
-                                        )
-                                    )
-                                ),
-                                PatternConstruct.MakeCollectionPattern(
-                                    true,
-                                    PatternConstruct.MakeIdentifierPattern(
-                                        "x",
-                                        Helpers.MakePrimitiveType("int"),
-                                        null
-                                    ),
-                                    PatternConstruct.MakeIdentifierPattern(
-                                        "y",
-                                        Helpers.MakePrimitiveType("int"),
-                                        null
-                                    ),
-                                    PatternConstruct.MakeIgnoringRestPattern()
-                                )
-                            ),
-                            Statement.MakeMatchClause(
-                                null,
-                                Statement.MakeExprStmt(
-                                    Expression.MakeSequenceExpression(
-                                        Helpers.MakeCallExpression(
-                                            Helpers.MakeIdentifierPath(
-                                                "print",
-                                                AstType.MakeFunctionType(
-                                                    "print",
-                                                    Helpers.MakeVoidType(),
-                                                    TextLocation.Empty,
-                                                    TextLocation.Empty,
-                                                    Helpers.MakePrimitiveType("string")
-                                                )
-                                            ),
-											Expression.MakeConstant("string", "tmp4 is a vector")
-                                        )
-                                    )
-                                ),
-                                PatternConstruct.MakeCollectionPattern(
-                                    true,
-                                    PatternConstruct.MakeExpressionPattern(
-                                        Expression.MakeConstant("int", 1)
-                                    ),
-                                    PatternConstruct.MakeExpressionPattern(
-                                        Expression.MakeConstant("int", 2)
-                                    ),
-                                    PatternConstruct.MakeExpressionPattern(
-                                        Expression.MakeConstant("int", 3)
-                                    ),
-                                    PatternConstruct.MakeWildcardPattern()
-                                )
-                            )
-                        ),
-                        Statement.MakeVarDecl(
-                            Helpers.MakeSeq(
-                                AstNode.MakeIdentifier("tmp5", Helpers.MakeGenericType("array", Helpers.MakePrimitiveType("int")))
-                            ),
-                            Helpers.MakeSeq(
-                                Expression.MakeSequenceInitializer(
-                                    Helpers.MakeGenericType("array", Helpers.MakePrimitiveType("int")),
-                                    Expression.MakeConstant("int", 1),
-                                    Expression.MakeConstant("int", 2),
-                                    Expression.MakeConstant("int", 3),
-                                    Expression.MakeConstant("int", 4)
-                                )
-                            ),
-                            Modifiers.Immutable
-                        ),
-                        Statement.MakeMatchStmt(
-                            Helpers.MakeIdentifierPath(
-                                "tmp5",
-                                Helpers.MakeGenericType("array", Helpers.MakePrimitiveType("int"))
-                            ),
-                            Statement.MakeMatchClause(
-                                null,
-                                Statement.MakeExprStmt(
-                                    Expression.MakeSequenceExpression(
-                                        Helpers.MakeCallExpression(
-                                            Helpers.MakeIdentifierPath(
-                                                "printFormat",
-                                                AstType.MakeFunctionType(
-                                                    "printFormat",
-                                                    Helpers.MakeVoidType(),
-                                                    TextLocation.Empty,
-                                                    TextLocation.Empty,
-                                                    Helpers.MakePrimitiveType("string")
-                                                )
-                                            ),
-                                            Expression.MakeConstant("string", "x and y are both array's elements and the values are {0} and {1} respectively"),
-                                            Helpers.MakeIdentifierPath(
-                                                "x",
-                                                Helpers.MakePrimitiveType("int")
-                                            ),
-                                            Helpers.MakeIdentifierPath(
-                                                "y",
-                                                Helpers.MakePrimitiveType("int")
-                                            )
-                                        )
-                                    )
-                                ),
-                                PatternConstruct.MakeCollectionPattern(
-                                    false,
-                                    PatternConstruct.MakeIdentifierPattern(
-                                        "x",
-                                        Helpers.MakePrimitiveType("int"),
-                                        null
-                                    ),
-                                    PatternConstruct.MakeIdentifierPattern(
-                                        "y",
-                                        Helpers.MakePrimitiveType("int"),
-                                        null
-                                    ),
-                                    PatternConstruct.MakeIgnoringRestPattern()
-                                )
-                            ),
-                            Statement.MakeMatchClause(
-                                null,
-                                Statement.MakeExprStmt(
-                                    Expression.MakeSequenceExpression(
-                                        Helpers.MakeCallExpression(
-                                            Helpers.MakeIdentifierPath(
-                                                "print",
-                                                AstType.MakeFunctionType(
-                                                    "print",
-                                                    Helpers.MakeVoidType(),
-                                                    TextLocation.Empty,
-                                                    TextLocation.Empty,
-                                                    Helpers.MakePrimitiveType("string")
-                                                )
-                                            ),
-                                            Expression.MakeConstant("string", "tmp5 is an array")
-                                        )
-                                    )
-                                ),
-                                PatternConstruct.MakeCollectionPattern(
-                                    false,
-                                    PatternConstruct.MakeExpressionPattern(
-                                        Expression.MakeConstant("int", 1)
-                                    ),
-                                    PatternConstruct.MakeExpressionPattern(
-                                        Expression.MakeConstant("int", 2)
-                                    ),
-                                    PatternConstruct.MakeExpressionPattern(
-                                        Expression.MakeConstant("int", 3)
-                                    ),
-                                    PatternConstruct.MakeWildcardPattern()
-                                )
-                            )
-                        ),*/
-                        Statement.MakeVarDecl(
-                            Helpers.MakeSeq(
-                                Helpers.MakePaticularPatternWithType(
-                                    "tmp6",
-                                    Helpers.MakeGenericType(
-                                        "tuple",
-                                        Helpers.MakePrimitiveType("int"),
-                                        Helpers.MakePrimitiveType("int")
-                                    )
-                                )
-                            ),
-                            Helpers.MakeSeq(
-                                Expression.MakeParen(
-                                    Expression.MakeSequenceExpression(
-                                        Expression.MakeConstant("int", 1),
-                                        Expression.MakeConstant("int", 2)
-                                    )
-                                )
-                            ),
-                            Modifiers.Immutable
-                        ),
-                        Statement.MakeMatchStmt(
-                            Helpers.MakeIdentifierPath(
-                                "tmp6",
-                                Helpers.MakeGenericType(
-                                    "tuple",
-                                    Helpers.MakePrimitiveType("int"),
-                                    Helpers.MakePrimitiveType("int")
-                                )
-                            ),
-                            Statement.MakeMatchClause(
-                                null,
-                                Statement.MakeExprStmt(
-                                    Expression.MakeSequenceExpression(
-                                        Helpers.MakeCallExpression(
-                                            Helpers.MakeIdentifierPath(
-                                                "printFormat",
-                                                AstType.MakeFunctionType(
-                                                    "printFormat",
-                                                    Helpers.MakeVoidType(),
-                                                    TextLocation.Empty,
-                                                    TextLocation.Empty,
-                                                    Helpers.MakePrimitiveType("string")
-                                                )
-                                            ),
-                                            Expression.MakeConstant("string", "x is {0}\n"),
-                                            Helpers.MakeIdentifierPath(
-                                                "x",
-                                                Helpers.MakePrimitiveType("int")
-                                            )
-                                        ) 
-                                    )
-                                ),
-                                PatternConstruct.MakeTuplePattern(
-                                    PatternConstruct.MakeIdentifierPattern(
-                                        "x",
-                                        Helpers.MakePrimitiveType("int"),
-                                        null
-                                    ),
-                                    PatternConstruct.MakeIgnoringRestPattern()
-                                )
-                            ),
-                            Statement.MakeMatchClause(
-                                null,
-                                Statement.MakeExprStmt(
-                                    Expression.MakeSequenceExpression(
-                                        Helpers.MakeCallExpression(
-                                            Helpers.MakeIdentifierPath(
-                                                "printFormat",
-                                                AstType.MakeFunctionType(
-                                                    "printFormat",
-                                                    Helpers.MakeVoidType(),
-                                                    TextLocation.Empty,
-                                                    TextLocation.Empty,
-                                                    Helpers.MakePrimitiveType("string")
-                                                )
-                                            ),
-                                            Expression.MakeConstant("string", "x is {0} and y is {1}\n"),
-                                            Helpers.MakeIdentifierPath(
-                                                "x",
-                                                Helpers.MakePrimitiveType("int")
-                                            ),
-                                            Helpers.MakeIdentifierPath(
-                                                "y",
-                                                Helpers.MakePrimitiveType("int")
-                                            )
-                                        )
-                                    )
-                                ),
-                                PatternConstruct.MakeTuplePattern(
-                                    PatternConstruct.MakeIdentifierPattern(
-                                        "x",
-                                        Helpers.MakePrimitiveType("int"),
-                                        null
-                                    ),
-                                    PatternConstruct.MakeIdentifierPattern(
-                                        "y",
-                                        Helpers.MakePrimitiveType("int"),
-                                        null
-                                    )
                                 )
                             )
                         )
