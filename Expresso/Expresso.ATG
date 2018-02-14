@@ -1046,7 +1046,7 @@ WhileStmt<out Statement stmt>		(. Expression cond; BlockStatement body; var star
                                        GoUpScope();
                                     .).
 /*------------------------------------------------------------------------*/
-ForStmt<out Statement stmt>			 (. PatternConstruct left = null; Expression rvalue; BlockStatement body; Identifier ident = null; cur_modifiers = ExpressoModifiers.None;
+ForStmt<out Statement stmt>			 (. PatternConstruct left = null; Expression rvalue; BlockStatement body; cur_modifiers = ExpressoModifiers.None;
                                         var start_loc = NextLocation;
 									 .)
 =
@@ -1054,17 +1054,15 @@ ForStmt<out Statement stmt>			 (. PatternConstruct left = null; Expression rvalu
                                         GoDownScope();
                                         Symbols.Name = "for`" + ScopeId++;
                                      .)
-  ( ( keyword_let					 (. cur_modifiers = ExpressoModifiers.Immutable; .)
-    | keyword_var
-    )
-    Identifier<out ident>            (. Symbols.AddSymbol(ident.Name, ident); .)
-  | PatternWithType<out left>
+  ( keyword_let				    	 (. cur_modifiers = ExpressoModifiers.Immutable; .)
+  | keyword_var
   )
+  PatternWithType<out left>
   keyword_in
   CondExpr<out rvalue>
   Block<out body>					 (.
-  									    if(ident != null){
-  									        var initializer = AstNode.MakeVariableInitializer(PatternConstruct.MakeIdentifierPattern(ident, null), rvalue);
+  									    if(left != null){
+  									        var initializer = AstNode.MakeVariableInitializer(left, rvalue);
   									        stmt = Statement.MakeValueBindingForStmt(cur_modifiers, body, start_loc, initializer);
   									    }else{
   									        stmt = Statement.MakeForStmt(left, rvalue, body, start_loc);

@@ -119,7 +119,7 @@ namespace Expresso.Test
         }
 
         /// <summary>
-        /// Makes an PatternWithType node with type.
+        /// Makes a PatternWithType node with type.
         /// </summary>
         /// <returns>The some identifier pattern.</returns>
         /// <param name="name">Name.</param>
@@ -132,6 +132,12 @@ namespace Expresso.Test
             );
         }
 
+        /// <summary>
+        /// Makes a <see name="PatternWithType"/> with a type associated with the identifier.
+        /// </summary>
+        /// <returns>The paticular pattern with type.</returns>
+        /// <param name="name">Name.</param>
+        /// <param name="type">Type.</param>
         public static PatternWithType MakePaticularPatternWithType(string name, AstType type)
         {
             return PatternConstruct.MakePatternWithType(
@@ -140,6 +146,12 @@ namespace Expresso.Test
             );
         }
 
+        /// <summary>
+        /// Makes a <see cref="PatternWithType"/> with types all resolved.
+        /// </summary>
+        /// <returns>The exact pattern with type.</returns>
+        /// <param name="name">Name.</param>
+        /// <param name="type">Type.</param>
         public static PatternWithType MakeExactPatternWithType(string name, AstType type)
         {
             return PatternConstruct.MakePatternWithType(

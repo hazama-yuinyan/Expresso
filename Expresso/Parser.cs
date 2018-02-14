@@ -1577,7 +1577,7 @@ string cur_class_name;
 	}
 
 	void ForStmt(out Statement stmt) {
-		PatternConstruct left = null; Expression rvalue; BlockStatement body; Identifier ident = null; cur_modifiers = ExpressoModifiers.None;
+		PatternConstruct left = null; Expression rvalue; BlockStatement body; cur_modifiers = ExpressoModifiers.None;
 		     var start_loc = NextLocation;
 		
 		Expect(23);
@@ -1585,23 +1585,18 @@ string cur_class_name;
 		GoDownScope();
 		Symbols.Name = "for`" + ScopeId++;
 		
-		if (la.kind == 27 || la.kind == 28) {
-			if (la.kind == 27) {
-				Get();
-				cur_modifiers = ExpressoModifiers.Immutable; 
-			} else {
-				Get();
-			}
-			Identifier(out ident);
-			Symbols.AddSymbol(ident.Name, ident); 
-		} else if (StartOf(13)) {
-			PatternWithType(out left);
+		if (la.kind == 27) {
+			Get();
+			cur_modifiers = ExpressoModifiers.Immutable; 
+		} else if (la.kind == 28) {
+			Get();
 		} else SynErr(139);
+		PatternWithType(out left);
 		Expect(24);
 		CondExpr(out rvalue);
 		Block(out body);
-		if(ident != null){
-		   var initializer = AstNode.MakeVariableInitializer(PatternConstruct.MakeIdentifierPattern(ident, null), rvalue);
+		if(left != null){
+		   var initializer = AstNode.MakeVariableInitializer(left, rvalue);
 		   stmt = Statement.MakeValueBindingForStmt(cur_modifiers, body, start_loc, initializer);
 		}else{
 		   stmt = Statement.MakeForStmt(left, rvalue, body, start_loc);
@@ -1669,23 +1664,6 @@ string cur_class_name;
 			inits.Add(init); 
 		}
 		pattern = PatternConstruct.MakeValueBindingPattern(inits, modifiers); 
-	}
-
-	void Identifier(out Identifier ident) {
-		string name; var loc = CurrentLocation; 
-		Expect(14);
-		name = t.val;
-		if(CheckKeyword(t.val)){
-		   ident = null;
-		   return;
-		}
-		AstType type = AstType.MakePlaceholderType(CurrentLocation);
-		
-		if (la.kind == 41) {
-			Get();
-			Type(out type);
-		}
-		ident = AstNode.MakeIdentifier(name, type, cur_modifiers, loc); 
 	}
 
 	void PatternWithType(out PatternConstruct pattern) {
@@ -1838,6 +1816,23 @@ string cur_class_name;
 		@catch = Statement.MakeCatchClause(ident, body, start_loc);
 		GoUpScope();
 		
+	}
+
+	void Identifier(out Identifier ident) {
+		string name; var loc = CurrentLocation; 
+		Expect(14);
+		name = t.val;
+		if(CheckKeyword(t.val)){
+		   ident = null;
+		   return;
+		}
+		AstType type = AstType.MakePlaceholderType(CurrentLocation);
+		
+		if (la.kind == 41) {
+			Get();
+			Type(out type);
+		}
+		ident = AstNode.MakeIdentifier(name, type, cur_modifiers, loc); 
 	}
 
 	void VarDef(out PatternConstruct pattern, out Expression option) {

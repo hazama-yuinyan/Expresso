@@ -868,14 +868,14 @@ namespace Expresso.Test
                             ),
                             Helpers.MakeSeq(
                                 Expression.MakeConstant("int", 100),
-                                Expression.MakeConstant("int", 50),
+                                Expression.MakeConstant("int", 20),
                                 Expression.MakeConstant("int", 300),
                                 Expression.MakeConstant("int", 400)
                             ),
                             Modifiers.Immutable
                         ),
                         Helpers.MakeVariableDeclaration(
-                            Helpers.MakeSeq(PatternConstruct.MakeIdentifierPattern("flag", Helpers.MakePrimitiveType("bool"))),
+                            Helpers.MakeSeq(Helpers.MakeSomePatternWithType("flag", Helpers.MakePrimitiveType("bool"))),
                             Modifiers.None
                         ),
                         Statement.MakeExprStmt(
@@ -956,7 +956,7 @@ namespace Expresso.Test
                         ),
                         Statement.MakeVarDecl(
                             Helpers.MakeSeq<PatternConstruct>(
-                                PatternConstruct.MakeIdentifierPattern(
+                                Helpers.MakeSomePatternWithType(
                                     "fibs",
                                     Helpers.MakeGenericType(
                                         "vector",
@@ -1014,7 +1014,7 @@ namespace Expresso.Test
                         ),
                         Statement.MakeVarDecl(
                             Helpers.MakeSeq(
-                                PatternConstruct.MakeIdentifierPattern(
+                                Helpers.MakeSomePatternWithType(
                                     "vec",
                                     Helpers.MakeGenericType(
                                         "vector",
