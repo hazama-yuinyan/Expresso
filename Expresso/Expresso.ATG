@@ -776,24 +776,30 @@ Parameter<out ParameterDeclaration param>   (. string name; Identifier identifie
   											.).
 /*------------------------------------------------------------------------*/
 FieldDecl<out EntityDeclaration field>
-  (. Expression rhs; Identifier ident; var start_loc = NextLocation;
-     var idents = new List<Identifier>(); var exprs = new List<Expression>();
+  (. Expression rhs; PatternConstruct pattern; var start_loc = NextLocation;
+     var patterns = new List<PatternConstruct>(); var exprs = new List<Expression>();
   .)
 = 
   ( keyword_let                           (. cur_modifiers |= ExpressoModifiers.Immutable; .)
   | keyword_var
   )
-  SimpleVarDef<out ident, out rhs>        (.  
-                                             idents.Add(ident);
+  VarDef<out pattern, out rhs>            (. 
+                                             if(pattern is PatternWithType pattern_type && !(pattern_type.Pattern is IdentifierPattern))
+                                                SemanticError("Error ES0021: A field can only contain an identifier pattern; `{0}`", pattern_type.Pattern);
+
+                                             patterns.Add(pattern);
                                              exprs.Add(rhs);
                                           .)  
   { ','
-    SimpleVarDef<out ident, out rhs>      (.
-                                             idents.Add(ident);
+    VarDef<out pattern, out rhs>          (.
+                                             if(pattern is PatternWithType pattern_type2 && !(pattern_type2.Pattern is IdentifierPattern))
+                                                SemanticError("Error ES0021: A field can only contain an indentifier pattern; `{0}`", pattern_type2.Pattern);
+
+                                             patterns.Add(pattern);
                                              exprs.Add(rhs);
                                           .)
   }
-  SYNC ';'							      (. field = EntityDeclaration.MakeField(idents, exprs, cur_modifiers, start_loc, CurrentLocation);
+  SYNC ';'							      (. field = EntityDeclaration.MakeField(patterns, exprs, cur_modifiers, start_loc, CurrentLocation);
                                              cur_modifiers = ExpressoModifiers.None; 
                                           .).
 /*------------------------------------------------------------------------*/
@@ -1202,15 +1208,6 @@ VarDef<out PatternConstruct pattern, out Expression option> (. option = null; va
                                            if(ident_pat.Identifier.Type is PlaceholderType && option == null)
                                                SemanticError(loc, "Error ES0003: Give me some context or I can't infer the type of {0}", ident_pat.Identifier.Name);
                                        }
-                                    .).
-/*------------------------------------------------------------------------*/
-SimpleVarDef<out Identifier ident, out Expression option>   (. option = null; var loc = NextLocation; .)
-=
-  Identifier<out ident>             (. Symbols.AddSymbol(ident.Name, ident); .)
-  [ '='
-    CondExpr<out option>
-  ]                                 (. if(ident.Type is PlaceholderType && option == null)
-                                           SemanticError(loc, "Error ES0003: Give me some context or I can't infer the type of {0}", ident.Name);
                                     .).
 /*------------------------------------------------------------------------*/
 PatternVarDef<out VariableInitializer init> (. Identifier ident; Expression expr = null; .)

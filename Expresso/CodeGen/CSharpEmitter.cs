@@ -236,7 +236,7 @@ namespace Expresso.CodeGen
 
             foreach(var decl in ast.Declarations){
                 // Define only the function signatures here so that these functions or methods can call themselves
-                DefineFunctionSignatures(ast.Declarations, decl, context);
+                DefineFunctionSignaturesAndFields(ast.Declarations, decl, context);
                 decl.AcceptWalker(this, context);
             }
 
@@ -1501,7 +1501,7 @@ namespace Expresso.CodeGen
         public CSharpExpr VisitFieldDeclaration(FieldDeclaration fieldDecl, CSharpEmitterContext context)
         {
             foreach(var init in fieldDecl.Initializers){
-                var field_builder = init.Pattern is IdentifierPattern ident_pat ? Symbols[ident_pat.Identifier.IdentifierId].Field as FieldBuilder : throw new EmitterException("Invalid field: {0}", init.Pattern);
+                var field_builder = init.NameToken != null ? Symbols[init.NameToken.IdentifierId].Field as FieldBuilder : throw new EmitterException("Invalid field: {0}", init.Pattern);
                 var initializer = init.Initializer.AcceptWalker(this, context);
                 if(initializer != null)
                     context.TypeBuilder.SetBody(field_builder, initializer);
@@ -2088,7 +2088,7 @@ namespace Expresso.CodeGen
             }
         }
 
-        void DefineFunctionSignatures(IEnumerable<EntityDeclaration> entities, EntityDeclaration startingPoint, CSharpEmitterContext context)
+        void DefineFunctionSignaturesAndFields(IEnumerable<EntityDeclaration> entities, EntityDeclaration startingPoint, CSharpEmitterContext context)
         {
             var tmp_counter = scope_counter;
             bool is_broken = false;
@@ -2159,10 +2159,12 @@ namespace Expresso.CodeGen
             }
 
             foreach(var init in fieldDecl.Initializers){
-                if(init.Pattern is IdentifierPattern ident_pat){
+                if(init.Pattern is PatternWithType inner && inner.Pattern is IdentifierPattern ident_pat){
                     var type = CSharpCompilerHelper.GetNativeType(ident_pat.Identifier.Type);
                     var field_builder = context.TypeBuilder.DefineField(init.Name, type, !Expression.IsNullNode(init.Initializer), attr);
                     AddSymbol(ident_pat.Identifier, new ExpressoSymbol{Field = field_builder});
+                }else{
+                    throw new EmitterException("Invalid module field!");
                 }
             }
         }

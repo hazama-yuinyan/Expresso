@@ -610,8 +610,8 @@ string cur_class_name;
 	}
 
 	void FieldDecl(out EntityDeclaration field) {
-		Expression rhs; Identifier ident; var start_loc = NextLocation;
-		var idents = new List<Identifier>(); var exprs = new List<Expression>();
+		Expression rhs; PatternConstruct pattern; var start_loc = NextLocation;
+		var patterns = new List<PatternConstruct>(); var exprs = new List<Expression>();
 		
 		if (la.kind == 27) {
 			Get();
@@ -619,20 +619,26 @@ string cur_class_name;
 		} else if (la.kind == 28) {
 			Get();
 		} else SynErr(109);
-		SimpleVarDef(out ident, out rhs);
-		idents.Add(ident);
+		VarDef(out pattern, out rhs);
+		if(pattern is PatternWithType pattern_type && !(pattern_type.Pattern is IdentifierPattern))
+		  SemanticError("Error ES0021: A field can only contain an identifier pattern; `{0}`", pattern_type.Pattern);
+		
+		patterns.Add(pattern);
 		exprs.Add(rhs);
 		
 		while (la.kind == 12) {
 			Get();
-			SimpleVarDef(out ident, out rhs);
-			idents.Add(ident);
+			VarDef(out pattern, out rhs);
+			if(pattern is PatternWithType pattern_type2 && !(pattern_type2.Pattern is IdentifierPattern))
+			  SemanticError("Error ES0021: A field can only contain an indentifier pattern; `{0}`", pattern_type2.Pattern);
+			
+			patterns.Add(pattern);
 			exprs.Add(rhs);
 			
 		}
 		while (!(la.kind == 0 || la.kind == 6)) {SynErr(110); Get();}
 		Expect(6);
-		field = EntityDeclaration.MakeField(idents, exprs, cur_modifiers, start_loc, CurrentLocation);
+		field = EntityDeclaration.MakeField(patterns, exprs, cur_modifiers, start_loc, CurrentLocation);
 		                  cur_modifiers = ExpressoModifiers.None; 
 		               
 	}
@@ -1120,16 +1126,17 @@ string cur_class_name;
 		}
 	}
 
-	void SimpleVarDef(out Identifier ident, out Expression option) {
+	void VarDef(out PatternConstruct pattern, out Expression option) {
 		option = null; var loc = NextLocation; 
-		Identifier(out ident);
-		Symbols.AddSymbol(ident.Name, ident); 
+		PatternWithType(out pattern);
 		if (la.kind == 42) {
 			Get();
 			CondExpr(out option);
 		}
-		if(ident.Type is PlaceholderType && option == null)
-		   SemanticError(loc, "Error ES0003: Give me some context or I can't infer the type of {0}", ident.Name);
+		if(pattern is IdentifierPattern ident_pat){
+		   if(ident_pat.Identifier.Type is PlaceholderType && option == null)
+		       SemanticError(loc, "Error ES0003: Give me some context or I can't infer the type of {0}", ident_pat.Identifier.Name);
+		}
 		
 	}
 
@@ -1832,20 +1839,6 @@ string cur_class_name;
 			Type(out type);
 		}
 		ident = AstNode.MakeIdentifier(name, type, cur_modifiers, loc); 
-	}
-
-	void VarDef(out PatternConstruct pattern, out Expression option) {
-		option = null; var loc = NextLocation; 
-		PatternWithType(out pattern);
-		if (la.kind == 42) {
-			Get();
-			CondExpr(out option);
-		}
-		if(pattern is IdentifierPattern ident_pat){
-		   if(ident_pat.Identifier.Type is PlaceholderType && option == null)
-		       SemanticError(loc, "Error ES0003: Give me some context or I can't infer the type of {0}", ident_pat.Identifier.Name);
-		}
-		
 	}
 
 	void PatternVarDef(out VariableInitializer init) {

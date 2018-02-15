@@ -726,7 +726,7 @@ namespace Expresso.Ast.Analysis
             var type_table = symbols.GetTypeTable(creation.TypePath.IdentifierNode.Name);
             if(type_table == null){
                 parser.ReportSemanticError(
-                    "Error ES1500: Type `{0}` isn't found or accessible from the scope {1}.",
+                    "Error ES1501: The type `{0}` isn't found or accessible from the scope {1}.",
                     creation,
                     creation.TypePath, symbols.Name
                 );
@@ -741,7 +741,7 @@ namespace Expresso.Ast.Analysis
                 var key = type_table.GetSymbol(key_path.AsIdentifier.Name);
                 if(key == null){
                     parser.ReportSemanticError(
-                        "Error ES1501: Type `{0}` doesn't have a field named '{1}'.",
+                        "Error ES1502: The type `{0}` doesn't have a field named '{1}'.",
                         key_value.KeyExpression,
                         creation.TypePath, key_path.AsIdentifier.Name
                     );

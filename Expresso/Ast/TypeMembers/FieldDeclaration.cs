@@ -41,13 +41,13 @@ namespace Expresso.Ast
             }
         }
 
-        public FieldDeclaration(IEnumerable<Identifier> lhs, IEnumerable<Expression> rhs,
+        public FieldDeclaration(IEnumerable<PatternConstruct> lhs, IEnumerable<Expression> rhs,
             Modifiers modifiers, TextLocation start, TextLocation end)
             : base(start, end)
         {
             rhs = rhs ?? lhs.Select(arg => Expression.Null);
-            foreach(var variable in lhs.Zip(rhs, (ident, expr) => new Tuple<Identifier, Expression>(ident, expr)))
-                Initializers.Add(new VariableInitializer(PatternConstruct.MakeIdentifierPattern(variable.Item1, null), variable.Item2));
+            foreach(var variable in lhs.Zip(rhs, (pattern, expr) => new Tuple<PatternConstruct, Expression>(pattern, expr)))
+                Initializers.Add(new VariableInitializer(variable.Item1, variable.Item2));
 
             EntityDeclaration.SetModifiers(this, modifiers);
         }

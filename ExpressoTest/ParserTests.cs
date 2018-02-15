@@ -1164,9 +1164,9 @@ namespace Expresso.Test
                     Helpers.MakeSeq<EntityDeclaration>(
                         EntityDeclaration.MakeField(
                             Helpers.MakeSeq(
-                                AstNode.MakeIdentifier("x", Helpers.MakePrimitiveType("int")),
-                                AstNode.MakeIdentifier("y", Helpers.MakePrimitiveType("int")),
-                                AstNode.MakeIdentifier("z", Helpers.MakePrimitiveType("int"))
+                                Helpers.MakeSomePatternWithType("x", Helpers.MakePrimitiveType("int")),
+                                Helpers.MakeSomePatternWithType("y", Helpers.MakePrimitiveType("int")),
+                                Helpers.MakeSomePatternWithType("z", Helpers.MakePrimitiveType("int"))
                             ),
                             Helpers.MakeSeq(
                                 Expression.Null,
@@ -2243,15 +2243,15 @@ namespace Expresso.Test
 
             var ast = parser.TopmostAst;
 
-            var expected_ast = AstNode.MakeModuleDef("TestModule", new List<EntityDeclaration>{
+            var expected_ast = AstNode.MakeModuleDef("test_module", new List<EntityDeclaration>{
                 EntityDeclaration.MakeClassDecl(
                     "TestClass",
                     Enumerable.Empty<AstType>(),
                     Helpers.MakeSeq<EntityDeclaration>(
                         EntityDeclaration.MakeField(
                             Helpers.MakeSeq(
-                                AstNode.MakeIdentifier("x", Helpers.MakePrimitiveType("int")),
-                                AstNode.MakeIdentifier("y", Helpers.MakePrimitiveType("int"))
+                                Helpers.MakeSomePatternWithType("x", Helpers.MakePrimitiveType("int")),
+                                Helpers.MakeSomePatternWithType("y", Helpers.MakePrimitiveType("int"))
                             ),
                             null,
                             Modifiers.Private | Modifiers.Immutable
@@ -2289,7 +2289,7 @@ namespace Expresso.Test
                 ),
                 EntityDeclaration.MakeField(
                     Helpers.MakeSeq(
-                        Helpers.MakeSomeIdent("pair")
+                        Helpers.MakeSomePatternWithType("pair")
                     ),
                     Helpers.MakeSeq(
                         Expression.MakeParen(
@@ -2344,7 +2344,7 @@ namespace Expresso.Test
                             Helpers.MakeCallExpression(
                                 Expression.MakeMemRef(
                                     Helpers.MakeIdentifierPath("Math"),
-                                    Helpers.MakeSomeIdent("Sin")
+                                    Helpers.MakeSomeIdent("sin")
                                 ),
                                 Helpers.MakeIdentifierPath("x")
                             )
@@ -2477,7 +2477,7 @@ namespace Expresso.Test
                     Helpers.MakeSeq<EntityDeclaration>(
                         EntityDeclaration.MakeField(
                             Helpers.MakeSeq(
-                                AstNode.MakeIdentifier("x", Helpers.MakePrimitiveType("int"))
+                                Helpers.MakeSomePatternWithType("x", Helpers.MakePrimitiveType("int"))
                             ),
                             Helpers.MakeSeq<Expression>(
                                 Expression.Null
@@ -2486,8 +2486,8 @@ namespace Expresso.Test
                         ),
                         EntityDeclaration.MakeField(
                             Helpers.MakeSeq(
-                                AstNode.MakeIdentifier("y", Helpers.MakePrimitiveType("int")),
-                                Helpers.MakeSomeIdent("z")
+                                Helpers.MakeSomePatternWithType("y", Helpers.MakePrimitiveType("int")),
+                                Helpers.MakeSomePatternWithType("z")
                             ),
                             Helpers.MakeSeq(
                                 Expression.Null,
@@ -3131,7 +3131,7 @@ namespace Expresso.Test
                     Helpers.MakeSeq<EntityDeclaration>(
                         EntityDeclaration.MakeField(
                             Helpers.MakeSeq(
-                                AstNode.MakeIdentifier("ExsMessage", AstType.MakePrimitiveType("string"))
+                                Helpers.MakeSomePatternWithType("ExsMessage", AstType.MakePrimitiveType("string"))
                             ),
                             Helpers.MakeSeq<Expression>(
                                 Expression.Null
@@ -3603,7 +3603,7 @@ namespace Expresso.Test
                     TextLocation.Empty,
                     EntityDeclaration.MakeField(
                         Helpers.MakeSeq(
-                            AstNode.MakeIdentifier(
+                            Helpers.MakeSomePatternWithType(
                                 "x",
                                 Helpers.MakePrimitiveType("int")
                             )
@@ -3625,7 +3625,7 @@ namespace Expresso.Test
                             )
                         ),
                         Helpers.MakePrimitiveType("int"),
-                        Modifiers.None
+                        Modifiers.Public
                     )
                 ),
                 EntityDeclaration.MakeFunc(

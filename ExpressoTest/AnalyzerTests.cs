@@ -1740,9 +1740,9 @@ namespace Expresso.Test
                     Helpers.MakeSeq<EntityDeclaration>(
                         EntityDeclaration.MakeField(
                             Helpers.MakeSeq(
-                                AstNode.MakeIdentifier("x", Helpers.MakePrimitiveType("int")),
-                                AstNode.MakeIdentifier("y", Helpers.MakePrimitiveType("int")),
-                                AstNode.MakeIdentifier("z", Helpers.MakePrimitiveType("int"))
+                                Helpers.MakeExactPatternWithType("x", Helpers.MakePrimitiveType("int")),
+                                Helpers.MakeExactPatternWithType("y", Helpers.MakePrimitiveType("int")),
+                                Helpers.MakeExactPatternWithType("z", Helpers.MakePrimitiveType("int"))
                             ),
                             Helpers.MakeSeq(
                                 Expression.Null,
@@ -3452,6 +3452,358 @@ namespace Expresso.Test
         }
 
         [Test]
+        public void TestModule()
+        {
+            var parser = new Parser(new Scanner("../../sources/for_unit_tests/test_module.exs"));
+            parser.DoPostParseProcessing = true;
+            parser.Parse();
+
+            var ast = parser.TopmostAst;
+
+            var expected_ast = AstNode.MakeModuleDef("test_module", new List<EntityDeclaration>{
+                EntityDeclaration.MakeClassDecl(
+                    "TestClass",
+                    Enumerable.Empty<AstType>(),
+                    Helpers.MakeSeq<EntityDeclaration>(
+                        EntityDeclaration.MakeField(
+                            Helpers.MakeSeq(
+                                Helpers.MakeExactPatternWithType(
+                                    "x",
+                                    Helpers.MakePrimitiveType("int")
+                                ),
+                                Helpers.MakeExactPatternWithType(
+                                    "y",
+                                    Helpers.MakePrimitiveType("int")
+                                )
+                            ),
+                            Helpers.MakeSeq(
+                                Expression.Null,
+                                Expression.Null
+                            ),
+                            Modifiers.Private | Modifiers.Immutable
+                        ),
+                        EntityDeclaration.MakeFunc(
+                            "getX",
+                            Enumerable.Empty<ParameterDeclaration>(),
+                            Statement.MakeBlock(
+                                Helpers.MakeSingleItemReturnStatement(
+                                    Expression.MakeMemRef(
+                                        Expression.MakeSelfRef(),
+                                        AstNode.MakeIdentifier(
+                                            "x",
+                                            Helpers.MakePrimitiveType("int")
+                                        )
+                                    )
+                                )
+                            ),
+                            Helpers.MakePrimitiveType("int"),
+                            Modifiers.Public
+                        ),
+                        EntityDeclaration.MakeFunc(
+                            "getY",
+                            Enumerable.Empty<ParameterDeclaration>(),
+                            Statement.MakeBlock(
+                                Helpers.MakeSingleItemReturnStatement(
+                                    Expression.MakeMemRef(
+                                        Expression.MakeSelfRef(),
+                                        AstNode.MakeIdentifier(
+                                            "y",
+                                            Helpers.MakePrimitiveType("int")
+                                        )
+                                    )
+                                )
+                            ),
+                            Helpers.MakePrimitiveType("int"),
+                            Modifiers.Public
+                        )
+                    ),
+                    Modifiers.Export
+                ),
+                EntityDeclaration.MakeField(
+                    Helpers.MakeSeq(
+                        Helpers.MakePaticularPatternWithType(
+                            "pair",
+                            Helpers.MakeGenericType(
+                                "tuple",
+                                Helpers.MakePrimitiveType("int"),
+                                Helpers.MakePrimitiveType("int")
+                            )
+                        )
+                    ),
+                    Helpers.MakeSeq(
+                        Expression.MakeParen(
+                            Expression.MakeSequenceExpression(
+                                Expression.MakeConstant("int", 200),
+                                Expression.MakeConstant("int", 300)
+                            )
+                        )
+                    ),
+                    Modifiers.Export | Modifiers.Immutable
+                ),
+                EntityDeclaration.MakeFunc(
+                    "createTest",
+                    Helpers.MakeSeq(
+                        EntityDeclaration.MakeParameter(
+                            "x",
+                            Helpers.MakePrimitiveType("int")
+                        ),
+                        EntityDeclaration.MakeParameter(
+                            "y",
+                            Helpers.MakePrimitiveType("int")
+                        )
+                    ),
+                    Statement.MakeBlock(
+                        Helpers.MakeSingleItemReturnStatement(
+                            Expression.MakeObjectCreation(
+                                Helpers.MakeGenericType("TestClass"),
+                                Helpers.MakeSeq(
+                                    AstNode.MakeIdentifier("x"),
+                                    AstNode.MakeIdentifier("y")
+                                ),
+                                Helpers.MakeSeq(
+                                    Helpers.MakeIdentifierPath(
+                                        "x",
+                                        Helpers.MakePrimitiveType("int")
+                                    ),
+                                    Helpers.MakeIdentifierPath(
+                                        "y",
+                                        Helpers.MakePrimitiveType("int")
+                                    )
+                                )
+                            )
+                        )
+                    ),
+                    Helpers.MakeGenericType("TestClass"),
+                    Modifiers.Export
+                ),
+                EntityDeclaration.MakeFunc(
+                    "mySin",
+                    Helpers.MakeSeq(
+                        EntityDeclaration.MakeParameter(
+                            "x",
+                            Helpers.MakePrimitiveType("double")
+                        )
+                    ),
+                    Statement.MakeBlock(
+                        Helpers.MakeSingleItemReturnStatement(
+                            Helpers.MakeCallExpression(
+                                Expression.MakeMemRef(
+                                    Helpers.MakeIdentifierPath(
+                                        "Math",
+                                        AstType.MakeSimpleType("System.Math")
+                                    ),
+                                    AstNode.MakeIdentifier(
+                                        "sin",
+                                        AstType.MakeFunctionType(
+                                            "sin",
+                                            Helpers.MakePrimitiveType("double"), 
+                                            TextLocation.Empty,
+                                            TextLocation.Empty,
+                                            Helpers.MakePrimitiveType("double")
+                                        )
+                                    )
+                                ),
+                                Helpers.MakeIdentifierPath(
+                                    "x",
+                                    Helpers.MakePrimitiveType("double")
+                                )
+                            )
+                        )
+                    ),
+                    Helpers.MakePrimitiveType("double"),
+                    Modifiers.Export
+                )
+            }, Helpers.MakeSeq<ImportDeclaration>(
+                AstNode.MakeImportDecl(AstNode.MakeIdentifier("System.Math"), "Math")
+            ));
+
+            Assert.IsNotNull(ast);
+            Helpers.AstStructuralEqual(ast, expected_ast);
+        }
+
+        [Test]
+        public void Module()
+        {
+            var parser = new Parser(new Scanner("../../sources/for_unit_tests/module.exs"));
+            parser.DoPostParseProcessing = true;
+            parser.Parse();
+
+            var ast = parser.TopmostAst;
+
+            var expected_ast = AstNode.MakeModuleDef("main", new List<EntityDeclaration>{
+                EntityDeclaration.MakeFunc(
+                    "main",
+                    Enumerable.Empty<ParameterDeclaration>(),
+                    Statement.MakeBlock(
+                        Statement.MakeVarDecl(
+                            Helpers.MakeSeq(
+                                Helpers.MakePaticularPatternWithType(
+                                    "a",
+                                    AstType.MakeMemberType(
+                                        Helpers.MakeGenericType("TestModule"),
+                                        Helpers.MakeGenericType("TestClass")
+                                    )
+                                )
+                            ),
+                            Helpers.MakeSeq(
+                                Expression.MakeObjectCreation(
+                                    AstType.MakeMemberType(
+                                        Helpers.MakeGenericType("TestModule"),
+                                        Helpers.MakeGenericType("TestClass")
+                                    ),
+                                    Helpers.MakeSeq(
+                                        AstNode.MakeIdentifier("x"),
+                                        AstNode.MakeIdentifier("y")
+                                    ),
+                                    Helpers.MakeSeq(
+                                        Expression.MakeConstant("int", 100),
+                                        Expression.MakeConstant("int", 300)
+                                    )
+                                )
+                            ),
+                            Modifiers.Immutable
+                        ),
+                        Statement.MakeVarDecl(
+                            Helpers.MakeSeq(
+                                Helpers.MakePaticularPatternWithType(
+                                    "b",
+                                    Helpers.MakeGenericType("TestClass")
+                                )
+                            ),
+                            Helpers.MakeSeq(
+                                Helpers.MakeCallExpression(
+                                    Expression.MakePath(
+                                        AstNode.MakeIdentifier(
+                                            "TestModule",
+                                            Helpers.MakeGenericType("./test_module.exs")
+                                        ),
+                                        AstNode.MakeIdentifier(
+                                            "createTest",
+                                            AstType.MakeFunctionType(
+                                                "createTest",
+                                                Helpers.MakeGenericType("TestClass"),
+                                                Helpers.MakeSeq(
+                                                    Helpers.MakePrimitiveType("int"),
+                                                    Helpers.MakePrimitiveType("int")
+                                                )
+                                            )
+                                        )
+                                    ),
+                                    Expression.MakeConstant("int", 50),
+                                    Expression.MakeConstant("int", 100)
+                                )
+                            ),
+                            Modifiers.Immutable
+                        ),
+                        Statement.MakeVarDecl(
+                            Helpers.MakeSeq(
+                                Helpers.MakePaticularPatternWithType(
+                                    "c",
+                                    Helpers.MakeGenericType(
+                                        "tuple",
+                                        Helpers.MakePrimitiveType("int"),
+                                        Helpers.MakePrimitiveType("int")
+                                    )
+                                )
+                            ),
+                            Helpers.MakeSeq(
+                                Expression.MakePath(
+                                    AstNode.MakeIdentifier(
+                                        "TestModule",
+                                        Helpers.MakeGenericType("./test_module.exs")
+                                    ),
+                                    AstNode.MakeIdentifier(
+                                        "pair",
+                                        Helpers.MakeGenericType(
+                                            "tuple",
+                                            Helpers.MakePrimitiveType("int"),
+                                            Helpers.MakePrimitiveType("int")
+                                        )
+                                    )
+                                )
+                            ),
+                            Modifiers.Immutable
+                        ),
+                        Statement.MakeVarDecl(
+                            Helpers.MakeSeq(
+                                Helpers.MakePaticularPatternWithType(
+                                    "d",
+                                    Helpers.MakePrimitiveType("double")
+                                )
+                            ),
+                            Helpers.MakeSeq(
+                                Helpers.MakeCallExpression(
+                                    Expression.MakePath(
+                                        AstNode.MakeIdentifier(
+                                            "TestModule",
+                                            Helpers.MakeGenericType("./test_module.exs")
+                                        ),
+                                        AstNode.MakeIdentifier(
+                                            "mySin",
+                                            AstType.MakeFunctionType(
+                                                "mySin",
+                                                Helpers.MakePrimitiveType("double"),
+                                                TextLocation.Empty,
+                                                TextLocation.Empty,
+                                                Helpers.MakePrimitiveType("double")
+                                            )
+                                        )
+                                    ),
+                                    Expression.MakeConstant("double", 0.0)
+                                )
+                            ),
+                            Modifiers.Immutable
+                        ),
+                        Statement.MakeExprStmt(
+                            Helpers.MakeCallExpression(
+                                Helpers.MakeIdentifierPath(
+                                    "println",
+                                    AstType.MakeFunctionType(
+                                        "println",
+                                        Helpers.MakeVoidType(),
+                                        TextLocation.Empty,
+                                        TextLocation.Empty,
+                                        Helpers.MakePrimitiveType("string")
+                                    )
+                                ),
+                                Helpers.MakeIdentifierPath(
+                                    "a",
+                                    AstType.MakeMemberType(
+                                        Helpers.MakeGenericType("TestModule"),
+                                        Helpers.MakeGenericType("TestClass")
+                                    )
+                                ),
+                                Helpers.MakeIdentifierPath(
+                                    "b",
+                                    Helpers.MakeGenericType("TestClass")
+                                ),
+                                Helpers.MakeIdentifierPath(
+                                    "c",
+                                    Helpers.MakeGenericType(
+                                        "tuple",
+                                        Helpers.MakePrimitiveType("int"),
+                                        Helpers.MakePrimitiveType("int")
+                                    )
+                                ),
+                                Helpers.MakeIdentifierPath(
+                                    "d",
+                                    Helpers.MakePrimitiveType("double")
+                                )
+                            )
+                        )
+                    ),
+                    Helpers.MakeVoidType(),
+                    Modifiers.None
+                )
+            }, new List<ImportDeclaration>{
+                AstNode.MakeImportDecl(AstNode.MakeIdentifier("test_module"), "TestModule")
+            });
+
+            Assert.IsNotNull(ast);
+            Helpers.AstStructuralEqual(ast, expected_ast);
+        }
+
+        [Test]
         public void Class()
         {
             var parser = new Parser(new Scanner("../../sources/for_unit_tests/class.exs"));
@@ -3467,7 +3819,7 @@ namespace Expresso.Test
                     Helpers.MakeSeq<EntityDeclaration>(
                         EntityDeclaration.MakeField(
                             Helpers.MakeSeq(
-                                AstNode.MakeIdentifier("x", Helpers.MakePrimitiveType("int"))
+                                Helpers.MakeExactPatternWithType("x", Helpers.MakePrimitiveType("int"))
                             ),
                             Helpers.MakeSeq<Expression>(
                                 Expression.Null
@@ -3476,8 +3828,8 @@ namespace Expresso.Test
                         ),
                         EntityDeclaration.MakeField(
                             Helpers.MakeSeq(
-                                AstNode.MakeIdentifier("y", Helpers.MakePrimitiveType("int")),
-                                AstNode.MakeIdentifier("z", Helpers.MakePrimitiveType("int"))
+                                Helpers.MakeExactPatternWithType("y", Helpers.MakePrimitiveType("int")),
+                                Helpers.MakePaticularPatternWithType("z", Helpers.MakePrimitiveType("int"))
                             ),
                             Helpers.MakeSeq(
                                 Expression.Null,
@@ -3769,358 +4121,6 @@ namespace Expresso.Test
                     Helpers.MakeVoidType(),
                     Modifiers.None
                 )
-            });
-
-            Assert.IsNotNull(ast);
-            Helpers.AstStructuralEqual(ast, expected_ast);
-        }
-
-        [Test]
-        public void TestModule()
-        {
-            var parser = new Parser(new Scanner("../../sources/for_unit_tests/test_module.exs"));
-            parser.DoPostParseProcessing = true;
-            parser.Parse();
-
-            var ast = parser.TopmostAst;
-
-            var expected_ast = AstNode.MakeModuleDef("TestModule", new List<EntityDeclaration>{
-                EntityDeclaration.MakeClassDecl(
-                    "TestClass",
-                    Enumerable.Empty<AstType>(),
-                    Helpers.MakeSeq<EntityDeclaration>(
-                        EntityDeclaration.MakeField(
-                            Helpers.MakeSeq(
-                                AstNode.MakeIdentifier(
-                                    "x",
-                                    Helpers.MakePrimitiveType("int")
-                                ),
-                                AstNode.MakeIdentifier(
-                                    "y",
-                                    Helpers.MakePrimitiveType("int")
-                                )
-                            ),
-                            Helpers.MakeSeq(
-                                Expression.Null,
-                                Expression.Null
-                            ),
-                            Modifiers.Private | Modifiers.Immutable
-                        ),
-                        EntityDeclaration.MakeFunc(
-                            "getX",
-                            Enumerable.Empty<ParameterDeclaration>(),
-                            Statement.MakeBlock(
-                                Helpers.MakeSingleItemReturnStatement(
-                                    Expression.MakeMemRef(
-                                        Expression.MakeSelfRef(),
-                                        AstNode.MakeIdentifier(
-                                            "x",
-                                            Helpers.MakePrimitiveType("int")
-                                        )
-                                    )
-                                )
-                            ),
-                            Helpers.MakePrimitiveType("int"),
-                            Modifiers.Public
-                        ),
-                        EntityDeclaration.MakeFunc(
-                            "getY",
-                            Enumerable.Empty<ParameterDeclaration>(),
-                            Statement.MakeBlock(
-                                Helpers.MakeSingleItemReturnStatement(
-                                    Expression.MakeMemRef(
-                                        Expression.MakeSelfRef(),
-                                        AstNode.MakeIdentifier(
-                                            "y",
-                                            Helpers.MakePrimitiveType("int")
-                                        )
-                                    )
-                                )
-                            ),
-                            Helpers.MakePrimitiveType("int"),
-                            Modifiers.Public
-                        )
-                    ),
-                    Modifiers.Export
-                ),
-                EntityDeclaration.MakeField(
-                    Helpers.MakeSeq(
-                        AstNode.MakeIdentifier(
-                            "pair",
-                            Helpers.MakeGenericType(
-                                "tuple",
-                                Helpers.MakePrimitiveType("int"),
-                                Helpers.MakePrimitiveType("int")
-                            )
-                        )
-                    ),
-                    Helpers.MakeSeq(
-                        Expression.MakeParen(
-                            Expression.MakeSequenceExpression(
-                                Expression.MakeConstant("int", 200),
-                                Expression.MakeConstant("int", 300)
-                            )
-                        )
-                    ),
-                    Modifiers.Export | Modifiers.Immutable
-                ),
-                EntityDeclaration.MakeFunc(
-                    "createTest",
-                    Helpers.MakeSeq(
-                        EntityDeclaration.MakeParameter(
-                            "x",
-                            Helpers.MakePrimitiveType("int")
-                        ),
-                        EntityDeclaration.MakeParameter(
-                            "y",
-                            Helpers.MakePrimitiveType("int")
-                        )
-                    ),
-                    Statement.MakeBlock(
-                        Helpers.MakeSingleItemReturnStatement(
-                            Expression.MakeObjectCreation(
-                                Helpers.MakeGenericType("TestClass"),
-                                Helpers.MakeSeq(
-                                    AstNode.MakeIdentifier("x"),
-                                    AstNode.MakeIdentifier("y")
-                                ),
-                                Helpers.MakeSeq(
-                                    Helpers.MakeIdentifierPath(
-                                        "x",
-                                        Helpers.MakePrimitiveType("int")
-                                    ),
-                                    Helpers.MakeIdentifierPath(
-                                        "y",
-                                        Helpers.MakePrimitiveType("int")
-                                    )
-                                )
-                            )
-                        )
-                    ),
-                    Helpers.MakeGenericType("TestClass"),
-                    Modifiers.Export
-                ),
-                EntityDeclaration.MakeFunc(
-                    "mySin",
-                    Helpers.MakeSeq(
-                        EntityDeclaration.MakeParameter(
-                            "x",
-                            Helpers.MakePrimitiveType("double")
-                        )
-                    ),
-                    Statement.MakeBlock(
-                        Helpers.MakeSingleItemReturnStatement(
-                            Helpers.MakeCallExpression(
-                                Expression.MakeMemRef(
-                                    Helpers.MakeIdentifierPath(
-                                        "Math",
-                                        AstType.MakeSimpleType("System.Math")
-                                    ),
-                                    AstNode.MakeIdentifier(
-                                        "sin",
-                                        AstType.MakeFunctionType(
-                                            "sin",
-                                            Helpers.MakePrimitiveType("double"), 
-                                            TextLocation.Empty,
-                                            TextLocation.Empty,
-                                            Helpers.MakePrimitiveType("double")
-                                        )
-                                    )
-                                ),
-                                Helpers.MakeIdentifierPath(
-                                    "x",
-                                    Helpers.MakePrimitiveType("double")
-                                )
-                            )
-                        )
-                    ),
-                    Helpers.MakePrimitiveType("double"),
-                    Modifiers.Export
-                )
-            }, Helpers.MakeSeq<ImportDeclaration>(
-                AstNode.MakeImportDecl(AstNode.MakeIdentifier("System.Math"), "Math")
-            ));
-
-            Assert.IsNotNull(ast);
-            Helpers.AstStructuralEqual(ast, expected_ast);
-        }
-
-        [Test]
-        public void Module()
-        {
-            var parser = new Parser(new Scanner("../../sources/for_unit_tests/module.exs"));
-            parser.DoPostParseProcessing = true;
-            parser.Parse();
-
-            var ast = parser.TopmostAst;
-
-            var expected_ast = AstNode.MakeModuleDef("main", new List<EntityDeclaration>{
-                EntityDeclaration.MakeFunc(
-                    "main",
-                    Enumerable.Empty<ParameterDeclaration>(),
-                    Statement.MakeBlock(
-                        Statement.MakeVarDecl(
-                            Helpers.MakeSeq(
-                                Helpers.MakePaticularPatternWithType(
-                                    "a",
-                                    AstType.MakeMemberType(
-                                        Helpers.MakeGenericType("TestModule"),
-                                        Helpers.MakeGenericType("TestClass")
-                                    )
-                                )
-                            ),
-                            Helpers.MakeSeq(
-                                Expression.MakeObjectCreation(
-                                    AstType.MakeMemberType(
-                                        Helpers.MakeGenericType("TestModule"),
-                                        Helpers.MakeGenericType("TestClass")
-                                    ),
-                                    Helpers.MakeSeq(
-                                        AstNode.MakeIdentifier("x"),
-                                        AstNode.MakeIdentifier("y")
-                                    ),
-                                    Helpers.MakeSeq(
-                                        Expression.MakeConstant("int", 100),
-                                        Expression.MakeConstant("int", 300)
-                                    )
-                                )
-                            ),
-                            Modifiers.Immutable
-                        ),
-                        Statement.MakeVarDecl(
-                            Helpers.MakeSeq(
-                                Helpers.MakePaticularPatternWithType(
-                                    "b",
-                                    Helpers.MakeGenericType("TestClass")
-                                )
-                            ),
-                            Helpers.MakeSeq(
-                                Helpers.MakeCallExpression(
-                                    Expression.MakePath(
-                                        AstNode.MakeIdentifier(
-                                            "TestModule",
-                                            Helpers.MakeGenericType("./test_module.exs")
-                                        ),
-                                        AstNode.MakeIdentifier(
-                                            "createTest",
-                                            AstType.MakeFunctionType(
-                                                "createTest",
-                                                Helpers.MakeGenericType("TestClass"),
-                                                Helpers.MakeSeq(
-                                                    Helpers.MakePrimitiveType("int"),
-                                                    Helpers.MakePrimitiveType("int")
-                                                )
-                                            )
-                                        )
-                                    ),
-                                    Expression.MakeConstant("int", 50),
-                                    Expression.MakeConstant("int", 100)
-                                )
-                            ),
-                            Modifiers.Immutable
-                        ),
-                        Statement.MakeVarDecl(
-                            Helpers.MakeSeq(
-                                Helpers.MakePaticularPatternWithType(
-                                    "c",
-                                    Helpers.MakeGenericType(
-                                        "tuple",
-                                        Helpers.MakePrimitiveType("int"),
-                                        Helpers.MakePrimitiveType("int")
-                                    )
-                                )
-                            ),
-                            Helpers.MakeSeq(
-                                Expression.MakePath(
-                                    AstNode.MakeIdentifier(
-                                        "TestModule",
-                                        Helpers.MakeGenericType("./test_module.exs")
-                                    ),
-                                    AstNode.MakeIdentifier(
-										"pair",
-                                        Helpers.MakeGenericType(
-                                            "tuple",
-                                            Helpers.MakePrimitiveType("int"),
-                                            Helpers.MakePrimitiveType("int")
-                                        )
-                                    )
-                                )
-                            ),
-                            Modifiers.Immutable
-                        ),
-                        Statement.MakeVarDecl(
-                            Helpers.MakeSeq(
-                                Helpers.MakePaticularPatternWithType(
-                                    "d",
-                                    Helpers.MakePrimitiveType("double")
-                                )
-                            ),
-                            Helpers.MakeSeq(
-                                Helpers.MakeCallExpression(
-                                    Expression.MakePath(
-                                        AstNode.MakeIdentifier(
-                                            "TestModule",
-                                            Helpers.MakeGenericType("./test_module.exs")
-                                        ),
-                                        AstNode.MakeIdentifier(
-                                            "mySin",
-                                            AstType.MakeFunctionType(
-                                                "mySin",
-                                                Helpers.MakePrimitiveType("double"),
-                                                TextLocation.Empty,
-                                                TextLocation.Empty,
-                                                Helpers.MakePrimitiveType("double")
-                                            )
-                                        )
-                                    ),
-                                    Expression.MakeConstant("double", 0.0)
-                                )
-                            ),
-                            Modifiers.Immutable
-                        ),
-                        Statement.MakeExprStmt(
-                            Helpers.MakeCallExpression(
-                                Helpers.MakeIdentifierPath(
-                                    "println",
-                                    AstType.MakeFunctionType(
-                                        "println",
-                                        Helpers.MakeVoidType(),
-                                        TextLocation.Empty,
-                                        TextLocation.Empty,
-                                        Helpers.MakePrimitiveType("string")
-                                    )
-                                ),
-                                Helpers.MakeIdentifierPath(
-                                    "a",
-                                    AstType.MakeMemberType(
-                                        Helpers.MakeGenericType("TestModule"),
-                                        Helpers.MakeGenericType("TestClass")
-                                    )
-                                ),
-                                Helpers.MakeIdentifierPath(
-                                    "b",
-                                    Helpers.MakeGenericType("TestClass")
-                                ),
-                                Helpers.MakeIdentifierPath(
-                                    "c",
-                                    Helpers.MakeGenericType(
-                                        "tuple",
-                                        Helpers.MakePrimitiveType("int"),
-                                        Helpers.MakePrimitiveType("int")
-                                    )
-                                ),
-                                Helpers.MakeIdentifierPath(
-                                    "d",
-                                    Helpers.MakePrimitiveType("double")
-                                )
-                            )
-                        )
-                    ),
-                    Helpers.MakeVoidType(),
-                    Modifiers.None
-                )
-            }, new List<ImportDeclaration>{
-                AstNode.MakeImportDecl(AstNode.MakeIdentifier("test_module"), "TestModule")
             });
 
             Assert.IsNotNull(ast);
@@ -4837,7 +4837,7 @@ namespace Expresso.Test
                     Helpers.MakeSeq<EntityDeclaration>(
                         EntityDeclaration.MakeField(
                             Helpers.MakeSeq(
-                                AstNode.MakeIdentifier("ExsMessage", AstType.MakePrimitiveType("string"))
+                                Helpers.MakeExactPatternWithType("ExsMessage", AstType.MakePrimitiveType("string"))
                             ),
                             Helpers.MakeSeq<Expression>(
                                 Expression.Null
@@ -5574,6 +5574,148 @@ namespace Expresso.Test
 
             Assert.IsNotNull(ast);
             Helpers.AstStructuralEqual(ast, expected);
+        }
+
+        [Test]
+        public void Interface()
+        {
+            var parser = new Parser(new Scanner("../../sources/for_unit_tests/interface.exs"));
+            parser.DoPostParseProcessing = true;
+            parser.Parse();
+
+            var ast = parser.TopmostAst;
+
+            var expected_ast = AstNode.MakeModuleDef("main", new List<EntityDeclaration>{
+                EntityDeclaration.MakeInterfaceDecl(
+                    "IInterface",
+                    Enumerable.Empty<AstType>(),
+                    Modifiers.None,
+                    TextLocation.Empty,
+                    TextLocation.Empty,
+                    EntityDeclaration.MakeFunc(
+                        "doSomeBehavior",
+                        Enumerable.Empty<ParameterDeclaration>(),
+                        null,
+                        Helpers.MakePrimitiveType("int"),
+                        Modifiers.Public
+                    )
+                ),
+                EntityDeclaration.MakeClassDecl(
+                    "TestClass",
+                    Helpers.MakeSeq<AstType>(
+                        Helpers.MakeGenericType("IInterface")
+                    ),
+                    Modifiers.None,
+                    TextLocation.Empty,
+                    TextLocation.Empty,
+                    EntityDeclaration.MakeField(
+                        Helpers.MakeSeq(
+                            Helpers.MakeExactPatternWithType(
+                                "x",
+                                Helpers.MakePrimitiveType("int")
+                            )
+                        ),
+                        Helpers.MakeSeq<Expression>(
+                            Expression.Null
+                        ),
+                        Modifiers.Immutable
+                    ),
+                    EntityDeclaration.MakeFunc(
+                        "doSomeBehavior",
+                        Enumerable.Empty<ParameterDeclaration>(),
+                        Statement.MakeBlock(
+                            Helpers.MakeSingleItemReturnStatement(
+                                Expression.MakeMemRef(
+                                    Expression.MakeSelfRef(),
+                                    AstNode.MakeIdentifier(
+                                        "x",
+                                        Helpers.MakePrimitiveType("int")
+                                    )
+                                )
+                            )
+                        ),
+                        Helpers.MakePrimitiveType("int"),
+                        Modifiers.Public
+                    )
+                ),
+                EntityDeclaration.MakeFunc(
+                    "main",
+                    Enumerable.Empty<ParameterDeclaration>(),
+                    Statement.MakeBlock(
+                        Statement.MakeVarDecl(
+                            Helpers.MakeSeq(
+                                Helpers.MakePaticularPatternWithType(
+                                    "t",
+                                    Helpers.MakeGenericType("TestClass")
+                                )
+                            ),
+                            Helpers.MakeSeq(
+                                Expression.MakeObjectCreation(
+                                    Helpers.MakeGenericType("TestClass"),
+                                    Helpers.MakeSeq(
+                                        AstNode.MakeIdentifier("x")
+                                    ),
+                                    Helpers.MakeSeq(
+                                        Expression.MakeConstant("int", 1)
+                                    )
+                                )
+                            ),
+                            Modifiers.Immutable
+                        ),
+                        Statement.MakeVarDecl(
+                            Helpers.MakeSeq(
+                                Helpers.MakePaticularPatternWithType(
+                                    "a",
+                                    Helpers.MakePrimitiveType("int")
+                                )
+                            ),
+                            Helpers.MakeSeq(
+                                Helpers.MakeCallExpression(
+                                    Expression.MakeMemRef(
+                                        Helpers.MakeIdentifierPath(
+                                            "t",
+                                            Helpers.MakeGenericType("TestClass")
+                                        ),
+                                        AstNode.MakeIdentifier(
+                                            "doSomeBehavior",
+                                            AstType.MakeFunctionType(
+                                                "doSomeBehavior",
+                                                Helpers.MakePrimitiveType("int"),
+                                                Enumerable.Empty<AstType>()
+                                            )
+                                        )
+                                    )
+                                )
+                            ),
+                            Modifiers.Immutable
+                        ),
+                        Statement.MakeExprStmt(
+                            Helpers.MakeCallExpression(
+                                Helpers.MakeIdentifierPath(
+                                    "printFormat",
+                                    AstType.MakeFunctionType(
+                                        "printFormat",
+                                        Helpers.MakeVoidType(),
+                                        TextLocation.Empty,
+                                        TextLocation.Empty,
+                                        Helpers.MakePrimitiveType("string")
+                                    )
+                                ),
+                                Expression.MakeConstant("string", "t.x = {0}"),
+                                Helpers.MakeIdentifierPath(
+                                    "a",
+                                    Helpers.MakePrimitiveType("int")
+                                )
+                            )
+                        )
+                    ),
+                    Helpers.MakeVoidType(),
+                    Modifiers.None
+                )
+            });
+
+            Assert.IsNotNull(ast);
+            Helpers.AstStructuralEqual(ast, expected_ast);
         }
 
         [Test]

@@ -26,7 +26,7 @@ namespace Expresso.Ast
         public string Name{
             get{
                 var pattern = Pattern;
-                if(pattern is IdentifierPattern ident_pat)
+                if(pattern is PatternWithType inner && inner.Pattern is IdentifierPattern ident_pat)
                     return ident_pat.Identifier.Name;
                 else
                     return null;
@@ -36,7 +36,7 @@ namespace Expresso.Ast
         public Identifier NameToken{
             get{
                 var pattern = Pattern;
-                if(pattern is IdentifierPattern ident_pat)
+                if(pattern is PatternWithType inner && inner.Pattern is IdentifierPattern ident_pat)
                     return ident_pat.Identifier;
                 else
                     return null;

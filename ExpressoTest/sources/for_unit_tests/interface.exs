@@ -19,7 +19,7 @@ class TestClass : IInterface
 {
 	let x (- int;
 
-	def doSomeBehavior() -> int
+	public def doSomeBehavior() -> int
 	{
 	    return self.x;
 	}
