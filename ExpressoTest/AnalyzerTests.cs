@@ -4618,7 +4618,7 @@ namespace Expresso.Test
                                             ),
                                             TextLocation.Empty,
                                             AstNode.MakeVariableInitializer(
-                                                PatternConstruct.MakeIdentifierPattern(
+                                                Helpers.MakePaticularPatternWithType(
                                                     "j",
                                                     Helpers.MakePrimitiveType("int")
                                                 ),

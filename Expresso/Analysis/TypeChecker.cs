@@ -1115,10 +1115,18 @@ namespace Expresso.Ast.Analysis
         {
             var left_type = initializer.Pattern.AcceptWalker(this);
             var tuple = left_type as SimpleType;
+            if(left_type == null){
+                throw new ParserException(
+                    "(Internal) Error ES0900: The left-hand-side of a VariableInitializer is inferred as null.",
+                    initializer
+                );
+            }
+
             if(IsPlaceholderType(left_type) || tuple != null && ContainsPlaceholderType(tuple)){
                 inference_runner.InspectsClosure = true;
                 var inferred_type = initializer.Initializer.AcceptWalker(inference_runner);
-                inference_runner.InspectsClosure = false;
+                // This code is needed because other methods could inspect closures
+                inference_runner.InspectsClosure = true;
                 if(IsCollectionType(inferred_type) && ((SimpleType)inferred_type).TypeArguments.Any(t => t is PlaceholderType)){
                     parser.ReportSemanticErrorRegional(
                         "Error ES1302: Can not infer the inner type of the container `{0}` because it lacks initial values.",
@@ -1309,9 +1317,7 @@ namespace Expresso.Ast.Analysis
             if(second == null)
                 throw new ArgumentNullException(nameof(second));
 
-            var primitive1 = first as PrimitiveType;
-            var primitive2 = second as PrimitiveType;
-            if(primitive1 != null && primitive2 != null){
+            if(first is PrimitiveType primitive1 && second is PrimitiveType primitive2){
                 if(IsNumericalType(first) && IsNumericalType(second)){
                     if(primitive1.KnownTypeCode == KnownTypeCode.Int && primitive2.KnownTypeCode == KnownTypeCode.UInt){
                         return TriBool.Intermmediate;
@@ -1344,6 +1350,11 @@ namespace Expresso.Ast.Analysis
             if(simple2 != null && simple2.IsNull){
                 // This indicates that the right-hand-side represents, say, the wildcard pattern
                 return TriBool.True;
+            }
+
+            if(first is FunctionType func1 && second is FunctionType func2){
+                if(first.IsMatch(func2))
+                    return TriBool.True;
             }
 
             return TriBool.False;
