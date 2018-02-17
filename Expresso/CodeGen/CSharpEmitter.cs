@@ -919,7 +919,7 @@ namespace Expresso.CodeGen
                                              : ident.Name;
                     var method = context.TargetType.GetMethod(method_name);
                     if(method == null)
-                        throw new EmitterException("It is found that the native symbol '{0}' doesn't represent a method", ident.Name);
+                        throw new EmitterException("It is found that the native symbol '{0}' doesn't represent a method.", ident.Name);
                     
                     context.Method = method;
                     Symbols.Add(ident.IdentifierId, new ExpressoSymbol{Method = method});
@@ -1607,12 +1607,12 @@ namespace Expresso.CodeGen
                 context.ContextExpression = CSharpExpr.Block(new []{param}, new []{assignment, context.ContextExpression});
             }
 
-            if(context.Field == null && context.TargetType != null){
+            if(context.Field == null && context.TargetType != null && (identifierPattern.Parent is DestructuringPattern || identifierPattern.Parent is TuplePattern)){
                 // context.TargetType is supposed to be set in CSharpEmitter.VisitIdentifier
                 var field = context.TargetType.GetField(identifierPattern.Identifier.Name, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static);
                 if(field == null){
                     throw new EmitterException(
-                        "Type `{0}` doesn't have the field `{1}`",
+                        "The type `{0}` doesn't have the field `{1}`",
                         context.TargetType, identifierPattern.Identifier.Name
                     );
                 }
