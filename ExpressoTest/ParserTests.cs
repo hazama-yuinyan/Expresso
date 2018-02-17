@@ -3191,9 +3191,15 @@ namespace Expresso.Test
                                     Statement.MakeExprStmt(
                                         Helpers.MakeCallExpression(
                                             Helpers.MakeIdentifierPath("println"),
+                                            Expression.MakeConstant("string", "First catch block")
+                                        )
+                                    ),
+                                    Statement.MakeExprStmt(
+                                        Helpers.MakeCallExpression(
+                                            Helpers.MakeIdentifierPath("println"),
                                             Expression.MakeMemRef(
                                                 Helpers.MakeIdentifierPath("e"),
-                                                Helpers.MakeSomeIdent("Message")
+                                                Helpers.MakeSomeIdent("ExsMessage")
                                             )
                                         )
                                     )
@@ -3307,7 +3313,7 @@ namespace Expresso.Test
                                             Helpers.MakeIdentifierPath("println"),
                                             Expression.MakeMemRef(
                                                 Helpers.MakeIdentifierPath("e"),
-                                                Helpers.MakeSomeIdent("Message")
+                                                Helpers.MakeSomeIdent("ExsMessage")
                                             )
                                         )
                                     )
@@ -3506,7 +3512,7 @@ namespace Expresso.Test
                         ),
                         Statement.MakeVarDecl(
                             Helpers.MakeSeq(
-                                PatternConstruct.MakeIdentifierPattern(
+                                Helpers.MakeSomePatternWithType(
                                     "y",
                                     Helpers.MakeGenericType(
                                         "vector",

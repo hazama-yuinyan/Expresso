@@ -1133,7 +1133,7 @@ string cur_class_name;
 			Get();
 			CondExpr(out option);
 		}
-		if(pattern is IdentifierPattern ident_pat){
+		if(pattern is PatternWithType inner && inner.Pattern is IdentifierPattern ident_pat){
 		   if(ident_pat.Identifier.Type is PlaceholderType && option == null)
 		       SemanticError(loc, "Error ES0003: Give me some context or I can't infer the type of {0}", ident_pat.Identifier.Name);
 		}

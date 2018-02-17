@@ -352,8 +352,7 @@ namespace Expresso.Ast.Analysis
                                 );
                             }*/
 
-                            // simple_type doesn't need to be cloned because it's already cloned
-                            return AstType.MakeSimpleType("slice", new []{simple_type, simple_type.TypeArguments.First().Clone()});
+                            return AstType.MakeSimpleType("slice", new []{simple_type.Clone(), simple_type.TypeArguments.First().Clone()});
                         }
                     }
                     return simple_type.TypeArguments.LastOrNullObject().Clone();

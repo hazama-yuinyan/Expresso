@@ -4831,9 +4831,10 @@ namespace Expresso.Test
             var expected = AstNode.MakeModuleDef("main", new List<EntityDeclaration>{
                 EntityDeclaration.MakeClassDecl(
                     "ExsException",
-                    Helpers.MakeSeq<AstType>(
+                    /*Helpers.MakeSeq<AstType>(
                         Helpers.MakeGenericType("Exception")
-                    ),
+                    )*/
+                    Enumerable.Empty<AstType>(),
                     Helpers.MakeSeq<EntityDeclaration>(
                         EntityDeclaration.MakeField(
                             Helpers.MakeSeq(
@@ -5140,7 +5141,7 @@ namespace Expresso.Test
                                                     Helpers.MakePrimitiveType("string")
                                                 )
                                             ),
-                                            Expression.MakeConstant("string", "Second finally block")
+                                            Expression.MakeConstant("string", "Second catch block")
                                         )
                                     ),
                                     Statement.MakeExprStmt(
@@ -5170,7 +5171,7 @@ namespace Expresso.Test
                                                     Helpers.MakeGenericType("ExsException")
                                                 ),
                                                 AstNode.MakeIdentifier(
-                                                    "Message",
+                                                    "ExsMessage",
                                                     Helpers.MakePrimitiveType("string")
                                                 )
                                             )
@@ -5422,7 +5423,7 @@ namespace Expresso.Test
                         ),
                         Statement.MakeVarDecl(
                             Helpers.MakeSeq(
-                                Helpers.MakePaticularPatternWithType(
+                                Helpers.MakeExactPatternWithType(
                                     "y",
                                     Helpers.MakeGenericType(
                                         "vector",
@@ -5492,7 +5493,7 @@ namespace Expresso.Test
                             ),
                             TextLocation.Empty,
                             AstNode.MakeVariableInitializer(
-                                PatternConstruct.MakeIdentifierPattern(
+                                Helpers.MakePaticularPatternWithType(
                                     "x",
                                     Helpers.MakePrimitiveType("int")
                                 ),

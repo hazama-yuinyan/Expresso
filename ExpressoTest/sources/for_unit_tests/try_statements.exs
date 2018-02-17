@@ -7,7 +7,7 @@ import "System.Exception" as Exception;
 
 
 
-class ExsException : Exception
+class ExsException /*: Exception*/
 {
     public let ExsMessage (- string;
 }
