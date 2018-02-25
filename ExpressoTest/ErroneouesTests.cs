@@ -385,6 +385,16 @@ namespace Expresso.Test
 
             Assert.AreEqual(1, parser.errors.count);
         }
+
+        [Test]
+        public void DifferentAccessModifierOnMethods()
+        {
+            var parser = new Parser(new Scanner("../../sources/for_unit_tests/erroneous/different_access_modifier_on_methods.exs"));
+            parser.DoPostParseProcessing = true;
+            parser.Parse();
+
+            Assert.AreEqual(1, parser.errors.count);
+        }
     }
 }
 

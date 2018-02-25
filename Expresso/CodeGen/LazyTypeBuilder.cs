@@ -74,7 +74,7 @@ namespace Expresso.CodeGen
             prologue = impl_type.DefineMethod("Prologue", MethodAttributes.Assembly | MethodAttributes.Static, typeof(void), types);
             static_prologue = impl_type.DefineMethod("StaticPrologue", MethodAttributes.Assembly | MethodAttributes.Static, typeof(void), null);
             implementers = new List<Tuple<Expression, MethodBuilder>>();
-            members = new List<MemberInfo>();
+            members = new List<MemberInfo>().Concat(builder.GetMethods().OfType<MethodBuilder>()).ToList();
             is_created = false;
         }
 
@@ -141,8 +141,10 @@ namespace Expresso.CodeGen
             );
             var il = ctor.GetILGenerator();
             var real_params = types.Concat(parameterTypes).ToArray();
-            LoadArgs(il, 0);
-            il.Emit(OpCodes.Call, interface_type.BaseType.GetConstructor(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance, null, Type.EmptyTypes, null));
+            if(!interface_type.BaseType.Attributes.HasFlag(TypeAttributes.Interface)){
+                LoadArgs(il, 0);
+                il.Emit(OpCodes.Call, interface_type.BaseType.GetConstructor(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance, null, Type.EmptyTypes, null));
+            }
 
             LoadArgs(il, 0);
             il.Emit(OpCodes.Call, prologue);
@@ -178,6 +180,13 @@ namespace Expresso.CodeGen
         /// <returns>The interface type.</returns>
         public Type CreateInterfaceType()
         {
+            if(interface_type.Attributes.HasFlag(TypeAttributes.Interface)){
+                if(type_cache == null)
+                    type_cache = interface_type.CreateType();
+
+                return type_cache;
+            }
+            
             ConstructorBuilder ctor = null;
             if(!members.OfType<ConstructorBuilder>().Any()){
                 var param_types = members.OfType<FieldBuilder>()
@@ -226,6 +235,9 @@ namespace Expresso.CodeGen
         /// <returns>The type.</returns>
         public Type CreateType()
         {
+            if(interface_type.Attributes.HasFlag(TypeAttributes.Interface))
+                return null;
+            
             if(is_created)
                 return type_cache;
 

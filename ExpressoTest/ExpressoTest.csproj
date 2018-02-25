@@ -34,7 +34,7 @@
     <Reference Include="System" />
     <Reference Include="System.Numerics" />
     <Reference Include="nunit.framework">
-      <HintPath>..\packages\NUnit.3.6.0\lib\net45\nunit.framework.dll</HintPath>
+      <HintPath>..\packages\NUnit.3.9.0\lib\net45\nunit.framework.dll</HintPath>
     </Reference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
@@ -57,7 +57,6 @@
     <None Include="sources\for_unit_tests\simple_literals.exs" />
     <None Include="sources\for_unit_tests\test_module.exs" />
     <None Include="sources\for_unit_tests\erroneous\literals.exs" />
-    <None Include="packages.config" />
     <None Include="sources\for_unit_tests\try_statements.exs" />
     <None Include="sources\for_unit_tests\closures.exs" />
     <None Include="sources\for_unit_tests\closures_with_compound_statements.exs" />
@@ -101,6 +100,8 @@
     <None Include="sources\for_unit_tests\erroneous\private_accessibility.exs" />
     <None Include="sources\for_unit_tests\erroneous\protected_accessibility.exs" />
     <None Include="sources\for_unit_tests\erroneous\member_immutability.exs" />
+    <None Include="sources\for_unit_tests\erroneous\different_access_modifier_on_methods.exs" />
+    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AnalyzerTests.cs" />

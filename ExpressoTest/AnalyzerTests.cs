@@ -5619,7 +5619,7 @@ namespace Expresso.Test
                         Helpers.MakeSeq<Expression>(
                             Expression.Null
                         ),
-                        Modifiers.Immutable
+                        Modifiers.Immutable | Modifiers.Private
                     ),
                     EntityDeclaration.MakeFunc(
                         "doSomeBehavior",

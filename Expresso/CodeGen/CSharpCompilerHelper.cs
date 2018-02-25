@@ -52,6 +52,14 @@ namespace Expresso.CodeGen
         }
 
         /// <summary>
+        /// Gets the list of <see cref="Type"/> instances of dynamic interfaces.
+        /// </summary>
+        /// <value>The interface types.</value>
+        public static List<Type> InterfaceTypes{
+            get;
+        } = new List<Type>();
+
+        /// <summary>
         /// Helper method to convert a PrimitiveType to a C#'s type.
         /// </summary>
         /// <returns>A <see cref="System.Type"/> object.</returns>
@@ -178,8 +186,16 @@ namespace Expresso.CodeGen
                         break;
                 }
 
-                if(type == null)
-                    throw new EmitterException("Type `{0}` is not found!", simple.Identifier);
+                if(type == null){
+                    var interface_type = InterfaceTypes.Where(it => it.Name == name)
+                                                       .Select(it => it)
+                                                       .First();
+                    
+                    if(interface_type == null)
+                        throw new EmitterException("The type `{0}` is not found!", simple.Identifier);
+                    else
+                        return interface_type;
+                }
 
                 return type;
             }
@@ -337,36 +353,36 @@ namespace Expresso.CodeGen
             
             var type = obj.GetType();
             if(type.IsGenericType){
-	            var type_def = type.GetGenericTypeDefinition();
-	            if(type_def == typeof(List<>)){
+                var type_def = type.GetGenericTypeDefinition();
+                if(type_def == typeof(List<>)){
                     if(obj is IEnumerable<int> enumerable)
-	                    return ExpandSequence(enumerable);
+                        return ExpandSequence(enumerable);
                     else if(obj is IEnumerable<uint> eumerable2)
-	                    return ExpandSequence(eumerable2);
-	                else
+                        return ExpandSequence(eumerable2);
+                    else
                         return ExpandSequence((IEnumerable<object>)obj);
-	            }
+                }
 
-	            if(type_def == typeof(Dictionary<,>)){
-	                if(obj is Dictionary<int, int> dict)
-	                    return ExpandDictionary(dict);
-	                else if(obj is Dictionary<uint, int> dict2)
-	                    return ExpandDictionary(dict2);
+                if(type_def == typeof(Dictionary<,>)){
+                    if(obj is Dictionary<int, int> dict)
+                        return ExpandDictionary(dict);
+                    else if(obj is Dictionary<uint, int> dict2)
+                        return ExpandDictionary(dict2);
                     else if(obj is Dictionary<string, int> dict3)
                         return ExpandDictionary(dict3);
                     else if(obj is Dictionary<int, uint> dict4)
-	                    return ExpandDictionary(dict4);
+                        return ExpandDictionary(dict4);
                     else if(obj is Dictionary<int, string> dict5)
                         return ExpandDictionary(dict5);
-	                else if(obj is Dictionary<uint, uint> dict6)
-	                    return ExpandDictionary(dict6);
+                    else if(obj is Dictionary<uint, uint> dict6)
+                        return ExpandDictionary(dict6);
                     else if(obj is Dictionary<uint, string> dict7)
                         return ExpandDictionary(dict7);
                     else if(obj is Dictionary<string, uint> dict8)
                         return ExpandDictionary(dict8);
                     else if(obj is Dictionary<string, string> dict9)
                         return ExpandDictionary(dict9);
-	            }
+                }
             }else if(type.IsArray){
                 if(obj is IEnumerable<int> enumerable)
                     return ExpandSequence(enumerable);

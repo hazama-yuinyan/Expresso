@@ -945,6 +945,20 @@ namespace Expresso.Ast.Analysis
             DescendScope();
             scope_counter = 0;
 
+            if(funcDecl.Parent is TypeDeclaration type_decl){
+                foreach(var base_type in type_decl.BaseTypes){
+                    var parent_type = symbols.GetTypeTable(base_type.Name);
+                    var ident = parent_type.GetSymbol(funcDecl.Name);
+                    if(ident != null && !ident.Modifiers.Equals(funcDecl.Modifiers)){
+                        throw new ParserException(
+                            "Error ES1030: The parent type's '{0}' is {1} but this type's '{0}' is {2}.",
+                            funcDecl,
+                            funcDecl.Name, ident.Modifiers, funcDecl.Modifiers
+                        );
+                    }
+                }
+            }
+
             foreach(var param in funcDecl.Parameters){
                 var param_type = param.AcceptWalker(this);
                 if(IsPlaceholderType(param_type)){
@@ -989,7 +1003,7 @@ namespace Expresso.Ast.Analysis
             // Delay discovering the return type because the body statements should be type-aware
             // before the return type is started to be inferred
             if(IsPlaceholderType(funcDecl.ReturnType)){
-                if(funcDecl.Parent is TypeDeclaration type_decl && type_decl.TypeKind == ClassType.Interface){
+                if(funcDecl.Parent is TypeDeclaration type_decl2 && type_decl2.TypeKind == ClassType.Interface){
                     throw new ParserException(
                         "Error ES1602: The method signature '{0}' in an interface must make the return type explicit.",
                         funcDecl,

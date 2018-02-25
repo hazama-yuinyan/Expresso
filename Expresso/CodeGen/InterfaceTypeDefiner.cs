@@ -312,6 +312,18 @@ namespace Expresso.CodeGen
                     attr ^= MethodAttributes.Private;
                 }
 
+                if(funcDecl.Parent is TypeDeclaration type_decl && type_decl.TypeKind == ClassType.Interface){
+                    attr |= MethodAttributes.Abstract | MethodAttributes.Virtual | MethodAttributes.Public;
+                    attr ^= MethodAttributes.Private;
+                }else if(funcDecl.Parent is TypeDeclaration type_decl2){
+                    foreach(var base_type in type_decl2.BaseTypes){
+                        var native_type = Symbols[base_type.IdentifierNode.IdentifierId].Type;
+                        // interfaces methods must be virtual
+                        if(native_type.GetMethod(CSharpCompilerHelper.ConvertToPascalCase(funcDecl.Name)) != null)
+                            attr |= MethodAttributes.Virtual;
+                    }
+                }
+
                 context.TypeBuilder.DefineMethod(CSharpCompilerHelper.ConvertToPascalCase(funcDecl.Name), attr, return_type, param_types.ToArray());
 
                 emitter.AscendScope();
@@ -326,12 +338,13 @@ namespace Expresso.CodeGen
 
                 var parent_type = context.TypeBuilder;
                 var attr = typeDecl.Modifiers.HasFlag(Modifiers.Export) ? TypeAttributes.Public : TypeAttributes.NotPublic;
-                attr |= TypeAttributes.Class;
+                attr |= (typeDecl.TypeKind == ClassType.Interface) ? TypeAttributes.Interface | TypeAttributes.Abstract : TypeAttributes.Class;
                 var name = typeDecl.Name;
 
                 foreach(var base_type in typeDecl.BaseTypes){
                     var native_type = CSharpCompilerHelper.GetNativeType(base_type);
-                    AddSymbol(base_type.IdentifierNode, new ExpressoSymbol{Type = native_type});
+                    if(!Symbols.ContainsKey(base_type.IdentifierNode.IdentifierId))
+                        AddSymbol(base_type.IdentifierNode, new ExpressoSymbol{Type = native_type});
                 }
                 // TODO: take 1 type from base_types.
                 var base_types = 
@@ -339,6 +352,9 @@ namespace Expresso.CodeGen
                     select Symbols[bt.IdentifierNode.IdentifierId].Type;
                 //parent_type.DefineNestedType(name, attr, base_types);
                 context.TypeBuilder = new LazyTypeBuilder(context.ModuleBuilder, name, attr, base_types, false);
+
+                foreach(var base_type in base_types)
+                    context.TypeBuilder.InterfaceTypeBuilder.AddInterfaceImplementation(base_type);
 
                 try{
                     foreach(var member in typeDecl.Members)

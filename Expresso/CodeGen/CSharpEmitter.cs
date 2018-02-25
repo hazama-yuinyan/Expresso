@@ -1421,6 +1421,9 @@ namespace Expresso.CodeGen
 
         public CSharpExpr VisitFunctionDeclaration(FunctionDeclaration funcDecl, CSharpEmitterContext context)
         {
+            if(funcDecl.Body.IsNull)
+                return null;
+            
             context.Additionals = new List<object>();
             int tmp_counter = scope_counter;
             DescendScope();
@@ -1462,6 +1465,15 @@ namespace Expresso.CodeGen
                 context.AssemblyBuilder.SetEntryPoint(interface_func, PEFileKinds.ConsoleApplication);
 
             context.TypeBuilder.SetBody(interface_func, lambda);
+
+            /*if(funcDecl.Parent is TypeDeclaration type_decl){
+                foreach(var base_type in type_decl.BaseTypes){
+                    var interface_type = Symbols[base_type.IdentifierNode.IdentifierId].Type;
+                    var interface_method = interface_type.GetMethod(funcDecl.Name);
+                    if(interface_method != null)
+                        context.TypeBuilder.InterfaceTypeBuilder.DefineMethodOverride(interface_func, interface_method);
+                }
+            }*/
 
             AscendScope();
             scope_counter = tmp_counter + 1;

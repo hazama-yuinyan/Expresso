@@ -576,7 +576,7 @@ string cur_class_name;
 		Expect(14);
 		name = t.val;
 		if(!CheckKeyword(name)){
-		   ident = AstNode.MakeIdentifier(name, AstType.MakePlaceholderType(CurrentLocation), ExpressoModifiers.None, ident_start_loc); 
+		   ident = AstNode.MakeIdentifier(name, AstType.MakePlaceholderType(CurrentLocation), modifiers, ident_start_loc); 
 		   Symbols.AddSymbol(name, ident);
 		}else{
 		   // The name is unsuitable for a method or a function name.
@@ -903,7 +903,7 @@ string cur_class_name;
 		Expect(14);
 		name = t.val;
 		if(!CheckKeyword(name)){
-		   ident = AstNode.MakeIdentifier(name, AstType.MakePlaceholderType(CurrentLocation), ExpressoModifiers.None, ident_start_loc); 
+		   ident = AstNode.MakeIdentifier(name, AstType.MakePlaceholderType(CurrentLocation), ExpressoModifiers.Public, ident_start_loc); 
 		   Symbols.AddSymbol(name, ident);
 		}else{
 		   // The name is unsuitable for a method or a function name.
@@ -1134,7 +1134,7 @@ string cur_class_name;
 			CondExpr(out option);
 		}
 		if(pattern is PatternWithType inner && inner.Pattern is IdentifierPattern ident_pat){
-		   if(ident_pat.Identifier.Type is PlaceholderType && option == null)
+		   if(inner.Type is PlaceholderType && option == null)
 		       SemanticError(loc, "Error ES0003: Give me some context or I can't infer the type of {0}", ident_pat.Identifier.Name);
 		}
 		
