@@ -31,7 +31,15 @@ namespace Expresso.CodeGen
         /// Current type builder.
         /// It will be null if we are not constructing a type declaration.
         /// </summary>
-        public LazyTypeBuilder TypeBuilder{
+        public LazyTypeBuilder LazyTypeBuilder{
+            get; set;
+        }
+
+        /// <summary>
+        /// Current interface type builder.
+        /// It can be null if we are not constructing an interface.
+        /// </summary>
+        public TypeBuilder InterfaceTypeBuilder{
             get; set;
         }
 

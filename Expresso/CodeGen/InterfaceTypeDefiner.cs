@@ -306,15 +306,14 @@ namespace Expresso.CodeGen
 
                 var return_type = CSharpCompilerHelper.GetNativeType(funcDecl.ReturnType);
 
-                var attr = (context.TypeBuilder != null) ? MethodAttributes.Private : MethodAttributes.Static | MethodAttributes.Private;
+                var attr = (context.LazyTypeBuilder != null) ? MethodAttributes.Private : MethodAttributes.Static | MethodAttributes.Private;
                 if(funcDecl.Modifiers.HasFlag(Modifiers.Public)){
                     attr |= MethodAttributes.Public;
                     attr ^= MethodAttributes.Private;
                 }
 
                 if(funcDecl.Parent is TypeDeclaration type_decl && type_decl.TypeKind == ClassType.Interface){
-                    attr |= MethodAttributes.Abstract | MethodAttributes.Virtual | MethodAttributes.Public;
-                    attr ^= MethodAttributes.Private;
+                    attr |= MethodAttributes.Abstract | MethodAttributes.Virtual;
                 }else if(funcDecl.Parent is TypeDeclaration type_decl2){
                     foreach(var base_type in type_decl2.BaseTypes){
                         var native_type = Symbols[base_type.IdentifierNode.IdentifierId].Type;
@@ -324,7 +323,10 @@ namespace Expresso.CodeGen
                     }
                 }
 
-                context.TypeBuilder.DefineMethod(CSharpCompilerHelper.ConvertToPascalCase(funcDecl.Name), attr, return_type, param_types.ToArray());
+                if(funcDecl.Parent is TypeDeclaration type_decl3 && type_decl3.TypeKind == ClassType.Interface)
+                    context.InterfaceTypeBuilder.DefineMethod(CSharpCompilerHelper.ConvertToPascalCase(funcDecl.Name), attr, return_type, param_types.ToArray());
+                else
+                    context.LazyTypeBuilder.DefineMethod(CSharpCompilerHelper.ConvertToPascalCase(funcDecl.Name), attr, return_type, param_types.ToArray());
 
                 emitter.AscendScope();
                 emitter.scope_counter = tmp_counter + 1;
@@ -336,9 +338,9 @@ namespace Expresso.CodeGen
                 emitter.DescendScope();
                 emitter.scope_counter = 0;
 
-                var parent_type = context.TypeBuilder;
+                var parent_type = context.LazyTypeBuilder;
                 var attr = typeDecl.Modifiers.HasFlag(Modifiers.Export) ? TypeAttributes.Public : TypeAttributes.NotPublic;
-                attr |= (typeDecl.TypeKind == ClassType.Interface) ? TypeAttributes.Interface | TypeAttributes.Abstract : TypeAttributes.Class;
+                attr |= (typeDecl.TypeKind == ClassType.Interface) ? TypeAttributes.Interface | TypeAttributes.Abstract : TypeAttributes.Class | TypeAttributes.BeforeFieldInit;
                 var name = typeDecl.Name;
 
                 foreach(var base_type in typeDecl.BaseTypes){
@@ -350,21 +352,31 @@ namespace Expresso.CodeGen
                 var base_types = 
                     from bt in typeDecl.BaseTypes
                     select Symbols[bt.IdentifierNode.IdentifierId].Type;
-                //parent_type.DefineNestedType(name, attr, base_types);
-                context.TypeBuilder = new LazyTypeBuilder(context.ModuleBuilder, name, attr, base_types, false);
+
+                // derive from object if we don't already derive from that
+                var first_type = base_types.FirstOrDefault();
+                if(first_type != null && !first_type.IsClass)
+                    base_types = new []{typeof(object)}.Concat(base_types);
+                
+                if(typeDecl.TypeKind == ClassType.Interface)
+                    context.InterfaceTypeBuilder = context.ModuleBuilder.DefineType(name, TypeAttributes.Interface | TypeAttributes.Abstract);
+                else
+                    context.LazyTypeBuilder = new LazyTypeBuilder(context.ModuleBuilder, name, attr, base_types, false);
 
                 foreach(var base_type in base_types)
-                    context.TypeBuilder.InterfaceTypeBuilder.AddInterfaceImplementation(base_type);
+                    context.LazyTypeBuilder.InterfaceTypeBuilder.AddInterfaceImplementation(base_type);
 
                 try{
                     foreach(var member in typeDecl.Members)
                         member.AcceptWalker(this);
 
-                    var type = context.TypeBuilder.CreateInterfaceType();
-                    AddSymbol(typeDecl.NameToken, new ExpressoSymbol{Type = type, TypeBuilder = context.TypeBuilder});
+                    var type = (typeDecl.TypeKind == ClassType.Interface) ? context.InterfaceTypeBuilder.CreateType() : context.LazyTypeBuilder.CreateInterfaceType();
+                    var expresso_symbol = (typeDecl.TypeKind == ClassType.Interface) ? new ExpressoSymbol{Type = type} : new ExpressoSymbol{Type = type, TypeBuilder = context.LazyTypeBuilder};
+                    AddSymbol(typeDecl.NameToken, expresso_symbol);
                 }
                 finally{
-                    context.TypeBuilder = parent_type;
+                    context.LazyTypeBuilder = parent_type;
+                    context.InterfaceTypeBuilder = null;
                 }
 
                 emitter.AscendScope();
@@ -400,7 +412,7 @@ namespace Expresso.CodeGen
 
                 foreach(var init in fieldDecl.Initializers){
                     var type = CSharpCompilerHelper.GetNativeType(init.NameToken.Type);
-                    var field_builder = context.TypeBuilder.DefineField(init.Name, type, !Expression.IsNullNode(init.Initializer), attr);
+                    var field_builder = context.LazyTypeBuilder.DefineField(init.Name, type, !Expression.IsNullNode(init.Initializer), attr);
                     AddSymbol(init.NameToken, new ExpressoSymbol{Field = field_builder});
                 }
             }

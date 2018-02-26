@@ -186,16 +186,8 @@ namespace Expresso.CodeGen
                         break;
                 }
 
-                if(type == null){
-                    var interface_type = InterfaceTypes.Where(it => it.Name == name)
-                                                       .Select(it => it)
-                                                       .First();
-                    
-                    if(interface_type == null)
-                        throw new EmitterException("The type `{0}` is not found!", simple.Identifier);
-                    else
-                        return interface_type;
-                }
+                if(type == null)
+                    throw new EmitterException("The type `{0}` is not found!", simple.Identifier);
 
                 return type;
             }

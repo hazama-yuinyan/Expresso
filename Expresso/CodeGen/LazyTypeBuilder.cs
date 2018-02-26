@@ -324,6 +324,11 @@ namespace Expresso.CodeGen
             }).First();
         }
 
+        /// <summary>
+        /// Sets the body of the `field`.
+        /// </summary>
+        /// <param name="field">Field.</param>
+        /// <param name="body">Body.</param>
         public void SetBody(FieldBuilder field, Expression body)
         {
             if(body == null)
@@ -343,6 +348,11 @@ namespace Expresso.CodeGen
             AddImplementer(body, impl_method);
         }
 
+        /// <summary>
+        /// Sets the body of the `field` in a closure type.
+        /// </summary>
+        /// <param name="field">Field.</param>
+        /// <param name="ilEmitter">Il emitter.</param>
         public void SetBody(FieldBuilder field, Action<ILGenerator, FieldBuilder> ilEmitter)
         {
             if(ilEmitter == null)
@@ -352,6 +362,11 @@ namespace Expresso.CodeGen
             ilEmitter(prologue_il, field);
         }
 
+        /// <summary>
+        /// Sets the body of the `method`.
+        /// </summary>
+        /// <param name="method">Method.</param>
+        /// <param name="body">Body.</param>
         public void SetBody(MethodInfo method, Expression body)
         {
             if(body == null)
@@ -366,6 +381,11 @@ namespace Expresso.CodeGen
             }
         }
 
+        /// <summary>
+        /// Sets the body of the `ctor`.
+        /// </summary>
+        /// <param name="ctor">Ctor.</param>
+        /// <param name="body">Body.</param>
         public void SetBody(ConstructorBuilder ctor, Expression body)
         {
             if(body == null)

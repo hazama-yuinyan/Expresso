@@ -205,7 +205,7 @@ namespace Expresso.CodeGen
 
             context.AssemblyBuilder = asm_builder;
             context.ModuleBuilder = mod_builder;
-            context.TypeBuilder = type_builder;
+            context.LazyTypeBuilder = type_builder;
 
             context.ExternalModuleType = null;
             foreach(var external_module in ast.ExternalModules){
@@ -229,7 +229,7 @@ namespace Expresso.CodeGen
 
             context.AssemblyBuilder = asm_builder;
             context.ModuleBuilder = mod_builder;
-            context.TypeBuilder = type_builder;
+            context.LazyTypeBuilder = type_builder;
 
             foreach(var import in ast.Imports)
                 import.AcceptWalker(this, context);
@@ -1295,7 +1295,7 @@ namespace Expresso.CodeGen
 
         public CSharpExpr VisitSuperReferenceExpression(SuperReferenceExpression superRef, CSharpEmitterContext context)
         {
-            var super_type = context.TypeBuilder.BaseType;
+            var super_type = context.LazyTypeBuilder.BaseType;
             return CSharpExpr.Parameter(super_type, "super");
         }
 
@@ -1317,7 +1317,7 @@ namespace Expresso.CodeGen
             var symbol = GetNativeSymbol(simpleType.IdentifierNode);
             if(symbol != null && symbol.Type != null){
                 context.TargetType = symbol.Type;
-                context.Constructor = context.TargetType.GetConstructors().Last();
+                context.Constructor = context.TargetType.GetConstructors().First();
                 return symbol.Parameter;
             }else{
                 throw new EmitterException("It is found that Type '{0}' isn't defined.", simpleType.Identifier);
@@ -1440,7 +1440,7 @@ namespace Expresso.CodeGen
             DefaultReturnValue = CSharpExpr.Default(return_type);
 
             var prev_self = context.ParameterSelf;
-            var self_type = context.TypeBuilder.InterfaceType;
+            var self_type = context.LazyTypeBuilder.InterfaceType;
             context.ParameterSelf = CSharpExpr.Parameter(self_type, "self");
 
             var is_global_function = !funcDecl.Modifiers.HasFlag(Modifiers.Public) && !funcDecl.Modifiers.HasFlag(Modifiers.Protected) && !funcDecl.Modifiers.HasFlag(Modifiers.Private);
@@ -1452,7 +1452,7 @@ namespace Expresso.CodeGen
             else
                 attrs |= BindingFlags.NonPublic;
 
-            var interface_func = context.TypeBuilder.GetInterfaceMethod(CSharpCompilerHelper.ConvertToPascalCase(funcDecl.Name), attrs);
+            var interface_func = context.LazyTypeBuilder.GetInterfaceMethod(CSharpCompilerHelper.ConvertToPascalCase(funcDecl.Name), attrs);
             AddSymbol(funcDecl.NameToken, new ExpressoSymbol{Method = interface_func});
 
             var body = funcDecl.Body.AcceptWalker(this, context);
@@ -1464,7 +1464,7 @@ namespace Expresso.CodeGen
             if(funcDecl.Name == "main")
                 context.AssemblyBuilder.SetEntryPoint(interface_func, PEFileKinds.ConsoleApplication);
 
-            context.TypeBuilder.SetBody(interface_func, lambda);
+            context.LazyTypeBuilder.SetBody(interface_func, lambda);
 
             /*if(funcDecl.Parent is TypeDeclaration type_decl){
                 foreach(var base_type in type_decl.BaseTypes){
@@ -1489,8 +1489,8 @@ namespace Expresso.CodeGen
 
             scope_counter = original_count;
 
-            var parent_type = context.TypeBuilder;
-            context.TypeBuilder = Symbols[typeDecl.NameToken.IdentifierId].TypeBuilder;
+            var parent_type = context.LazyTypeBuilder;
+            context.LazyTypeBuilder = Symbols[typeDecl.NameToken.IdentifierId].TypeBuilder;
 
             DescendScope();
             scope_counter = 0;
@@ -1499,10 +1499,11 @@ namespace Expresso.CodeGen
                 foreach(var member in typeDecl.Members)
                     member.AcceptWalker(this, context);
 
-                context.TypeBuilder.CreateType();
+                if(typeDecl.TypeKind == ClassType.Class)
+                    context.LazyTypeBuilder.CreateType();
             }
             finally{
-                context.TypeBuilder = parent_type;
+                context.LazyTypeBuilder = parent_type;
             }
 
             AscendScope();
@@ -1516,7 +1517,7 @@ namespace Expresso.CodeGen
                 var field_builder = init.NameToken != null ? Symbols[init.NameToken.IdentifierId].Field as FieldBuilder : throw new EmitterException("Invalid field: {0}", init.Pattern);
                 var initializer = init.Initializer.AcceptWalker(this, context);
                 if(initializer != null)
-                    context.TypeBuilder.SetBody(field_builder, initializer);
+                    context.LazyTypeBuilder.SetBody(field_builder, initializer);
             }
 
             return null;
@@ -2112,15 +2113,15 @@ namespace Expresso.CodeGen
                 }
 
                 if(entity is FunctionDeclaration 
-                   && context.TypeBuilder.GetMethod(CSharpCompilerHelper.ConvertToPascalCase(entity.Name)) == null)
+                   && context.LazyTypeBuilder.GetMethod(CSharpCompilerHelper.ConvertToPascalCase(entity.Name)) == null)
                     DefineFunctionSignature((FunctionDeclaration)entity, context);
                 else if(entity is FieldDeclaration
-                        && context.TypeBuilder.GetField(entity.Name) == null)
+                        && context.LazyTypeBuilder.GetField(entity.Name) == null)
                     DefineField((FieldDeclaration)entity, context);
             }
 
-            if(!context.TypeBuilder.IsInterfaceDefined && !is_broken)
-                context.TypeBuilder.CreateInterfaceType();
+            if(!context.LazyTypeBuilder.IsInterfaceDefined && !is_broken)
+                context.LazyTypeBuilder.CreateInterfaceType();
             
             scope_counter = tmp_counter;
         }
@@ -2137,7 +2138,7 @@ namespace Expresso.CodeGen
             var return_type = CSharpCompilerHelper.GetNativeType(funcDecl.ReturnType);
 
             var is_global_function = !funcDecl.Modifiers.HasFlag(Modifiers.Public) && !funcDecl.Modifiers.HasFlag(Modifiers.Protected) && !funcDecl.Modifiers.HasFlag(Modifiers.Private);
-            var self_param = CSharpExpr.Parameter(context.TypeBuilder.InterfaceTypeBuilder, "self");
+            var self_param = CSharpExpr.Parameter(context.LazyTypeBuilder.InterfaceTypeBuilder, "self");
             var parameters = is_global_function ? formal_parameters : new []{self_param}.Concat(formal_parameters);
 
             var attrs = is_global_function ? MethodAttributes.Static :
@@ -2151,7 +2152,7 @@ namespace Expresso.CodeGen
             var param_types =
                 from param in parameters
                 select param.Type;
-            context.TypeBuilder.DefineMethod(CSharpCompilerHelper.ConvertToPascalCase(funcDecl.Name), attrs, return_type, param_types.ToArray());
+            context.LazyTypeBuilder.DefineMethod(CSharpCompilerHelper.ConvertToPascalCase(funcDecl.Name), attrs, return_type, param_types.ToArray());
 
             AscendScope();
             scope_counter = tmp_counter + 1;
@@ -2173,7 +2174,7 @@ namespace Expresso.CodeGen
             foreach(var init in fieldDecl.Initializers){
                 if(init.Pattern is PatternWithType inner && inner.Pattern is IdentifierPattern ident_pat){
                     var type = CSharpCompilerHelper.GetNativeType(ident_pat.Identifier.Type);
-                    var field_builder = context.TypeBuilder.DefineField(init.Name, type, !Expression.IsNullNode(init.Initializer), attr);
+                    var field_builder = context.LazyTypeBuilder.DefineField(init.Name, type, !Expression.IsNullNode(init.Initializer), attr);
                     AddSymbol(ident_pat.Identifier, new ExpressoSymbol{Field = field_builder});
                 }else{
                     throw new EmitterException("Invalid module field!");
