@@ -102,6 +102,7 @@
     <None Include="sources\for_unit_tests\erroneous\member_immutability.exs" />
     <None Include="sources\for_unit_tests\erroneous\different_access_modifier_on_methods.exs" />
     <None Include="packages.config" />
+    <None Include="sources\for_unit_tests\erroneous\types_mismatched_on_argument.exs" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AnalyzerTests.cs" />

@@ -461,7 +461,7 @@ namespace Expresso.Ast.Analysis
             SymbolTable AscendScopesUntil(string parentName)
             {
                 var table = checker.symbols;
-                while(!table.Parent.Name.StartsWith(parentName)){
+                while(!table.Parent.Name.StartsWith(parentName, StringComparison.CurrentCulture)){
                     table = table.Parent;
                     if(table.Parent == null)
                         throw new Exception("table.Parent is null");

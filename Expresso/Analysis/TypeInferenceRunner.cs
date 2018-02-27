@@ -668,7 +668,7 @@ namespace Expresso.Ast.Analysis
             {
                 if(parameterDecl.Option.IsNull){
                     parser.ReportSemanticErrorRegional(
-                        "Error ES1310: Can not infer the type of the prameter '{0}' because it doesn't have an optional value.",
+                        "Error ES1310: Can not infer the type of the parameter '{0}' because it doesn't have an optional value.",
                         parameterDecl.NameToken, parameterDecl.NameToken,
                         parameterDecl.Name
                     );

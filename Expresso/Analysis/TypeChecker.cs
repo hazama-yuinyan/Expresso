@@ -10,7 +10,7 @@ namespace Expresso.Ast.Analysis
 {
     /// <summary>
     /// A type checker is responsible for type validity check as well as type inference, if needed.
-    /// All <see cref="Expresso.Ast.PlaceholderType"/> nodes will be replaced with real types
+    /// All <see cref="PlaceholderType"/> nodes will be replaced with real types
     /// inferred from the context.
     /// </summary>
     partial class TypeChecker : IAstWalker<AstType>
@@ -416,8 +416,19 @@ namespace Expresso.Ast.Analysis
                 return inferred;
             }
 
-            // TODO: implement the type check on arguments.
             inference_runner.VisitCallExpression(callExpr);
+            foreach(var pair in func_type.Parameters.Zip(callExpr.Arguments, (l, r) => new Tuple<AstType, Expression>(l, r))){
+                var arg_type = pair.Item2.AcceptWalker(inference_runner);
+                if(IsCompatibleWith(pair.Item1, arg_type) == TriBool.False){
+                    throw new ParserException(
+                        "Error ES1303: Types mismatched; expected `{0}`, found `{1}`.",
+                        pair.Item2,
+                        pair.Item1,
+                        arg_type
+                    );
+                }
+            }
+
             if(func_type == null){
                 throw new ParserException(
                     "Error ES1805: {0} turns out not to be a function.",
@@ -574,7 +585,7 @@ namespace Expresso.Ast.Analysis
             // Infer and spread the type of the identifier to this node
             inference_runner.VisitIdentifier(ident);
             if(inspecting_immutability && ident.Modifiers.HasFlag(Modifiers.Immutable)){
-                parser.ReportSemanticError(
+                throw new ParserException(
                     "Error ES1900: Re-assignment on an immutable variable '{0}'.",
                     ident,
                     ident.Name
@@ -882,9 +893,9 @@ namespace Expresso.Ast.Analysis
         public AstType VisitSimpleType(SimpleType simpleType)
         {
             BindTypeName(simpleType.IdentifierToken);
-            // If the type arguments contain any unsubstituted arguments(placeholder nodes)
+            // If the type arguments contain any unsubstituted ones(placeholder nodes)
             // return the statically defined placeholder type node to indicate that it needs to be inferred
-            if(simpleType.TypeArguments.HasChildren && IsPlaceholderType(simpleType.TypeArguments.FirstOrNullObject()))
+            if(simpleType.TypeArguments.HasChildren && simpleType.TypeArguments.Any(ta => IsPlaceholderType(ta)))
                 return PlaceholderTypeNode.Clone();
             else
                 return simpleType;
@@ -1143,7 +1154,7 @@ namespace Expresso.Ast.Analysis
                 inference_runner.InspectsClosure = true;
                 if(IsCollectionType(inferred_type) && ((SimpleType)inferred_type).TypeArguments.Any(t => t is PlaceholderType)){
                     parser.ReportSemanticErrorRegional(
-                        "Error ES1302: Can not infer the inner type of the container `{0}` because it lacks initial values.",
+                        "Error ES1312: Can not infer the inner type of the container `{0}` because it lacks initial values.",
                         initializer.Pattern,
                         initializer.Initializer,
                         inferred_type.Name
@@ -1321,7 +1332,7 @@ namespace Expresso.Ast.Analysis
         /// <summary>
         /// Determines whether <c>first</c> is compatible with the specified <c>second</c>.
         /// </summary>
-        /// <returns><c>true</c> if is compatible with the specified first second; otherwise, <c>false</c>.</returns>
+        /// <returns><c>true</c> if first is compatible with the specified second; otherwise, <c>false</c>.</returns>
         /// <param name="first">First.</param>
         /// <param name="second">Second.</param>
         static TriBool IsCompatibleWith(AstType first, AstType second)

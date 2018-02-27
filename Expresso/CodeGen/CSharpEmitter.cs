@@ -18,12 +18,12 @@ namespace Expresso.CodeGen
     using CSharpExpr = System.Linq.Expressions.Expression;
     using ExprTree = System.Linq.Expressions;
 
-	/// <summary>
-	/// Expressoの構文木を解釈してC#の式木にコンパイルするクラス。
-	/// It emitts C#'s expression tree nodes from the AST of Expresso.
+    /// <summary>
+    /// Expressoの構文木を解釈してC#の式木にコンパイルするクラス。
+    /// It emitts C#'s expression tree nodes from the AST of Expresso.
     /// Assumes we are all OK with syntax and semantics since this class is considered
     /// to belong to the backend part in compiler theory.
-	/// </summary>
+    /// </summary>
     /// <remarks>
     /// While emitting, we don't check the semantics and validity because the type check and
     /// other semantics analisys phases do that.

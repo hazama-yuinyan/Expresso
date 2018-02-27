@@ -369,7 +369,7 @@ string cur_class_name;
 	public void SemanticError(string format, params object[] args)
 	{
 		//Convenient method for printing a semantic error with a format string
-		errors.SemErr(string.Format("{0} -- {1}", CurrentLocation, string.Format(format, args)));
+		errors.SemErr(string.Format(format, args));
 	}
 
     /// <summary>

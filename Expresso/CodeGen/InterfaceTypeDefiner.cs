@@ -29,267 +29,267 @@ namespace Expresso.CodeGen
 
             public void VisitAst(ExpressoAst ast)
             {
-                throw new NotImplementedException();
+                throw new InvalidOperationException();
             }
 
             public void VisitBlock(BlockStatement block)
             {
-                throw new NotImplementedException();
+                throw new InvalidOperationException();
             }
 
             public void VisitBreakStatement(BreakStatement breakStmt)
             {
-                throw new NotImplementedException();
+                throw new InvalidOperationException();
             }
 
             public void VisitContinueStatement(ContinueStatement continueStmt)
             {
-                throw new NotImplementedException();
+                throw new InvalidOperationException();
             }
 
             public void VisitEmptyStatement(EmptyStatement emptyStmt)
             {
-                throw new NotImplementedException();
+                throw new InvalidOperationException();
             }
 
             public void VisitExpressionStatement(ExpressionStatement exprStmt)
             {
-                throw new NotImplementedException();
+                throw new InvalidOperationException();
             }
 
             public void VisitForStatement(ForStatement forStmt)
             {
-                throw new NotImplementedException();
+                throw new InvalidOperationException();
             }
 
             public void VisitValueBindingForStatement(ValueBindingForStatement valueBindingForStatement)
             {
-                throw new NotImplementedException();
+                throw new InvalidOperationException();
             }
 
             public void VisitIfStatement(IfStatement ifStmt)
             {
-                throw new NotImplementedException();
+                throw new InvalidOperationException();
             }
 
             public void VisitReturnStatement(ReturnStatement returnStmt)
             {
-                throw new NotImplementedException();
+                throw new InvalidOperationException();
             }
 
             public void VisitMatchStatement(MatchStatement matchStmt)
             {
-                throw new NotImplementedException();
+                throw new InvalidOperationException();
             }
 
             public void VisitThrowStatement(ThrowStatement throwStmt)
             {
-                throw new NotImplementedException();
+                throw new InvalidOperationException();
             }
 
             public void VisitTryStatement(TryStatement tryStmt)
             {
-                throw new NotImplementedException();
+                throw new InvalidOperationException();
             }
 
             public void VisitWhileStatement(WhileStatement whileStmt)
             {
-                throw new NotImplementedException();
+                throw new InvalidOperationException();
             }
 
             public void VisitYieldStatement(YieldStatement yieldStmt)
             {
-                throw new NotImplementedException();
+                throw new InvalidOperationException();
             }
 
             public void VisitVariableDeclarationStatement(VariableDeclarationStatement varDecl)
             {
-                throw new NotImplementedException();
+                throw new InvalidOperationException();
             }
 
             public void VisitAssignment(AssignmentExpression assignment)
             {
-                throw new NotImplementedException();
+                throw new InvalidOperationException();
             }
 
             public void VisitBinaryExpression(BinaryExpression binaryExpr)
             {
-                throw new NotImplementedException();
+                throw new InvalidOperationException();
             }
 
             public void VisitCallExpression(CallExpression call)
             {
-                throw new NotImplementedException();
+                throw new InvalidOperationException();
             }
 
             public void VisitCastExpression(CastExpression castExpr)
             {
-                throw new NotImplementedException();
+                throw new InvalidOperationException();
             }
 
             public void VisitCatchClause(CatchClause catchClause)
             {
-                throw new NotImplementedException();
+                throw new InvalidOperationException();
             }
 
             public void VisitClosureLiteralExpression(ClosureLiteralExpression closure)
             {
-                throw new NotImplementedException();
+                throw new InvalidOperationException();
             }
 
             public void VisitComprehensionExpression(ComprehensionExpression comp)
             {
-                throw new NotImplementedException();
+                throw new InvalidOperationException();
             }
 
             public void VisitComprehensionForClause(ComprehensionForClause compFor)
             {
-                throw new NotImplementedException();
+                throw new InvalidOperationException();
             }
 
             public void VisitComprehensionIfClause(ComprehensionIfClause compIf)
             {
-                throw new NotImplementedException();
+                throw new InvalidOperationException();
             }
 
             public void VisitConditionalExpression(ConditionalExpression condExpr)
             {
-                throw new NotImplementedException();
+                throw new InvalidOperationException();
             }
 
             public void VisitFinallyClause(FinallyClause finallyClause)
             {
-                throw new NotImplementedException();
+                throw new InvalidOperationException();
             }
 
             public void VisitKeyValueLikeExpression(KeyValueLikeExpression keyValue)
             {
-                throw new NotImplementedException();
+                throw new InvalidOperationException();
             }
 
             public void VisitLiteralExpression(LiteralExpression literal)
             {
-                throw new NotImplementedException();
+                throw new InvalidOperationException();
             }
 
             public void VisitIdentifier(Identifier ident)
             {
-                throw new NotImplementedException();
+                throw new InvalidOperationException();
             }
 
             public void VisitIntegerSequenceExpression(IntegerSequenceExpression intSeq)
             {
-                throw new NotImplementedException();
+                throw new InvalidOperationException();
             }
 
             public void VisitIndexerExpression(IndexerExpression indexExpr)
             {
-                throw new NotImplementedException();
+                throw new InvalidOperationException();
             }
 
             public void VisitMemberReference(MemberReferenceExpression memRef)
             {
-                throw new NotImplementedException();
+                throw new InvalidOperationException();
             }
 
             public void VisitNewExpression(NewExpression newExpr)
             {
-                throw new NotImplementedException();
+                throw new InvalidOperationException();
             }
 
             public void VisitPathExpression(PathExpression pathExpr)
             {
-                throw new NotImplementedException();
+                throw new InvalidOperationException();
             }
 
             public void VisitParenthesizedExpression(ParenthesizedExpression parensExpr)
             {
-                throw new NotImplementedException();
+                throw new InvalidOperationException();
             }
 
             public void VisitObjectCreationExpression(ObjectCreationExpression creation)
             {
-                throw new NotImplementedException();
+                throw new InvalidOperationException();
             }
 
             public void VisitSequenceInitializer(SequenceInitializer seqInitializer)
             {
-                throw new NotImplementedException();
+                throw new InvalidOperationException();
             }
 
             public void VisitMatchClause(MatchPatternClause matchClause)
             {
-                throw new NotImplementedException();
+                throw new InvalidOperationException();
             }
 
             public void VisitSequenceExpression(SequenceExpression seqExpr)
             {
-                throw new NotImplementedException();
+                throw new InvalidOperationException();
             }
 
             public void VisitUnaryExpression(UnaryExpression unaryExpr)
             {
-                throw new NotImplementedException();
+                throw new InvalidOperationException();
             }
 
             public void VisitSelfReferenceExpression(SelfReferenceExpression selfRef)
             {
-                throw new NotImplementedException();
+                throw new InvalidOperationException();
             }
 
             public void VisitSuperReferenceExpression(SuperReferenceExpression superRef)
             {
-                throw new NotImplementedException();
+                throw new InvalidOperationException();
             }
 
             public void VisitCommentNode(CommentNode comment)
             {
-                throw new NotImplementedException();
+                throw new InvalidOperationException();
             }
 
             public void VisitTextNode(TextNode textNode)
             {
-                throw new NotImplementedException();
+                throw new InvalidOperationException();
             }
 
             public void VisitSimpleType(SimpleType simpleType)
             {
-                throw new NotImplementedException();
+                throw new InvalidOperationException();
             }
 
             public void VisitPrimitiveType(PrimitiveType primitiveType)
             {
-                throw new NotImplementedException();
+                throw new InvalidOperationException();
             }
 
             public void VisitReferenceType(ReferenceType referenceType)
             {
-                throw new NotImplementedException();
+                throw new InvalidOperationException();
             }
 
             public void VisitMemberType(MemberType memberType)
             {
-                throw new NotImplementedException();
+                throw new InvalidOperationException();
             }
 
             public void VisitFunctionType(FunctionType funcType)
             {
-                throw new NotImplementedException();
+                throw new InvalidOperationException();
             }
 
             public void VisitParameterType(ParameterType paramType)
             {
-                throw new NotImplementedException();
+                throw new InvalidOperationException();
             }
 
             public void VisitPlaceholderType(PlaceholderType placeholderType)
             {
-                throw new NotImplementedException();
+                throw new InvalidOperationException();
             }
 
             public void VisitImportDeclaration(ImportDeclaration importDecl)
             {
-                throw new NotImplementedException();
+                throw new InvalidOperationException();
             }
 
             public void VisitFunctionDeclaration(FunctionDeclaration funcDecl)
@@ -348,7 +348,7 @@ namespace Expresso.CodeGen
                     if(!Symbols.ContainsKey(base_type.IdentifierNode.IdentifierId))
                         AddSymbol(base_type.IdentifierNode, new ExpressoSymbol{Type = native_type});
                 }
-                // TODO: take 1 type from base_types.
+
                 var base_types = 
                     from bt in typeDecl.BaseTypes
                     select Symbols[bt.IdentifierNode.IdentifierId].Type;
@@ -385,7 +385,7 @@ namespace Expresso.CodeGen
 
             public void VisitAliasDeclaration(AliasDeclaration aliasDecl)
             {
-                throw new NotImplementedException();
+                throw new InvalidOperationException();
             }
 
             public void VisitFieldDeclaration(FieldDeclaration fieldDecl)
@@ -419,87 +419,87 @@ namespace Expresso.CodeGen
 
             public void VisitParameterDeclaration(ParameterDeclaration parameterDecl)
             {
-                throw new NotImplementedException();
+                throw new InvalidOperationException();
             }
 
             public void VisitVariableInitializer(VariableInitializer initializer)
             {
-                throw new NotImplementedException();
+                throw new InvalidOperationException();
             }
 
             public void VisitWildcardPattern(WildcardPattern wildcardPattern)
             {
-                throw new NotImplementedException();
+                throw new InvalidOperationException();
             }
 
             public void VisitIdentifierPattern(IdentifierPattern identifierPattern)
             {
-                throw new NotImplementedException();
+                throw new InvalidOperationException();
             }
 
             public void VisitValueBindingPattern(ValueBindingPattern valueBindingPattern)
             {
-                throw new NotImplementedException();
+                throw new InvalidOperationException();
             }
 
             public void VisitCollectionPattern(CollectionPattern collectionPattern)
             {
-                throw new NotImplementedException();
+                throw new InvalidOperationException();
             }
 
             public void VisitDestructuringPattern(DestructuringPattern destructuringPattern)
             {
-                throw new NotImplementedException();
+                throw new InvalidOperationException();
             }
 
             public void VisitTuplePattern(TuplePattern tuplePattern)
             {
-                throw new NotImplementedException();
+                throw new InvalidOperationException();
             }
 
             public void VisitExpressionPattern(ExpressionPattern exprPattern)
             {
-                throw new NotImplementedException();
+                throw new InvalidOperationException();
             }
 
             public void VisitIgnoringRestPattern(IgnoringRestPattern restPattern)
             {
-                throw new NotImplementedException();
+                throw new InvalidOperationException();
             }
 
             public void VisitKeyValuePattern(KeyValuePattern keyValuePattern)
             {
-                throw new NotImplementedException();
+                throw new InvalidOperationException();
             }
 
             public void VisitPatternWithType(PatternWithType pattern)
             {
-                throw new NotImplementedException();
+                throw new InvalidOperationException();
             }
 
             public void VisitNullNode(AstNode nullNode)
             {
-                throw new NotImplementedException();
+                throw new InvalidOperationException();
             }
 
             public void VisitNewLine(NewLineNode newlineNode)
             {
-                throw new NotImplementedException();
+                throw new InvalidOperationException();
             }
 
             public void VisitWhitespace(WhitespaceNode whitespaceNode)
             {
-                throw new NotImplementedException();
+                throw new InvalidOperationException();
             }
 
             public void VisitExpressoTokenNode(ExpressoTokenNode tokenNode)
             {
-                throw new NotImplementedException();
+                throw new InvalidOperationException();
             }
 
             public void VisitPatternPlaceholder(AstNode placeholder, ICSharpCode.NRefactory.PatternMatching.Pattern child)
             {
-                throw new NotImplementedException();
+                throw new InvalidOperationException();
             }
 
             #endregion
