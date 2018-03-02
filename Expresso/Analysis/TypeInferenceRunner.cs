@@ -155,7 +155,12 @@ namespace Expresso.Ast.Analysis
 
             public AstType VisitCatchClause(CatchClause catchClause)
             {
-                return catchClause.Identifier.AcceptWalker(this);
+                var type_symbol = checker.symbols.GetTypeSymbolInAnyScope(catchClause.Identifier.Type.Name);
+                // Resolve the type name
+                if(!type_symbol.IsNull)
+                    catchClause.Identifier.Type.IdentifierNode.Type = type_symbol.Type.Clone();
+
+                return type_symbol.Type;
             }
 
             public AstType VisitClosureLiteralExpression(ClosureLiteralExpression closure)
@@ -364,65 +369,71 @@ namespace Expresso.Ast.Analysis
             public AstType VisitMemberReference(MemberReferenceExpression memRef)
             {
                 var target_type = memRef.Target.AcceptWalker(this);
-                var type_table = checker.symbols.GetTypeTable(target_type.Name);
+                var type_table = checker.symbols.GetTypeTable(!target_type.IdentifierNode.Type.IsNull ? target_type.IdentifierNode.Type.Name : target_type.Name);
                 if(type_table == null){
                     throw new ParserException(
                         "Error ES2000: Although the expression '{0}' is evaluated to the type `{1}`, there isn't any type with that name.",
                         memRef.Target,
                         memRef.Target, target_type.Name
                     );
-                }else{
-                    var symbol = type_table.GetSymbol(memRef.Member.Name);
+                }
+                    
+                var symbol = type_table.GetSymbol(memRef.Member.Name);
+                if(symbol == null){
+                    symbol = type_table.GetSymbol("get_" + memRef.Member.Name);
                     if(symbol == null){
                         throw new ParserException(
-                            "Error ES2001: Type `{0}` doesn't have a field '{1}'!",
+                            "Error ES2001: The type `{0}` doesn't have a field '{1}'!",
                             memRef.Member,
                             target_type.Name, memRef.Member.Name
                         );
-                    }else{
-                        var modifiers = symbol.Modifiers;
-                        bool reported_error = false;
-                        if(modifiers.HasFlag(Modifiers.Private)){
-                            if(!(memRef.Target is SelfReferenceExpression)){
-                                parser.ReportSemanticError(
-                                    "Error ES3300: A private field can't be accessed from outside its surrounding scope: `{0}`.",
-                                    memRef.Member,
-                                    memRef
-                                );
-                                reported_error = true;
-                            }
-                        }
-
-                        if(modifiers.HasFlag(Modifiers.Protected)){
-                            if(!(memRef.Target is SelfReferenceExpression) && !(memRef.Target is SuperReferenceExpression)){
-                                parser.ReportSemanticError(
-                                    "Error ES3301: A protected field can't be accessed from outside its surrounding or derived classes: `{0}`.",
-                                    memRef.Member,
-                                    memRef
-                                );
-                                reported_error = true;
-                            }
-                        }
-
-                        if(checker.inspecting_immutability && modifiers.HasFlag(Modifiers.Immutable)){
-                            parser.ReportSemanticError(
-                                "Error ES1901: Re-assignment on an immutable field: `{0}`.",
-                                memRef.Member,
-                                memRef
-                            );
-                            reported_error = true;
-                        }
-
-                        if(reported_error)
-                            throw new FatalError("Accessibility or immutablity error");
-                        
-                        var type = symbol.Type.Clone();
-                        memRef.Member.Type.ReplaceWith(type);
-                        // Resolve the name here because we defer it until this point
-                        memRef.Member.IdentifierId = symbol.IdentifierId;
-                        return type.Clone();
                     }
                 }
+                 
+                var modifiers = symbol.Modifiers;
+                bool reported_error = false;
+                if(modifiers.HasFlag(Modifiers.Private)){
+                    if(!(memRef.Target is SelfReferenceExpression)){
+                        parser.ReportSemanticError(
+                            "Error ES3300: A private field can't be accessed from outside its surrounding scope: `{0}`.",
+                            memRef.Member,
+                            memRef
+                        );
+                        reported_error = true;
+                    }
+                }
+
+                if(modifiers.HasFlag(Modifiers.Protected)){
+                    if(!(memRef.Target is SelfReferenceExpression) && !(memRef.Target is SuperReferenceExpression)){
+                        parser.ReportSemanticError(
+                            "Error ES3301: A protected field can't be accessed from outside its surrounding or derived classes: `{0}`.",
+                            memRef.Member,
+                            memRef
+                        );
+                        reported_error = true;
+                    }
+                }
+
+                if(checker.inspecting_immutability && modifiers.HasFlag(Modifiers.Immutable)){
+                    parser.ReportSemanticError(
+                        "Error ES1901: Re-assignment on an immutable field: `{0}`.",
+                        memRef.Member,
+                        memRef
+                    );
+                    reported_error = true;
+                }
+
+                if(reported_error)
+                    throw new FatalError("Accessibility or immutablity error");
+                        
+                var type = symbol.Type.Clone();
+                memRef.Member.Type.ReplaceWith(type);
+                // Resolve the name here because we defer it until this point
+                memRef.Member.IdentifierId = symbol.IdentifierId;
+                if(symbol.Name.StartsWith("get_", StringComparison.CurrentCulture) && symbol.Type is FunctionType func_type)
+                    return func_type.ReturnType;
+                else
+                    return type;
             }
 
             public AstType VisitNewExpression(NewExpression newExpr)
@@ -467,6 +478,17 @@ namespace Expresso.Ast.Analysis
 
             public AstType VisitObjectCreationExpression(ObjectCreationExpression creation)
             {
+                var referenced = checker.symbols.GetTypeSymbolInAnyScope(creation.TypePath.Name);
+                if(referenced == null){
+                    throw new ParserException(
+                        "Error ES1501: The type `{0}` isn't found or accessible from the scope {1}.",
+                        creation.TypePath,
+                        creation.TypePath.Name
+                    );
+                }else{
+                    creation.TypePath.IdentifierNode.Type = referenced.Type.Clone();
+                }
+
                 foreach(var keyvalue in creation.Items){
                     // Walk through creation.Items in order to make them type-aware
                     keyvalue.ValueExpression.AcceptWalker(this);
@@ -856,7 +878,7 @@ namespace Expresso.Ast.Analysis
 
             static bool IsIntSeqType(AstType type)
             {
-                return type is PrimitiveType && ((PrimitiveType)type).KnownTypeCode == KnownTypeCode.IntSeq;
+                return type is PrimitiveType primitive && primitive.KnownTypeCode == KnownTypeCode.IntSeq;
             }
 
             AstType FigureOutReturnType(BlockStatement block)

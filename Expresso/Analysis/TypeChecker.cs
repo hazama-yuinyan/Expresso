@@ -460,13 +460,8 @@ namespace Expresso.Ast.Analysis
             DescendScope();
             scope_counter = 0;
 
-            /*if(!(catchClause.Identifier is DestructuringPattern)){
-                parser.ReportSemanticError(
-                    "Error ES1005: The pattern in a catch clause must be a Destructuring pattern.",
-                    catchClause.Identifier
-                );
-            }*/
-            catchClause.Identifier.AcceptWalker(this);
+            VisitIdentifier(catchClause.Identifier);
+            inference_runner.VisitCatchClause(catchClause);
             VisitBlock(catchClause.Body);
 
             AscendScope();
@@ -733,14 +728,15 @@ namespace Expresso.Ast.Analysis
 
         public AstType VisitObjectCreationExpression(ObjectCreationExpression creation)
         {
-            creation.AcceptWalker(inference_runner);
-            var type_table = symbols.GetTypeTable(creation.TypePath.IdentifierNode.Name);
+            inference_runner.VisitObjectCreationExpression(creation);
+            var type_table = symbols.GetTypeTable(creation.TypePath.IdentifierNode.Type.Name);
             if(type_table == null){
-                parser.ReportSemanticError(
-                    "Error ES1501: The type `{0}` isn't found or accessible from the scope {1}.",
-                    creation,
-                    creation.TypePath, symbols.Name
-                );
+                // Don't report type table missing error because InferenceRunner already do that
+                //parser.ReportSemanticError(
+                //    "Error ES1501: The type `{0}` isn't found or accessible from the scope {1}.",
+                //    creation,
+                //    creation.TypePath, symbols.Name
+                //);
                 return null;
             }
 
@@ -751,20 +747,31 @@ namespace Expresso.Ast.Analysis
 
                 var key = type_table.GetSymbol(key_path.AsIdentifier.Name);
                 if(key == null){
-                    parser.ReportSemanticError(
-                        "Error ES1502: The type `{0}` doesn't have a field named '{1}'.",
-                        key_value.KeyExpression,
-                        creation.TypePath, key_path.AsIdentifier.Name
-                    );
-                }else{
-                    var value_type = key_value.ValueExpression.AcceptWalker(this);
-                    if(IsCastable(value_type, key.Type) == TriBool.False){
-                        parser.ReportSemanticErrorRegional(
-                            "Error ES2000: The field '{0}' expects the value to be of type `{1}`, but it actually is `{2}`.",
-                            key_value.KeyExpression, key_value.ValueExpression,
-                            key_path.AsIdentifier.Name, key.Type, value_type
+                    key = type_table.GetSymbol("get_" + key_path.AsIdentifier.Name);
+                    if(key == null){
+                        throw new ParserException(
+                            "Error ES1502: The type `{0}` doesn't have a field named '{1}'.",
+                            key_value.KeyExpression,
+                            creation.TypePath, key_path.AsIdentifier.Name
                         );
                     }
+                }
+
+                var value_type = key_value.ValueExpression.AcceptWalker(this);
+                if(IsCastable(value_type, key.Type) == TriBool.False && !key.Name.StartsWith("get_", StringComparison.CurrentCulture)){
+                    parser.ReportSemanticErrorRegional(
+                        "Error ES2002: The field '{0}' expects the value to be of type `{1}`, but it actually is `{2}`.",
+                        key_value.KeyExpression, key_value.ValueExpression,
+                        key_path.AsIdentifier.Name, key.Type, value_type
+                    );
+                }
+                if(key.Name.StartsWith("get_", StringComparison.CurrentCulture) && key.Type is FunctionType func_type
+                   && IsCastable(value_type, func_type.ReturnType) == TriBool.False){
+                    parser.ReportSemanticErrorRegional(
+                        "Error ES2002: The field '{0}' expectes the value to beof type `{1}`, but it actually is `{2}`.",
+                        key_value.KeyExpression, key_value.ValueExpression,
+                        key_path.AsIdentifier.Name, key.Type, value_type
+                    );
                 }
             }
             return creation.TypePath;
@@ -1073,11 +1080,26 @@ namespace Expresso.Ast.Analysis
             var require_methods = new List<string>();
 
             foreach(var super_type in typeDecl.BaseTypes){
-                var super_type_table = symbols.GetTypeTable(super_type.Name);
-                if(super_type_table.TypeKind == ClassType.Interface)
-                    require_methods.AddRange(super_type_table.Symbols.Select(s => s.Name));
-                
                 super_type.AcceptWalker(this);
+                if(super_type is SimpleType simple){
+                    var super_type_table = symbols.GetTypeTable(super_type.Name);
+                    if(super_type_table == null){
+                        throw new ParserException(
+                            "Error ES1912: `{0}` isn't derivable.",
+                            super_type,
+                            super_type.Name
+                        );
+                    }
+
+                    if(super_type_table.TypeKind == ClassType.Interface)
+                        require_methods.AddRange(super_type_table.Symbols.Select(s => s.Name));
+                }else{
+                    throw new ParserException(
+                        "Error ES1911: A class can't be derived from `{0}`",
+                        super_type,
+                        super_type.Name
+                    );
+                }
             }
 
             while(require_methods.Contains("self"))
@@ -1093,7 +1115,7 @@ namespace Expresso.Ast.Analysis
             if(require_methods.Any()){
                 foreach(var require_method_name in require_methods){
                     parser.ReportSemanticError(
-                        "Error ES1900: The class '{0}' doesn't implement '{1}' but an interface requires you to implement it.",
+                        "Error ES1910: The class '{0}' doesn't implement '{1}' but an interface requires you to implement it.",
                         typeDecl,
                         typeDecl.Name, require_method_name
                     );
@@ -1585,6 +1607,7 @@ namespace Expresso.Ast.Analysis
                 var referenced = table.GetTypeSymbol(ident.Name);
                 if(referenced != null){
                     ident.IdentifierId = referenced.IdentifierId;
+                    ident.Type = referenced.Type.Clone();
                     return;
                 }
 
@@ -1593,7 +1616,7 @@ namespace Expresso.Ast.Analysis
 
             if(ident.IdentifierId == 0){
                 parser.ReportSemanticError(
-                    "Error ES0101: Type name `{0}` turns out not to be declared in the current scope {1}!",
+                    "Error ES0101: The type name `{0}` turns out not to be declared in the current scope {1}!",
                     ident,
                     ident.Name, symbols.Name
                 );

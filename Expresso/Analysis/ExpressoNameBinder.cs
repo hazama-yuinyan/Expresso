@@ -599,8 +599,10 @@ namespace Expresso.Ast.Analysis
                 ((ExpressoAst)importDecl.Parent).ExternalModules.Add(inner_parser.TopmostAst);
             }
             // Make the module name type-aware
-            importDecl.ModuleNameToken.Type = AstType.MakeSimpleType(importDecl.ModuleName);
+            var module_type = AstType.MakeSimpleType(importDecl.ModuleName);
+            importDecl.ModuleNameToken.Type = module_type;
             UniqueIdGenerator.DefineNewId(importDecl.ModuleNameToken);
+            importDecl.AliasNameToken.Type = module_type.Clone();
             UniqueIdGenerator.DefineNewId(importDecl.AliasNameToken);
             /*if(importDecl.AliasNameToken.IsNull){
                 importDecl.ModuleNameToken.AcceptWalker(this);
@@ -620,6 +622,9 @@ namespace Expresso.Ast.Analysis
             // Add Return type node
             var type_node = AstType.MakeSimpleType(typeDecl.Name);
             typeDecl.AddChild(type_node, Roles.Type);
+
+            foreach(var base_type in typeDecl.BaseTypes)
+                base_type.AcceptWalker(this);
 
             int tmp_counter = scope_counter;
             DecendScope();
@@ -718,7 +723,7 @@ namespace Expresso.Ast.Analysis
 
             if(ident.IdentifierId == 0){
                 parser.ReportSemanticError(
-                    "Error ES0101: Type symbol '{0}' turns out not to be declared or accessible in the current scope {1}!",
+                    "Error ES0101: The type symbol '{0}' turns out not to be declared or accessible in the current scope {1}!",
                     ident,
                     ident.Name, symbol_table.Name
                 );

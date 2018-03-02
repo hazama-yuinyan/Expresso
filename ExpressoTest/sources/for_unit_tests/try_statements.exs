@@ -7,14 +7,9 @@ import "System.Exception" as Exception;
 
 
 
-class ExsException /*: Exception*/
-{
-    public let ExsMessage (- string;
-}
-
 def throwException()
 {
-    throw ExsException{ExsMessage: "An unknown error has occurred"};
+    throw Exception{Message: "An unknown error has occurred"};
 }
 
 def main()
@@ -23,9 +18,9 @@ def main()
         println("First try block");
         throwException();
     }
-    catch e (- ExsException {
+    catch e (- Exception {
         println("First catch block");
-        println(e.ExsMessage);
+        println(e.Message);
     }
 
     /*var tmp = 1;
@@ -44,10 +39,10 @@ def main()
         printFormat("tmp2 is {0} at first\n", tmp2);
         throwException();
     }
-    catch e (- ExsException {
+    catch e (- Exception {
         println("Second catch block");
         tmp2 = 2;
-        println(e.ExsMessage);
+        println(e.Message);
     }
     finally{
         println("Second finally block");

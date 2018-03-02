@@ -4829,25 +4829,6 @@ namespace Expresso.Test
             var ast = parser.TopmostAst;
 
             var expected = AstNode.MakeModuleDef("main", new List<EntityDeclaration>{
-                EntityDeclaration.MakeClassDecl(
-                    "ExsException",
-                    /*Helpers.MakeSeq<AstType>(
-                        Helpers.MakeGenericType("Exception")
-                    )*/
-                    Enumerable.Empty<AstType>(),
-                    Helpers.MakeSeq<EntityDeclaration>(
-                        EntityDeclaration.MakeField(
-                            Helpers.MakeSeq(
-                                Helpers.MakeExactPatternWithType("ExsMessage", AstType.MakePrimitiveType("string"))
-                            ),
-                            Helpers.MakeSeq<Expression>(
-                                Expression.Null
-                            ),
-                            Modifiers.Public | Modifiers.Immutable
-                        )
-                    ),
-                    Modifiers.None
-                ),
                 EntityDeclaration.MakeFunc(
                     "throwException",
                     Enumerable.Empty<ParameterDeclaration>(),
@@ -4855,10 +4836,10 @@ namespace Expresso.Test
                         Statement.MakeThrowStmt(
                             Expression.MakeObjectCreation(
                                 Helpers.MakeGenericType(
-                                    "ExsException"
+                                    "Exception"
                                 ),
                                 Helpers.MakeSeq(
-                                    AstNode.MakeIdentifier("ExsMessage")
+                                    AstNode.MakeIdentifier("Message")
                                 ),
                                 Helpers.MakeSeq(
                                     Expression.MakeConstant("string", "An unknown error has occurred")
@@ -4908,7 +4889,7 @@ namespace Expresso.Test
                             Statement.MakeCatchClause(
                                 AstNode.MakeIdentifier(
                                     "e",
-                                    Helpers.MakeGenericType("ExsException")
+                                    Helpers.MakeGenericType("Exception")
                                 ),
                                 Statement.MakeBlock(
                                     Statement.MakeExprStmt(
@@ -4941,11 +4922,15 @@ namespace Expresso.Test
                                             Expression.MakeMemRef(
                                                 Helpers.MakeIdentifierPath(
                                                     "e",
-                                                    Helpers.MakeGenericType("ExsException")
+                                                    Helpers.MakeGenericType("Exception")
                                                 ),
                                                 AstNode.MakeIdentifier(
-                                                    "ExsMessage",
-                                                    Helpers.MakePrimitiveType("string")
+                                                    "Message",
+                                                    AstType.MakeFunctionType(
+                                                        "get_Message",
+                                                        Helpers.MakePrimitiveType("string"),
+                                                        Enumerable.Empty<AstType>()
+                                                    )
                                                 )
                                             )
                                         )
@@ -5126,7 +5111,7 @@ namespace Expresso.Test
                             Statement.MakeCatchClause(
                                 AstNode.MakeIdentifier(
                                     "e",
-                                    Helpers.MakeGenericType("ExsException")
+                                    Helpers.MakeGenericType("Exception")
                                 ),
                                 Statement.MakeBlock(
                                     Statement.MakeExprStmt(
@@ -5168,11 +5153,15 @@ namespace Expresso.Test
                                             Expression.MakeMemRef(
                                                 Helpers.MakeIdentifierPath(
                                                     "e",
-                                                    Helpers.MakeGenericType("ExsException")
+                                                    Helpers.MakeGenericType("Exception")
                                                 ),
                                                 AstNode.MakeIdentifier(
-                                                    "ExsMessage",
-                                                    Helpers.MakePrimitiveType("string")
+                                                    "Message",
+                                                    AstType.MakeFunctionType(
+                                                        "get_Message",
+                                                        Helpers.MakePrimitiveType("string"),
+                                                        Enumerable.Empty<AstType>()
+                                                    )
                                                 )
                                             )
                                         )

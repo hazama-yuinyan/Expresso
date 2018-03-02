@@ -405,6 +405,26 @@ namespace Expresso.Test
 
             Assert.AreEqual(1, parser.errors.count);
         }
+
+        [Test]
+        public void PrimitiveTypesCantBeDerived()
+        {
+            var parser = new Parser(new Scanner("../../sources/for_unit_tests/erroneous/primitive_types_cant_be_derived.exs"));
+            parser.DoPostParseProcessing = true;
+            parser.Parse();
+
+            Assert.AreEqual(1, parser.errors.count);
+        }
+
+        [Test]
+        public void CantBeDerivedFromStandardLibrariesType()
+        {
+            var parser = new Parser(new Scanner("../../sources/for_unit_tests/erroneous/cant_be_derived_from_standard_libraries_type.exs"));
+            parser.DoPostParseProcessing = true;
+            parser.Parse();
+
+            Assert.AreEqual(1, parser.errors.count);
+        }
     }
 }
 

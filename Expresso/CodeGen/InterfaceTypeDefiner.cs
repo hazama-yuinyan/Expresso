@@ -344,9 +344,11 @@ namespace Expresso.CodeGen
                 var name = typeDecl.Name;
 
                 foreach(var base_type in typeDecl.BaseTypes){
-                    var native_type = CSharpCompilerHelper.GetNativeType(base_type);
-                    if(!Symbols.ContainsKey(base_type.IdentifierNode.IdentifierId))
-                        AddSymbol(base_type.IdentifierNode, new ExpressoSymbol{Type = native_type});
+                    if(base_type is SimpleType simple){
+                        var native_type = CSharpCompilerHelper.GetNativeType(simple.IdentifierNode.Type);
+                        if(!Symbols.ContainsKey(base_type.IdentifierNode.IdentifierId))
+                            AddSymbol(base_type.IdentifierNode, new ExpressoSymbol{Type = native_type});
+                    }
                 }
 
                 var base_types = 
@@ -413,7 +415,7 @@ namespace Expresso.CodeGen
                 foreach(var init in fieldDecl.Initializers){
                     var type = CSharpCompilerHelper.GetNativeType(init.NameToken.Type);
                     var field_builder = context.LazyTypeBuilder.DefineField(init.Name, type, !Expression.IsNullNode(init.Initializer), attr);
-                    AddSymbol(init.NameToken, new ExpressoSymbol{Field = field_builder});
+                    AddSymbol(init.NameToken, new ExpressoSymbol{PropertyOrField = field_builder});
                 }
             }
 

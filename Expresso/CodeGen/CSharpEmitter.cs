@@ -167,7 +167,7 @@ namespace Expresso.CodeGen
             return surrounding_func == null || surrounding_func != null && surrounding_func.Name != "main";
         }
 
-        ExpressoSymbol GetNativeSymbol(Identifier ident)
+        ExpressoSymbol GetRuntimeSymbol(Identifier ident)
         {
             ExpressoSymbol symbol;
             if(Symbols.TryGetValue(ident.IdentifierId, out symbol))
@@ -703,7 +703,7 @@ namespace Expresso.CodeGen
         public CSharpExpr VisitCatchClause(CatchClause catchClause, CSharpEmitterContext context)
         {
             var ident = catchClause.Identifier;
-            var exception_type = CSharpCompilerHelper.GetNativeType(ident.Type);
+            var exception_type = CSharpCompilerHelper.GetNativeType((ident.Type.IdentifierNode.Type != null) ? ident.Type.IdentifierNode.Type : ident.Type);
             var param = CSharpExpr.Parameter(exception_type, ident.Name);
             AddSymbol(ident, new ExpressoSymbol{Parameter = param});
 
@@ -885,15 +885,15 @@ namespace Expresso.CodeGen
                     return CSharpExpr.Field(context.ParameterSelf, ident.Name);
             }
 
-            var symbol = GetNativeSymbol(ident);
+            var symbol = GetRuntimeSymbol(ident);
             if(symbol != null){
                 if(symbol.Parameter != null){
                     if(context.RequestType)
                         context.TargetType = symbol.Parameter.Type;
                     
                     return symbol.Parameter;
-                }else if(context.RequestField && symbol.Field != null){
-                    context.Field = symbol.Field;
+                }else if(context.RequestPropertyOrField && symbol.PropertyOrField != null){
+                    context.PropertyOrField = symbol.PropertyOrField;
                     return null;
                 }else if(context.RequestType && symbol.Type != null){
                     context.TargetType = symbol.Type;
@@ -918,11 +918,27 @@ namespace Expresso.CodeGen
                     var method_name = context.TargetType.FullName.StartsWith("System", StringComparison.CurrentCulture) ? CSharpCompilerHelper.ConvertToPascalCase(ident.Name)
                                              : ident.Name;
                     var method = context.TargetType.GetMethod(method_name);
-                    if(method == null)
-                        throw new EmitterException("It is found that the native symbol '{0}' doesn't represent a method.", ident.Name);
+                    if(method == null){
+                        if(!context.RequestPropertyOrField)
+                            throw new EmitterException("It is found that the native symbol '{0}' doesn't represent a method.", ident.Name);
+
+                        var field = context.TargetType.GetField(ident.Name);
+                        if(field == null){
+                            var property = context.TargetType.GetProperty(ident.Name);
+                            if(property == null)
+                                throw new EmitterException("It is found that the native symbol '{0}' doesn't resolve to neither a field, a property or a method", ident.Name);
+
+                            context.PropertyOrField = property;
+                            AddSymbol(ident, new ExpressoSymbol{PropertyOrField = property});
+                            return null;
+                        }
+
+                        context.PropertyOrField = field;
+                        AddSymbol(ident, new ExpressoSymbol{PropertyOrField = field});
+                    }
                     
                     context.Method = method;
-                    Symbols.Add(ident.IdentifierId, new ExpressoSymbol{Method = method});
+                    AddSymbol(ident, new ExpressoSymbol{Method = method});
                     return null;
                 }else{
                     throw new EmitterException("It is found that the native symbol '{0}' isn't defined.", ident.Name);
@@ -972,15 +988,15 @@ namespace Expresso.CodeGen
         {
             // In Expresso, a member access can be resolved either to a field reference or instance method call
             var expr = memRef.Target.AcceptWalker(this, context);
-            context.RequestField = true;
+            context.RequestPropertyOrField = true;
             context.RequestMethod = true;
-            context.Field = null;
+            context.PropertyOrField = null;
             context.Method = null;
 
-            memRef.Member.AcceptWalker(this, context);
-            context.RequestField = false;
+            VisitIdentifier(memRef.Member, context);
+            context.RequestPropertyOrField = false;
             context.RequestMethod = false;
-            return (context.Method != null) ? expr : CSharpExpr.Field(expr, context.Field);
+            return (context.Method != null) ? expr : CSharpExpr.PropertyOrField(expr, context.PropertyOrField.Name);
         }
 
         public CSharpExpr VisitNewExpression(NewExpression newExpr, CSharpEmitterContext context)
@@ -1010,19 +1026,19 @@ namespace Expresso.CodeGen
 
             context.TargetType = null;
             // We do this because the items in a path would already be resolved
-            // and a path only can refer to an external module's method
+            // and a path with more than 1 item can only refer to an external module's method
             var last_item = pathExpr.Items.Last();
-            var native_symbol = GetNativeSymbol(last_item);
+            var native_symbol = GetRuntimeSymbol(last_item);
             if(native_symbol != null){
                 context.TargetType = native_symbol.Type;
                 context.Method = native_symbol.Method;
-                context.Field = native_symbol.Field;
+                context.PropertyOrField = native_symbol.PropertyOrField;
             }else{
-                throw new EmitterException("It is found that the native symbol '{0}' doesn't represents anything", last_item.Name);
+                throw new EmitterException("It is found that the runtime symbol '{0}' doesn't represents anything", last_item.Name);
             }
 
-            if(native_symbol.Field != null)
-                return CSharpExpr.Field(null, context.Field);
+            if(native_symbol.PropertyOrField != null)
+                return CSharpExpr.Field(null, (FieldInfo)context.PropertyOrField);
             // On .NET environment, a path item is mapped to
             // Assembly::[Module]::{Class}
             // In reverse, an Expresso item can be mapped to the .NET type system as
@@ -1070,18 +1086,16 @@ namespace Expresso.CodeGen
         public CSharpExpr VisitObjectCreationExpression(ObjectCreationExpression creation, CSharpEmitterContext context)
         {
             var args = new CSharpExpr[creation.Items.Count];
-            context.Constructor = null;
-            creation.TypePath.AcceptWalker(this, context);
-            if(context.Constructor == null)
-                throw new EmitterException("No constructors found for the path `{0}`", creation, creation.TypePath);
+            context.ConstructorArgumentTypes = new Type[creation.Items.Count];
 
+            // TODO?: make it so that we resolve which constructor to call before generating code for arguments
             var formal_params = context.Constructor.GetParameters();
             // TODO: make object creation arguments pair to constructor parameters
             foreach(var pair in Enumerable.Range(0, creation.Items.Count()).Zip(
                 creation.Items,
                 (i, item) => Tuple.Create(i, item)
             )){
-                context.Field = null;
+                context.PropertyOrField = null;
                 var value_expr = pair.Item2.AcceptWalker(this, context);
 
                 /*int index = 0;
@@ -1100,7 +1114,13 @@ namespace Expresso.CodeGen
                     );
                 }*/
                 args[pair.Item1] = value_expr;
+                context.ConstructorArgumentTypes[pair.Item1] = value_expr.Type;
             }
+
+            context.Constructor = null;
+            creation.TypePath.AcceptWalker(this, context);
+            if(context.Constructor == null)
+                throw new EmitterException("No constructors found for the path `{0}` with arguments {1}", creation, creation.TypePath, context.ConstructorArgumentTypes);
 
             return CSharpExpr.New(context.Constructor, args);
         }
@@ -1314,10 +1334,10 @@ namespace Expresso.CodeGen
         // AstType nodes should be treated with special care
         public CSharpExpr VisitSimpleType(SimpleType simpleType, CSharpEmitterContext context)
         {
-            var symbol = GetNativeSymbol(simpleType.IdentifierNode);
+            var symbol = GetRuntimeSymbol(simpleType.IdentifierNode);
             if(symbol != null && symbol.Type != null){
                 context.TargetType = symbol.Type;
-                context.Constructor = context.TargetType.GetConstructors().First();
+                context.Constructor = context.TargetType.GetConstructor(context.ConstructorArgumentTypes);
                 return symbol.Parameter;
             }else{
                 throw new EmitterException("It is found that Type '{0}' isn't defined.", simpleType.Identifier);
@@ -1378,10 +1398,10 @@ namespace Expresso.CodeGen
         {
             context.RequestType = true;
             context.RequestMethod = true;
-            context.RequestField = true;
+            context.RequestPropertyOrField = true;
             context.TargetType = null;
             context.Method = null;
-            context.Field = null;
+            context.PropertyOrField = null;
 
             try{
                 importDecl.ModuleNameToken.AcceptWalker(this, context);
@@ -1414,7 +1434,7 @@ namespace Expresso.CodeGen
 
             context.RequestType = false;
             context.RequestMethod = false;
-            context.RequestField = false;
+            context.RequestPropertyOrField = false;
 
             return null;
         }
@@ -1514,7 +1534,7 @@ namespace Expresso.CodeGen
         public CSharpExpr VisitFieldDeclaration(FieldDeclaration fieldDecl, CSharpEmitterContext context)
         {
             foreach(var init in fieldDecl.Initializers){
-                var field_builder = init.NameToken != null ? Symbols[init.NameToken.IdentifierId].Field as FieldBuilder : throw new EmitterException("Invalid field: {0}", init.Pattern);
+                var field_builder = init.NameToken != null ? Symbols[init.NameToken.IdentifierId].PropertyOrField as FieldBuilder : throw new EmitterException("Invalid field: {0}", init.Pattern);
                 var initializer = init.Initializer.AcceptWalker(this, context);
                 if(initializer != null)
                     context.LazyTypeBuilder.SetBody(field_builder, initializer);
@@ -1620,7 +1640,7 @@ namespace Expresso.CodeGen
                 context.ContextExpression = CSharpExpr.Block(new []{param}, new []{assignment, context.ContextExpression});
             }
 
-            if(context.Field == null && context.TargetType != null && (identifierPattern.Parent is DestructuringPattern || identifierPattern.Parent is TuplePattern)){
+            if(context.PropertyOrField == null && context.TargetType != null && (identifierPattern.Parent is DestructuringPattern || identifierPattern.Parent is TuplePattern)){
                 // context.TargetType is supposed to be set in CSharpEmitter.VisitIdentifier
                 var field = context.TargetType.GetField(identifierPattern.Identifier.Name, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static);
                 if(field == null){
@@ -1629,7 +1649,7 @@ namespace Expresso.CodeGen
                         context.TargetType, identifierPattern.Identifier.Name
                     );
                 }
-                context.Field = field;
+                context.PropertyOrField = field;
             }
 
             if(!identifierPattern.InnerPattern.IsNull)
@@ -1725,7 +1745,7 @@ namespace Expresso.CodeGen
             context.TargetType = null;
             destructuringPattern.TypePath.AcceptWalker(this, context);
             var type = context.TargetType;
-            context.RequestField = true;
+            context.RequestPropertyOrField = true;
             var prev_additionals = context.Additionals;
             context.Additionals = new List<object>();
             var prev_additional_params = context.AdditionalParameters;
@@ -1744,11 +1764,11 @@ namespace Expresso.CodeGen
 
                 //var prev_tmp_variable = context.TemporaryVariable;
                 //context.TemporaryVariable = tmp_param;
-                context.Field = null;
+                context.PropertyOrField = null;
                 var expr = pattern.AcceptWalker(this, context);
                 //context.TemporaryVariable = prev_tmp_variable;
 
-                var field_access = CSharpExpr.Field(context.TemporaryExpression, context.Field);
+                var field_access = CSharpExpr.Field(context.TemporaryExpression, (FieldInfo)context.PropertyOrField);
                 //var assignment = CSharpExpr.Assign(tmp_param, field_access);
                 //context.Additionals.Add(assignment);
                 //context.AdditionalParameters.Add(tmp_param);
@@ -1789,7 +1809,7 @@ namespace Expresso.CodeGen
             context.Additionals = prev_additionals;
             context.AdditionalParameters = prev_additional_params;
             
-            context.RequestField = false;
+            context.RequestPropertyOrField = false;
             if(block.Any())
                 context.ContextExpression = CSharpExpr.Block(block_params, block);
 
@@ -1891,14 +1911,14 @@ namespace Expresso.CodeGen
 
         public CSharpExpr VisitKeyValuePattern(KeyValuePattern keyValuePattern, CSharpEmitterContext context)
         {
-            context.Field = null;
-            context.RequestField = true;
+            context.PropertyOrField = null;
+            context.RequestPropertyOrField = true;
             VisitIdentifier(keyValuePattern.KeyIdentifier, context);
             var expr = keyValuePattern.Value.AcceptWalker(this, context);
 
             var param = expr as ExprTree.ParameterExpression;
             if(param != null){
-                var assignment = CSharpExpr.Assign(param, CSharpExpr.Field(context.TemporaryVariable, context.Field));
+                var assignment = CSharpExpr.Assign(param, CSharpExpr.Field(context.TemporaryVariable, (FieldInfo)context.PropertyOrField));
                 return assignment;
             }
             return expr;
@@ -2175,7 +2195,7 @@ namespace Expresso.CodeGen
                 if(init.Pattern is PatternWithType inner && inner.Pattern is IdentifierPattern ident_pat){
                     var type = CSharpCompilerHelper.GetNativeType(ident_pat.Identifier.Type);
                     var field_builder = context.LazyTypeBuilder.DefineField(init.Name, type, !Expression.IsNullNode(init.Initializer), attr);
-                    AddSymbol(ident_pat.Identifier, new ExpressoSymbol{Field = field_builder});
+                    AddSymbol(ident_pat.Identifier, new ExpressoSymbol{PropertyOrField = field_builder});
                 }else{
                     throw new EmitterException("Invalid module field!");
                 }

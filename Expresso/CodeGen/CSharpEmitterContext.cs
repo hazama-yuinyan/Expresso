@@ -60,17 +60,17 @@ namespace Expresso.CodeGen
 
         /// <summary>
         /// Contains field info in which we have any interest.
-        /// Like the <see cref="Expresso.CodeGenCSharpEmitterContext.Method"/> property,
+        /// Like the <see cref="Method"/> property,
         /// setting it null indicates that you want to know which field we should be looking at.
         /// </summary>
-        public FieldInfo Field{
+        public MemberInfo PropertyOrField{
             get; set;
         }
 
         /// <summary>
         /// This flag indicates whether we are interested in fields or not.
         /// </summary>
-        public bool RequestField{
+        public bool RequestPropertyOrField{
             get; set;
         }
 
@@ -211,6 +211,15 @@ namespace Expresso.CodeGen
         /// </summary>
         /// <value>The type of the external module.</value>
         public Type ExternalModuleType{
+            get; set;
+        }
+
+        /// <summary>
+        /// Represents the types of the arugments of a constructor.
+        /// Used to resolve which constructor to call.
+        /// </summary>
+        /// <value>The constructor argument types.</value>
+        public Type[] ConstructorArgumentTypes{
             get; set;
         }
     }

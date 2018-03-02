@@ -7,7 +7,7 @@ namespace Expresso.CodeGen
 {
     /// <summary>
     /// Describes an entry to the emitter symbol table.
-    /// ExpressoSymbols bind Expresso world identifiers to CLR functions.
+    /// ExpressoSymbols bind Expresso world identifiers to CLR functions, methods, properties and fields.
     /// </summary>
     public class ExpressoSymbol
     {
@@ -26,9 +26,9 @@ namespace Expresso.CodeGen
         }
 
         /// <summary>
-        /// Represents a field.
+        /// Represents a property or a field.
         /// </summary>
-        public FieldInfo Field{
+        public MemberInfo PropertyOrField{
             get; set;
         }
 
@@ -73,7 +73,7 @@ namespace Expresso.CodeGen
 
         public override string ToString()
         {
-            return string.Format("[ExpressoSymbol: Parameter={0}, Method={1}, Field={2}, Lambda={3}, Member={4}, Type={5}, Length of Parameters={6}]", Parameter, Method, Field, Lambda, Member, Type, Parameters.Count);
+            return string.Format("[ExpressoSymbol: Parameter={0}, Method={1}, Field={2}, Lambda={3}, Member={4}, Type={5}, Length of Parameters={6}]", Parameter, Method, PropertyOrField, Lambda, Member, Type, Parameters.Count);
         }
     }
 }

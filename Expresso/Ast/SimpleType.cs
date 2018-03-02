@@ -1,6 +1,4 @@
-using System;
 using System.Collections.Generic;
-using System.Linq;
 using ICSharpCode.NRefactory;
 using ICSharpCode.NRefactory.TypeSystem;
 
@@ -10,6 +8,7 @@ namespace Expresso.Ast
     /// <summary>
     /// A simple type represents a user-defined type or a generic type that is composed of
     /// an identifier and type arguments.
+    /// SimpleType nodes should not be associated with AstType nodes unless they refer to some aliases.
     /// </summary>
     public class SimpleType : AstType
     {
