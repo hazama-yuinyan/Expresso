@@ -13,6 +13,39 @@ namespace Expresso.Ast
     {
         public static readonly Role<AstType> Parameter = new Role<AstType>("Parameter", AstType.Null);
 
+        #region Null Type
+        public static new readonly FunctionType Null = new NullFunctionType();
+
+        sealed class NullFunctionType : FunctionType
+        {
+            public override bool IsNull {
+                get {
+                    return true;
+                }
+            }
+
+            public override void AcceptWalker(IAstWalker walker)
+            {
+                walker.VisitNullNode(this);
+            }
+
+            public override TResult AcceptWalker<TResult>(IAstWalker<TResult> walker)
+            {
+                return walker.VisitNullNode(this);
+            }
+
+            public override TResult AcceptWalker<TResult, TData>(IAstWalker<TData, TResult> walker, TData data)
+            {
+                return walker.VisitNullNode(this, data);
+            }
+
+            internal protected override bool DoMatch(AstNode other, ICSharpCode.NRefactory.PatternMatching.Match match)
+            {
+                return other == null || other.IsNull;
+            }
+        }
+        #endregion
+
         /// <summary>
         /// Represents the return type.
         /// </summary>
@@ -34,6 +67,10 @@ namespace Expresso.Ast
         public Identifier Identifier{
             get{return GetChildByRole(Roles.Identifier);}
             set{SetChildByRole(Roles.Identifier, value);}
+        }
+
+        protected FunctionType()
+        {
         }
 
         public FunctionType(Identifier ident, AstType returnType, IEnumerable<AstType> parameters, TextLocation start, TextLocation end)

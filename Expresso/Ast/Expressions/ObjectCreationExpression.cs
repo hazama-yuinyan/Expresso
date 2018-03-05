@@ -11,12 +11,13 @@ namespace Expresso.Ast
     /// オブジェクト生成式。
     /// Represents an object creation expression.
     /// An object creation expression appears in places where rvalues are expected
-    /// and it creates a new object of type `Type` on the stack(if used without the "new" keyword)
-    /// or on the heap(if the "new" keyword is preceded).
+    /// and it creates a new object of type `Type` on the heap.
     /// Path '{' { ident ':' Expression } '}' ;
     /// </summary>
     public class ObjectCreationExpression : Expression
     {
+        public static readonly Role<FunctionType> CtorTypeRole = new Role<FunctionType>("CtorType", FunctionType.Null);
+
         #region Null
         public static new readonly ObjectCreationExpression Null = new NullObjectCreationExpression();
 
@@ -64,6 +65,16 @@ namespace Expresso.Ast
         /// <value>The field names.</value>
         public AstNodeCollection<KeyValueLikeExpression> Items{
             get{return GetChildrenByRole(Roles.KeyValue);}
+        }
+
+        /// <summary>
+        /// Gets or sets the type of the constructor.
+        /// Used to resolve the type of the constructor.
+        /// </summary>
+        /// <value>The type of the ctor.</value>
+        public FunctionType CtorType{
+            get{return GetChildByRole(CtorTypeRole);}
+            set{SetChildByRole(CtorTypeRole, value);}
         }
 
         protected ObjectCreationExpression()

@@ -11,7 +11,7 @@ namespace Expresso.Ast
     /// <summary>
     /// Represents a field declaration.
     /// A field declaration introduces a new field into the current scope.
-    /// Modifiers ("let" | "var") ident [ "(-" Type ] { ',' ident [ "(-" Type ] } ';' ;
+    /// Modifiers ("let" | "var") ident [ "(-" Type ] [ '=' Expression ] { ',' ident [ "(-" Type ] [ '=' Expression ] } ';' ;
     /// </summary>
     public class FieldDeclaration : EntityDeclaration
     {
@@ -49,7 +49,7 @@ namespace Expresso.Ast
             foreach(var variable in lhs.Zip(rhs, (pattern, expr) => new Tuple<PatternConstruct, Expression>(pattern, expr)))
                 Initializers.Add(new VariableInitializer(variable.Item1, variable.Item2));
 
-            EntityDeclaration.SetModifiers(this, modifiers);
+            SetModifiers(this, modifiers);
         }
 
         public override void AcceptWalker(IAstWalker walker)

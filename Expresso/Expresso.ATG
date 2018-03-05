@@ -663,7 +663,8 @@ ClassDecl<out EntityDeclaration decl, Modifiers modifiers>
     | InterfaceDecl<out entity, cur_modifiers> (. decls.Add(entity); .)
     )
   }
-  SYNC rcurly							       (. decl = EntityDeclaration.MakeClassDecl(ident, bases, decls, modifiers, start_loc, CurrentLocation);
+  SYNC rcurly							       (. 
+                                                  decl = EntityDeclaration.MakeClassDecl(ident, bases, decls, modifiers, start_loc, CurrentLocation);
                                                   GoUpScope();
                                                   cur_modifiers = ExpressoModifiers.None;
                                                .).

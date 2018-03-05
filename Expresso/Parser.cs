@@ -701,9 +701,9 @@ string cur_class_name;
 		while (!(la.kind == 0 || la.kind == 11)) {SynErr(113); Get();}
 		Expect(11);
 		decl = EntityDeclaration.MakeClassDecl(ident, bases, decls, modifiers, start_loc, CurrentLocation);
-		                   GoUpScope();
-		                   cur_modifiers = ExpressoModifiers.None;
-		                
+		GoUpScope();
+		cur_modifiers = ExpressoModifiers.None;
+		
 	}
 
 	void InterfaceDecl(out EntityDeclaration decl, Modifiers modifiers) {

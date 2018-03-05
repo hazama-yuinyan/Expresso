@@ -1086,7 +1086,17 @@ namespace Expresso.CodeGen
         public CSharpExpr VisitObjectCreationExpression(ObjectCreationExpression creation, CSharpEmitterContext context)
         {
             var args = new CSharpExpr[creation.Items.Count];
-            context.ConstructorArgumentTypes = new Type[creation.Items.Count];
+            context.Constructor = null;
+            creation.TypePath.AcceptWalker(this, context);
+            // Don't report TargetType missing error because it was already reported in TypeChecker
+            //if(context.TargetType == null)
+            //    throw new EmitterException("")
+            var arg_types =
+                from p in creation.CtorType.Parameters
+                                  select CSharpCompilerHelper.GetNativeType(p);
+            context.Constructor = context.TargetType.GetConstructor(arg_types.ToArray());
+            if(context.Constructor == null)
+                throw new EmitterException("No constructors found for the path `{0}` with arguments {1}", creation, creation.TypePath, arg_types);
 
             // TODO?: make it so that we resolve which constructor to call before generating code for arguments
             var formal_params = context.Constructor.GetParameters();
@@ -1114,13 +1124,7 @@ namespace Expresso.CodeGen
                     );
                 }*/
                 args[pair.Item1] = value_expr;
-                context.ConstructorArgumentTypes[pair.Item1] = value_expr.Type;
             }
-
-            context.Constructor = null;
-            creation.TypePath.AcceptWalker(this, context);
-            if(context.Constructor == null)
-                throw new EmitterException("No constructors found for the path `{0}` with arguments {1}", creation, creation.TypePath, context.ConstructorArgumentTypes);
 
             return CSharpExpr.New(context.Constructor, args);
         }
@@ -1337,7 +1341,6 @@ namespace Expresso.CodeGen
             var symbol = GetRuntimeSymbol(simpleType.IdentifierNode);
             if(symbol != null && symbol.Type != null){
                 context.TargetType = symbol.Type;
-                context.Constructor = context.TargetType.GetConstructor(context.ConstructorArgumentTypes);
                 return symbol.Parameter;
             }else{
                 throw new EmitterException("It is found that Type '{0}' isn't defined.", simpleType.Identifier);

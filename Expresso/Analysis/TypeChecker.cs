@@ -731,7 +731,7 @@ namespace Expresso.Ast.Analysis
             inference_runner.VisitObjectCreationExpression(creation);
             var type_table = symbols.GetTypeTable(creation.TypePath.IdentifierNode.Type.Name);
             if(type_table == null){
-                // Don't report type table missing error because InferenceRunner already do that
+                // Don't report type table missing error because InferenceRunner have already done that
                 //parser.ReportSemanticError(
                 //    "Error ES1501: The type `{0}` isn't found or accessible from the scope {1}.",
                 //    creation,
@@ -740,8 +740,9 @@ namespace Expresso.Ast.Analysis
                 return null;
             }
 
-            foreach(var key_value in creation.Items){
-                var key_path = key_value.KeyExpression as PathExpression;
+            var arg_types = new AstType[creation.Items.Count];
+            foreach(var pair in Enumerable.Range(0, creation.Items.Count).Zip(creation.Items, (l, r) => new Tuple<int, KeyValueLikeExpression>(l, r))){
+                var key_path = pair.Item2.KeyExpression as PathExpression;
                 if(key_path == null)
                     throw new InvalidOperationException();
 
@@ -751,29 +752,34 @@ namespace Expresso.Ast.Analysis
                     if(key == null){
                         throw new ParserException(
                             "Error ES1502: The type `{0}` doesn't have a field named '{1}'.",
-                            key_value.KeyExpression,
+                            pair.Item2.KeyExpression,
                             creation.TypePath, key_path.AsIdentifier.Name
                         );
                     }
                 }
 
-                var value_type = key_value.ValueExpression.AcceptWalker(this);
+                var value_type = pair.Item2.ValueExpression.AcceptWalker(this);
+                arg_types[pair.Item1] = value_type.Clone();
                 if(IsCastable(value_type, key.Type) == TriBool.False && !key.Name.StartsWith("get_", StringComparison.CurrentCulture)){
                     parser.ReportSemanticErrorRegional(
                         "Error ES2002: The field '{0}' expects the value to be of type `{1}`, but it actually is `{2}`.",
-                        key_value.KeyExpression, key_value.ValueExpression,
+                        pair.Item2.KeyExpression, pair.Item2.ValueExpression,
                         key_path.AsIdentifier.Name, key.Type, value_type
                     );
                 }
                 if(key.Name.StartsWith("get_", StringComparison.CurrentCulture) && key.Type is FunctionType func_type
                    && IsCastable(value_type, func_type.ReturnType) == TriBool.False){
                     parser.ReportSemanticErrorRegional(
-                        "Error ES2002: The field '{0}' expectes the value to beof type `{1}`, but it actually is `{2}`.",
-                        key_value.KeyExpression, key_value.ValueExpression,
+                        "Error ES2002: The field '{0}' expects the value to be of type `{1}`, but it actually is `{2}`.",
+                        pair.Item2.KeyExpression, pair.Item2.ValueExpression,
                         key_path.AsIdentifier.Name, key.Type, value_type
                     );
                 }
             }
+
+            var ctor_type = AstType.MakeFunctionType("constructor", AstType.MakeSimpleType("tuple"), arg_types);
+            var ctor_symbol = type_table.GetSymbol("constructor", ctor_type);
+            creation.CtorType = (FunctionType)ctor_symbol.Type.Clone();
             return creation.TypePath;
         }
 

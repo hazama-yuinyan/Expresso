@@ -15,6 +15,7 @@ namespace Expresso.Ast
     /// <summary>
     /// 抽象構文木のノードの共通基底。
     /// The base class for all the abstract syntax trees.
+    /// AstNodes should be cloned when absolutely needed to do that.
     /// </summary>
     public abstract class AstNode : IFreezable, INode, ICloneable
     {

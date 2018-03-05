@@ -139,6 +139,18 @@ namespace Expresso.CodeGen
                 new_table.GetSymbol(method_name).IdentifierId = IdentifierId++;
             }
 
+            foreach(var ctor in type.GetConstructors()){
+                var name = "constructor";
+
+                var return_type = AstType.MakeSimpleType("tuple");
+                var param_types =
+                    from p in ctor.GetParameters()
+                                  select GetExpressoType(p.ParameterType);
+                var ctor_type = AstType.MakeFunctionType(name, return_type, param_types);
+                new_table.AddSymbol(name, ctor_type);
+                new_table.GetSymbol(name, ctor_type).IdentifierId = IdentifierId++;
+            }
+
             if(!table_was_created){
                 new_table.Parent = table;
                 table.Children.Add(new_table);

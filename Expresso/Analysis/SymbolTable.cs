@@ -4,7 +4,7 @@ using System.Linq;
 using System.Runtime.Serialization;
 using Expresso.CodeGen;
 using ICSharpCode.NRefactory;
-
+using ICSharpCode.NRefactory.PatternMatching;
 
 namespace Expresso.Ast.Analysis
 {
@@ -18,7 +18,8 @@ namespace Expresso.Ast.Analysis
     {
         static readonly Dictionary<string, Identifier> NativeMapping;
         static readonly string TypeTablePrefix = "type_";
-        Dictionary<string, Identifier> type_table, table;
+        Dictionary<string, Identifier> type_table;
+        MultiValueDictionary<string, Identifier> table;
 
         /// <summary>
         /// The name for this symbol scope.
@@ -48,7 +49,7 @@ namespace Expresso.Ast.Analysis
         /// </summary>
         public IEnumerable<Identifier> Symbols{
             get{
-                return table.Values;
+                return table.Values.SelectMany(col => col.Select(ident => ident));
             }
         }
 
@@ -113,7 +114,7 @@ namespace Expresso.Ast.Analysis
         public SymbolTable(ClassType typeKind = ClassType.NotType)
         {
             type_table = new Dictionary<string, Identifier>();
-            table = new Dictionary<string, Identifier>();
+            table = new MultiValueDictionary<string, Identifier>();
             Children = new List<SymbolTable>();
             TypeKind = typeKind;
         }
@@ -137,8 +138,7 @@ namespace Expresso.Ast.Analysis
 
         public static Identifier GetNativeSymbol(string name)
         {
-            Identifier result;
-            if(NativeMapping.TryGetValue(name, out result))
+            if(NativeMapping.TryGetValue(name, out var result))
                 return result;
             else
                 return null;
@@ -154,8 +154,10 @@ namespace Expresso.Ast.Analysis
             }
 
             foreach(var entry2 in table){
-                var ast_type = entry2.Value.Type;
-                info.AddValue(entry2.Key, ast_type, ast_type.GetType());
+                foreach(var list_value in entry2.Value){
+                    var ast_type = list_value.Type;
+                    info.AddValue(entry2.Key, ast_type, ast_type.GetType());
+                }
             }
         }
 
@@ -308,8 +310,7 @@ namespace Expresso.Ast.Analysis
         /// </summary>
         public Identifier GetTypeSymbol(string name)
         {
-            Identifier result;
-            if(!type_table.TryGetValue(name, out result))
+            if(!type_table.TryGetValue(name, out var result))
                 return null;
 
             return result;
@@ -317,8 +318,7 @@ namespace Expresso.Ast.Analysis
 
         public Identifier GetTypeSymbolInAnyScope(string name)
         {
-            Identifier result;
-            if(!type_table.TryGetValue(name, out result)){
+            if(!type_table.TryGetValue(name, out var result)){
                 if(Parent != null)
                     return Parent.GetTypeSymbolInAnyScope(name);
                 else
@@ -333,11 +333,29 @@ namespace Expresso.Ast.Analysis
         /// </summary>
         public Identifier GetSymbol(string name)
         {
-            Identifier result;
-            if(!table.TryGetValue(name, out result))
+            if(!table.TryGetValue(name, out var results))
                 return null;
 
-            return result;
+            if(results.Count > 1)
+                throw new InvalidOperationException("There are more than 1 candidate for '" + name + "'");
+            
+            return results.First();
+        }
+
+        /// <summary>
+        /// Gets the corresponding <see cref="Identifier"/> node to `name` that also matches to the `type`.
+        /// </summary>
+        /// <returns>The symbol.</returns>
+        /// <param name="name">Name.</param>
+        /// <param name="type">Type.</param>
+        public Identifier GetSymbol(string name, AstType type)
+        {
+            if(!table.TryGetValue(name, out var results))
+                return null;
+
+            return results.Where(ident => ident.Type.IsMatch(type))
+                          .Select(ident => ident)
+                          .First();
         }
 
         /// <summary>
@@ -348,39 +366,67 @@ namespace Expresso.Ast.Analysis
         /// <param name="limit">The maximum count to track up scopes, while trying to find the symbol.</param>
         public Identifier GetSymbolInNScopesAbove(string name, int limit)
         {
-            Identifier result;
-            if(!table.TryGetValue(name, out result)){
+            if(!table.TryGetValue(name, out var results)){
                 if(Parent != null && limit > 0){
                     return Parent.GetSymbolInNScopesAbove(name, limit - 1);
                 }else{
-                    if(limit > 0 && NativeMapping.TryGetValue(name, out result))
+                    if(limit > 0 && NativeMapping.TryGetValue(name, out var result))
                         return result;
                     else
                         return null;
                 }
             }
 
-            return result;
+            if(results.Count > 1)
+                throw new InvalidOperationException("There are more than 1 candidate for '" + name + "'");
+
+            return results.First();
         }
 
         /// <summary>
-        /// Gets the corresponding <see cref="Expresso.Ast.Identifier"/> node to `name` in any parent scopes.
+        /// Gets the corresponding <see cref="Identifier"/> node to `name` in any parent scopes.
         /// </summary>
         public Identifier GetSymbolInAnyScope(string name)
         {
-            Identifier result;
-            if(!table.TryGetValue(name, out result)){
+            if(!table.TryGetValue(name, out var results)){
                 if(Parent != null){
                     return Parent.GetSymbolInAnyScope(name);
                 }else{
-                    if(NativeMapping.TryGetValue(name, out result))
+                    if(NativeMapping.TryGetValue(name, out var result))
                         return result;
                     else
                         return null;
                 }
             }
 
-            return result;
+            if(results.Count > 1)
+                throw new InvalidOperationException("There are more than 1 candidate for '" + name + "'");
+
+            return results.First();
+        }
+
+        /// <summary>
+        /// Gets the corresponding <see cref="Identifier"/> node to `name` in parent scopes that also matches to `type`.
+        /// </summary>
+        /// <returns>The symbol in any scope.</returns>
+        /// <param name="name">Name.</param>
+        /// <param name="type">Type.</param>
+        public Identifier GetSymbolInAnyScope(string name, AstType type)
+        {
+            if(!table.TryGetValue(name, out var results)){
+                if(Parent != null){
+                    return Parent.GetSymbolInAnyScope(name, type);
+                }else{
+                    if(NativeMapping.TryGetValue(name, out var result))
+                        return result;
+                    else
+                        return null;
+                }
+            }
+
+            return results.Where(ident => ident.Type.IsMatch(type))
+                          .Select(ident => ident)
+                          .First();
         }
 
         /// <summary>
@@ -391,8 +437,7 @@ namespace Expresso.Ast.Analysis
         public Identifier GetSymbolInAnyScopeWithoutNative(string name, out bool nativeSearched)
         {
             nativeSearched = false;
-            Identifier result;
-            if(!table.TryGetValue(name, out result)){
+            if(!table.TryGetValue(name, out var results)){
                 if(Parent != null){
                     return Parent.GetSymbolInAnyScopeWithoutNative(name, out nativeSearched);
                 }else{
@@ -401,13 +446,16 @@ namespace Expresso.Ast.Analysis
                 }
             }
 
-            return result;
+            if(results.Count > 1)
+                throw new InvalidOperationException("There are more than 1 candidate for '" + name + "'");
+
+            return results.First();
         }
 
         /// <summary>
         /// Gets the number of variables declared in the current scope.
         /// </summary>
-        public int CountNames(Func<Identifier, bool> pred)
+        /*public int CountNames(Func<Identifier, bool> pred)
         {
             if(pred != null){
                 int num_type_names = type_table.Values.Count(pred);
@@ -416,28 +464,28 @@ namespace Expresso.Ast.Analysis
             }else{
                 return type_table.Count + table.Count;
             }
-        }
+        }*/
 
         /// <summary>
         /// Counts up identifiers that satisfy the specified predicate function.
         /// </summary>
         /// <param name="pred">Pred.</param>
-        public int Count(Func<Identifier, bool> pred)
+        /*public int Count(Func<Identifier, bool> pred)
         {
             if(pred != null)
                 return table.Values.Count(pred);
             else
                 return table.Count;
-        }
+        }*/
 
         /// <summary>
         /// Counts all the variables that reside in this scope.
         /// </summary>
         /// <returns>The variables.</returns>
-        public int CountVariables()
+        /*public int CountVariables()
         {
             return Count(null);
-        }
+        }*/
 
         public void AddScope(ClassType typeKind = ClassType.NotType)
         {
@@ -491,16 +539,15 @@ namespace Expresso.Ast.Analysis
             var cloned = new SymbolTable();
 
             cloned.Name = Name;
-            Identifier value;
             foreach(var key in table.Keys){
-                if(!table.TryGetValue(key, out value))
+                if(!table.TryGetValue(key, out var value))
                     return null;
                 else
-                    cloned.table.Add(key, value);
+                    cloned.table.AddRange(key, value);
             }
 
             foreach(var key in type_table.Keys){
-                if(!type_table.TryGetValue(key, out value))
+                if(!type_table.TryGetValue(key, out var value))
                     return null;
                 else
                     cloned.type_table.Add(key, value);
