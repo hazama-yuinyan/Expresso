@@ -219,7 +219,7 @@ namespace Expresso.CodeGen
             }
 
             if(astType is PlaceholderType placeholder)
-                throw new EmitterException("Unknown placeholder!");
+                throw new EmitterException("Unresolved type found!");
 
             throw new EmitterException("Unknown AstType!");
         }

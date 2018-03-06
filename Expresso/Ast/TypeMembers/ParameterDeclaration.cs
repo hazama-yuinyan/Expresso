@@ -1,4 +1,3 @@
-using System;
 using ICSharpCode.NRefactory;
 using ICSharpCode.NRefactory.TypeSystem;
 
@@ -34,7 +33,7 @@ namespace Expresso.Ast
         /// <summary>
         /// Represents the parameter is variadic or not.
         /// </summary>
-        /// <value><c>true</c> if is variadic; otherwise, <c>false</c>.</value>
+        /// <value><c>true</c> if it is variadic; otherwise, <c>false</c>.</value>
         public bool IsVariadic{
             get; set;
         }

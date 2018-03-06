@@ -594,8 +594,8 @@ namespace Expresso.Ast.Analysis
                 var inner_parser = new Parser(parser.scanner.OpenChildFile(importDecl.ModuleName));
                 inner_parser.Parse();
 
+                BindAst(inner_parser.TopmostAst, inner_parser);
                 symbol_table.AddExternalSymbols(inner_parser.Symbols, importDecl.AliasName);
-                ExpressoNameBinder.BindAst(inner_parser.TopmostAst, inner_parser);
                 ((ExpressoAst)importDecl.Parent).ExternalModules.Add(inner_parser.TopmostAst);
             }
             // Make the module name type-aware

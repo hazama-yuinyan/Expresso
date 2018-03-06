@@ -78,7 +78,12 @@ namespace Expresso.Ast.Analysis
                     AstType.MakeSimpleType("tuple", TextLocation.Empty),    //The void type
                     TextLocation.Empty,
                     TextLocation.Empty,
-                    AstType.MakePrimitiveType("string", TextLocation.Empty)
+                    AstType.MakeSimpleType(
+                        "array",
+                        TextLocation.Empty,
+                        TextLocation.Empty,
+                        AstType.MakeSimpleType("object")
+                    )
                 )
             );
             print_ident.IdentifierId = 1000000000u;
@@ -91,7 +96,12 @@ namespace Expresso.Ast.Analysis
                     AstType.MakeSimpleType("tuple", TextLocation.Empty),    //The void type
                     TextLocation.Empty,
                     TextLocation.Empty,
-                    AstType.MakePrimitiveType("string", TextLocation.Empty)
+                    AstType.MakeSimpleType(
+                        "array",
+                        TextLocation.Empty,
+                        TextLocation.Empty,
+                        AstType.MakeSimpleType("object")
+                    )
                 )
             );
             println_ident.IdentifierId = 1000000001u;
@@ -104,7 +114,13 @@ namespace Expresso.Ast.Analysis
                     AstType.MakeSimpleType("tuple", TextLocation.Empty),    // The void type
                     TextLocation.Empty,
                     TextLocation.Empty,
-                    AstType.MakePrimitiveType("string", TextLocation.Empty)
+                    AstType.MakePrimitiveType("string", TextLocation.Empty),
+                    AstType.MakeSimpleType(
+                        "array",
+                        TextLocation.Empty,
+                        TextLocation.Empty,
+                        AstType.MakeSimpleType("object")
+                    )
                 )
             );
             printformat_ident.IdentifierId = 1000000002u;
@@ -173,7 +189,13 @@ namespace Expresso.Ast.Analysis
             if(name == null)
                 throw new ArgumentNullException();
             
-            var parent = Parent;
+            var parent = this;
+            while(parent != null && parent.Children.Count == 0)
+                parent = parent.Parent;
+
+            if(parent == null)
+                return null;
+            
             var tmp = parent.Children[0];
             var class_name = TypeTablePrefix + name;
             int child_counter = 1;
@@ -183,7 +205,9 @@ namespace Expresso.Ast.Analysis
 
                 if(child_counter >= parent.Children.Count){
                     child_counter = 1;
-                    parent = parent.Parent;
+                    do{
+                        parent = parent.Parent;
+                    }while(parent != null && parent.Children.Count == 0);
                     if(parent == null)
                         break;
                     
@@ -339,7 +363,7 @@ namespace Expresso.Ast.Analysis
             if(results.Count > 1)
                 throw new InvalidOperationException("There are more than 1 candidate for '" + name + "'");
             
-            return results.First();
+            return results.FirstOrDefault();
         }
 
         /// <summary>
@@ -355,7 +379,7 @@ namespace Expresso.Ast.Analysis
 
             return results.Where(ident => ident.Type.IsMatch(type))
                           .Select(ident => ident)
-                          .First();
+                          .FirstOrDefault();
         }
 
         /// <summary>
@@ -380,7 +404,7 @@ namespace Expresso.Ast.Analysis
             if(results.Count > 1)
                 throw new InvalidOperationException("There are more than 1 candidate for '" + name + "'");
 
-            return results.First();
+            return results.FirstOrDefault();
         }
 
         /// <summary>
@@ -402,7 +426,7 @@ namespace Expresso.Ast.Analysis
             if(results.Count > 1)
                 throw new InvalidOperationException("There are more than 1 candidate for '" + name + "'");
 
-            return results.First();
+            return results.FirstOrDefault();
         }
 
         /// <summary>
@@ -426,7 +450,7 @@ namespace Expresso.Ast.Analysis
 
             return results.Where(ident => ident.Type.IsMatch(type))
                           .Select(ident => ident)
-                          .First();
+                          .FirstOrDefault();
         }
 
         /// <summary>
@@ -449,7 +473,7 @@ namespace Expresso.Ast.Analysis
             if(results.Count > 1)
                 throw new InvalidOperationException("There are more than 1 candidate for '" + name + "'");
 
-            return results.First();
+            return results.FirstOrDefault();
         }
 
         /// <summary>

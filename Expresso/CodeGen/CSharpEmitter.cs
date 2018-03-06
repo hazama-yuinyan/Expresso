@@ -1096,9 +1096,8 @@ namespace Expresso.CodeGen
                                   select CSharpCompilerHelper.GetNativeType(p);
             context.Constructor = context.TargetType.GetConstructor(arg_types.ToArray());
             if(context.Constructor == null)
-                throw new EmitterException("No constructors found for the path `{0}` with arguments {1}", creation, creation.TypePath, arg_types);
+                throw new EmitterException("No constructors found for the path `{0}` with arguments {1}", creation, creation.TypePath, CSharpCompilerHelper.ExpandContainer(arg_types));
 
-            // TODO?: make it so that we resolve which constructor to call before generating code for arguments
             var formal_params = context.Constructor.GetParameters();
             // TODO: make object creation arguments pair to constructor parameters
             foreach(var pair in Enumerable.Range(0, creation.Items.Count()).Zip(
@@ -1362,7 +1361,7 @@ namespace Expresso.CodeGen
             // We don't need to inspect memberType.Target because memberType.IdentifierNode is already binded
             //memberType.Target.AcceptWalker(this, context);
             context.RequestType = true;
-            VisitIdentifier(memberType.IdentifierNode, context);
+            VisitSimpleType(memberType.ChildType, context);
             context.RequestType = false;
             return null;
         }

@@ -7,7 +7,7 @@ module main;
 class TestClass
 {
 	public let x (- int;
-	let y (- int, z = 3;
+	let y (- int, z (- int;
 
 	public def getX()
 	{
@@ -32,7 +32,7 @@ class TestClass
 
 def main()
 {
-	let a = TestClass{x : 1, y : 2};
+	let a = TestClass{x : 1, y : 2, z : 3};
 	//let b = new Test{x : 1, y : 2};
 	let c = a.getX();
 	let d = a.getY();

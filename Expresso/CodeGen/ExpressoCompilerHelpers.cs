@@ -85,7 +85,7 @@ namespace Expresso.CodeGen
                     break;
             }
             if(type == null)
-                throw new ParserException("Type '{0}' is not a native type", identifier, identifier.Name);
+                throw new ParserException("Error ES5000: The type '{0}' is not a native type", identifier, identifier.Name);
                 
             var type_name = type.Name;
             var expresso_type_name = GetExpressoTypeName(type.FullName);

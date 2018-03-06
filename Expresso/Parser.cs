@@ -480,10 +480,12 @@ string cur_class_name;
 		}
 		catch(ParserException e){
 		SemanticError(e.ToString());
+		throw e;
 		}
-		catch(FatalError){
+		catch(FatalError ex){
 		// Do nothing with a FatalError
 		// It only signals that the program should immediately exit
+		throw ex;
 		}
 		catch(StackOverflowException e){
 		Console.WriteLine(e.Message);
@@ -1025,7 +1027,7 @@ string cur_class_name;
 			Type(out type);
 			if(is_variadic && la.kind == _ident)
 			SemanticError("Error ES0010: The variadic parameter has to be placed in the last position of a parameter list");
-			else if(is_variadic && (type == null || !(type is SimpleType) || ((SimpleType)type).Name != "array"))
+			else if(is_variadic && (type == null || !(type is SimpleType simple) || simple.Name != "array"))
 			SemanticError("Error ES0001: The variadic parameter must be an array!");
 			
 		}

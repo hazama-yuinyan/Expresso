@@ -478,10 +478,12 @@ namespace Expresso.Ast.Analysis
 
             public AstType VisitObjectCreationExpression(ObjectCreationExpression creation)
             {
-                var referenced = checker.symbols.GetTypeSymbolInAnyScope(creation.TypePath.Name);
+                var table = creation.TypePath is MemberType member ? checker.symbols.GetTypeTable(member.Target.Name) : checker.symbols;
+                var referenced = table.GetTypeSymbolInAnyScope(creation.TypePath.Name);
                 if(referenced == null){
                     throw new ParserException(
                         "Error ES1501: The type `{0}` isn't found or accessible from the scope {1}.",
+                        creation,
                         creation.TypePath,
                         creation.TypePath.Name
                     );
@@ -493,7 +495,7 @@ namespace Expresso.Ast.Analysis
                     // Walk through creation.Items in order to make them type-aware
                     keyvalue.ValueExpression.AcceptWalker(this);
                 }
-                return creation.TypePath.Clone();
+                return creation.TypePath;
             }
 
             public AstType VisitSequenceInitializer(SequenceInitializer seqInitializer)
@@ -628,37 +630,37 @@ namespace Expresso.Ast.Analysis
 
             public AstType VisitSimpleType(SimpleType simpleType)
             {
-                return simpleType.Clone();
+                throw new InvalidOperationException("Can not work on that node!");
             }
 
             public AstType VisitPrimitiveType(PrimitiveType primitiveType)
             {
-                return primitiveType.Clone();
+                throw new InvalidOperationException("Can not work on that node!");
             }
 
             public AstType VisitReferenceType(ReferenceType referenceType)
             {
-                return referenceType.BaseType.Clone();
+                throw new InvalidOperationException("Can not work on that node!");
             }
 
             public AstType VisitMemberType(MemberType memberType)
             {
-                return memberType.ChildType.Clone();
+                throw new InvalidOperationException("Can not work on that node!");
             }
 
             public AstType VisitFunctionType(FunctionType funcType)
             {
-                return funcType.ReturnType.Clone();
+                throw new InvalidOperationException("Can not work on that node!");
             }
 
             public AstType VisitParameterType(ParameterType paramType)
             {
-                return paramType.Clone();
+                throw new InvalidOperationException("Can not work on that node!");
             }
 
             public AstType VisitPlaceholderType(PlaceholderType placeholderType)
             {
-                return null;
+                throw new InvalidOperationException("Can not work on that node!");
             }
 
             public AstType VisitAliasDeclaration(AliasDeclaration aliasDecl)

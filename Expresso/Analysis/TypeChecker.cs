@@ -80,7 +80,7 @@ namespace Expresso.Ast.Analysis
             int loop_count = (int)breakStmt.Count.Value;
             if(breakStmt.Ancestors.Count(node => node is WhileStatement || node is ForStatement || node is ValueBindingForStatement) < loop_count){
                 throw new ParserException(
-                    "Error ES4000: If we break out of loops {0} times with the break statement, we'll enter into nothing.",
+                    "Error ES4010: If we break out of loops {0} times with the break statement, we'll enter into nothing.",
                     breakStmt,
                     loop_count
                 );
@@ -94,7 +94,7 @@ namespace Expresso.Ast.Analysis
             int loop_count = (int)continueStmt.Count.Value;
             if(continueStmt.Ancestors.Count(node => node is WhileStatement || node is ForStatement || node is ValueBindingForStatement) < loop_count){
                 throw new ParserException(
-                    "Error ES4001: If we break out of loops {0} times with the continue statement, we'll enter into nothing.",
+                    "Error ES4011: If we break out of loops {0} times with the continue statement, we'll enter into nothing.",
                     continueStmt,
                     loop_count
                 );
@@ -417,13 +417,17 @@ namespace Expresso.Ast.Analysis
             }
 
             inference_runner.VisitCallExpression(callExpr);
-            foreach(var pair in func_type.Parameters.Zip(callExpr.Arguments, (l, r) => new Tuple<AstType, Expression>(l, r))){
-                var arg_type = pair.Item2.AcceptWalker(inference_runner);
-                if(IsCompatibleWith(pair.Item1, arg_type) == TriBool.False){
+            foreach(var triple in Enumerable.Range(0, func_type.Parameters.Count)
+                                            .Zip(func_type.Parameters, (l, r) => new Tuple<int, AstType>(l, r))
+                                            .Zip(callExpr.Arguments, (l, r) => new Tuple<int, AstType, Expression>(l.Item1, l.Item2, r))){
+                // If this parameter is the last and the type is an array we think of it as the variadic parameter
+                var param_type = triple.Item2 is SimpleType array && triple.Item1 == func_type.Parameters.Count - 1 ? array.TypeArguments.First() : triple.Item2;
+                var arg_type = triple.Item3.AcceptWalker(inference_runner);
+                if(IsCompatibleWith(param_type, arg_type) == TriBool.False){
                     throw new ParserException(
                         "Error ES1303: Types mismatched; expected `{0}`, found `{1}`.",
-                        pair.Item2,
-                        pair.Item1,
+                        triple.Item3,
+                        param_type,
                         arg_type
                     );
                 }
@@ -729,9 +733,11 @@ namespace Expresso.Ast.Analysis
         public AstType VisitObjectCreationExpression(ObjectCreationExpression creation)
         {
             inference_runner.VisitObjectCreationExpression(creation);
-            var type_table = symbols.GetTypeTable(creation.TypePath.IdentifierNode.Type.Name);
+            var type_path = creation.TypePath;
+            var table = (type_path is MemberType member) ? symbols.GetTypeTable(member.Target.Name) : symbols;
+            var type_table = table.GetTypeTable(type_path.Name);
             if(type_table == null){
-                // Don't report type table missing error because InferenceRunner have already done that
+                // Don't report type table missing error because InferenceRunner has already done that
                 //parser.ReportSemanticError(
                 //    "Error ES1501: The type `{0}` isn't found or accessible from the scope {1}.",
                 //    creation,
@@ -777,8 +783,17 @@ namespace Expresso.Ast.Analysis
                 }
             }
 
-            var ctor_type = AstType.MakeFunctionType("constructor", AstType.MakeSimpleType("tuple"), arg_types);
-            var ctor_symbol = type_table.GetSymbol("constructor", ctor_type);
+            var ctor_name = "constructor";
+            var ctor_type = AstType.MakeFunctionType(ctor_name, AstType.MakeSimpleType("tuple"), arg_types);
+            var ctor_symbol = type_table.GetSymbol(ctor_name, ctor_type);
+            if(ctor_symbol == null){
+                throw new ParserException(
+                    "Error ES2010: There are no constructors in the type `{0}` whose parameter types are {1}.",
+                    creation,
+                    creation.TypePath,
+                    ctor_type
+                );
+            }
             creation.CtorType = (FunctionType)ctor_symbol.Type.Clone();
             return creation.TypePath;
         }
@@ -1125,8 +1140,16 @@ namespace Expresso.Ast.Analysis
                         typeDecl,
                         typeDecl.Name, require_method_name
                     );
-                }                          
+                }
             }
+
+            var field_types = typeDecl.Members
+                                      .OfType<FieldDeclaration>()
+                                      .SelectMany(fd => fd.Initializers.Select(init => init.NameToken.Type.Clone()));
+            var name = "constructor";
+            var return_type = AstType.MakeSimpleType("tuple");
+            var ctor_type = AstType.MakeFunctionType(name, return_type, field_types);
+            symbols.AddSymbol(name, ctor_type);
 
             AscendScope();
             scope_counter = tmp_counter + 1;
@@ -1397,12 +1420,31 @@ namespace Expresso.Ast.Analysis
                 //TODO: implement it
                 if(simple1.IsMatch(simple2)){
                     return TriBool.True;
+                }else if(simple1.Name == "object"){
+                    return TriBool.True;
                 }
             }
 
             if(simple2 != null && simple2.IsNull){
                 // This indicates that the right-hand-side represents, say, the wildcard pattern
                 return TriBool.True;
+            }
+
+            if(simple1 != null){
+                if(second is MemberType member){
+                    if(simple1.Name == member.MemberName){
+                        return TriBool.True;
+                    }else if(simple1.Name == "object"){
+                        return TriBool.True;
+                    }
+                }
+            }
+
+            if(first is MemberType member1 && second is MemberType member2){
+                if(member1.IsMatch(member2))
+                    return TriBool.True;
+                else
+                    return TriBool.False;
             }
 
             if(first is FunctionType func1 && second is FunctionType func2){
