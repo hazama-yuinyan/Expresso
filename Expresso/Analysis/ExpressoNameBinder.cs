@@ -375,11 +375,6 @@ namespace Expresso.Ast.Analysis
             memRef.Target.AcceptWalker(this);
         }
 
-        public void VisitNewExpression(NewExpression newExpr)
-        {
-            newExpr.CreationExpression.AcceptWalker(this);
-        }
-
         public void VisitParenthesizedExpression(ParenthesizedExpression parensExpr)
         {
             parensExpr.Expression.AcceptWalker(this);

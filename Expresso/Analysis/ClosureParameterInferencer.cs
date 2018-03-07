@@ -224,11 +224,6 @@ namespace Expresso.Ast.Analysis
             throw new InvalidOperationException("Can not work on that node");
         }
 
-        public void VisitNewExpression(NewExpression newExpr)
-        {
-            throw new InvalidOperationException("Can not work on that node");
-        }
-
         public void VisitNewLine(NewLineNode newlineNode)
         {
             throw new InvalidOperationException("Can not work on that node");

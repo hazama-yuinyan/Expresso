@@ -399,11 +399,6 @@ namespace Expresso.Ast.Analysis
             throw new NotImplementedException();
         }
 
-        public void VisitNewExpression(NewExpression newExpr)
-        {
-            throw new NotImplementedException();
-        }
-
         public void VisitPathExpression(PathExpression pathExpr)
         {
             throw new NotImplementedException();

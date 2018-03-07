@@ -289,11 +289,6 @@ namespace Expresso.Ast.Analysis
 	        {
 	        }
 
-	        public void VisitNewExpression(NewExpression newExpr)
-	        {
-                newExpr.CreationExpression.AcceptWalker(this);
-	        }
-
 	        public void VisitNewLine(NewLineNode newlineNode)
 	        {
 	        }

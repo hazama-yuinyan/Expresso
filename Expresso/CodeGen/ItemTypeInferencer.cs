@@ -256,11 +256,6 @@ namespace Expresso.CodeGen
                 throw new NotImplementedException("Can not work on that node");
             }
 
-            public AstType VisitNewExpression(NewExpression newExpr)
-            {
-                throw new NotImplementedException("Can not work on that node");
-            }
-
             public AstType VisitNewLine(NewLineNode newlineNode)
             {
                 throw new NotImplementedException("Can not work on that node");

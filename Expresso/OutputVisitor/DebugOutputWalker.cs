@@ -246,12 +246,6 @@ namespace Expresso.Ast
             writer.Write(">");
         }
 
-        public void VisitNewExpression(NewExpression newExpr)
-        {
-            writer.Write("new ");
-            newExpr.CreationExpression.AcceptWalker(this);
-        }
-
         public void VisitSequenceInitializer(SequenceInitializer seqInitializer)
         {
             var type = CSharpCompilerHelper.GetContainerType(seqInitializer.ObjectType);

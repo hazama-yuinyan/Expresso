@@ -21,6 +21,11 @@ namespace Expresso.Ast
             }
         }
 
+        // Initializers shouldn't be renamed to Identifiers because of module fields.
+        /// <summary>
+        /// The initializers that actually initializes the fields.
+        /// </summary>
+        /// <value>The initializers.</value>
         public AstNodeCollection<VariableInitializer> Initializers{
             get{return GetChildrenByRole(Roles.Variable);}
         }

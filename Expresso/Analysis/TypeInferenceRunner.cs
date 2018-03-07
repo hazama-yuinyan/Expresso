@@ -383,7 +383,7 @@ namespace Expresso.Ast.Analysis
                     symbol = type_table.GetSymbol("get_" + memRef.Member.Name);
                     if(symbol == null){
                         throw new ParserException(
-                            "Error ES2001: The type `{0}` doesn't have a field '{1}'!",
+                            "Error ES2001: The type `{0}` doesn't have a field or a method '{1}'!",
                             memRef.Member,
                             target_type.Name, memRef.Member.Name
                         );
@@ -436,11 +436,6 @@ namespace Expresso.Ast.Analysis
                     return type;
             }
 
-            public AstType VisitNewExpression(NewExpression newExpr)
-            {
-                return newExpr.CreationExpression.AcceptWalker(this);
-            }
-
             public AstType VisitPathExpression(PathExpression pathExpr)
             {
                 if(pathExpr.Items.Count == 1){
@@ -460,7 +455,7 @@ namespace Expresso.Ast.Analysis
                             item.Type.ReplaceWith(result);
                         }else{
                             throw new ParserException(
-                                "Error ES1700: Type or symbol name '{0}' is not declared.",
+                                "Error ES1700: The type or symbol name '{0}' is not declared.",
                                 item,
                                 item.Name
                             );

@@ -192,11 +192,6 @@ namespace Expresso.CodeGen
                 throw new InvalidOperationException();
             }
 
-            public void VisitNewExpression(NewExpression newExpr)
-            {
-                throw new InvalidOperationException();
-            }
-
             public void VisitPathExpression(PathExpression pathExpr)
             {
                 throw new InvalidOperationException();

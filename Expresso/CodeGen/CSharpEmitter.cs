@@ -999,17 +999,6 @@ namespace Expresso.CodeGen
             return (context.Method != null) ? expr : CSharpExpr.PropertyOrField(expr, context.PropertyOrField.Name);
         }
 
-        public CSharpExpr VisitNewExpression(NewExpression newExpr, CSharpEmitterContext context)
-        {
-            var additionals = context.Additionals;
-            context.Additionals = new List<object>();
-            // On .NET environment, we have no means of creating object instances on the stack.
-            newExpr.CreationExpression.AcceptWalker(this, context);
-            var args = context.Additionals.Cast<ExprTree.Expression>();
-            context.Additionals = additionals;
-            return CSharpExpr.New(context.Constructor, args);
-        }
-
         public CSharpExpr VisitPathExpression(PathExpression pathExpr, CSharpEmitterContext context)
         {
             if(pathExpr.Items.Count == 1){

@@ -315,11 +315,6 @@ namespace Expresso.Ast
             return new IntegerSequenceExpression(start, end, step, upperInclusive);
         }
 
-        public static NewExpression MakeNewExpr(ObjectCreationExpression creationExpr, TextLocation loc = default(TextLocation))
-        {
-            return new NewExpression(creationExpr, loc);
-        }
-
         /// <summary>
         /// Makes a path expression from a sequence of identifiers.
         /// </summary>

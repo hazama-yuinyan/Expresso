@@ -690,11 +690,6 @@ namespace Expresso.Ast.Analysis
             return AstType.Null;
         }
 
-        public AstType VisitNewExpression(NewExpression newExpr)
-        {
-            return newExpr.CreationExpression.AcceptWalker(this);
-        }
-
         public AstType VisitPathExpression(PathExpression pathExpr)
         {
             if(pathExpr.Items.Count == 1){

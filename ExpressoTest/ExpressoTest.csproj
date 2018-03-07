@@ -105,6 +105,7 @@
     <None Include="sources\for_unit_tests\erroneous\types_mismatched_on_argument.exs" />
     <None Include="sources\for_unit_tests\erroneous\primitive_types_cant_be_derived.exs" />
     <None Include="sources\for_unit_tests\erroneous\cant_be_derived_from_standard_libraries_type.exs" />
+    <None Include="sources\for_unit_tests\use_of_the_standard_library.exs" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AnalyzerTests.cs" />
