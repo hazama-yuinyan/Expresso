@@ -9,6 +9,7 @@ namespace Expresso.Ast
     /// A simple type represents a user-defined type or a generic type that is composed of
     /// an identifier and type arguments.
     /// SimpleType nodes should not be associated with AstType nodes unless they refer to some aliases.
+    /// The SimpleType.Null property can be used to indicate that there is some type.
     /// </summary>
     public class SimpleType : AstType
     {

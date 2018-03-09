@@ -55,6 +55,7 @@ namespace Expresso.Ast
 
         void VisitSelfReferenceExpression(SelfReferenceExpression selfRef);
         void VisitSuperReferenceExpression(SuperReferenceExpression superRef);
+        void VisitNullReferenceExpression(NullReferenceExpression nullRef);
 
         void VisitCommentNode(CommentNode comment);
         void VisitTextNode(TextNode textNode);
@@ -141,6 +142,7 @@ namespace Expresso.Ast
 
         TResult VisitSelfReferenceExpression(SelfReferenceExpression selfRef);
         TResult VisitSuperReferenceExpression(SuperReferenceExpression superRef);
+        TResult VisitNullReferenceExpression(NullReferenceExpression nullRef);
 
         TResult VisitCommentNode(CommentNode comment);
         TResult VisitTextNode(TextNode textNode);
@@ -237,6 +239,7 @@ namespace Expresso.Ast
 
         TResult VisitSelfReferenceExpression(SelfReferenceExpression selfRef, TData data);
         TResult VisitSuperReferenceExpression(SuperReferenceExpression superRef, TData data);
+        TResult VisitNullReferenceExpression(NullReferenceExpression nullRef, TData data);
 
         TResult VisitCommentNode(CommentNode comment, TData data);
         TResult VisitTextNode(TextNode textNode, TData data);

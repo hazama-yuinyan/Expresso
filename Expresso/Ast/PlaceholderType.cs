@@ -1,5 +1,4 @@
-﻿using System;
-using ICSharpCode.NRefactory;
+﻿using ICSharpCode.NRefactory;
 
 
 namespace Expresso.Ast

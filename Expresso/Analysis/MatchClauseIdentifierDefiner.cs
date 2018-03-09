@@ -228,6 +228,11 @@ namespace Expresso.CodeGen
                 throw new InvalidOperationException("Can not work on that node");
             }
 
+            public void VisitNullReferenceExpression(NullReferenceExpression nullRef)
+            {
+                throw new InvalidOperationException("Can not work on that node");
+            }
+
             public void VisitObjectCreationExpression(ObjectCreationExpression creation)
             {
                 throw new InvalidOperationException("Can not work on that node");

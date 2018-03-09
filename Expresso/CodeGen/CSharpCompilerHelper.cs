@@ -186,21 +186,28 @@ namespace Expresso.CodeGen
                         break;
                 }
 
-                if(type == null)
-                    throw new EmitterException("The type `{0}` is not found!", simple.Identifier);
+                if(type == null && !astType.IdentifierNode.Type.IsNull){
+                    return GetNativeType(astType.IdentifierNode.Type);
+                }else if(type == null){
+                    throw new EmitterException("The type `{0}` is not found!", simple, simple);
+                }
 
                 return type;
             }
 
             if(astType is MemberType member){
+                Type type = null;
                 foreach(var asm in AppDomain.CurrentDomain.GetAssemblies()){
                     var types = GetTypes(asm);
-                    var type = types.Where(t => t.Name.StartsWith(member.MemberName, StringComparison.CurrentCulture)).FirstOrDefault();
+                    type = types.Where(t => t.Name.StartsWith(member.MemberName, StringComparison.CurrentCulture)).FirstOrDefault();
                     if(type != null)
-                        return type;
+                        break;
                 }
 
-                return null;
+                if(type == null)
+                    throw new EmitterException("The type `{0}` is not found!", member, member);
+
+                return type;
             }
 
             if(astType is FunctionType func){
@@ -328,8 +335,8 @@ namespace Expresso.CodeGen
         public static void Prepare()
         {
             foreach(var name in _AssemblyNames){
-                var am = new AssemblyName(name);
-                Assembly.Load(am);
+                var an = new AssemblyName(name);
+                Assembly.Load(an);
             }
         }
 
@@ -412,11 +419,6 @@ namespace Expresso.CodeGen
                 CSharpEmitter.Symbols.Add(builtin_pair.Value.Item2, new ExpressoSymbol{
                     Type = type
                 });
-                /*foreach(var method in type.GetMethods()){
-                    CSharpEmitter.Symbols.Add(IdentifierId++, new ExpressoSymbol{
-                        Method = method
-                    });
-                }*/
             }
         }
 
@@ -434,19 +436,12 @@ namespace Expresso.CodeGen
                         Type = type
                     });*/
                 }else{
-                //var start_index = (import.ModuleName.LastIndexOf('.') != -1) ? import.ModuleName.LastIndexOf('.') : 0;
-                //var type_name = import.ModuleName.Substring(start_index);
                     var simple_type = AstType.MakeSimpleType(import.ModuleName);
                     var type = GetNativeType(simple_type);
 
                     CSharpEmitter.Symbols.Add(import.ModuleNameToken.IdentifierId, new ExpressoSymbol{
                         Type = type
                     });
-                /*foreach(var method in type.GetMethods()){
-                    CSharpEmitter.Symbols.Add(IdentifierId++, new ExpressoSymbol{
-                        Method = method
-                    });
-                }*/
                 }
             }
         }

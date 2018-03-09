@@ -237,6 +237,11 @@ namespace Expresso.CodeGen
                 throw new InvalidOperationException();
             }
 
+            public void VisitNullReferenceExpression(NullReferenceExpression nullRef)
+            {
+                throw new InvalidOperationException();
+            }
+
             public void VisitCommentNode(CommentNode comment)
             {
                 throw new InvalidOperationException();

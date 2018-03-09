@@ -445,6 +445,11 @@ namespace Expresso.Ast.Analysis
             throw new NotImplementedException();
         }
 
+        public void VisitNullReferenceExpression(NullReferenceExpression nullRef)
+        {
+            throw new NotImplementedException();
+        }
+
         public void VisitCommentNode(CommentNode comment)
         {
             throw new NotImplementedException();

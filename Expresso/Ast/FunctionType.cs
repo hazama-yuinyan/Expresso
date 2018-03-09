@@ -8,6 +8,7 @@ namespace Expresso.Ast
     /// <summary>
     /// Represents the function type as AST.
     /// In practice it just represents the function signature.
+    /// When matching is executed it ignores the return type.
     /// </summary>
     public class FunctionType : AstType
     {
@@ -101,8 +102,7 @@ namespace Expresso.Ast
         protected internal override bool DoMatch(AstNode other, ICSharpCode.NRefactory.PatternMatching.Match match)
         {
             var o = other as FunctionType;
-            return o != null && ReturnType.DoMatch(o.ReturnType, match)
-                && Parameters.DoMatch(o.Parameters, match);
+            return o != null && Parameters.DoMatch(o.Parameters, match);
         }
 
         #endregion

@@ -297,6 +297,10 @@ namespace Expresso.Ast.Analysis
 	        {
 	        }
 
+            public void VisitNullReferenceExpression(NullReferenceExpression nullRef)
+            {
+            }
+
 	        public void VisitObjectCreationExpression(ObjectCreationExpression creation)
 	        {
                 creation.Items.AcceptWalker(this);

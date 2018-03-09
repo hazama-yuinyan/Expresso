@@ -28,6 +28,7 @@ namespace Expresso.Ast
     /// <item>slice</item>
     /// <item>array of the above types</item>
     /// </list>
+    /// Note that the array, vector and dictionary types are builtin types and primitive types but we treat them as SimpleType nodes in AST.
     /// </summary>
     public class PrimitiveType : AstType
     {
@@ -53,7 +54,7 @@ namespace Expresso.Ast
         }
 
         public override Identifier IdentifierNode{
-            get{return null;}
+            get{return Identifier.Null;}
         }
 
         public PrimitiveType(string keyword, TextLocation location)
@@ -95,9 +96,6 @@ namespace Expresso.Ast
         public static ExpressoTypeCode GetKnownTypeCodeForPrimitiveType(string keyword, AstNode node)
         {
             switch(keyword){
-            case "array":
-                return ExpressoTypeCode.Array;
-
             case "bool":
                 return ExpressoTypeCode.Bool;
 
@@ -122,14 +120,17 @@ namespace Expresso.Ast
             case "bigint":
                 return ExpressoTypeCode.BigInteger;
 
+            case "function":
+                return ExpressoTypeCode.Function;
+
+            case "array":
+                return ExpressoTypeCode.Array;
+
             case "vector":
                 return ExpressoTypeCode.Vector;
 
             case "dictionary":
                 return ExpressoTypeCode.Dictionary;
-
-            case "function":
-                return ExpressoTypeCode.Function;
 
             case "tuple":
                 return ExpressoTypeCode.Tuple;

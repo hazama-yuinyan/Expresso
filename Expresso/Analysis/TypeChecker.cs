@@ -23,6 +23,7 @@ namespace Expresso.Ast.Analysis
         SymbolTable symbols;  //keep a SymbolTable reference in a private field for convenience
         TypeInferenceRunner inference_runner;
         ClosureParameterInferencer closure_parameter_inferencer;
+        AstType[] argument_types;
 
         public TypeChecker(Parser parser)
         {
@@ -405,6 +406,17 @@ namespace Expresso.Ast.Analysis
 
         public AstType VisitCallExpression(CallExpression callExpr)
         {
+            var arg_types = new AstType[callExpr.Arguments.Count];
+            foreach(var pair in Enumerable.Range(0, callExpr.Arguments.Count).Zip(callExpr.Arguments, (l, r) => new Tuple<int, Expression>(l, r))){
+                var arg_type = pair.Item2.AcceptWalker(this);
+                // FIXME?: Think about changing the property methods' types
+                // arg_type doesn't need to be cloned because the user of this field clones them
+                arg_types[pair.Item1] = (arg_type is FunctionType property_type) ? property_type.ReturnType : arg_type;
+            }
+
+            var parent_types = argument_types;
+            argument_types = arg_types;
+
             var func_type = callExpr.Target.AcceptWalker(this) as FunctionType;
             // Don't call inference_runner.VisitCallExpression here
             // because doing so causes VisitIdentifier to be invoked two times
@@ -417,12 +429,20 @@ namespace Expresso.Ast.Analysis
             }
 
             inference_runner.VisitCallExpression(callExpr);
+            if(func_type == null){
+                throw new ParserException(
+                    "Error ES1805: {0} turns out not to be a function.",
+                    callExpr,
+                    callExpr.Target
+                );
+            }
+
             foreach(var triple in Enumerable.Range(0, func_type.Parameters.Count)
                                             .Zip(func_type.Parameters, (l, r) => new Tuple<int, AstType>(l, r))
-                                            .Zip(callExpr.Arguments, (l, r) => new Tuple<int, AstType, Expression>(l.Item1, l.Item2, r))){
+                                            .Zip(argument_types, (l, r) => new Tuple<int, AstType, AstType>(l.Item1, l.Item2, r))){
                 // If this parameter is the last and the type is an array we think of it as the variadic parameter
                 var param_type = triple.Item2 is SimpleType array && triple.Item1 == func_type.Parameters.Count - 1 ? array.TypeArguments.First() : triple.Item2;
-                var arg_type = triple.Item3.AcceptWalker(inference_runner);
+                var arg_type = triple.Item3;
                 if(IsCompatibleWith(param_type, arg_type) == TriBool.False){
                     throw new ParserException(
                         "Error ES1303: Types mismatched; expected `{0}`, found `{1}`.",
@@ -433,14 +453,9 @@ namespace Expresso.Ast.Analysis
                 }
             }
 
-            if(func_type == null){
-                throw new ParserException(
-                    "Error ES1805: {0} turns out not to be a function.",
-                    callExpr,
-                    callExpr.Target.ToString()
-                );
-            }
-            return ((FunctionType)func_type).ReturnType;
+            argument_types = parent_types;
+
+            return func_type.ReturnType;
         }
 
         public AstType VisitCastExpression(CastExpression castExpr)
@@ -465,7 +480,7 @@ namespace Expresso.Ast.Analysis
             scope_counter = 0;
 
             VisitIdentifier(catchClause.Identifier);
-            inference_runner.VisitCatchClause(catchClause);
+            //inference_runner.VisitCatchClause(catchClause);
             VisitBlock(catchClause.Body);
 
             AscendScope();
@@ -659,7 +674,12 @@ namespace Expresso.Ast.Analysis
 
                 return simple_type.TypeArguments.Last();
             }
-            return null;
+
+            throw new ParserException(
+                "Error ES3013: Can not index into a value of type `{0}`",
+                indexExpr,
+                type
+            );
         }
 
         public AstType VisitMemberReference(MemberReferenceExpression memRef)
@@ -669,15 +689,30 @@ namespace Expresso.Ast.Analysis
             var type = memRef.Target.AcceptWalker(this);
             if(IsPlaceholderType(type)){
                 var inferred = memRef.Target.AcceptWalker(inference_runner);
-                // Do not replace the type node because ExpressoInferenceRunner has already done that
+                // Don't replace the type node because InferenceRunner has already done that
                 //type.ReplaceWith(inferred);
                 inference_runner.VisitMemberReference(memRef);
                 type = inferred;
             }
 
-            var type_table = symbols.GetTypeTable(type.Name);
+            if(type == null){
+                throw new ParserException(
+                    "Error ES3302: The expression '{0}' isn't resolved to a type",
+                    memRef,
+                    memRef.Target
+                );
+            }
+
+            /*var type_table = symbols.GetTypeTable(!type.IdentifierNode.Type.IsNull ? type.IdentifierNode.Type.Name : type.Name);
             if(type_table != null){
-                var symbol = type_table.GetSymbol(memRef.Member.Name);
+                Identifier symbol;
+                if(argument_types != null){
+                    var func_type = AstType.MakeFunctionType(memRef.Member.Name, AstType.MakePlaceholderType(), argument_types);
+                    symbol = type_table.GetSymbol(memRef.Member.Name, func_type);
+                }else{
+                    symbol = type_table.GetSymbol(memRef.Member.Name);
+                }
+
                 if(symbol == null){
                     // Don't report field missing error here because InferenceRunner has already done that
                 }else{
@@ -685,9 +720,10 @@ namespace Expresso.Ast.Analysis
                     //memRef.Member.IdentifierId = symbol.IdentifierId;
                     return symbol.Type;
                 }
-            }
+            }*/
+            return memRef.Member.Type;
 
-            return AstType.Null;
+            //return AstType.MakeSimpleType("tuple");
         }
 
         public AstType VisitPathExpression(PathExpression pathExpr)
@@ -730,15 +766,14 @@ namespace Expresso.Ast.Analysis
             inference_runner.VisitObjectCreationExpression(creation);
             var type_path = creation.TypePath;
             var table = (type_path is MemberType member) ? symbols.GetTypeTable(member.Target.Name) : symbols;
-            var type_table = table.GetTypeTable(type_path.Name);
+            var type_table = table.GetTypeTable(!type_path.IdentifierNode.Type.IsNull ? type_path.IdentifierNode.Type.Name : type_path.Name);
             if(type_table == null){
-                // Don't report type table missing error because InferenceRunner has already done that
-                //parser.ReportSemanticError(
-                //    "Error ES1501: The type `{0}` isn't found or accessible from the scope {1}.",
-                //    creation,
-                //    creation.TypePath, symbols.Name
-                //);
-                return null;
+                // Report type table missing error because InferenceRunner doesn't always do that
+                throw new ParserException(
+                    "Error ES1501: The type `{0}` isn't found or accessible from the scope {1}.",
+                    creation,
+                    creation.TypePath, symbols.Name
+                );
             }
 
             var arg_types = new AstType[creation.Items.Count];
@@ -747,9 +782,12 @@ namespace Expresso.Ast.Analysis
                 if(key_path == null)
                     throw new InvalidOperationException();
 
-                var key = type_table.GetSymbol(key_path.AsIdentifier.Name);
-                if(key == null){
-                    key = type_table.GetSymbol("get_" + key_path.AsIdentifier.Name);
+                if(type_table.IsNetType){
+                    //FIXME: match against constructor parameters
+                    var value_type = pair.Item2.ValueExpression.AcceptWalker(this);
+                    arg_types[pair.Item1] = value_type.Clone();
+                }else{
+                    var key = type_table.GetSymbol(key_path.AsIdentifier.Name);
                     if(key == null){
                         throw new ParserException(
                             "Error ES1502: The type `{0}` doesn't have a field named '{1}'.",
@@ -757,24 +795,16 @@ namespace Expresso.Ast.Analysis
                             creation.TypePath, key_path.AsIdentifier.Name
                         );
                     }
-                }
 
-                var value_type = pair.Item2.ValueExpression.AcceptWalker(this);
-                arg_types[pair.Item1] = value_type.Clone();
-                if(IsCastable(value_type, key.Type) == TriBool.False && !key.Name.StartsWith("get_", StringComparison.CurrentCulture)){
-                    parser.ReportSemanticErrorRegional(
-                        "Error ES2002: The field '{0}' expects the value to be of type `{1}`, but it actually is `{2}`.",
-                        pair.Item2.KeyExpression, pair.Item2.ValueExpression,
-                        key_path.AsIdentifier.Name, key.Type, value_type
-                    );
-                }
-                if(key.Name.StartsWith("get_", StringComparison.CurrentCulture) && key.Type is FunctionType func_type
-                   && IsCastable(value_type, func_type.ReturnType) == TriBool.False){
-                    parser.ReportSemanticErrorRegional(
-                        "Error ES2002: The field '{0}' expects the value to be of type `{1}`, but it actually is `{2}`.",
-                        pair.Item2.KeyExpression, pair.Item2.ValueExpression,
-                        key_path.AsIdentifier.Name, key.Type, value_type
-                    );
+                    var value_type = pair.Item2.ValueExpression.AcceptWalker(this);
+                    arg_types[pair.Item1] = value_type.Clone();
+                    if(IsCastable(value_type, key.Type) == TriBool.False){
+                        parser.ReportSemanticErrorRegional(
+                            "Error ES2002: The field '{0}' expects the value to be of type `{1}`, but it actually is `{2}`.",
+                            pair.Item2.KeyExpression, pair.Item2.ValueExpression,
+                            key_path.AsIdentifier.Name, key.Type, value_type
+                        );
+                    }
                 }
             }
 
@@ -901,6 +931,11 @@ namespace Expresso.Ast.Analysis
                 return inference_runner.VisitSuperReferenceExpression(superRef);
             else
                 return superRef.SuperIdentifier.Type;
+        }
+
+        public AstType VisitNullReferenceExpression(NullReferenceExpression nullRef)
+        {
+            return SimpleType.Null;
         }
 
         public AstType VisitCommentNode(CommentNode comment)
@@ -1411,6 +1446,9 @@ namespace Expresso.Ast.Analysis
 
             var simple1 = first as SimpleType;
             var simple2 = second as SimpleType;
+            if(simple1 != null && simple1.Name == "object")
+                return TriBool.True;
+            
             if(simple1 != null && simple2 != null){
                 //TODO: implement it
                 if(simple1.IsMatch(simple2)){
@@ -1428,8 +1466,6 @@ namespace Expresso.Ast.Analysis
             if(simple1 != null){
                 if(second is MemberType member){
                     if(simple1.Name == member.MemberName){
-                        return TriBool.True;
-                    }else if(simple1.Name == "object"){
                         return TriBool.True;
                     }
                 }

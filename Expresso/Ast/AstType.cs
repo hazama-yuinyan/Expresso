@@ -11,6 +11,7 @@ namespace Expresso.Ast
     /// A type reference in Expresso AST.
     /// An AstType is an ast node, while a TypeReference is an internal and public representation.
     /// The AstType.Null property can be used to represent the unit type, but we use an empty tuple type as the unit type.
+    /// AstType nodes must be cloned when needed.
     /// </summary>
     public abstract class AstType : AstNode
     {
@@ -291,19 +292,19 @@ namespace Expresso.Ast
         public static FunctionType MakeFunctionType(string name, AstType returnType, IEnumerable<AstType> parameters,
             TextLocation start = default(TextLocation), TextLocation end = default(TextLocation))
         {
-            return new FunctionType(AstNode.MakeIdentifier(name, Modifiers.None, start), returnType, parameters, start, end);
+            return new FunctionType(MakeIdentifier(name, Modifiers.None, start), returnType, parameters, start, end);
         }
 
         public static FunctionType MakeFunctionType(string name, AstType returnType, TextLocation start, TextLocation end,
             params AstType[] parameters)
         {
-            return new FunctionType(AstNode.MakeIdentifier(name, Modifiers.None, start), returnType, parameters, start, end);
+            return new FunctionType(MakeIdentifier(name, Modifiers.None, start), returnType, parameters, start, end);
         }
 
         public static ParameterType MakeParameterType(string name, TextLocation loc = default(TextLocation))
         {
             return new ParameterType(
-                AstNode.MakeIdentifier(name, Modifiers.None, loc)
+                MakeIdentifier(name, Modifiers.None, loc)
             );
         }
 

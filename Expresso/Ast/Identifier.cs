@@ -10,6 +10,8 @@ namespace Expresso.Ast
 	/// Reperesents a symbol.
     /// Identifiers should not be associated with AstType nodes if they just refer to types
     /// because doing so creates reference cycles and thus causes problems.
+    /// But there is an exception where Identifiers will be associated with AstType nodes
+    /// if there are aliases for the names the Identifiers refer to.
     /// </summary>
     public class Identifier : AstNode
     {

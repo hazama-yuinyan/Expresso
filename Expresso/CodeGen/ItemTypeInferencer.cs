@@ -266,6 +266,11 @@ namespace Expresso.CodeGen
                 throw new NotImplementedException("Can not work on that node");
             }
 
+            public AstType VisitNullReferenceExpression(NullReferenceExpression nullRef)
+            {
+                throw new NotImplementedException("Can not work on that node");
+            }
+
             public AstType VisitObjectCreationExpression(ObjectCreationExpression creation)
             {
                 throw new NotImplementedException("Can not work on that node");

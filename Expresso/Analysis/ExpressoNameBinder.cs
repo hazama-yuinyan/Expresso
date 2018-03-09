@@ -419,6 +419,11 @@ namespace Expresso.Ast.Analysis
             BindName(superRef.SuperIdentifier);
         }
 
+        public void VisitNullReferenceExpression(NullReferenceExpression nullRef)
+        {
+            // no op
+        }
+
         public void VisitCommentNode(CommentNode comment)
         {
             // no op

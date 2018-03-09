@@ -6,6 +6,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using Expresso.Ast;
 using Expresso.Ast.Analysis;
+using ICSharpCode.NRefactory;
 
 namespace Expresso.CodeGen
 {
@@ -120,13 +121,14 @@ namespace Expresso.CodeGen
             var expresso_type_name_full = expresso_name_builder.ToString();
             var new_table = table.Children.Where(t => t.Name == converted_name_full).FirstOrDefault();
             bool table_was_created = new_table != null;
-            new_table = new_table ?? new SymbolTable();
+            new_table = new_table ?? new SymbolTable(ClassType.Class, true);
             new_table.Name = converted_name_full;
 
+            // FIXME?: Think about changing the property methods' type
             foreach(var public_method in type.GetMethods()){
                 var method_name = public_method.Name;
                 method_name = ConvertToExpressoFunctionName(method_name);
-                if(IgnoreList.Contains(method_name) || method_name.StartsWith("op_", StringComparison.CurrentCulture) || new_table.GetSymbol(method_name) != null)
+                if(IgnoreList.Contains(method_name) || method_name.StartsWith("op_", StringComparison.CurrentCulture))
                     continue;
                         
                 var return_type = GetExpressoType(public_method.ReturnType);
@@ -136,7 +138,7 @@ namespace Expresso.CodeGen
                 var method_type = AstType.MakeFunctionType(method_name, return_type, param_types);
                 new_table.AddSymbol(method_name, method_type);
 
-                new_table.GetSymbol(method_name).IdentifierId = IdentifierId++;
+                new_table.GetSymbol(method_name, method_type).IdentifierId = IdentifierId++;
             }
 
             foreach(var ctor in type.GetConstructors()){
@@ -169,6 +171,9 @@ namespace Expresso.CodeGen
             var type_name = SpecialNamesMapInverse.ContainsKey(actual_type_name) ? SpecialNamesMapInverse[actual_type_name].Item1 : type.Name;
             if(type_name == "Void")
                 return AstType.MakeSimpleType("tuple");
+
+            if(type.IsArray)
+                return AstType.MakeSimpleType("array", TextLocation.Empty, TextLocation.Empty, GetExpressoType(type.GetElementType()));
             
             var primitive = GetPrimitiveAstType(type_name);
             if(primitive != null)
@@ -179,7 +184,7 @@ namespace Expresso.CodeGen
             
             var type_args =
                 from arg in type.GetGenericArguments()
-                                select AstType.MakeSimpleType(arg.Name);
+                                select GetExpressoType(arg);
             return AstType.MakeSimpleType(type_name, type_args);
         }
 

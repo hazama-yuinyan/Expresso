@@ -9,7 +9,7 @@ import "System.Exception" as Exception;
 
 def throwException()
 {
-    throw Exception{Message: "An unknown error has occurred"};
+    throw Exception{message: "An unknown error has occurred"};
 }
 
 def main()

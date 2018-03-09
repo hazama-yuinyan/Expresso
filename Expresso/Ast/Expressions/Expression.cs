@@ -305,6 +305,11 @@ namespace Expresso.Ast
             return new SuperReferenceExpression(start);
         }
 
+        public static NullReferenceExpression MakeNullRef(TextLocation loc = default(TextLocation))
+        {
+            return new NullReferenceExpression(loc);
+        }
+
         public static MemberReferenceExpression MakeMemRef(Expression target, Identifier subscript)
         {
             return new MemberReferenceExpression(target, subscript);

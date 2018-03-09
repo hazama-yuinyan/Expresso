@@ -133,6 +133,15 @@ namespace Expresso.Ast.Analysis
 
             public AstType VisitCallExpression(CallExpression callExpr)
             {
+                var arg_types = new AstType[callExpr.Arguments.Count];
+                foreach(var pair in Enumerable.Range(0, callExpr.Arguments.Count).Zip(callExpr.Arguments, (l, r) => new Tuple<int, Expression>(l, r))){
+                    var arg_type = pair.Item2.AcceptWalker(this);
+                    arg_types[pair.Item1] = arg_type;
+                }
+
+                var parent_types = checker.argument_types;
+                checker.argument_types = arg_types;
+
                 var func_type = callExpr.Target.AcceptWalker(this) as FunctionType;
                 if(func_type == null){
                     throw new ParserException(
@@ -141,26 +150,20 @@ namespace Expresso.Ast.Analysis
                         callExpr.Target.ToString()
                     );
                 }
+
+                checker.argument_types = parent_types;
                 
-                foreach(var arg in callExpr.Arguments)
-                    arg.AcceptWalker(this);
-                
-                return func_type.ReturnType.Clone();
+                return func_type.ReturnType;
             }
 
             public AstType VisitCastExpression(CastExpression castExpr)
             {
-                return castExpr.ToExpression.Clone();
+                return castExpr.ToExpression;
             }
 
             public AstType VisitCatchClause(CatchClause catchClause)
             {
-                var type_symbol = checker.symbols.GetTypeSymbolInAnyScope(catchClause.Identifier.Type.Name);
-                // Resolve the type name
-                if(!type_symbol.IsNull)
-                    catchClause.Identifier.Type.IdentifierNode.Type = type_symbol.Type.Clone();
-
-                return type_symbol.Type;
+                throw new InvalidOperationException("Can not work on that node");
             }
 
             public AstType VisitClosureLiteralExpression(ClosureLiteralExpression closure)
@@ -228,7 +231,7 @@ namespace Expresso.Ast.Analysis
                 checker.AscendScope();
                 checker.scope_counter = tmp_counter + 1;
 
-                return obj_type.Clone();
+                return obj_type;
             }
 
             public AstType VisitComprehensionForClause(ComprehensionForClause compFor)
@@ -297,17 +300,23 @@ namespace Expresso.Ast.Analysis
 
             public AstType VisitLiteralExpression(LiteralExpression literal)
             {
-                return literal.Type.Clone();
+                return literal.Type;
             }
 
             public AstType VisitIdentifier(Identifier ident)
             {
+                if(!ident.Type.IsNull && !(ident.Type is PlaceholderType))
+                    return ResolveType(ident);
+
                 if(ident.Type is PlaceholderType){
                     var symbol = checker.symbols.GetSymbolInAnyScope(ident.Name);
                     if(symbol != null){
                         var cloned = symbol.Type.Clone();
                         ident.Type.ReplaceWith(cloned);
-                        return symbol.Type;
+                        if(!ident.Type.IsNull && !(ident.Type is PlaceholderType))
+                            return ResolveType(ident);
+                        else
+                            return symbol.Type;
                     }
 
                     var symbol2 = checker.symbols.GetTypeSymbolInAnyScope(ident.Name);
@@ -374,18 +383,25 @@ namespace Expresso.Ast.Analysis
                     throw new ParserException(
                         "Error ES2000: Although the expression '{0}' is evaluated to the type `{1}`, there isn't any type with that name.",
                         memRef.Target,
-                        memRef.Target, target_type.Name
+                        memRef.Target, target_type
                     );
                 }
                     
-                var symbol = type_table.GetSymbol(memRef.Member.Name);
+                Identifier symbol;
+                if(checker.argument_types != null){
+                    var func_type = AstType.MakeFunctionType(memRef.Member.Name, AstType.MakePlaceholderType(), checker.argument_types.Select(arg => arg.Clone()));
+                    symbol = type_table.GetSymbol(memRef.Member.Name, func_type);
+                }else{
+                    symbol = type_table.GetSymbol(memRef.Member.Name);
+                }
+
                 if(symbol == null){
                     symbol = type_table.GetSymbol("get_" + memRef.Member.Name);
                     if(symbol == null){
                         throw new ParserException(
                             "Error ES2001: The type `{0}` doesn't have a field or a method '{1}'!",
                             memRef.Member,
-                            target_type.Name, memRef.Member.Name
+                            target_type, memRef.Member.Name
                         );
                     }
                 }
@@ -426,14 +442,13 @@ namespace Expresso.Ast.Analysis
                 if(reported_error)
                     throw new FatalError("Accessibility or immutablity error");
                         
-                var type = symbol.Type.Clone();
-                memRef.Member.Type.ReplaceWith(type);
+                memRef.Member.Type.ReplaceWith(symbol.Type.Clone());
                 // Resolve the name here because we defer it until this point
                 memRef.Member.IdentifierId = symbol.IdentifierId;
-                if(symbol.Name.StartsWith("get_", StringComparison.CurrentCulture) && symbol.Type is FunctionType func_type)
-                    return func_type.ReturnType;
+                if(symbol.Name.StartsWith("get_", StringComparison.CurrentCulture) && symbol.Type is FunctionType func_type2)
+                    return func_type2.ReturnType;
                 else
-                    return type;
+                    return symbol.Type;
             }
 
             public AstType VisitPathExpression(PathExpression pathExpr)
@@ -597,7 +612,7 @@ namespace Expresso.Ast.Analysis
                     let entity = a as EntityDeclaration
                     select entity;
 
-                return decls.First().ReturnType.Clone();
+                return decls.First().ReturnType;
             }
 
             public AstType VisitSuperReferenceExpression(SuperReferenceExpression superRef)
@@ -610,7 +625,12 @@ namespace Expresso.Ast.Analysis
                     from pt in type.BaseTypes
                     select pt as AstType;
 
-                return decls.First().Clone();
+                return decls.First();
+            }
+
+            public AstType VisitNullReferenceExpression(NullReferenceExpression nullRef)
+            {
+                return null;
             }
 
             public AstType VisitCommentNode(CommentNode comment)
@@ -761,13 +781,13 @@ namespace Expresso.Ast.Analysis
                         }
                     }
 
-                    return type.Clone();
+                    return type;
                 }else{
                     var type = identifierPattern.InnerPattern.AcceptWalker(this);
                     if(IsIntSeqType(type))
                         type = AstType.MakePrimitiveType("int", type.StartLocation);
 
-                    return type.Clone();
+                    return type;
                 }
             }
 
@@ -822,6 +842,7 @@ namespace Expresso.Ast.Analysis
                     return type;
 
                 if(type is SimpleType val_tuple && pattern.Type is SimpleType tuple){
+                    // TODO: take resolving type name into account
                     foreach(var pair in tuple.TypeArguments.Zip(val_tuple.TypeArguments, (l, r) => new Tuple<AstType, AstType>(l, r)))
                         pair.Item2.ReplaceWith(pair.Item1.Clone());
 
@@ -830,11 +851,15 @@ namespace Expresso.Ast.Analysis
                     throw new ParserException(
                         "Error ES1306: The type in the type annotation `{0}` conflicts with the expression type `{1}`",
                         pattern,
-                        pattern.Type,
-                        type
+                        pattern.Type, type
                     );
                 }else{
                     type.ReplaceWith(pattern.Type.Clone());
+                    if(pattern.Pattern is IdentifierPattern ident_pat)
+                        ResolveType(ident_pat.Identifier);
+                    else
+                        throw new FatalError("Unrecognizable code path");
+                    
                     return pattern.Type;
                 }
             }
@@ -889,9 +914,9 @@ namespace Expresso.Ast.Analysis
                     var func = block.Parent as FunctionDeclaration;
                     var closure = block.Parent as ClosureLiteralExpression;
                     if(func != null && IsVoidType(func.ReturnType)){
-                        return func.ReturnType.Clone();
+                        return func.ReturnType;
                     }else if(closure != null && IsVoidType(closure.ReturnType)){
-                        return closure.ReturnType.Clone();
+                        return closure.ReturnType;
                     }
 
                     if(last_if.FalseBlock.IsNull){
@@ -935,6 +960,17 @@ namespace Expresso.Ast.Analysis
                             ident_pat2.Identifier.Type.ReplaceWith(pair.Item2);
                     }
                 }
+            }
+
+            AstType ResolveType(Identifier ident)
+            {
+                var type_symbol = checker.symbols.GetTypeSymbolInAnyScope(ident.Type.Name);
+                if(type_symbol != null && ident.Type.Name != type_symbol.Type.Name){
+                    ident.Type.IdentifierNode.Type = type_symbol.Type.Clone();
+                    return type_symbol.Type;
+                }
+
+                return ident.Type;
             }
         }
     }

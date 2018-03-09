@@ -486,6 +486,11 @@ namespace Expresso.Ast
             writer.Write("super");
         }
 
+        public void VisitNullReferenceExpression(NullReferenceExpression nullRef)
+        {
+            writer.Write("null");
+        }
+
         public void VisitCommentNode(CommentNode comment)
         {
             writer.Write("//" + comment.Text);

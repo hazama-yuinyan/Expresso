@@ -443,7 +443,7 @@ Expresso                    		(. ExpressoAst module_decl = null;
                                                 ExpressoNameBinder.BindAst(module_decl, this); //Here's the start of post-parse processing
                                         }
                                         catch(ParserException e){
-                                            SemanticError(e.ToString());
+                                            errors.SemErr(e.ToString());
                                             throw e;
                                         }
                                         catch(FatalError ex){
@@ -1913,6 +1913,7 @@ Literal<out Expression expr>	(. expr = null; string tmp;
   								   var super_expr = Expression.MakeSuperRef(start_loc);
   								   expr = super_expr;
   								   Symbols.AddSymbol(cur_class_name + "super", super_expr.SuperIdentifier);
-  								.).
+  								.)
+  | "null"                      (. expr = Expression.MakeNullRef(start_loc); .).
 /*------------------------------------------------------------------------*/
 END Expresso.

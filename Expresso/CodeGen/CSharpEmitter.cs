@@ -689,8 +689,12 @@ namespace Expresso.CodeGen
         public CSharpExpr VisitCallExpression(CallExpression call, CSharpEmitterContext context)
         {
             var compiled_args = call.Arguments.Select(arg => arg.AcceptWalker(this, context));
+            var parent_args = context.ArgumentTypes;
+            context.ArgumentTypes = compiled_args.Select(arg => arg.Type).ToArray();
+
             var inst = call.Target.AcceptWalker(this, context);
-            return ConstructCallExpression((ExprTree.ParameterExpression)inst, context.Method, compiled_args);
+            context.ArgumentTypes = parent_args;
+            return ConstructCallExpression(inst, context.Method, compiled_args);
         }
 
         public CSharpExpr VisitCastExpression(CastExpression castExpr, CSharpEmitterContext context)
@@ -917,7 +921,7 @@ namespace Expresso.CodeGen
                     // For methods or functions in external modules
                     var method_name = context.TargetType.FullName.StartsWith("System", StringComparison.CurrentCulture) ? CSharpCompilerHelper.ConvertToPascalCase(ident.Name)
                                              : ident.Name;
-                    var method = context.TargetType.GetMethod(method_name);
+                    var method = (context.ArgumentTypes != null) ? context.TargetType.GetMethod(method_name, context.ArgumentTypes) : context.TargetType.GetMethod(method_name);
                     if(method == null){
                         if(!context.RequestPropertyOrField)
                             throw new EmitterException("It is found that the native symbol '{0}' doesn't represent a method.", ident.Name);
@@ -1309,6 +1313,11 @@ namespace Expresso.CodeGen
         {
             var super_type = context.LazyTypeBuilder.BaseType;
             return CSharpExpr.Parameter(super_type, "super");
+        }
+
+        public CSharpExpr VisitNullReferenceExpression(NullReferenceExpression nullRef, CSharpEmitterContext context)
+        {
+            return CSharpExpr.Constant(null, typeof(object));
         }
 
         public CSharpExpr VisitCommentNode(CommentNode comment, CSharpEmitterContext context)
@@ -2067,11 +2076,11 @@ namespace Expresso.CodeGen
             return parameters;
         }
 
-        CSharpExpr ConstructCallExpression(ExprTree.ParameterExpression inst, MethodInfo method, IEnumerable<CSharpExpr> args)
+        CSharpExpr ConstructCallExpression(CSharpExpr inst, MethodInfo method, IEnumerable<CSharpExpr> args)
         {
             if(method == null){
                 return CSharpExpr.Invoke(inst, args);
-            }else if(method.Name == "Write" || method.Name == "WriteLine"){
+            }else if(method.DeclaringType.Name == "Console" && (method.Name == "Write" || method.Name == "WriteLine")){
                 var first = args.First();
                 var expand_method = typeof(CSharpCompilerHelper).GetMethod("ExpandContainer");
                 if(first.Type == typeof(string)){

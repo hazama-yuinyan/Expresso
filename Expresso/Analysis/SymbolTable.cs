@@ -68,6 +68,14 @@ namespace Expresso.Ast.Analysis
             get;
         }
 
+        /// <summary>
+        /// Gets the value indicating whether the symbol table represents a type in .NET.
+        /// </summary>
+        /// <value><c>true</c> if is net type; otherwise, <c>false</c>.</value>
+        public bool IsNetType{
+            get;
+        }
+
         static SymbolTable()
         {
             NativeMapping = new Dictionary<string, Identifier>();
@@ -127,12 +135,13 @@ namespace Expresso.Ast.Analysis
             NativeMapping.Add("printFormat", printformat_ident);
         }
 
-        public SymbolTable(ClassType typeKind = ClassType.NotType)
+        public SymbolTable(ClassType typeKind = ClassType.NotType, bool isNetType = false)
         {
             type_table = new Dictionary<string, Identifier>();
             table = new MultiValueDictionary<string, Identifier>();
             Children = new List<SymbolTable>();
             TypeKind = typeKind;
+            IsNetType = isNetType;
         }
 
         /// <summary>
@@ -380,6 +389,19 @@ namespace Expresso.Ast.Analysis
             return results.Where(ident => ident.Type.IsMatch(type))
                           .Select(ident => ident)
                           .FirstOrDefault();
+        }
+
+        /// <summary>
+        /// Gets all the symbols corresponding to `name`.
+        /// </summary>
+        /// <returns>The symbols.</returns>
+        /// <param name="name">Name.</param>
+        public IReadOnlyCollection<Identifier> GetSymbols(string name)
+        {
+            if(!table.TryGetValue(name, out var results))
+                return null;
+            else
+                return results;
         }
 
         /// <summary>

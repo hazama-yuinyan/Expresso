@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq.Expressions;
 using System.Reflection;
 using System.Reflection.Emit;
 using Expresso.Ast;
@@ -207,7 +206,7 @@ namespace Expresso.CodeGen
         }
 
         /// <summary>
-        /// Represents a <see cref="System.Type"/> instance that represents an external module type. 
+        /// Represents a <see cref="Type"/> instance that represents an external module type. 
         /// </summary>
         /// <value>The type of the external module.</value>
         public Type ExternalModuleType{
@@ -215,11 +214,11 @@ namespace Expresso.CodeGen
         }
 
         /// <summary>
-        /// Represents the types of the arugments of a constructor.
-        /// Used to resolve which constructor to call.
+        /// Represents the types of the arugments of a method.
+        /// Used to resolve which method overload to call.
         /// </summary>
-        /// <value>The constructor argument types.</value>
-        public Type[] ConstructorArgumentTypes{
+        /// <value>The argument types.</value>
+        public Type[] ArgumentTypes{
             get; set;
         }
     }

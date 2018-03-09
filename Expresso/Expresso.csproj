@@ -219,6 +219,7 @@
     <Compile Include="CodeGen\ItemTypeInferencer.cs" />
     <Compile Include="CodeGen\ExpressoCompilerHelpers.cs" />
     <Compile Include="Ast\Patterns\PatternWithType.cs" />
+    <Compile Include="Ast\Expressions\NullReferenceExpression.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System" />
