@@ -23,6 +23,7 @@ namespace Expresso.Ast.Analysis
         SymbolTable symbols;  //keep a SymbolTable reference in a private field for convenience
         TypeInferenceRunner inference_runner;
         ClosureParameterInferencer closure_parameter_inferencer;
+        NullCheckWalker null_checker;
         AstType[] argument_types;
 
         public TypeChecker(Parser parser)
@@ -31,6 +32,7 @@ namespace Expresso.Ast.Analysis
             symbols = parser.Symbols;
             inference_runner = new TypeInferenceRunner(parser, this);
             closure_parameter_inferencer = new ClosureParameterInferencer(parser, this);
+            null_checker = new NullCheckWalker(this);
         }
 
         public static void Check(ExpressoAst ast, Parser parser)
@@ -935,6 +937,15 @@ namespace Expresso.Ast.Analysis
 
         public AstType VisitNullReferenceExpression(NullReferenceExpression nullRef)
         {
+            try{
+                null_checker.VisitNullReferenceExpression(nullRef);
+            }
+            catch(InvalidOperationException){
+                throw new ParserException(
+                    "Error ES1022: In Expresso, null literals can only be used in contexts with .NET.",
+                    nullRef
+                );
+            }
             return SimpleType.Null;
         }
 

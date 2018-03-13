@@ -106,6 +106,7 @@
     <None Include="sources\for_unit_tests\erroneous\primitive_types_cant_be_derived.exs" />
     <None Include="sources\for_unit_tests\erroneous\cant_be_derived_from_standard_libraries_type.exs" />
     <None Include="sources\for_unit_tests\use_of_the_standard_library.exs" />
+    <None Include="sources\for_unit_tests\erroneous\invalid_use_of_null.exs" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AnalyzerTests.cs" />

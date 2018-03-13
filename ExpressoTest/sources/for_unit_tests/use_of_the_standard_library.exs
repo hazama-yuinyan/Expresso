@@ -8,7 +8,6 @@ import "System.Text.UTF8Encoding" as UTF8Encoding;
 
 def main()
 {
-	//let writer (- FileStream;
     var writer (- FileStream;
     try{
 		writer = File.openWrite("./some_text.txt");

@@ -1,4 +1,5 @@
 ﻿using System;
+using Expresso.Ast.Analysis;
 using NUnit.Framework;
 
 namespace Expresso.Test
@@ -423,6 +424,16 @@ namespace Expresso.Test
             parser.DoPostParseProcessing = true;
             parser.Parse();
 
+            Assert.AreEqual(1, parser.errors.count);
+        }
+
+        [Test]
+        public void InvalidUseOfNull()
+        {
+            var parser = new Parser(new Scanner("../../sources/for_unit_tests/erroneous/invalid_use_of_null.exs"));
+            parser.DoPostParseProcessing = true;
+
+            Assert.Throws(typeof(ParserException), () => parser.Parse());
             Assert.AreEqual(1, parser.errors.count);
         }
     }

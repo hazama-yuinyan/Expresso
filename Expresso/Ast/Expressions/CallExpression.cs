@@ -7,7 +7,7 @@ namespace Expresso.Ast
 {
     /// <summary>
     /// 関数呼び出し。
-	/// Represents a function or method call. It binds an object when it references to a method
+	/// Represents a function, method or closure call. It binds an object when it references to a method
     /// otherwise it binds nothing.
     /// Expression '(' [ Arguments ] ')' ;
     /// </summary>

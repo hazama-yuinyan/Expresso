@@ -630,7 +630,7 @@ namespace Expresso.Ast.Analysis
 
             public AstType VisitNullReferenceExpression(NullReferenceExpression nullRef)
             {
-                return null;
+                return SimpleType.Null;
             }
 
             public AstType VisitCommentNode(CommentNode comment)
