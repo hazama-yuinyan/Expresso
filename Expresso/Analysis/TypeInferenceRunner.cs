@@ -321,12 +321,11 @@ namespace Expresso.Ast.Analysis
 
                     var symbol2 = checker.symbols.GetTypeSymbolInAnyScope(ident.Name);
                     if(symbol2 == null){
-                        parser.ReportSemanticError(
+                        throw new ParserException(
                             "Error ES1000: The symbol '{0}' at {1} is not defined in the current scope {2}.",
                             ident,
                             ident.Name, ident.StartLocation, checker.symbols.Name
                         );
-                        return null;
                     }else{
                         var cloned = symbol2.Type.Clone();
                         ident.Type.ReplaceWith(cloned);
@@ -440,7 +439,7 @@ namespace Expresso.Ast.Analysis
                 }
 
                 if(reported_error)
-                    throw new FatalError("Accessibility or immutablity error");
+                    throw new FatalError("Accessibility or immutability error");
                         
                 memRef.Member.Type.ReplaceWith(symbol.Type.Clone());
                 // Resolve the name here because we defer it until this point
@@ -531,8 +530,8 @@ namespace Expresso.Ast.Analysis
                         key_type = checker.FigureOutCommonType(key_type, tmp_key);
                         value_type = checker.FigureOutCommonType(value_type, tmp_value);
                     }
-                    seqInitializer.ObjectType.TypeArguments.FirstOrNullObject().ReplaceWith(key_type);
-                    seqInitializer.ObjectType.TypeArguments.LastOrNullObject().ReplaceWith(value_type);
+                    seqInitializer.ObjectType.TypeArguments.FirstOrNullObject().ReplaceWith(key_type.Clone());
+                    seqInitializer.ObjectType.TypeArguments.LastOrNullObject().ReplaceWith(value_type.Clone());
 
                     return AstType.MakeSimpleType("dictionary", new []{
                         key_type.Clone(), value_type.Clone()
@@ -965,7 +964,7 @@ namespace Expresso.Ast.Analysis
             AstType ResolveType(Identifier ident)
             {
                 var type_symbol = checker.symbols.GetTypeSymbolInAnyScope(ident.Type.Name);
-                if(type_symbol != null && ident.Type.Name != type_symbol.Type.Name){
+                if(type_symbol != null && !type_symbol.Type.IsNull && ident.Type.Name != type_symbol.Type.Name){
                     ident.Type.IdentifierNode.Type = type_symbol.Type.Clone();
                     return type_symbol.Type;
                 }

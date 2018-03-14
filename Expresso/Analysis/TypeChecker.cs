@@ -369,7 +369,7 @@ namespace Expresso.Ast.Analysis
             case OperatorType.Modulus:
                 if(!IsNumericalType(lhs_type) || !IsNumericalType(rhs_type)){
                     parser.ReportSemanticErrorRegional(
-                        "Error ES1004: Can not apply the operator '{0}' on `{1}` and `{2}`",
+                        "Error ES1005: Can not apply the operator '{0}' on `{1}` and `{2}`",
                         binaryExpr.Left, binaryExpr.Right,
                         binaryExpr.OperatorToken, lhs_type, rhs_type
                     );
@@ -449,7 +449,8 @@ namespace Expresso.Ast.Analysis
                     throw new ParserException(
                         "Error ES1303: Types mismatched; expected `{0}`, found `{1}`.",
                         triple.Item3,
-                        param_type,
+                        // .ToString() is needed because otherwise it will call another overload of the constructor
+                        param_type.ToString(),
                         arg_type
                     );
                 }
@@ -465,8 +466,8 @@ namespace Expresso.Ast.Analysis
             var target_type = castExpr.ToExpression;
             var expression_type = castExpr.Target.AcceptWalker(this);
             if(IsCastable(expression_type, target_type) == TriBool.False){
-                parser.ReportSemanticErrorRegional(
-                    "Error ES1004: Can not cast the type `{0}` to type `{1}`.",
+                throw new ParserException(
+                    "Error ES1004: Can not cast the type `{0}` to the type `{1}`.",
                     castExpr.Target, castExpr.ToExpression,
                     expression_type, target_type
                 );
@@ -1166,6 +1167,9 @@ namespace Expresso.Ast.Analysis
 
             while(require_methods.Contains("self"))
                 require_methods.Remove("self");
+
+            while(require_methods.Contains("constructor"))
+                require_methods.Remove("constructor");
 
             foreach(var member in typeDecl.Members){
                 if(member is FunctionDeclaration method)

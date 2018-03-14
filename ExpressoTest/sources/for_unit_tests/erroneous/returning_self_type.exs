@@ -11,8 +11,3 @@ class TestClass
 	    return self;
 	}
 }
-
-def main()
-{
-    let a = TestClass{};
-}

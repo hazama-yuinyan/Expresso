@@ -12,9 +12,9 @@ namespace Expresso.Test
         {
             var parser = new Parser(new Scanner("../../sources/for_unit_tests/erroneous/literals.exs"));
             parser.DoPostParseProcessing = true;
-            parser.Parse();
 
-            Assert.AreEqual(6, parser.errors.count);
+            Assert.That(() => parser.Parse(), Throws.TypeOf<ParserException>().With.Message.Contains("ES1000"));
+            Assert.AreEqual(9, parser.errors.count);
         }
 
         [Test]
@@ -22,8 +22,8 @@ namespace Expresso.Test
         {
             var parser = new Parser(new Scanner("../../sources/for_unit_tests/erroneous/reassignment.exs"));
             parser.DoPostParseProcessing = true;
-            parser.Parse();
 
+            Assert.That(() => parser.Parse(), Throws.TypeOf<ParserException>().With.Message.Contains("ES1900"));
             Assert.AreEqual(1, parser.errors.count);
         }
 
@@ -34,6 +34,7 @@ namespace Expresso.Test
             parser.DoPostParseProcessing = true;
             parser.Parse();
 
+            // Assert.That isn't needed here because the above code doesn't throw an exception
             Assert.AreEqual(1, parser.errors.count);
         }
 
@@ -42,9 +43,9 @@ namespace Expresso.Test
         {
             var parser = new Parser(new Scanner("../../sources/for_unit_tests/erroneous/undefined_function.exs"));
             parser.DoPostParseProcessing = true;
-            parser.Parse();
 
-            Assert.AreEqual(3, parser.errors.count);
+            Assert.That(() => parser.Parse(), Throws.TypeOf<ParserException>().With.Message.Contains("ES1000"));
+            Assert.AreEqual(2, parser.errors.count);
         }
 
         [Test]
@@ -54,6 +55,7 @@ namespace Expresso.Test
             parser.DoPostParseProcessing = true;
             parser.Parse();
 
+            // Assert.That isn't needed here because the above code doesn't throw an exception
             Assert.AreEqual(1, parser.errors.count);
         }
 
@@ -64,6 +66,7 @@ namespace Expresso.Test
             parser.DoPostParseProcessing = true;
             parser.Parse();
 
+            // Assert.That isn't needed here because the above code doesn't throw an exception
             Assert.AreEqual(1, parser.errors.count);
         }
 
@@ -72,8 +75,8 @@ namespace Expresso.Test
         {
             var parser = new Parser(new Scanner("../../sources/for_unit_tests/erroneous/has_no_return_type_in_interface.exs"));
             parser.DoPostParseProcessing = true;
-            parser.Parse();
 
+            Assert.That(() => parser.Parse(), Throws.TypeOf<ParserException>().With.Message.Contains("ES1602"));
             Assert.AreEqual(2, parser.errors.count);
         }
 
@@ -82,8 +85,8 @@ namespace Expresso.Test
         {
             var parser = new Parser(new Scanner("../../sources/for_unit_tests/erroneous/function_after_main_function.exs"));
             parser.DoPostParseProcessing = true;
-            parser.Parse();
 
+            Assert.That(() => parser.Parse(), Throws.TypeOf<ParserException>().With.Message.Contains("ES1805"));
             Assert.AreEqual(3, parser.errors.count);
         }
 
@@ -94,6 +97,7 @@ namespace Expresso.Test
             parser.DoPostParseProcessing = true;
             parser.Parse();
 
+            // Assert.That isn't needed here because the above code doesn't throw an exception
             Assert.AreEqual(1, parser.errors.count);
         }
 
@@ -104,6 +108,7 @@ namespace Expresso.Test
             parser.DoPostParseProcessing = true;
             parser.Parse();
 
+            // Assert.That isn't needed here because the above code doesn't throw an exception
             Assert.AreEqual(1, parser.errors.count);
         }
 
@@ -114,6 +119,7 @@ namespace Expresso.Test
             parser.DoPostParseProcessing = true;
             parser.Parse();
 
+            // Assert.That isn't needed here because the above code doesn't throw an exception
             Assert.AreEqual(1, parser.errors.count);
         }
 
@@ -124,6 +130,7 @@ namespace Expresso.Test
             parser.DoPostParseProcessing = true;
             parser.Parse();
 
+            // Assert.That isn't needed here because the above code doesn't throw an exception
             Assert.AreEqual(3, parser.errors.count);
         }
 
@@ -134,6 +141,7 @@ namespace Expresso.Test
             parser.DoPostParseProcessing = true;
             parser.Parse();
 
+            // Assert.That isn't needed here because the above code doesn't throw an exception
             Assert.AreEqual(1, parser.errors.count);
         }
 
@@ -144,6 +152,7 @@ namespace Expresso.Test
             parser.DoPostParseProcessing = true;
             parser.Parse();
 
+            // Assert.That isn't needed here because the above code doesn't throw an exception
             Assert.AreEqual(2, parser.errors.count);
         }
 
@@ -154,7 +163,8 @@ namespace Expresso.Test
             parser.DoPostParseProcessing = true;
             parser.Parse();
 
-            Assert.AreEqual(1, parser.errors.count);
+            // Assert.That isn't needed here because the above code doesn't throw an exception
+            Assert.AreEqual(2, parser.errors.count);
         }
 
         [Test]
@@ -162,8 +172,8 @@ namespace Expresso.Test
         {
             var parser = new Parser(new Scanner("../../sources/for_unit_tests/erroneous/type_mismatch_on_value_of_object_creation.exs"));
             parser.DoPostParseProcessing = true;
-            parser.Parse();
 
+            Assert.That(() => parser.Parse(), Throws.TypeOf<ParserException>().With.Message.Contains("ES2010"));
             Assert.AreEqual(2, parser.errors.count);
         }
 
@@ -172,8 +182,8 @@ namespace Expresso.Test
         {
             var parser = new Parser(new Scanner("../../sources/for_unit_tests/erroneous/missing_field.exs"));
             parser.DoPostParseProcessing = true;
-            parser.Parse();
 
+            Assert.That(() => parser.Parse(), Throws.TypeOf<ParserException>().With.Message.Contains("ES1502"));
             Assert.AreEqual(1, parser.errors.count);
         }
 
@@ -182,8 +192,8 @@ namespace Expresso.Test
         {
             var parser = new Parser(new Scanner("../../sources/for_unit_tests/erroneous/missing_type.exs"));
             parser.DoPostParseProcessing = true;
-            parser.Parse();
 
+            Assert.That(() => parser.Parse(), Throws.TypeOf<ParserException>().With.Message.Contains("ES1501"));
             Assert.AreEqual(2, parser.errors.count);
         }
 
@@ -192,8 +202,8 @@ namespace Expresso.Test
         {
             var parser = new Parser(new Scanner("../../sources/for_unit_tests/erroneous/invalid_slice_on_dictionary.exs"));
             parser.DoPostParseProcessing = true;
-            parser.Parse();
 
+            Assert.That(() => parser.Parse(), Throws.TypeOf<ParserException>().With.Message.Contains("ES3012"));
             Assert.AreEqual(1, parser.errors.count);
         }
 
@@ -202,8 +212,8 @@ namespace Expresso.Test
         {
             var parser = new Parser(new Scanner("../../sources/for_unit_tests/erroneous/invalid_slice_on_custom_type.exs"));
             parser.DoPostParseProcessing = true;
-            parser.Parse();
 
+            Assert.That(() => parser.Parse(), Throws.TypeOf<ParserException>().With.Message.Contains("ES3011"));
             Assert.AreEqual(1, parser.errors.count);
         }
 
@@ -212,8 +222,8 @@ namespace Expresso.Test
         {
             var parser = new Parser(new Scanner("../../sources/for_unit_tests/erroneous/invalid_casting.exs"));
             parser.DoPostParseProcessing = true;
-            parser.Parse();
 
+            Assert.That(() => parser.Parse(), Throws.TypeOf<ParserException>().With.Message.Contains("ES1004"));
             Assert.AreEqual(1, parser.errors.count);
         }
 
@@ -222,8 +232,8 @@ namespace Expresso.Test
         {
             var parser = new Parser(new Scanner("../../sources/for_unit_tests/erroneous/call_a_variable.exs"));
             parser.DoPostParseProcessing = true;
-            parser.Parse();
 
+            Assert.That(() => parser.Parse(), Throws.TypeOf<ParserException>().With.Message.Contains("ES1805"));
             Assert.AreEqual(1, parser.errors.count);
         }
 
@@ -234,6 +244,7 @@ namespace Expresso.Test
             parser.DoPostParseProcessing = true;
             parser.Parse();
 
+            // Assert.That isn't needed here because the above code doesn't throw an exception
             Assert.AreEqual(2, parser.errors.count);
         }
 
@@ -244,6 +255,7 @@ namespace Expresso.Test
             parser.DoPostParseProcessing = true;
             parser.Parse();
 
+            // Assert.That isn't needed here because the above code doesn't throw an exception
             Assert.AreEqual(1, parser.errors.count);
         }
 
@@ -254,6 +266,7 @@ namespace Expresso.Test
             parser.DoPostParseProcessing = true;
             parser.Parse();
 
+            // Assert.That isn't needed here because the above code doesn't throw an exception
             Assert.AreEqual(1, parser.errors.count);
         }
 
@@ -264,6 +277,7 @@ namespace Expresso.Test
             parser.DoPostParseProcessing = true;
             parser.Parse();
 
+            // Assert.That isn't needed here because the above code doesn't throw an exception
             Assert.AreEqual(2, parser.errors.count);
         }
 
@@ -274,6 +288,7 @@ namespace Expresso.Test
             parser.DoPostParseProcessing = true;
             parser.Parse();
 
+            // Assert.That isn't needed here because the above code doesn't throw an exception
             Assert.AreEqual(1, parser.errors.count);
         }
 
@@ -284,6 +299,7 @@ namespace Expresso.Test
             parser.DoPostParseProcessing = true;
             parser.Parse();
 
+            // Assert.That isn't needed here because the above code doesn't throw an exception
             Assert.AreEqual(1, parser.errors.count);
         }
 
@@ -292,8 +308,8 @@ namespace Expresso.Test
         {
             var parser = new Parser(new Scanner("../../sources/for_unit_tests/erroneous/invalid_break_statement.exs"));
             parser.DoPostParseProcessing = true;
-            parser.Parse();
 
+            Assert.That(() => parser.Parse(), Throws.TypeOf<ParserException>().With.Message.Contains("ES4010"));
             Assert.AreEqual(1, parser.errors.count);
         }
 
@@ -302,8 +318,8 @@ namespace Expresso.Test
         {
             var parser = new Parser(new Scanner("../../sources/for_unit_tests/erroneous/invalid_continue_statement.exs"));
             parser.DoPostParseProcessing = true;
-            parser.Parse();
 
+            Assert.That(() => parser.Parse(), Throws.TypeOf<ParserException>().With.Message.Contains("ES4011"));
             Assert.AreEqual(1, parser.errors.count);
         }
 
@@ -314,6 +330,7 @@ namespace Expresso.Test
             parser.DoPostParseProcessing = true;
             parser.Parse();
 
+            // Assert.That isn't needed here because the above code doesn't throw an exception
             Assert.AreEqual(1, parser.errors.count);
         }
 
@@ -324,6 +341,7 @@ namespace Expresso.Test
             parser.DoPostParseProcessing = true;
             parser.Parse();
 
+            // Assert.That isn't needed here because the above code doesn't throw an exception
             Assert.AreEqual(2, parser.errors.count);
         }
 
@@ -334,6 +352,7 @@ namespace Expresso.Test
             parser.DoPostParseProcessing = true;
             parser.Parse();
 
+            // Assert.That isn't needed here because the above code doesn't throw an exception
             Assert.AreEqual(4, parser.errors.count);
         }
 
@@ -352,8 +371,8 @@ namespace Expresso.Test
         {
             var parser = new Parser(new Scanner("../../sources/for_unit_tests/erroneous/unknown_field.exs"));
             parser.DoPostParseProcessing = true;
-            parser.Parse();
 
+            Assert.That(() => parser.Parse(), Throws.TypeOf<ParserException>().With.Message.Contains("ES2001"));
             Assert.AreEqual(1, parser.errors.count);
         }
 
@@ -362,8 +381,8 @@ namespace Expresso.Test
         {
             var parser = new Parser(new Scanner("../../sources/for_unit_tests/erroneous/private_accessibility.exs"));
             parser.DoPostParseProcessing = true;
-            parser.Parse();
 
+            Assert.That(() => parser.Parse(), Throws.TypeOf<FatalError>().With.Message.Contains("Accessibility or immutability error"));
             Assert.AreEqual(1, parser.errors.count);
         }
 
@@ -372,8 +391,8 @@ namespace Expresso.Test
         {
             var parser = new Parser(new Scanner("../../sources/for_unit_tests/erroneous/protected_accessibility.exs"));
             parser.DoPostParseProcessing = true;
-            parser.Parse();
 
+            Assert.That(() => parser.Parse(), Throws.TypeOf<FatalError>().With.Message.Contains("Accessibility or immutability error"));
             Assert.AreEqual(1, parser.errors.count);
         }
 
@@ -382,8 +401,8 @@ namespace Expresso.Test
         {
             var parser = new Parser(new Scanner("../../sources/for_unit_tests/erroneous/member_immutability.exs"));
             parser.DoPostParseProcessing = true;
-            parser.Parse();
 
+            Assert.That(() => parser.Parse(), Throws.TypeOf<FatalError>().With.Message.Contains("Accessibility or immutability error"));
             Assert.AreEqual(1, parser.errors.count);
         }
 
@@ -392,8 +411,8 @@ namespace Expresso.Test
         {
             var parser = new Parser(new Scanner("../../sources/for_unit_tests/erroneous/different_access_modifier_on_methods.exs"));
             parser.DoPostParseProcessing = true;
-            parser.Parse();
 
+            Assert.That(() => parser.Parse(), Throws.TypeOf<ParserException>().With.Message.Contains("ES1030"));
             Assert.AreEqual(1, parser.errors.count);
         }
 
@@ -402,8 +421,8 @@ namespace Expresso.Test
         {
             var parser = new Parser(new Scanner("../../sources/for_unit_tests/erroneous/types_mismatched_on_argument.exs"));
             parser.DoPostParseProcessing = true;
-            parser.Parse();
 
+            Assert.That(() => parser.Parse(), Throws.TypeOf<ParserException>().With.Message.Contains("ES1303"));
             Assert.AreEqual(1, parser.errors.count);
         }
 
@@ -412,8 +431,8 @@ namespace Expresso.Test
         {
             var parser = new Parser(new Scanner("../../sources/for_unit_tests/erroneous/primitive_types_cant_be_derived.exs"));
             parser.DoPostParseProcessing = true;
-            parser.Parse();
 
+            Assert.That(() => parser.Parse(), Throws.TypeOf<ParserException>().With.Message.Contains("ES1911"));
             Assert.AreEqual(1, parser.errors.count);
         }
 
@@ -422,8 +441,8 @@ namespace Expresso.Test
         {
             var parser = new Parser(new Scanner("../../sources/for_unit_tests/erroneous/cant_be_derived_from_standard_libraries_type.exs"));
             parser.DoPostParseProcessing = true;
-            parser.Parse();
 
+            Assert.That(() => parser.Parse(), Throws.TypeOf<ParserException>().With.Message.Contains("ES1912"));
             Assert.AreEqual(1, parser.errors.count);
         }
 
@@ -433,7 +452,7 @@ namespace Expresso.Test
             var parser = new Parser(new Scanner("../../sources/for_unit_tests/erroneous/invalid_use_of_null.exs"));
             parser.DoPostParseProcessing = true;
 
-            Assert.Throws(typeof(ParserException), () => parser.Parse());
+            Assert.That(() => parser.Parse(), Throws.TypeOf<ParserException>().With.Message.Contains("ES1022"));
             Assert.AreEqual(1, parser.errors.count);
         }
     }

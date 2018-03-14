@@ -3,7 +3,6 @@
 def main()
 {
     vat m = 10;
-    let n = 20;
     var vector;
     let k ~ 20;
     l = 100;

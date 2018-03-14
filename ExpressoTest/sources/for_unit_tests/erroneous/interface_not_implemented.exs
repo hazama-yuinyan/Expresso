@@ -19,8 +19,3 @@ class ConcreteClass : IInterface
 		return self.x;
 	}
 }
-
-def main()
-{
-	let c = ConcreteClass{x: 1};
-}
