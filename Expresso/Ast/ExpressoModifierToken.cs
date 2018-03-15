@@ -37,6 +37,7 @@ namespace Expresso.Ast
         static readonly Modifiers[] allModifiers = {
             Modifiers.Public, Modifiers.Protected, Modifiers.Private,
             Modifiers.Abstract, Modifiers.Virtual, Modifiers.Static, Modifiers.Override,
+            Modifiers.Mutating,
             Modifiers.Export,
             Modifiers.Immutable,
             Modifiers.Any

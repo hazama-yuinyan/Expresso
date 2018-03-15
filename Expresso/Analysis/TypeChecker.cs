@@ -706,27 +706,18 @@ namespace Expresso.Ast.Analysis
                 );
             }
 
-            /*var type_table = symbols.GetTypeTable(!type.IdentifierNode.Type.IsNull ? type.IdentifierNode.Type.Name : type.Name);
-            if(type_table != null){
-                Identifier symbol;
-                if(argument_types != null){
-                    var func_type = AstType.MakeFunctionType(memRef.Member.Name, AstType.MakePlaceholderType(), argument_types);
-                    symbol = type_table.GetSymbol(memRef.Member.Name, func_type);
-                }else{
-                    symbol = type_table.GetSymbol(memRef.Member.Name);
+            var type_table = symbols.GetTypeTable(!type.IdentifierNode.Type.IsNull ? type.IdentifierNode.Type.Name : type.Name);
+            if(!type_table.IsNetType){
+                var symbol = type_table.GetSymbol(memRef.Member.Name);
+                if(memRef.Target is PathExpression path && path.AsIdentifier.Modifiers.HasFlag(Modifiers.Immutable) && symbol.Modifiers.HasFlag(Modifiers.Mutating)){
+                    throw new ParserException(
+                        "Error ES2100: A mutating method '{0}' can't be called on an immutable variable.",
+                        memRef,
+                        symbol.Name
+                    );
                 }
-
-                if(symbol == null){
-                    // Don't report field missing error here because InferenceRunner has already done that
-                }else{
-                    // Don't bind the name of the member here because InferenceRunner has already done that
-                    //memRef.Member.IdentifierId = symbol.IdentifierId;
-                    return symbol.Type;
-                }
-            }*/
+            }
             return memRef.Member.Type;
-
-            //return AstType.MakeSimpleType("tuple");
         }
 
         public AstType VisitPathExpression(PathExpression pathExpr)

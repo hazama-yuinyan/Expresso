@@ -3917,11 +3917,11 @@ namespace Expresso.Test
                         EntityDeclaration.MakeField(
                             Helpers.MakeSeq(
                                 Helpers.MakeExactPatternWithType("y", Helpers.MakePrimitiveType("int")),
-                                Helpers.MakePaticularPatternWithType("z", Helpers.MakePrimitiveType("int"))
+                                Helpers.MakeExactPatternWithType("z", Helpers.MakePrimitiveType("int"))
                             ),
                             Helpers.MakeSeq(
                                 Expression.Null,
-                                Expression.MakeConstant("int", 3)
+                                Expression.Null
                             ),
                             Modifiers.Private | Modifiers.Immutable
                         ),
@@ -4024,11 +4024,13 @@ namespace Expresso.Test
                                     Helpers.MakeGenericType("TestClass"),
                                     Helpers.MakeSeq(
                                         AstNode.MakeIdentifier("x"),
-                                        AstNode.MakeIdentifier("y")
+                                        AstNode.MakeIdentifier("y"),
+                                        AstNode.MakeIdentifier("z")
                                     ),
                                     Helpers.MakeSeq(
                                         Expression.MakeConstant("int", 1),
-                                        Expression.MakeConstant("int", 2)
+                                        Expression.MakeConstant("int", 2),
+                                        Expression.MakeConstant("int", 3)
                                     )
                                 )
                             ),

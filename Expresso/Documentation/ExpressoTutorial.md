@@ -96,8 +96,8 @@ In Listing 3, we introduced a new let binding stating `let n (- int = 4 * 5;`. T
 the value of it will be `4 * 5`. Note that we explicitly annotate the type here. Because Expresso has a strong type inference system, you woudln't usually need
 to do so. But we'll generally do that here in the tutorial for clarity.
 
-Note that we use `(-` for separating the variable name and the type. It represents `∈` in ASCII-compatible characters and means exactly the `∈`. In other words,
-the right hand side includes the left hand side.
+Note that we use `(-` for separating the variable name and the type. It represents `∈` in ASCII-compatible characters and means exactly the mathematical `∈`.
+In other words, the right hand side includes the left hand side.
 
 By introducing let bindings, we can keep the results of some operations aside. And then we can perform other operations based on those values. I would suggest 
 you to prefer let bindings over variable declarations because let bindings tend to make the code clearer and more concise by making the code easier to read and
@@ -165,7 +165,7 @@ The `intseq` type has the corresponding literal form and it is written as follow
 ```expresso
     let seq = 1..10;    // `step` can be omitted and 1 is assumed if ommited and the double dots mean that the lower bound is
                         // inclusive but the upper bound is exclusive
-    let series = seq.collect();
+    let series = seq.select(|x| => x);
     for let elem in seq {  // print "123456789"
         print(elem);
     }
@@ -181,9 +181,9 @@ to produce integers that are in the range specified in the expression.
     let negative_seq = -10..0;
     let to_negative = 0..-10:-1;
     println("Legend: (f(x) = x - 10, g(x) = -x)");
-    for let (n, to_n) in negative_seq.zip(to_negative) {
-        print("(f(x), g(x)) = ({0}, {1}),", n, to_n);  // print "(f(x), g(x)) = (-10, 0),(f(x), g(x)) = (-9, -1)" and so on
-        if n == to_n {      // and when it reaches (5, 5), it also prints "Crossed over!"
+    for let (x, to_n) in negative_seq.zip(to_negative) {
+        print("(f(x), g(x)) = ({0}, {1}),", x, to_n);  // print "(f(x), g(x)) = (-10, 0),(f(x), g(x)) = (-9, -1)" and so on
+        if x == to_n {      // and when it reaches (5, 5), it also prints "Crossed over!"
             println("Crossed over!");
         }
     }
@@ -217,12 +217,12 @@ the `intseq` type reveals its funny yet powerful potential out to the public.
 
 In the above example, it seems that the latter 2 intseq objects extract elements from the same array object.
 You may be wondering that it is inefficient because it seems that we have 3 arrays in the end. Having 3 arrays means that
-Expresso first allocates 3 chunks of memory and fills the first chunk of memory with integers from 0 to 10. And then it copies
+Expresso first allocates 3 chunks of memory and fills the first chunk of memory with integers from 0 to 10, and then it copies
 the first half of elements of the previous array to the second chunk of memory and the second half of elements to the last chunk of memory.
 But Expresso is smart enough to solve this problem. Instead of returning a new array, it returns iterators that goes through
 the first half of the elements and the second half of the elements respectively.
 Note that the chunks of memory(`first_half` and `second_half` variables in this snippet) are called `slice` in Expresso and that `slice` is another iterator
-(in .NET term it also called an `enumerator`).
+(in .NET term it is also called an `enumerator`).
 
 Sometimes, it's useful to view into some sequence. That's the time when the `slice` type comes into play. The `slice` type, as the name implies,
 slices some sequence and allows you to view a portion of that sequence. Combining some sequence with an `intseq` using the indexer syntax
@@ -264,7 +264,7 @@ For other methods available, see the API documentation for the .NET's List<T> cl
 ### The `array` type
 
 The `array` type is another sequence type, which doesn't allow you to grow or shrink its size. Thus the compiler already knows the size of an array object
-when compiling.
+when compiling. However, it currently doesn't take advantage of it.
 
 ### The `dictionary` type
 
@@ -294,7 +294,7 @@ we define the work flow as a chain of functions. So in Expresso, you can rewrite
 let mapped = a.map(|elem| => /* do something on each element */);
 ```
 
-This reads: We're assigining the value that will be computed by iterating through the array and doing some calculations on each element of
+This reads: We're assigining the value that will be computed by iterating through the array and performing some calculations on each element of
 the array to a variable. This sounds more straightforward and is easier to read, isn't it?
 
 ## Main philosophies

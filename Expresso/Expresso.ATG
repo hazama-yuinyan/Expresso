@@ -681,6 +681,8 @@ Modifiers<>
                             .)
   | "private"               (. cur_modifiers |= ExpressoModifiers.Private; .)
   | "static"                (. cur_modifiers |= ExpressoModifiers.Static; .)
+  | "mutating"              (. cur_modifiers |= ExpressoModifiers.Mutating; .)
+  | "override"              (. cur_modifiers |= ExpressoModifiers.Override; .)
   ).
 /*------------------------------------------------------------------------*/
 FuncDecl<out EntityDeclaration decl, Modifiers modifiers>
@@ -954,7 +956,7 @@ EmptyStmt<out Statement stmt>       (. var start_loc = NextLocation; .)
 =
   SYNC ';'							(. stmt = Statement.MakeEmptyStmt(start_loc); .).
 /*------------------------------------------------------------------------*/
-AugAssignOpe<ref OperatorType type>
+AugmentedAssignOperators<ref OperatorType type>
 =
   ( "+="							(. type = OperatorType.Plus; .)
   | "-="							(. type = OperatorType.Minus; .)
@@ -975,7 +977,7 @@ ExprStmt<out Statement stmt>			(.  SequenceExpression lhs = null, seq = null;
 										.)
 =
   LValueList<out lhs>
-  [ ( AugAssignOpe<ref op_type>
+  [ ( AugmentedAssignOperators<ref op_type>
       RValueList<out seq>                 
     )                                   (.  if(lhs.Count != seq.Count)  //See if both sides have the same number of items or not
                                                 SemanticError("Error ES0007: An augmented assignment must have both sides balanced.");
@@ -1659,7 +1661,10 @@ PatternPrimary<out Expression expr>     (. expr = null; PathExpression path; .)
 /*------------------------------------------------------------------------*/
 LhsPrimary<out Expression expr>     (. expr = null; PathExpression path; .)
 =
-  PathExpression<out path>          (. expr = path; .)
+  ( PathExpression<out path>          (. expr = path; .)
+  | SelfReferenceExpression<out expr>
+  | SuperReferenceExpression<out expr>
+  )
   { Trailer<ref expr>
   }.
 /*------------------------------------------------------------------------*/
@@ -1903,17 +1908,24 @@ Literal<out Expression expr>	(. expr = null; string tmp;
                                 .)
   | "true"                      (. expr = Expression.MakeConstant("bool", true, start_loc); .)		
   | "false"                     (. expr = Expression.MakeConstant("bool", false, start_loc); .)
-  | "self"                      (.
-  								   var self_expr = Expression.MakeSelfRef(start_loc);
-  								   expr = self_expr;
-  								   // Don't add self symbol because we only need one ParameterExpression instance per type.
-  								   //Symbols.AddSymbol(cur_class_name + "self", self_expr.SelfIdentifier);
-  								.)
-  | "super"                     (.
-  								   var super_expr = Expression.MakeSuperRef(start_loc);
-  								   expr = super_expr;
-  								   Symbols.AddSymbol(cur_class_name + "super", super_expr.SuperIdentifier);
-  								.)
+  | SelfReferenceExpression<out expr>
+  | SuperReferenceExpression<out expr>
   | "null"                      (. expr = Expression.MakeNullRef(start_loc); .).
+/*------------------------------------------------------------------------*/
+SelfReferenceExpression<out Expression expr>    (. var start_loc = NextLocation; .)
+=
+  "self"                                        (.
+                                                    expr = Expression.MakeSelfRef(start_loc);
+                                                    // Don't add self symbol because we only need one ParameterExpression instance per a type.
+                                                    //Symbols.AddSymbol(cur_class_name + "self", self_expr.SelfIdentifier);
+                                                .).
+/*------------------------------------------------------------------------*/
+SuperReferenceExpression<out Expression expr>   (. var start_loc = NextLocation; .)
+=
+  "super"                                       (. 
+                                                    expr = Expression.MakeSuperRef(start_loc);
+                                                    // Don't add super symbol because we only need one ParameterExpression instance per a type.
+                                                    //Symbols.AddSymbol(cur_class_name + "super", super_expr.SuperIdentifier);
+                                                .).
 /*------------------------------------------------------------------------*/
 END Expresso.

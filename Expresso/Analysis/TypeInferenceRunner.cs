@@ -431,7 +431,7 @@ namespace Expresso.Ast.Analysis
 
                 if(checker.inspecting_immutability && modifiers.HasFlag(Modifiers.Immutable)){
                     parser.ReportSemanticError(
-                        "Error ES1901: Re-assignment on an immutable field: `{0}`.",
+                        "Error ES1902: Re-assignment on an immutable field: `{0}`.",
                         memRef.Member,
                         memRef
                     );

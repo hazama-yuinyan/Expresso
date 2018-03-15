@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using Expresso.Ast.Analysis;
 using NUnit.Framework;
 
@@ -363,6 +364,7 @@ namespace Expresso.Test
             parser.DoPostParseProcessing = true;
             parser.Parse();
 
+            // Assert.That isn't needed here because the above code doesn't throw an exception
             Assert.AreEqual(2, parser.errors.count);
         }
 
@@ -453,6 +455,16 @@ namespace Expresso.Test
             parser.DoPostParseProcessing = true;
 
             Assert.That(() => parser.Parse(), Throws.TypeOf<ParserException>().With.Message.Contains("ES1022"));
+            Assert.AreEqual(1, parser.errors.count);
+        }
+
+        [Test]
+        public void CallMutatingMethodOnImmutableVarible()
+        {
+            var parser = new Parser(new Scanner("../../sources/for_unit_tests/erroneous/call_mutating_method_on_immutable_variable.exs"));
+            parser.DoPostParseProcessing = true;
+
+            Assert.That(() => parser.Parse(), Throws.TypeOf<ParserException>().With.Message.Contains("ES2100"));
             Assert.AreEqual(1, parser.errors.count);
         }
     }

@@ -248,6 +248,7 @@
     <None Include="Documentation\ExpressoTutorial.md" />
     <None Include="CodeGen\ParameterCollector.cs" />
     <None Include="packages.config" />
+    <None Include="Documentation\TODO.txt" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Ast\HelperNodes\" />

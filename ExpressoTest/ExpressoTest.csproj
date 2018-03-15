@@ -107,6 +107,8 @@
     <None Include="sources\for_unit_tests\erroneous\cant_be_derived_from_standard_libraries_type.exs" />
     <None Include="sources\for_unit_tests\use_of_the_standard_library.exs" />
     <None Include="sources\for_unit_tests\erroneous\invalid_use_of_null.exs" />
+    <None Include="sources\for_unit_tests\erroneous\call_mutating_method_on_immutable_variable.exs" />
+    <None Include="sources\palindrome_tests.exs" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AnalyzerTests.cs" />
