@@ -109,6 +109,18 @@ public class Parser {
 		Get();
 -->parseRoot
 	}
+
+	public Expression ParseExpression()
+	{
+		la = new Token();
+		la.val = "";
+		Get();
+
+		Expression expr = null;
+		CondExpr(out expr);
+		Expect(0);
+		return expr;
+	}
 	
 	static readonly bool[,] set = {
 -->initialization

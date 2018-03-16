@@ -102,7 +102,7 @@ namespace Expresso.Test
         /// <param name="name">The name of the identifier.</param>
         public static Identifier MakeSomeIdent(string name)
         {
-            return AstNode.MakeIdentifier(name, new PlaceholderType(TextLocation.Empty));
+            return AstNode.MakeIdentifier(name, AstType.MakePlaceholderType());
         }
 
         /// <summary>
@@ -113,8 +113,8 @@ namespace Expresso.Test
         public static PatternWithType MakeSomePatternWithType(string name)
         {
             return PatternConstruct.MakePatternWithType(
-                PatternConstruct.MakeIdentifierPattern(name, new PlaceholderType(TextLocation.Empty)),
-                new PlaceholderType(TextLocation.Empty)
+                PatternConstruct.MakeIdentifierPattern(name, AstType.MakePlaceholderType()),
+                AstType.MakePlaceholderType()
             );
         }
 
@@ -127,7 +127,7 @@ namespace Expresso.Test
         public static PatternWithType MakeSomePatternWithType(string name, AstType type)
         {
             return PatternConstruct.MakePatternWithType(
-                PatternConstruct.MakeIdentifierPattern(name, new PlaceholderType(TextLocation.Empty)),
+                PatternConstruct.MakeIdentifierPattern(name, AstType.MakePlaceholderType()),
                 type
             );
         }
@@ -142,7 +142,7 @@ namespace Expresso.Test
         {
             return PatternConstruct.MakePatternWithType(
                 PatternConstruct.MakeIdentifierPattern(name, type),
-                new PlaceholderType(TextLocation.Empty)
+                AstType.MakePlaceholderType()
             );
         }
 
@@ -163,8 +163,8 @@ namespace Expresso.Test
         public static PatternWithType MakeSomeTuplePatternWithType(params string[] names)
         {
             return PatternConstruct.MakePatternWithType(
-                PatternConstruct.MakeTuplePattern(names.Select(n => PatternConstruct.MakeIdentifierPattern(n, new PlaceholderType(TextLocation.Empty)))),
-                new PlaceholderType(TextLocation.Empty)
+                PatternConstruct.MakeTuplePattern(names.Select(n => PatternConstruct.MakeIdentifierPattern(n, AstType.MakePlaceholderType()))),
+                AstType.MakePlaceholderType()
             );
         }
 
@@ -173,7 +173,7 @@ namespace Expresso.Test
             return PatternConstruct.MakePatternWithType(
                 PatternConstruct.MakeTuplePattern(names.Zip(types, (l, r) => new Tuple<string, AstType>(l, r))
                                                   .Select(pair => PatternConstruct.MakeIdentifierPattern(pair.Item1, pair.Item2))),
-                Helpers.MakeGenericType(
+                MakeGenericType(
                     "tuple",
                     types.Select(t => t.Clone())
                 )

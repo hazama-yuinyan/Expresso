@@ -7,4 +7,7 @@
 ・ツールの提供
 ・シングルトン専用構文の実装
 ・using, do...while構文の追加
-・
+・isによる型チェックとそれに伴う自動キャスト機能
+・intseqにintの範囲外が来た時に落ちるはずなのを直す
+・pureC#の呼び出し(FFI, new, etc.)
+・Dictionaryの要素に対してkey,valueをタプルで返すようにする(Dictionaryをfor..inの右辺に使えるようにする)

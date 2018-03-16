@@ -116,7 +116,7 @@ namespace Expresso.Ast
         public Expression ReplaceWith(Func<Expression, Expression> replaceFunction)
         {
             if(replaceFunction == null)
-                throw new ArgumentNullException("replaceFunction");
+                throw new ArgumentNullException(nameof(replaceFunction));
 
             return (Expression)base.ReplaceWith(node => replaceFunction((Expression)node));
         }
@@ -130,7 +130,7 @@ namespace Expresso.Ast
         /// <param name="rhs">The right-hand-side expression(single item)</param>
         public static AssignmentExpression MakeSingleAssignment(Expression lhs, Expression rhs)
         {
-            return new AssignmentExpression(Expression.MakeSequenceExpression(lhs), Expression.MakeSequenceExpression(rhs), OperatorType.Assign);
+            return new AssignmentExpression(MakeSequenceExpression(lhs), MakeSequenceExpression(rhs), OperatorType.Assign);
         }
 
         /// <summary>
@@ -142,7 +142,7 @@ namespace Expresso.Ast
         /// <param name="rhs">The right-hand-side expression(single item).</param>
         public static AssignmentExpression MakeSingleAugmentedAssignment(OperatorType opType, Expression lhs, Expression rhs)
         {
-            return new AssignmentExpression(Expression.MakeSequenceExpression(lhs), Expression.MakeSequenceExpression(rhs), opType);
+            return new AssignmentExpression(MakeSequenceExpression(lhs), MakeSequenceExpression(rhs), opType);
         }
 
         /// <summary>

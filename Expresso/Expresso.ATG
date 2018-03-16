@@ -455,7 +455,7 @@ Expresso                    		(. ExpressoAst module_decl = null;
                                             Console.WriteLine(e.Message);
                                         }
 
-  										this.TopmostAst = module_decl;	//Currently there is not so much code out there, though...
+  										TopmostAst = module_decl;	//Currently there is not so much code out there, though...
   									.).
 /*------------------------------------------------------------------------*/
 ModuleBody<out ExpressoAst ast>	    (.  var decls = new List<EntityDeclaration>();

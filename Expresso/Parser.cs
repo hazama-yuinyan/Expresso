@@ -491,7 +491,7 @@ string cur_class_name;
 		Console.WriteLine(e.Message);
 		}
 		
-		this.TopmostAst = module_decl;	//Currently there is not so much code out there, though...
+		TopmostAst = module_decl;	//Currently there is not so much code out there, though...
 		
 	}
 
@@ -2728,6 +2728,18 @@ string cur_class_name;
 		Expresso();
 		Expect(0);
 
+	}
+
+	public Expression ParseExpression()
+	{
+		la = new Token();
+		la.val = "";
+		Get();
+
+		Expression expr = null;
+		CondExpr(out expr);
+		Expect(0);
+		return expr;
 	}
 	
 	static readonly bool[,] set = {

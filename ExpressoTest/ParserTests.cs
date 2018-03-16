@@ -3919,5 +3919,173 @@ namespace Expresso.Test
             Assert.IsNotNull(ast);
             Helpers.AstStructuralEqual(ast, expected);
         }
+
+        [Test]
+        public void UseOfTheStandardLibrary()
+        {
+        }
+
+        [Test]
+        public void VariousStrings()
+        {
+            var parser = new Parser(new Scanner("../../sources/for_unit_tests/various_strings.exs"));
+            parser.Parse();
+
+            var ast = parser.TopmostAst;
+
+            var expected = AstNode.MakeModuleDef("main", new List<EntityDeclaration>{
+                EntityDeclaration.MakeClassDecl(
+                    "TestClass",
+                    Enumerable.Empty<AstType>(),
+                    Modifiers.None,
+                    TextLocation.Empty,
+                    TextLocation.Empty,
+                    EntityDeclaration.MakeField(
+                        Helpers.MakeSeq(
+                            Helpers.MakeSomePatternWithType(
+                                "x",
+                                Helpers.MakePrimitiveType("int")
+                            )
+                        ),
+                        Helpers.MakeSeq(
+                            Expression.Null
+                        ),
+                        Modifiers.Immutable | Modifiers.Private
+                    ),
+                    EntityDeclaration.MakeField(
+                        Helpers.MakeSeq(
+                            Helpers.MakeSomePatternWithType(
+                                "y",
+                                Helpers.MakePrimitiveType("int")
+                            )
+                        ),
+                        Helpers.MakeSeq(
+                            Expression.Null
+                        ),
+                        Modifiers.Public | Modifiers.Immutable
+                    ),
+                    EntityDeclaration.MakeFunc(
+                        "getX",
+                        Enumerable.Empty<ParameterDeclaration>(),
+                        Statement.MakeBlock(
+                            Helpers.MakeSingleItemReturnStatement(
+                                Expression.MakeMemRef(
+                                    Expression.MakeSelfRef(),
+                                    Helpers.MakeSomeIdent("x")
+                                )
+                            )
+                        ),
+                        Helpers.MakePlaceholderType(),
+                        Modifiers.Public
+                    )
+                ),
+                EntityDeclaration.MakeFunc(
+                    "main",
+                    Enumerable.Empty<ParameterDeclaration>(),
+                    Statement.MakeBlock(
+                        Statement.MakeVarDecl(
+                            Helpers.MakeSeq(
+                                Helpers.MakeSomePatternWithType("x")
+                            ),
+                            Helpers.MakeSeq(
+                                Expression.MakeConstant("int", 5)
+                            ),
+                            Modifiers.Immutable
+                        ),
+                        Statement.MakeVarDecl(
+                            Helpers.MakeSeq(
+                                Helpers.MakeSomePatternWithType("t")
+                            ),
+                            Helpers.MakeSeq(
+                                Expression.MakeObjectCreation(
+                                    Helpers.MakeGenericType("TestClass"),
+                                    Helpers.MakeSeq(
+                                        AstNode.MakeIdentifier("x"),
+                                        AstNode.MakeIdentifier("y")
+                                    ),
+                                    Helpers.MakeSeq(
+                                        Expression.MakeConstant("int", 1),
+                                        Expression.MakeConstant("int", 2)
+                                    )
+                                )
+                            ),
+                            Modifiers.Immutable
+                        ),
+                        Statement.MakeVarDecl(
+                            Helpers.MakeSeq(
+                                Helpers.MakeSomePatternWithType("ary")
+                            ),
+                            Helpers.MakeSeq(
+                                Expression.MakeSequenceInitializer(
+                                    Helpers.MakeGenericType(
+                                        "array",
+                                        Helpers.MakePlaceholderType()
+                                    ),
+                                    TextLocation.Empty,
+                                    TextLocation.Empty,
+                                    Expression.MakeConstant("int", 1),
+                                    Expression.MakeConstant("int", 1),
+                                    Expression.MakeConstant("int", 2),
+                                    Expression.MakeConstant("int", 3),
+                                    Expression.MakeConstant("int", 5),
+                                    Expression.MakeConstant("int", 8)
+                                )
+                            ),
+                            Modifiers.Immutable
+                        ),
+                        Statement.MakeVarDecl(
+                            Helpers.MakeSeq(
+                                Helpers.MakeSomePatternWithType("a")
+                            ),
+                            Helpers.MakeSeq(
+                                Expression.MakeConstant("string", "some string")
+                            ),
+                            Modifiers.Immutable
+                        ),
+                        Statement.MakeVarDecl(
+                            Helpers.MakeSeq(
+                                Helpers.MakeSomePatternWithType("b")
+                            ),
+                            Helpers.MakeSeq(
+                                Expression.MakeConstant("string", "some string containing templates: ${x + 1}")
+                            ),
+                            Modifiers.Immutable
+                        ),
+                        Statement.MakeVarDecl(
+                            Helpers.MakeSeq(
+                                Helpers.MakeSomePatternWithType("c")
+                            ),
+                            Helpers.MakeSeq(
+                                Expression.MakeConstant("string", "another string containing templates: ${t.getX()}, ${t.y}")
+                            ),
+                            Modifiers.Immutable
+                        ),
+                        Statement.MakeVarDecl(
+                            Helpers.MakeSeq(
+                                Helpers.MakeSomePatternWithType("d")
+                            ),
+                            Helpers.MakeSeq(
+                                Expression.MakeConstant("string", "the 6th fibonacci number is ${ary[5]}")
+                            ),
+                            Modifiers.Immutable
+                        ),
+                        Statement.MakeExprStmt(
+                            Helpers.MakeCallExpression(
+                                Helpers.MakeIdentifierPath("println"),
+                                Helpers.MakeIdentifierPath("a"),
+                                Helpers.MakeIdentifierPath("b"),
+                                Helpers.MakeIdentifierPath("c"),
+                                Helpers.MakeIdentifierPath("d")
+                            )
+                        )
+                    ),
+                    Helpers.MakePlaceholderType(),
+                    Modifiers.None
+                )
+            });
+
+            Assert.IsNotNull(ast);
+            Helpers.AstStructuralEqual(ast, expected);
+        }
     }
 }

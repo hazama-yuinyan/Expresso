@@ -268,7 +268,7 @@ when compiling. However, it currently doesn't take advantage of it.
 
 ### The `dictionary` type
 
-
+The dictionary type, which is sometimes called a HashMap or simply an object, is a collection of several keys and values.
 
 OK, next up is exponentiation. But we'll be doing it in a slightly different way. Even though Expresso has the operator for it, here we'll be doing it on our
 own, using while loop.

@@ -1,3 +1,6 @@
+/**
+ * This code is a psuedo-code. It doesn't work.
+ */
 module main;
 
 
