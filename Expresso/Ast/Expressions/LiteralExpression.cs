@@ -90,7 +90,7 @@ namespace Expresso.Ast
         public void SetValue(object value, string literalValue)
         {
             if(value == null)
-                throw new ArgumentNullException("value");
+                throw new ArgumentNullException(nameof(value));
 
             Value = value;
             literal_value = literalValue;

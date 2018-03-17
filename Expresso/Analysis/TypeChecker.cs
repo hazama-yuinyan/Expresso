@@ -21,7 +21,7 @@ namespace Expresso.Ast.Analysis
     {
         static PlaceholderType PlaceholderTypeNode = new PlaceholderType(TextLocation.Empty);
         static List<AstType> TemporaryTypes = new List<AstType>();
-        static Regex InterpolationTargetFinder = new Regex(@"${([^}]+)}", RegexOptions.Compiled);
+        static Regex InterpolationTargetFinder = new Regex(@"\${([^}]+)}", RegexOptions.Compiled);
         bool inspecting_immutability = false;
         int scope_counter;
         Parser parser;
@@ -435,7 +435,7 @@ namespace Expresso.Ast.Analysis
                 return inferred;
             }
 
-            inference_runner.VisitCallExpression(callExpr);
+            //inference_runner.VisitCallExpression(callExpr);
             if(func_type == null){
                 throw new ParserException(
                     "Error ES1805: {0} turns out not to be a function.",
@@ -448,7 +448,7 @@ namespace Expresso.Ast.Analysis
                                             .Zip(func_type.Parameters, (l, r) => new Tuple<int, AstType>(l, r))
                                             .Zip(argument_types, (l, r) => new Tuple<int, AstType, AstType>(l.Item1, l.Item2, r))){
                 // If this parameter is the last and the type is an array we think of it as the variadic parameter
-                var param_type = triple.Item2 is SimpleType array && triple.Item1 == func_type.Parameters.Count - 1 ? array.TypeArguments.First() : triple.Item2;
+                var param_type = (triple.Item2 is SimpleType array && triple.Item1 == func_type.Parameters.Count - 1) ? array.TypeArguments.First() : triple.Item2;
                 var arg_type = triple.Item3;
                 if(IsCompatibleWith(param_type, arg_type) == TriBool.False){
                     throw new ParserException(
@@ -605,12 +605,10 @@ namespace Expresso.Ast.Analysis
 
                 var exprs = new List<Expression>();
                 foreach(RegexMatch match in matches){
-                    var captures = match.Captures;
-                    var inner_parser = new Parser(new Scanner(new MemoryStream(Encoding.UTF8.GetBytes(captures[0].Value))));
+                    var groups = match.Groups;
+                    var inner_parser = new Parser(new Scanner(new MemoryStream(Encoding.UTF8.GetBytes(groups[1].Value))));
                     try{
-                        var expr = inner_parser.ParseExpression();
-                        expr.AcceptWalker(this);
-                        exprs.Add(expr);
+                        exprs.Add(inner_parser.ParseExpression());
                     }
                     catch(ParserException e){
                         parser.ReportSemanticError(
@@ -622,20 +620,23 @@ namespace Expresso.Ast.Analysis
                 }
 
                 int counter = 0;
-                literal.Value = InterpolationTargetFinder.Replace(template, match => "{" + counter++.ToString() + "}");
+                var replaced_string = InterpolationTargetFinder.Replace(template, match => "{" + counter++.ToString() + "}");
+                literal.SetValue(replaced_string, replaced_string);
 
-                var call_expr = Expression.MakeCallExpr(
-                    Expression.MakeMemRef(
-                        Expression.MakePath(
-                            AstNode.MakeIdentifier("string", AstType.MakePlaceholderType())
+                if(matches.Count > 0){
+                    var call_expr = Expression.MakeCallExpr(
+                        Expression.MakeMemRef(
+                            Expression.MakePath(
+                                AstNode.MakeIdentifier("string", AstType.MakePlaceholderType())
+                            ),
+                            AstNode.MakeIdentifier("format", AstType.MakePlaceholderType())
                         ),
-                        AstNode.MakeIdentifier("Format", AstType.MakePlaceholderType())
-                    ),
-                    new []{literal.Clone()}.Concat(exprs),
-                    literal.StartLocation
-                );
-                literal.ReplaceWith(call_expr);
-                VisitCallExpression(call_expr);
+                        new []{literal.Clone()}.Concat(exprs),
+                        literal.StartLocation
+                    );
+                    literal.ReplaceWith(call_expr);
+                    VisitCallExpression(call_expr);
+                }
             }
 
             return literal.Type;
@@ -864,10 +865,10 @@ namespace Expresso.Ast.Analysis
         public AstType VisitSequenceInitializer(SequenceInitializer seqInitializer)
         {
             if(seqInitializer.ObjectType.TypeArguments.First() is PlaceholderType)
-                seqInitializer.AcceptWalker(inference_runner);
+                inference_runner.VisitSequenceInitializer(seqInitializer);
 
             // Accepts each item as it replaces placeholder nodes with real type nodes
-            // We don't validate the type of each item because inference phase do that
+            // We don't validate the type of each item because inference phase has done that
             AstType type = null;
             foreach(var item in seqInitializer.Items){
                 if(type == null)
@@ -1496,14 +1497,12 @@ namespace Expresso.Ast.Analysis
 
             var simple1 = first as SimpleType;
             var simple2 = second as SimpleType;
-            if(simple1 != null && simple1.Name == "object")
+            if(simple1 != null && simple1.Name.ToLower() == "object")
                 return TriBool.True;
             
             if(simple1 != null && simple2 != null){
                 //TODO: implement it
                 if(simple1.IsMatch(simple2)){
-                    return TriBool.True;
-                }else if(simple1.Name == "object"){
                     return TriBool.True;
                 }
             }

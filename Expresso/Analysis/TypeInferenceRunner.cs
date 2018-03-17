@@ -389,7 +389,7 @@ namespace Expresso.Ast.Analysis
                 Identifier symbol;
                 if(checker.argument_types != null){
                     var func_type = AstType.MakeFunctionType(memRef.Member.Name, AstType.MakePlaceholderType(), checker.argument_types.Select(arg => arg.Clone()));
-                    symbol = type_table.GetSymbol(memRef.Member.Name, func_type);
+                    symbol = GetOverloadOfMethod(type_table, memRef.Member.Name, func_type);
                 }else{
                     symbol = type_table.GetSymbol(memRef.Member.Name);
                 }
@@ -400,7 +400,7 @@ namespace Expresso.Ast.Analysis
                         throw new ParserException(
                             "Error ES2001: The type `{0}` doesn't have a field or a method '{1}'!",
                             memRef.Member,
-                            target_type, memRef.Member.Name
+                            target_type.ToString(), memRef.Member.Name
                         );
                     }
                 }
@@ -970,6 +970,42 @@ namespace Expresso.Ast.Analysis
                 }
 
                 return ident.Type;
+            }
+
+            Identifier GetOverloadOfMethod(SymbolTable table, string methodName, FunctionType funcType)
+            {
+                if(funcType.Parameters.Count == 0){
+                    var symbol = table.GetSymbol(methodName, funcType);
+                    return (symbol != null) ? symbol : null;
+                }
+
+                // TODO: implement it in more formal way
+                foreach(var pair in Enumerable.Range(0, funcType.Parameters.Count).Reverse().Zip(funcType.Parameters.Reverse(),
+                                                                                                      (l, r) => new Tuple<int, AstType>(l, r))){
+                    var new_parameters = funcType.Parameters
+                                                 .Take(pair.Item1 + 1)
+                                                 .Select(t => t.Clone());
+                    var new_func_type = AstType.MakeFunctionType(funcType.Name, funcType.ReturnType.Clone(), new_parameters);
+                    var symbol = table.GetSymbol(methodName, new_func_type);
+                    if(symbol != null)
+                        return symbol;
+                    
+                    var new_parameters2 = funcType.Parameters
+                                                  .Take(pair.Item1)
+                                                  .Select(t => t.Clone())
+                                                  .Concat(new []{AstType.MakeSimpleType(
+                        "array",
+                        TextLocation.Empty,
+                        TextLocation.Empty,
+                        AstType.MakeSimpleType("Object")
+                    )});
+                    var new_func_type2 = AstType.MakeFunctionType(funcType.Name, funcType.ReturnType.Clone(), new_parameters2);
+                    var symbol2 = table.GetSymbol(methodName, new_func_type2);
+                    if(symbol2 != null)
+                        return symbol2;
+                }
+
+                return null;
             }
         }
     }
