@@ -1299,7 +1299,7 @@ namespace Expresso.Ast.Analysis
                 return identifierPattern.Identifier.Type.Clone();
             }else{
                 var type = identifierPattern.AcceptWalker(inference_runner);
-                identifierPattern.Identifier.Type.ReplaceWith(type);
+                identifierPattern.Identifier.Type.ReplaceWith(type.Clone());
                 identifierPattern.InnerPattern.AcceptWalker(this);
                 return type;
             }
