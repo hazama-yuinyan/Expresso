@@ -3894,12 +3894,13 @@ namespace Expresso.Test
                     Statement.MakeBlock(
                         Statement.MakeVarDecl(
                             Helpers.MakeSeq(
-                                Helpers.MakeExactPatternWithType(
+                                Helpers.MakeSomePatternWithType(
                                     "writer",
                                     Helpers.MakeGenericType("FileStream")
                                 )
                             ),
-                            Helpers.MakeSeq<Expression>(
+                            Helpers.MakeSeq(
+                                Expression.Null
                             ),
                             Modifiers.None
                         ),
@@ -3999,6 +4000,9 @@ namespace Expresso.Test
                     "UTF8Encoding"
                 )
             ));
+
+            Assert.IsNotNull(ast);
+            Helpers.AstStructuralEqual(ast, expected);
         }
 
         [Test]
