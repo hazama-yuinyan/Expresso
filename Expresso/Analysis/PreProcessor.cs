@@ -258,6 +258,7 @@ namespace Expresso.Ast.Analysis
 
                 int counter = 0;
                 var replaced_string = InterpolationTargetFinder.Replace(template, match => "{" + counter++.ToString() + "}");
+                replaced_string = replaced_string.Replace("$$", "$");
                 literal.SetValue(replaced_string, replaced_string);
 
                 if(matches.Count > 0){

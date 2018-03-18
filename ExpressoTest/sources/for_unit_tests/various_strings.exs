@@ -22,6 +22,7 @@ def main()
 	let b = "some string containing templates: ${x + 1}";
 	let c = "another string containing templates: ${t.getX()}, ${t.y}";
 	let d = "the 6th fibonacci number is ${ary[5]}";
+    let e = "a string containing dollar symbol: $$x = ${x}";
 
-	println(a, b, c, d);
+	println(a, b, c, d, e);
 }

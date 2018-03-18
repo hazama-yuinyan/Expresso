@@ -29,5 +29,5 @@ def main()
 {
 	let t = TestClass{x: 1};
 	let a = t.doSomeBehavior();
-    printFormat("t.x = {0}", a);
+    println("t.x = ${a}");
 }

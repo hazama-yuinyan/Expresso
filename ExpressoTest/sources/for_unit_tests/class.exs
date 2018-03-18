@@ -40,5 +40,5 @@ def main()
     let f = a.getZ();
     let g = a.x;
 	
-	printFormat("(a.x, a.y, a.z, x) = ({0}, {1}, {2}, {3})\n", c, d, f, g);
+	println("(a.x, a.y, a.z, x) = (${c}, ${d}, ${f}, ${g})");
 }

@@ -25,18 +25,18 @@ def main()
 
     /*var tmp = 1;
     try{
-        printFormat("tmp is {0} at first\n", tmp);
+        println("tmp is ${tmp} at first");
         throwException();
     }
     finally{
         println("First finally block");
         tmp = 2;
     }
-    printFormat("tmp is {0} at last\n", tmp);*/
+    println("tmp is ${tmp} at last");*/
 
     var tmp2 = 1;
     try{
-        printFormat("tmp2 is {0} at first\n", tmp2);
+        println("tmp2 is ${tmp2} at first");
         throwException();
     }
     catch e (- Exception {
@@ -48,5 +48,5 @@ def main()
         println("Second finally block");
         tmp2 = 3;
     }
-    printFormat("tmp2 is {0} at last\n", tmp2);
+    println("tmp2 is ${tmp2} at last");
 }

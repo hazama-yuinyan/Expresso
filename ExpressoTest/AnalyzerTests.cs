@@ -6504,6 +6504,47 @@ namespace Expresso.Test
                             ),
                             Modifiers.Immutable
                         ),
+                        Statement.MakeVarDecl(
+                            Helpers.MakeSeq(
+                                Helpers.MakePaticularPatternWithType(
+                                    "e",
+                                    Helpers.MakePrimitiveType("string")
+                                )
+                            ),
+                            Helpers.MakeSeq(
+                                Helpers.MakeCallExpression(
+                                    Expression.MakeMemRef(
+                                        Helpers.MakeIdentifierPath(
+                                            "string",
+                                            Helpers.MakePrimitiveType("string")
+                                        ),
+                                        AstNode.MakeIdentifier(
+                                            "format",
+                                            AstType.MakeFunctionType(
+                                                "format",
+                                                Helpers.MakePrimitiveType("string"),
+                                                TextLocation.Empty,
+                                                TextLocation.Empty,
+                                                Helpers.MakePrimitiveType("string"),
+                                                Helpers.MakeGenericType(
+                                                    "array",
+                                                    Helpers.MakeGenericType("Object")
+                                                )
+                                            )
+                                        )
+                                    ),
+                                    Expression.MakeConstant(
+                                        "string",
+                                        "a string containing dollar symbol: $x = {0}"
+                                    ),
+                                    Helpers.MakeIdentifierPath(
+                                        "x",
+                                        Helpers.MakePrimitiveType("int")
+                                    )
+                                )
+                            ),
+                            Modifiers.Immutable
+                        ),
                         Statement.MakeExprStmt(
                             Helpers.MakeCallExpression(
                                 Helpers.MakeIdentifierPath(
@@ -6533,6 +6574,10 @@ namespace Expresso.Test
                                 ),
                                 Helpers.MakeIdentifierPath(
                                     "d",
+                                    Helpers.MakePrimitiveType("string")
+                                ),
+                                Helpers.MakeIdentifierPath(
+                                    "e",
                                     Helpers.MakePrimitiveType("string")
                                 )
                             )

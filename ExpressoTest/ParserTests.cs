@@ -4069,13 +4069,23 @@ namespace Expresso.Test
                             ),
                             Modifiers.Immutable
                         ),
+                        Statement.MakeVarDecl(
+                            Helpers.MakeSeq(
+                                Helpers.MakeSomePatternWithType("e")
+                            ),
+                            Helpers.MakeSeq(
+                                Expression.MakeConstant("string", "a string containing dollar symbol: $$x = ${x}")
+                            ),
+                            Modifiers.Immutable
+                        ),
                         Statement.MakeExprStmt(
                             Helpers.MakeCallExpression(
                                 Helpers.MakeIdentifierPath("println"),
                                 Helpers.MakeIdentifierPath("a"),
                                 Helpers.MakeIdentifierPath("b"),
                                 Helpers.MakeIdentifierPath("c"),
-                                Helpers.MakeIdentifierPath("d")
+                                Helpers.MakeIdentifierPath("d"),
+                                Helpers.MakeIdentifierPath("e")
                             )
                         )
                     ),
