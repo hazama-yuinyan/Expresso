@@ -1277,9 +1277,8 @@ namespace Expresso.Test
                                 Statement.MakeExprStmt(
                                     Expression.MakeSequenceExpression(
                                         Helpers.MakeCallExpression(
-                                            Helpers.MakeIdentifierPath("printFormat"),
-                                            Expression.MakeConstant("string", "{0} is in the range of 3 to 10\n"),
-                                            Helpers.MakeIdentifierPath("i")
+                                            Helpers.MakeIdentifierPath("println"),
+                                            Expression.MakeConstant("string", "${i} is in the range of 3 to 10")
                                         )
                                     )
                                 ),
@@ -1335,9 +1334,8 @@ namespace Expresso.Test
                                 Statement.MakeExprStmt(
                                     Expression.MakeSequenceExpression(
                                         Helpers.MakeCallExpression(
-                                            Helpers.MakeIdentifierPath("printFormat"),
-                                            Expression.MakeConstant("string", "x is {0}\n"),
-                                            Helpers.MakeIdentifierPath("x")
+                                            Helpers.MakeIdentifierPath("println"),
+                                            Expression.MakeConstant("string", "x is ${x}")
                                         )
                                     )
                                 ),
@@ -1356,10 +1354,8 @@ namespace Expresso.Test
                                 Statement.MakeExprStmt(
                                     Expression.MakeSequenceExpression(
                                         Helpers.MakeCallExpression(
-                                            Helpers.MakeIdentifierPath("printFormat"),
-                                            Expression.MakeConstant("string", "x is {0} and y is {1}\n"),
-                                            Helpers.MakeIdentifierPath("x"),
-                                            Helpers.MakeIdentifierPath("y")
+                                            Helpers.MakeIdentifierPath("println"),
+                                            Expression.MakeConstant("string", "x is ${x} and y is ${y}")
                                         )
                                     )
                                 ),
@@ -1401,10 +1397,8 @@ namespace Expresso.Test
                                 Statement.MakeExprStmt(
                                     Expression.MakeSequenceExpression(
                                         Helpers.MakeCallExpression(
-                                            Helpers.MakeIdentifierPath("printFormat"),
-                                            Expression.MakeConstant("string", "x and y are both vector's elements and the values are {0} and {1} respectively"),
-                                            Helpers.MakeIdentifierPath("x"),
-                                            Helpers.MakeIdentifierPath("y")
+                                            Helpers.MakeIdentifierPath("println"),
+                                            Expression.MakeConstant("string", "x and y are both vector's elements and the values are ${x} and ${y} respectively")
                                         )
                                     )
                                 ),
@@ -1470,10 +1464,8 @@ namespace Expresso.Test
                                 Statement.MakeExprStmt(
                                     Expression.MakeSequenceExpression(
                                         Helpers.MakeCallExpression(
-                                            Helpers.MakeIdentifierPath("printFormat"),
-                                            Expression.MakeConstant("string", "x and y are both array's elements and the values are {0} and {1} respectively"),
-                                            Helpers.MakeIdentifierPath("x"),
-                                            Helpers.MakeIdentifierPath("y")
+                                            Helpers.MakeIdentifierPath("println"),
+                                            Expression.MakeConstant("string", "x and y are both array's elements and the values are ${x} and ${y} respectively")
                                         )
                                     )
                                 ),
@@ -1538,9 +1530,8 @@ namespace Expresso.Test
                                 Statement.MakeExprStmt(
                                     Expression.MakeSequenceExpression(
                                         Helpers.MakeCallExpression(
-                                            Helpers.MakeIdentifierPath("printFormat"),
-                                            Expression.MakeConstant("string", "x is {0}\n"),
-                                            Helpers.MakeIdentifierPath("x")
+                                            Helpers.MakeIdentifierPath("println"),
+                                            Expression.MakeConstant("string", "x is ${x}")
                                         )
                                     )
                                 ),
@@ -1558,10 +1549,8 @@ namespace Expresso.Test
                                 Statement.MakeExprStmt(
                                     Expression.MakeSequenceExpression(
                                         Helpers.MakeCallExpression(
-                                            Helpers.MakeIdentifierPath("printFormat"),
-                                            Expression.MakeConstant("string", "x is {0} and y is {1}\n"),
-                                            Helpers.MakeIdentifierPath("x"),
-                                            Helpers.MakeIdentifierPath("y")
+                                            Helpers.MakeIdentifierPath("println"),
+                                            Expression.MakeConstant("string", "x is ${x} and y is ${y}")
                                         )
                                     )
                                 ),
@@ -2679,12 +2668,8 @@ namespace Expresso.Test
                         ),
                         Statement.MakeExprStmt(
                             Helpers.MakeCallExpression(
-                                Helpers.MakeIdentifierPath("printFormat"),
-                                Expression.MakeConstant("string", "(a.x, a.y, a.z, x) = ({0}, {1}, {2}, {3})\n"),
-                                Helpers.MakeIdentifierPath("c"),
-                                Helpers.MakeIdentifierPath("d"),
-                                Helpers.MakeIdentifierPath("f"),
-                                Helpers.MakeIdentifierPath("g")
+                                Helpers.MakeIdentifierPath("println"),
+                                Expression.MakeConstant("string", "(a.x, a.y, a.z, x) = (${c}, ${d}, ${f}, ${g})")
                             )
                         )
                     ),
@@ -3125,24 +3110,6 @@ namespace Expresso.Test
             var ast = parser.TopmostAst;
 
             var expected = AstNode.MakeModuleDef("main", new List<EntityDeclaration>{
-                EntityDeclaration.MakeClassDecl(
-                    "ExsException",
-                    Helpers.MakeSeq<AstType>(
-                        Helpers.MakeGenericType("Exception")
-                    ),
-                    Helpers.MakeSeq<EntityDeclaration>(
-                        EntityDeclaration.MakeField(
-                            Helpers.MakeSeq(
-                                Helpers.MakeSomePatternWithType("ExsMessage", AstType.MakePrimitiveType("string"))
-                            ),
-                            Helpers.MakeSeq<Expression>(
-                                Expression.Null
-                            ),
-                            Modifiers.Public | Modifiers.Immutable
-                        )
-                    ),
-                    Modifiers.None
-                ),
                 EntityDeclaration.MakeFunc(
                     "throwException",
                     Enumerable.Empty<ParameterDeclaration>(),
@@ -3150,10 +3117,10 @@ namespace Expresso.Test
                         Statement.MakeThrowStmt(
                             Expression.MakeObjectCreation(
                                 Helpers.MakeGenericType(
-                                    "ExsException"
+                                    "Exception"
                                 ),
                                 Helpers.MakeSeq(
-                                    AstNode.MakeIdentifier("ExsMessage")
+                                    AstNode.MakeIdentifier("message")
                                 ),
                                 Helpers.MakeSeq(
                                     Expression.MakeConstant("string", "An unknown error has occurred")
@@ -3187,7 +3154,7 @@ namespace Expresso.Test
                             Statement.MakeCatchClause(
                                 AstNode.MakeIdentifier(
                                     "e",
-                                    Helpers.MakeGenericType("ExsException")
+                                    Helpers.MakeGenericType("Exception")
                                 ),
                                 Statement.MakeBlock(
                                     Statement.MakeExprStmt(
@@ -3201,7 +3168,7 @@ namespace Expresso.Test
                                             Helpers.MakeIdentifierPath("println"),
                                             Expression.MakeMemRef(
                                                 Helpers.MakeIdentifierPath("e"),
-                                                Helpers.MakeSomeIdent("ExsMessage")
+                                                Helpers.MakeSomeIdent("Message")
                                             )
                                         )
                                     )
@@ -3221,9 +3188,8 @@ namespace Expresso.Test
                             Statement.MakeBlock(
                                 Statement.MakeExprStmt(
                                     Helpers.MakeCallExpression(
-                                        Helpers.MakeIdentifierPath("printFormat"),
-                                        Expression.MakeConstant("string", "tmp is {0} at first\n"),
-                                        Helpers.MakeIdentifierPath("tmp")
+                                        Helpers.MakeIdentifierPath("println"),
+                                        Expression.MakeConstant("string", "tmp is ${tmp} at first")
                                     )
                                 ),
                                 Statement.MakeExprStmt(
@@ -3246,9 +3212,8 @@ namespace Expresso.Test
                         ),
                         Statement.MakeExprStmt(
                             Helpers.MakeCallExpression(
-                                Helpers.MakeIdentifierPath("printFormat"),
-                                Expression.MakeConstant("string", "tmp is {0} at last\n"),
-                                Helpers.MakeIdentifierPath("tmp")
+                                Helpers.MakeIdentifierPath("println"),
+                                Expression.MakeConstant("string", "tmp is ${tmp} at last")
                             )
                         ),*/
                         Statement.MakeVarDecl(
@@ -3264,9 +3229,8 @@ namespace Expresso.Test
                             Statement.MakeBlock(
                                 Statement.MakeExprStmt(
                                     Helpers.MakeCallExpression(
-                                        Helpers.MakeIdentifierPath("printFormat"),
-                                        Expression.MakeConstant("string", "tmp2 is {0} at first\n"),
-                                        Helpers.MakeIdentifierPath("tmp2")
+                                        Helpers.MakeIdentifierPath("println"),
+                                        Expression.MakeConstant("string", "tmp2 is ${tmp2} at first")
                                     )
                                 ),
                                 Statement.MakeExprStmt(
@@ -3295,7 +3259,7 @@ namespace Expresso.Test
                             Statement.MakeCatchClause(
                                 AstNode.MakeIdentifier(
                                     "e",
-                                    Helpers.MakeGenericType("ExsException")
+                                    Helpers.MakeGenericType("Exception")
                                 ),
                                 Statement.MakeBlock(
                                     Statement.MakeExprStmt(
@@ -3315,7 +3279,7 @@ namespace Expresso.Test
                                             Helpers.MakeIdentifierPath("println"),
                                             Expression.MakeMemRef(
                                                 Helpers.MakeIdentifierPath("e"),
-                                                Helpers.MakeSomeIdent("ExsMessage")
+                                                Helpers.MakeSomeIdent("Message")
                                             )
                                         )
                                     )
@@ -3324,9 +3288,8 @@ namespace Expresso.Test
                         ),
                         Statement.MakeExprStmt(
                             Helpers.MakeCallExpression(
-                                Helpers.MakeIdentifierPath("printFormat"),
-                                Expression.MakeConstant("string", "tmp2 is {0} at last\n"),
-                                Helpers.MakeIdentifierPath("tmp2")
+                                Helpers.MakeIdentifierPath("println"),
+                                Expression.MakeConstant("string", "tmp2 is ${tmp2} at last")
                             )
                         )
                     ),
@@ -3673,12 +3636,8 @@ namespace Expresso.Test
                         ),
                         Statement.MakeExprStmt(
                             Helpers.MakeCallExpression(
-                                Helpers.MakeIdentifierPath("printFormat"),
-                                Expression.MakeConstant(
-                                    "string",
-                                    "t.x = {0}"
-                                ),
-                                Helpers.MakeIdentifierPath("a")
+                                Helpers.MakeIdentifierPath("println"),
+                                Expression.MakeConstant("string", "t.x = ${a}")
                             )
                         )
                     ),

@@ -25,22 +25,22 @@ namespace Expresso.CodeGen
             new List<string>{"System.Numerics, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089", "ExpressoRuntime"};
 
         static Dictionary<string, Tuple<string, uint>> SpecialNamesMap = new Dictionary<string, Tuple<string, uint>>{
-            {"intseq", Tuple.Create("Expresso.Runtime.Builtins.ExpressoIntegerSequence", 1_000_000_003u)},
-            {"slice", Tuple.Create("Expresso.Runtime.Builtins.Slice", 1_000_000_004u)},
-            {"function", Tuple.Create("System.Func", 1_000_000_005u)},
-            {"bool", Tuple.Create("System.Boolean", 1_000_000_006u)},
-            {"int", Tuple.Create("System.Int32", 1_000_000_007u)},
-            {"uint", Tuple.Create("System.UInt32", 1_000_000_008u)},
-            {"float", Tuple.Create("System.Single", 1_000_000_009u)},
-            {"double", Tuple.Create("System.Double", 1_000_000_010u)},
-            {"char", Tuple.Create("System.Char", 1_000_000_011u)},
-            {"byte", Tuple.Create("System.Byte", 1_000_000_012u)},
-            {"string", Tuple.Create("System.String", 1_000_000_013u)},
-            {"array", Tuple.Create("System.Array", 1_000_000_014u)},
-            {"vector", Tuple.Create("System.Collections.Generic.List", 1_000_000_015u)},
-            {"tuple", Tuple.Create("System.Tuple", 1_000_000_016u)},
-            {"dictionary", Tuple.Create("System.Collections.Generic.Dictionary", 1_000_000_017u)},
-            {"bigint", Tuple.Create("System.Numerics.BigInteger", 1_000_000_018u)}
+            {"intseq", Tuple.Create("Expresso.Runtime.Builtins.ExpressoIntegerSequence", ExpressoCompilerHelpers.StartOfIdentifierId + 0u)},
+            {"slice", Tuple.Create("Expresso.Runtime.Builtins.Slice", ExpressoCompilerHelpers.StartOfIdentifierId + 1u)},
+            {"function", Tuple.Create("System.Func", ExpressoCompilerHelpers.StartOfIdentifierId + 2u)},
+            {"bool", Tuple.Create("System.Boolean", ExpressoCompilerHelpers.StartOfIdentifierId + 3u)},
+            {"int", Tuple.Create("System.Int32", ExpressoCompilerHelpers.StartOfIdentifierId + 4u)},
+            {"uint", Tuple.Create("System.UInt32", ExpressoCompilerHelpers.StartOfIdentifierId + 5u)},
+            {"float", Tuple.Create("System.Single", ExpressoCompilerHelpers.StartOfIdentifierId + 6u)},
+            {"double", Tuple.Create("System.Double", ExpressoCompilerHelpers.StartOfIdentifierId + 7u)},
+            {"char", Tuple.Create("System.Char", ExpressoCompilerHelpers.StartOfIdentifierId + 8u)},
+            {"byte", Tuple.Create("System.Byte", ExpressoCompilerHelpers.StartOfIdentifierId + 9u)},
+            {"string", Tuple.Create("System.String", ExpressoCompilerHelpers.StartOfIdentifierId + 10u)},
+            {"array", Tuple.Create("System.Array", ExpressoCompilerHelpers.StartOfIdentifierId + 11u)},
+            {"vector", Tuple.Create("System.Collections.Generic.List", ExpressoCompilerHelpers.StartOfIdentifierId + 12u)},
+            {"tuple", Tuple.Create("System.Tuple", ExpressoCompilerHelpers.StartOfIdentifierId + 13u)},
+            {"dictionary", Tuple.Create("System.Collections.Generic.Dictionary", ExpressoCompilerHelpers.StartOfIdentifierId + 14u)},
+            {"bigint", Tuple.Create("System.Numerics.BigInteger", ExpressoCompilerHelpers.StartOfIdentifierId + 15u)}
         };
 
         /// <summary>
@@ -406,11 +406,11 @@ namespace Expresso.CodeGen
                     typeof(string), typeof(object[])
                 })
             });
-            CSharpEmitter.Symbols.Add(1000000002u, new ExpressoSymbol{
+            /*CSharpEmitter.Symbols.Add(1000000002u, new ExpressoSymbol{
                 Method = typeof(Console).GetMethod("Write", new []{
                     typeof(string), typeof(object[])
                 })
-            });
+            });*/
 
             foreach(var builtin_pair in SpecialNamesMap){
                 var primitive = AstType.MakePrimitiveType(builtin_pair.Key);

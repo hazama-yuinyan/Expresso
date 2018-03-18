@@ -15,27 +15,28 @@ namespace Expresso.CodeGen
     /// </summary>
     public static class ExpressoCompilerHelpers
     {
-        static uint IdentifierId = 1000000019u;
+        internal static uint StartOfIdentifierId = 1_000_000_002u;
+        static uint IdentifierId = StartOfIdentifierId + 16u;
         static readonly string TypePrefix = "type_";
         static readonly string[] IgnoreList = new []{"equals", "getHashCode"};
 
         static Dictionary<string, Tuple<string, uint>> SpecialNamesMapInverse = new Dictionary<string, Tuple<string, uint>>{
-            {"Expresso.Runtime.Builtins.ExpressoIntegerSequence", Tuple.Create("intseq", 1_000_000_003u)},
-            {"Expresso.Runtime.Builtins.Slice", Tuple.Create("slice", 1_000_000_004u)},
-            {"System.Func", Tuple.Create("function", 1_000_000_005u)},
-            {"System.Boolean", Tuple.Create("bool", 1_000_000_006u)},
-            {"System.Int32", Tuple.Create("int", 1_000_000_007u)},
-            {"System.UInt32", Tuple.Create("uint", 1_000_000_008u)},
-            {"System.Single", Tuple.Create("float", 1_000_000_009u)},
-            {"System.Double", Tuple.Create("double", 1_000_000_010u)},
-            {"System.Char", Tuple.Create("char", 1_000_000_011u)},
-            {"System.Byte", Tuple.Create("byte", 1_000_000_012u)},
-            {"System.String", Tuple.Create("string", 1_000_000_013u)},
-            {"System.Array", Tuple.Create("array", 1_000_000_014u)},
-            {"System.Collections.Generic.List", Tuple.Create("vector", 1_000_000_015u)},
-            {"System.Tuple", Tuple.Create("tuple", 1_000_000_016u)},
-            {"System.Collections.Generic.Dictionary", Tuple.Create("dictionary", 1_000_000_017u)},
-            {"System.Numerics.BigInteger", Tuple.Create("bigint", 1_000_000_018u)}
+            {"Expresso.Runtime.Builtins.ExpressoIntegerSequence", Tuple.Create("intseq", StartOfIdentifierId + 0)},
+            {"Expresso.Runtime.Builtins.Slice", Tuple.Create("slice", StartOfIdentifierId + 1u)},
+            {"System.Func", Tuple.Create("function", StartOfIdentifierId + 2u)},
+            {"System.Boolean", Tuple.Create("bool", StartOfIdentifierId + 3u)},
+            {"System.Int32", Tuple.Create("int", StartOfIdentifierId + 4u)},
+            {"System.UInt32", Tuple.Create("uint", StartOfIdentifierId + 5u)},
+            {"System.Single", Tuple.Create("float", StartOfIdentifierId + 6u)},
+            {"System.Double", Tuple.Create("double", StartOfIdentifierId + 7u)},
+            {"System.Char", Tuple.Create("char", StartOfIdentifierId + 8u)},
+            {"System.Byte", Tuple.Create("byte", StartOfIdentifierId + 9u)},
+            {"System.String", Tuple.Create("string", StartOfIdentifierId + 10u)},
+            {"System.Array", Tuple.Create("array", StartOfIdentifierId + 11u)},
+            {"System.Collections.Generic.List", Tuple.Create("vector", StartOfIdentifierId + 12u)},
+            {"System.Tuple", Tuple.Create("tuple", StartOfIdentifierId + 13u)},
+            {"System.Collections.Generic.Dictionary", Tuple.Create("dictionary", StartOfIdentifierId + 14u)},
+            {"System.Numerics.BigInteger", Tuple.Create("bigint", StartOfIdentifierId + 15u)}
         };
 
         public static string ConvertToExpressoFunctionName(string name)

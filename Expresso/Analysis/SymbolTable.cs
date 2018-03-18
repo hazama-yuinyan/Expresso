@@ -115,7 +115,7 @@ namespace Expresso.Ast.Analysis
             println_ident.IdentifierId = 1000000001u;
             NativeMapping.Add("println", println_ident);
 
-            var printformat_ident = AstNode.MakeIdentifier(
+            /*var printformat_ident = AstNode.MakeIdentifier(
                 "WriteLine",
                 AstType.MakeFunctionType(
                     "printFormat",
@@ -132,7 +132,7 @@ namespace Expresso.Ast.Analysis
                 )
             );
             printformat_ident.IdentifierId = 1000000002u;
-            NativeMapping.Add("printFormat", printformat_ident);
+            NativeMapping.Add("printFormat", printformat_ident);*/
         }
 
         public SymbolTable(ClassType typeKind = ClassType.NotType, bool isNetType = false)
