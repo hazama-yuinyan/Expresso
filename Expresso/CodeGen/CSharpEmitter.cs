@@ -692,7 +692,10 @@ namespace Expresso.CodeGen
             var parent_args = context.ArgumentTypes;
             context.ArgumentTypes = compiled_args.Select(arg => arg.Type).ToArray();
 
+            context.RequestMethod = true;
+            context.Method = null;
             var inst = call.Target.AcceptWalker(this, context);
+            context.RequestMethod = false;
             context.ArgumentTypes = parent_args;
             return ConstructCallExpression(inst, context.Method, compiled_args);
         }
@@ -942,7 +945,8 @@ namespace Expresso.CodeGen
                     }
                     
                     context.Method = method;
-                    AddSymbol(ident, new ExpressoSymbol{Method = method});
+                    // Don't add a method symbol so that we can find other overloads of it
+                    //AddSymbol(ident, new ExpressoSymbol{Method = method});
                     return null;
                 }else{
                     throw new EmitterException("It is found that the native symbol '{0}' isn't defined.", ident.Name);
@@ -990,7 +994,7 @@ namespace Expresso.CodeGen
 
         public CSharpExpr VisitMemberReference(MemberReferenceExpression memRef, CSharpEmitterContext context)
         {
-            // In Expresso, a member access can be resolved either to a field reference or instance method call
+            // In Expresso, a member access can be resolved either to a field reference or an (instance and static) method call
             var expr = memRef.Target.AcceptWalker(this, context);
             context.RequestPropertyOrField = true;
             context.RequestMethod = true;
@@ -2083,12 +2087,13 @@ namespace Expresso.CodeGen
             }else if(method.DeclaringType.Name == "Console" && (method.Name == "Write" || method.Name == "WriteLine")){
                 var first = args.First();
                 var expand_method = typeof(CSharpCompilerHelper).GetMethod("ExpandContainer");
-                if(first.Type == typeof(string)){
+                var first_string = first as ExprTree.ConstantExpression;
+                /*if(first.Type == typeof(string) && first_string != null && ((string)first_string.Value).Contains("{0}")){
                     return CSharpExpr.Call(method, first, CSharpExpr.NewArrayInit(
                         typeof(string),
                         args.Skip(1).Select(a => CSharpExpr.Call(expand_method, CSharpExpr.Convert(a, typeof(object))))
                     ));
-                }else{
+                }else{*/
                     var builder = new StringBuilder();
                     for(int i = 0; i < args.Count(); ++i){
                         if(i != 0)
@@ -2101,7 +2106,7 @@ namespace Expresso.CodeGen
                         typeof(string),
                         args.Select(a => CSharpExpr.Call(expand_method, CSharpExpr.Convert(a, typeof(object))))
                     ));
-                }
+                //}
             }else{
                 if(method.ContainsGenericParameters){
                     var parameters = method.GetParameters();
@@ -2117,7 +2122,14 @@ namespace Expresso.CodeGen
                         method = type.GetMethod(method.Name);
                     }
                 }
-                return (inst != null) ? CSharpExpr.Call(inst, method, args) : CSharpExpr.Call(method, args);
+
+                var args_array = args.ToArray();
+                foreach(var pair in Enumerable.Range(0, args_array.Length).Zip(method.GetParameters(), (l, r) => new Tuple<int, ParameterInfo>(l, r))){
+                    var arg = args_array[pair.Item1];
+                    if(pair.Item2.ParameterType != arg.Type)
+                        args_array[pair.Item1] = CSharpExpr.Convert(arg, pair.Item2.ParameterType);
+                }
+                return (inst != null) ? CSharpExpr.Call(inst, method, args_array) : CSharpExpr.Call(method, args_array);
             }
         }
 
@@ -2202,7 +2214,7 @@ namespace Expresso.CodeGen
             }
         }
 
-        List<ExprTree.Expression> ExpandCollection(Type collectionType, ExprTree.ParameterExpression param, out List<ExprTree.ParameterExpression> parameters)
+        List<CSharpExpr> ExpandCollection(Type collectionType, ExprTree.ParameterExpression param, out List<ExprTree.ParameterExpression> parameters)
         {
             parameters = new List<ExprTree.ParameterExpression>();
             var out_parameters = parameters;
@@ -2211,7 +2223,7 @@ namespace Expresso.CodeGen
                     var tmp_param = CSharpExpr.Parameter(t, "__" + VariableCount++);
                     out_parameters.Add(tmp_param);
                     return CSharpExpr.Assign(tmp_param, CSharpExpr.Property(param, "Item" + (i + 1)));
-                }).OfType<ExprTree.Expression>()
+                }).OfType<CSharpExpr>()
                   .ToList();
                 
                 return content;
@@ -2256,52 +2268,6 @@ namespace Expresso.CodeGen
             }
         }
 		#endregion
-
-        #region static methods
-        public static Action GetAction(MethodInfo method, object inst)
-        {
-            if(method.ReturnType != typeof(void))
-                throw new ArgumentException("An action method has to return void type", nameof(method));
-
-            if(method.GetParameters().Length != 0)
-                throw new ArgumentException("This method expects the method being called to have no parameters");
-
-            return () => method.Invoke(inst, new object[]{});
-        }
-
-        public static Action<object[]> GetAction(MethodInfo method, object inst, object[] parameters)
-        {
-            if(method.ReturnType != typeof(void))
-                throw new ArgumentException("An action method has to return void type", nameof(method));
-
-            if(method.GetParameters().Length == 0)
-                throw new ArgumentException("This method expects the method being called to have parameters");
-
-            return (objs) => method.Invoke(inst, objs);
-        }
-
-        public static Func<T> GetFunc<T>(MethodInfo method, object inst)
-        {
-            if(method.ReturnType == typeof(void))
-                throw new ArgumentException("A func method has to return some type", nameof(method));
-
-            if(method.GetParameters().Length != 0)
-                throw new ArgumentException("This method expects the method being called to have no parameters");
-
-            return () => (T)method.Invoke(inst, new object[]{});
-        }
-
-        public static Func<object[], T> GetFunc<T>(MethodInfo method, object inst, object[] parameters)
-        {
-            if(method.ReturnType == typeof(void))
-                throw new ArgumentException("A func method has to return some type", nameof(method));
-
-            if(method.GetParameters().Length == 0)
-                throw new ArgumentException("This method expects the method being called to have parameters");
-
-            return (objs) => (T)method.Invoke(inst, objs);
-        }
-        #endregion
 	}
 }
 

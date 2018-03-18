@@ -1,17 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text.RegularExpressions;
 using ICSharpCode.NRefactory;
 using ICSharpCode.NRefactory.PatternMatching;
 using Expresso.TypeSystem;
-using System.IO;
-using System.Text;
 
 namespace Expresso.Ast.Analysis
 {
-    using RegexMatch = System.Text.RegularExpressions.Match;
-
     /// <summary>
     /// A type checker is responsible for type validity check as well as type inference, if needed.
     /// All <see cref="PlaceholderType"/> nodes will be replaced with real types
@@ -21,7 +16,6 @@ namespace Expresso.Ast.Analysis
     {
         static PlaceholderType PlaceholderTypeNode = new PlaceholderType(TextLocation.Empty);
         static List<AstType> TemporaryTypes = new List<AstType>();
-        static Regex InterpolationTargetFinder = new Regex(@"\${([^}]+)}", RegexOptions.Compiled);
         bool inspecting_immutability = false;
         int scope_counter;
         Parser parser;
@@ -599,46 +593,6 @@ namespace Expresso.Ast.Analysis
 
         public AstType VisitLiteralExpression(LiteralExpression literal)
         {
-            if(literal.Type.Name == "string"){
-                var template = (string)literal.Value;
-                var matches = InterpolationTargetFinder.Matches(template);
-
-                var exprs = new List<Expression>();
-                foreach(RegexMatch match in matches){
-                    var groups = match.Groups;
-                    var inner_parser = new Parser(new Scanner(new MemoryStream(Encoding.UTF8.GetBytes(groups[1].Value))));
-                    try{
-                        exprs.Add(inner_parser.ParseExpression());
-                    }
-                    catch(ParserException e){
-                        parser.ReportSemanticError(
-                            "Error ES3000: A string interpolation error: {0}",
-                            literal,
-                            e.Message
-                        );
-                    }
-                }
-
-                int counter = 0;
-                var replaced_string = InterpolationTargetFinder.Replace(template, match => "{" + counter++.ToString() + "}");
-                literal.SetValue(replaced_string, replaced_string);
-
-                if(matches.Count > 0){
-                    var call_expr = Expression.MakeCallExpr(
-                        Expression.MakeMemRef(
-                            Expression.MakePath(
-                                AstNode.MakeIdentifier("string", AstType.MakePlaceholderType())
-                            ),
-                            AstNode.MakeIdentifier("format", AstType.MakePlaceholderType())
-                        ),
-                        new []{literal.Clone()}.Concat(exprs),
-                        literal.StartLocation
-                    );
-                    literal.ReplaceWith(call_expr);
-                    VisitCallExpression(call_expr);
-                }
-            }
-
             return literal.Type;
         }
 

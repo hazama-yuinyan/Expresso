@@ -221,6 +221,7 @@
     <Compile Include="Ast\Patterns\PatternWithType.cs" />
     <Compile Include="Ast\Expressions\NullReferenceExpression.cs" />
     <Compile Include="Analysis\NullCheckWalker.cs" />
+    <Compile Include="Analysis\PreProcessor.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System" />

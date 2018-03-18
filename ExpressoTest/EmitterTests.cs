@@ -525,7 +525,7 @@ namespace Expresso.Test
         [Test]
         public void VariousStrings()
         {
-            var parser = new Parser(new Scanner("../../sources/for_unit_tests/various_strings.exs.exs"));
+            var parser = new Parser(new Scanner("../../sources/for_unit_tests/various_strings.exs"));
             parser.DoPostParseProcessing = true;
             parser.Parse();
 

@@ -475,8 +475,10 @@ string cur_class_name;
 		  
 		ModuleBody(out module_decl);
 		Debug.Assert(Symbols.Parent.Name == "root", "The symbol table should indicate \"programRoot\" before name binding ");
-		if(DoPostParseProcessing)
+		if(DoPostParseProcessing){
+		   PreProcessor.PerformPreProcess(module_decl, this);
 		   ExpressoNameBinder.BindAst(module_decl, this); //Here's the start of post-parse processing
+		}
 		}
 		catch(ParserException e){
 		errors.SemErr(e.ToString());

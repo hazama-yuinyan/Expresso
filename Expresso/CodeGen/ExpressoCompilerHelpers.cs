@@ -69,6 +69,7 @@ namespace Expresso.CodeGen
         {
             foreach(var primitive in SpecialNamesMapInverse){
                 table.AddTypeSymbol(primitive.Value.Item1, AstType.MakePrimitiveType(primitive.Value.Item1));
+                table.GetTypeSymbol(primitive.Value.Item1).IdentifierId = primitive.Value.Item2;
                 AddNativeSymbolTable(AstNode.MakeIdentifier(primitive.Key), table);
             }
         }
@@ -158,8 +159,6 @@ namespace Expresso.CodeGen
                 table.Children.Add(new_table);
                 // Don't add a type symbol here bacause the Parser class has already done that
                 //table.AddTypeSymbol(expresso_type_name_full, AstType.MakeSimpleType(expresso_type_name, type_args));
-                if(SpecialNamesMapInverse.ContainsKey(identifier.Name))
-                    table.GetTypeSymbol(expresso_type_name).IdentifierId = IdentifierId++;
             }
         }
 
