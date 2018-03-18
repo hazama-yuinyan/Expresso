@@ -3848,7 +3848,7 @@ namespace Expresso.Test
                     Helpers.MakePrimitiveType("double"),
                     Modifiers.Export
                 )
-            }, Helpers.MakeSeq<ImportDeclaration>(
+            }, Helpers.MakeSeq(
                 AstNode.MakeImportDecl(AstNode.MakeIdentifier("System.Math"), "Math")
             ));
 
@@ -4033,9 +4033,9 @@ namespace Expresso.Test
                     Helpers.MakeVoidType(),
                     Modifiers.None
                 )
-            }, new List<ImportDeclaration>{
+            }, Helpers.MakeSeq(
                 AstNode.MakeImportDecl(AstNode.MakeIdentifier("test_module"), "TestModule")
-            });
+            ));
 
             Assert.IsNotNull(ast);
             Helpers.AstStructuralEqual(ast, expected_ast);
@@ -6474,6 +6474,216 @@ namespace Expresso.Test
         [Test]
         public void UseOfTheStandardLibrary()
         {
+            var parser = new Parser(new Scanner("../../sources/for_unit_tests/use_of_the_standard_library.exs"));
+            parser.DoPostParseProcessing = true;
+            parser.Parse();
+
+            var ast = parser.TopmostAst;
+
+            var expected = AstNode.MakeModuleDef("main", new List<EntityDeclaration>{
+                EntityDeclaration.MakeFunc(
+                    "main",
+                    Enumerable.Empty<ParameterDeclaration>(),
+                    Statement.MakeBlock(
+                        Statement.MakeVarDecl(
+                            Helpers.MakeSeq(
+                                Helpers.MakeExactPatternWithType(
+                                    "writer",
+                                    Helpers.MakeGenericType("FileStream")
+                                )
+                            ),
+                            Helpers.MakeSeq(
+                                Expression.Null
+                            ),
+                            Modifiers.None
+                        ),
+                        Statement.MakeTryStmt(
+                            Statement.MakeBlock(
+                                Statement.MakeExprStmt(
+                                    Expression.MakeSingleAssignment(
+                                        Helpers.MakeIdentifierPath(
+                                            "writer",
+                                            Helpers.MakeGenericType("FileStream")
+                                        ),
+                                        Helpers.MakeCallExpression(
+                                            Expression.MakeMemRef(
+                                                Helpers.MakeIdentifierPath(
+                                                    "File",
+                                                    Helpers.MakeGenericType("System.IO.File")
+                                                ),
+                                                AstNode.MakeIdentifier(
+                                                    "openWrite",
+                                                    AstType.MakeFunctionType(
+                                                        "openWrite",
+                                                        Helpers.MakeGenericType("FileStream"),
+                                                        TextLocation.Empty,
+                                                        TextLocation.Empty,
+                                                        Helpers.MakePrimitiveType("string")
+                                                    )
+                                                )
+                                            ),
+                                            Expression.MakeConstant(
+                                                "string",
+                                                "./some_text.txt"
+                                            )
+                                        )
+                                    )
+                                ),
+                                Statement.MakeVarDecl(
+                                    Helpers.MakeSeq(
+                                        Helpers.MakePaticularPatternWithType(
+                                            "bytes",
+                                            Helpers.MakeGenericType(
+                                                "array",
+                                                Helpers.MakePrimitiveType("byte")
+                                            )
+                                        ) 
+                                    ),
+                                    Helpers.MakeSeq(
+                                        Helpers.MakeCallExpression(
+                                            Expression.MakeMemRef(
+                                                Expression.MakeObjectCreation(
+                                                    Helpers.MakeGenericType("UTF8Encoding"),
+                                                    Helpers.MakeSeq(
+                                                        AstNode.MakeIdentifier("encoderShouldEmitUTF8Identifier")
+                                                    ),
+                                                    Helpers.MakeSeq(
+                                                        Expression.MakeConstant("bool", true)
+                                                    )
+                                                ),
+                                                AstNode.MakeIdentifier(
+                                                    "getBytes",
+                                                    AstType.MakeFunctionType(
+                                                        "getBytes",
+                                                        Helpers.MakeGenericType(
+                                                            "array",
+                                                            Helpers.MakePrimitiveType("byte")
+                                                        ),
+                                                        TextLocation.Empty,
+                                                        TextLocation.Empty,
+                                                        Helpers.MakePrimitiveType("string")
+                                                    )
+                                                )
+                                            ),
+                                            Expression.MakeConstant(
+                                                "string",
+                                                "This is to test writing a file"
+                                            )
+                                        )
+                                    ),
+                                    Modifiers.Immutable
+                                ),
+                                Statement.MakeExprStmt(
+                                    Helpers.MakeCallExpression(
+                                        Expression.MakeMemRef(
+                                            Helpers.MakeIdentifierPath(
+                                                "writer",
+                                                Helpers.MakeGenericType("FileStream")
+                                            ),
+                                            AstNode.MakeIdentifier(
+                                                "write",
+                                                AstType.MakeFunctionType(
+                                                    "write",
+                                                    Helpers.MakeVoidType(),
+                                                    TextLocation.Empty,
+                                                    TextLocation.Empty,
+                                                    Helpers.MakeGenericType(
+                                                        "array",
+                                                        Helpers.MakePrimitiveType("byte")
+                                                    ),
+                                                    Helpers.MakePrimitiveType("int"),
+                                                    Helpers.MakePrimitiveType("int")
+                                                )
+                                            )
+                                        ),
+                                        Helpers.MakeIdentifierPath(
+                                            "bytes",
+                                            Helpers.MakeGenericType(
+                                                "array",
+                                                Helpers.MakePrimitiveType("byte")
+                                            )
+                                        ),
+                                        Expression.MakeConstant("int", 0),
+                                        Expression.MakeMemRef(
+                                            Helpers.MakeIdentifierPath(
+                                                "bytes",
+                                                Helpers.MakeGenericType(
+                                                    "array",
+                                                    Helpers.MakePrimitiveType("byte")
+                                                )
+                                            ),
+                                            AstNode.MakeIdentifier(
+                                                "Length",
+                                                AstType.MakeFunctionType(
+                                                    "get_Length",
+                                                    Helpers.MakePrimitiveType("int"),
+                                                    Enumerable.Empty<AstType>()
+                                                )
+                                            )
+                                        )
+                                    )
+                                )
+                            ),
+                            Statement.MakeFinallyClause(
+                                Statement.MakeBlock(
+                                    Statement.MakeIfStmt(
+                                        PatternConstruct.MakeExpressionPattern(
+                                            Expression.MakeBinaryExpr(
+                                                OperatorType.InEquality,
+                                                Helpers.MakeIdentifierPath(
+                                                    "writer",
+                                                    Helpers.MakeGenericType("FileStream")
+                                                ),
+                                                Expression.MakeNullRef()
+                                            )
+                                        ),
+                                        Statement.MakeBlock(
+                                            Statement.MakeExprStmt(
+                                                Helpers.MakeCallExpression(
+                                                    Expression.MakeMemRef(
+                                                        Helpers.MakeIdentifierPath(
+                                                            "writer",
+                                                            Helpers.MakeGenericType("FileStream")
+                                                        ),
+                                                        AstNode.MakeIdentifier(
+                                                            "dispose",
+                                                            AstType.MakeFunctionType(
+                                                                "dispose",
+                                                                Helpers.MakeVoidType(),
+                                                                Enumerable.Empty<AstType>()
+                                                            )
+                                                        )
+                                                    )
+                                                )
+                                            )
+                                        ),
+                                        BlockStatement.Null
+                                    )
+                                )
+                            ),
+                            TextLocation.Empty
+                        )
+                    ),
+                    Helpers.MakeVoidType(),
+                    Modifiers.None
+                )
+            }, Helpers.MakeSeq(
+                AstNode.MakeImportDecl(
+                    AstNode.MakeIdentifier("System.IO.File"),
+                    "File"
+                ),
+                AstNode.MakeImportDecl(
+                    AstNode.MakeIdentifier("System.IO.FileStream"),
+                    "FileStream"
+                ),
+                AstNode.MakeImportDecl(
+                    AstNode.MakeIdentifier("System.Text.UTF8Encoding"),
+                    "UTF8Encoding"
+                )
+            ));
+
+            Assert.IsNotNull(ast);
+            Helpers.AstStructuralEqual(ast, expected);
         }
 
         [Test]
