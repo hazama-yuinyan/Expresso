@@ -498,16 +498,8 @@ namespace Expresso.Ast.Analysis
         public void VisitImportDeclaration(ImportDeclaration importDecl)
         {
             // An import declaration always introduces new variable(s) into the module scope.
-            if(importDecl.AliasNameToken.IsNull){
-                /*foreach(var entity in importDecl.ImportedEntities){
-
-                }*/
-            }else{
-                if(importDecl.AliasNameToken.IsNull)
-                    Define(importDecl.ModuleName);
-                else
-                    Define(importDecl.AliasName);
-            }
+            foreach(var import_path in importDecl.ImportPaths)
+                Define(import_path.Name);
         }
 
         public void VisitFunctionDeclaration(FunctionDeclaration funcDecl)

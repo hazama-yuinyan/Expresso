@@ -1,6 +1,4 @@
-﻿using System;
-using System.Diagnostics;
-using Expresso.Ast.Analysis;
+﻿using Expresso.Ast.Analysis;
 using NUnit.Framework;
 
 namespace Expresso.Test

@@ -561,13 +561,26 @@ namespace Expresso.Ast
         public void VisitImportDeclaration(ImportDeclaration importDecl)
         {
             writer.Write("import ");
-            if(!importDecl.AliasNameToken.IsNull){
-                writer.Write(importDecl.ModuleName);
-                writer.Write(" as ");
-                writer.Write(importDecl.AliasName);
-            }else{
-                writer.Write(importDecl.ModuleName);
+            if(importDecl.ImportPaths.Count > 1)
+                writer.Write('{');
+
+            PrintList(importDecl.ImportPaths);
+
+            if(importDecl.ImportPaths.Count > 1)
+                writer.Write('}');
+
+            if(!importDecl.TargetFile.IsNull){
+                writer.Write(" from ");
+                writer.Write(importDecl.TargetFilePath);
             }
+
+            writer.Write(" as ");
+            if(importDecl.AliasTokens.Count > 1)
+                writer.Write('{');
+            
+            PrintList(importDecl.AliasTokens);
+            if(importDecl.AliasTokens.Count > 1)
+                writer.Write('}');
         }
 
         public void VisitFunctionDeclaration(FunctionDeclaration funcDecl)

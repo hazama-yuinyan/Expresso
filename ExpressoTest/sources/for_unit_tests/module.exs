@@ -4,7 +4,7 @@
 module main;
 
 
-import "./test_module.exs" as TestModule;
+import test_module from "./test_module.exs" as TestModule;
 
 
 def main()

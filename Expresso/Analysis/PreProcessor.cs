@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -207,7 +208,28 @@ namespace Expresso.Ast.Analysis
 
         public void VisitImportDeclaration(ImportDeclaration importDecl)
         {
-            // no op
+            // Here's the good place to import names from other files
+            // All external names will be imported into the module scope we are currently compiling
+            if(!importDecl.TargetFile.IsNull){
+                var inner_parser = new Parser(parser.scanner.OpenChildFile(importDecl.TargetFilePath));
+                inner_parser.Parse();
+
+                PerformPreProcess(inner_parser.TopmostAst, inner_parser);
+                ExpressoNameBinder.BindAst(inner_parser.TopmostAst, inner_parser);
+                // TODO: implement the way it imports only types, functions and variables
+                parser.Symbols.AddExternalSymbols(inner_parser.Symbols, importDecl.AliasTokens.First().Name);
+                ((ExpressoAst)importDecl.Parent).ExternalModules.Add(inner_parser.TopmostAst);
+            }
+
+            // Make the module name type-aware
+            foreach(var pair in importDecl.ImportPaths.Zip(importDecl.AliasTokens, (l, r) => new Tuple<Identifier, Identifier>(l, r))){
+                var type = AstType.MakeSimpleType(pair.Item1.Name);
+                pair.Item1.Type = type;
+                UniqueIdGenerator.DefineNewId(pair.Item1);
+
+                pair.Item2.Type = type.Clone();
+                UniqueIdGenerator.DefineNewId(pair.Item2);
+            }
         }
 
         public void VisitIndexerExpression(IndexerExpression indexExpr)

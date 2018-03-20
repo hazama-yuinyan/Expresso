@@ -1278,21 +1278,45 @@ namespace Expresso.Ast
             return new ExpressoAst(decls, imports, moduleName);
 		}
 
-        public static ImportDeclaration MakeImportDecl(Identifier moduleName, string aliasName)
+        public static ImportDeclaration MakeImportDecl(Identifier path, string aliasName)
 		{
-            return (aliasName != null) ? new ImportDeclaration(moduleName, AstNode.MakeIdentifier(aliasName)) :
-                new ImportDeclaration(moduleName);
+            return new ImportDeclaration(new []{path}, new []{MakeIdentifier(aliasName)});
 		}
 
-        public static ImportDeclaration MakeImportDecl(Identifier moduleName, Identifier alias)
+        public static ImportDeclaration MakeImportDecl(Identifier path, Identifier alias)
         {
-            return (alias != null) ? new ImportDeclaration(moduleName, alias) : new ImportDeclaration(moduleName);
+            return new ImportDeclaration(new []{path}, new []{alias});
         }
 
-        /*public static ImportDeclaration MakeImportDecl(PathExpression moduleName, IEnumerable<PathExpression> importedEntities)
+        public static ImportDeclaration MakeImportDecl(IEnumerable<Identifier> paths, IEnumerable<string> aliasNames)
         {
-            return new ImportDeclaration(moduleName, null, importedEntities);
-        }*/
+            return new ImportDeclaration(paths, aliasNames.Select(n => MakeIdentifier(n)));
+        }
+
+        public static ImportDeclaration MakeImportDecl(IEnumerable<Identifier> paths, IEnumerable<Identifier> aliases)
+        {
+            return new ImportDeclaration(paths, aliases);
+        }
+
+        public static ImportDeclaration MakeImportDecl(Identifier path, string alias, string fileName)
+        {
+            return new ImportDeclaration(new []{path}, new []{MakeIdentifier(alias)}, MakeIdentifier(fileName));
+        }
+
+        public static ImportDeclaration MakeImportDecl(Identifier path, Identifier alias, Identifier file)
+        {
+            return new ImportDeclaration(new []{path}, new []{alias}, file);
+        }
+
+        public static ImportDeclaration MakeImportDecl(IEnumerable<Identifier> paths, IEnumerable<string> aliasNames, string fileName)
+        {
+            return new ImportDeclaration(paths, aliasNames.Select(n => MakeIdentifier(n)), MakeIdentifier(fileName));
+        }
+
+        public static ImportDeclaration MakeImportDecl(IEnumerable<Identifier> paths, IEnumerable<Identifier> aliases, Identifier file)
+        {
+            return new ImportDeclaration(paths, aliases, file);
+        }
 
         public static VariableInitializer MakeVariableInitializer(PatternConstruct pattern, Expression expr)
         {

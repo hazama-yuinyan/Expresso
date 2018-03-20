@@ -3,7 +3,7 @@
  */
 module test_module;
 
-import "System.Math" as Math;
+import System.Math as Math;
 
 
 export class TestClass

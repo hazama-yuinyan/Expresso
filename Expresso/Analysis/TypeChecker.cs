@@ -54,6 +54,7 @@ namespace Expresso.Ast.Analysis
 
         public AstType VisitAst(ExpressoAst ast)
         {
+            Console.WriteLine("Checking types on {0}...", ast.Name);
             foreach(var decl in ast.Declarations)
                 decl.AcceptWalker(this);
 
@@ -1000,12 +1001,12 @@ namespace Expresso.Ast.Analysis
 
         public AstType VisitImportDeclaration(ImportDeclaration importDecl)
         {
-            var module_type = AstType.MakeSimpleType(importDecl.ModuleName);
-            importDecl.ModuleNameToken.Type.ReplaceWith(module_type);
+            foreach(var pair in importDecl.ImportPaths.Zip(importDecl.AliasTokens, (l, r) => new Tuple<Identifier, Identifier>(l, r))){
+                var module_type = AstType.MakeSimpleType(pair.Item1.Name);
+                pair.Item1.Type.ReplaceWith(module_type);
 
-            if(!importDecl.AliasNameToken.IsNull){
-                var module_type2 = importDecl.ModuleNameToken.AcceptWalker(this);
-                importDecl.AliasNameToken.IdentifierId = module_type2.IdentifierNode.IdentifierId;
+                var module_type2 = pair.Item1.AcceptWalker(this);
+                pair.Item2.IdentifierId = module_type2.IdentifierNode.IdentifierId;
             }
             return null;
         }

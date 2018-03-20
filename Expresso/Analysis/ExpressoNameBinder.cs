@@ -1,10 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
-using System.Text;
-using System.Text.RegularExpressions;
 
 
 /*
@@ -118,6 +114,8 @@ namespace Expresso.Ast.Analysis
         {
             Debug.Assert(symbol_table.Name == "programRoot", "When entering VisitAst, symbol_table should be programRoot");
             scope_counter = 0;
+
+            Console.WriteLine("Resolving names on {0}...", ast.ModuleName);
 
             ast.Imports.AcceptWalker(this);
             ast.Declarations.AcceptWalker(this);
@@ -584,22 +582,8 @@ namespace Expresso.Ast.Analysis
 
         public void VisitImportDeclaration(ImportDeclaration importDecl)
         {
-            // Here's the good place to import names from other files
-            // All external names will be imported into the module scope we are currently compiling
-            if(importDecl.ModuleName.EndsWith(".exs", StringComparison.CurrentCulture)){
-                var inner_parser = new Parser(parser.scanner.OpenChildFile(importDecl.ModuleName));
-                inner_parser.Parse();
+            
 
-                BindAst(inner_parser.TopmostAst, inner_parser);
-                symbol_table.AddExternalSymbols(inner_parser.Symbols, importDecl.AliasName);
-                ((ExpressoAst)importDecl.Parent).ExternalModules.Add(inner_parser.TopmostAst);
-            }
-            // Make the module name type-aware
-            var module_type = AstType.MakeSimpleType(importDecl.ModuleName);
-            importDecl.ModuleNameToken.Type = module_type;
-            UniqueIdGenerator.DefineNewId(importDecl.ModuleNameToken);
-            importDecl.AliasNameToken.Type = module_type.Clone();
-            UniqueIdGenerator.DefineNewId(importDecl.AliasNameToken);
             /*if(importDecl.AliasNameToken.IsNull){
                 importDecl.ModuleNameToken.AcceptWalker(this);
                 foreach(var ie in importDecl.ImportedEntities)

@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Collections.Generic;
 
 using ICSharpCode.NRefactory;
 
@@ -26,7 +24,7 @@ namespace Expresso.Ast
 		/// <summary>
 		/// モジュール名。
 		/// The name of the module.
-		/// If the module contains the main function, it would be called the "main" module.
+		/// If the module contains the main function, it should be called the "main" module.
 		/// </summary>
 		public string Name{
             get{return NameToken.Name;}
@@ -73,7 +71,7 @@ namespace Expresso.Ast
 
         public ExpressoAst(IEnumerable<EntityDeclaration> decls, IEnumerable<ImportDeclaration> imports, string maybeModuleName = null)
         {
-            NameToken = AstNode.MakeIdentifier(maybeModuleName);
+            NameToken = MakeIdentifier(maybeModuleName);
 
             if(imports != null)
                 Imports.AddRange(imports);

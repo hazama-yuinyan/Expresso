@@ -231,6 +231,16 @@ namespace Expresso.CodeGen
             throw new EmitterException("Unknown AstType!");
         }
 
+        public static Type TryGetNativeType(AstType type)
+        {
+            try{
+                return GetNativeType(type);
+            }
+            catch(EmitterException){
+                return null;
+            }
+        }
+
         public static string InterpolateString(string original)
         {
             return InterpolateStringRegexp.Replace(original, m => {
@@ -424,8 +434,8 @@ namespace Expresso.CodeGen
 
         public static void AddNativeSymbols(AstNodeCollection<ImportDeclaration> imports)
         {
-            foreach(var import in imports){
-                if(import.ModuleName.EndsWith(".exs", StringComparison.CurrentCulture)){
+            outer_loop:foreach(var import in imports){
+                if(import.TargetFile.IsNull){
                     /*var module_name = import.ModuleName;
                     var start_index = module_name.LastIndexOf("/", StringComparison.CurrentCulture);
                     var actual_module_name = module_name.Substring(start_index + 1, module_name.LastIndexOf(".", StringComparison.CurrentCulture) - start_index - 1);
@@ -436,12 +446,17 @@ namespace Expresso.CodeGen
                         Type = type
                     });*/
                 }else{
-                    var simple_type = AstType.MakeSimpleType(import.ModuleName);
-                    var type = GetNativeType(simple_type);
+                    foreach(var import_path in import.ImportPaths){
+                        if(!import_path.Name.Contains("::") && !import_path.Name.Contains("."))
+                            goto outer_loop;
+                        
+                        var simple_type = AstType.MakeSimpleType(import_path.ToString());
+                        var type = TryGetNativeType(simple_type);
 
-                    CSharpEmitter.Symbols.Add(import.ModuleNameToken.IdentifierId, new ExpressoSymbol{
-                        Type = type
-                    });
+                        CSharpEmitter.Symbols.Add(import_path.IdentifierId, new ExpressoSymbol{
+                            Type = type
+                        });
+                    }
                 }
             }
         }

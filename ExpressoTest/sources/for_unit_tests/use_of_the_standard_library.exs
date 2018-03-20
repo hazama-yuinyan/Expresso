@@ -1,9 +1,8 @@
 module main;
 
 
-import "System.IO.File" as File;
-import "System.IO.FileStream" as FileStream;
-import "System.Text.UTF8Encoding" as UTF8Encoding;
+import System.IO.{File, FileStream} as {File, FileStream};
+import System.Text.UTF8Encoding as UTF8Encoding;
 
 
 def main()

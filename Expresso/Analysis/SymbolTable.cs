@@ -309,7 +309,7 @@ namespace Expresso.Ast.Analysis
                 type_table.Add(name, ident);
             }
             catch(ArgumentException){
-                throw new ParserException("The name `{0}` is already defined in the type namespace in the current scope '{1}'.", ident, name, Name);
+                throw new ParserException("Error ES3014: The name `{0}` is already defined in the type namespace in the current scope '{1}'.", ident, name, Name);
             }
         }
 
@@ -334,7 +334,7 @@ namespace Expresso.Ast.Analysis
                 table.Add(name, ident);
             }
             catch(ArgumentException){
-                throw new ParserException("The name `{0}` is already defined in the current scope {1}.", ident, name, Name);
+                throw new ParserException("Error ES3014: The name `{0}` is already defined in the current scope {1}.", ident, name, Name);
             }
         }
 

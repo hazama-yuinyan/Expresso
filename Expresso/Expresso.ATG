@@ -3,6 +3,8 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Numerics;
+using System.IO;
+using System.Text;
 using System.Text.RegularExpressions;
 
 using Expresso.Ast;
@@ -465,7 +467,7 @@ ModuleBody<out ExpressoAst ast>	    (.  var decls = new List<EntityDeclaration>(
 										List<ImportDeclaration> prog_defs = null; EntityDeclaration decl = null;
 									.)
 =
-  ModuleNameDefinition<out module_name>
+  ModuleNameDefinition<out module_name> (. Console.WriteLine("Parsing {0}...", module_name); .)
   [ ProgramDefinition<out prog_defs>
   ]
   								
@@ -505,8 +507,9 @@ ProgramDefinition<. out List<ImportDeclaration> imports .>	(. imports = new List
   }.
 /*------------------------------------------------------------------------*/
 ImportDecl<out ImportDeclaration decl>
-            (.  decl = null; /*var has_in = false; PathExpression path;*/ Identifier symbol = null;
-				Identifier alias = null; var entities = new List<Identifier>();
+            (.  decl = null; bool seen_from = false;
+				Identifier alias = null; Identifier target_file = null; var start_loc = NextLocation;
+                var paths = new List<Identifier>(); var aliases = new List<Identifier>();
 			.)
 =
   /*****************************
@@ -515,45 +518,92 @@ ImportDecl<out ImportDeclaration decl>
    *****************************/
   SYNC
   "import"
-  string_literal                (.
-                                   var path = t.val.Substring(1, t.val.Length - 2);
-  								   symbol = AstNode.MakeIdentifier(path, ExpressoModifiers.None, CurrentLocation);
-  								   Symbols.AddTypeSymbol(path, symbol);
-                                   if(!symbol.Name.EndsWith(".exs", StringComparison.CurrentCulture))
-                                       Symbols.AddNativeSymbolTable(symbol);
-  								.)
-  ( "as"                        (. var alias_start_loc = CurrentLocation; .)
-    ident						(.
-    							   if(!CheckKeyword(t.val)){
-    							       alias = AstNode.MakeIdentifier(t.val, ExpressoModifiers.None, alias_start_loc);
-    							       Symbols.AddTypeSymbol(t.val, symbol);
-    							   }else{
-    							       // Failed to parse an alias name.
-    							       // Leave the parser to recover its state.
-    							   }
-    							.)
-  )
-  /*PathExpression<out path>      (. entities.Add(path); .)
-  ( "as"
-    ident						(.
-                                   if(!CheckKeyword(t.val)){
-                                       alias = AstNode.MakeIdentifier(t.val, ExpressoModifiers.None, CurrentLocation);
-                                       Symbols.AddTypeSymbol(t.val, alias);
-                                   }else{
-                                       // Failed to parse an alias name.
-                                       // Leave the parser to recover its state.
+  ImportPaths<ref paths, start_loc>
+  [ "from"                      (.
+                                    seen_from = true;
+                                    var file_start_loc = CurrentLocation;
+                                .)
+    string_literal              (. 
+                                    var name = t.val.Substring(1, t.val.Length - 2);
+                                    if(!File.Exists(name)){
+                                        SemanticError("Error ES0020: The external file '{0}' doesn't exist.", name);
+                                    }
+                                    target_file = AstNode.MakeIdentifier(name, ExpressoModifiers.None, file_start_loc);
+                                .)
+  ]                             (.
+                                   foreach(var path in paths){
+                                       if(!seen_from)
+                                           Symbols.AddNativeSymbolTable(path);
                                    }
                                 .)
-  | { WEAK ','
-      PathExpression<out path>  (. entities.Add(path); .)
-    }
-    "in"                        (. has_in = true; .)
-    PathExpression<out path>
-  )*/
-  SYNC ';'                      (. //if(has_in)
-                                   //    decl = AstNode.MakeImportDecl(path, entities);
-                                   //else
-                                       decl = AstNode.MakeImportDecl(symbol, alias);
+  ( "as"                                         (. var alias_start_loc = CurrentLocation; .)
+    ( ImportAlias<out alias, alias_start_loc>    (. aliases.Add(alias); .)
+    | '{'
+      ImportAlias<out alias, alias_start_loc>    (. aliases.Add(alias); .)
+      { ','                                      (. alias_start_loc = CurrentLocation; .)
+        ImportAlias<out alias, alias_start_loc>  (. aliases.Add(alias); .)
+      }
+      '}'
+    )
+  )
+  SYNC ';'                      (. decl = AstNode.MakeImportDecl(paths, aliases, target_file); .).
+/*------------------------------------------------------------------------*/
+ImportPaths<. ref List<Identifier> paths, TextLocation startLoc.>    (. var builder = new StringBuilder(); .)
+=
+  ident                             (.
+                                       builder.Append(t.val);
+                                       if(la.val != "::" && la.val != "."){
+                                           var tmp = AstNode.MakeIdentifier(t.val, ExpressoModifiers.None, startLoc);
+                                           Symbols.AddTypeSymbol(tmp.Name, tmp);
+                                           paths.Add(tmp);
+                                       }
+                                    .)
+  [ "::"                            (. builder.Append("::"); .)
+    ident                           (.
+                                       builder.Append(t.val);
+                                       if(la.val != "."){
+                                           var tmp = AstNode.MakeIdentifier(builder.ToString(), ExpressoModifiers.None, startLoc);
+                                           Symbols.AddTypeSymbol(tmp.Name, tmp);
+                                           paths.Add(tmp);
+                                       }
+                                    .)
+  ]
+  { '.'                             (. builder.Append('.'); .)
+    ( ident                         (.
+                                       builder.Append(t.val);
+                                       if(la.val != "."){
+                                           var tmp = AstNode.MakeIdentifier(builder.ToString(), ExpressoModifiers.None, startLoc);
+                                           Symbols.AddTypeSymbol(tmp.Name, tmp);
+                                           paths.Add(tmp);
+                                       }
+                                    .)
+    | '{'                           (. var parent_namespace = builder.ToString(); .)
+      ident                         (.
+                                       var tmp = AstNode.MakeIdentifier(parent_namespace + t.val, ExpressoModifiers.None, startLoc);
+                                       Symbols.AddTypeSymbol(tmp.Name, tmp);
+                                       paths.Add(tmp);
+                                    .)
+      { ','
+        ident                       (.
+                                       var tmp2 = AstNode.MakeIdentifier(parent_namespace + t.val, ExpressoModifiers.None, startLoc);
+                                       Symbols.AddTypeSymbol(tmp2.Name, tmp2);
+                                       paths.Add(tmp2);
+                                    .)
+      }
+      '}'
+    )
+  }.
+/*------------------------------------------------------------------------*/
+ImportAlias<out Identifier ident, TextLocation startLoc>    (. ident = null; .)
+=
+  ident                         (.
+                                   if(!CheckKeyword(t.val)){
+                                       ident = AstNode.MakeIdentifier(t.val, ExpressoModifiers.None, startLoc);
+                                       Symbols.AddTypeSymbol(ident.Name, ident);
+                                   }else{
+                                       // Failed to parse an alias name
+                                       // Leave the parser to recover its state.
+                                   }
                                 .).
 /*------------------------------------------------------------------------*/
 InterfaceDecl<out EntityDeclaration decl, Modifiers modifiers>

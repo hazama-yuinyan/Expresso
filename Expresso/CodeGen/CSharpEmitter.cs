@@ -72,7 +72,7 @@ namespace Expresso.CodeGen
             item_type_inferencer = new ItemTypeInferencer(this);
 
             CSharpCompilerHelper.AddPrimitiveNativeSymbols();
-            AddNativeSymbols(parser.TopmostAst);
+            //AddNativeSymbols(parser.TopmostAst);
         }
 
         static void AddNativeSymbols(ExpressoAst astTree)
@@ -215,13 +215,13 @@ namespace Expresso.CodeGen
                 context.CurrentModuleCount = external_module_count;
                 scope_counter = tmp_counter;
 
-                var regexp = new Regex(external_module.Name);
-                var import = ast.Imports.Where(i => regexp.IsMatch(i.ModuleName))
-                                .FirstOrDefault();
+                var external_module_name = external_module.Name;
+                var import = ast.Imports
+                                .FirstOrDefault(i => external_module_name == i.ImportPaths.First().Name);
                 if(import == null)
                     throw new EmitterException("'{0}' isn't a module name", external_module.Name);
 
-                Symbols.Add(import.ModuleNameToken.IdentifierId, new ExpressoSymbol{
+                Symbols.Add(import.ImportPaths.First().IdentifierId, new ExpressoSymbol{
                     Type = context.ExternalModuleType
                 });
                 context.ExternalModuleType = null;
@@ -1400,45 +1400,44 @@ namespace Expresso.CodeGen
 
         public CSharpExpr VisitImportDeclaration(ImportDeclaration importDecl, CSharpEmitterContext context)
         {
-            context.RequestType = true;
-            context.RequestMethod = true;
-            context.RequestPropertyOrField = true;
-            context.TargetType = null;
-            context.Method = null;
-            context.PropertyOrField = null;
+            foreach(var pair in importDecl.ImportPaths.Zip(importDecl.AliasTokens, (l, r) => new Tuple<Identifier, Identifier>(l, r))){
+                if(!pair.Item1.Name.Contains("::") && !pair.Item1.Name.Contains("."))
+                    break;
+                
+                var import_path = pair.Item1;
+                var alias = pair.Item2;
 
-            try{
-                importDecl.ModuleNameToken.AcceptWalker(this, context);
-            }
-            catch(EmitterException ex){
-                if(!importDecl.ModuleName.EndsWith(".exs", StringComparison.CurrentCulture))
-                    throw ex;
-            }
-            if(importDecl.ModuleName.EndsWith(".exs", StringComparison.CurrentCulture) && importDecl.AliasName != null){
-                // For importing external modules
-                /*var type_symbol = symbol_table.GetTypeSymbol(importDecl.AliasName);
-                if(type_symbol != null){
-                    AddSymbol(type_symbol, new ExpressoSymbol{
-                        Type = context.TargetType,
-                        Field = context.Field,
-                        Method = context.Method
-                    });
+                var type = CSharpCompilerHelper.GetNativeType(AstType.MakeSimpleType(import_path.Name));
+                if(type != null){
+                    var expresso_symbol = new ExpressoSymbol{Type = type};
+                    AddSymbol(import_path, expresso_symbol);
+                    AddSymbol(alias, expresso_symbol);
                 }else{
-                    var symbol = symbol_table.GetSymbol(importDecl.ModuleName);
-                    AddSymbol(symbol, new ExpressoSymbol{
-                        Type = context.TargetType,
-                        Method = context.Method,
-                        Field = context.Field
-                    });
-                }*/
-                AddSymbol(importDecl.AliasNameToken, new ExpressoSymbol{
-                    Type = context.TargetType
-                });
+                    var parent_type_name = import_path.Name.Substring(0, import_path.Name.LastIndexOf(".", StringComparison.CurrentCulture));
+                    var parent_type = CSharpCompilerHelper.GetNativeType(AstType.MakeSimpleType(parent_type_name));
+                    var member_name = import_path.Name.Substring(import_path.Name.LastIndexOf(".", StringComparison.CurrentCulture) + 1);
+                    if(parent_type != null){
+                        var flag = BindingFlags.Static | BindingFlags.NonPublic;
+                        var method = parent_type.GetMethod(member_name, flag);
+                        if(method != null){
+                            var expresso_symbol = new ExpressoSymbol{Method = method};
+                            AddSymbol(import_path, expresso_symbol);
+                            AddSymbol(alias, expresso_symbol);
+                        }else{
+                            var module_field = parent_type.GetField(member_name, flag);
+                            if(module_field != null){
+                                var expresso_symbol = new ExpressoSymbol{PropertyOrField = module_field};
+                                AddSymbol(import_path, expresso_symbol);
+                                AddSymbol(alias, expresso_symbol);
+                            }else{
+                                throw new EmitterException("Error ES1903: It is found that the import name {0} isn't defined", import_path.Name);
+                            }
+                        }
+                    }
+                }
             }
+            
 
-            context.RequestType = false;
-            context.RequestMethod = false;
-            context.RequestPropertyOrField = false;
 
             return null;
         }

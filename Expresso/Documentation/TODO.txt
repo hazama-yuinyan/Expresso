@@ -10,3 +10,4 @@
 ・intseqにintの範囲外が来た時に落ちるはずなのを直す
 ・pureC#の呼び出し(FFI, new, etc.)
 ・Dictionaryの要素に対してkey,valueをタプルで返すようにする(Dictionaryをfor..inの右辺に使えるようにする)
+・importにfrom節を追加し、import元に.dllを追加する
