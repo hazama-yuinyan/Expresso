@@ -219,7 +219,7 @@ namespace Expresso.Test
 
         public static SimpleType MakeGenericPlaceholderType(string identifier)
         {
-            return new SimpleType(Helpers.MakeSomeIdent(identifier), TextLocation.Empty);
+            return AstType.MakeSimpleType(MakeSomeIdent(identifier), TextLocation.Empty);
         }
 
         /// <summary>

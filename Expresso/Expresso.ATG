@@ -305,6 +305,20 @@ $namespace=Expresso
         return t.kind == _ident && token.kind == _colon;
     }
 
+    bool IsStartOfImportPath()
+    {
+        var token = scanner.Peek();
+        scanner.ResetPeek();
+        return token.val != "::" && token.val != ".";
+    }
+
+    bool IsStartOfTypeNameOfImportPath()
+    {
+        var token = scanner.Peek();
+        scanner.ResetPeek();
+        return token.val != ".";
+    }
+
     bool CheckKeyword(string name)
     {
         if(KnownTypeReference.Keywords.Contains(name)){
@@ -548,51 +562,51 @@ ImportDecl<out ImportDeclaration decl>
   )
   SYNC ';'                      (. decl = AstNode.MakeImportDecl(paths, aliases, target_file); .).
 /*------------------------------------------------------------------------*/
-ImportPaths<. ref List<Identifier> paths, TextLocation startLoc.>    (. var builder = new StringBuilder(); .)
+ImportPaths<. ref List<Identifier> paths, TextLocation startLoc.>    (. var builder = new StringBuilder(); Identifier ident = null; .)
 =
-  ident                             (.
-                                       builder.Append(t.val);
-                                       if(la.val != "::" && la.val != "."){
-                                           var tmp = AstNode.MakeIdentifier(t.val, ExpressoModifiers.None, startLoc);
-                                           Symbols.AddTypeSymbol(tmp.Name, tmp);
-                                           paths.Add(tmp);
-                                       }
+  ( IF(IsStartOfImportPath())
+    ImportPath<out ident, "", startLoc> (. paths.Add(ident); .)
+  | ident                               (. builder.Append(t.val); .)
+  )
+  [ "::"                            (. 
+                                       builder.Append("::");
+                                       var parent_namespace = builder.ToString();
                                     .)
-  [ "::"                            (. builder.Append("::"); .)
-    ident                           (.
-                                       builder.Append(t.val);
-                                       if(la.val != "."){
-                                           var tmp = AstNode.MakeIdentifier(builder.ToString(), ExpressoModifiers.None, startLoc);
-                                           Symbols.AddTypeSymbol(tmp.Name, tmp);
-                                           paths.Add(tmp);
-                                       }
-                                    .)
-  ]
-  { '.'                             (. builder.Append('.'); .)
-    ( ident                         (.
-                                       builder.Append(t.val);
-                                       if(la.val != "."){
-                                           var tmp = AstNode.MakeIdentifier(builder.ToString(), ExpressoModifiers.None, startLoc);
-                                           Symbols.AddTypeSymbol(tmp.Name, tmp);
-                                           paths.Add(tmp);
-                                       }
-                                    .)
-    | '{'                           (. var parent_namespace = builder.ToString(); .)
-      ident                         (.
-                                       var tmp = AstNode.MakeIdentifier(parent_namespace + t.val, ExpressoModifiers.None, startLoc);
-                                       Symbols.AddTypeSymbol(tmp.Name, tmp);
-                                       paths.Add(tmp);
-                                    .)
+    ( ( IF(IsStartOfTypeNameOfImportPath())
+        ImportPath<out ident, parent_namespace, startLoc>  (. paths.Add(ident); .)
+      | ident                                              (. builder.Append(t.val); .)
+      )
+    | '{'                           (. var parent_namespace2 = builder.ToString(); .)
+      ImportPath<out ident, parent_namespace2, startLoc>   (. paths.Add(ident); .)
       { ','
-        ident                       (.
-                                       var tmp2 = AstNode.MakeIdentifier(parent_namespace + t.val, ExpressoModifiers.None, startLoc);
-                                       Symbols.AddTypeSymbol(tmp2.Name, tmp2);
-                                       paths.Add(tmp2);
+        ImportPath<out ident, parent_namespace2, startLoc> (. paths.Add(ident); .)
+      }
+      '}'
+    )
+  ]
+  { '.'                             (. 
+                                       builder.Append('.');
+                                       var parent_namespace3 = builder.ToString();
                                     .)
+    ( ( IF(IsStartOfTypeNameOfImportPath())
+        ImportPath<out ident, parent_namespace3, startLoc> (. paths.Add(ident); .)
+      | ident                                              (. builder.Append(t.val); .)
+      )
+    | '{'                           (. var parent_namespace4 = builder.ToString(); .)
+      ImportPath<out ident, parent_namespace4, startLoc>   (. paths.Add(ident); .)
+      { ','
+        ImportPath<out ident, parent_namespace4, startLoc> (. paths.Add(ident); .)
       }
       '}'
     )
   }.
+/*------------------------------------------------------------------------*/
+ImportPath<out Identifier ident, string parentNamespace, TextLocation startLoc>    (. ident = null; .)
+=
+  ident                         (.
+                                   ident = AstNode.MakeIdentifier(parentNamespace + t.val, ExpressoModifiers.None, startLoc);
+                                   Symbols.AddTypeSymbol(ident.Name, ident);
+                                .).
 /*------------------------------------------------------------------------*/
 ImportAlias<out Identifier ident, TextLocation startLoc>    (. ident = null; .)
 =

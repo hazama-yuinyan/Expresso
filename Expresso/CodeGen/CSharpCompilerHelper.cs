@@ -432,35 +432,6 @@ namespace Expresso.CodeGen
             }
         }
 
-        public static void AddNativeSymbols(AstNodeCollection<ImportDeclaration> imports)
-        {
-            outer_loop:foreach(var import in imports){
-                if(import.TargetFile.IsNull){
-                    /*var module_name = import.ModuleName;
-                    var start_index = module_name.LastIndexOf("/", StringComparison.CurrentCulture);
-                    var actual_module_name = module_name.Substring(start_index + 1, module_name.LastIndexOf(".", StringComparison.CurrentCulture) - start_index - 1);
-                    var simple_type = AstType.MakeSimpleType(actual_module_name);
-                    var type = GetNativeType(simple_type);
-
-                    CSharpEmitter.Symbols.Add(import.ModuleNameToken.IdentifierId, new ExpressoSymbol{
-                        Type = type
-                    });*/
-                }else{
-                    foreach(var import_path in import.ImportPaths){
-                        if(!import_path.Name.Contains("::") && !import_path.Name.Contains("."))
-                            goto outer_loop;
-                        
-                        var simple_type = AstType.MakeSimpleType(import_path.ToString());
-                        var type = TryGetNativeType(simple_type);
-
-                        CSharpEmitter.Symbols.Add(import_path.IdentifierId, new ExpressoSymbol{
-                            Type = type
-                        });
-                    }
-                }
-            }
-        }
-
         static string ExpandSequence<T>(IEnumerable<T> enumerable)
         {
             var builder = new StringBuilder();

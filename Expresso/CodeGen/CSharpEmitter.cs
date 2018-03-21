@@ -72,14 +72,6 @@ namespace Expresso.CodeGen
             item_type_inferencer = new ItemTypeInferencer(this);
 
             CSharpCompilerHelper.AddPrimitiveNativeSymbols();
-            //AddNativeSymbols(parser.TopmostAst);
-        }
-
-        static void AddNativeSymbols(ExpressoAst astTree)
-        {
-            CSharpCompilerHelper.AddNativeSymbols(astTree.Imports);
-            foreach(var external_module in astTree.ExternalModules)
-                AddNativeSymbols(external_module);
         }
 
         static Type GuessEnumeratorType(Type type)

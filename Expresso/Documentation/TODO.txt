@@ -11,3 +11,5 @@
 ・pureC#の呼び出し(FFI, new, etc.)
 ・Dictionaryの要素に対してkey,valueをタプルで返すようにする(Dictionaryをfor..inの右辺に使えるようにする)
 ・importにfrom節を追加し、import元に.dllを追加する
+・doc commentを追加する
+・shadowingを実装する

@@ -2442,9 +2442,9 @@ namespace Expresso.Test
                     Helpers.MakePlaceholderType(),
                     Modifiers.None
                 )
-            }, new List<ImportDeclaration>{
-                AstNode.MakeImportDecl(AstNode.MakeIdentifier("./test_module.exs"), "TestModule")
-            });
+            }, Helpers.MakeSeq(
+                AstNode.MakeImportDecl(AstNode.MakeIdentifier("test_module"), "TestModule", "./test_module.exs")
+            ));
 
             Assert.IsNotNull(ast);
 
@@ -4176,6 +4176,81 @@ namespace Expresso.Test
 
             Assert.IsNotNull(ast);
             Helpers.AstStructuralEqual(ast, expected);
+        }
+
+        [Test]
+        public void Module2()
+        {
+            var parser = new Parser(new Scanner("../../sources/for_unit_tests/module2.exs"));
+            parser.Parse();
+
+            var ast = parser.TopmostAst;
+
+            var expected_ast = AstNode.MakeModuleDef("main", new List<EntityDeclaration>{
+                EntityDeclaration.MakeFunc(
+                    "main",
+                    Enumerable.Empty<ParameterDeclaration>(),
+                    Statement.MakeBlock(
+                        Statement.MakeVarDecl(
+                            Helpers.MakeSeq(
+                                Helpers.MakeSomePatternWithType("t")
+                            ),
+                            Helpers.MakeSeq(
+                                Expression.MakeObjectCreation(
+                                    Helpers.MakeGenericPlaceholderType("TestClass"),
+                                    Helpers.MakeSeq(
+                                        AstNode.MakeIdentifier("x"),
+                                        AstNode.MakeIdentifier("y")
+                                    ),
+                                    Helpers.MakeSeq(
+                                        Expression.MakeConstant("int", 1),
+                                        Expression.MakeConstant("int", 2)
+                                    )
+                                )
+                            ),
+                            Modifiers.Immutable
+                        ),
+                        Statement.MakeVarDecl(
+                            Helpers.MakeSeq(
+                                Helpers.MakeSomePatternWithType("t2")
+                            ),
+                            Helpers.MakeSeq(
+                                Helpers.MakeCallExpression(
+                                    Helpers.MakeIdentifierPath("createTest"),
+                                    Expression.MakeConstant("int", 3),
+                                    Expression.MakeConstant("int", 4)
+                                )
+                            ),
+                            Modifiers.Immutable
+                        ),
+                        Statement.MakeExprStmt(
+                            Helpers.MakeCallExpression(
+                                Helpers.MakeIdentifierPath("println"),
+                                Helpers.MakeIdentifierPath("t"),
+                                Helpers.MakeIdentifierPath("t2")
+                            )
+                        )
+                    ),
+                    Helpers.MakePlaceholderType(),
+                    Modifiers.None
+                )
+            }, Helpers.MakeSeq(
+                AstNode.MakeImportDecl(
+                    Helpers.MakeSeq(
+                        AstNode.MakeIdentifier("test_module::TestClass"),
+                        AstNode.MakeIdentifier("test_module::createTest")
+                    ),
+                    Helpers.MakeSeq(
+                        "TestModule",
+                        "createTest"
+                    ),
+                    "./test_module.exs"
+                )
+            ));
+
+            Assert.IsNotNull(ast);
+
+            Helpers.AstStructuralEqual(ast, expected_ast);
         }
     }
 }
