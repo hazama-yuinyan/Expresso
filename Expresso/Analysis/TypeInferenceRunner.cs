@@ -493,7 +493,7 @@ namespace Expresso.Ast.Analysis
                     throw new ParserException(
                         "Error ES1501: The type `{0}` isn't found or accessible from the scope {1}.",
                         creation,
-                        creation.TypePath,
+                        creation.TypePath.ToString(),
                         creation.TypePath.Name
                     );
                 }else{

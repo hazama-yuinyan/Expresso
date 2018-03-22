@@ -465,6 +465,26 @@ namespace Expresso.Test
             Assert.That(() => parser.Parse(), Throws.TypeOf<ParserException>().With.Message.Contains("ES2100"));
             Assert.AreEqual(1, parser.errors.count);
         }
+
+        [Test]
+        public void ImportUnexportedItem()
+        {
+            var parser = new Parser(new Scanner("../../sources/for_unit_tests/erroneous/import_unexported_item.exs"));
+            parser.DoPostParseProcessing = true;
+
+            Assert.That(() => parser.Parse(), Throws.TypeOf<ParserException>().With.Message.Contains("ES3302"));
+            Assert.AreEqual(1, parser.errors.count);
+        }
+
+        [Test]
+        public void ImportUndefiedSymbol()
+        {
+            var parser = new Parser(new Scanner("../../sources/for_unit_tests/erroneous/import_undefined_symbol.exs"));
+            parser.DoPostParseProcessing = true;
+
+            Assert.That(() => parser.Parse(), Throws.TypeOf<ParserException>().With.Message.Contains("ES0103"));
+            Assert.AreEqual(1, parser.errors.count);
+        }
     }
 }
 

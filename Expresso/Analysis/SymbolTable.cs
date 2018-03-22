@@ -560,13 +560,55 @@ namespace Expresso.Ast.Analysis
         }
 
         /// <summary>
+        /// Adds external tables and symbols with certain paths to this table with alias names.
+        /// </summary>
+        /// <param name="externalTable">External table.</param>
+        /// <param name="importPaths">Import paths.</param>
+        /// <param name="aliasTokens">Alias tokens.</param>
+        public void AddExternalSymbols(SymbolTable externalTable, IEnumerable<Identifier> importPaths, IEnumerable<Identifier> aliasTokens)
+        {
+            var root_table = this;
+            while(root_table.Parent != null)
+                root_table = root_table.Parent;
+            
+            foreach(var pair in importPaths.Zip(aliasTokens, (l, r) => new Tuple<Identifier, Identifier>(l, r))){
+                var target_name = pair.Item1.Name.Substring(pair.Item1.Name.LastIndexOf("::", StringComparison.CurrentCulture) + 2);
+                var target_table = externalTable.GetTypeTable(target_name);
+                if(target_table == null){
+                    var target_name2 = target_name.Substring(target_name.LastIndexOf(".", StringComparison.CurrentCulture) + 1);
+                    var symbol = externalTable.GetSymbol(target_name2);
+                    if(symbol == null){
+                        throw new ParserException(
+                            "Error ES0103: An external symbol '{0}' isn't found.",
+                            pair.Item1,
+                            pair.Item1.ToString()
+                        );
+                    }else{
+                        if(!symbol.Modifiers.HasFlag(Modifiers.Export))
+                            ReportExportMissingError(pair.Item1);
+                        
+                        root_table.AddSymbol(pair.Item2.Name, symbol);
+                    }
+                }else{
+                    var type_symbol = externalTable.GetTypeSymbol(target_name);
+                    if(!type_symbol.Modifiers.HasFlag(Modifiers.Export))
+                        ReportExportMissingError(pair.Item1);
+                    
+                    var cloned = target_table.Clone();
+                    cloned.Parent = root_table;
+                    root_table.Children.Add(cloned);
+                }
+            }
+        }
+
+        /// <summary>
         /// Adds a native symbol's table.
         /// </summary>
         /// <param name="symbol">Symbol.</param>
         public void AddNativeSymbolTable(Identifier symbol)
         {
             if(Parent.Name != "root")
-                throw new ParserException("Expected to call this method on programRoot but you called it on `{0}`", symbol, Name);
+                throw new InvalidOperationException(string.Format("Expected to call this method on programRoot but you called it on `{0}`", Name));
             
             ExpressoCompilerHelpers.AddNativeSymbolTable(symbol, Parent);
         }
@@ -606,6 +648,15 @@ namespace Expresso.Ast.Analysis
             }
 
             return cloned;
+        }
+
+        static void ReportExportMissingError(Identifier ident)
+        {
+            throw new ParserException(
+                "Error ES3302: '{0}' doesn't have the export flag.\nYou can't import an unexported item.",
+                ident,
+                ident.Name
+            );
         }
     }
 }

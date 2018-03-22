@@ -4241,7 +4241,7 @@ namespace Expresso.Test
                         AstNode.MakeIdentifier("test_module::createTest")
                     ),
                     Helpers.MakeSeq(
-                        "TestModule",
+                        "TestClass",
                         "createTest"
                     ),
                     "./test_module.exs"

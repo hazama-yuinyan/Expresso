@@ -539,7 +539,7 @@ ImportDecl<out ImportDeclaration decl>
                                 .)
     string_literal              (. 
                                     var name = t.val.Substring(1, t.val.Length - 2);
-                                    if(!File.Exists(name)){
+                                    if(!scanner.ChildFileExists(name)){
                                         SemanticError("Error ES0020: The external file '{0}' doesn't exist.", name);
                                     }
                                     target_file = AstNode.MakeIdentifier(name, ExpressoModifiers.None, file_start_loc);
@@ -706,8 +706,8 @@ ClassDecl<out EntityDeclaration decl, Modifiers modifiers>
                                                       Symbols.AddTypeSymbol(name, ident);
                                                       cur_class_name = name;
                                                   }else{
-                                                    // Failed to parse an identifier.
-                                                    // Leave the parser to recover its state.
+                                                      // Failed to parse an identifier.
+                                                      // Leave the parser to recover its state.
                                                   }
                                                .)
   [ ':'
@@ -721,10 +721,7 @@ ClassDecl<out EntityDeclaration decl, Modifiers modifiers>
                                                .)
   {                                            (. cur_modifiers = ExpressoModifiers.Private; .)
     { Modifiers<>
-    }                                          (. //var tmp = cur_flag ^ ExpressoModifiers.Static;
-                                                  //tmp = tmp ^ ExpressoModifiers.VisibilityMask & ~ExpressoModifiers.Export;
-                                                  //if(tmp
-                                               .)
+    }
     ( FuncDecl<out entity, cur_modifiers>      (. decls.Add(entity); .)
     | FieldDecl<out entity>	                   (. decls.Add(entity); .)
     | ClassDecl<out entity, cur_modifiers>     (. decls.Add(entity); .)

@@ -216,8 +216,13 @@ namespace Expresso.Ast.Analysis
 
                 PerformPreProcess(inner_parser.TopmostAst, inner_parser);
                 ExpressoNameBinder.BindAst(inner_parser.TopmostAst, inner_parser);
-                // TODO: implement the way it imports only types, functions and variables
-                parser.Symbols.AddExternalSymbols(inner_parser.Symbols, importDecl.AliasTokens.First().Name);
+
+                var first_import_path = importDecl.ImportPaths.First();
+                if(!first_import_path.Name.Contains("::") && !first_import_path.Name.Contains("."))
+                    parser.Symbols.AddExternalSymbols(inner_parser.Symbols, importDecl.AliasTokens.First().Name);
+                else
+                    parser.Symbols.AddExternalSymbols(inner_parser.Symbols, importDecl.ImportPaths, importDecl.AliasTokens);
+                
                 ((ExpressoAst)importDecl.Parent).ExternalModules.Add(inner_parser.TopmostAst);
             }
 
@@ -227,7 +232,11 @@ namespace Expresso.Ast.Analysis
                 pair.Item1.Type = type;
                 UniqueIdGenerator.DefineNewId(pair.Item1);
 
-                pair.Item2.Type = type.Clone();
+                // Types from the standard library should know the real name
+                // in order for the compiler to keep track of them.
+                if(type.Name.StartsWith("System.", StringComparison.CurrentCulture))
+                    pair.Item2.Type = type.Clone();
+                
                 UniqueIdGenerator.DefineNewId(pair.Item2);
             }
         }

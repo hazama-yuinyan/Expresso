@@ -831,5 +831,11 @@ public class Scanner {
 		return child_scanner;
 	}
 
+	public bool ChildFileExists(string childFileName)
+	{
+		var combined = Path.GetFullPath(Path.Combine(directoryName, childFileName));
+		return File.Exists(combined);
+	}
+
 } // end Scanner
 }

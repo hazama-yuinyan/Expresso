@@ -13,3 +13,4 @@
 ・importにfrom節を追加し、import元に.dllを追加する
 ・doc commentを追加する
 ・shadowingを実装する
+・importで別名をつけた時に、importした関数の戻り値の型の整合性が取れるようにする

@@ -3910,7 +3910,7 @@ namespace Expresso.Test
                                     Expression.MakePath(
                                         AstNode.MakeIdentifier(
                                             "TestModule",
-                                            Helpers.MakeGenericType("./test_module.exs")
+                                            Helpers.MakeGenericType("test_module")
                                         ),
                                         AstNode.MakeIdentifier(
                                             "createTest",
@@ -3945,7 +3945,7 @@ namespace Expresso.Test
                                 Expression.MakePath(
                                     AstNode.MakeIdentifier(
                                         "TestModule",
-                                        Helpers.MakeGenericType("./test_module.exs")
+                                        Helpers.MakeGenericType("test_module")
                                     ),
                                     AstNode.MakeIdentifier(
                                         "pair",
@@ -3971,7 +3971,7 @@ namespace Expresso.Test
                                     Expression.MakePath(
                                         AstNode.MakeIdentifier(
                                             "TestModule",
-                                            Helpers.MakeGenericType("./test_module.exs")
+                                            Helpers.MakeGenericType("test_module")
                                         ),
                                         AstNode.MakeIdentifier(
                                             "mySin",
@@ -4034,7 +4034,14 @@ namespace Expresso.Test
                     Modifiers.None
                 )
             }, Helpers.MakeSeq(
-                AstNode.MakeImportDecl(AstNode.MakeIdentifier("test_module"), "TestModule")
+                AstNode.MakeImportDecl(
+                    AstNode.MakeIdentifier(
+                        "test_module",
+                        Helpers.MakeGenericType("test_module")
+                    ),
+                    "./test_module.exs",
+                    "TestModule"
+                )
             ));
 
             Assert.IsNotNull(ast);
@@ -7076,6 +7083,122 @@ namespace Expresso.Test
 
             Assert.IsNotNull(ast);
             Helpers.AstStructuralEqual(ast, expected);
+        }
+
+        [Test]
+        public void Module2()
+        {
+            var parser = new Parser(new Scanner("../../sources/for_unit_tests/module2.exs"));
+            parser.DoPostParseProcessing = true;
+            parser.Parse();
+
+            var ast = parser.TopmostAst;
+
+            var expected_ast = AstNode.MakeModuleDef("main", new List<EntityDeclaration>{
+                EntityDeclaration.MakeFunc(
+                    "main",
+                    Enumerable.Empty<ParameterDeclaration>(),
+                    Statement.MakeBlock(
+                        Statement.MakeVarDecl(
+                            Helpers.MakeSeq(
+                                Helpers.MakePaticularPatternWithType(
+                                    "t",
+                                    Helpers.MakeGenericType("TestClass")
+                                )
+                            ),
+                            Helpers.MakeSeq(
+                                Expression.MakeObjectCreation(
+                                    Helpers.MakeGenericType("TestClass"),
+                                    Helpers.MakeSeq(
+                                        AstNode.MakeIdentifier("x"),
+                                        AstNode.MakeIdentifier("y")
+                                    ),
+                                    Helpers.MakeSeq(
+                                        Expression.MakeConstant("int", 1),
+                                        Expression.MakeConstant("int", 2)
+                                    )
+                                )
+                            ),
+                            Modifiers.Immutable
+                        ),
+                        Statement.MakeVarDecl(
+                            Helpers.MakeSeq(
+                                Helpers.MakePaticularPatternWithType(
+                                    "t2",
+                                    Helpers.MakeGenericType("TestClass")
+                                )
+                            ),
+                            Helpers.MakeSeq(
+                                Helpers.MakeCallExpression(
+                                    Helpers.MakeIdentifierPath(
+                                        "createTest",
+                                        AstType.MakeFunctionType(
+                                            "createTest",
+                                            Helpers.MakeGenericType("TestClass"),
+                                            TextLocation.Empty,
+                                            TextLocation.Empty,
+                                            Helpers.MakePrimitiveType("int"),
+                                            Helpers.MakePrimitiveType("int")
+                                        )
+                                    ),
+                                    Expression.MakeConstant("int", 3),
+                                    Expression.MakeConstant("int", 4)
+                                )
+                            ),
+                            Modifiers.Immutable
+                        ),
+                        Statement.MakeExprStmt(
+                            Helpers.MakeCallExpression(
+                                Helpers.MakeIdentifierPath(
+                                    "println",
+                                    AstType.MakeFunctionType(
+                                        "println",
+                                        Helpers.MakeVoidType(),
+                                        TextLocation.Empty,
+                                        TextLocation.Empty,
+                                        Helpers.MakeGenericType(
+                                            "array",
+                                            Helpers.MakeGenericType("object")
+                                        )
+                                    )
+                                ),
+                                Helpers.MakeIdentifierPath(
+                                    "t",
+                                    Helpers.MakeGenericType("TestClass")
+                                ),
+                                Helpers.MakeIdentifierPath(
+                                    "t2",
+                                    Helpers.MakeGenericType("TestClass")
+                                )
+                            )
+                        )
+                    ),
+                    Helpers.MakeVoidType(),
+                    Modifiers.None
+                )
+            }, Helpers.MakeSeq(
+                AstNode.MakeImportDecl(
+                    Helpers.MakeSeq(
+                        AstNode.MakeIdentifier(
+                            "test_module::TestClass"//,
+                            //Helpers.MakeGenericType("test_module::TestClass")
+                        ),
+                        AstNode.MakeIdentifier(
+                            "test_module::createTest"//,
+                            //Helpers.MakeGenericType("test_module::createTest")
+                        )
+                    ),
+                    Helpers.MakeSeq(
+                        "TestClass",
+                        "createTest"
+                    ),
+                    "./test_module.exs"
+                )
+            ));
+
+            Assert.IsNotNull(ast);
+
+            Helpers.AstStructuralEqual(ast, expected_ast);
         }
     }
 }

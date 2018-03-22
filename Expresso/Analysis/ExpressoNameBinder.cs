@@ -63,41 +63,18 @@ namespace Expresso.Ast.Analysis
             Console.WriteLine("We have given ids on total of {0} identifiers.", UniqueIdGenerator.CurrentId - 1);
             #endif
 		}
-
-        /// <summary>
-        /// The public surface of post-parse processing if it is compiling an external module.
-        /// In this method, we are only binding names and checking type validity.
-        /// </summary>
-        /// <param name="parser">Parser.</param>
-        internal static void NameBindAst(Parser parser)
-        {
-            ExpressoNameBinder binder = new ExpressoNameBinder(parser);
-            binder.OnlyBind(parser.TopmostAst);
-        }
 		#endregion
 		
 		void Bind(ExpressoAst unboundAst)
 		{
             Debug.Assert(unboundAst != null, "We have to have something to bind to");
 			
-			// Find all scopes and variables
             unboundAst.AcceptWalker(this);
 			
             TypeChecker.Check(unboundAst, parser);
-			// Run flow checker
             //FlowChecker.Check(unboundAst);
 		}
 
-        void OnlyBind(ExpressoAst unboundAst)
-        {
-            Debug.Assert(unboundAst != null, "We have to have something to bind to");
-
-            // Find all scopes and variables
-            unboundAst.AcceptWalker(this);
-
-            TypeChecker.Check(unboundAst, parser);
-        }
-		
         void DecendScope()
 		{
             symbol_table = symbol_table.Children[scope_counter];

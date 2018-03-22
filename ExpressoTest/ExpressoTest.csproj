@@ -111,6 +111,9 @@
     <None Include="sources\palindrome_tests.exs" />
     <None Include="sources\for_unit_tests\various_strings.exs" />
     <None Include="sources\for_unit_tests\module2.exs" />
+    <None Include="sources\for_unit_tests\erroneous\test_erroneous_module.exs" />
+    <None Include="sources\for_unit_tests\erroneous\import_unexported_item.exs" />
+    <None Include="sources\for_unit_tests\erroneous\import_undefined_symbol.exs" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AnalyzerTests.cs" />

@@ -681,8 +681,8 @@ string cur_class_name;
 		                        Symbols.AddTypeSymbol(name, ident);
 		                        cur_class_name = name;
 		                    }else{
-		                      // Failed to parse an identifier.
-		                      // Leave the parser to recover its state.
+		                        // Failed to parse an identifier.
+		                        // Leave the parser to recover its state.
 		                    }
 		                 
 		if (la.kind == 4) {
@@ -704,7 +704,6 @@ string cur_class_name;
 			while (StartOf(3)) {
 				Modifiers();
 			}
-			
 			if (la.kind == 35) {
 				FuncDecl(out entity, cur_modifiers);
 				decls.Add(entity); 
@@ -785,7 +784,7 @@ string cur_class_name;
 			
 			Expect(20);
 			var name = t.val.Substring(1, t.val.Length - 2);
-			if(!File.Exists(name)){
+			if(!scanner.ChildFileExists(name)){
 			   SemanticError("Error ES0020: The external file '{0}' doesn't exist.", name);
 			}
 			target_file = AstNode.MakeIdentifier(name, ExpressoModifiers.None, file_start_loc);

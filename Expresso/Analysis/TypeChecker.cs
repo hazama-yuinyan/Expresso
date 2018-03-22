@@ -656,7 +656,7 @@ namespace Expresso.Ast.Analysis
                     throw new ParserException(
                         "Error ES3011: Can not apply the indexer operator on the type `{0}`.",
                         indexExpr,
-                        simple_type
+                        simple_type.ToString()
                     );
                 }
 
@@ -766,7 +766,7 @@ namespace Expresso.Ast.Analysis
                 throw new ParserException(
                     "Error ES1501: The type `{0}` isn't found or accessible from the scope {1}.",
                     creation,
-                    creation.TypePath, symbols.Name
+                    creation.TypePath.ToString(), symbols.Name
                 );
             }
 
@@ -786,7 +786,7 @@ namespace Expresso.Ast.Analysis
                         throw new ParserException(
                             "Error ES1502: The type `{0}` doesn't have a field named '{1}'.",
                             pair.Item2.KeyExpression,
-                            creation.TypePath, key_path.AsIdentifier.Name
+                            creation.TypePath.ToString(), key_path.AsIdentifier.Name
                         );
                     }
 
@@ -809,7 +809,7 @@ namespace Expresso.Ast.Analysis
                 throw new ParserException(
                     "Error ES2010: There are no constructors in the type `{0}` whose parameter types are {1}.",
                     creation,
-                    creation.TypePath,
+                    creation.TypePath.ToString(),
                     ctor_type
                 );
             }
@@ -1363,7 +1363,7 @@ namespace Expresso.Ast.Analysis
         public AstType VisitPatternWithType(PatternWithType pattern)
         {
             // We need to replace pattern.Type because every AstType nodes that will be replaced
-            // have to have a parent
+            // has to have a parent
             // tuple nodes has been created on their own
             var type = inference_runner.VisitPatternWithType(pattern);
             if(pattern.Type is PlaceholderType && type is SimpleType tuple && tuple.Name == "tuple"){
