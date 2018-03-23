@@ -559,8 +559,6 @@ namespace Expresso.Ast.Analysis
 
         public void VisitImportDeclaration(ImportDeclaration importDecl)
         {
-            
-
             /*if(importDecl.AliasNameToken.IsNull){
                 importDecl.ModuleNameToken.AcceptWalker(this);
                 foreach(var ie in importDecl.ImportedEntities)

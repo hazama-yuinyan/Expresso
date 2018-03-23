@@ -19,6 +19,25 @@ namespace Expresso.CodeGen
     using ExprTree = System.Linq.Expressions;
 
     /// <summary>
+    /// An <see cref="IComparer"/> implementation that sorts import paths.
+    /// With it, paths to the standard library come first and others come second.
+    /// </summary>
+    class ImportPathComparer : IComparer<string>
+    {
+        public int Compare(string x, string y)
+        {
+            if(x.StartsWith("System.", StringComparison.CurrentCulture) && !y.StartsWith("System.", StringComparison.CurrentCulture))
+                return -1;
+            else if(x.StartsWith("System.", StringComparison.CurrentCulture) && y.StartsWith("System.", StringComparison.CurrentCulture))
+                return 0;
+            else if(!x.StartsWith("System.", StringComparison.CurrentCulture) && y.StartsWith("System.", StringComparison.CurrentCulture))
+                return -1;
+            else
+                return 0;
+        }
+    }
+
+    /// <summary>
     /// Expressoの構文木を解釈してC#の式木にコンパイルするクラス。
     /// It emitts C#'s expression tree nodes from the AST of Expresso.
     /// Assumes we are all OK with syntax and semantics since this class is considered
@@ -47,6 +66,7 @@ namespace Expresso.CodeGen
         const string ClosureDelegateName = "__ApplyMethod";
         bool has_continue;
 
+        Parser parser;
         SymbolTable symbol_table;
         ExpressoCompilerOptions options;
         MatchClauseIdentifierDefiner identifier_definer;
@@ -66,6 +86,7 @@ namespace Expresso.CodeGen
 
         public CSharpEmitter(Parser parser, ExpressoCompilerOptions options)
         {
+            this.parser = parser;
             symbol_table = parser.Symbols;
             this.options = options;
             identifier_definer = new MatchClauseIdentifierDefiner();
@@ -135,9 +156,14 @@ namespace Expresso.CodeGen
         internal static void AddSymbol(Identifier ident, ExpressoSymbol symbol)
         {
             if(ident.IdentifierId == 0)
-                throw new EmitterException("An invalid identifier is invalid because it can't be used for any purpose");
-
-            Symbols.Add(ident.IdentifierId, symbol);
+                throw new InvalidOperationException("An invalid identifier is invalid because it can't be used for any purpose");
+            
+            try{
+                Symbols.Add(ident.IdentifierId, symbol);
+            }
+            catch(ArgumentException){
+                throw new InvalidOperationException(string.Format("The native symbol for '{0}' is already added", ident.Name));
+            }
         }
 
         void DescendScope()
@@ -185,14 +211,19 @@ namespace Expresso.CodeGen
             var asm_builder = Thread.GetDomain().DefineDynamicAssembly(name, AssemblyBuilderAccess.RunAndSave, options.OutputPath);
             var file_name = (ast.Name == "main") ? ast.Name + ".exe" : ast.Name + ".dll";
             var mod_builder = asm_builder.DefineDynamicModule(file_name);
+            // Leave the ast.Name as is because otherwise we can't refer to it later when visiting ImportDeclarations
             var type_builder = new LazyTypeBuilder(mod_builder, CSharpCompilerHelper.ConvertToPascalCase(ast.Name), TypeAttributes.Class | TypeAttributes.Public, Enumerable.Empty<Type>(), true);
-            var root_symbol_table = symbol_table;
+            var local_parser = parser;
             if(ast.ExternalModules.Any()){
                 context.CurrentModuleCount = ast.ExternalModules.Count;
             }else{
                 Debug.Assert(symbol_table.Name == "programRoot", "The symbol_table should indicate 'programRoot' before generating codes.");
-                if(context.CurrentModuleCount > 0)
-                    symbol_table = symbol_table.Parent.Children[symbol_table.Parent.Children.Count - context.CurrentModuleCount--];
+                if(context.CurrentModuleCount > 0){
+                    parser = parser.InnerParsers[parser.InnerParsers.Count - context.CurrentModuleCount--];
+                    symbol_table = parser.Symbols;
+
+                    local_parser = parser;
+                }
             }
 
             context.AssemblyBuilder = asm_builder;
@@ -200,29 +231,35 @@ namespace Expresso.CodeGen
             context.LazyTypeBuilder = type_builder;
 
             context.ExternalModuleType = null;
-            foreach(var external_module in ast.ExternalModules){
+            ast.Imports.OrderBy(i => i.ImportPaths.First().Name, new ImportPathComparer());
+            foreach(var pair in ast.ExternalModules.Zip(ast.Imports.SkipWhile(i => i.ImportPaths.First().Name.StartsWith("System.", StringComparison.CurrentCulture)),
+                                                        (l, r) => new Tuple<ExpressoAst, ImportDeclaration>(l, r))){
+                Debug.Assert(pair.Item2.ImportPaths.First().Name.StartsWith(pair.Item1.Name), "The module name must be matched to the import path");
+
                 var external_module_count = context.CurrentModuleCount;
                 var tmp_counter = scope_counter;
-                VisitAst(external_module, context);
+                VisitAst(pair.Item1, context);
                 context.CurrentModuleCount = external_module_count;
                 scope_counter = tmp_counter;
 
-                var external_module_name = external_module.Name;
-                var import = ast.Imports
-                                .FirstOrDefault(i => external_module_name == i.ImportPaths.First().Name);
-                if(import == null)
-                    throw new EmitterException("'{0}' isn't a module name", external_module.Name);
-
-                Symbols.Add(import.ImportPaths.First().IdentifierId, new ExpressoSymbol{
-                    Type = context.ExternalModuleType
-                });
-                context.ExternalModuleType = null;
+                var first_import = pair.Item2.ImportPaths.First();
+                if(!first_import.Name.Contains("::") && !first_import.Name.Contains(".")){
+                    Symbols.Add(pair.Item2.ImportPaths.First().IdentifierId, new ExpressoSymbol{
+                        Type = context.ExternalModuleType
+                    });
+                    context.ExternalModuleType = null;
+                }
             }
 
             context.AssemblyBuilder = asm_builder;
             context.ModuleBuilder = mod_builder;
             context.LazyTypeBuilder = type_builder;
+            if(local_parser != null){
+                parser = local_parser;
+                symbol_table = parser.Symbols;
+            }
 
+            Console.WriteLine("Emitting code on {0}...", ast.ModuleName);
             foreach(var import in ast.Imports)
                 import.AcceptWalker(this, context);
 
@@ -236,7 +273,6 @@ namespace Expresso.CodeGen
             asm_builder.Save(GetModuleName(ast));
 
             AssemblyBuilder = asm_builder;
-            symbol_table = root_symbol_table;
 
             return null;
         }
@@ -1399,33 +1435,48 @@ namespace Expresso.CodeGen
                 var import_path = pair.Item1;
                 var alias = pair.Item2;
 
-                var type = CSharpCompilerHelper.GetNativeType(AstType.MakeSimpleType(import_path.Name));
+                var last_index = import_path.Name.LastIndexOf("::");
+                var type_name = import_path.Name.Substring(last_index == -1 ? 0 : last_index + 2);
+                var type = ('a' <= type_name[0] && type_name[0] <= 'z') ? null : CSharpCompilerHelper.GetNativeType(AstType.MakeSimpleType(CSharpCompilerHelper.ConvertToPascalCase(type_name)));
+
                 if(type != null){
                     var expresso_symbol = new ExpressoSymbol{Type = type};
-                    AddSymbol(import_path, expresso_symbol);
-                    AddSymbol(alias, expresso_symbol);
+                    //AddSymbol(import_path, expresso_symbol);
+                    // This if statement is needed because otherwise types in the standard library
+                    // won't get cached
+                    if(!Symbols.ContainsKey(alias.IdentifierId))
+                        AddSymbol(alias, expresso_symbol);
                 }else{
-                    var parent_type_name = import_path.Name.Substring(0, import_path.Name.LastIndexOf(".", StringComparison.CurrentCulture));
-                    var parent_type = CSharpCompilerHelper.GetNativeType(AstType.MakeSimpleType(parent_type_name));
-                    var member_name = import_path.Name.Substring(import_path.Name.LastIndexOf(".", StringComparison.CurrentCulture) + 1);
-                    if(parent_type != null){
-                        var flag = BindingFlags.Static | BindingFlags.NonPublic;
-                        var method = parent_type.GetMethod(member_name, flag);
+                    var symbol = GetRuntimeSymbol(alias);
+                    if(symbol != null){
+                        //AddSymbol(alias, symbol);
+                    }else{
+                        throw new EmitterException("Error ES1903: It is found that the import name '{0}' isn't defined.", import_path.Name);
+                    }
+                    /*var module_type_name = import_path.Name.Substring(0, last_index);
+                    var module_type = CSharpCompilerHelper.GetNativeType(AstType.MakeSimpleType(module_type_name));
+                    var member_name = CSharpCompilerHelper.ConvertToPascalCase(type_name);
+
+                    if(module_type != null){
+                        var flags = BindingFlags.Static | BindingFlags.NonPublic;
+                        var method = module_type.GetMethod(member_name, flags);
+
                         if(method != null){
                             var expresso_symbol = new ExpressoSymbol{Method = method};
-                            AddSymbol(import_path, expresso_symbol);
+                            //AddSymbol(import_path, expresso_symbol);
                             AddSymbol(alias, expresso_symbol);
                         }else{
-                            var module_field = parent_type.GetField(member_name, flag);
+                            var module_field = module_type.GetField(member_name, flags);
+
                             if(module_field != null){
                                 var expresso_symbol = new ExpressoSymbol{PropertyOrField = module_field};
-                                AddSymbol(import_path, expresso_symbol);
+                                //AddSymbol(import_path, expresso_symbol);
                                 AddSymbol(alias, expresso_symbol);
                             }else{
                                 throw new EmitterException("Error ES1903: It is found that the import name {0} isn't defined", import_path.Name);
                             }
                         }
-                    }
+                    }*/
                 }
             }
             
@@ -2127,11 +2178,11 @@ namespace Expresso.CodeGen
         void DefineFunctionSignaturesAndFields(IEnumerable<EntityDeclaration> entities, EntityDeclaration startingPoint, CSharpEmitterContext context)
         {
             var tmp_counter = scope_counter;
-            bool is_broken = false;
+            bool is_broken_out = false;
             var interface_definer = new InterfaceTypeDefiner(this, context);
             foreach(var entity in entities.SkipWhile(e => e != startingPoint)){
                 if(entity is TypeDeclaration){
-                    is_broken = true;
+                    is_broken_out = true;
                     break;
                 }
 
@@ -2143,7 +2194,7 @@ namespace Expresso.CodeGen
                     DefineField((FieldDeclaration)entity, context);
             }
 
-            if(!context.LazyTypeBuilder.IsInterfaceDefined && !is_broken)
+            if(!context.LazyTypeBuilder.IsInterfaceDefined && !is_broken_out)
                 context.LazyTypeBuilder.CreateInterfaceType();
             
             scope_counter = tmp_counter;

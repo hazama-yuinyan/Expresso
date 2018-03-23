@@ -100,7 +100,7 @@ namespace Expresso.Ast
 
         public static ParameterDeclaration MakeParameter(string name, AstType type, Expression option = null, bool isVariadic = false, TextLocation loc = default(TextLocation))
         {
-            return new ParameterDeclaration(AstNode.MakeIdentifier(name, type), option ?? Expression.Null, isVariadic, loc);
+            return new ParameterDeclaration(MakeIdentifier(name, type), option ?? Expression.Null, isVariadic, loc);
         }
 
         public static ParameterDeclaration MakeParameter(Identifier identifier, Expression option = null, bool isVariadic = false, TextLocation loc = default(TextLocation))
@@ -112,7 +112,7 @@ namespace Expresso.Ast
             IEnumerable<EntityDeclaration> decls, Modifiers modifiers,
             TextLocation start = default(TextLocation), TextLocation end = default(TextLocation))
         {
-            return new TypeDeclaration(ClassType.Class, AstNode.MakeIdentifier(className), bases, decls, modifiers, start, end);
+            return new TypeDeclaration(ClassType.Class, MakeIdentifier(className), bases, decls, modifiers, start, end);
         }
 
         public static TypeDeclaration MakeClassDecl(Identifier ident, IEnumerable<AstType> bases,
@@ -125,14 +125,14 @@ namespace Expresso.Ast
         public static TypeDeclaration MakeClassDecl(string name, IEnumerable<AstType> bases,
                                                     Modifiers modifiers, TextLocation start, TextLocation end, params EntityDeclaration[] decls)
         {
-            return new TypeDeclaration(ClassType.Class, AstNode.MakeIdentifier(name), bases, decls, modifiers, start, end);
+            return new TypeDeclaration(ClassType.Class, MakeIdentifier(name), bases, decls, modifiers, start, end);
         }
 
         public static TypeDeclaration MakeInterfaceDecl(string interfaceName, IEnumerable<AstType> bases,
                                                         IEnumerable<EntityDeclaration> decls, Modifiers modifiers,
                                                         TextLocation start = default(TextLocation), TextLocation end = default(TextLocation))
         {
-            return new TypeDeclaration(ClassType.Interface, AstNode.MakeIdentifier(interfaceName), bases, decls, modifiers, start, end);
+            return new TypeDeclaration(ClassType.Interface, MakeIdentifier(interfaceName), bases, decls, modifiers, start, end);
         }
 
         public static TypeDeclaration MakeInterfaceDecl(Identifier ident, IEnumerable<AstType> bases,
@@ -145,13 +145,13 @@ namespace Expresso.Ast
         public static TypeDeclaration MakeInterfaceDecl(string name, IEnumerable<AstType> bases,
                                                         Modifiers modifiers, TextLocation start, TextLocation end, params EntityDeclaration[] decls)
         {
-            return new TypeDeclaration(ClassType.Interface, AstNode.MakeIdentifier(name), bases, decls, modifiers, start, end);
+            return new TypeDeclaration(ClassType.Interface, MakeIdentifier(name), bases, decls, modifiers, start, end);
         }
 
         public static FunctionDeclaration MakeFunc(string name, IEnumerable<ParameterDeclaration> parameters, BlockStatement body,
             AstType returnType, Modifiers modifiers, TextLocation loc = default(TextLocation))
         {
-            return MakeFunc(AstNode.MakeIdentifier(name), parameters, body, returnType, modifiers, loc);;
+            return MakeFunc(MakeIdentifier(name), parameters, body, returnType, modifiers, loc);;
         }
 
         public static FunctionDeclaration MakeFunc(Identifier ident, IEnumerable<ParameterDeclaration> parameters,
@@ -159,12 +159,6 @@ namespace Expresso.Ast
         {
             return new FunctionDeclaration(ident, parameters, body, returnType, modifiers, loc);
         }
-
-        /*public static FunctionDeclaration MakeClosure(string name, IEnumerable<ParameterDeclaration> parameters, Block body,
-            TypeAnnotation returnType, Stack<object> environ)
-        {
-            return new FunctionDeclaration(name, parameters.ToArray(), body, returnType, Flags.None, environ);
-        }*/
         #endregion
     }
 }

@@ -18,9 +18,6 @@ namespace Expresso.CodeGen
     /// </summary>
     public static class CSharpCompilerHelper
     {
-        public static Regex InterpolateStringRegexp =
-            new Regex(@"%([a-zA-Z_][a-zA-Z_0-9]*)");
-
         static List<string> _AssemblyNames =
             new List<string>{"System.Numerics, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089", "ExpressoRuntime"};
 
@@ -55,9 +52,7 @@ namespace Expresso.CodeGen
         /// Gets the list of <see cref="Type"/> instances of dynamic interfaces.
         /// </summary>
         /// <value>The interface types.</value>
-        public static List<Type> InterfaceTypes{
-            get;
-        } = new List<Type>();
+        public static List<Type> InterfaceTypes{get;} = new List<Type>();
 
         /// <summary>
         /// Helper method to convert a PrimitiveType to a C#'s type.
@@ -231,28 +226,6 @@ namespace Expresso.CodeGen
             throw new EmitterException("Unknown AstType!");
         }
 
-        public static Type TryGetNativeType(AstType type)
-        {
-            try{
-                return GetNativeType(type);
-            }
-            catch(EmitterException){
-                return null;
-            }
-        }
-
-        public static string InterpolateString(string original)
-        {
-            return InterpolateStringRegexp.Replace(original, m => {
-                return m.Groups[1].Value;
-            });
-        }
-
-        public static string FormatString(string str, params object[] objs)
-        {
-            return "";
-        }
-
         public static Type GuessTupleType(IEnumerable<Type> elementTypes)
         {
             var types = elementTypes.ToArray();
@@ -352,6 +325,7 @@ namespace Expresso.CodeGen
 
         public static string ConvertToPascalCase(string name)
         {
+            // TODO: implement it properly
             return name.Substring(0, 1).ToUpper() + name.Substring(1);
         }
 

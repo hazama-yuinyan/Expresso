@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Runtime.Serialization;
 using Expresso.CodeGen;
@@ -567,14 +568,15 @@ namespace Expresso.Ast.Analysis
         /// <param name="aliasTokens">Alias tokens.</param>
         public void AddExternalSymbols(SymbolTable externalTable, IEnumerable<Identifier> importPaths, IEnumerable<Identifier> aliasTokens)
         {
-            var root_table = this;
-            while(root_table.Parent != null)
-                root_table = root_table.Parent;
-            
+            Debug.Assert(Name == "programRoot", "External tables must be added on 'programRoot'.");
+
+            var target_table = this;
+
             foreach(var pair in importPaths.Zip(aliasTokens, (l, r) => new Tuple<Identifier, Identifier>(l, r))){
                 var target_name = pair.Item1.Name.Substring(pair.Item1.Name.LastIndexOf("::", StringComparison.CurrentCulture) + 2);
-                var target_table = externalTable.GetTypeTable(target_name);
-                if(target_table == null){
+                var external_target_table = externalTable.GetTypeTable(target_name);
+
+                if(external_target_table == null){
                     var target_name2 = target_name.Substring(target_name.LastIndexOf(".", StringComparison.CurrentCulture) + 1);
                     var symbol = externalTable.GetSymbol(target_name2);
                     if(symbol == null){
@@ -586,17 +588,21 @@ namespace Expresso.Ast.Analysis
                     }else{
                         if(!symbol.Modifiers.HasFlag(Modifiers.Export))
                             ReportExportMissingError(pair.Item1);
-                        
-                        root_table.AddSymbol(pair.Item2.Name, symbol);
+
+                        pair.Item2.IdentifierId = symbol.IdentifierId;
+                        target_table.AddSymbol(pair.Item2.Name, symbol);
                     }
                 }else{
                     var type_symbol = externalTable.GetTypeSymbol(target_name);
                     if(!type_symbol.Modifiers.HasFlag(Modifiers.Export))
                         ReportExportMissingError(pair.Item1);
                     
-                    var cloned = target_table.Clone();
-                    cloned.Parent = root_table;
-                    root_table.Children.Add(cloned);
+                    var cloned = external_target_table.Clone();
+                    cloned.Parent = target_table;
+                    target_table.Children.Add(cloned);
+
+                    pair.Item1.IdentifierId = type_symbol.IdentifierId;
+                    pair.Item2.IdentifierId = type_symbol.IdentifierId;
                 }
             }
         }

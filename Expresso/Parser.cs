@@ -94,6 +94,8 @@ string cur_class_name;
         }
     }
 
+    internal List<Parser> InnerParsers{get;} = new List<Parser>();
+
 	///<summary>
 	/// Parser Implementation details:
 	/// 	During parsing we'll construct the symbol table.

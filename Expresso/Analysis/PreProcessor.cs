@@ -215,21 +215,29 @@ namespace Expresso.Ast.Analysis
                 inner_parser.Parse();
 
                 PerformPreProcess(inner_parser.TopmostAst, inner_parser);
+                var first_import_path = importDecl.ImportPaths.First();
                 ExpressoNameBinder.BindAst(inner_parser.TopmostAst, inner_parser);
 
-                var first_import_path = importDecl.ImportPaths.First();
+                parser.InnerParsers.Add(inner_parser);
+
                 if(!first_import_path.Name.Contains("::") && !first_import_path.Name.Contains("."))
                     parser.Symbols.AddExternalSymbols(inner_parser.Symbols, importDecl.AliasTokens.First().Name);
                 else
                     parser.Symbols.AddExternalSymbols(inner_parser.Symbols, importDecl.ImportPaths, importDecl.AliasTokens);
-                
-                ((ExpressoAst)importDecl.Parent).ExternalModules.Add(inner_parser.TopmostAst);
+
+                if(!first_import_path.Name.Contains("::") && !first_import_path.Name.Contains(".")){
+                    ((ExpressoAst)importDecl.Parent).ExternalModules.Add(inner_parser.TopmostAst);
+                }else{
+                    var filtered = FilterAst(inner_parser.TopmostAst, importDecl.ImportPaths);
+                    ((ExpressoAst)importDecl.Parent).ExternalModules.Add(filtered);
+                }
             }
 
             // Make the module name type-aware
             foreach(var pair in importDecl.ImportPaths.Zip(importDecl.AliasTokens, (l, r) => new Tuple<Identifier, Identifier>(l, r))){
                 var type = AstType.MakeSimpleType(pair.Item1.Name);
                 pair.Item1.Type = type;
+                // These 2 statements are needed because otherwise aliases won't get IdentifierIds
                 UniqueIdGenerator.DefineNewId(pair.Item1);
 
                 // Types from the standard library should know the real name
@@ -500,6 +508,37 @@ namespace Expresso.Ast.Analysis
         public void VisitYieldStatement(YieldStatement yieldStmt)
         {
             yieldStmt.Expression.AcceptWalker(this);
+        }
+
+        static ExpressoAst FilterAst(ExpressoAst ast, IEnumerable<Identifier> importPaths)
+        {
+            foreach(var decl in ast.Declarations){
+                if(decl is FieldDeclaration field){
+                    bool found = false;
+                    foreach(var init in field.Initializers){
+                        if(IsExportedItem(init.Name, importPaths))
+                            found = true;
+                    }
+
+                    if(!found)
+                        decl.Remove();
+                }else{
+                    var decl_name = decl.Name;
+                    if(!IsExportedItem(decl_name, importPaths))
+                        decl.Remove();
+                }
+            }
+
+            return ast;
+        }
+
+        static bool IsExportedItem(string name, IEnumerable<Identifier> importPaths)
+        {
+            return importPaths.Any(ident => {
+                var tmp = ident.Name.Substring(ident.Name.LastIndexOf("::") + 2);
+                var target_name = tmp.Substring(tmp.LastIndexOf(".") + 1);
+                return target_name == name;
+            });
         }
     }
 }

@@ -22,6 +22,9 @@ namespace Expresso.Ast.Analysis
         /// </summary>
         public static void DefineNewId(Identifier ident)
         {
+            if(ident.IdentifierId != 0)
+                return;
+            
             ident.IdentifierId = Id++;
         }
     }
