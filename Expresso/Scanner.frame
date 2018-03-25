@@ -380,6 +380,10 @@ public class Scanner {
 	// make sure that peeking starts at the current scan position
 	public void ResetPeek () { pt = tokens; }
 
+	/// <summary>
+	/// Opens a file relative to the source file that the scanner is currently opening
+	/// and creates a new scanner on it.
+	/// </summary>
 	public Scanner OpenChildFile(string childFileName)
 	{
 		var combined = Path.GetFullPath(Path.Combine(directoryName, childFileName));
@@ -387,10 +391,24 @@ public class Scanner {
 		return child_scanner;
 	}
 
+	/// <summary>
+	/// Checks whether a file relative to the source file that the scanner is currently opening
+	/// exists.
+	/// </summary>
 	public bool ChildFileExists(string childFileName)
 	{
 		var combined = Path.GetFullPath(Path.Combine(directoryName, childFileName));
 		return File.Exists(combined);
+	}
+
+	/// <summary>
+	/// Gets a string representing a file path relative to the source file 
+	/// that the scanner is currently opening.
+	/// </summary>
+	public string GetFullPath(string childFileName)
+	{
+		var combined = Path.GetFullPath(Path.Combine(directoryName, childFileName));
+		return combined;
 	}
 
 } // end Scanner

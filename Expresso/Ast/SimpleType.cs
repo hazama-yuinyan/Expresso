@@ -122,6 +122,13 @@ namespace Expresso.Ast
             TypeArguments.AddRange(typeArgs);
         }
 
+        public SimpleType(Identifier ident, IEnumerable<AstType> typeArgs, TextLocation start, TextLocation end)
+            : base(start, end)
+        {
+            IdentifierToken = ident;
+            TypeArguments.AddRange(typeArgs);
+        }
+
         public override void AcceptWalker(IAstWalker walker)
         {
             walker.VisitSimpleType(this);

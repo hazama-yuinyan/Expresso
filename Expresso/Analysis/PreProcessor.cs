@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+using Expresso.CodeGen;
 using ICSharpCode.NRefactory.PatternMatching;
 
 namespace Expresso.Ast.Analysis
@@ -211,25 +212,32 @@ namespace Expresso.Ast.Analysis
             // Here's the good place to import names from other files
             // All external names will be imported into the module scope we are currently compiling
             if(!importDecl.TargetFile.IsNull){
-                var inner_parser = new Parser(parser.scanner.OpenChildFile(importDecl.TargetFilePath));
-                inner_parser.Parse();
+                Parser inner_parser = null;
+                if(importDecl.TargetFilePath.EndsWith(".exs")){
+                    inner_parser = new Parser(parser.scanner.OpenChildFile(importDecl.TargetFilePath));
+                    inner_parser.Parse();
 
-                PerformPreProcess(inner_parser.TopmostAst, inner_parser);
+                    PerformPreProcess(inner_parser.TopmostAst, inner_parser);
+                    ExpressoNameBinder.BindAst(inner_parser.TopmostAst, inner_parser);
+
+                    parser.InnerParsers.Add(inner_parser);
+                }
+
                 var first_import_path = importDecl.ImportPaths.First();
-                ExpressoNameBinder.BindAst(inner_parser.TopmostAst, inner_parser);
-
-                parser.InnerParsers.Add(inner_parser);
-
+                var table = importDecl.TargetFilePath.EndsWith(".dll") ? ExpressoCompilerHelpers.GetSymbolTableForAssembly(parser.scanner.GetFullPath(importDecl.TargetFilePath))
+                                      : inner_parser.Symbols;
                 if(!first_import_path.Name.Contains("::") && !first_import_path.Name.Contains("."))
-                    parser.Symbols.AddExternalSymbols(inner_parser.Symbols, importDecl.AliasTokens.First().Name);
+                    parser.Symbols.AddExternalSymbols(table, importDecl.AliasTokens.First().Name);
                 else
-                    parser.Symbols.AddExternalSymbols(inner_parser.Symbols, importDecl.ImportPaths, importDecl.AliasTokens);
+                    parser.Symbols.AddExternalSymbols(table, importDecl.ImportPaths, importDecl.AliasTokens);
 
-                if(!first_import_path.Name.Contains("::") && !first_import_path.Name.Contains(".")){
-                    ((ExpressoAst)importDecl.Parent).ExternalModules.Add(inner_parser.TopmostAst);
-                }else{
-                    var filtered = FilterAst(inner_parser.TopmostAst, importDecl.ImportPaths);
-                    ((ExpressoAst)importDecl.Parent).ExternalModules.Add(filtered);
+                if(importDecl.TargetFilePath.EndsWith(".exs")){
+                    if(!first_import_path.Name.Contains("::") && !first_import_path.Name.Contains(".")){
+                        ((ExpressoAst)importDecl.Parent).ExternalModules.Add(inner_parser.TopmostAst);
+                    }else{
+                        var filtered = FilterAst(inner_parser.TopmostAst, importDecl.ImportPaths);
+                        ((ExpressoAst)importDecl.Parent).ExternalModules.Add(filtered);
+                    }
                 }
             }
 
@@ -240,11 +248,12 @@ namespace Expresso.Ast.Analysis
                 // These 2 statements are needed because otherwise aliases won't get IdentifierIds
                 UniqueIdGenerator.DefineNewId(pair.Item1);
 
-                // Types from the standard library should know the real name
+                // Types from the standard library and external dlls should know the real name
                 // in order for the compiler to keep track of them.
-                if(type.Name.StartsWith("System.", StringComparison.CurrentCulture))
+                if(type.Name.StartsWith("System.", StringComparison.CurrentCulture) || importDecl.TargetFilePath.EndsWith(".dll"))
                     pair.Item2.Type = type.Clone();
-                
+
+                // These 2 statements are needed because otherwise aliases won't get IdentifierIds
                 UniqueIdGenerator.DefineNewId(pair.Item2);
             }
         }

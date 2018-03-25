@@ -573,7 +573,8 @@ namespace Expresso.Ast.Analysis
             var target_table = this;
 
             foreach(var pair in importPaths.Zip(aliasTokens, (l, r) => new Tuple<Identifier, Identifier>(l, r))){
-                var target_name = pair.Item1.Name.Substring(pair.Item1.Name.LastIndexOf("::", StringComparison.CurrentCulture) + 2);
+                var last_index = pair.Item1.Name.LastIndexOf("::", StringComparison.CurrentCulture);
+                var target_name = (last_index == -1) ? pair.Item1.Name : pair.Item1.Name.Substring(last_index + 2);
                 var external_target_table = externalTable.GetTypeTable(target_name);
 
                 if(external_target_table == null){
@@ -659,7 +660,7 @@ namespace Expresso.Ast.Analysis
         static void ReportExportMissingError(Identifier ident)
         {
             throw new ParserException(
-                "Error ES3302: '{0}' doesn't have the export flag.\nYou can't import an unexported item.",
+                "Error ES3303: '{0}' doesn't have the export flag.\nYou can't import an unexported item.",
                 ident,
                 ident.Name
             );

@@ -317,22 +317,13 @@ string cur_class_name;
     bool IsObjectCreation()
     {
         var t = la;
-        if(t.kind != _lcurly && t.kind != _double_colon)
+        if(t.kind != _lcurly)
             return false;
-
-        var x = t;
-        while(x.kind == _ident || x.kind == _double_colon)
-            x = scanner.Peek();
-
-        if(x.kind != _lcurly){
-            scanner.ResetPeek();
-            return false;
-        }
 
         var key = scanner.Peek();
         var tt = scanner.Peek();
         scanner.ResetPeek();
-        return key.kind == _ident && tt.kind == _colon;
+        return key.kind == _rcurly || key.kind == _ident && tt.kind == _colon;
     }
 
     bool IsStartOfAnotherType()

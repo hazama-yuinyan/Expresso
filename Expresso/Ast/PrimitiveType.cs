@@ -93,6 +93,12 @@ namespace Expresso.Ast
 
         #endregion
 
+        /// <summary>
+        /// Gets an <see cref="ExpressoTypeCode"/> instance corresponds to `keyword`.
+        /// </summary>
+        /// <returns>The known type code for primitive type.</returns>
+        /// <param name="keyword">Keyword.</param>
+        /// <param name="node">Node.</param>
         public static ExpressoTypeCode GetKnownTypeCodeForPrimitiveType(string keyword, AstNode node)
         {
             switch(keyword){
@@ -146,6 +152,57 @@ namespace Expresso.Ast
 
             case "slice":
                 return ExpressoTypeCode.Slice;
+
+            default:
+                throw new ParserException("{0} is an unknown primitive type!", node, keyword);
+            }
+        }
+
+        /// <summary>
+        /// Gets a <see cref="ExpressoTypeCode"/> instance corresponds to the `keyword`.
+        /// Note that it ignores the generic types.
+        /// </summary>
+        /// <returns>The actual known type code.</returns>
+        /// <param name="keyword">Keyword.</param>
+        /// <param name="node">Node.</param>
+        public static ExpressoTypeCode GetActualKnownTypeCodeForPrimitiveType(string keyword, AstNode node)
+        {
+            switch(keyword){
+            case "bool":
+                return ExpressoTypeCode.Bool;
+
+            case "char":
+                return ExpressoTypeCode.Char;
+
+            case "byte":
+                return ExpressoTypeCode.Byte;
+
+            case "int":
+                return ExpressoTypeCode.Int;
+
+            case "uint":
+                return ExpressoTypeCode.UInt;
+
+            case "float":
+                return ExpressoTypeCode.Float;
+
+            case "double":
+                return ExpressoTypeCode.Double;
+
+            case "bigint":
+                return ExpressoTypeCode.BigInteger;
+
+            case "function":
+                return ExpressoTypeCode.Function;
+
+            case "intseq":
+                return ExpressoTypeCode.IntSeq;
+
+                /*case "void":
+                return ExpressoTypeCode.Void;*/
+
+            case "string":
+                return ExpressoTypeCode.String;
 
             default:
                 throw new ParserException("{0} is an unknown primitive type!", node, keyword);

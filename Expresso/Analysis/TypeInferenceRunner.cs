@@ -327,9 +327,12 @@ namespace Expresso.Ast.Analysis
                             ident.Name, ident.StartLocation, checker.symbols.Name
                         );
                     }else{
-                        var cloned = symbol2.Type.Clone();
-                        ident.Type.ReplaceWith(cloned);
-                        return symbol2.Type;
+                            var cloned = symbol2.Type.Clone();
+                            ident.Type.ReplaceWith(cloned);
+                            return symbol2.Type;
+                            /*ident.Type.ReplaceWith(AstType.MakeSimpleType((Identifier)symbol2.Clone()));
+                            return ident.Type;
+                        }*/
                     }
                 }else{
                     return ident.Type;
@@ -382,7 +385,7 @@ namespace Expresso.Ast.Analysis
                     throw new ParserException(
                         "Error ES2000: Although the expression '{0}' is evaluated to the type `{1}`, there isn't any type with that name.",
                         memRef.Target,
-                        memRef.Target, target_type
+                        memRef.Target.ToString(), target_type
                     );
                 }
                     

@@ -950,8 +950,8 @@ namespace Expresso.CodeGen
             }else{
                 if(context.TargetType != null && context.RequestMethod){
                     // For methods or functions in external modules
-                    var method_name = context.TargetType.FullName.StartsWith("System", StringComparison.CurrentCulture) ? CSharpCompilerHelper.ConvertToPascalCase(ident.Name)
-                                             : ident.Name;
+                    // We regard types containing namespaces as types from other assemblies
+                    var method_name = context.TargetType.FullName.Contains(".") ? CSharpCompilerHelper.ConvertToPascalCase(ident.Name) : ident.Name;
                     var method = (context.ArgumentTypes != null) ? context.TargetType.GetMethod(method_name, context.ArgumentTypes) : context.TargetType.GetMethod(method_name);
                     if(method == null){
                         if(!context.RequestPropertyOrField)
@@ -1451,32 +1451,26 @@ namespace Expresso.CodeGen
                     if(symbol != null){
                         //AddSymbol(alias, symbol);
                     }else{
-                        throw new EmitterException("Error ES1903: It is found that the import name '{0}' isn't defined.", import_path.Name);
-                    }
-                    /*var module_type_name = import_path.Name.Substring(0, last_index);
-                    var module_type = CSharpCompilerHelper.GetNativeType(AstType.MakeSimpleType(module_type_name));
-                    var member_name = CSharpCompilerHelper.ConvertToPascalCase(type_name);
+                        var module_type_name = import_path.Name.Substring(0, last_index);
+                        var module_type = CSharpCompilerHelper.GetNativeType(AstType.MakeSimpleType(module_type_name));
+                        var member_name = CSharpCompilerHelper.ConvertToPascalCase(type_name);
 
-                    if(module_type != null){
-                        var flags = BindingFlags.Static | BindingFlags.NonPublic;
-                        var method = module_type.GetMethod(member_name, flags);
+                        if(module_type != null){
+                            var flags = BindingFlags.Static | BindingFlags.NonPublic;
+                            var method = module_type.GetMethod(member_name, flags);
 
-                        if(method != null){
-                            var expresso_symbol = new ExpressoSymbol{Method = method};
-                            //AddSymbol(import_path, expresso_symbol);
-                            AddSymbol(alias, expresso_symbol);
-                        }else{
-                            var module_field = module_type.GetField(member_name, flags);
-
-                            if(module_field != null){
-                                var expresso_symbol = new ExpressoSymbol{PropertyOrField = module_field};
-                                //AddSymbol(import_path, expresso_symbol);
-                                AddSymbol(alias, expresso_symbol);
+                            if(method != null){
+                                AddSymbol(alias, new ExpressoSymbol{Method = method});
                             }else{
-                                throw new EmitterException("Error ES1903: It is found that the import name {0} isn't defined", import_path.Name);
+                                var module_field = module_type.GetField(member_name, flags);
+
+                                if(module_field != null)
+                                    AddSymbol(alias, new ExpressoSymbol{PropertyOrField = module_field});
+                                else
+                                    throw new EmitterException("Error ES1903: It is found that the import name {0} isn't defined", import_path.Name);
                             }
                         }
-                    }*/
+                    }
                 }
             }
             

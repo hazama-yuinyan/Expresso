@@ -268,22 +268,13 @@ $namespace=Expresso
     bool IsObjectCreation()
     {
         var t = la;
-        if(t.kind != _lcurly && t.kind != _double_colon)
+        if(t.kind != _lcurly)
             return false;
-
-        var x = t;
-        while(x.kind == _ident || x.kind == _double_colon)
-            x = scanner.Peek();
-
-        if(x.kind != _lcurly){
-            scanner.ResetPeek();
-            return false;
-        }
 
         var key = scanner.Peek();
         var tt = scanner.Peek();
         scanner.ResetPeek();
-        return key.kind == _ident && tt.kind == _colon;
+        return key.kind == _rcurly || key.kind == _ident && tt.kind == _colon;
     }
 
     bool IsStartOfAnotherType()
@@ -554,12 +545,12 @@ ImportDecl<out ImportDeclaration decl>
                                 .)
   ( "as"                                         (. var alias_start_loc = CurrentLocation; .)
     ( ImportAlias<out alias, alias_start_loc>    (. aliases.Add(alias); .)
-    | '{'
+    | lcurly
       ImportAlias<out alias, alias_start_loc>    (. aliases.Add(alias); .)
       { ','                                      (. alias_start_loc = CurrentLocation; .)
         ImportAlias<out alias, alias_start_loc>  (. aliases.Add(alias); .)
       }
-      '}'
+      rcurly
     )
   )
   SYNC ';'                      (. decl = AstNode.MakeImportDecl(paths, aliases, target_file); .).
@@ -578,12 +569,12 @@ ImportPaths<. ref List<Identifier> paths, TextLocation startLoc.>    (. var buil
         ImportPath<out ident, parent_namespace, startLoc>  (. paths.Add(ident); .)
       | ident                                              (. builder.Append(t.val); .)
       )
-    | '{'                           (. var parent_namespace2 = builder.ToString(); .)
+    | lcurly                        (. var parent_namespace2 = builder.ToString(); .)
       ImportPath<out ident, parent_namespace2, startLoc>   (. paths.Add(ident); .)
       { ','
         ImportPath<out ident, parent_namespace2, startLoc> (. paths.Add(ident); .)
       }
-      '}'
+      rcurly
     )
   ]
   { '.'                             (. 
@@ -594,12 +585,12 @@ ImportPaths<. ref List<Identifier> paths, TextLocation startLoc.>    (. var buil
         ImportPath<out ident, parent_namespace3, startLoc> (. paths.Add(ident); .)
       | ident                                              (. builder.Append(t.val); .)
       )
-    | '{'                           (. var parent_namespace4 = builder.ToString(); .)
+    | lcurly                        (. var parent_namespace4 = builder.ToString(); .)
       ImportPath<out ident, parent_namespace4, startLoc>   (. paths.Add(ident); .)
       { ','
         ImportPath<out ident, parent_namespace4, startLoc> (. paths.Add(ident); .)
       }
-      '}'
+      rcurly
     )
   }.
 /*------------------------------------------------------------------------*/
@@ -1614,7 +1605,7 @@ UnaryOperator<out OperatorType opType>  (. opType = OperatorType.None; .)
 Primary<out Expression expr>		    (. expr = null; PathExpression path; AstType type_path = null; .)
 =
   ( PathExpression<out path>            (. expr = path; .) /* It's possible that a PathExpression turns out to be just an identifier */
-    [ IF(IsObjectCreation())            (. type_path = ConvertPathToType(path); .)
+    [ IF(IsObjectCreation())            (. type_path = ConvertPathToType(path); .)  /* The possible successor is in MatchStmt */
       ObjectCreation<type_path, out expr>
     ]
   | Atom<out expr>

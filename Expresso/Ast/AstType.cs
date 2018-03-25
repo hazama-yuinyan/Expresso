@@ -278,6 +278,12 @@ namespace Expresso.Ast
             return new SimpleType(name, typeArgs, start, end);
         }
 
+        public static SimpleType MakeSimpleType(Identifier ident, IEnumerable<AstType> typeArgs, TextLocation start = default(TextLocation),
+                                                TextLocation end = default(TextLocation))
+        {
+            return new SimpleType(ident, typeArgs, start, end);
+        }
+
         public static ReferenceType MakeReferenceType(AstType baseType, TextLocation start = default(TextLocation))
         {
             return new ReferenceType(baseType, start);

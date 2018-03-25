@@ -58,7 +58,7 @@ namespace Expresso.CodeGen
         public static PrimitiveType GetPrimitiveAstType(string type)
         {
             try{
-                var type_code = PrimitiveType.GetKnownTypeCodeForPrimitiveType(type, null);
+                var type_code = PrimitiveType.GetActualKnownTypeCodeForPrimitiveType(type, null);
                 return AstType.MakePrimitiveType(type);
             }
             catch(ParserException){
@@ -90,6 +90,24 @@ namespace Expresso.CodeGen
             if(type == null)
                 throw new ParserException("Error ES5000: The type '{0}' is not a native type", identifier, identifier.Name);
                 
+            PopulateSymbolTable(table, type);
+        }
+
+        public static SymbolTable GetSymbolTableForAssembly(string assemblyPath)
+        {
+            var asm = Assembly.LoadFrom(assemblyPath);
+            var root_table = new SymbolTable();
+
+            foreach(var type in asm.GetTypes()){
+                PopulateSymbolTable(root_table, type);
+                root_table.AddTypeSymbol(type.FullName, AstNode.MakeIdentifier(type.FullName, Modifiers.Export));
+            }
+
+            return root_table;
+        }
+
+        static void PopulateSymbolTable(SymbolTable table, Type type)
+        {
             var type_name = type.Name;
             var expresso_type_name = GetExpressoTypeName(type.FullName);
             var expresso_name_builder = new StringBuilder(expresso_type_name);
@@ -97,7 +115,7 @@ namespace Expresso.CodeGen
                 // ignore compiler-generated classes
                 return;
             }
-                    
+
             var converted_name = new StringBuilder(TypePrefix + expresso_type_name);
 
             var type_args = new List<AstType>();
@@ -112,10 +130,10 @@ namespace Expresso.CodeGen
                         converted_name.Append(", ");
                         expresso_name_builder.Append(", ");
                     }
-                            
+
                     converted_name.Append(type_arg.Name);
                     expresso_name_builder.Append(type_arg.Name);
-                    type_args.Add(AstType.MakeSimpleType(type_arg.Name));
+                    type_args.Add(AstType.MakeParameterType(type_arg.Name));
                 }
             }
 
@@ -132,7 +150,7 @@ namespace Expresso.CodeGen
                 method_name = ConvertToExpressoFunctionName(method_name);
                 if(IgnoreList.Contains(method_name) || method_name.StartsWith("op_", StringComparison.CurrentCulture))
                     continue;
-                        
+
                 var return_type = GetExpressoType(public_method.ReturnType);
                 var param_types =
                     from param in public_method.GetParameters()
@@ -172,9 +190,6 @@ namespace Expresso.CodeGen
             if(type_name == "Void")
                 return AstType.MakeSimpleType("tuple");
 
-            if(type.IsArray)
-                return AstType.MakeSimpleType("array", TextLocation.Empty, TextLocation.Empty, GetExpressoType(type.GetElementType()));
-            
             var primitive = GetPrimitiveAstType(type_name);
             if(primitive != null)
                 return primitive;
