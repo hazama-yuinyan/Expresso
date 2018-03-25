@@ -67,7 +67,7 @@ namespace Expresso.Ast.Analysis
 		
 		void Bind(ExpressoAst unboundAst)
 		{
-            Debug.Assert(unboundAst != null, "We have to have something to bind to");
+            Debug.Assert(unboundAst != null, "We have to hold something to bind to");
 			
             unboundAst.AcceptWalker(this);
 			

@@ -13,6 +13,7 @@ The language name __Expresso__ is coined as a mixture of __Espresso__ and __expr
 * Type-strict 
 * Having collections in the built-in types
 * Type inference
+* Complete interoperability with other .NET languages on IL code level
 
 ## How to compile
 
