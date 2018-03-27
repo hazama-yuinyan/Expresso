@@ -11,7 +11,7 @@ namespace Expresso.Ast
     /// 2. Name imports.
     /// Path resolving can be done as follows:
     /// Above all, the name should represent a full path to a module, a type, a function or a module field.
-    /// "import" ident [ "::" ident ] { '.' ( ident | '{' ident { ',' ident } '}' ) [ "from" string_literal ] "as" ( ident | '{' ident { ',' ident } '}') ';'
+    /// "import" ident [ "::" ( ident | '{' ident { ',' ident } '}' ) ] { '.' ( ident | '{' ident { ',' ident } '}' ) [ "from" string_literal ] "as" ( ident | '{' ident { ',' ident } '}') ';'
     /// </summary>
     public class ImportDeclaration : AstNode
     {

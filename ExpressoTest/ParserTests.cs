@@ -4252,5 +4252,134 @@ namespace Expresso.Test
 
             Helpers.AstStructuralEqual(ast, expected_ast);
         }
+
+        [Test]
+        public void InteroperabilityTestWithCSharp()
+        {
+            var parser = new Parser(new Scanner("../../sources/for_unit_tests/interoperability_test_with_csharp.exs"));
+            parser.Parse();
+
+            var ast = parser.TopmostAst;
+
+            var expected = AstNode.MakeModuleDef("main", new List<EntityDeclaration>{
+                EntityDeclaration.MakeFunc(
+                    "main",
+                    Enumerable.Empty<ParameterDeclaration>(),
+                    Statement.MakeBlock(
+                        Statement.MakeVarDecl(
+                            Helpers.MakeSeq(
+                                Helpers.MakeSomePatternWithType("t")
+                            ),
+                            Helpers.MakeSeq(
+                                Expression.MakeObjectCreation(
+                                    Helpers.MakeGenericType("InteroperabilityTest"),
+                                    Enumerable.Empty<Identifier>(),
+                                    Enumerable.Empty<Expression>()
+                                )
+                            ),
+                            Modifiers.Immutable
+                        ),
+                        Statement.MakeExprStmt(
+                            Helpers.MakeCallExpression(
+                                Expression.MakeMemRef(
+                                    Helpers.MakeIdentifierPath("t"),
+                                    Helpers.MakeSomeIdent("doSomething")
+                                )
+                            )
+                        ),
+                        Statement.MakeVarDecl(
+                            Helpers.MakeSeq(
+                                Helpers.MakeSomePatternWithType("i")
+                            ),
+                            Helpers.MakeSeq(
+                                Helpers.MakeCallExpression(
+                                    Expression.MakeMemRef(
+                                        Helpers.MakeIdentifierPath("t"),
+                                        Helpers.MakeSomeIdent("getSomeInt")
+                                    )
+                                )
+                            ),
+                            Modifiers.Immutable
+                        ),
+                        Statement.MakeVarDecl(
+                            Helpers.MakeSeq(
+                                Helpers.MakeSomePatternWithType("list")
+                            ),
+                            Helpers.MakeSeq(
+                                Helpers.MakeCallExpression(
+                                    Expression.MakeMemRef(
+                                        Helpers.MakeIdentifierPath("t"),
+                                        Helpers.MakeSomeIdent("getIntList")
+                                    )
+                                )
+                            ),
+                            Modifiers.Immutable
+                        ),
+                        Statement.MakeExprStmt(
+                            Helpers.MakeCallExpression(
+                                Expression.MakeMemRef(
+                                    Helpers.MakeIdentifierPath("StaticTest"),
+                                    Helpers.MakeSomeIdent("doSomething")
+                                )
+                            )
+                        ),
+                        Statement.MakeVarDecl(
+                            Helpers.MakeSeq(
+                                Helpers.MakeSomePatternWithType("flag")
+                            ),
+                            Helpers.MakeSeq(
+                                Helpers.MakeCallExpression(
+                                    Expression.MakeMemRef(
+                                        Helpers.MakeIdentifierPath("StaticTest"),
+                                        Helpers.MakeSomeIdent("getSomeBool")
+                                    )
+                                )
+                            ),
+                            Modifiers.Immutable
+                        ),
+                        Statement.MakeVarDecl(
+                            Helpers.MakeSeq(
+                                Helpers.MakeSomePatternWithType("seq")
+                            ),
+                            Helpers.MakeSeq(
+                                Helpers.MakeCallExpression(
+                                    Expression.MakeMemRef(
+                                        Helpers.MakeIdentifierPath("StaticTest"),
+                                        Helpers.MakeSomeIdent("getSomeIntSeq")
+                                    )
+                                )
+                            ),
+                            Modifiers.Immutable
+                        ),
+                        Statement.MakeExprStmt(
+                            Helpers.MakeCallExpression(
+                                Helpers.MakeIdentifierPath("println"),
+                                Helpers.MakeIdentifierPath("i"),
+                                Helpers.MakeIdentifierPath("list"),
+                                Helpers.MakeIdentifierPath("flag"),
+                                Helpers.MakeIdentifierPath("seq")
+                            )
+                        )
+                    ),
+                    Helpers.MakePlaceholderType(),
+                    Modifiers.None
+                )
+            }, Helpers.MakeSeq(
+                EntityDeclaration.MakeImportDecl(
+                    Helpers.MakeSeq(
+                        AstNode.MakeIdentifier("InteroperabilityTest.InteroperabilityTest"),
+                        AstNode.MakeIdentifier("InteroperabilityTest.StaticTest")
+                    ),
+                    Helpers.MakeSeq(
+                        "InteroperabilityTest",
+                        "StaticTest"
+                    ),
+                    "./InteroperabilityTest.dll"
+                )
+            ));
+
+            Assert.IsNotNull(ast);
+            Helpers.AstStructuralEqual(ast, expected);
+        }
     }
 }

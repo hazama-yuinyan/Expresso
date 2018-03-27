@@ -8,8 +8,8 @@
 ・using, do...while構文の追加
 ・isによる型チェックとそれに伴う自動キャスト機能
 ・intseqにintの範囲外が来た時に落ちるはずなのを直す
-・pureC#の呼び出し(FFI, new, etc.)
 ・Dictionaryの要素に対してkey,valueをタプルで返すようにする(Dictionaryをfor..inの右辺に使えるようにする)
 ・doc commentを追加する
 ・shadowingを実装する
 ・importで別名をつけた時に、importした関数の戻り値の型の整合性が取れるようにする
+・comprehensionの実装
