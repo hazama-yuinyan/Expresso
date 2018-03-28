@@ -418,7 +418,7 @@ namespace Expresso.CodeGen
                 if(type.IsArray)
                     builder.Append("]");
                 else
-                    builder.Append("...]");
+                    builder.Append(", ...]");
             }else{
                 if(type.IsArray)
                     builder.Append("[]");

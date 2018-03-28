@@ -257,6 +257,14 @@ $namespace=Expresso
         return la.kind == _ident && x.kind != _double_colon && x.kind != _lcurly;
     }
 
+    bool IsDestructuringPattern()
+    {
+        var tt = la;
+        var x = scanner.Peek();
+        scanner.ResetPeek();
+        return tt.kind == _ident && (x.kind == _double_colon || x.kind == _lcurly);
+    }
+
     bool NotFinalComma()
     {
         var t = la;
@@ -310,6 +318,43 @@ $namespace=Expresso
         var token = scanner.Peek();
         scanner.ResetPeek();
         return token.val != ".";
+    }
+
+    bool IsIntSeqColon()
+    {
+        var tt = la;
+        var x = scanner.Peek();
+        bool another_colon_found = false;
+        while(x.kind != _semicolon){
+            if(x.kind == _colon)
+                another_colon_found = true;
+
+            x = scanner.Peek();
+        }
+        scanner.ResetPeek();
+        return !another_colon_found;
+    }
+
+    bool IsGenericTypeSignature()
+    {
+        var x = scanner.Peek();
+        bool closing_bracket_found = false;
+        while(x.kind != _semicolon){
+            if(x.kind == _rangle_bracket)
+                closing_bracket_found = true;
+
+            x = scanner.Peek();
+        }
+        scanner.ResetPeek();
+        return closing_bracket_found;
+    }
+
+    bool IsArrayTypeSignature()
+    {
+        var tt = la;
+        var x = scanner.Peek();
+        scanner.ResetPeek();
+        return tt.kind == _lbracket && x.kind == _rbracket;
     }
 
     bool CheckKeyword(string name)
@@ -387,7 +432,6 @@ CHARACTERS
 TOKENS
   double_dots = "..".
   triple_dots = "...".
-  rbracket = ']'.
   colon = ':'.
   double_colon = "::".
   semicolon = ';'.
@@ -396,6 +440,8 @@ TOKENS
   lbracket = '['.
   rparen = ')'.
   rcurly = '}'.
+  rangle_bracket = '>'.
+  rbracket = ']'.
   comma = ','.
   dot = '.'.
   ident  = (letter | '_') {'_' | letter | digit}.
@@ -895,7 +941,8 @@ Type<out AstType type>				(. var start_loc = NextLocation; type = new Placeholde
    | "void"							(. type = AstType.MakeSimpleType("tuple", Enumerable.Empty<AstType>(), start_loc, CurrentLocation); .)
    | TypePathExpression<out type>   (. if(is_reference) type = AstType.MakeReferenceType(type, TextLocation.Empty); .)
    )                                (. start_loc = NextLocation; .)
-   [ GenericTypeSignature<name, is_reference, start_loc, out type>
+   [ IF(IsGenericTypeSignature())       /* For ambiguity in Comparison on '<' */
+     GenericTypeSignature<name, is_reference, start_loc, out type>
                                     (.
                                         if(!IsPrimitiveGenericType(name)){
                                             SemanticError("Error ES0006: `{0}` is not a generic type!", name);
@@ -906,7 +953,8 @@ Type<out AstType type>				(. var start_loc = NextLocation; type = new Placeholde
  /* Split brackets into 2 tokens that represent the array type
     because otherwise it conflicts with the array literal.
  */
-   { '[' ']'                        (. if(type.IsNull)
+   { IF(IsArrayTypeSignature())     /* For ambiguity in ClosureLiteral */
+     '[' ']'                        (. if(type.IsNull)
                                            SemanticError("Error ES0007: Array of unknown type is specified. Unknown type is just unknown!");
                 
                                        type = AstType.MakeSimpleType("array", start_loc, CurrentLocation, type);
@@ -1271,13 +1319,6 @@ VarDef<out PatternConstruct pattern, out Expression option> (. option = null; va
                                        }
                                     .).
 /*------------------------------------------------------------------------*/
-PatternVarDef<out VariableInitializer init> (. Identifier ident; Expression expr = null; .)
-=
-  Identifier<out ident>
-  [ '='
-    PatternOrTest<out expr>
-  ]                                         (. init = AstNode.MakeVariableInitializer(PatternConstruct.MakeIdentifierPattern(ident, null), expr); .).
-/*------------------------------------------------------------------------*/
 RValueList<out SequenceExpression seq>		(. Expression tmp; var exprs = new List<Expression>(); .)
 =
   CondExpr<out tmp>							(. exprs.Add(tmp); .)
@@ -1295,15 +1336,13 @@ Pattern<out PatternConstruct pattern>       (. pattern = null; .)
   | RValuePattern<out pattern>.
 /*------------------------------------------------------------------------*/
 ValueBindingPattern<out PatternConstruct pattern>
-                                        (. VariableInitializer init; var modifiers = ExpressoModifiers.None; .)
+                                        (. var modifiers = ExpressoModifiers.None; var start_loc = NextLocation; .)
 =
   ( keyword_let                         (. modifiers = ExpressoModifiers.Immutable; .)
   | keyword_var
-  )                                     (. var inits = new List<VariableInitializer>(); .)
-  PatternVarDef<out init>               (. inits.Add(init); .)
-  { ','
-    PatternVarDef<out init>             (. inits.Add(init); .)
-  }                                     (. pattern = PatternConstruct.MakeValueBindingPattern(inits, modifiers); .).
+  )
+  PatternWithType<out pattern>
+                                        (. pattern = PatternConstruct.MakeValueBindingPattern(pattern, modifiers, start_loc); .).
 /*------------------------------------------------------------------------*/
 ExpressionPattern<out PatternConstruct pattern> (. Expression expr; .)
 =
@@ -1347,7 +1386,8 @@ TupleElementPattern<out PatternConstruct pattern>   (. pattern = PatternConstruc
   | TuplePattern<out pattern>
   | IF(IsIdentifierPattern())
     IdentifierPattern<out pattern>
-  | DestructuringPattern<out pattern>
+  | IF(IsDestructuringPattern())
+    DestructuringPattern<out pattern>
   | ExpressionPattern<out pattern>
   ).
 /*------------------------------------------------------------------------*/
@@ -1505,7 +1545,8 @@ IntSeqExpr<out Expression expr>     (. Expression start = null, end = null, step
   BitOr<out start>                  (. expr = start; .)
   [ RangeOperator<ref upper_inclusive>
     BitOr<out end>
-    [ ':'
+    [ IF(IsIntSeqColon())       /* For ambiguity in CondExpr */
+      ':'
       BitOr<out step>
     ]                               (. if(step == null) step = Expression.MakeConstant("int", 1, TextLocation.Empty);
                                        expr = Expression.MakeIntSeq(start, end, step, upper_inclusive);

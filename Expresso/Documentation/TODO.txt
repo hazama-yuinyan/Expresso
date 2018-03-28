@@ -13,3 +13,5 @@
 ・shadowingを実装する
 ・importで別名をつけた時に、importした関数の戻り値の型の整合性が取れるようにする
 ・comprehensionの実装
+・プロパティのセットの実装
+・matchの挙動が一部Rustと違うのを修正する

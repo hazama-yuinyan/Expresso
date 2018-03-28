@@ -350,7 +350,7 @@ namespace Expresso.CodeGen
 
             public void VisitValueBindingPattern(ValueBindingPattern valueBindingPattern)
             {
-                valueBindingPattern.Variables.AcceptWalker(this);
+                valueBindingPattern.Pattern.AcceptWalker(this);
             }
 
             public void VisitVariableDeclarationStatement(VariableDeclarationStatement varDecl)

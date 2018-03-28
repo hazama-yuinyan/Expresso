@@ -1308,8 +1308,8 @@ namespace Expresso.Ast.Analysis
 
         public AstType VisitValueBindingPattern(ValueBindingPattern valueBindingPattern)
         {
-            var types = valueBindingPattern.Variables.Select(variable => variable.AcceptWalker(this));
-            return AstType.MakeSimpleType("tuple", types, valueBindingPattern.StartLocation, valueBindingPattern.EndLocation);
+            var type = valueBindingPattern.Pattern.AcceptWalker(this);
+            return type;
         }
 
         public AstType VisitCollectionPattern(CollectionPattern collectionPattern)

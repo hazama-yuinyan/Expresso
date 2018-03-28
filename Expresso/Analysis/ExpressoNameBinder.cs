@@ -608,7 +608,7 @@ namespace Expresso.Ast.Analysis
 
         public void VisitValueBindingPattern(ValueBindingPattern valueBindingPattern)
         {
-            valueBindingPattern.Variables.AcceptWalker(this);
+            valueBindingPattern.Pattern.AcceptWalker(this);
         }
 
         public void VisitCollectionPattern(CollectionPattern collectionPattern)

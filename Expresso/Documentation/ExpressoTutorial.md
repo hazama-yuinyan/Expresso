@@ -33,8 +33,8 @@ you progress reading the tutorial, you will see different names used for the mod
 In Expresso the naming convention for modules is the snake case. In other words, you name a module "test_module" rather than
 "testModule" or "TestModule". This is not a strict rule that the compiler enforces but it's considered a good style to keep that rule.
 In `main` function, which is the entry point for the program, we `println'ed` a string. `println` is a function that outputs
-some string to the console. There are also the single line version, `print`, that doesn't output a line break at the end and
-the format string version, `printFormat`, that formats the string according to the first argument given to that function.
+some string to the console. There is also the single line version, `print`, that doesn't output a line break at the end.
+In addition, even though we'll come back later to this topic, Expresso has string interpolation as well.
 
 ## Getting into the Expresso world
 
@@ -42,7 +42,7 @@ Let's dive into the Expresso world. Because I mentioned at the beginning of this
 we'll use Expresso as a simple calculator first. 
 Note that from now on we'll not be including the `module main; def main(){` part because with it the examples will be too complex. Since it's boring to repeat
 writing the same thing over and over and it's considered hard to see if we include the magic header every time, we won't do that.
-So if you follow this tutorial don't forget to include the magic header at the beginning of source files.
+So if you follow this tutorial, don't forget to include the magic header at the beginning of source files.
 As the saying goes "A journey of a thousand miles begins with a single step", we'll be starting with a simple calculation.
 
 ```expresso
@@ -83,7 +83,7 @@ println(a + 1);
 
 ### Let bindings and variable declarations
 
-In Expresso, there are 2 forms of variable binding. 
+In Expresso, there are 2 forms of variable bindings. 
 Variables are useful considering the ability to keep track of values they hold. But sometimes we just want to give values descriptive names
 because we need the same values several times or because it is tedious to change all the literal values over and over when you try
 to guess the proper values for some programs. That's where immutable variables come into play.
@@ -126,12 +126,12 @@ That's all for floating-point numbers.
 
 ### The `bool` type
 
-Next, let's look at a simple type: the `bool` type. The `bool` represents the boolean and has two possible values: true and false.
+Next, let's look at a simple type: the `bool` type. The `bool` represents the boolean and has two possible values: `true` and `false`.
 In Expresso, the `if` statement doesn't allow the conditional to have any types other than `bool`. If you are trying to do that,
 you'll see the following error:
 
 ```
-Error ES4000: The conditional expression has to be of type `bool`
+Error ES4000: The conditional expression has to be of type `bool`.
 ```
 
 The error message should tell the story.
@@ -165,14 +165,14 @@ The `intseq` type has the corresponding literal form and it is written as follow
 ```expresso
     let seq = 1..10;    // `step` can be omitted and 1 is assumed if ommited and the double dots mean that the lower bound is
                         // inclusive but the upper bound is exclusive
-    let series = seq.select(|x| => x);
+    let series = Enumerable.select(seq, |x| => x);
     for let elem in seq {  // print "123456789"
         print(elem);
     }
-    println(series); // print "[1,2,3,4,5,6,7,8,9...]"
+    println(series); // print "[1, 2, 3, 4, 5, 6, 7, 8, 9, ...]"
 ```
 
-<span class="caption">Listing4: An intseq turns into a vector</span>
+<span class="caption">Listing 4: An intseq turns into a vector</span>
 
 An integer sequence expression does not create a vector of integers by itself. Instead, it creates a new object that is ready
 to produce integers that are in the range specified in the expression.
@@ -181,23 +181,23 @@ to produce integers that are in the range specified in the expression.
     let negative_seq = -10..0;
     let to_negative = 0..-10:-1;
     println("Legend: (f(x) = x - 10, g(x) = -x)");
-    for let (x, to_n) in negative_seq.zip(to_negative) {
+    for let (x, to_n) in Enumerable.zip(negative_seq, to_negative, |l, r| => (l, r)) {
         print("(f(x), g(x)) = ({0}, {1}),", x, to_n);  // print "(f(x), g(x)) = (-10, 0),(f(x), g(x)) = (-9, -1)" and so on
-        if x == to_n {      // and when it reaches (5, 5), it also prints "Crossed over!"
+        if x == to_n {      // and when it reaches (-5, -5), it also prints "Crossed over!"
             println("Crossed over!");
         }
     }
 ```
 
-<span class="caption">Listing5: Two graphs crossed over</span>
+<span class="caption">Listing 5: Two graphs crossed over</span>
 
 We call such objects iterators because they iterate through a sequence-like object and yields an element at a time.
-It's very useful and it's one of the reasons that gives Expresso the power of expressive-ness.
+It's very useful and it's one of the reasons that gives Expresso the power of expressiveness.
 An integer sequence expression can take negative values in any of its operands as long as they fit in the range of
 the built-in `int` type(which corresponds to [-2<sup>31</sup>, 2<sup>31</sup> - 1]).
 You may notice that the integer sequence expression looks like something, say, the conditional operator. And yes, that's right! 
 In Expresso, we have 2 types of ternary operators. One is the conditional operator(often called "the ternary operator"
-since most programming languages does have only one ternary operator) and the other is the integer sequence operator we have just introduced.
+because most programming languages does have only one ternary operator) and the other is the integer sequence operator we have just introduced.
 
 ### The `slice` type
 
@@ -208,12 +208,12 @@ the `intseq` type reveals its funny yet powerful potential out to the public.
     let some_array = (0..10).toList();
     let first_half = some_array[0..5];
     let second_half = some_array[5..10];
-    for let (a, b) in first_half.zip(second_half) {
+    for let (a, b) in Enumerable.zip(first_half, second_half, |l, r| => (l, r)) {
         print("({0}, {1}),", a, b);   // print "(0, 5),(1, 6),(2, 7)" and so on
     }
 ```
 
-<span class="caption">Listing6: Spliting into 2 slices</span>
+<span class="caption">Listing 6: Spliting into 2 slices</span>
 
 In the above example, it seems that the latter 2 intseq objects extract elements from the same array object.
 You may be wondering that it is inefficient because it seems that we have 3 arrays in the end. Having 3 arrays means that
@@ -221,7 +221,7 @@ Expresso first allocates 3 chunks of memory and fills the first chunk of memory 
 the first half of elements of the previous array to the second chunk of memory and the second half of elements to the last chunk of memory.
 But Expresso is smart enough to solve this problem. Instead of returning a new array, it returns iterators that goes through
 the first half of the elements and the second half of the elements respectively.
-Note that the chunks of memory(`first_half` and `second_half` variables in this snippet) are called `slice` in Expresso and that `slice` is another iterator
+Note that the chunks of memory(`first_half` and `second_half` let-bindings in this snippet) are called `slice` in Expresso and that `slice` is another iterator
 (in .NET term it is also called an `enumerator`).
 
 Sometimes, it's useful to view into some sequence. That's the time when the `slice` type comes into play. The `slice` type, as the name implies,
@@ -247,7 +247,7 @@ var natural_numbers = [0, 1, 2, 3, 4, 5, ...];
 <span class="caption">Listing 7: Initializing a vector of natural numbers</span>
 
 Note the trailing periods. If you forget them, the object will be an array, which doesn't allow you to grow or shrink its size. As you can see,
-Expresso allows you to construct an vector object in literal form, which most other type-strict programming languages don't.   
+Expresso allows you to construct a vector object in literal form, which most other type-strict programming languages don't.   
 You can add or remove an item from the vector.
 
 ```expresso
@@ -270,7 +270,7 @@ when compiling. However, it currently doesn't take advantage of it.
 
 The dictionary type, which is sometimes called a HashMap or simply an object, is a collection of several keys and values.
 
-OK, next up is exponentiation. But we'll be doing it in a slightly different way. Even though Expresso has the operator for it, here we'll be doing it on our
+OK, so far so good. We've explained the very basics of builtin types. next up is exponentiation. But we'll be doing it in a slightly different way. Even though Expresso has the operator for it, here we'll be doing it on our
 own, using while loop.
 
 The main policy for Expresso is that "Programming languages must allow programmers to write what it does, not how it does something".
@@ -291,7 +291,7 @@ we define the work flow as a chain of functions. So in Expresso, you can rewrite
 ```expresso
 // construct some array
 // and assume the array is named "a"
-let mapped = a.map(|elem| => /* do something on each element */);
+let mapped = Enumerable.select(a, |elem| => /* do something on each element */);
 ```
 
 This reads: We're assigining the value that will be computed by iterating through the array and performing some calculations on each element of
@@ -300,7 +300,7 @@ the array to a variable. This sounds more straightforward and is easier to read,
 ## Main philosophies
 
 Expresso has two philosophies. One is "What the compiler doesn't allow you to do is just what you can't", and the other is
-"Just do as the compiler says" or more hilariously, "Just lean and bend on the compiler until the perpendicular becomes the parallel".
+"Just do as the compiler says" or more hilariously, "Just lean and bend on the compiler until a perpendicular line becomes a parallel one".
 The first one is somewhat obvious because otherwise, the compiler has some bugs.
 The latter tells you that if you just follow what the compiler says, then you can do right things naturally.
 
@@ -318,3 +318,114 @@ And also, it is worth noting that the compiler can tell more specific and unders
 Of course, it can even suggest the propper usages when it encounters some errors.
 In contrast, it can be considered as a disadvantage that supporting those types as builtin makes it hard to maintain the source code and
 it can lead to compiler size inflation.
+
+## Interoperability with other .NET languages
+
+Let's imagine a world without any borders. You could go anywhere, you could do anything and you could live anywhere. Such a world would be woderful, don't you think?
+In a sense, we can view Expresso as such. Because it runs on the CLR(Common Language Runtime), you can not only call functions or methods that come from other lanauages,
+but also construct objects that come from those languages and even call instance methods on them. It's exactly as if we would be in a border-less world! Doing so is
+as simple as follows:
+
+```expresso
+module main;
+
+
+import OtherLanguageWorld.{TestClass, StaticTest} from "./CSharpDll.dll" as {TestClass, StaticTest};
+
+def main()
+{
+    let t = TestClass{maximum: 1000};
+    let i = t.getSomeInt();
+    let seq = t.getSomeIntSeq(0);
+
+    StaticTest.greet();
+    let flag = StaticTest.getSomeFlag();
+    let vec = StaticTest.getSomeIntList();
+
+    println(i, seq, flag, vec);
+}
+```
+
+<span class="caption">Listing : Interoperating with C#</span>
+
+First, we import types defined in the other language. Note that the file path in the from clause is relative to the source file that the declaration resides in.
+Once the types are imported, you can do anything with them as if they were defined in Expresso, as with the types in the standard library. Oh, I forgot showing
+the C#'s code. Say we have the following C# code:
+
+```csharp
+// In TestInterface.cs
+using System;
+using Expresso.Runtime.Builtins;
+
+namespace OtherLanguageWorld
+{
+    public interface TestInterface
+    {
+        int GetSomeInt();
+        ExpressoIntegerSequence GetSomeIntSeq();
+    }
+}
+
+// In TestClass.cs
+using System;
+using Expresso.Runtime.Builtins;
+
+namespace OtherLanguageWorld
+{
+    public class TestClass : TestInterface
+    {
+        int maximum;
+
+        public TestClass(int maximum)
+        {
+            this.maximum = maximum;
+        }
+
+        public List<int> GetSomeInt()
+        {
+            Console.WriteLine("GetSomeInt called");
+            return 100;
+        }
+
+        public int GetSomeIntSeq(int lower)
+        {
+            Console.WriteLine("GetSomeIntSeq called");
+            return new ExpressoIntegerSequence(lower, maximum, 1, false);
+        }
+    }
+}
+
+// In StaticTest.cs
+using System;
+using System.Collections.Generic;
+
+namespace OtherLanguageWorld
+{
+    public class StaticTest
+    {
+        public static void Greet()
+        {
+            Console.WriteLine("Hello from StaticTest.Greet");
+        }
+
+        public static bool GetSomeFlag()
+        {
+            Console.WriteLine("GetSomeFlag called");
+            return true;
+        }
+
+        public static List<int> GetSomeIntList()
+        {
+            Console.WriteLine("GetSomeIntList called");
+            return new List<int>{1, 2, 3, 4, 5};
+        }
+    }
+}
+
+```
+
+<span class="caption">Listing : C# code to import</span>
+
+When we run the code in Listing , we'll see outputs from Console.WriteLine statements, `100`, `[0..1000:1]`, `true` and `[1, 2, 3, 4, 5, ...]` on the console.
+Note that because we're currently defining the `ExpressoIntegerSequence` type in C#, we also can return it from C#. As you can see from this fact, you can interoperate
+with Expresso in C# as well.

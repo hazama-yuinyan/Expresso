@@ -125,9 +125,9 @@ namespace Expresso.Ast
             return new IdentifierPattern(ident, inner);
         }
 
-        public static ValueBindingPattern MakeValueBindingPattern(IEnumerable<VariableInitializer> inits, Modifiers modifiers)
+        public static ValueBindingPattern MakeValueBindingPattern(PatternConstruct pattern, Modifiers modifiers, TextLocation loc = default(TextLocation))
         {
-            return new ValueBindingPattern(inits, modifiers);
+            return new ValueBindingPattern(pattern, modifiers, loc);
         }
 
         public static CollectionPattern MakeCollectionPattern(IEnumerable<PatternConstruct> items, bool isVector)
