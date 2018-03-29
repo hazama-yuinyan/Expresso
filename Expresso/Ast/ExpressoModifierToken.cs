@@ -11,6 +11,17 @@ namespace Expresso.Ast
     /// </summary>
     public class ExpressoModifierToken : ExpressoTokenNode
     {
+        public static readonly TokenRole PublicModifierRole = new TokenRole("public", Null);
+        public static readonly TokenRole ProtectedModifierRole = new TokenRole("protected", Null);
+        public static readonly TokenRole PrivateModifierRole = new TokenRole("private", Null);
+        public static readonly TokenRole AbstractModifierRole = new TokenRole("abstract", Null);
+        public static readonly TokenRole VirtualModifierRole = new TokenRole("virtual", Null);
+        public static readonly TokenRole StaticModifierRole = new TokenRole("static", Null);
+        public static readonly TokenRole OverrideModifierRole = new TokenRole("override", Null);
+        public static readonly TokenRole MutatingModifierRole = new TokenRole("mutating", Null);
+        public static readonly TokenRole ExportModifierRole = new TokenRole("export", Null);
+        public static readonly TokenRole ImmutableModifierRole = new TokenRole("immutable", Null);
+
         Modifiers modifier;
 
         public Modifiers Modifier{
@@ -48,9 +59,47 @@ namespace Expresso.Ast
         }
 
         public ExpressoModifierToken(TextLocation loc, Modifiers modifier)
-            : base(loc, new TokenRole(modifier.ToString().ToLower(), ExpressoTokenNode.Null))
+            : base(loc, GetTokenRole(modifier.ToString().ToLower()))
         {
             this.modifier = modifier;
+        }
+
+        static TokenRole GetTokenRole(string modifier)
+        {
+            switch(modifier){
+            case "public":
+                return PublicModifierRole;
+
+            case "protected":
+                return ProtectedModifierRole;
+
+            case "private":
+                return PrivateModifierRole;
+
+            case "abstract":
+                return AbstractModifierRole;
+
+            case "virtual":
+                return VirtualModifierRole;
+
+            case "static":
+                return StaticModifierRole;
+
+            case "override":
+                return OverrideModifierRole;
+
+            case "mutating":
+                return MutatingModifierRole;
+
+            case "export":
+                return ExportModifierRole;
+
+            case "immutable":
+                return ImmutableModifierRole;
+
+            default:
+                throw new InvalidOperationException("Unknown modifier!");
+            }
         }
     }
 }

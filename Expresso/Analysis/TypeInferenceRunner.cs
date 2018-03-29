@@ -224,11 +224,11 @@ namespace Expresso.Ast.Analysis
                     var key_value = comp.Item as KeyValueLikeExpression;
                     var key_type = key_value.KeyExpression.AcceptWalker(this);
                     var value_type = key_value.ValueExpression.AcceptWalker(this);
-                    obj_type.TypeArguments.FirstOrNullObject().ReplaceWith(key_type);
-                    obj_type.TypeArguments.LastOrNullObject().ReplaceWith(value_type);
+                    obj_type.TypeArguments.FirstOrNullObject().ReplaceWith(key_type.Clone());
+                    obj_type.TypeArguments.LastOrNullObject().ReplaceWith(value_type.Clone());
                 }else if(obj_type.Name == "array" || obj_type.Name == "vector"){
                     var element_type = comp.Item.AcceptWalker(this);
-                    obj_type.TypeArguments.FirstOrNullObject().ReplaceWith(element_type);
+                    obj_type.TypeArguments.FirstOrNullObject().ReplaceWith(element_type.Clone());
                 }else{
                     throw new InvalidOperationException("Unreachable!");
                 }

@@ -3963,10 +3963,7 @@ namespace Expresso.Test
                             Helpers.MakeSeq(
                                 Helpers.MakeCallExpression(
                                     Expression.MakePath(
-                                        AstNode.MakeIdentifier(
-                                            "TestModule",
-                                            Helpers.MakeGenericType("test_module")
-                                        ),
+                                        AstNode.MakeIdentifier("TestModule"),
                                         AstNode.MakeIdentifier(
                                             "createTest",
                                             AstType.MakeFunctionType(
@@ -3998,10 +3995,7 @@ namespace Expresso.Test
                             ),
                             Helpers.MakeSeq(
                                 Expression.MakePath(
-                                    AstNode.MakeIdentifier(
-                                        "TestModule",
-                                        Helpers.MakeGenericType("test_module")
-                                    ),
+                                    AstNode.MakeIdentifier("TestModule"),
                                     AstNode.MakeIdentifier(
                                         "pair",
                                         Helpers.MakeGenericType(
@@ -4024,10 +4018,7 @@ namespace Expresso.Test
                             Helpers.MakeSeq(
                                 Helpers.MakeCallExpression(
                                     Expression.MakePath(
-                                        AstNode.MakeIdentifier(
-                                            "TestModule",
-                                            Helpers.MakeGenericType("test_module")
-                                        ),
+                                        AstNode.MakeIdentifier("TestModule"),
                                         AstNode.MakeIdentifier(
                                             "mySin",
                                             AstType.MakeFunctionType(
@@ -7477,7 +7468,7 @@ namespace Expresso.Test
                     Modifiers.None
                 )
             }, Helpers.MakeSeq(
-                EntityDeclaration.MakeImportDecl(
+                AstNode.MakeImportDecl(
                     Helpers.MakeSeq(
                         AstNode.MakeIdentifier("InteroperabilityTest.InteroperabilityTest"),
                         AstNode.MakeIdentifier("InteroperabilityTest.StaticTest")

@@ -147,7 +147,7 @@ namespace Expresso.Ast
         internal protected override bool DoMatch(AstNode other, ICSharpCode.NRefactory.PatternMatching.Match match)
         {
             var o = other as SimpleType;
-            return o != null && MatchString(Identifier, o.Identifier) && TypeArguments.DoMatch(o.TypeArguments, match);
+            return o != null && IdentifierNode.DoMatch(o.IdentifierNode, match) && TypeArguments.DoMatch(o.TypeArguments, match);
         }
 
         public override ITypeReference ToTypeReference(NameLookupMode lookupMode, InterningProvider interningProvider)
