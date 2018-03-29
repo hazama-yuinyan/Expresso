@@ -166,6 +166,14 @@ namespace Expresso.Ast
             continueStmt.Count.AcceptWalker(this);
         }
 
+        public void VisitDoWhileStatement(DoWhileStatement doWhileStmt)
+        {
+            writer.Write("do{");
+            writer.Write("...{0}", doWhileStmt.Delegator.Body.Statements.Count);
+            writer.Write("}while ");
+            doWhileStmt.Delegator.Condition.AcceptWalker(this);
+        }
+
         public void VisitEmptyStatement(EmptyStatement emptyStmt)
         {
             writer.Write("<empty>");

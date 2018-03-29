@@ -47,6 +47,11 @@ namespace Expresso.CodeGen
                 throw new InvalidOperationException();
             }
 
+            public void VisitDoWhileStatement(DoWhileStatement doWhileStmt)
+            {
+                throw new InvalidOperationException();
+            }
+
             public void VisitEmptyStatement(EmptyStatement emptyStmt)
             {
                 throw new InvalidOperationException();

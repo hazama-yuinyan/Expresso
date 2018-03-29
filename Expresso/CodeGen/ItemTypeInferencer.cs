@@ -23,52 +23,52 @@ namespace Expresso.CodeGen
 
             public AstType VisitAliasDeclaration(AliasDeclaration aliasDecl)
             {
-                throw new NotImplementedException("Can not work on that node");
+                throw new InvalidOperationException("Can not work on that node");
             }
 
             public AstType VisitAssignment(AssignmentExpression assignment)
             {
-                throw new NotImplementedException("Can not work on that node");
+                throw new InvalidOperationException("Can not work on that node");
             }
 
             public AstType VisitAst(ExpressoAst ast)
             {
-                throw new NotImplementedException("Can not work on that node");
+                throw new InvalidOperationException("Can not work on that node");
             }
 
             public AstType VisitBinaryExpression(BinaryExpression binaryExpr)
             {
-                throw new NotImplementedException("Can not work on that node");
+                throw new InvalidOperationException("Can not work on that node");
             }
 
             public AstType VisitBlock(BlockStatement block)
             {
-                throw new NotImplementedException("Can not work on that node");
+                throw new InvalidOperationException("Can not work on that node");
             }
 
             public AstType VisitBreakStatement(BreakStatement breakStmt)
             {
-                throw new NotImplementedException("Can not work on that node");
+                throw new InvalidOperationException("Can not work on that node");
             }
 
             public AstType VisitCallExpression(CallExpression call)
             {
-                throw new NotImplementedException("Can not work on that node");
+                throw new InvalidOperationException("Can not work on that node");
             }
 
             public AstType VisitCastExpression(CastExpression castExpr)
             {
-                throw new NotImplementedException("Can not work on that node");
+                throw new InvalidOperationException("Can not work on that node");
             }
 
             public AstType VisitCatchClause(CatchClause catchClause)
             {
-                throw new NotImplementedException("Can not work on that node");
+                throw new InvalidOperationException("Can not work on that node");
             }
 
             public AstType VisitClosureLiteralExpression(ClosureLiteralExpression closure)
             {
-                throw new NotImplementedException("Can not work on that node");
+                throw new InvalidOperationException("Can not work on that node");
             }
 
             public AstType VisitCollectionPattern(CollectionPattern collectionPattern)
@@ -78,32 +78,32 @@ namespace Expresso.CodeGen
 
             public AstType VisitCommentNode(CommentNode comment)
             {
-                throw new NotImplementedException("Can not work on that node");
+                throw new InvalidOperationException("Can not work on that node");
             }
 
             public AstType VisitComprehensionExpression(ComprehensionExpression comp)
             {
-                throw new NotImplementedException("Can not work on that node");
+                throw new InvalidOperationException("Can not work on that node");
             }
 
             public AstType VisitComprehensionForClause(ComprehensionForClause compFor)
             {
-                throw new NotImplementedException("Can not work on that node");
+                throw new InvalidOperationException("Can not work on that node");
             }
 
             public AstType VisitComprehensionIfClause(ComprehensionIfClause compIf)
             {
-                throw new NotImplementedException("Can not work on that node");
+                throw new InvalidOperationException("Can not work on that node");
             }
 
             public AstType VisitConditionalExpression(ConditionalExpression condExpr)
             {
-                throw new NotImplementedException("Can not work on that node");
+                throw new InvalidOperationException("Can not work on that node");
             }
 
             public AstType VisitContinueStatement(ContinueStatement continueStmt)
             {
-                throw new NotImplementedException("Can not work on that node");
+                throw new InvalidOperationException("Can not work on that node");
             }
 
             public AstType VisitDestructuringPattern(DestructuringPattern destructuringPattern)
@@ -111,54 +111,59 @@ namespace Expresso.CodeGen
                 return destructuringPattern.TypePath;
             }
 
+            public AstType VisitDoWhileStatement(DoWhileStatement doWhileStmt)
+            {
+                throw new InvalidOperationException("can not work on that node");
+            }
+
             public AstType VisitEmptyStatement(EmptyStatement emptyStmt)
             {
-                throw new NotImplementedException("Can not work on that node");
+                throw new InvalidOperationException("Can not work on that node");
             }
 
             public AstType VisitExpressionPattern(ExpressionPattern exprPattern)
             {
-                throw new NotImplementedException("Can not work on that node");
+                throw new InvalidOperationException("Can not work on that node");
             }
 
             public AstType VisitExpressionStatement(ExpressionStatement exprStmt)
             {
-                throw new NotImplementedException("Can not work on that node");
+                throw new InvalidOperationException("Can not work on that node");
             }
 
             public AstType VisitExpressoTokenNode(ExpressoTokenNode tokenNode)
             {
-                throw new NotImplementedException("Can not work on that node");
+                throw new InvalidOperationException("Can not work on that node");
             }
 
             public AstType VisitFieldDeclaration(FieldDeclaration fieldDecl)
             {
-                throw new NotImplementedException("Can not work on that node");
+                throw new InvalidOperationException("Can not work on that node");
             }
 
             public AstType VisitFinallyClause(FinallyClause finallyClause)
             {
-                throw new NotImplementedException("Can not work on that node");
+                throw new InvalidOperationException("Can not work on that node");
             }
 
             public AstType VisitForStatement(ForStatement forStmt)
             {
-                throw new NotImplementedException("Can not work on that node");
+                throw new InvalidOperationException("Can not work on that node");
             }
 
             public AstType VisitFunctionDeclaration(FunctionDeclaration funcDecl)
             {
-                throw new NotImplementedException("Can not work on that node");
+                throw new InvalidOperationException("Can not work on that node");
             }
 
             public AstType VisitFunctionType(FunctionType funcType)
             {
-                throw new NotImplementedException("Can not work on that node");
+                throw new InvalidOperationException("Can not work on that node");
             }
 
             public AstType VisitIdentifier(Identifier ident)
             {
-                throw new NotImplementedException("Can not work on that node");
+                throw new InvalidOperationException("Can not work on that node");
             }
 
             public AstType VisitIdentifierPattern(IdentifierPattern identifierPattern)
@@ -198,7 +203,7 @@ namespace Expresso.CodeGen
 
             public AstType VisitIfStatement(IfStatement ifStmt)
             {
-                throw new NotImplementedException("Can not work on that node");
+                throw new InvalidOperationException("Can not work on that node");
             }
 
             public AstType VisitIgnoringRestPattern(IgnoringRestPattern restPattern)
@@ -208,22 +213,22 @@ namespace Expresso.CodeGen
 
             public AstType VisitImportDeclaration(ImportDeclaration importDecl)
             {
-                throw new NotImplementedException("Can not work on that node");
+                throw new InvalidOperationException("Can not work on that node");
             }
 
             public AstType VisitIndexerExpression(IndexerExpression indexExpr)
             {
-                throw new NotImplementedException("Can not work on that node");
+                throw new InvalidOperationException("Can not work on that node");
             }
 
             public AstType VisitIntegerSequenceExpression(IntegerSequenceExpression intSeq)
             {
-                throw new NotImplementedException("Can not work on that node");
+                throw new InvalidOperationException("Can not work on that node");
             }
 
             public AstType VisitKeyValueLikeExpression(KeyValueLikeExpression keyValue)
             {
-                throw new NotImplementedException("Can not work on that node");
+                throw new InvalidOperationException("Can not work on that node");
             }
 
             public AstType VisitKeyValuePattern(KeyValuePattern keyValuePattern)
@@ -233,7 +238,7 @@ namespace Expresso.CodeGen
 
             public AstType VisitLiteralExpression(LiteralExpression literal)
             {
-                throw new NotImplementedException("Can not work on that node");
+                throw new InvalidOperationException("Can not work on that node");
             }
 
             public AstType VisitMatchClause(MatchPatternClause matchClause)
@@ -248,52 +253,52 @@ namespace Expresso.CodeGen
 
             public AstType VisitMemberReference(MemberReferenceExpression memRef)
             {
-                throw new NotImplementedException("Can not work on that node");
+                throw new InvalidOperationException("Can not work on that node");
             }
 
             public AstType VisitMemberType(MemberType memberType)
             {
-                throw new NotImplementedException("Can not work on that node");
+                throw new InvalidOperationException("Can not work on that node");
             }
 
             public AstType VisitNewLine(NewLineNode newlineNode)
             {
-                throw new NotImplementedException("Can not work on that node");
+                throw new InvalidOperationException("Can not work on that node");
             }
 
             public AstType VisitNullNode(AstNode nullNode)
             {
-                throw new NotImplementedException("Can not work on that node");
+                throw new InvalidOperationException("Can not work on that node");
             }
 
             public AstType VisitNullReferenceExpression(NullReferenceExpression nullRef)
             {
-                throw new NotImplementedException("Can not work on that node");
+                throw new InvalidOperationException("Can not work on that node");
             }
 
             public AstType VisitObjectCreationExpression(ObjectCreationExpression creation)
             {
-                throw new NotImplementedException("Can not work on that node");
+                throw new InvalidOperationException("Can not work on that node");
             }
 
             public AstType VisitPatternWithType(PatternWithType pattern)
             {
-                throw new NotImplementedException("Can not work on that node");
+                throw new InvalidOperationException("Can not work on that node");
             }
 
             public AstType VisitParameterDeclaration(ParameterDeclaration parameterDecl)
             {
-                throw new NotImplementedException("Can not work on that node");
+                throw new InvalidOperationException("Can not work on that node");
             }
 
             public AstType VisitParameterType(ParameterType paramType)
             {
-                throw new NotImplementedException("Can not work on that node");
+                throw new InvalidOperationException("Can not work on that node");
             }
 
             public AstType VisitParenthesizedExpression(ParenthesizedExpression parensExpr)
             {
-                throw new NotImplementedException("Can not work on that node");
+                throw new InvalidOperationException("Can not work on that node");
             }
 
             public AstType VisitPathExpression(PathExpression pathExpr)
@@ -304,67 +309,67 @@ namespace Expresso.CodeGen
 
             public AstType VisitPatternPlaceholder(AstNode placeholder, Pattern child)
             {
-                throw new NotImplementedException("Can not work on that node");
+                throw new InvalidOperationException("Can not work on that node");
             }
 
             public AstType VisitPlaceholderType(PlaceholderType placeholderType)
             {
-                throw new NotImplementedException("Can not work on that node");
+                throw new InvalidOperationException("Can not work on that node");
             }
 
             public AstType VisitPrimitiveType(PrimitiveType primitiveType)
             {
-                throw new NotImplementedException("Can not work on that node");
+                throw new InvalidOperationException("Can not work on that node");
             }
 
             public AstType VisitReferenceType(ReferenceType referenceType)
             {
-                throw new NotImplementedException("Can not work on that node");
+                throw new InvalidOperationException("Can not work on that node");
             }
 
             public AstType VisitReturnStatement(ReturnStatement returnStmt)
             {
-                throw new NotImplementedException("Can not work on that node");
+                throw new InvalidOperationException("Can not work on that node");
             }
 
             public AstType VisitSelfReferenceExpression(SelfReferenceExpression selfRef)
             {
-                throw new NotImplementedException("Can not work on that node");
+                throw new InvalidOperationException("Can not work on that node");
             }
 
             public AstType VisitSequenceExpression(SequenceExpression seqExpr)
             {
-                throw new NotImplementedException("Can not work on that node");
+                throw new InvalidOperationException("Can not work on that node");
             }
 
             public AstType VisitSequenceInitializer(SequenceInitializer seqInitializer)
             {
-                throw new NotImplementedException("Can not work on that node");
+                throw new InvalidOperationException("Can not work on that node");
             }
 
             public AstType VisitSimpleType(SimpleType simpleType)
             {
-                throw new NotImplementedException("Can not work on that node");
+                throw new InvalidOperationException("Can not work on that node");
             }
 
             public AstType VisitSuperReferenceExpression(SuperReferenceExpression superRef)
             {
-                throw new NotImplementedException("Can not work on that node");
+                throw new InvalidOperationException("Can not work on that node");
             }
 
             public AstType VisitTextNode(TextNode textNode)
             {
-                throw new NotImplementedException("Can not work on that node");
+                throw new InvalidOperationException("Can not work on that node");
             }
 
             public AstType VisitThrowStatement(ThrowStatement throwStmt)
             {
-                throw new NotImplementedException("Can not work on that node");
+                throw new InvalidOperationException("Can not work on that node");
             }
 
             public AstType VisitTryStatement(TryStatement tryStmt)
             {
-                throw new NotImplementedException("Can not work on that node");
+                throw new InvalidOperationException("Can not work on that node");
             }
 
             public AstType VisitTuplePattern(TuplePattern tuplePattern)
@@ -374,42 +379,42 @@ namespace Expresso.CodeGen
 
             public AstType VisitTypeDeclaration(TypeDeclaration typeDecl)
             {
-                throw new NotImplementedException("Can not work on that node");
+                throw new InvalidOperationException("Can not work on that node");
             }
 
             public AstType VisitUnaryExpression(UnaryExpression unaryExpr)
             {
-                throw new NotImplementedException("Can not work on that node");
+                throw new InvalidOperationException("Can not work on that node");
             }
 
             public AstType VisitValueBindingForStatement(ValueBindingForStatement valueBindingForStatment)
             {
-                throw new NotImplementedException("Can not work on that node");
+                throw new InvalidOperationException("Can not work on that node");
             }
 
             public AstType VisitValueBindingPattern(ValueBindingPattern valueBindingPattern)
             {
-                throw new NotImplementedException("Can not work on that node");
+                throw new InvalidOperationException("Can not work on that node");
             }
 
             public AstType VisitVariableDeclarationStatement(VariableDeclarationStatement varDecl)
             {
-                throw new NotImplementedException("Can not work on that node");
+                throw new InvalidOperationException("Can not work on that node");
             }
 
             public AstType VisitVariableInitializer(VariableInitializer initializer)
             {
-                throw new NotImplementedException("Can not work on that node");
+                throw new InvalidOperationException("Can not work on that node");
             }
 
             public AstType VisitWhileStatement(WhileStatement whileStmt)
             {
-                throw new NotImplementedException("Can not work on that node");
+                throw new InvalidOperationException("Can not work on that node");
             }
 
             public AstType VisitWhitespace(WhitespaceNode whitespaceNode)
             {
-                throw new NotImplementedException("Can not work on that node");
+                throw new InvalidOperationException("Can not work on that node");
             }
 
             public AstType VisitWildcardPattern(WildcardPattern wildcardPattern)
@@ -419,7 +424,7 @@ namespace Expresso.CodeGen
 
             public AstType VisitYieldStatement(YieldStatement yieldStmt)
             {
-                throw new NotImplementedException("Can not work on that node");
+                throw new InvalidOperationException("Can not work on that node");
             }
 
             static bool IsContainerType(AstType type)

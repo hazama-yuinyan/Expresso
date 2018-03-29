@@ -222,6 +222,7 @@
     <Compile Include="Ast\Expressions\NullReferenceExpression.cs" />
     <Compile Include="Analysis\NullCheckWalker.cs" />
     <Compile Include="Analysis\PreProcessor.cs" />
+    <Compile Include="Ast\Statements\DoWhileStatement.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System" />

@@ -15,6 +15,7 @@ namespace Expresso.Ast
         void VisitBlock(BlockStatement block);
         void VisitBreakStatement(BreakStatement breakStmt);
         void VisitContinueStatement(ContinueStatement continueStmt);
+        void VisitDoWhileStatement(DoWhileStatement doWhileStmt);
         void VisitEmptyStatement(EmptyStatement emptyStmt);
         void VisitExpressionStatement(ExpressionStatement exprStmt);
         void VisitForStatement(ForStatement forStmt);
@@ -102,6 +103,7 @@ namespace Expresso.Ast
         TResult VisitBlock(BlockStatement block);
         TResult VisitBreakStatement(BreakStatement breakStmt);
         TResult VisitContinueStatement(ContinueStatement continueStmt);
+        TResult VisitDoWhileStatement(DoWhileStatement doWhileStmt);
         TResult VisitEmptyStatement(EmptyStatement emptyStmt);
         TResult VisitExpressionStatement(ExpressionStatement exprStmt);
         TResult VisitForStatement(ForStatement forStmt);
@@ -199,6 +201,7 @@ namespace Expresso.Ast
         TResult VisitBlock(BlockStatement block, TData data);
         TResult VisitBreakStatement(BreakStatement breakStmt, TData data);
         TResult VisitContinueStatement(ContinueStatement continueStmt, TData data);
+        TResult VisitDoWhileStatement(DoWhileStatement doWhileStmt, TData data);
         TResult VisitEmptyStatement(EmptyStatement emptyStmt, TData data);
         TResult VisitExpressionStatement(ExpressionStatement exprStmt, TData data);
         TResult VisitForStatement(ForStatement forStmt, TData data);

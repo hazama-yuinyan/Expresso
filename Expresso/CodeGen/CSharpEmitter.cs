@@ -338,6 +338,17 @@ namespace Expresso.CodeGen
             return CSharpExpr.Continue(continue_targets[continue_targets.Count - count]);
         }
 
+        public CSharpExpr VisitDoWhileStatement(DoWhileStatement doWhileStmt, CSharpEmitterContext context)
+        {
+            var previous_additionals = context.Additionals;
+            context.Additionals = new List<object>();
+            var while_stmt = VisitWhileStatement(doWhileStmt.Delegator, context);
+            var body = context.Additionals.First() as CSharpExpr;
+            context.Additionals = previous_additionals;
+                                                            //{ body;
+            return CSharpExpr.Block(body, while_stmt);      //  while_stmt}
+        }
+
         public CSharpExpr VisitEmptyStatement(EmptyStatement emptyStmt, CSharpEmitterContext context)
         {
             return CSharpExpr.Empty();
@@ -571,10 +582,14 @@ namespace Expresso.CodeGen
 
             var condition = CSharpExpr.IfThen(CSharpExpr.Not(whileStmt.Condition.AcceptWalker(this, context)),
                 CSharpExpr.Break(end_loop));
+            var real_body = VisitBlock(whileStmt.Body, context);
             var body = CSharpExpr.Block(
                 condition,
-                whileStmt.Body.AcceptWalker(this, context)
+                real_body
             );
+            if(context.Additionals != null)
+                context.Additionals.Add(real_body);
+            
             break_targets.RemoveAt(break_targets.Count - 1);
             continue_targets.RemoveAt(continue_targets.Count - 1);
 
@@ -716,7 +731,9 @@ namespace Expresso.CodeGen
 
         public CSharpExpr VisitCallExpression(CallExpression call, CSharpEmitterContext context)
         {
-            var compiled_args = call.Arguments.Select(arg => arg.AcceptWalker(this, context));
+            var compiled_args = call.Arguments
+                                    .Select(arg => arg.AcceptWalker(this, context))
+                                    .ToArray();
             var parent_args = context.ArgumentTypes;
             context.ArgumentTypes = compiled_args.Select(arg => arg.Type).ToArray();
 
@@ -2116,7 +2133,7 @@ namespace Expresso.CodeGen
             return parameters;
         }
 
-        CSharpExpr ConstructCallExpression(CSharpExpr inst, MethodInfo method, IEnumerable<CSharpExpr> args)
+        CSharpExpr ConstructCallExpression(CSharpExpr inst, MethodInfo method, CSharpExpr[] args)
         {
             if(method == null){
                 return CSharpExpr.Invoke(inst, args);
@@ -2159,13 +2176,12 @@ namespace Expresso.CodeGen
                     }
                 }
 
-                var args_array = args.ToArray();
-                foreach(var pair in Enumerable.Range(0, args_array.Length).Zip(method.GetParameters(), (l, r) => new Tuple<int, ParameterInfo>(l, r))){
-                    var arg = args_array[pair.Item1];
+                foreach(var pair in Enumerable.Range(0, args.Length).Zip(method.GetParameters(), (l, r) => new Tuple<int, ParameterInfo>(l, r))){
+                    var arg = args[pair.Item1];
                     if(pair.Item2.ParameterType != arg.Type)
-                        args_array[pair.Item1] = CSharpExpr.Convert(arg, pair.Item2.ParameterType);
+                        args[pair.Item1] = CSharpExpr.Convert(arg, pair.Item2.ParameterType);
                 }
-                return (inst != null) ? CSharpExpr.Call(inst, method, args_array) : CSharpExpr.Call(method, args_array);
+                return (inst != null) ? CSharpExpr.Call(inst, method, args) : CSharpExpr.Call(method, args);
             }
         }
 

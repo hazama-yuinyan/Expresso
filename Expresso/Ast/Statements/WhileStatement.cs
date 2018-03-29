@@ -1,6 +1,6 @@
 using System;
 using ICSharpCode.NRefactory;
-
+using ICSharpCode.NRefactory.PatternMatching;
 
 namespace Expresso.Ast
 {
@@ -14,6 +14,34 @@ namespace Expresso.Ast
 	/// </summary>
     public class WhileStatement : Statement
 	{
+        #region NullObject
+        public static new WhileStatement Null = new NullWhileStatement();
+
+        sealed class NullWhileStatement : WhileStatement
+        {
+            public override bool IsNull => true;
+
+            public override void AcceptWalker(IAstWalker walker)
+            {
+                walker.VisitNullNode(this);
+            }
+
+            public override TResult AcceptWalker<TResult>(IAstWalker<TResult> walker)
+            {
+                return walker.VisitNullNode(this);
+            }
+
+            public override TResult AcceptWalker<TResult, TData>(IAstWalker<TData, TResult> walker, TData data)
+            {
+                return walker.VisitNullNode(this, data);
+            }
+
+            protected internal override bool DoMatch (AstNode other, Match match)
+            {
+                return other == null || other.IsNull;
+            }
+        }
+        #endregion
 		/// <summary>
         /// 条件式。
 		/// The condition which determines how long we'll continue executing the body statements.
@@ -30,6 +58,10 @@ namespace Expresso.Ast
         public BlockStatement Body{
             get{return GetChildByRole(Roles.Body);}
             set{SetChildByRole(Roles.Body, value);}
+        }
+
+        protected WhileStatement()
+        {
         }
 
         public WhileStatement(Expression condition, BlockStatement block,

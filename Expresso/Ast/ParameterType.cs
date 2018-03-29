@@ -57,7 +57,10 @@ namespace Expresso.Ast
         protected internal override bool DoMatch(AstNode other, ICSharpCode.NRefactory.PatternMatching.Match match)
         {
             var o = other as ParameterType;
-            return o != null && IdentifierToken.DoMatch(o.IdentifierToken, match);
+            if(o != null)
+                return IdentifierToken.DoMatch(o.IdentifierToken, match);
+
+            return other is AstType;
         }
 
         public override ITypeReference ToTypeReference(NameLookupMode lookupMode, InterningProvider interningProvider)

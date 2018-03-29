@@ -1,5 +1,3 @@
-using System;
-
 using ICSharpCode.NRefactory;
 
 namespace Expresso.Ast
@@ -13,9 +11,9 @@ namespace Expresso.Ast
 	/// </summary>
     public class IntegerSequenceExpression : Expression
 	{
-        public static readonly Role<Expression> LowerRole = new Role<Expression>("Lower", Expression.Null);
-        public static readonly Role<Expression> UpperRole = new Role<Expression>("Upper", Expression.Null);
-        public static readonly Role<Expression> StepRole = new Role<Expression>("Step", Expression.Null);
+        public static readonly Role<Expression> LowerRole = new Role<Expression>("Lower", Null);
+        public static readonly Role<Expression> UpperRole = new Role<Expression>("Upper", Null);
+        public static readonly Role<Expression> StepRole = new Role<Expression>("Step", Null);
 
 		/// <summary>
 		/// 整数列の下限.

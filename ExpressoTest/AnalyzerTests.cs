@@ -1495,6 +1495,61 @@ namespace Expresso.Test
                         ),
                         Statement.MakeVarDecl(
                             Helpers.MakeSeq(
+                                Helpers.MakePaticularPatternWithType(
+                                    "n",
+                                    Helpers.MakePrimitiveType("int")
+                                )
+                            ),
+                            Helpers.MakeSeq(
+                                Expression.MakeConstant("int", 100)
+                            ),
+                            Modifiers.None
+                        ),
+                        Statement.MakeDoWhileStmt(
+                            Expression.MakeBinaryExpr(
+                                OperatorType.GreaterThan,
+                                Helpers.MakeIdentifierPath(
+                                    "n",
+                                    Helpers.MakePrimitiveType("int")
+                                ),
+                                Expression.MakeConstant("int", 0)
+                            ),
+                            Statement.MakeBlock(
+                                Statement.MakeExprStmt(
+                                    Expression.MakeSingleAugmentedAssignment(
+                                        OperatorType.Minus,
+                                        Helpers.MakeIdentifierPath(
+                                            "n",
+                                            Helpers.MakePrimitiveType("int")
+                                        ),
+                                        Expression.MakeConstant("int", 40)
+                                    )
+                                ),
+                                Statement.MakeExprStmt(
+                                    Helpers.MakeCallExpression(
+                                        Helpers.MakeIdentifierPath(
+                                            "println",
+                                            AstType.MakeFunctionType(
+                                                "println",
+                                                Helpers.MakeVoidType(),
+                                                TextLocation.Empty,
+                                                TextLocation.Empty,
+                                                Helpers.MakeGenericType(
+                                                    "array",
+                                                    Helpers.MakeGenericType("object")
+                                                )
+                                            )
+                                        ),
+                                        Helpers.MakeIdentifierPath(
+                                            "n",
+                                            Helpers.MakePrimitiveType("int")
+                                        )
+                                    )
+                                )
+                            )
+                        ),
+                        Statement.MakeVarDecl(
+                            Helpers.MakeSeq(
                                 Helpers.MakeExactPatternWithType(
                                     "vec",
                                     Helpers.MakeGenericType(
@@ -5034,7 +5089,7 @@ namespace Expresso.Test
                                                         TextLocation.Empty,
                                                         TextLocation.Empty,
                                                         Helpers.MakeGenericType(
-                                                            "arraay",
+                                                            "array",
                                                             Helpers.MakeGenericType("object")
                                                         )
                                                     )

@@ -134,6 +134,11 @@ namespace Expresso.Ast.Analysis
 	            destructuringPattern.Items.AcceptWalker(this);
 	        }
 
+            public void VisitDoWhileStatement(DoWhileStatement doWhileStmt)
+            {
+                VisitWhileStatement(doWhileStmt.Delegator);
+            }
+
 	        public void VisitEmptyStatement(EmptyStatement emptyStmt)
 	        {
 	        }

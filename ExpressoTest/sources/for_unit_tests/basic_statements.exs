@@ -29,6 +29,12 @@ def main()
 		a, b = b, a + b;
 	}
 
+    var n = 100;
+    do{
+        n -= 40;
+        println(n);
+    }while n > 0;
+
 	var vec (- vector<int> = [...];
 	for let i in [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, ...] {
 		for let j in 0..10 {

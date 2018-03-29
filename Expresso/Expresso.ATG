@@ -332,7 +332,7 @@ $namespace=Expresso
             x = scanner.Peek();
         }
         scanner.ResetPeek();
-        return !another_colon_found;
+        return tt.kind == _colon && !another_colon_found;
     }
 
     bool IsGenericTypeSignature()
@@ -346,7 +346,7 @@ $namespace=Expresso
             x = scanner.Peek();
         }
         scanner.ResetPeek();
-        return closing_bracket_found;
+        return la.kind == _langle_bracket && closing_bracket_found;
     }
 
     bool IsArrayTypeSignature()
@@ -437,6 +437,7 @@ TOKENS
   semicolon = ';'.
   lcurly = '{'.
   lparen = '('.
+  langle_bracket = '<'.
   lbracket = '['.
   rparen = ')'.
   rcurly = '}'.
@@ -937,11 +938,12 @@ Type<out AstType type>				(. var start_loc = NextLocation; type = new Placeholde
    | TupleTypeSignature<out type>
    | "vector"						(. name = t.val; .)
    | "dictionary"					(. name = t.val; .)
+   | "slice"                        (. name = t.val; .)
    | "intseq"						(. type = CreateType(t.val, start_loc, is_reference); .)
    | "void"							(. type = AstType.MakeSimpleType("tuple", Enumerable.Empty<AstType>(), start_loc, CurrentLocation); .)
    | TypePathExpression<out type>   (. if(is_reference) type = AstType.MakeReferenceType(type, TextLocation.Empty); .)
    )                                (. start_loc = NextLocation; .)
-   [ IF(IsGenericTypeSignature())       /* For ambiguity in Comparison on '<' */
+   [ /*IF(IsGenericTypeSignature())*/       /* For ambiguity in Comparison on '<' */
      GenericTypeSignature<name, is_reference, start_loc, out type>
                                     (.
                                         if(!IsPrimitiveGenericType(name)){
@@ -1112,6 +1114,7 @@ CompoundStmt<out Statement stmt>	(. stmt = null; BlockStatement block = null; .)
     Block<out block>                (. stmt = block; .)
   | IfStmt<out stmt>					
   | WhileStmt<out stmt>
+  | DoWhileStmt<out stmt>
   | ForStmt<out stmt>
   | MatchStmt<out stmt>
   | TryStmt<out stmt>.
@@ -1159,6 +1162,21 @@ WhileStmt<out Statement stmt>		(. Expression cond; BlockStatement body; var star
   CondExpr<out cond>
   Block<out body>                   (.
                                        stmt = Statement.MakeWhileStmt(cond, body, start_loc);
+                                       GoUpScope();
+                                    .).
+/*------------------------------------------------------------------------*/
+DoWhileStmt<out Statement stmt>     (. var start_loc = NextLocation; Expression expr = null; BlockStatement body = null; .)
+=
+  "do"                              (.
+                                       Symbols.AddScope();
+                                       GoDownScope();
+                                       Symbols.Name = "do-while`" + ScopeId++;
+                                    .)
+  Block<out body>
+  "while"
+  CondExpr<out expr>
+  ';'                               (. 
+                                       stmt = Statement.MakeDoWhileStmt(expr, body, start_loc, CurrentLocation);
                                        GoUpScope();
                                     .).
 /*------------------------------------------------------------------------*/
@@ -1289,6 +1307,7 @@ FinallyClause<out FinallyClause @finally>   (. var start_loc = NextLocation; Blo
 VarDeclStmt<out Statement stmt>           (. Expression rhs = null; var start_loc = NextLocation;
 								             PatternConstruct pattern; 
 								             var patterns = new List<PatternConstruct>(); var exprs = new List<Expression>();
+                                             cur_modifiers = ExpressoModifiers.None;
 								          .)
 = 
   ( "let"                                 (. cur_modifiers = ExpressoModifiers.Immutable; .)
@@ -1304,9 +1323,7 @@ VarDeclStmt<out Statement stmt>           (. Expression rhs = null; var start_lo
   									         rhs = null;
   								          .)
   }
-  SYNC ';'     						      (. stmt = Statement.MakeVarDecl(patterns, exprs, cur_modifiers, start_loc, CurrentLocation);
-                                             cur_modifiers = ExpressoModifiers.None;
-                                          .).
+  SYNC ';'     						      (. stmt = Statement.MakeVarDecl(patterns, exprs, cur_modifiers, start_loc, CurrentLocation); .).
 /*------------------------------------------------------------------------*/
 VarDef<out PatternConstruct pattern, out Expression option> (. option = null; var loc = NextLocation; .)
 =

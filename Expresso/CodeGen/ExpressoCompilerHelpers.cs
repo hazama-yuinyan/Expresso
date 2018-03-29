@@ -185,10 +185,15 @@ namespace Expresso.CodeGen
         {
             var name = type.FullName ?? type.Name;
             var index = name.IndexOf("`", StringComparison.CurrentCulture);
-            var actual_type_name = name.Substring(0, index == -1 ? name.Length : index);
+            var actual_type_name = name.Substring(0, (index == -1) ? name.Length : index);
             var type_name = SpecialNamesMapInverse.ContainsKey(actual_type_name) ? SpecialNamesMapInverse[actual_type_name].Item1 : type.Name;
             if(type_name == "Void")
                 return AstType.MakeSimpleType("tuple");
+
+            // This code is needed because in C# arrays are represented as *[] where * is any type
+            // That is, arrays in C# isn't array type
+            if(type.IsArray)
+                return AstType.MakeSimpleType("array", TextLocation.Empty, TextLocation.Empty, GetExpressoType(type.GetElementType()));
 
             var primitive = GetPrimitiveAstType(type_name);
             if(primitive != null)

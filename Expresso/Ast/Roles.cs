@@ -1,4 +1,3 @@
-using System;
 using ICSharpCode.NRefactory;
 
 
@@ -9,7 +8,7 @@ namespace Expresso.Ast
         public static readonly Role<AstNode> Root = AstNode.RootRole;
 
         public static readonly Role<Identifier> Identifier =
-            new Role<Identifier>("Identifier", Expresso.Ast.Identifier.Null);
+            new Role<Identifier>("Identifier", Ast.Identifier.Null);
         public static readonly Role<PathExpression> Path =
             new Role<PathExpression>("Path", PathExpression.Null);
         public static readonly Role<BlockStatement> Body =
@@ -17,15 +16,15 @@ namespace Expresso.Ast
         public static readonly Role<ParameterDeclaration> Parameter =
             new Role<ParameterDeclaration>("Parameter");
         public static readonly Role<Expression> Argument =
-            new Role<Expression>("Argument", Expresso.Ast.Expression.Null);
+            new Role<Expression>("Argument", Ast.Expression.Null);
         public static readonly Role<KeyValueLikeExpression> KeyValue =
             new Role<KeyValueLikeExpression>("KeyValue");
         public static readonly Role<AstType> Type = new Role<AstType>("Type", AstType.Null);
         public static readonly Role<AstType> BaseType = new Role<AstType>("BaseType", AstType.Null);
         public static readonly Role<Expression> Expression =
-            new Role<Expression>("Expression", Expresso.Ast.Expression.Null);
+            new Role<Expression>("Expression", Ast.Expression.Null);
         public static readonly Role<Expression> TargetExpression =
-            new Role<Expression>("Target", Expresso.Ast.Expression.Null);
+            new Role<Expression>("Target", Ast.Expression.Null);
         public static readonly Role<AstType> TypeArgument =
             new Role<AstType>("TypeArgument", AstType.Null);
         public static readonly Role<Statement> EmbeddedStatement =

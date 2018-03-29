@@ -1014,6 +1014,37 @@ namespace Expresso.Test
                         ),
                         Statement.MakeVarDecl(
                             Helpers.MakeSeq(
+                                Helpers.MakeSomePatternWithType("n")
+                            ),
+                            Helpers.MakeSeq(
+                                Expression.MakeConstant("int", 100)
+                            ),
+                            Modifiers.None
+                        ),
+                        Statement.MakeDoWhileStmt(
+                            Expression.MakeBinaryExpr(
+                                OperatorType.GreaterThan,
+                                Helpers.MakeIdentifierPath("n"),
+                                Expression.MakeConstant("int", 0)
+                            ),
+                            Statement.MakeBlock(
+                                Statement.MakeExprStmt(
+                                    Expression.MakeSingleAugmentedAssignment(
+                                        OperatorType.Minus,
+                                        Helpers.MakeIdentifierPath("n"),
+                                        Expression.MakeConstant("int", 40)
+                                    )
+                                ),
+                                Statement.MakeExprStmt(
+                                    Helpers.MakeCallExpression(
+                                        Helpers.MakeIdentifierPath("println"),
+                                        Helpers.MakeIdentifierPath("n")
+                                    )
+                                )
+                            )
+                        ),
+                        Statement.MakeVarDecl(
+                            Helpers.MakeSeq(
                                 Helpers.MakeSomePatternWithType(
                                     "vec",
                                     Helpers.MakeGenericType(

@@ -106,6 +106,11 @@ namespace Expresso.Ast.Analysis
             return null;
         }
 
+        public AstType VisitDoWhileStatement(DoWhileStatement doWhileStmt)
+        {
+            return VisitWhileStatement(doWhileStmt.Delegator);
+        }
+
         public AstType VisitEmptyStatement(EmptyStatement emptyStmt)
         {
             return AstType.Null;
@@ -313,7 +318,7 @@ namespace Expresso.Ast.Analysis
                 var right_type = assignment.Right.AcceptWalker(this);
                 if(IsCompatibleWith(left_type, right_type) == TriBool.False){
                     parser.ReportSemanticErrorRegional(
-                        "Error ES1002: Type `{0}` on left-hand-side isn't compatible with type `{1}` on right-hand-side.",
+                        "Error ES1001: Type `{0}` on left-hand-side isn't compatible with type `{1}` on right-hand-side.",
                         assignment.Left, assignment.Right,
                         left_type, right_type
                     );
@@ -342,7 +347,7 @@ namespace Expresso.Ast.Analysis
             if(IsCompatibleWith(lhs_type, rhs_type) == TriBool.False){
                 // Invalid operators must lead to this code path
                 parser.ReportSemanticErrorRegional(
-                    "Error ES1003: Can not apply the operator '{0}' on `{1}` and `{2}`.",
+                    "Error ES1002: Can not apply the operator '{0}' on `{1}` and `{2}`.",
                     binaryExpr.Left, binaryExpr.Right,
                     binaryExpr.OperatorToken, lhs_type, rhs_type
                 );
@@ -413,7 +418,7 @@ namespace Expresso.Ast.Analysis
                 var arg_type = pair.Item2.AcceptWalker(this);
                 // FIXME?: Think about changing the property methods' types
                 // arg_type doesn't need to be cloned because the user of this field clones them
-                arg_types[pair.Item1] = (arg_type is FunctionType property_type) ? property_type.ReturnType : arg_type;
+                arg_types[pair.Item1] = (arg_type is FunctionType property_type && property_type.Name.StartsWith("get_")) ? property_type.ReturnType : arg_type;
             }
 
             var parent_types = argument_types;
@@ -467,7 +472,7 @@ namespace Expresso.Ast.Analysis
             var expression_type = castExpr.Target.AcceptWalker(this);
             if(IsCastable(expression_type, target_type) == TriBool.False){
                 throw new ParserException(
-                    "Error ES1004: Can not cast the type `{0}` to the type `{1}`.",
+                    "Error ES1003: Can not cast the type `{0}` to the type `{1}`.",
                     castExpr.Target, castExpr.ToExpression,
                     expression_type, target_type
                 );
@@ -573,7 +578,7 @@ namespace Expresso.Ast.Analysis
             var false_type = condExpr.FalseExpression.AcceptWalker(this);
             if(IsCompatibleWith(true_type, false_type) == TriBool.False){
                 parser.ReportSemanticErrorRegional(
-                    "Error ES1005: An conditional expression must return one type! But `{0}` is not compatible with `{1}`.",
+                    "Error ES1006: An conditional expression must return one type! But `{0}` is not compatible with `{1}`.",
                     condExpr.Condition, condExpr.FalseExpression,
                     true_type, false_type
                 );
@@ -1486,6 +1491,9 @@ namespace Expresso.Ast.Analysis
                 if(first.IsMatch(func2))
                     return TriBool.True;
             }
+
+            if(first is ParameterType)
+                return TriBool.True;
 
             return TriBool.False;
         }

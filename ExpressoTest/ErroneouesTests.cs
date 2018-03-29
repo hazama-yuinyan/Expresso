@@ -22,7 +22,7 @@ namespace Expresso.Test
             var parser = new Parser(new Scanner("../../sources/for_unit_tests/erroneous/reassignment.exs"));
             parser.DoPostParseProcessing = true;
 
-            Assert.That(() => parser.Parse(), Throws.TypeOf<ParserException>().With.Message.Contains("ES1900"));
+            Assert.That(() => parser.Parse(), Throws.TypeOf<ParserException>().With.Message.Contains("new InvalidOperationException"));
             Assert.AreEqual(1, parser.errors.count);
         }
 
@@ -222,7 +222,7 @@ namespace Expresso.Test
             var parser = new Parser(new Scanner("../../sources/for_unit_tests/erroneous/invalid_casting.exs"));
             parser.DoPostParseProcessing = true;
 
-            Assert.That(() => parser.Parse(), Throws.TypeOf<ParserException>().With.Message.Contains("ES1004"));
+            Assert.That(() => parser.Parse(), Throws.TypeOf<ParserException>().With.Message.Contains("ES1003"));
             Assert.AreEqual(1, parser.errors.count);
         }
 

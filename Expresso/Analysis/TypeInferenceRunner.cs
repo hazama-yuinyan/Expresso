@@ -56,6 +56,11 @@ namespace Expresso.Ast.Analysis
                 throw new InvalidOperationException("Can not work on that node!");
             }
 
+            public AstType VisitDoWhileStatement(DoWhileStatement doWhileStmt)
+            {
+                throw new InvalidOperationException("Can not work on that node!");
+            }
+
             public AstType VisitEmptyStatement(EmptyStatement emptyStmt)
             {
                 throw new InvalidOperationException("Can not work on that node!");
@@ -979,12 +984,11 @@ namespace Expresso.Ast.Analysis
             {
                 if(funcType.Parameters.Count == 0){
                     var symbol = table.GetSymbol(methodName, funcType);
-                    return (symbol != null) ? symbol : null;
+                    return symbol;
                 }
 
-                // TODO: implement it in more formal way
                 foreach(var pair in Enumerable.Range(0, funcType.Parameters.Count).Reverse().Zip(funcType.Parameters.Reverse(),
-                                                                                                      (l, r) => new Tuple<int, AstType>(l, r))){
+                                                                                                 (l, r) => new Tuple<int, AstType>(l, r))){
                     var new_parameters = funcType.Parameters
                                                  .Take(pair.Item1 + 1)
                                                  .Select(t => t.Clone());

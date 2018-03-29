@@ -17,42 +17,42 @@ namespace Expresso.Ast
             type_params = typeParams;
         }
 
-        public void VisitAliasDeclaration (AliasDeclaration aliasDecl)
+        public void VisitAliasDeclaration(AliasDeclaration aliasDecl)
         {
             throw new InvalidOperationException("Can not work on that node");
         }
 
-        public void VisitAssignment (AssignmentExpression assignment)
+        public void VisitAssignment(AssignmentExpression assignment)
         {
             throw new InvalidOperationException("Can not work on that node");
         }
 
-        public void VisitAst (ExpressoAst ast)
+        public void VisitAst(ExpressoAst ast)
         {
             throw new InvalidOperationException("Can not work on that node");
         }
 
-        public void VisitBinaryExpression (BinaryExpression binaryExpr)
+        public void VisitBinaryExpression(BinaryExpression binaryExpr)
         {
             throw new InvalidOperationException("Can not work on that node");
         }
 
-        public void VisitBlock (BlockStatement block)
+        public void VisitBlock(BlockStatement block)
         {
             throw new InvalidOperationException("Can not work on that node");
         }
 
-        public void VisitBreakStatement (BreakStatement breakStmt)
+        public void VisitBreakStatement(BreakStatement breakStmt)
         {
             throw new InvalidOperationException("Can not work on that node");
         }
 
-        public void VisitCallExpression (CallExpression callExpr)
+        public void VisitCallExpression(CallExpression callExpr)
         {
             throw new InvalidOperationException("Can not work on that node");
         }
 
-        public void VisitCastExpression (CastExpression castExpr)
+        public void VisitCastExpression(CastExpression castExpr)
         {
             throw new InvalidOperationException("Can not work on that node");
         }
@@ -62,72 +62,77 @@ namespace Expresso.Ast
             throw new InvalidOperationException("Can not work on that node");
         }
 
-        public void VisitClosureLiteralExpression (ClosureLiteralExpression closure)
+        public void VisitClosureLiteralExpression(ClosureLiteralExpression closure)
         {
             throw new InvalidOperationException("Can not work on that node");
         }
 
-        public void VisitCollectionPattern (CollectionPattern collectionPattern)
+        public void VisitCollectionPattern(CollectionPattern collectionPattern)
         {
             throw new InvalidOperationException("Can not work on that node");
         }
 
-        public void VisitCommentNode (CommentNode comment)
+        public void VisitCommentNode(CommentNode comment)
         {
             throw new InvalidOperationException("Can not work on that node");
         }
 
-        public void VisitComprehensionExpression (ComprehensionExpression comp)
+        public void VisitComprehensionExpression(ComprehensionExpression comp)
         {
             throw new InvalidOperationException("Can not work on that node");
         }
 
-        public void VisitComprehensionForClause (ComprehensionForClause compFor)
+        public void VisitComprehensionForClause(ComprehensionForClause compFor)
         {
             throw new InvalidOperationException("Can not work on that node");
         }
 
-        public void VisitComprehensionIfClause (ComprehensionIfClause compIf)
+        public void VisitComprehensionIfClause(ComprehensionIfClause compIf)
         {
             throw new InvalidOperationException("Can not work on that node");
         }
 
-        public void VisitConditionalExpression (ConditionalExpression condExpr)
+        public void VisitConditionalExpression(ConditionalExpression condExpr)
         {
             throw new InvalidOperationException("Can not work on that node");
         }
 
-        public void VisitContinueStatement (ContinueStatement continueStmt)
+        public void VisitContinueStatement(ContinueStatement continueStmt)
         {
             throw new InvalidOperationException("Can not work on that node");
         }
 
-        public void VisitDestructuringPattern (DestructuringPattern destructuringPattern)
+        public void VisitDestructuringPattern(DestructuringPattern destructuringPattern)
         {
             throw new InvalidOperationException("Can not work on that node");
         }
 
-        public void VisitEmptyStatement (EmptyStatement emptyStmt)
+        public void VisitDoWhileStatement(DoWhileStatement doWhileStmt)
         {
             throw new InvalidOperationException("Can not work on that node");
         }
 
-        public void VisitExpressionPattern (ExpressionPattern exprPattern)
+        public void VisitEmptyStatement(EmptyStatement emptyStmt)
         {
             throw new InvalidOperationException("Can not work on that node");
         }
 
-        public void VisitExpressionStatement (ExpressionStatement exprStmt)
+        public void VisitExpressionPattern(ExpressionPattern exprPattern)
         {
             throw new InvalidOperationException("Can not work on that node");
         }
 
-        public void VisitExpressoTokenNode (ExpressoTokenNode tokenNode)
+        public void VisitExpressionStatement(ExpressionStatement exprStmt)
         {
             throw new InvalidOperationException("Can not work on that node");
         }
 
-        public void VisitFieldDeclaration (FieldDeclaration fieldDecl)
+        public void VisitExpressoTokenNode(ExpressoTokenNode tokenNode)
+        {
+            throw new InvalidOperationException("Can not work on that node");
+        }
+
+        public void VisitFieldDeclaration(FieldDeclaration fieldDecl)
         {
             throw new InvalidOperationException("Can not work on that node");
         }
@@ -137,33 +142,33 @@ namespace Expresso.Ast
             throw new InvalidOperationException("Can not work on that node");
         }
 
-        public void VisitForStatement (ForStatement forStmt)
+        public void VisitForStatement(ForStatement forStmt)
         {
             throw new InvalidOperationException("Can not work on that node");
         }
 
-        public void VisitFunctionDeclaration (FunctionDeclaration funcDecl)
+        public void VisitFunctionDeclaration(FunctionDeclaration funcDecl)
         {
             throw new InvalidOperationException("Can not work on that node");
         }
 
-        public void VisitFunctionType (FunctionType funcType)
+        public void VisitFunctionType(FunctionType funcType)
         {
             funcType.ReturnType.AcceptWalker(this);
             funcType.Parameters.AcceptWalker(this);
         }
 
-        public void VisitIdentifier (Identifier ident)
+        public void VisitIdentifier(Identifier ident)
         {
             throw new InvalidOperationException("Can not work on that node");
         }
 
-        public void VisitIdentifierPattern (IdentifierPattern identifierPattern)
+        public void VisitIdentifierPattern(IdentifierPattern identifierPattern)
         {
             throw new InvalidOperationException("Can not work on that node");
         }
 
-        public void VisitIfStatement (IfStatement ifStmt)
+        public void VisitIfStatement(IfStatement ifStmt)
         {
             throw new InvalidOperationException("Can not work on that node");
         }
@@ -173,22 +178,22 @@ namespace Expresso.Ast
             throw new InvalidOperationException("Can not work on that node");
         }
 
-        public void VisitImportDeclaration (ImportDeclaration importDecl)
+        public void VisitImportDeclaration(ImportDeclaration importDecl)
         {
             throw new InvalidOperationException("Can not work on that node");
         }
 
-        public void VisitIndexerExpression (IndexerExpression indexExpr)
+        public void VisitIndexerExpression(IndexerExpression indexExpr)
         {
             throw new InvalidOperationException("Can not work on that node");
         }
 
-        public void VisitIntegerSequenceExpression (IntegerSequenceExpression intSeq)
+        public void VisitIntegerSequenceExpression(IntegerSequenceExpression intSeq)
         {
             throw new InvalidOperationException("Can not work on that node");
         }
 
-        public void VisitKeyValueLikeExpression (KeyValueLikeExpression keyValue)
+        public void VisitKeyValueLikeExpression(KeyValueLikeExpression keyValue)
         {
             throw new InvalidOperationException("Can not work on that node");
         }
@@ -198,36 +203,36 @@ namespace Expresso.Ast
             throw new InvalidOperationException("can not work on that node");
         }
 
-        public void VisitLiteralExpression (LiteralExpression literal)
+        public void VisitLiteralExpression(LiteralExpression literal)
         {
             throw new InvalidOperationException("Can not work on that node");
         }
 
-        public void VisitMatchClause (MatchPatternClause matchClause)
+        public void VisitMatchClause(MatchPatternClause matchClause)
         {
             throw new InvalidOperationException("Can not work on that node");
         }
 
-        public void VisitMatchStatement (MatchStatement matchStmt)
+        public void VisitMatchStatement(MatchStatement matchStmt)
         {
             throw new InvalidOperationException("Can not work on that node");
         }
 
-        public void VisitMemberReference (MemberReferenceExpression memRef)
+        public void VisitMemberReference(MemberReferenceExpression memRef)
         {
             throw new InvalidOperationException("Can not work on that node");
         }
 
-        public void VisitMemberType (MemberType memberType)
+        public void VisitMemberType(MemberType memberType)
         {
         }
 
-        public void VisitNewLine (NewLineNode newlineNode)
+        public void VisitNewLine(NewLineNode newlineNode)
         {
             throw new InvalidOperationException("Can not work on that node");
         }
 
-        public void VisitNullNode (AstNode nullNode)
+        public void VisitNullNode(AstNode nullNode)
         {
             throw new InvalidOperationException("Can not work on that node");
         }
@@ -237,7 +242,7 @@ namespace Expresso.Ast
             throw new InvalidOperationException("Can not work on that node");
         }
 
-        public void VisitObjectCreationExpression (ObjectCreationExpression creation)
+        public void VisitObjectCreationExpression(ObjectCreationExpression creation)
         {
             throw new InvalidOperationException("Can not work on that node");
         }
@@ -247,64 +252,64 @@ namespace Expresso.Ast
             throw new InvalidOperationException("Can not work on that node");
         }
 
-        public void VisitParameterDeclaration (ParameterDeclaration parameterDecl)
+        public void VisitParameterDeclaration(ParameterDeclaration parameterDecl)
         {
             throw new InvalidOperationException("Can not work on that node");
         }
 
-        public void VisitParameterType (ParameterType paramType)
+        public void VisitParameterType(ParameterType paramType)
         {
         }
 
-        public void VisitParenthesizedExpression (ParenthesizedExpression parensExpr)
-        {
-            throw new InvalidOperationException("Can not work on that node");
-        }
-
-        public void VisitPathExpression (PathExpression pathExpr)
+        public void VisitParenthesizedExpression(ParenthesizedExpression parensExpr)
         {
             throw new InvalidOperationException("Can not work on that node");
         }
 
-        public void VisitPatternPlaceholder (AstNode placeholder, Pattern child)
+        public void VisitPathExpression(PathExpression pathExpr)
         {
             throw new InvalidOperationException("Can not work on that node");
         }
 
-        public void VisitPlaceholderType (PlaceholderType placeholderType)
+        public void VisitPatternPlaceholder(AstNode placeholder, Pattern child)
+        {
+            throw new InvalidOperationException("Can not work on that node");
+        }
+
+        public void VisitPlaceholderType(PlaceholderType placeholderType)
         {
         }
 
-        public void VisitPrimitiveType (PrimitiveType primitiveType)
+        public void VisitPrimitiveType(PrimitiveType primitiveType)
         {
         }
 
-        public void VisitReferenceType (ReferenceType referenceType)
+        public void VisitReferenceType(ReferenceType referenceType)
         {
             referenceType.BaseType.AcceptWalker(this);
         }
 
-        public void VisitReturnStatement (ReturnStatement returnStmt)
+        public void VisitReturnStatement(ReturnStatement returnStmt)
         {
             throw new InvalidOperationException("Can not work on that node");
         }
 
-        public void VisitSelfReferenceExpression (SelfReferenceExpression selfRef)
+        public void VisitSelfReferenceExpression(SelfReferenceExpression selfRef)
         {
             throw new InvalidOperationException("Can not work on that node");
         }
 
-        public void VisitSequenceExpression (SequenceExpression seqExpr)
+        public void VisitSequenceExpression(SequenceExpression seqExpr)
         {
             throw new InvalidOperationException("Can not work on that node");
         }
 
-        public void VisitSequenceInitializer (SequenceInitializer seqInitializer)
+        public void VisitSequenceInitializer(SequenceInitializer seqInitializer)
         {
             throw new InvalidOperationException("Can not work on that node");
         }
 
-        public void VisitSimpleType (SimpleType simpleType)
+        public void VisitSimpleType(SimpleType simpleType)
         {
             foreach(var type_arg in simpleType.TypeArguments)
                 type_arg.AcceptWalker(this);
@@ -318,12 +323,12 @@ namespace Expresso.Ast
             }
         }
 
-        public void VisitSuperReferenceExpression (SuperReferenceExpression superRef)
+        public void VisitSuperReferenceExpression(SuperReferenceExpression superRef)
         {
             throw new InvalidOperationException("Can not work on that node");
         }
 
-        public void VisitTextNode (TextNode textNode)
+        public void VisitTextNode(TextNode textNode)
         {
             throw new InvalidOperationException("Can not work on that node");
         }
@@ -338,57 +343,57 @@ namespace Expresso.Ast
             throw new InvalidOperationException("Can not work on that node");
         }
 
-        public void VisitTuplePattern (TuplePattern tuplePattern)
+        public void VisitTuplePattern(TuplePattern tuplePattern)
         {
             throw new InvalidOperationException("Can not work on that node");
         }
 
-        public void VisitTypeDeclaration (TypeDeclaration typeDecl)
+        public void VisitTypeDeclaration(TypeDeclaration typeDecl)
         {
             throw new InvalidOperationException("Can not work on that node");
         }
 
-        public void VisitUnaryExpression (UnaryExpression unaryExpr)
+        public void VisitUnaryExpression(UnaryExpression unaryExpr)
         {
             throw new InvalidOperationException("Can not work on that node");
         }
 
-        public void VisitValueBindingForStatement (ValueBindingForStatement valueBindingForStmt)
+        public void VisitValueBindingForStatement(ValueBindingForStatement valueBindingForStmt)
         {
             throw new InvalidOperationException("Can not work on that node");
         }
 
-        public void VisitValueBindingPattern (ValueBindingPattern valueBindingPattern)
+        public void VisitValueBindingPattern(ValueBindingPattern valueBindingPattern)
         {
             throw new InvalidOperationException("Can not work on that node");
         }
 
-        public void VisitVariableDeclarationStatement (VariableDeclarationStatement varDecl)
+        public void VisitVariableDeclarationStatement(VariableDeclarationStatement varDecl)
         {
             throw new NotImplementedException("Can not work on that node");
         }
 
-        public void VisitVariableInitializer (VariableInitializer initializer)
+        public void VisitVariableInitializer(VariableInitializer initializer)
         {
             throw new InvalidOperationException("Can not work on that node");
         }
 
-        public void VisitWhileStatement (WhileStatement whileStmt)
+        public void VisitWhileStatement(WhileStatement whileStmt)
         {
             throw new InvalidOperationException("Can not work on that node");
         }
 
-        public void VisitWhitespace (WhitespaceNode whitespaceNode)
+        public void VisitWhitespace(WhitespaceNode whitespaceNode)
         {
             throw new InvalidOperationException("Can not work on that node");
         }
 
-        public void VisitWildcardPattern (WildcardPattern wildcardPattern)
+        public void VisitWildcardPattern(WildcardPattern wildcardPattern)
         {
             throw new InvalidOperationException("Can not work on that node");
         }
 
-        public void VisitYieldStatement (YieldStatement yieldStmt)
+        public void VisitYieldStatement(YieldStatement yieldStmt)
         {
             throw new InvalidOperationException("Can not work on that node");
         }

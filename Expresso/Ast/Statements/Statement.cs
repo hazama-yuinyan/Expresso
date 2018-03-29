@@ -182,6 +182,12 @@ namespace Expresso.Ast
             return new WhileStatement(condition, body, loc);
         }
 
+        public static DoWhileStatement MakeDoWhileStmt(Expression condition, BlockStatement body, TextLocation start = default(TextLocation),
+                                                       TextLocation end = default(TextLocation))
+        {
+            return new DoWhileStatement(MakeWhileStmt(condition, body, start), start, end);
+        }
+
         public static ForStatement MakeForStmt(PatternConstruct pattern, Expression rvalue,
             BlockStatement body, TextLocation loc = default(TextLocation))
         {

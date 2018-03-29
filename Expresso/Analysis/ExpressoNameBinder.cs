@@ -124,6 +124,11 @@ namespace Expresso.Ast.Analysis
             //no op
         }
 
+        public void VisitDoWhileStatement(DoWhileStatement doWhileStmt)
+        {
+            VisitWhileStatement(doWhileStmt.Delegator);
+        }
+
         public void VisitEmptyStatement(EmptyStatement emptyStmt)
         {
             //no op

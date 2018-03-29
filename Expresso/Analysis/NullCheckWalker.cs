@@ -121,6 +121,11 @@ namespace Expresso.Ast.Analysis
                 throw new InvalidOperationException("Can not work on that node");
             }
 
+            public void VisitDoWhileStatement(DoWhileStatement doWhileStmt)
+            {
+                throw new InvalidOperationException("Can not work on that node");
+            }
+
             public void VisitEmptyStatement(EmptyStatement emptyStmt)
             {
                 throw new InvalidOperationException("Can not work on that node");
