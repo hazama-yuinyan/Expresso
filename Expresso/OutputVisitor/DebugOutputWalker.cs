@@ -536,7 +536,7 @@ namespace Expresso.Ast
         {
             memberType.Target.AcceptWalker(this);
             writer.Write("::");
-            writer.Write(memberType.MemberName);
+            VisitIdentifier(memberType.IdentifierNode);
         }
 
         public void VisitFunctionType(FunctionType funcType)

@@ -332,12 +332,9 @@ namespace Expresso.Ast.Analysis
                             ident.Name, ident.StartLocation, checker.symbols.Name
                         );
                     }else{
-                            var cloned = symbol2.Type.Clone();
-                            ident.Type.ReplaceWith(cloned);
-                            return symbol2.Type;
-                            /*ident.Type.ReplaceWith(AstType.MakeSimpleType((Identifier)symbol2.Clone()));
-                            return ident.Type;
-                        }*/
+                        var cloned = symbol2.Type.Clone();
+                        ident.Type.ReplaceWith(cloned);
+                        return symbol2.Type;
                     }
                 }else{
                     return ident.Type;
@@ -948,7 +945,7 @@ namespace Expresso.Ast.Analysis
                             checker.parser.ReportSemanticErrorRegional(
                                 "Error ES1800: All code paths must return something. {0} returns nothing.",
                                 last_if.TrueBlock, last_if.FalseBlock,
-                                true_return != null ? "The false block" : "The true block"
+                                (true_return != null) ? "The false block" : "The true block"
                             );
                         }
                     }
@@ -971,11 +968,12 @@ namespace Expresso.Ast.Analysis
 
             AstType ResolveType(Identifier ident)
             {
+                if(!ident.Type.IdentifierNode.Type.IsNull)
+                    return ident.Type;
+                
                 var type_symbol = checker.symbols.GetTypeSymbolInAnyScope(ident.Type.Name);
-                if(type_symbol != null && !type_symbol.Type.IsNull && ident.Type.Name != type_symbol.Type.Name){
+                if(type_symbol != null && !type_symbol.Type.IsNull && ident.Type.Name != type_symbol.Type.Name)
                     ident.Type.IdentifierNode.Type = type_symbol.Type.Clone();
-                    return type_symbol.Type;
-                }
 
                 return ident.Type;
             }

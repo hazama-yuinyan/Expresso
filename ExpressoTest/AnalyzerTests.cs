@@ -5165,8 +5165,9 @@ namespace Expresso.Test
                     Statement.MakeBlock(
                         Statement.MakeThrowStmt(
                             Expression.MakeObjectCreation(
-                                Helpers.MakeGenericType(
-                                    "Exception"
+                                Helpers.MakeGenericTypeWithRealName(
+                                    "Exception",
+                                    "System.Exception"
                                 ),
                                 Helpers.MakeSeq(
                                     AstNode.MakeIdentifier("message")
@@ -5222,7 +5223,10 @@ namespace Expresso.Test
                             Statement.MakeCatchClause(
                                 AstNode.MakeIdentifier(
                                     "e",
-                                    Helpers.MakeGenericType("Exception")
+                                    Helpers.MakeGenericTypeWithRealName(
+                                        "Exception",
+                                        "System.Exception"
+                                    )
                                 ),
                                 Statement.MakeBlock(
                                     Statement.MakeExprStmt(
@@ -5261,7 +5265,10 @@ namespace Expresso.Test
                                             Expression.MakeMemRef(
                                                 Helpers.MakeIdentifierPath(
                                                     "e",
-                                                    Helpers.MakeGenericType("Exception")
+                                                    Helpers.MakeGenericTypeWithRealName(
+                                                        "Exception",
+                                                        "System.Exception"
+                                                    )
                                                 ),
                                                 AstNode.MakeIdentifier(
                                                     "Message",
@@ -5531,7 +5538,10 @@ namespace Expresso.Test
                             Statement.MakeCatchClause(
                                 AstNode.MakeIdentifier(
                                     "e",
-                                    Helpers.MakeGenericType("Exception")
+                                    Helpers.MakeGenericTypeWithRealName(
+                                        "Exception",
+                                        "System.Exception"
+                                    )
                                 ),
                                 Statement.MakeBlock(
                                     Statement.MakeExprStmt(
@@ -5579,7 +5589,10 @@ namespace Expresso.Test
                                             Expression.MakeMemRef(
                                                 Helpers.MakeIdentifierPath(
                                                     "e",
-                                                    Helpers.MakeGenericType("Exception")
+                                                    Helpers.MakeGenericTypeWithRealName(
+                                                        "Exception",
+                                                        "System.Exception"
+                                                    )
                                                 ),
                                                 AstNode.MakeIdentifier(
                                                     "Message",
@@ -6542,7 +6555,11 @@ namespace Expresso.Test
                             Helpers.MakeSeq(
                                 Helpers.MakeExactPatternWithType(
                                     "writer",
-                                    Helpers.MakeGenericType("FileStream")
+                                    Helpers.MakeGenericTypeWithRealName(
+                                        "FileStream",
+                                        "System.IO.FileStream"
+                                    ),
+                                    "FileStream"
                                 )
                             ),
                             Helpers.MakeSeq(
@@ -6556,7 +6573,10 @@ namespace Expresso.Test
                                     Expression.MakeSingleAssignment(
                                         Helpers.MakeIdentifierPath(
                                             "writer",
-                                            Helpers.MakeGenericType("FileStream")
+                                            Helpers.MakeGenericTypeWithRealName(
+                                                "FileStream",
+                                                "System.IO.FileStream"
+                                            )
                                         ),
                                         Helpers.MakeCallExpression(
                                             Expression.MakeMemRef(
@@ -6596,7 +6616,10 @@ namespace Expresso.Test
                                         Helpers.MakeCallExpression(
                                             Expression.MakeMemRef(
                                                 Expression.MakeObjectCreation(
-                                                    Helpers.MakeGenericType("UTF8Encoding"),
+                                                    Helpers.MakeGenericTypeWithRealName(
+                                                        "UTF8Encoding",
+                                                        "System.Text.UTF8Encoding"
+                                                    ),
                                                     Helpers.MakeSeq(
                                                         AstNode.MakeIdentifier("encoderShouldEmitUTF8Identifier")
                                                     ),
@@ -6631,7 +6654,10 @@ namespace Expresso.Test
                                         Expression.MakeMemRef(
                                             Helpers.MakeIdentifierPath(
                                                 "writer",
-                                                Helpers.MakeGenericType("FileStream")
+                                                Helpers.MakeGenericTypeWithRealName(
+                                                    "FileStream",
+                                                    "System.IO.FileStream"
+                                                )
                                             ),
                                             AstNode.MakeIdentifier(
                                                 "write",
@@ -6685,7 +6711,10 @@ namespace Expresso.Test
                                                 OperatorType.InEquality,
                                                 Helpers.MakeIdentifierPath(
                                                     "writer",
-                                                    Helpers.MakeGenericType("FileStream")
+                                                    Helpers.MakeGenericTypeWithRealName(
+                                                        "FileStream",
+                                                        "System.IO.FileStream"
+                                                    )
                                                 ),
                                                 Expression.MakeNullRef()
                                             )
@@ -6696,7 +6725,10 @@ namespace Expresso.Test
                                                     Expression.MakeMemRef(
                                                         Helpers.MakeIdentifierPath(
                                                             "writer",
-                                                            Helpers.MakeGenericType("FileStream")
+                                                            Helpers.MakeGenericTypeWithRealName(
+                                                                "FileStream",
+                                                                "System.IO.FileStream"
+                                                            )
                                                         ),
                                                         AstNode.MakeIdentifier(
                                                             "dispose",
@@ -7265,12 +7297,18 @@ namespace Expresso.Test
                             Helpers.MakeSeq(
                                 Helpers.MakePaticularPatternWithType(
                                     "t",
-                                    Helpers.MakeGenericType("InteroperabilityTest")
+                                    Helpers.MakeGenericTypeWithRealName(
+                                        "InteroperabilityTest",
+                                        "InteroperabilityTest.InteroperabilityTest"
+                                    )
                                 )
                             ),
                             Helpers.MakeSeq(
                                 Expression.MakeObjectCreation(
-                                    Helpers.MakeGenericType("InteroperabilityTest"),
+                                    Helpers.MakeGenericTypeWithRealName(
+                                        "InteroperabilityTest",
+                                        "InteroperabilityTest.InteroperabilityTest"
+                                    ),
                                     Enumerable.Empty<Identifier>(),
                                     Enumerable.Empty<Expression>()
                                 )
@@ -7282,7 +7320,10 @@ namespace Expresso.Test
                                 Expression.MakeMemRef(
                                     Helpers.MakeIdentifierPath(
                                         "t",
-                                        Helpers.MakeGenericType("InteroperabilityTest")
+                                        Helpers.MakeGenericTypeWithRealName(
+                                            "InteroperabilityTest",
+                                            "InteroperabilityTest.InteroperabilityTest"
+                                        )
                                     ),
                                     AstNode.MakeIdentifier(
                                         "doSomething",
@@ -7307,7 +7348,10 @@ namespace Expresso.Test
                                     Expression.MakeMemRef(
                                         Helpers.MakeIdentifierPath(
                                             "t",
-                                            Helpers.MakeGenericType("InteroperabilityTest")
+                                            Helpers.MakeGenericTypeWithRealName(
+                                                "InteroperabilityTest",
+                                                "InteroperabilityTest.InteroperabilityTest"
+                                            )
                                         ),
                                         AstNode.MakeIdentifier(
                                             "getSomeInt",
@@ -7337,7 +7381,10 @@ namespace Expresso.Test
                                     Expression.MakeMemRef(
                                         Helpers.MakeIdentifierPath(
                                             "t",
-                                            Helpers.MakeGenericType("InteroperabilityTest")
+                                            Helpers.MakeGenericTypeWithRealName(
+                                                "InteroperabilityTest",
+                                                "InteroperabilityTest.InteroperabilityTest"
+                                            )
                                         ),
                                         AstNode.MakeIdentifier(
                                             "getIntList",
@@ -7360,7 +7407,9 @@ namespace Expresso.Test
                                 Expression.MakeMemRef(
                                     Helpers.MakeIdentifierPath(
                                         "StaticTest",
-                                        Helpers.MakeGenericType("StaticTest")
+                                        Helpers.MakeGenericType(
+                                            "InteroperabilityTest.StaticTest"
+                                        )
                                     ),
                                     AstNode.MakeIdentifier(
                                         "doSomething",
@@ -7385,7 +7434,9 @@ namespace Expresso.Test
                                     Expression.MakeMemRef(
                                         Helpers.MakeIdentifierPath(
                                             "StaticTest",
-                                            Helpers.MakeGenericType("StaticTest")
+                                            Helpers.MakeGenericType(
+                                                "InteroperabilityTest.StaticTest"
+                                            )
                                         ),
                                         AstNode.MakeIdentifier(
                                             "getSomeBool",
@@ -7412,7 +7463,9 @@ namespace Expresso.Test
                                     Expression.MakeMemRef(
                                         Helpers.MakeIdentifierPath(
                                             "StaticTest",
-                                            Helpers.MakeGenericType("StaticTest")
+                                            Helpers.MakeGenericType(
+                                                "InteroperabilityTest.StaticTest"
+                                            )
                                         ),
                                         AstNode.MakeIdentifier(
                                             "getSomeIntSeq",

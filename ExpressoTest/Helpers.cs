@@ -160,6 +160,14 @@ namespace Expresso.Test
             );
         }
 
+        public static PatternWithType MakeExactPatternWithType(string name, SimpleType fullyQuialifiedType, string aliasTypeName)
+        {
+            return PatternConstruct.MakePatternWithType(
+                PatternConstruct.MakeIdentifierPattern(name, fullyQuialifiedType),
+                AstType.MakeSimpleType(aliasTypeName)
+            );
+        }
+
         public static PatternWithType MakeSomeTuplePatternWithType(params string[] names)
         {
             return PatternConstruct.MakePatternWithType(
@@ -184,37 +192,55 @@ namespace Expresso.Test
         /// Makes a path expression from a string.
         /// </summary>
         /// <returns>A path expression</returns>
-        /// <param name="identifier">Identifier.</param>
-        public static PathExpression MakeIdentifierPath(string identifier)
+        /// <param name="name">Identifier.</param>
+        public static PathExpression MakeIdentifierPath(string name)
         {
-            return Expression.MakePath(MakeSomeIdent(identifier));
+            return Expression.MakePath(MakeSomeIdent(name));
         }
 
         /// <summary>
         /// Makes a path expression from a string and a type.
         /// </summary>
         /// <returns>The identifier path.</returns>
-        /// <param name="identifier">Identifier.</param>
+        /// <param name="name">Identifier.</param>
         /// <param name="type">Type.</param>
-        public static PathExpression MakeIdentifierPath(string identifier, AstType type)
+        public static PathExpression MakeIdentifierPath(string name, AstType type)
         {
-            return Expression.MakePath(AstNode.MakeIdentifier(identifier, type));
+            return Expression.MakePath(AstNode.MakeIdentifier(name, type));
         }
 
         /// <summary>
         /// Makes an AstType with the specified identifier and optional type arguments.
         /// </summary>
         /// <returns>A generic type.</returns>
-        /// <param name="identifier">Type identifier.</param>
+        /// <param name="name">Type identifier.</param>
         /// <param name="typeArgs">Type arguments.</param>
-        public static SimpleType MakeGenericType(string identifier, params AstType[] typeArgs)
+        public static SimpleType MakeGenericType(string name, params AstType[] typeArgs)
         {
-            return AstType.MakeSimpleType(identifier, typeArgs);
+            return AstType.MakeSimpleType(name, typeArgs);
         }
 
-        public static SimpleType MakeGenericType(string identifier, IEnumerable<AstType> typeArgs)
+        public static SimpleType MakeGenericType(string name, IEnumerable<AstType> typeArgs)
         {
-            return AstType.MakeSimpleType(identifier, typeArgs);
+            return AstType.MakeSimpleType(name, typeArgs);
+        }
+
+        /// <summary>
+        /// Makes a SimpleType with a fully qualified name and optional type arguments.
+        /// </summary>
+        /// <returns>A generic type with real name.</returns>
+        /// <param name="identifier">Identifier.</param>
+        /// <param name="realName">A fully qualified name.</param>
+        /// <param name="typeArgs">Type arguments.</param>
+        public static SimpleType MakeGenericTypeWithRealName(string identifier, string realName, params AstType[] typeArgs)
+        {
+            return AstType.MakeSimpleType(
+                AstNode.MakeIdentifier(
+                    identifier,
+                    AstType.MakeSimpleType(realName)
+                ),
+                typeArgs
+            );
         }
 
         public static SimpleType MakeGenericPlaceholderType(string identifier)

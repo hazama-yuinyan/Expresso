@@ -418,7 +418,7 @@ namespace Expresso.Ast.Analysis
                 var arg_type = pair.Item2.AcceptWalker(this);
                 // FIXME?: Think about changing the property methods' types
                 // arg_type doesn't need to be cloned because the user of this field clones them
-                arg_types[pair.Item1] = (arg_type is FunctionType property_type && property_type.Name.StartsWith("get_")) ? property_type.ReturnType : arg_type;
+                arg_types[pair.Item1] = (arg_type is FunctionType func_type2 && func_type2.Name.StartsWith("get_", StringComparison.CurrentCulture)) ? func_type2.ReturnType : arg_type;
             }
 
             var parent_types = argument_types;
@@ -428,14 +428,13 @@ namespace Expresso.Ast.Analysis
             // Don't call inference_runner.VisitCallExpression here
             // because doing so causes VisitIdentifier to be invoked two times
             // and show the same messages twice
-            if(IsPlaceholderType(func_type)){
+            /*if(IsPlaceholderType(func_type)){
                 var inferred = inference_runner.VisitCallExpression(callExpr);
                 // Don't replace nodes here because the above code does that
                 //func_type.ReplaceWith(inferred);
                 return inferred;
-            }
+            }*/
 
-            //inference_runner.VisitCallExpression(callExpr);
             if(func_type == null){
                 throw new ParserException(
                     "Error ES1805: {0} turns out not to be a function.",
@@ -462,6 +461,9 @@ namespace Expresso.Ast.Analysis
             }
 
             argument_types = parent_types;
+
+            // In order to resolve it so that it gets a fully qualified name
+            func_type.ReturnType.AcceptWalker(this);
 
             return func_type.ReturnType;
         }

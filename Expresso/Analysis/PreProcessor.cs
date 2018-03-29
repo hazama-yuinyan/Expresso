@@ -218,7 +218,7 @@ namespace Expresso.Ast.Analysis
             // All external names will be imported into the module scope we are currently compiling
             if(!importDecl.TargetFile.IsNull){
                 Parser inner_parser = null;
-                if(importDecl.TargetFilePath.EndsWith(".exs")){
+                if(importDecl.TargetFilePath.EndsWith(".exs", StringComparison.CurrentCulture)){
                     inner_parser = new Parser(parser.scanner.OpenChildFile(importDecl.TargetFilePath));
                     inner_parser.Parse();
 
@@ -229,14 +229,14 @@ namespace Expresso.Ast.Analysis
                 }
 
                 var first_import_path = importDecl.ImportPaths.First();
-                var table = importDecl.TargetFilePath.EndsWith(".dll") ? ExpressoCompilerHelpers.GetSymbolTableForAssembly(parser.scanner.GetFullPath(importDecl.TargetFilePath))
+                var table = importDecl.TargetFilePath.EndsWith(".dll", StringComparison.CurrentCulture) ? ExpressoCompilerHelpers.GetSymbolTableForAssembly(parser.scanner.GetFullPath(importDecl.TargetFilePath))
                                       : inner_parser.Symbols;
                 if(!first_import_path.Name.Contains("::") && !first_import_path.Name.Contains("."))
                     parser.Symbols.AddExternalSymbols(table, importDecl.AliasTokens.First().Name);
                 else
                     parser.Symbols.AddExternalSymbols(table, importDecl.ImportPaths, importDecl.AliasTokens);
 
-                if(importDecl.TargetFilePath.EndsWith(".exs")){
+                if(importDecl.TargetFilePath.EndsWith(".exs", StringComparison.CurrentCulture)){
                     if(!first_import_path.Name.Contains("::") && !first_import_path.Name.Contains(".")){
                         ((ExpressoAst)importDecl.Parent).ExternalModules.Add(inner_parser.TopmostAst);
                     }else{
@@ -255,7 +255,7 @@ namespace Expresso.Ast.Analysis
 
                 // Types from the standard library and external dlls should know the real name
                 // in order for the compiler to keep track of them.
-                if(type.Name.StartsWith("System.", StringComparison.CurrentCulture) || importDecl.TargetFilePath.EndsWith(".dll"))
+                if(type.Name.StartsWith("System.", StringComparison.CurrentCulture) || importDecl.TargetFilePath.EndsWith(".dll", StringComparison.CurrentCulture))
                     pair.Item2.Type = type.Clone();
 
                 // These 2 statements are needed because otherwise aliases won't get IdentifierIds

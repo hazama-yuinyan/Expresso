@@ -242,9 +242,9 @@ string cur_class_name;
         foreach(var item in path.Items){
             item.Remove();
             if(type == null)
-                type = AstType.MakeSimpleType(item, TextLocation.Empty);
+                type = AstType.MakeSimpleType(item.Name, TextLocation.Empty);
             else
-                type = AstType.MakeMemberType(type, AstType.MakeSimpleType(item, TextLocation.Empty), TextLocation.Empty);
+                type = AstType.MakeMemberType(type, AstType.MakeSimpleType(item.Name, TextLocation.Empty), TextLocation.Empty);
         }
 
         return type;
