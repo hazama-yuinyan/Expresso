@@ -184,7 +184,7 @@ namespace Expresso.CodeGen
                 if(type == null && !astType.IdentifierNode.Type.IsNull){
                     return GetNativeType(astType.IdentifierNode.Type);
                 }else if(type == null){
-                    throw new EmitterException("The type `{0}` is not found!", simple, simple);
+                    throw new EmitterException("The simple type `{0}` is not found!", simple, simple);
                 }
 
                 return type;
@@ -194,13 +194,14 @@ namespace Expresso.CodeGen
                 Type type = null;
                 foreach(var asm in AppDomain.CurrentDomain.GetAssemblies()){
                     var types = GetTypes(asm);
+                    //type = asm.GetType(member.MemberName);
                     type = types.Where(t => t.Name.StartsWith(member.MemberName, StringComparison.CurrentCulture)).FirstOrDefault();
                     if(type != null)
                         break;
                 }
 
                 if(type == null)
-                    throw new EmitterException("The type `{0}` is not found!", member, member);
+                    throw new EmitterException("The member type `{0}` is not found!", member, member);
 
                 return type;
             }

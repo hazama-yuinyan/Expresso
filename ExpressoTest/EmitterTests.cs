@@ -10,6 +10,26 @@ namespace Expresso.Test
     [TestFixture]
     public class EmitterTests
     {
+        private AppDomain cur_domain;
+
+        [SetUp]
+        public void SetUp()
+        {
+            /*var domain = AppDomain.CreateDomain("TestEnvironment");
+            foreach(var asm in AppDomain.CurrentDomain.GetAssemblies()){
+                var asm_name = asm.GetName();
+                domain.Load(asm_name);
+            }
+            cur_domain = domain;*/
+        }
+
+        [TearDown]
+        public void Cleanup()
+        {
+            CSharpEmitter.Symbols.Clear();
+            //AppDomain.Unload(cur_domain);
+        }
+
         [Test]
         public void SimpleLiterals()
         {

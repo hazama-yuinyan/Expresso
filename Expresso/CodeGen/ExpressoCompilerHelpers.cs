@@ -19,6 +19,7 @@ namespace Expresso.CodeGen
         static uint IdentifierId = StartOfIdentifierId + 16u;
         static readonly string TypePrefix = "type_";
         static readonly string[] IgnoreList = new []{"equals", "getHashCode"};
+        static readonly Tuple<string, string> ReplaceTypeStrings = new Tuple<string, string>("Object", "object");
 
         static Dictionary<string, Tuple<string, uint>> SpecialNamesMapInverse = new Dictionary<string, Tuple<string, uint>>{
             {"Expresso.Runtime.Builtins.ExpressoIntegerSequence", Tuple.Create("intseq", StartOfIdentifierId + 0)},
@@ -187,6 +188,7 @@ namespace Expresso.CodeGen
             var index = name.IndexOf("`", StringComparison.CurrentCulture);
             var actual_type_name = name.Substring(0, (index == -1) ? name.Length : index);
             var type_name = SpecialNamesMapInverse.ContainsKey(actual_type_name) ? SpecialNamesMapInverse[actual_type_name].Item1 : type.Name;
+
             if(type_name == "Void")
                 return AstType.MakeSimpleType("tuple");
 
@@ -201,11 +203,14 @@ namespace Expresso.CodeGen
 
             if(type.IsGenericParameter)
                 return AstType.MakeParameterType(AstNode.MakeIdentifier(type.Name));
-            
+
+            var fully_qualified_name = type.FullName;
             var type_args =
                 from arg in type.GetGenericArguments()
                                 select GetExpressoType(arg);
-            return AstType.MakeSimpleType(type_name, type_args);
+
+            return (fully_qualified_name != null) ? AstType.MakeSimpleType(AstNode.MakeIdentifier(type_name, AstType.MakeSimpleType(fully_qualified_name)), type_args)
+                                                               : AstType.MakeSimpleType(type_name, type_args);
         }
 
         static IEnumerable<Type> GetTypes(Assembly asm)

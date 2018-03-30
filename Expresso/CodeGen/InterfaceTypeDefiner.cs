@@ -350,7 +350,7 @@ namespace Expresso.CodeGen
 
                 foreach(var base_type in typeDecl.BaseTypes){
                     if(base_type is SimpleType simple){
-                        var native_type = CSharpCompilerHelper.GetNativeType(simple.IdentifierNode.Type);
+                        var native_type = CSharpCompilerHelper.GetNativeType(!simple.IdentifierNode.Type.IsNull ? simple.IdentifierNode.Type : simple);
                         if(!Symbols.ContainsKey(base_type.IdentifierNode.IdentifierId))
                             AddSymbol(base_type.IdentifierNode, new ExpressoSymbol{Type = native_type});
                     }

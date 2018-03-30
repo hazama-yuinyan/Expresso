@@ -13,6 +13,8 @@ namespace Expresso.Ast
     /// </summary>
     public class CallExpression : Expression
     {
+        public static readonly Role<FunctionType> OverloadSignatureRole = new Role<FunctionType>("OverloadSignature", FunctionType.Null);
+
         /// <summary>
         /// 呼び出す対象。
 		/// The target function to be called.
@@ -33,6 +35,16 @@ namespace Expresso.Ast
         public AstNodeCollection<Expression> Arguments{
             get{return GetChildrenByRole(Roles.Argument);}
 		}
+
+        /// <summary>
+        /// Represents the signature to call.
+        /// Used to resolve the method overload.
+        /// </summary>
+        /// <value>The overload signature.</value>
+        public FunctionType OverloadSignature{
+            get{return GetChildByRole(OverloadSignatureRole);}
+            set{SetChildByRole(OverloadSignatureRole, value);}
+        }
 
         public ExpressoTokenNode RPar{
             get{return GetChildByRole(Roles.RParenthesisToken);}

@@ -56,7 +56,8 @@ namespace Expresso.CodeGen
         //# because we have defined a symbol id on all the identifier nodes
         //# that identifies the symbol uniqueness within the whole program.
         //###################################################
-        internal static Dictionary<uint, ExpressoSymbol> Symbols = new Dictionary<uint, ExpressoSymbol>();
+        // FIXME: make it accessible only from the tester class
+        public static Dictionary<uint, ExpressoSymbol> Symbols = new Dictionary<uint, ExpressoSymbol>();
         static int LoopCounter = 1, ClosureId = 0;
         static ExprTree.LabelTarget ReturnTarget = null;
         static CSharpExpr DefaultReturnValue = null;
@@ -234,7 +235,7 @@ namespace Expresso.CodeGen
             ast.Imports.OrderBy(i => i.ImportPaths.First().Name, new ImportPathComparer());
             foreach(var pair in ast.ExternalModules.Zip(ast.Imports.SkipWhile(i => i.ImportPaths.First().Name.StartsWith("System.", StringComparison.CurrentCulture)),
                                                         (l, r) => new Tuple<ExpressoAst, ImportDeclaration>(l, r))){
-                Debug.Assert(pair.Item2.ImportPaths.First().Name.StartsWith(pair.Item1.Name), "The module name must be matched to the import path");
+                Debug.Assert(pair.Item2.ImportPaths.First().Name.StartsWith(pair.Item1.Name, StringComparison.CurrentCulture), "The module name must be matched to the import path");
 
                 var external_module_count = context.CurrentModuleCount;
                 var tmp_counter = scope_counter;
@@ -735,7 +736,7 @@ namespace Expresso.CodeGen
                                     .Select(arg => arg.AcceptWalker(this, context))
                                     .ToArray();
             var parent_args = context.ArgumentTypes;
-            context.ArgumentTypes = compiled_args.Select(arg => arg.Type).ToArray();
+            context.ArgumentTypes = call.OverloadSignature.Parameters.Select(p => CSharpCompilerHelper.GetNativeType(p)).ToArray();// compiled_args.Select(arg => arg.Type).ToArray();
 
             context.RequestMethod = true;
             context.Method = null;
@@ -978,7 +979,7 @@ namespace Expresso.CodeGen
                         if(field == null){
                             var property = context.TargetType.GetProperty(ident.Name);
                             if(property == null)
-                                throw new EmitterException("It is found that the native symbol '{0}' doesn't resolve to neither a field, a property or a method", ident.Name);
+                                throw new EmitterException("It is found that the native symbol '{0}' doesn't resolve to either a field, a property or a method.", ident.Name);
 
                             context.PropertyOrField = property;
                             AddSymbol(ident, new ExpressoSymbol{PropertyOrField = property});
@@ -2176,10 +2177,27 @@ namespace Expresso.CodeGen
                     }
                 }
 
-                foreach(var pair in Enumerable.Range(0, args.Length).Zip(method.GetParameters(), (l, r) => new Tuple<int, ParameterInfo>(l, r))){
-                    var arg = args[pair.Item1];
-                    if(pair.Item2.ParameterType != arg.Type)
-                        args[pair.Item1] = CSharpExpr.Convert(arg, pair.Item2.ParameterType);
+                var method_params = method.GetParameters();
+                if(method_params.Length < args.Length){
+                    // For varargs methods
+                    int base_index = method_params.Length;
+                    var array_param = method_params.Last();
+                    if(!array_param.ParameterType.IsArray)
+                        throw new EmitterException("Expected the last parameter is an array(params): {0}", array_param.Name);
+                    
+                    var array_type = array_param.ParameterType.GetElementType();
+                    var array_creation = CSharpExpr.NewArrayInit(
+                        array_type,
+                        args.Skip(base_index - 1).Select(arg => CSharpExpr.Convert(arg, array_type))
+                    );
+                    var transformed_args = args.Take(base_index - 1).Concat(new []{array_creation});
+                    args = transformed_args.ToArray();
+                }else{
+                    foreach(var pair in Enumerable.Range(0, args.Length).Zip(method.GetParameters(), (l, r) => new Tuple<int, ParameterInfo>(l, r))){
+                        var arg = args[pair.Item1];
+                        if(pair.Item2.ParameterType != arg.Type)
+                            args[pair.Item1] = CSharpExpr.Convert(arg, pair.Item2.ParameterType);
+                    }
                 }
                 return (inst != null) ? CSharpExpr.Call(inst, method, args) : CSharpExpr.Call(method, args);
             }

@@ -447,7 +447,7 @@ namespace Expresso.Ast.Analysis
                                             .Zip(func_type.Parameters, (l, r) => new Tuple<int, AstType>(l, r))
                                             .Zip(argument_types, (l, r) => new Tuple<int, AstType, AstType>(l.Item1, l.Item2, r))){
                 // If this parameter is the last and the type is an array we think of it as the variadic parameter
-                var param_type = (triple.Item2 is SimpleType array && triple.Item1 == func_type.Parameters.Count - 1) ? array.TypeArguments.First() : triple.Item2;
+                var param_type = (triple.Item2 is SimpleType array && array.Name == "array" && triple.Item1 == func_type.Parameters.Count - 1) ? array.TypeArguments.First() : triple.Item2;
                 var arg_type = triple.Item3;
                 if(IsCompatibleWith(param_type, arg_type) == TriBool.False){
                     throw new ParserException(

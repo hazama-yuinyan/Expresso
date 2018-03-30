@@ -391,10 +391,14 @@ namespace Expresso.Ast.Analysis
                     );
                 }
                     
-                Identifier symbol;
+                Identifier symbol = null;
                 if(checker.argument_types != null){
                     var func_type = AstType.MakeFunctionType(memRef.Member.Name, AstType.MakePlaceholderType(), checker.argument_types.Select(arg => arg.Clone()));
-                    symbol = GetOverloadOfMethod(type_table, memRef.Member.Name, func_type);
+                    var results = GetOverloadOfMethod(type_table, memRef.Member.Name, func_type);
+                    if(results != null){
+                        symbol = results.Item1;
+                        ((CallExpression)memRef.Parent).OverloadSignature = results.Item2;
+                    }
                 }else{
                     symbol = type_table.GetSymbol(memRef.Member.Name);
                 }
@@ -978,13 +982,14 @@ namespace Expresso.Ast.Analysis
                 return ident.Type;
             }
 
-            Identifier GetOverloadOfMethod(SymbolTable table, string methodName, FunctionType funcType)
+            Tuple<Identifier, FunctionType> GetOverloadOfMethod(SymbolTable table, string methodName, FunctionType funcType)
             {
                 if(funcType.Parameters.Count == 0){
                     var symbol = table.GetSymbol(methodName, funcType);
-                    return symbol;
+                    return new Tuple<Identifier, FunctionType>(symbol, funcType);
                 }
 
+                // TODO: make it so that it takes upcasts into account
                 foreach(var pair in Enumerable.Range(0, funcType.Parameters.Count).Reverse().Zip(funcType.Parameters.Reverse(),
                                                                                                  (l, r) => new Tuple<int, AstType>(l, r))){
                     var new_parameters = funcType.Parameters
@@ -993,21 +998,36 @@ namespace Expresso.Ast.Analysis
                     var new_func_type = AstType.MakeFunctionType(funcType.Name, funcType.ReturnType.Clone(), new_parameters);
                     var symbol = table.GetSymbol(methodName, new_func_type);
                     if(symbol != null)
-                        return symbol;
-                    
+                        return new Tuple<Identifier, FunctionType>(symbol, new_func_type);
+
                     var new_parameters2 = funcType.Parameters
                                                   .Take(pair.Item1)
                                                   .Select(t => t.Clone())
-                                                  .Concat(new []{AstType.MakeSimpleType(
-                        "array",
-                        TextLocation.Empty,
-                        TextLocation.Empty,
-                        AstType.MakeSimpleType("Object")
-                    )});
+                                                  .Concat(new []{AstType.MakeSimpleType(AstNode.MakeIdentifier("Object", AstType.MakeSimpleType("System.Object")))});
                     var new_func_type2 = AstType.MakeFunctionType(funcType.Name, funcType.ReturnType.Clone(), new_parameters2);
                     var symbol2 = table.GetSymbol(methodName, new_func_type2);
                     if(symbol2 != null)
-                        return symbol2;
+                        return new Tuple<Identifier, FunctionType>(symbol2, new_func_type2);
+
+                    var new_parameters3 = funcType.Parameters
+                                                  .Take(pair.Item1)
+                                                  .Select(t => t.Clone())
+                                                  .Concat(new []{AstType.MakeSimpleType(
+                                                      "array",
+                                                      TextLocation.Empty,
+                                                      TextLocation.Empty,
+                                                      // This is because objects from the outside starts with a capital O
+                                                      AstType.MakeSimpleType(
+                                                          AstNode.MakeIdentifier(
+                                                              "Object",
+                                                              AstType.MakeSimpleType("System.Object")
+                                                             )
+                                                         )
+                                                     )});
+                    var new_func_type3 = AstType.MakeFunctionType(funcType.Name, funcType.ReturnType.Clone(), new_parameters3);
+                    var symbol3 = table.GetSymbol(methodName, new_func_type3);
+                    if(symbol3 != null)
+                        return new Tuple<Identifier, FunctionType>(symbol3, new_func_type3);
                 }
 
                 return null;
