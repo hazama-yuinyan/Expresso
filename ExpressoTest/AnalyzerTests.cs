@@ -2061,9 +2061,9 @@ namespace Expresso.Test
                                                             TextLocation.Empty,
                                                             TextLocation.Empty,
                                                             Helpers.MakePrimitiveType("string"),
-                                                            Helpers.MakeGenericType(
-                                                                "array",
-                                                                Helpers.MakeGenericType("Object")
+                                                            Helpers.MakeGenericTypeWithRealName(
+                                                                "Object",
+                                                                "System.Object"
                                                             )
                                                         )
                                                     )
@@ -2170,9 +2170,9 @@ namespace Expresso.Test
                                                             TextLocation.Empty,
                                                             TextLocation.Empty,
                                                             Helpers.MakePrimitiveType("string"),
-                                                            Helpers.MakeGenericType(
-                                                                "array",
-                                                                Helpers.MakeGenericType("Object")
+                                                            Helpers.MakeGenericTypeWithRealName(
+                                                                "Object",
+                                                                "System.Object"
                                                             )
                                                         )
                                                     )
@@ -2228,9 +2228,13 @@ namespace Expresso.Test
                                                             TextLocation.Empty,
                                                             TextLocation.Empty,
                                                             Helpers.MakePrimitiveType("string"),
-                                                            Helpers.MakeGenericType(
-                                                                "array",
-                                                                Helpers.MakeGenericType("Object")
+                                                            Helpers.MakeGenericTypeWithRealName(
+                                                                "Object",
+                                                                "System.Object"
+                                                            ),
+                                                            Helpers.MakeGenericTypeWithRealName(
+                                                                "Object",
+                                                                "System.Object"
                                                             )
                                                         )
                                                     )
@@ -2318,7 +2322,10 @@ namespace Expresso.Test
                                                             Helpers.MakePrimitiveType("string"),
                                                             Helpers.MakeGenericType(
                                                                 "array",
-                                                                Helpers.MakeGenericType("Object")
+                                                                Helpers.MakeGenericTypeWithRealName(
+                                                                    "Object",
+                                                                    "System.Object"
+                                                                )
                                                             )
                                                         )
                                                     )
@@ -2365,7 +2372,10 @@ namespace Expresso.Test
                                                     TextLocation.Empty,
                                                     Helpers.MakeGenericType(
                                                         "array",
-                                                        Helpers.MakeGenericType("object")
+                                                        Helpers.MakeGEnericTypeWithRealName(
+                                                            "Object",
+                                                            "System.Object"
+                                                        )
                                                     )
                                                 )
                                             ),
@@ -2442,7 +2452,10 @@ namespace Expresso.Test
                                                             Helpers.MakePrimitiveType("string"),
                                                             Helpers.MakeGenericType(
                                                                 "array",
-                                                                Helpers.MakeGenericType("Object")
+                                                                Helpers.MakeGenericTypeWithRealName(
+                                                                    "Object",
+                                                                    "System.Object"
+                                                                )
                                                             )
                                                         )
                                                     )
@@ -2574,9 +2587,9 @@ namespace Expresso.Test
                                                             TextLocation.Empty,
                                                             TextLocation.Empty,
                                                             Helpers.MakePrimitiveType("string"),
-                                                            Helpers.MakeGenericType(
-                                                                "array",
-                                                                Helpers.MakeGenericType("Object")
+                                                            Helpers.MakeGenericTypeWithRealName(
+                                                                "Object",
+                                                                "System.Object"
                                                             )
                                                         )
                                                     )
@@ -2631,9 +2644,13 @@ namespace Expresso.Test
                                                             TextLocation.Empty,
                                                             TextLocation.Empty,
                                                             Helpers.MakePrimitiveType("string"),
-                                                            Helpers.MakeGenericType(
-                                                                "array",
-                                                                Helpers.MakeGenericType("Object")
+                                                            Helpers.MakeGenericTypeWithRealName(
+                                                                "Object",
+                                                                "System.Object"
+                                                            ),
+                                                            Helpers.MakeGenericTypeWithRealName(
+                                                                "Object",
+                                                                "System.Object"
                                                             )
                                                         )
                                                     )
@@ -3752,7 +3769,7 @@ namespace Expresso.Test
 
             var expected_ast = AstNode.MakeModuleDef("test_module", new List<EntityDeclaration>{
                 EntityDeclaration.MakeClassDecl(
-                    "TestClass",
+                    "TestClass3",
                     Enumerable.Empty<AstType>(),
                     Helpers.MakeSeq<EntityDeclaration>(
                         EntityDeclaration.MakeField(
@@ -3845,7 +3862,7 @@ namespace Expresso.Test
                     Statement.MakeBlock(
                         Helpers.MakeSingleItemReturnStatement(
                             Expression.MakeObjectCreation(
-                                Helpers.MakeGenericType("TestClass"),
+                                Helpers.MakeGenericType("TestClass3"),
                                 Helpers.MakeSeq(
                                     AstNode.MakeIdentifier("x"),
                                     AstNode.MakeIdentifier("y")
@@ -3863,7 +3880,7 @@ namespace Expresso.Test
                             )
                         )
                     ),
-                    Helpers.MakeGenericType("TestClass"),
+                    Helpers.MakeGenericType("TestClass3"),
                     Modifiers.Export
                 ),
                 EntityDeclaration.MakeFunc(
@@ -3931,7 +3948,7 @@ namespace Expresso.Test
                                     "a",
                                     AstType.MakeMemberType(
                                         Helpers.MakeGenericType("TestModule"),
-                                        Helpers.MakeGenericType("TestClass")
+                                        Helpers.MakeGenericType("TestClass3")
                                     )
                                 )
                             ),
@@ -3939,7 +3956,7 @@ namespace Expresso.Test
                                 Expression.MakeObjectCreation(
                                     AstType.MakeMemberType(
                                         Helpers.MakeGenericType("TestModule"),
-                                        Helpers.MakeGenericType("TestClass")
+                                        Helpers.MakeGenericType("TestClass3")
                                     ),
                                     Helpers.MakeSeq(
                                         AstNode.MakeIdentifier("x"),
@@ -3957,7 +3974,7 @@ namespace Expresso.Test
                             Helpers.MakeSeq(
                                 Helpers.MakePaticularPatternWithType(
                                     "b",
-                                    Helpers.MakeGenericType("TestClass")
+                                    Helpers.MakeGenericType("TestClass3")
                                 )
                             ),
                             Helpers.MakeSeq(
@@ -3968,7 +3985,7 @@ namespace Expresso.Test
                                             "createTest",
                                             AstType.MakeFunctionType(
                                                 "createTest",
-                                                Helpers.MakeGenericType("TestClass"),
+                                                Helpers.MakeGenericType("TestClass3"),
                                                 Helpers.MakeSeq(
                                                     Helpers.MakePrimitiveType("int"),
                                                     Helpers.MakePrimitiveType("int")
@@ -4054,12 +4071,12 @@ namespace Expresso.Test
                                     "a",
                                     AstType.MakeMemberType(
                                         Helpers.MakeGenericType("TestModule"),
-                                        Helpers.MakeGenericType("TestClass")
+                                        Helpers.MakeGenericType("TestClass3")
                                     )
                                 ),
                                 Helpers.MakeIdentifierPath(
                                     "b",
-                                    Helpers.MakeGenericType("TestClass")
+                                    Helpers.MakeGenericType("TestClass3")
                                 ),
                                 Helpers.MakeIdentifierPath(
                                     "c",
@@ -4410,7 +4427,10 @@ namespace Expresso.Test
                                                 Helpers.MakePrimitiveType("string"),
                                                 Helpers.MakeGenericType(
                                                     "array",
-                                                    Helpers.MakeGenericType("Object")
+                                                    Helpers.MakeGenericTypeWithRealName(
+                                                        "Object",
+                                                        "System.Object"
+                                                    )
                                                 )
                                             )
                                         )
@@ -5475,9 +5495,9 @@ namespace Expresso.Test
                                                         TextLocation.Empty,
                                                         TextLocation.Empty,
                                                         Helpers.MakePrimitiveType("string"),
-                                                        Helpers.MakeGenericType(
-                                                            "array",
-                                                            Helpers.MakeGenericType("Object")
+                                                        Helpers.MakeGenericTypeWithRealName(
+                                                            "Object",
+                                                            "System.Object"
                                                         )
                                                     )
                                                 )
@@ -5637,9 +5657,9 @@ namespace Expresso.Test
                                                 TextLocation.Empty,
                                                 TextLocation.Empty,
                                                 Helpers.MakePrimitiveType("string"),
-                                                Helpers.MakeGenericType(
-                                                    "array",
-                                                    Helpers.MakeGenericType("Object")
+                                                Helpers.MakeGenericTypeWithRealName(
+                                                    "Object",
+                                                    "System.Object"
                                                 )
                                             )
                                         )
@@ -6061,7 +6081,7 @@ namespace Expresso.Test
                     )
                 ),
                 EntityDeclaration.MakeClassDecl(
-                    "TestClass",
+                    "TestClass2",
                     Helpers.MakeSeq<AstType>(
                         Helpers.MakeGenericType("IInterface")
                     ),
@@ -6075,7 +6095,7 @@ namespace Expresso.Test
                                 Helpers.MakePrimitiveType("int")
                             )
                         ),
-                        Helpers.MakeSeq<Expression>(
+                        Helpers.MakeSeq(
                             Expression.Null
                         ),
                         Modifiers.Immutable | Modifiers.Private
@@ -6106,12 +6126,12 @@ namespace Expresso.Test
                             Helpers.MakeSeq(
                                 Helpers.MakePaticularPatternWithType(
                                     "t",
-                                    Helpers.MakeGenericType("TestClass")
+                                    Helpers.MakeGenericType("TestClass2")
                                 )
                             ),
                             Helpers.MakeSeq(
                                 Expression.MakeObjectCreation(
-                                    Helpers.MakeGenericType("TestClass"),
+                                    Helpers.MakeGenericType("TestClass2"),
                                     Helpers.MakeSeq(
                                         AstNode.MakeIdentifier("x")
                                     ),
@@ -6134,7 +6154,7 @@ namespace Expresso.Test
                                     Expression.MakeMemRef(
                                         Helpers.MakeIdentifierPath(
                                             "t",
-                                            Helpers.MakeGenericType("TestClass")
+                                            Helpers.MakeGenericType("TestClass2")
                                         ),
                                         AstNode.MakeIdentifier(
                                             "doSomeBehavior",
@@ -6178,9 +6198,9 @@ namespace Expresso.Test
                                                 TextLocation.Empty,
                                                 TextLocation.Empty,
                                                 Helpers.MakePrimitiveType("string"),
-                                                Helpers.MakeGenericType(
-                                                    "array",
-                                                    Helpers.MakeGenericType("Object")
+                                                Helpers.MakeGenericTypeWithRealName(
+                                                    "Object",
+                                                    "System.Object"
                                                 )
                                             )
                                         )
@@ -6782,7 +6802,7 @@ namespace Expresso.Test
 
             var expected = AstNode.MakeModuleDef("main", new List<EntityDeclaration>{
                 EntityDeclaration.MakeClassDecl(
-                    "TestClass",
+                    "TestClass5",
                     Enumerable.Empty<AstType>(),
                     Modifiers.None,
                     TextLocation.Empty,
@@ -6852,12 +6872,12 @@ namespace Expresso.Test
                             Helpers.MakeSeq(
                                 Helpers.MakePaticularPatternWithType(
                                     "t",
-                                    Helpers.MakeGenericType("TestClass")
+                                    Helpers.MakeGenericType("TestClass5")
                                 )
                             ),
                             Helpers.MakeSeq(
                                 Expression.MakeObjectCreation(
-                                    Helpers.MakeGenericType("TestClass"),
+                                    Helpers.MakeGenericType("TestClass5"),
                                     Helpers.MakeSeq(
                                         AstNode.MakeIdentifier("x"),
                                         AstNode.MakeIdentifier("y")
@@ -6935,9 +6955,9 @@ namespace Expresso.Test
                                                 TextLocation.Empty,
                                                 TextLocation.Empty,
                                                 Helpers.MakePrimitiveType("string"),
-                                                Helpers.MakeGenericType(
-                                                    "array",
-                                                    Helpers.MakeGenericType("Object")
+                                                Helpers.MakeGenericTypeWithRealName(
+                                                    "Object",
+                                                    "System.Object"
                                                 )
                                             )
                                         )
@@ -6983,9 +7003,13 @@ namespace Expresso.Test
                                                 TextLocation.Empty,
                                                 TextLocation.Empty,
                                                 Helpers.MakePrimitiveType("string"),
-                                                Helpers.MakeGenericType(
-                                                    "array",
-                                                    Helpers.MakeGenericType("Object")
+                                                Helpers.MakeGenericTypeWithRealName(
+                                                    "Object",
+                                                    "System.Object"
+                                                ),
+                                                Helpers.MakeGenericTypeWithRealName(
+                                                    "Object",
+                                                    "System.Object"
                                                 )
                                             )
                                         )
@@ -6998,7 +7022,7 @@ namespace Expresso.Test
                                         Expression.MakeMemRef(
                                             Helpers.MakeIdentifierPath(
                                                 "t",
-                                                Helpers.MakeGenericType("TestClass")
+                                                Helpers.MakeGenericType("TestClass5")
                                             ),
                                             AstNode.MakeIdentifier(
                                                 "getX",
@@ -7013,7 +7037,7 @@ namespace Expresso.Test
                                     Expression.MakeMemRef(
                                         Helpers.MakeIdentifierPath(
                                             "t",
-                                            Helpers.MakeGenericType("TestClass")
+                                            Helpers.MakeGenericType("TestClass5")
                                         ),
                                         AstNode.MakeIdentifier(
                                             "y",
@@ -7046,9 +7070,9 @@ namespace Expresso.Test
                                                 TextLocation.Empty,
                                                 TextLocation.Empty,
                                                 Helpers.MakePrimitiveType("string"),
-                                                Helpers.MakeGenericType(
-                                                    "array",
-                                                    Helpers.MakeGenericType("Object")
+                                                Helpers.MakeGenericTypeWithRealName(
+                                                    "Object",
+                                                    "System.Object"
                                                 )
                                             )
                                         )
@@ -7097,9 +7121,9 @@ namespace Expresso.Test
                                                 TextLocation.Empty,
                                                 TextLocation.Empty,
                                                 Helpers.MakePrimitiveType("string"),
-                                                Helpers.MakeGenericType(
-                                                    "array",
-                                                    Helpers.MakeGenericType("Object")
+                                                Helpers.MakeGenericTypeWithRealName(
+                                                    "Object",
+                                                    "System.Object"
                                                 )
                                             )
                                         )
@@ -7181,12 +7205,12 @@ namespace Expresso.Test
                             Helpers.MakeSeq(
                                 Helpers.MakePaticularPatternWithType(
                                     "t",
-                                    Helpers.MakeGenericType("TestClass")
+                                    Helpers.MakeGenericType("TestClass4")
                                 )
                             ),
                             Helpers.MakeSeq(
                                 Expression.MakeObjectCreation(
-                                    Helpers.MakeGenericType("TestClass"),
+                                    Helpers.MakeGenericType("TestClass4"),
                                     Helpers.MakeSeq(
                                         AstNode.MakeIdentifier("x"),
                                         AstNode.MakeIdentifier("y")
@@ -7203,7 +7227,7 @@ namespace Expresso.Test
                             Helpers.MakeSeq(
                                 Helpers.MakePaticularPatternWithType(
                                     "t2",
-                                    Helpers.MakeGenericType("TestClass")
+                                    Helpers.MakeGenericType("TestClass4")
                                 )
                             ),
                             Helpers.MakeSeq(
@@ -7212,7 +7236,7 @@ namespace Expresso.Test
                                         "createTest",
                                         AstType.MakeFunctionType(
                                             "createTest",
-                                            Helpers.MakeGenericType("TestClass"),
+                                            Helpers.MakeGenericType("TestClass4"),
                                             TextLocation.Empty,
                                             TextLocation.Empty,
                                             Helpers.MakePrimitiveType("int"),
@@ -7242,11 +7266,11 @@ namespace Expresso.Test
                                 ),
                                 Helpers.MakeIdentifierPath(
                                     "t",
-                                    Helpers.MakeGenericType("TestClass")
+                                    Helpers.MakeGenericType("TestClass4")
                                 ),
                                 Helpers.MakeIdentifierPath(
                                     "t2",
-                                    Helpers.MakeGenericType("TestClass")
+                                    Helpers.MakeGenericType("TestClass4")
                                 )
                             )
                         )
@@ -7257,20 +7281,14 @@ namespace Expresso.Test
             }, Helpers.MakeSeq(
                 AstNode.MakeImportDecl(
                     Helpers.MakeSeq(
-                        AstNode.MakeIdentifier(
-                            "test_module::TestClass"//,
-                            //Helpers.MakeGenericType("test_module::TestClass")
-                        ),
-                        AstNode.MakeIdentifier(
-                            "test_module::createTest"//,
-                            //Helpers.MakeGenericType("test_module::createTest")
-                        )
+                        AstNode.MakeIdentifier("test_module::TestClass4"),
+                        AstNode.MakeIdentifier("test_module::createTest")
                     ),
                     Helpers.MakeSeq(
-                        "TestClass",
+                        "TestClass4",
                         "createTest"
                     ),
-                    "./test_module.exs"
+                    "./test_module2.exs"
                 )
             ));
 
@@ -7370,8 +7388,9 @@ namespace Expresso.Test
                             Helpers.MakeSeq(
                                 Helpers.MakePaticularPatternWithType(
                                     "list",
-                                    Helpers.MakeGenericType(
+                                    Helpers.MakeGenericTypeWithRealName(
                                         "vector",
+                                        "System.Collections.Generic.List`1[[System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089]]",
                                         Helpers.MakePrimitiveType("int")
                                     )
                                 )
@@ -7390,8 +7409,9 @@ namespace Expresso.Test
                                             "getIntList",
                                             AstType.MakeFunctionType(
                                                 "getIntList",
-                                                Helpers.MakeGenericType(
+                                                Helpers.MakeGenericTypeWithRealName(
                                                     "vector",
+                                                    "Vector",
                                                     Helpers.MakePrimitiveType("int")
                                                 ),
                                                 Enumerable.Empty<AstType>()
@@ -7501,8 +7521,9 @@ namespace Expresso.Test
                                 ),
                                 Helpers.MakeIdentifierPath(
                                     "list",
-                                    Helpers.MakeGenericType(
+                                    Helpers.MakeGenericTypeWithRealName(
                                         "vector",
+                                        "System.Collections.Generic.List`1[[System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089]]",
                                         Helpers.MakePrimitiveType("int")
                                     )
                                 ),
