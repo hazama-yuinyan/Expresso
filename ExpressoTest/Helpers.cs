@@ -243,11 +243,6 @@ namespace Expresso.Test
             );
         }
 
-        public static SimpleType MakeGenericPlaceholderType(string identifier)
-        {
-            return AstType.MakeSimpleType(MakeSomeIdent(identifier), TextLocation.Empty);
-        }
-
         /// <summary>
         /// Makes a primitive type.
         /// </summary>
