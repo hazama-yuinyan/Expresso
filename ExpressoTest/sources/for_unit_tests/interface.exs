@@ -15,7 +15,7 @@ interface IInterface
 	def doSomeBehavior() -> int;
 }
 
-class TestClass : IInterface
+class TestClass2 : IInterface
 {
 	let x (- int;
 
@@ -27,7 +27,7 @@ class TestClass : IInterface
 
 def main()
 {
-	let t = TestClass{x: 1};
+	let t = TestClass2{x: 1};
 	let a = t.doSomeBehavior();
     println("t.x = ${a}");
 }

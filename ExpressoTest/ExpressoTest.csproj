@@ -115,6 +115,7 @@
     <None Include="sources\for_unit_tests\erroneous\import_unexported_item.exs" />
     <None Include="sources\for_unit_tests\erroneous\import_undefined_symbol.exs" />
     <None Include="sources\for_unit_tests\interoperability_test_with_csharp.exs" />
+    <None Include="sources\for_unit_tests\test_module2.exs" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AnalyzerTests.cs" />

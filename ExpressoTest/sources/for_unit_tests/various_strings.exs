@@ -1,7 +1,7 @@
 module main;
 
 
-class TestClass
+class TestClass5
 {
 	let x (- int;
 	public let y (- int;
@@ -15,7 +15,7 @@ class TestClass
 def main()
 {
 	let x = 5;
-	let t = TestClass{x: 1, y: 2};
+	let t = TestClass5{x: 1, y: 2};
 	let ary = [1, 1, 2, 3, 5, 8];
 
 	let a = "some string";

@@ -1003,7 +1003,9 @@ namespace Expresso.Ast.Analysis
                     var new_parameters2 = funcType.Parameters
                                                   .Take(pair.Item1)
                                                   .Select(t => t.Clone())
-                                                  .Concat(new []{AstType.MakeSimpleType(AstNode.MakeIdentifier("Object", AstType.MakeSimpleType("System.Object")))});
+                                                  .Concat(Enumerable.Range(0, funcType.Parameters.Count - pair.Item1)
+                                                          .Select(_ => AstType.MakeSimpleType(AstNode.MakeIdentifier("Object", AstType.MakeSimpleType("System.Object"))))
+                                                         );
                     var new_func_type2 = AstType.MakeFunctionType(funcType.Name, funcType.ReturnType.Clone(), new_parameters2);
                     var symbol2 = table.GetSymbol(methodName, new_func_type2);
                     if(symbol2 != null)

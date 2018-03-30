@@ -1,12 +1,12 @@
 /**
  * Test module
  */
-module test_module;
+module test_module2;
 
 import System.Math as Math;
 
 
-export class TestClass3
+export class TestClass4
 {
 	let x (- int, y (- int;
 	
@@ -23,9 +23,9 @@ export class TestClass3
 
 export let pair = (200, 300);
 
-export def createTest(x (- int, y (- int) -> TestClass3
+export def createTest(x (- int, y (- int) -> TestClass4
 {
-	return TestClass3{x : x, y : y};
+	return TestClass4{x : x, y : y};
 }
 
 export def mySin(x (- double) -> double
