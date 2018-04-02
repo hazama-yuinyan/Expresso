@@ -182,7 +182,7 @@ to produce integers that are in the range specified in the expression.
     let to_negative = 0..-10:-1;
     println("Legend: (f(x) = x - 10, g(x) = -x)");
     for let (x, to_n) in Enumerable.zip(negative_seq, to_negative, |l, r| => (l, r)) {
-        print("(f(x), g(x)) = ({0}, {1}),", x, to_n);  // print "(f(x), g(x)) = (-10, 0),(f(x), g(x)) = (-9, -1)" and so on
+        print("(f(x), g(x)) = (${x}, ${to_n}),");  // print "(f(x), g(x)) = (-10, 0),(f(x), g(x)) = (-9, -1)" and so on
         if x == to_n {      // and when it reaches (-5, -5), it also prints "Crossed over!"
             println("Crossed over!");
         }
@@ -209,7 +209,7 @@ the `intseq` type reveals its funny yet powerful potential out to the public.
     let first_half = some_array[0..5];
     let second_half = some_array[5..10];
     for let (a, b) in Enumerable.zip(first_half, second_half, |l, r| => (l, r)) {
-        print("({0}, {1}),", a, b);   // print "(0, 5),(1, 6),(2, 7)" and so on
+        print("(${a}, ${b}),");   // print "(0, 5),(1, 6),(2, 7)" and so on
     }
 ```
 
@@ -425,6 +425,6 @@ namespace OtherLanguageWorld
 
 <span class="caption">Listing : C# code to import</span>
 
-When we run the code in Listing , we'll see outputs from Console.WriteLine statements, `100`, `[0..1000:1]`, `true` and `[1, 2, 3, 4, 5, ...]` on the console.
+When we run the code in Listing (placeholder for the number), we'll see outputs from Console.WriteLine statements, `100`, `[0..1000:1]`, `true` and `[1, 2, 3, 4, 5, ...]` on the console.
 Note that because we're currently defining the `ExpressoIntegerSequence` type in C#, we also can return it from C#. As you can see from this fact, you can interoperate
 with Expresso in C# as well.

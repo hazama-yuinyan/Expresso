@@ -1,7 +1,7 @@
 module main;
 
 
-import "System.Exception" as Exception;
+import System.Exception as Exception;
 
 
 class TestException : Exception

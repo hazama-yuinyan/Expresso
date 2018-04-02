@@ -439,7 +439,7 @@ namespace Expresso.Ast.Analysis
                 throw new ParserException(
                     "Error ES1805: {0} turns out not to be a function.",
                     callExpr,
-                    callExpr.Target
+                    callExpr.Target.ToString()
                 );
             }
 
@@ -688,7 +688,7 @@ namespace Expresso.Ast.Analysis
             throw new ParserException(
                 "Error ES3013: Can not index into a value of type `{0}`",
                 indexExpr,
-                type
+                type.ToString()
             );
         }
 
@@ -709,7 +709,7 @@ namespace Expresso.Ast.Analysis
                 throw new ParserException(
                     "Error ES3302: The expression '{0}' isn't resolved to a type",
                     memRef,
-                    memRef.Target
+                    memRef.Target.ToString()
                 );
             }
 

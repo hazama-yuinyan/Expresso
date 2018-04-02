@@ -356,7 +356,7 @@ namespace Expresso.Ast.Analysis
                         throw new ParserException(
                             "Error ES3011: Can not apply the indexer operator on type `{0}`",
                             indexExpr,
-                            simple_type
+                            simple_type.ToString()
                         );
                     }
 
@@ -859,7 +859,7 @@ namespace Expresso.Ast.Analysis
                     throw new ParserException(
                         "Error ES1306: The type in the type annotation `{0}` conflicts with the expression type `{1}`",
                         pattern,
-                        pattern.Type, type
+                        pattern.Type.ToString(), type
                     );
                 }else{
                     type.ReplaceWith(pattern.Type.Clone());
