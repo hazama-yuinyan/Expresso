@@ -168,6 +168,7 @@ string cur_class_name;
         object obj = null;
         string suffix = value.Substring(value.Length - 1);
         string numerics = value.Replace("_", "");
+
         switch(suffix){
         case "u":
         case "U":
