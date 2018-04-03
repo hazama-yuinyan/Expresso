@@ -92,7 +92,7 @@ namespace Expresso.Ast
         }
 
         #region Factory methods
-        public static FieldDeclaration MakeField(IEnumerable<PatternConstruct> lhs, IEnumerable<Expression> rhs,
+        public static FieldDeclaration MakeField(IEnumerable<PatternWithType> lhs, IEnumerable<Expression> rhs,
             Modifiers modifiers, TextLocation start = default(TextLocation), TextLocation end = default(TextLocation))
         {
             return new FieldDeclaration(lhs, rhs, modifiers, start, end);

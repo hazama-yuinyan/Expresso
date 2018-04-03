@@ -12,7 +12,7 @@ namespace Expresso.Ast
     public class VariableInitializer : AstNode
     {
         #region Null
-        public static new VariableInitializer Null = new NullVariableInitializer();
+        public static readonly new VariableInitializer Null = new NullVariableInitializer();
 
         sealed class NullVariableInitializer : VariableInitializer
         {
@@ -73,9 +73,9 @@ namespace Expresso.Ast
         /// Represents the pattern.
         /// </summary>
         /// <value>The name token.</value>
-        public PatternConstruct Pattern{
-            get{return GetChildByRole(Roles.Pattern);}
-            set{SetChildByRole(Roles.Pattern, value);}
+        public PatternWithType Pattern{
+            get{return GetChildByRole(Roles.TypedPattern);}
+            set{SetChildByRole(Roles.TypedPattern, value);}
         }
 
         public ExpressoTokenNode AssignToken{
@@ -95,11 +95,11 @@ namespace Expresso.Ast
         {
         }
 
-        public VariableInitializer(PatternConstruct pattern, Expression initializer = null)
+        public VariableInitializer(PatternWithType pattern, Expression initializer = null)
             : base(pattern.StartLocation, initializer == null ? pattern.EndLocation : initializer.EndLocation)
         {
             Pattern = pattern;
-            Initializer = initializer ?? Expression.Null;
+            Initializer = initializer;
         }
 
         public override void AcceptWalker(IAstWalker walker)

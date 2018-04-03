@@ -799,12 +799,6 @@ namespace Expresso.Ast.Analysis
                 }
             }
 
-            public AstType VisitValueBindingPattern(ValueBindingPattern valueBindingPattern)
-            {
-                var type = valueBindingPattern.Pattern.AcceptWalker(this);
-                return type;
-            }
-
             public AstType VisitTuplePattern(TuplePattern tuplePattern)
             {
                 if(tuplePattern.Ancestors.Any(a => a is PatternWithType)){

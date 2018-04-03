@@ -571,11 +571,6 @@ namespace Expresso.Ast.Analysis
             throw new NotImplementedException();
         }
 
-        public void VisitValueBindingPattern(ValueBindingPattern valueBindingPattern)
-        {
-            throw new NotImplementedException();
-        }
-
         public void VisitCollectionPattern(CollectionPattern collectionPattern)
         {
             throw new NotImplementedException();

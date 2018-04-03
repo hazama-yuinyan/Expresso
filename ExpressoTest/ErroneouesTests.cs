@@ -12,7 +12,9 @@ namespace Expresso.Test
             var parser = new Parser(new Scanner("../../sources/for_unit_tests/erroneous/literals.exs"));
             parser.DoPostParseProcessing = true;
 
-            Assert.That(() => parser.Parse(), Throws.TypeOf<ParserException>().With.Message.Contains("ES1000"));
+            parser.Parse();
+
+            //Assert.That(() => parser.Parse(), Throws.TypeOf<ParserException>().With.Message.Contains("ES1000"));
             Assert.AreEqual(9, parser.errors.count);
         }
 

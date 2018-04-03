@@ -393,11 +393,6 @@ namespace Expresso.CodeGen
                 throw new InvalidOperationException("Can not work on that node");
             }
 
-            public AstType VisitValueBindingPattern(ValueBindingPattern valueBindingPattern)
-            {
-                throw new InvalidOperationException("Can not work on that node");
-            }
-
             public AstType VisitVariableDeclarationStatement(VariableDeclarationStatement varDecl)
             {
                 throw new InvalidOperationException("Can not work on that node");

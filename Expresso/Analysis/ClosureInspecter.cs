@@ -421,11 +421,6 @@ namespace Expresso.Ast.Analysis
                 checker.scope_counter = tmp_counter;
 	        }
 
-	        public void VisitValueBindingPattern(ValueBindingPattern valueBindingPattern)
-	        {
-                valueBindingPattern.Pattern.AcceptWalker(this);
-	        }
-
 	        public void VisitVariableDeclarationStatement(VariableDeclarationStatement varDecl)
 	        {
                 varDecl.Variables.AcceptWalker(this);

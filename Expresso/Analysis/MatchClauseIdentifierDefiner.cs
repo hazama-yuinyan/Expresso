@@ -353,11 +353,6 @@ namespace Expresso.CodeGen
                 throw new InvalidOperationException("Can not work on that node");
             }
 
-            public void VisitValueBindingPattern(ValueBindingPattern valueBindingPattern)
-            {
-                valueBindingPattern.Pattern.AcceptWalker(this);
-            }
-
             public void VisitVariableDeclarationStatement(VariableDeclarationStatement varDecl)
             {
                 throw new InvalidOperationException("Can not work on that node");

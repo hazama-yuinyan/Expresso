@@ -444,11 +444,6 @@ namespace Expresso.CodeGen
                 throw new InvalidOperationException();
             }
 
-            public void VisitValueBindingPattern(ValueBindingPattern valueBindingPattern)
-            {
-                throw new InvalidOperationException();
-            }
-
             public void VisitCollectionPattern(CollectionPattern collectionPattern)
             {
                 throw new InvalidOperationException();

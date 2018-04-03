@@ -952,7 +952,7 @@ namespace Expresso.Test
                             )
                         ),
                         Statement.MakeVarDecl(
-                            Helpers.MakeSeq<PatternConstruct>(
+                            Helpers.MakeSeq(
                                 Helpers.MakeSomePatternWithType(
                                     "fibs",
                                     Helpers.MakeGenericType(
@@ -1334,7 +1334,7 @@ namespace Expresso.Test
                             Helpers.MakeSeq(Helpers.MakeSomePatternWithType("tmp3")),
                             Helpers.MakeSeq(
                                 Expression.MakeObjectCreation(
-                                    Helpers.MakeGenericType("TestClass"),
+                                    Helpers.MakeGenericType("TestClass6"),
                                     Helpers.MakeSeq(
                                         AstNode.MakeIdentifier("x"),
                                         AstNode.MakeIdentifier("y"),
@@ -1362,7 +1362,7 @@ namespace Expresso.Test
                                     )
                                 ),
                                 PatternConstruct.MakeDestructuringPattern(
-                                    Helpers.MakeGenericType("TestClass"),
+                                    Helpers.MakeGenericType("TestClass6"),
                                     PatternConstruct.MakeIdentifierPattern(
                                         "x",
                                         Helpers.MakePlaceholderType(),
@@ -1382,7 +1382,7 @@ namespace Expresso.Test
                                     )
                                 ),
                                 PatternConstruct.MakeDestructuringPattern(
-                                    Helpers.MakeGenericType("TestClass"),
+                                    Helpers.MakeGenericType("TestClass6"),
                                     PatternConstruct.MakeIdentifierPattern(
                                         "x",
                                         Helpers.MakePlaceholderType(),
@@ -1597,7 +1597,6 @@ namespace Expresso.Test
             });
 
             Assert.IsNotNull(ast);
-
             Helpers.AstStructuralEqual(ast, expected);
         }
 
@@ -2026,9 +2025,9 @@ namespace Expresso.Test
                         ),
                         Helpers.MakeVariableDeclaration(
                             Helpers.MakeSeq(
-                                PatternConstruct.MakeIdentifierPattern("a", AstType.MakePrimitiveType("int")),
-                                PatternConstruct.MakeIdentifierPattern("b", AstType.MakePrimitiveType("int")),
-                                PatternConstruct.MakeIdentifierPattern("c", AstType.MakePrimitiveType("int"))
+                                Helpers.MakeSomePatternWithType("a", AstType.MakePrimitiveType("int")),
+                                Helpers.MakeSomePatternWithType("b", AstType.MakePrimitiveType("int")),
+                                Helpers.MakeSomePatternWithType("c", AstType.MakePrimitiveType("int"))
                             ),
                             Modifiers.None
                         ),
@@ -2060,7 +2059,7 @@ namespace Expresso.Test
                         ),
                         Statement.MakeVarDecl(
                             Helpers.MakeSeq(
-                                PatternConstruct.MakeIdentifierPattern(
+                                Helpers.MakeSomePatternWithType(
                                     "vec",
                                     Helpers.MakeGenericType(
                                         "vector", 

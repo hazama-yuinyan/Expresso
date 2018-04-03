@@ -196,7 +196,7 @@ namespace Expresso.Ast
         public void VisitValueBindingForStatement(ValueBindingForStatement valueBindingForStmt)
         {
             writer.Write("for ");
-            writer.Write(valueBindingForStmt.Modifiers);
+            writer.Write(valueBindingForStmt.Modifiers.HasFlag(Modifiers.Immutable) ? "let" : "var");
             writer.Write(' ');
             valueBindingForStmt.Initializer.Pattern.AcceptWalker(this);
             writer.Write(" in ");
@@ -656,16 +656,6 @@ namespace Expresso.Ast
                 writer.Write(" @ ");
                 identifierPattern.InnerPattern.AcceptWalker(this);
             }
-        }
-
-        public void VisitValueBindingPattern(ValueBindingPattern valueBindingPattern)
-        {
-            if(valueBindingPattern.Modifiers.HasFlag(Modifiers.Immutable))
-                writer.Write("let ");
-            else
-                writer.Write("var ");
-
-            valueBindingPattern.Pattern.AcceptWalker(this);
         }
 
         public void VisitCollectionPattern(CollectionPattern collectionPattern)

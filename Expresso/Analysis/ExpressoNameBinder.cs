@@ -611,11 +611,6 @@ namespace Expresso.Ast.Analysis
             identifierPattern.InnerPattern.AcceptWalker(this);
         }
 
-        public void VisitValueBindingPattern(ValueBindingPattern valueBindingPattern)
-        {
-            valueBindingPattern.Pattern.AcceptWalker(this);
-        }
-
         public void VisitCollectionPattern(CollectionPattern collectionPattern)
         {
             collectionPattern.Items.AcceptWalker(this);

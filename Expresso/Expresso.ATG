@@ -885,26 +885,26 @@ Parameter<out ParameterDeclaration param>   (. string name; Identifier identifie
   											.).
 /*------------------------------------------------------------------------*/
 FieldDecl<out EntityDeclaration field>
-  (. Expression rhs; PatternConstruct pattern; var start_loc = NextLocation;
-     var patterns = new List<PatternConstruct>(); var exprs = new List<Expression>();
+  (. Expression rhs; PatternWithType typed_pattern; var start_loc = NextLocation;
+     var patterns = new List<PatternWithType>(); var exprs = new List<Expression>();
   .)
 = 
   ( keyword_let                           (. cur_modifiers |= ExpressoModifiers.Immutable; .)
   | keyword_var
   )
-  VarDef<out pattern, out rhs>            (. 
-                                             if(pattern is PatternWithType pattern_type && !(pattern_type.Pattern is IdentifierPattern))
-                                                SemanticError("Error ES0021: A field can only contain an identifier pattern; `{0}`", pattern_type.Pattern);
+  VarDef<out typed_pattern, out rhs>      (. 
+                                             if(!(typed_pattern.Pattern is IdentifierPattern))
+                                                SemanticError("Error ES0021: A field can only contain an identifier pattern; `{0}`", typed_pattern.Pattern);
 
-                                             patterns.Add(pattern);
+                                             patterns.Add(typed_pattern);
                                              exprs.Add(rhs);
                                           .)  
   { ','
-    VarDef<out pattern, out rhs>          (.
-                                             if(pattern is PatternWithType pattern_type2 && !(pattern_type2.Pattern is IdentifierPattern))
-                                                SemanticError("Error ES0021: A field can only contain an indentifier pattern; `{0}`", pattern_type2.Pattern);
+    VarDef<out typed_pattern, out rhs>    (.
+                                             if(!(typed_pattern.Pattern is IdentifierPattern))
+                                                SemanticError("Error ES0021: A field can only contain an indentifier pattern; `{0}`", typed_pattern.Pattern);
 
-                                             patterns.Add(pattern);
+                                             patterns.Add(typed_pattern);
                                              exprs.Add(rhs);
                                           .)
   }
@@ -1144,7 +1144,7 @@ IfStmt<out Statement stmt>			(. PatternConstruct pattern = null; BlockStatement 
                                        Symbols.Name = "if`" + ScopeId++;
                                     .)
   ( ExpressionPattern<out pattern>
-  | ValueBindingPattern<out pattern>
+  /*| ValueBindingPattern<out pattern>*/
   )
   Block<out true_block>
   [ "else"
@@ -1181,7 +1181,7 @@ DoWhileStmt<out Statement stmt>     (. var start_loc = NextLocation; Expression 
                                        GoUpScope();
                                     .).
 /*------------------------------------------------------------------------*/
-ForStmt<out Statement stmt>			 (. PatternConstruct left = null; Expression rvalue; BlockStatement body; cur_modifiers = ExpressoModifiers.None;
+ForStmt<out Statement stmt>			 (. PatternWithType left = null; Expression rvalue; BlockStatement body; cur_modifiers = ExpressoModifiers.None;
                                         var start_loc = NextLocation;
 									 .)
 =
@@ -1305,8 +1305,8 @@ FinallyClause<out FinallyClause @finally>   (. var start_loc = NextLocation; Blo
   Block<out body>                           (. @finally = Statement.MakeFinallyClause(body, start_loc); .).
 /*------------------------------------------------------------------------*/
 VarDeclStmt<out Statement stmt>           (. Expression rhs = null; var start_loc = NextLocation;
-								             PatternConstruct pattern; 
-								             var patterns = new List<PatternConstruct>(); var exprs = new List<Expression>();
+								             PatternWithType pattern; 
+								             var patterns = new List<PatternWithType>(); var exprs = new List<Expression>();
                                              cur_modifiers = ExpressoModifiers.None;
 								          .)
 = 
@@ -1325,13 +1325,13 @@ VarDeclStmt<out Statement stmt>           (. Expression rhs = null; var start_lo
   }
   SYNC ';'     						      (. stmt = Statement.MakeVarDecl(patterns, exprs, cur_modifiers, start_loc, CurrentLocation); .).
 /*------------------------------------------------------------------------*/
-VarDef<out PatternConstruct pattern, out Expression option> (. option = null; var loc = NextLocation; .)
+VarDef<out PatternWithType typed_pattern, out Expression option> (. option = null; var loc = NextLocation; .)
 =
-  PatternWithType<out pattern>
+  PatternWithType<out typed_pattern>
   [ '='
     CondExpr<out option>
-  ]                                 (. if(pattern is PatternWithType inner && inner.Pattern is IdentifierPattern ident_pat){
-                                           if(inner.Type is PlaceholderType && option == null)
+  ]                                 (. if(typed_pattern.Pattern is IdentifierPattern ident_pat){
+                                           if(typed_pattern.Type is PlaceholderType && option == null)
                                                SemanticError(loc, "Error ES0003: Give me some context or I can't infer the type of {0}", ident_pat.Identifier.Name);
                                        }
                                     .).
@@ -1352,15 +1352,6 @@ Pattern<out PatternConstruct pattern>       (. pattern = null; .)
   | DestructuringPattern<out pattern>
   | RValuePattern<out pattern>.
 /*------------------------------------------------------------------------*/
-ValueBindingPattern<out PatternConstruct pattern>
-                                        (. var modifiers = ExpressoModifiers.None; var start_loc = NextLocation; .)
-=
-  ( keyword_let                         (. modifiers = ExpressoModifiers.Immutable; .)
-  | keyword_var
-  )
-  PatternWithType<out pattern>
-                                        (. pattern = PatternConstruct.MakeValueBindingPattern(pattern, modifiers, start_loc); .).
-/*------------------------------------------------------------------------*/
 ExpressionPattern<out PatternConstruct pattern> (. Expression expr; .)
 =
   PatternOrTest<out expr>                       (. pattern = PatternConstruct.MakeExpressionPattern(expr); .).
@@ -1369,7 +1360,7 @@ RValuePattern<out PatternConstruct pattern>     (. Expression expr; .)
 =
   LiteralIntSeqExpr<out expr>                   (. pattern = PatternConstruct.MakeExpressionPattern(expr); .).
 /*------------------------------------------------------------------------*/
-PatternWithType<out PatternConstruct pattern>    (. pattern = PatternConstruct.Null; AstType type = new PlaceholderType(NextLocation); .)
+PatternWithType<out PatternWithType typed_pattern>    (. typed_pattern = null; PatternConstruct pattern = null; AstType type = new PlaceholderType(NextLocation); .)
 =
   ( WildcardPattern<out pattern>
   | IF(IsIdentifierPattern())
@@ -1379,7 +1370,7 @@ PatternWithType<out PatternConstruct pattern>    (. pattern = PatternConstruct.N
   )
   [ "(-"
     Type<out type>
-  ]                                             (. pattern = PatternConstruct.MakePatternWithType(pattern, type); .).
+  ]                                             (. typed_pattern = PatternConstruct.MakePatternWithType(pattern, type); .).
 /*------------------------------------------------------------------------*/
 WildcardPattern<out PatternConstruct pattern>
 =
@@ -1399,7 +1390,6 @@ IdentifierPattern<out PatternConstruct pattern> (. PatternConstruct inner = null
 TupleElementPattern<out PatternConstruct pattern>   (. pattern = PatternConstruct.Null; .)
 =
   ( WildcardPattern<out pattern>
-  | ValueBindingPattern<out pattern>
   | TuplePattern<out pattern>
   | IF(IsIdentifierPattern())
     IdentifierPattern<out pattern>
@@ -1951,7 +1941,7 @@ CompIter<out ComprehensionIter expr>    (. expr = null; .)
   CompFor<out expr>
   | CompIf<out expr> .
 /*------------------------------------------------------------------------*/
-CompFor<out ComprehensionIter expr>		(. Expression rvalue = null; ComprehensionIter body = null; PatternConstruct target; .)
+CompFor<out ComprehensionIter expr>		(. Expression rvalue = null; ComprehensionIter body = null; PatternWithType typed_pattern; .)
 =
   keyword_for							(. if(is_first_comprehension_for_clause){
   										   	   Symbols.AddScope();
@@ -1960,11 +1950,11 @@ CompFor<out ComprehensionIter expr>		(. Expression rvalue = null; ComprehensionI
   										   	   is_first_comprehension_for_clause = false;
   										   }
   										.)
-  PatternWithType<out target>
+  PatternWithType<out typed_pattern>
   keyword_in
   CondExpr<out rvalue>
   [CompIter<out body>]					(.
-  										   expr = Expression.MakeCompFor(target, rvalue, body);
+  										   expr = Expression.MakeCompFor(typed_pattern, rvalue, body);
   										.).
 /*------------------------------------------------------------------------*/
 CompIf<out ComprehensionIter expr>		(. Expression tmp; ComprehensionIter body = null; .)

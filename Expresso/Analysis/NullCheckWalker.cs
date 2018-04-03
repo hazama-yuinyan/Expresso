@@ -371,11 +371,6 @@ namespace Expresso.Ast.Analysis
                 throw new InvalidOperationException("Can not work on that node");
             }
 
-            public void VisitValueBindingPattern(ValueBindingPattern valueBindingPattern)
-            {
-                throw new InvalidOperationException("Can not work on that node");
-            }
-
             public void VisitVariableDeclarationStatement(VariableDeclarationStatement varDecl)
             {
                 throw new InvalidOperationException("Can not work on that node");

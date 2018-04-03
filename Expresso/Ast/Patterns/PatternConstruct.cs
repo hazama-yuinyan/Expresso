@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using ICSharpCode.NRefactory;
 using ICSharpCode.NRefactory.PatternMatching;
 
@@ -20,11 +19,6 @@ namespace Expresso.Ast
                 get{
                     return true;
                 }
-            }
-
-            internal NullPatternConstruct()
-                : base(default(TextLocation), default(TextLocation))
-            {
             }
 
             public override void AcceptWalker(IAstWalker walker)
@@ -100,6 +94,10 @@ namespace Expresso.Ast
             }
         }
 
+        protected PatternConstruct()
+        {
+        }
+
         protected PatternConstruct(TextLocation startLoc, TextLocation endLoc)
             : base(startLoc, endLoc)
         {
@@ -123,11 +121,6 @@ namespace Expresso.Ast
         public static IdentifierPattern MakeIdentifierPattern(Identifier ident, PatternConstruct inner = null)
         {
             return new IdentifierPattern(ident, inner);
-        }
-
-        public static ValueBindingPattern MakeValueBindingPattern(PatternConstruct pattern, Modifiers modifiers, TextLocation loc = default(TextLocation))
-        {
-            return new ValueBindingPattern(pattern, modifiers, loc);
         }
 
         public static CollectionPattern MakeCollectionPattern(IEnumerable<PatternConstruct> items, bool isVector)

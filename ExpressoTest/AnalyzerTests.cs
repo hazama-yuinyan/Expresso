@@ -1802,7 +1802,7 @@ namespace Expresso.Test
 
             var expected_ast = AstNode.MakeModuleDef("main", new List<EntityDeclaration>{
                 EntityDeclaration.MakeClassDecl(
-                    "TestClass",
+                    "TestClass6",
                     Enumerable.Empty<AstType>(),
                     Helpers.MakeSeq<EntityDeclaration>(
                         EntityDeclaration.MakeField(
@@ -2108,11 +2108,11 @@ namespace Expresso.Test
                         ),
                         Statement.MakeVarDecl(
                             Helpers.MakeSeq(
-                                Helpers.MakePaticularPatternWithType("tmp3", Helpers.MakeGenericType("TestClass"))
+                                Helpers.MakePaticularPatternWithType("tmp3", Helpers.MakeGenericType("TestClass6"))
                             ),
                             Helpers.MakeSeq(
                                 Expression.MakeObjectCreation(
-                                    Helpers.MakeGenericType("TestClass"),
+                                    Helpers.MakeGenericType("TestClass6"),
                                     Helpers.MakeSeq(
                                         AstNode.MakeIdentifier("x"),
                                         AstNode.MakeIdentifier("y"),
@@ -2128,7 +2128,7 @@ namespace Expresso.Test
                             Modifiers.Immutable
                         ),
                         Statement.MakeMatchStmt(
-                            Helpers.MakeIdentifierPath("tmp3", Helpers.MakeGenericType("TestClass")),
+                            Helpers.MakeIdentifierPath("tmp3", Helpers.MakeGenericType("TestClass6")),
                             Statement.MakeMatchClause(
                                 null,
                                 Statement.MakeExprStmt(
@@ -2178,7 +2178,7 @@ namespace Expresso.Test
                                     )
                                 ),
                                 PatternConstruct.MakeDestructuringPattern(
-                                    Helpers.MakeGenericType("TestClass"),
+                                    Helpers.MakeGenericType("TestClass6"),
                                     PatternConstruct.MakeIdentifierPattern(
                                         "x",
                                         Helpers.MakePrimitiveType("int"),
@@ -2244,7 +2244,7 @@ namespace Expresso.Test
                                     )
                                 ),
                                 PatternConstruct.MakeDestructuringPattern(
-                                    Helpers.MakeGenericType("TestClass"),
+                                    Helpers.MakeGenericType("TestClass6"),
                                     PatternConstruct.MakeIdentifierPattern(
                                         "x",
                                         Helpers.MakePrimitiveType("int"),

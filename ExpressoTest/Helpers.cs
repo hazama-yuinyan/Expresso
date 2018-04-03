@@ -307,7 +307,7 @@ namespace Expresso.Test
         /// <returns>A variable declaration.</returns>
         /// <param name="patterns">Identifiers.</param>
         /// <param name="modifiers">Modifiers.</param>
-        public static VariableDeclarationStatement MakeVariableDeclaration(IEnumerable<PatternConstruct> patterns, Modifiers modifiers)
+        public static VariableDeclarationStatement MakeVariableDeclaration(IEnumerable<PatternWithType> patterns, Modifiers modifiers)
         {
             var exprs =
                 from ident in patterns

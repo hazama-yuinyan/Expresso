@@ -37,6 +37,8 @@ namespace Expresso.Ast
             new Role<PatternConstruct>("Pattern", PatternConstruct.Null);
         public static readonly Role<SimpleType> GenericType =
             new Role<SimpleType>("GenericType", SimpleType.Null);
+        public static readonly Role<PatternWithType> TypedPattern = 
+            new Role<PatternWithType>("TypedPattern", PatternWithType.Null);
 
         // some pre-defined roles for most used punctuations
         public static readonly TokenRole LParenthesisToken = new TokenRole("(", ExpressoTokenNode.Null);

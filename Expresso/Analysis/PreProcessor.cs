@@ -488,11 +488,6 @@ namespace Expresso.Ast.Analysis
             VisitBlock(valueBindingForStmt.Body);
         }
 
-        public void VisitValueBindingPattern(ValueBindingPattern valueBindingPattern)
-        {
-            valueBindingPattern.Pattern.AcceptWalker(this);
-        }
-
         public void VisitVariableDeclarationStatement(VariableDeclarationStatement varDecl)
         {
             varDecl.Variables.AcceptWalker(this);

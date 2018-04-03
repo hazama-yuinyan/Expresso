@@ -132,8 +132,13 @@ namespace Expresso.CodeGen
                 param = CSharpExpr.Parameter(substituted_type, "__iter");
                 creation = CSharpExpr.Assign(param, CSharpExpr.New(ctor, iterator));
             }else{
-                var get_enumerator_method = typeof(IEnumerable<>).MakeGenericType(iterator.Type.IsArray ? iterator.Type.GetElementType() : iterator.Type.GenericTypeArguments.First())
-                                                                 .GetMethod("GetEnumerator");
+                Type enumerator_type;
+                if(iterator.Type.Name.StartsWith("ExpressoIntegerSequence", StringComparison.CurrentCulture) || iterator.Type.Name.StartsWith("Slice", StringComparison.CurrentCulture))
+                    enumerator_type = iterator.Type;
+                else
+                    enumerator_type = typeof(IEnumerable<>).MakeGenericType(iterator.Type.IsArray ? iterator.Type.GetElementType() : iterator.Type.GenericTypeArguments.First());
+                
+                var get_enumerator_method = enumerator_type.GetMethod("GetEnumerator");
                 param = CSharpExpr.Parameter(get_enumerator_method.ReturnType, "__iter");
 
                 creation = CSharpExpr.Assign(param, CSharpExpr.Call(iterator, get_enumerator_method));
@@ -435,7 +440,6 @@ namespace Expresso.CodeGen
             DescendScope();
             scope_counter = 0;
 
-            // TODO: Implement it in a more formal way(take multiple items into account)
             var parent_params = context.AdditionalParameters;
             context.AdditionalParameters = new List<ExprTree.ParameterExpression>();
             valueBindingForStatement.Initializer.Pattern.AcceptWalker(this, context);
@@ -1753,19 +1757,6 @@ namespace Expresso.CodeGen
                 return identifierPattern.InnerPattern.AcceptWalker(this, context);
             else
                 return param;
-        }
-
-        public CSharpExpr VisitValueBindingPattern(ValueBindingPattern valueBindingPattern, CSharpEmitterContext context)
-        {
-            // ValueBindingPatterns can be complex because they introduce new variables into the surrounding scope
-            // and they have nothing to do with the value being matched.
-            context.Additionals = new List<object>();
-            var pattern = valueBindingPattern.Pattern.AcceptWalker(this, context);
-            var parameters = context.Additionals.Cast<ExprTree.ParameterExpression>();
-            context.ContextExpression = CSharpExpr.Block(parameters, context.ContextExpression);
-            var result = CSharpExpr.Block(parameters, pattern);
-
-            return result;
         }
 
         public CSharpExpr VisitCollectionPattern(CollectionPattern collectionPattern, CSharpEmitterContext context)

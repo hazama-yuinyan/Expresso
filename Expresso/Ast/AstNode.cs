@@ -1318,9 +1318,9 @@ namespace Expresso.Ast
             return new ImportDeclaration(paths, aliases, file);
         }
 
-        public static VariableInitializer MakeVariableInitializer(PatternConstruct pattern, Expression expr)
+        public static VariableInitializer MakeVariableInitializer(PatternWithType typedPattern, Expression expr)
         {
-            return new VariableInitializer(pattern, expr);
+            return new VariableInitializer(typedPattern, expr);
         }
 		#endregion
     }

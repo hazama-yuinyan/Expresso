@@ -80,7 +80,6 @@ namespace Expresso.Ast
 
         void VisitWildcardPattern(WildcardPattern wildcardPattern);
         void VisitIdentifierPattern(IdentifierPattern identifierPattern);
-        void VisitValueBindingPattern(ValueBindingPattern valueBindingPattern);
         void VisitCollectionPattern(CollectionPattern collectionPattern);
         void VisitDestructuringPattern(DestructuringPattern destructuringPattern);
         void VisitTuplePattern(TuplePattern tuplePattern);
@@ -168,7 +167,6 @@ namespace Expresso.Ast
 
         TResult VisitWildcardPattern(WildcardPattern wildcardPattern);
         TResult VisitIdentifierPattern(IdentifierPattern identifierPattern);
-        TResult VisitValueBindingPattern(ValueBindingPattern valueBindingPattern);
         TResult VisitCollectionPattern(CollectionPattern collectionPattern);
         TResult VisitDestructuringPattern(DestructuringPattern destructuringPattern);
         TResult VisitTuplePattern(TuplePattern tuplePattern);
@@ -266,7 +264,6 @@ namespace Expresso.Ast
 
         TResult VisitWildcardPattern(WildcardPattern wildcardPattern, TData data);
         TResult VisitIdentifierPattern(IdentifierPattern identifierPattern, TData data);
-        TResult VisitValueBindingPattern(ValueBindingPattern valueBindingPattern, TData data);
         TResult VisitCollectionPattern(CollectionPattern collectionPattern, TData data);
         TResult VisitDestructuringPattern(DestructuringPattern destructuringPattern, TData data);
         TResult VisitTuplePattern(TuplePattern tuplePattern, TData data);

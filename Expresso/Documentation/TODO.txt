@@ -7,10 +7,10 @@
 ・シングルトン専用構文の実装
 ・using, do...while構文の追加
 ・isによる型チェックとそれに伴う自動キャスト機能
-・Dictionaryの要素に対してkey,valueをタプルで返すようにする(Dictionaryをfor..inの右辺に使えるようにする)
 ・doc commentを追加する
 ・shadowingを実装する
 ・comprehensionの実装
 ・プロパティのセットの実装
 ・matchの挙動が一部Rustと違うのを修正する
 ・Windows上でLazyTypeBuilder.ctorのbuilder.GetMethods()が動かないのを修正する
+・let a = [0..10];みたいな表記ができるようにする

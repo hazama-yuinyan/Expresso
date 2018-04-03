@@ -168,7 +168,6 @@
     <Compile Include="Ast\Patterns\WildcardPattern.cs" />
     <Compile Include="Ast\Patterns\PatternConstruct.cs" />
     <Compile Include="Ast\Patterns\IdentifierPattern.cs" />
-    <Compile Include="Ast\Patterns\ValueBindingPattern.cs" />
     <Compile Include="Ast\Patterns\TuplePattern.cs" />
     <Compile Include="Ast\Patterns\ExpressionPattern.cs" />
     <Compile Include="Ast\Statements\MatchStatement.cs" />
@@ -251,6 +250,7 @@
     <None Include="CodeGen\ParameterCollector.cs" />
     <None Include="packages.config" />
     <None Include="Documentation\TODO.txt" />
+    <None Include="Ast\Patterns\ValueBindingPattern.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Ast\HelperNodes\" />

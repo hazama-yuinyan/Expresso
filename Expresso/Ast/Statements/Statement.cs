@@ -14,7 +14,7 @@ namespace Expresso.Ast
     public abstract class Statement : AstNode
     {
         #region Null
-        public static new Statement Null = new NullStatement();
+        public static readonly new Statement Null = new NullStatement();
 
         sealed class NullStatement : Statement
         {
@@ -147,7 +147,7 @@ namespace Expresso.Ast
             return new BlockStatement(stmts, stmts.First().StartLocation, stmts.Last().EndLocation);
         }
 
-        public static VariableDeclarationStatement MakeVarDecl(IEnumerable<PatternConstruct> lhs, IEnumerable<Expression> rhs,
+        public static VariableDeclarationStatement MakeVarDecl(IEnumerable<PatternWithType> lhs, IEnumerable<Expression> rhs,
             Modifiers modifiers, TextLocation start = default(TextLocation), TextLocation end = default(TextLocation))
         {
             return new VariableDeclarationStatement(lhs, rhs, modifiers, start, end);
@@ -194,7 +194,7 @@ namespace Expresso.Ast
             return new ForStatement(pattern, rvalue, body, loc);
         }
 
-        public static ValueBindingForStatement MakeValueBindingForStmt(Modifiers modifiers, PatternConstruct pattern, Expression expr, BlockStatement body,
+        public static ValueBindingForStatement MakeValueBindingForStmt(Modifiers modifiers, PatternWithType pattern, Expression expr, BlockStatement body,
                                                                        TextLocation loc = default(TextLocation))
         {
             return new ValueBindingForStatement(modifiers, AstNode.MakeVariableInitializer(pattern, expr), body, loc);

@@ -158,7 +158,7 @@ namespace Expresso.Ast.Analysis
             DescendScope();
             scope_counter = 0;
 
-            var left_type = valueBindingForStatment.Initializer.AcceptWalker(this);
+            var left_type = VisitVariableInitializer(valueBindingForStatment.Initializer);
 
             if(!IsSequenceType(left_type)){
                 parser.ReportSemanticError(
@@ -166,10 +166,6 @@ namespace Expresso.Ast.Analysis
                     valueBindingForStatment.Initializer.Initializer,
                     left_type
                 );
-            }else{
-                var elem_type = MakeOutElementType(left_type);
-                if(IsPlaceholderType(left_type))
-                    left_type.ReplaceWith(elem_type);
             }
 
             VisitBlock(valueBindingForStatment.Body);
@@ -1251,23 +1247,19 @@ namespace Expresso.Ast.Analysis
                 }
 
                 if(tuple != null && tuple.Name == "tuple" && inferred_type is SimpleType right_simple){
-                    var right_simple2 = (initializer.Parent is ValueBindingForStatement && right_simple.Name == "dictionary") ? right_simple : (SimpleType)right_simple.TypeArguments.First();
+                    var right_simple2 = (initializer.Parent is ValueBindingForStatement && right_simple.Name == "dictionary" || right_simple.Name == "tuple") ? right_simple
+                                         : (SimpleType)right_simple.TypeArguments.First();
                     // Don't report an error here because we will catch it later in this method
-                    var tuple_pat = (TuplePattern)((PatternWithType)initializer.Pattern).Pattern;
+                    var tuple_pat = (TuplePattern)initializer.Pattern.Pattern;
                     foreach(var pair in tuple_pat.Patterns.OfType<IdentifierPattern>().Zip(right_simple2.TypeArguments,
                                                                                            (l, r) => new Tuple<IdentifierPattern, AstType>(l, r))){
                         pair.Item1.Identifier.Type.ReplaceWith(pair.Item2.Clone());
                     }
                 }
 
-                if(initializer.Parent is ValueBindingForStatement && inferred_type is SimpleType simple){
-                    if(simple.Name == "dictionary"){
-                        var tuple_type = AstType.MakeSimpleType("tuple", simple.TypeArguments.Select(ta => ta.Clone()));
-                        left_type.ReplaceWith(tuple_type);
-                    }else{
-                        var inner_type = simple.TypeArguments.First().Clone();
-                        left_type.ReplaceWith(inner_type);
-                    }
+                if(initializer.Parent is ValueBindingForStatement){
+                    var elem_type = MakeOutElementType(inferred_type);
+                    left_type.ReplaceWith(elem_type);
                 }else{
                     left_type.ReplaceWith(inferred_type.Clone());
                 }
@@ -1317,12 +1309,6 @@ namespace Expresso.Ast.Analysis
                 identifierPattern.InnerPattern.AcceptWalker(this);
                 return type;
             }
-        }
-
-        public AstType VisitValueBindingPattern(ValueBindingPattern valueBindingPattern)
-        {
-            var type = valueBindingPattern.Pattern.AcceptWalker(this);
-            return type;
         }
 
         public AstType VisitCollectionPattern(CollectionPattern collectionPattern)
