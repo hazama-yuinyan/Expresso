@@ -85,7 +85,7 @@
     <None Include="sources\for_unit_tests\erroneous\invalid_casting.exs" />
     <None Include="sources\for_unit_tests\erroneous\call_a_variable.exs" />
     <None Include="sources\for_unit_tests\erroneous\invalid_operator.exs" />
-    <None Include="sources\for_unit_tests\erroneous\not_compatible.exs" />
+    <None Include="sources\for_unit_tests\erroneous\inconsistent_types.exs" />
     <None Include="sources\for_unit_tests\erroneous\not_compatible_with_right_hand_side.exs" />
     <None Include="sources\for_unit_tests\erroneous\not_compatible_on_conditional_expression.exs" />
     <None Include="sources\for_unit_tests\erroneous\types_mismatched_on_match_statement.exs" />
@@ -117,6 +117,7 @@
     <None Include="sources\for_unit_tests\interoperability_test_with_csharp.exs" />
     <None Include="sources\for_unit_tests\test_module2.exs" />
     <None Include="sources\for_unit_tests\erroneous\out_of_int_range_intseq.exs" />
+    <None Include="sources\for_unit_tests\advanced_for_loops.exs" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AnalyzerTests.cs" />

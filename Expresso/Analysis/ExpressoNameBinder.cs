@@ -154,7 +154,7 @@ namespace Expresso.Ast.Analysis
             DecendScope();
             scope_counter = 0;
 
-            valueBindingForStmt.Variables.AcceptWalker(this);
+            valueBindingForStmt.Initializer.AcceptWalker(this);
             VisitBlock(valueBindingForStmt.Body);
 
             AscendScope();

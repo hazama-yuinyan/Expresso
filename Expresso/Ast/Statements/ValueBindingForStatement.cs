@@ -1,8 +1,5 @@
-using System;
-
 using ICSharpCode.NRefactory;
 using ICSharpCode.NRefactory.PatternMatching;
-using System.Collections.Generic;
 
 namespace Expresso.Ast
 {
@@ -37,13 +34,13 @@ namespace Expresso.Ast
         /// つまり、複数の変数にいっせいにオブジェクトを捕捉させることもできる。
         /// When evaluating the both sides of the "in" keyword,
         /// the same rule as the assignment applies.
-        /// So for example,
-        /// for(let (x, y) in [1,2,3,4,5,6])...
-        /// the x and y captures the first and second element of the list at the first time,
-        /// the third and forth the next time, and the fifth and sixth the last time.
+        /// If you want to destructure thr right-hand-side,
+        /// the iterator has to produce a tuple.
+        /// The iterator must return a single value or a tuple.
         /// </summary>
-        public AstNodeCollection<VariableInitializer> Variables{
-            get{return GetChildrenByRole(Roles.Variable);}
+        public VariableInitializer Initializer{
+            get{return GetChildByRole(Roles.Variable);}
+            set{SetChildByRole(Roles.Variable, value);}
         }
 
         /// <summary>
@@ -55,14 +52,11 @@ namespace Expresso.Ast
             set{SetChildByRole(Roles.Body, value);}
         }
 
-        public ValueBindingForStatement(Modifiers modifiers, IEnumerable<VariableInitializer> initializers,
-            BlockStatement body, TextLocation loc)
+        public ValueBindingForStatement(Modifiers modifiers, VariableInitializer init, BlockStatement body, TextLocation loc)
             : base(loc, body.EndLocation)
         {
             Modifiers = modifiers;
-            foreach(var initializer in initializers)
-                AddChild(initializer, Roles.Variable);
-            
+            Initializer = init;
             Body = body;
         }
 
@@ -86,7 +80,7 @@ namespace Expresso.Ast
         protected internal override bool DoMatch(AstNode other, Match match)
         {
             var o = other as ValueBindingForStatement;
-            return o != null && Variables.DoMatch(o.Variables, match) && Body.DoMatch(o.Body, match);
+            return o != null && Initializer.DoMatch(o.Initializer, match) && Body.DoMatch(o.Body, match);
         }
 
         #endregion

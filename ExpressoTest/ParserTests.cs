@@ -925,6 +925,13 @@ namespace Expresso.Test
                         ),
                         Statement.MakeValueBindingForStmt(
                             Modifiers.Immutable,
+                            Helpers.MakeSomePatternWithType("p"),
+                            Expression.MakeIntSeq(
+                                Expression.MakeConstant("int", 0),
+                                Helpers.MakeIdentifierPath("y"),
+                                Expression.MakeConstant("int", 1),
+                                false
+                            ),
                             Statement.MakeBlock(
                                 Helpers.MakeSeq(
                                     Helpers.MakeAugmentedAssignment(
@@ -941,16 +948,6 @@ namespace Expresso.Test
                                             )
                                         )
                                     )
-                                )
-                            ),
-                            TextLocation.Empty,
-                            AstNode.MakeVariableInitializer(
-                                Helpers.MakeSomePatternWithType("p"),
-                                Expression.MakeIntSeq(
-                                    Expression.MakeConstant("int", 0),
-                                    Helpers.MakeIdentifierPath("y"),
-                                    Expression.MakeConstant("int", 1),
-                                    false
                                 )
                             )
                         ),
@@ -1063,9 +1060,32 @@ namespace Expresso.Test
                         ),
                         Statement.MakeValueBindingForStmt(
                             Modifiers.Immutable,
+                            Helpers.MakeSomePatternWithType("i"),
+                            Expression.MakeSequenceInitializer(
+                                Helpers.MakeGenericType("vector", Helpers.MakePlaceholderType()),
+                                TextLocation.Empty,
+                                TextLocation.Empty,
+                                Expression.MakeConstant("int", 0),
+                                Expression.MakeConstant("int", 1),
+                                Expression.MakeConstant("int", 2),
+                                Expression.MakeConstant("int", 3),
+                                Expression.MakeConstant("int", 4),
+                                Expression.MakeConstant("int", 5),
+                                Expression.MakeConstant("int", 6),
+                                Expression.MakeConstant("int", 7),
+                                Expression.MakeConstant("int", 8),
+                                Expression.MakeConstant("int", 9)
+                            ),
                             Statement.MakeBlock(
                                 Statement.MakeValueBindingForStmt(
                                     Modifiers.Immutable,
+                                    Helpers.MakeSomePatternWithType("j"),
+                                    Expression.MakeIntSeq(
+                                        Expression.MakeConstant("int", 0),
+                                        Expression.MakeConstant("int", 10),
+                                        Expression.MakeConstant("int", 1),
+                                        false
+                                    ),
                                     Statement.MakeBlock(
                                         Statement.MakeIfStmt(
                                             PatternConstruct.MakeExpressionPattern(
@@ -1126,36 +1146,7 @@ namespace Expresso.Test
                                                 Helpers.MakeIdentifierPath("j")
                                             )
                                         )
-                                    ),
-                                    TextLocation.Empty,
-                                    AstNode.MakeVariableInitializer(
-                                        Helpers.MakeSomePatternWithType("j"),
-                                        Expression.MakeIntSeq(
-                                            Expression.MakeConstant("int", 0),
-                                            Expression.MakeConstant("int", 10),
-                                            Expression.MakeConstant("int", 1),
-                                            false
-                                        )
                                     )
-                                )
-                            ),
-                            TextLocation.Empty,
-                            AstNode.MakeVariableInitializer(
-                                Helpers.MakeSomePatternWithType("i"),
-                                Expression.MakeSequenceInitializer(
-                                    Helpers.MakeGenericType("vector", Helpers.MakePlaceholderType()),
-                                    TextLocation.Empty,
-                                    TextLocation.Empty,
-                                    Expression.MakeConstant("int", 0),
-                                    Expression.MakeConstant("int", 1),
-                                    Expression.MakeConstant("int", 2),
-                                    Expression.MakeConstant("int", 3),
-                                    Expression.MakeConstant("int", 4),
-                                    Expression.MakeConstant("int", 5),
-                                    Expression.MakeConstant("int", 6),
-                                    Expression.MakeConstant("int", 7),
-                                    Expression.MakeConstant("int", 8),
-                                    Expression.MakeConstant("int", 9)
                                 )
                             )
                         ),
@@ -2185,6 +2176,8 @@ namespace Expresso.Test
                         ),
                         Statement.MakeValueBindingForStmt(
                             Modifiers.Immutable,
+                            Helpers.MakeSomePatternWithType("tmp"),
+                            Helpers.MakeIdentifierPath("rest"),
                             Statement.MakeBlock(
                                 Statement.MakeExprStmt(
                                     Helpers.MakeCallExpression(
@@ -2195,11 +2188,6 @@ namespace Expresso.Test
                                         Helpers.MakeIdentifierPath("tmp")
                                     )
                                 )
-                            ),
-                            TextLocation.Empty,
-                            AstNode.MakeVariableInitializer(
-                                Helpers.MakeSomePatternWithType("tmp"),
-                                Helpers.MakeIdentifierPath("rest")
                             )
                         ),
                         Helpers.MakeSingleItemReturnStatement(Helpers.MakeIdentifierPath("tmp_vec"))
@@ -3007,6 +2995,13 @@ namespace Expresso.Test
                                         ),
                                         Statement.MakeValueBindingForStmt(
                                             Modifiers.Immutable,
+                                            Helpers.MakeSomePatternWithType("j"),
+                                            Expression.MakeIntSeq(
+                                                Expression.MakeConstant("int", 0),
+                                                Helpers.MakeIdentifierPath("i"),
+                                                Expression.MakeConstant("int", 1),
+                                                false
+                                            ),
                                             Statement.MakeBlock(
                                                 Statement.MakeExprStmt(
                                                     Expression.MakeAugumentedAssignment(
@@ -3015,16 +3010,6 @@ namespace Expresso.Test
                                                         Expression.MakeSequenceExpression(Helpers.MakeIdentifierPath("j"))
                                                     )
                                                 )
-                                            ),
-                                            TextLocation.Empty,
-                                            AstNode.MakeVariableInitializer(
-                                                Helpers.MakeSomePatternWithType("j"),
-	                                            Expression.MakeIntSeq(
-	                                                Expression.MakeConstant("int", 0),
-	                                                Helpers.MakeIdentifierPath("i"),
-	                                                Expression.MakeConstant("int", 1),
-	                                                false
-	                                            )
                                             )
                                         ),
                                         Helpers.MakeSingleItemReturnStatement(
@@ -3529,6 +3514,8 @@ namespace Expresso.Test
                         ),
                         Statement.MakeValueBindingForStmt(
                             Modifiers.Immutable,
+                            Helpers.MakeSomePatternWithType("x"),
+                            Helpers.MakeIdentifierPath("d"),
                             Statement.MakeBlock(
                                 Statement.MakeExprStmt(
                                     Helpers.MakeCallExpression(
@@ -3545,11 +3532,6 @@ namespace Expresso.Test
                                         Helpers.MakeIdentifierPath("x")
                                     )
                                 )
-                            ),
-                            TextLocation.Empty,
-                            AstNode.MakeVariableInitializer(
-                                Helpers.MakeSomePatternWithType("x"),
-                                Helpers.MakeIdentifierPath("d")
                             )
                         ),
                         Statement.MakeExprStmt(
@@ -4396,7 +4378,7 @@ namespace Expresso.Test
                     Modifiers.None
                 )
             }, Helpers.MakeSeq(
-                EntityDeclaration.MakeImportDecl(
+                AstNode.MakeImportDecl(
                     Helpers.MakeSeq(
                         AstNode.MakeIdentifier("InteroperabilityTest.InteroperabilityTest"),
                         AstNode.MakeIdentifier("InteroperabilityTest.StaticTest")
@@ -4408,6 +4390,139 @@ namespace Expresso.Test
                     "./InteroperabilityTest.dll"
                 )
             ));
+
+            Assert.IsNotNull(ast);
+            Helpers.AstStructuralEqual(ast, expected);
+        }
+
+        [Test]
+        public void AdvancedForLoops()
+        {
+            var parser = new Parser(new Scanner("../../sources/for_unit_tests/advanced_for_loops.exs"));
+            parser.Parse();
+
+            var ast = parser.TopmostAst;
+
+            var expected = AstNode.MakeModuleDef("main", new List<EntityDeclaration>{
+                EntityDeclaration.MakeFunc(
+                    "main",
+                    Enumerable.Empty<ParameterDeclaration>(),
+                    Statement.MakeBlock(
+                        Statement.MakeVarDecl(
+                            Helpers.MakeSeq(
+                                Helpers.MakeSomePatternWithType("dict")
+                            ),
+                            Helpers.MakeSeq(
+                                Expression.MakeSequenceInitializer(
+                                    Helpers.MakeGenericType(
+                                        "dictionary",
+                                        Helpers.MakePlaceholderType(),
+                                        Helpers.MakePlaceholderType()
+                                    ),
+                                    TextLocation.Empty,
+                                    TextLocation.Empty,
+                                    Expression.MakeKeyValuePair(Expression.MakeConstant("string", "akari"), Expression.MakeConstant("int", 13)),
+                                    Expression.MakeKeyValuePair(Expression.MakeConstant("string", "chinatsu"), Expression.MakeConstant("int", 13)),
+                                    Expression.MakeKeyValuePair(Expression.MakeConstant("string", "kyoko"), Expression.MakeConstant("int", 14)),
+                                    Expression.MakeKeyValuePair(Expression.MakeConstant("string", "yui"), Expression.MakeConstant("int", 14))
+                                )
+                            ),
+                            Modifiers.Immutable
+                        ),
+                        Statement.MakeVarDecl(
+                            Helpers.MakeSeq(
+                                Helpers.MakeSomePatternWithType("a")
+                            ),
+                            Helpers.MakeSeq(
+                                Expression.MakeSequenceInitializer(
+                                    Helpers.MakeGenericType(
+                                        "array",
+                                        Helpers.MakePlaceholderType()
+                                    ),
+                                    TextLocation.Empty,
+                                    TextLocation.Empty,
+                                    Expression.MakeParen(
+                                        Expression.MakeSequenceExpression(Expression.MakeConstant("int", 1), Expression.MakeConstant("int", 2))
+                                    ),
+                                    Expression.MakeParen(
+                                        Expression.MakeSequenceExpression(Expression.MakeConstant("int", 3), Expression.MakeConstant("int", 4))
+                                    ),
+                                    Expression.MakeParen(
+                                        Expression.MakeSequenceExpression(Expression.MakeConstant("int", 5), Expression.MakeConstant("int", 6))
+                                    )
+                                )
+                            ),
+                            Modifiers.Immutable
+                        ),
+                        Statement.MakeVarDecl(
+                            Helpers.MakeSeq(
+                                Helpers.MakeSomePatternWithType("v")
+                            ),
+                            Helpers.MakeSeq(
+                                Expression.MakeSequenceInitializer(
+                                    Helpers.MakeGenericType(
+                                        "vector",
+                                        Helpers.MakePlaceholderType()
+                                    ),
+                                    TextLocation.Empty,
+                                    TextLocation.Empty,
+                                    Expression.MakeParen(
+                                        Expression.MakeSequenceExpression(Expression.MakeConstant("int", 7), Expression.MakeConstant("int", 8))
+                                    ),
+                                    Expression.MakeParen(
+                                        Expression.MakeSequenceExpression(Expression.MakeConstant("int", 9), Expression.MakeConstant("int", 10))
+                                    ),
+                                    Expression.MakeParen(
+                                        Expression.MakeSequenceExpression(Expression.MakeConstant("int", 11), Expression.MakeConstant("int", 12))
+                                    )
+                                )
+                            ),
+                            Modifiers.Immutable
+                        ),
+                        Statement.MakeValueBindingForStmt(
+                            Modifiers.Immutable,
+                            Helpers.MakeSomeTuplePatternWithType("key", "value"),
+                            Helpers.MakeIdentifierPath("dict"),
+                            Statement.MakeBlock(
+                                Statement.MakeExprStmt(
+                                    Helpers.MakeCallExpression(
+                                        Helpers.MakeIdentifierPath("println"),
+                                        Expression.MakeConstant("string", "${key}: ${value}, ")
+                                    )
+                                )
+                            )
+                        ),
+                        Statement.MakeValueBindingForStmt(
+                            Modifiers.Immutable,
+                            Helpers.MakeSomeTuplePatternWithType("first", "second"),
+                            Helpers.MakeIdentifierPath("a"),
+                            Statement.MakeBlock(
+                                Statement.MakeExprStmt(
+                                    Helpers.MakeCallExpression(
+                                        Helpers.MakeIdentifierPath("println"),
+                                        Expression.MakeConstant("string", "(${first}, ${second}), ")
+                                    )
+                                )
+                            )
+                        ),
+                        Statement.MakeValueBindingForStmt(
+                            Modifiers.Immutable,
+                            Helpers.MakeSomeTuplePatternWithType("first2", "second2"),
+                            Helpers.MakeIdentifierPath("v"),
+                            Statement.MakeBlock(
+                                Statement.MakeExprStmt(
+                                    Helpers.MakeCallExpression(
+                                        Helpers.MakeIdentifierPath("println"),
+                                        Expression.MakeConstant("string", "(${first2}, ${second2}), ")
+                                    )
+                                )
+                            )
+                        )
+                    ),
+                    Helpers.MakePlaceholderType(),
+                    Modifiers.None
+                )
+            });
 
             Assert.IsNotNull(ast);
             Helpers.AstStructuralEqual(ast, expected);

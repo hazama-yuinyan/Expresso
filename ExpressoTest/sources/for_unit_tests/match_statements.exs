@@ -4,7 +4,7 @@
 module main;
 
 
-class TestClass
+class TestClass6
 {
     public let x (- int, y (- int, z (- int;
 }
@@ -27,10 +27,10 @@ def main()
         _ => println("otherwise");
     }
 
-    let tmp3 = TestClass{x: 1, y: 2, z: 3};
+    let tmp3 = TestClass6{x: 1, y: 2, z: 3};
     match tmp3 {
-        TestClass{x, ..} => println("x is ${x}");,
-        TestClass{x, y, _} => println("x is ${x} and y is ${y}");
+        TestClass6{x, ..} => println("x is ${x}");,
+        TestClass6{x, y, _} => println("x is ${x} and y is ${y}");
     }
 
     /*let tmp4 = [1, 2, 3, 4, ...];

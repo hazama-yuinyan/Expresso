@@ -484,7 +484,7 @@ namespace Expresso.Ast.Analysis
 
         public void VisitValueBindingForStatement(ValueBindingForStatement valueBindingForStmt)
         {
-            valueBindingForStmt.Variables.AcceptWalker(this);
+            valueBindingForStmt.Initializer.AcceptWalker(this);
             VisitBlock(valueBindingForStmt.Body);
         }
 

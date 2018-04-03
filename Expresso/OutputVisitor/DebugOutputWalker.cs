@@ -198,11 +198,9 @@ namespace Expresso.Ast
             writer.Write("for ");
             writer.Write(valueBindingForStmt.Modifiers);
             writer.Write(' ');
-            foreach(var initializer in valueBindingForStmt.Variables){
-                writer.Write(initializer.Name);
-                writer.Write(" in ");
-                initializer.Initializer.AcceptWalker(this);
-            }
+            valueBindingForStmt.Initializer.Pattern.AcceptWalker(this);
+            writer.Write(" in ");
+            valueBindingForStmt.Initializer.Initializer.AcceptWalker(this);
         }
 
         public void VisitIdentifier(Identifier ident)
@@ -210,23 +208,16 @@ namespace Expresso.Ast
             if(ident.Modifiers.HasFlag(Modifiers.Immutable))
                 writer.Write("Immutable ");
             
-            if(ident.Type.IsNull){
-                writer.Write(ident.Name);
-                writer.Write(" @ ");
-                if(ident.IdentifierId == 0)
-                    writer.Write("<invalid>");
-                else
-                    writer.Write("<id: {0}>", ident.IdentifierId);
-            }else{
-                writer.Write(ident.Name);
+            writer.Write(ident.Name);
+            if(!ident.Type.IsNull){
                 writer.Write(" (- ");
                 ident.Type.AcceptWalker(this);
-                writer.Write(" @ ");
-                if(ident.IdentifierId == 0)
-                    writer.Write("<invalid>");
-                else
-                    writer.Write("<id: {0}>", ident.IdentifierId);
             }
+            writer.Write(" @ ");
+            if(ident.IdentifierId == 0)
+                writer.Write("<invalid>");
+            else
+                writer.Write("<id: {0}>", ident.IdentifierId);
         }
 
         public void VisitIfStatement(IfStatement ifStmt)

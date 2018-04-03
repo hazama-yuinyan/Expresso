@@ -207,13 +207,11 @@ namespace Expresso.Ast.Analysis
         public void VisitValueBindingForStatement(ValueBindingForStatement valueBindingForStmt)
         {
             // Walk the expression
-            valueBindingForStmt.Variables.FirstOrNullObject().Pattern.AcceptWalker(this);
+            valueBindingForStmt.Initializer.AcceptWalker(this);
 
             BitArray opte = new BitArray(bits);
             BitArray exit = new BitArray(bits.Length, true);
             PushLoop(exit);
-
-            valueBindingForStmt.Variables.FirstOrNullObject().Initializer.AcceptWalker(this);
 
             // Walk the body
             valueBindingForStmt.Body.AcceptWalker(this);

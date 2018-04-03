@@ -161,7 +161,7 @@ namespace Expresso.CodeGen
             {
                 var native_type = CSharpCompilerHelper.GetNativeType(identifierPattern.Identifier.Type);
                 var native_param = CSharpExpr.Parameter(native_type, identifierPattern.Identifier.Name);
-                CSharpEmitter.AddSymbol(identifierPattern.Identifier, new ExpressoSymbol{Parameter = native_param});
+                AddSymbol(identifierPattern.Identifier, new ExpressoSymbol{Parameter = native_param});
             }
 
             public void VisitIfStatement(IfStatement ifStmt)
@@ -395,13 +395,13 @@ namespace Expresso.CodeGen
                 if(pattern is IdentifierPattern ident_pat){
                     var native_type = CSharpCompilerHelper.GetNativeType(ident_pat.Identifier.Type);
                     var native_param = CSharpExpr.Parameter(native_type, name);
-                    CSharpEmitter.AddSymbol(ident_pat.Identifier, new ExpressoSymbol{Parameter = native_param});
+                    AddSymbol(ident_pat.Identifier, new ExpressoSymbol{Parameter = native_param});
                 }else if(pattern is TuplePattern tuple_pat){
                     foreach(var pat in tuple_pat.Patterns){
                         if(pat is IdentifierPattern ident_pat2){
                             var native_type = CSharpCompilerHelper.GetNativeType(ident_pat2.Identifier.Type);
                             var native_param = CSharpExpr.Parameter(native_type, ident_pat2.Identifier.Name);
-                            CSharpEmitter.AddSymbol(ident_pat2.Identifier, new ExpressoSymbol{Parameter = native_param});
+                            AddSymbol(ident_pat2.Identifier, new ExpressoSymbol{Parameter = native_param});
                         }
                     }
                 }

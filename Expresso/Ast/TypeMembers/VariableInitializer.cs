@@ -1,5 +1,3 @@
-using System;
-using ICSharpCode.NRefactory;
 using ICSharpCode.NRefactory.PatternMatching;
 
 
@@ -13,6 +11,34 @@ namespace Expresso.Ast
     /// </summary>
     public class VariableInitializer : AstNode
     {
+        #region Null
+        public static new VariableInitializer Null = new NullVariableInitializer();
+
+        sealed class NullVariableInitializer : VariableInitializer
+        {
+            public override bool IsNull => true;
+
+            public override void AcceptWalker(IAstWalker walker)
+            {
+                walker.VisitNullNode(this);
+            }
+
+            public override TResult AcceptWalker<TResult>(IAstWalker<TResult> walker)
+            {
+                return walker.VisitNullNode(this);
+            }
+
+            public override TResult AcceptWalker<TResult, TData>(IAstWalker<TData, TResult> walker, TData data)
+            {
+                return walker.VisitNullNode(this, data);
+            }
+
+            protected internal override bool DoMatch (AstNode other, Match match)
+            {
+                return other == null || other.IsNull;
+            }
+        }
+        #endregion
         public override NodeType NodeType{
             get{
                 return NodeType.Unknown;
@@ -65,6 +91,10 @@ namespace Expresso.Ast
             set{SetChildByRole(Roles.Expression, value);}
         }
 
+        protected VariableInitializer()
+        {
+        }
+
         public VariableInitializer(PatternConstruct pattern, Expression initializer = null)
             : base(pattern.StartLocation, initializer == null ? pattern.EndLocation : initializer.EndLocation)
         {
@@ -90,8 +120,7 @@ namespace Expresso.Ast
         internal protected override bool DoMatch(AstNode other, Match match)
         {
             var o = other as VariableInitializer;
-            return o != null && Pattern.DoMatch(o.Pattern, match)
-                && Initializer.DoMatch(o.Initializer, match);
+            return o != null && Pattern.DoMatch(o.Pattern, match) && Initializer.DoMatch(o.Initializer, match);
         }
     }
 }

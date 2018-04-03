@@ -1810,12 +1810,11 @@ string cur_class_name;
 		Expect(26);
 		CondExpr(out rvalue);
 		Block(out body);
-		if(left != null){
-		   var initializer = AstNode.MakeVariableInitializer(left, rvalue);
-		   stmt = Statement.MakeValueBindingForStmt(cur_modifiers, body, start_loc, initializer);
-		}else{
+		if(left != null)
+		   stmt = Statement.MakeValueBindingForStmt(cur_modifiers, left, rvalue, body, start_loc);
+		else
 		   stmt = Statement.MakeForStmt(left, rvalue, body, start_loc);
-		}
+		
 		                        GoUpScope();
 		                        cur_modifiers = ExpressoModifiers.None;
 		                     

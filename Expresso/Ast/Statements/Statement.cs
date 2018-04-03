@@ -194,15 +194,10 @@ namespace Expresso.Ast
             return new ForStatement(pattern, rvalue, body, loc);
         }
 
-        public static ValueBindingForStatement MakeValueBindingForStmt(Modifiers modifiers, IEnumerable<VariableInitializer> initializers,
-            BlockStatement body, TextLocation loc = default(TextLocation))
+        public static ValueBindingForStatement MakeValueBindingForStmt(Modifiers modifiers, PatternConstruct pattern, Expression expr, BlockStatement body,
+                                                                       TextLocation loc = default(TextLocation))
         {
-            return new ValueBindingForStatement(modifiers, initializers, body, loc);
-        }
-
-        public static ValueBindingForStatement MakeValueBindingForStmt(Modifiers modifiers, BlockStatement body, TextLocation loc, params VariableInitializer[] initializers)
-        {
-            return new ValueBindingForStatement(modifiers, initializers, body, loc);
+            return new ValueBindingForStatement(modifiers, AstNode.MakeVariableInitializer(pattern, expr), body, loc);
         }
 
         public static EmptyStatement MakeEmptyStmt(TextLocation loc = default(TextLocation))

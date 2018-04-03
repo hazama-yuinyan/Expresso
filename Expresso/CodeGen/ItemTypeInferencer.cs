@@ -168,7 +168,8 @@ namespace Expresso.CodeGen
 
             public AstType VisitIdentifierPattern(IdentifierPattern identifierPattern)
             {
-                var type = identifierPattern.Parent.AcceptWalker(this);
+                return identifierPattern.Identifier.Type;
+                /*var type = identifierPattern.Parent.AcceptWalker(this);
                 var simple_type = type as SimpleType;
                 if(IsContainerType(type)){
                     var elem_type = simple_type.TypeArguments.FirstOrNullObject();
@@ -198,7 +199,7 @@ namespace Expresso.CodeGen
                     return AstType.MakePrimitiveType("int");
                 }else{
                     return type;
-                }
+                }*/
             }
 
             public AstType VisitIfStatement(IfStatement ifStmt)
@@ -283,7 +284,7 @@ namespace Expresso.CodeGen
 
             public AstType VisitPatternWithType(PatternWithType pattern)
             {
-                throw new InvalidOperationException("Can not work on that node");
+                return pattern.Type;
             }
 
             public AstType VisitParameterDeclaration(ParameterDeclaration parameterDecl)
@@ -303,7 +304,7 @@ namespace Expresso.CodeGen
 
             public AstType VisitPathExpression(PathExpression pathExpr)
             {
-                var type = pathExpr.Items.Select(item => item.Type).Last();
+                var type = pathExpr.Items.Last().Type;
                 return type;
             }
 
@@ -429,8 +430,7 @@ namespace Expresso.CodeGen
 
             static bool IsContainerType(AstType type)
             {
-                var simple = type as SimpleType;
-                if(simple != null && (simple.Identifier == "array" || simple.Identifier == "vector"))
+                if(type.Name == "array" || type.Name == "vector")
                     return true;
                 else
                     return false;
@@ -438,8 +438,7 @@ namespace Expresso.CodeGen
 
             static bool IsTupleType(AstType type)
             {
-                var simple = type as SimpleType;
-                if(simple != null && simple.Identifier == "tuple")
+                if(type.Name == "tuple")
                     return true;
                 else
                     return false;
@@ -447,8 +446,7 @@ namespace Expresso.CodeGen
 
             static bool IsIntSeqType(AstType type)
             {
-                var primitive = type as PrimitiveType;
-                if(primitive != null && primitive.KnownTypeCode == TypeSystem.KnownTypeCode.IntSeq)
+                if(type is PrimitiveType primitive && primitive.KnownTypeCode == TypeSystem.KnownTypeCode.IntSeq)
                     return true;
                 else
                     return false;

@@ -163,13 +163,12 @@ The `intseq` type has the corresponding literal form and it is written as follow
 `lower(..|...)upper[:step]`
 
 ```expresso
-    let seq = 1..10;    // `step` can be omitted and 1 is assumed if ommited and the double dots mean that the lower bound is
-                        // inclusive but the upper bound is exclusive
-    let series = Enumerable.select(seq, |x| => x);
+    let series = [1..10];   // `step` can be omitted and 1 is assumed if ommited and the double dots mean that the lower bound is
+                            // inclusive but the upper bound is exclusive
     for let elem in seq {  // print "123456789"
         print(elem);
     }
-    println(series); // print "[1, 2, 3, 4, 5, 6, 7, 8, 9, ...]"
+    println(series); // print "[1, 2, 3, 4, 5, 6, 7, 8, 9]"
 ```
 
 <span class="caption">Listing 4: An intseq turns into a vector</span>
@@ -205,7 +204,7 @@ So far you may be sick of the tiring and boring explanations. But when combined 
 the `intseq` type reveals its funny yet powerful potential out to the public.
 
 ```expresso
-    let some_array = (0..10).toList();
+    let some_array = [0..10, ...];
     let first_half = some_array[0..5];
     let second_half = some_array[5..10];
     for let (a, b) in Enumerable.zip(first_half, second_half, |l, r| => (l, r)) {

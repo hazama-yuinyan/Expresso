@@ -158,20 +158,18 @@ namespace Expresso.Ast.Analysis
             DescendScope();
             scope_counter = 0;
 
-            foreach(var variable in valueBindingForStatment.Variables){
-                var target_type = variable.Initializer.AcceptWalker(this);
-                if(!IsSequenceType(target_type)){
-                    parser.ReportSemanticError(
-                        "Error ES1301: `{0}` isn't a sequence type! A for statemant can only be used for iterating over a sequence.",
-                        variable.Initializer,
-                        target_type
-                    );
-                }else{
-                    var elem_type = MakeOutElementType(target_type);
-                    var left_type = variable.Pattern.AcceptWalker(this);
-                    if(IsPlaceholderType(left_type))
-                        left_type.ReplaceWith(elem_type);
-                }
+            var left_type = valueBindingForStatment.Initializer.AcceptWalker(this);
+
+            if(!IsSequenceType(left_type)){
+                parser.ReportSemanticError(
+                    "Error ES1301: `{0}` isn't a sequence type! A for statemant can only be used for iterating over a sequence.",
+                    valueBindingForStatment.Initializer.Initializer,
+                    left_type
+                );
+            }else{
+                var elem_type = MakeOutElementType(left_type);
+                if(IsPlaceholderType(left_type))
+                    left_type.ReplaceWith(elem_type);
             }
 
             VisitBlock(valueBindingForStatment.Body);
@@ -1255,16 +1253,21 @@ namespace Expresso.Ast.Analysis
                     );
                 }
 
-                if(tuple != null){
-                    var right_simple = inferred_type as SimpleType;
+                if(tuple != null && tuple.Name == "tuple" && inferred_type is SimpleType right_simple){
+                    var right_simple2 = (initializer.Parent is ValueBindingForStatement && right_simple.Name == "dictionary") ? right_simple : (SimpleType)right_simple.TypeArguments.First();
                     // Don't report an error here because we will catch it later in this method
                     var tuple_pat = (TuplePattern)((PatternWithType)initializer.Pattern).Pattern;
-                    foreach(var pair in tuple_pat.Patterns.OfType<IdentifierPattern>().Zip(right_simple.TypeArguments,
-                                                                                          (l, r) => new Tuple<IdentifierPattern, AstType>(l, r))){
+                    foreach(var pair in tuple_pat.Patterns.OfType<IdentifierPattern>().Zip(right_simple2.TypeArguments,
+                                                                                           (l, r) => new Tuple<IdentifierPattern, AstType>(l, r))){
                         pair.Item1.Identifier.Type.ReplaceWith(pair.Item2.Clone());
                     }
                 }
-                left_type.ReplaceWith(inferred_type.Clone());
+                if(initializer.Parent is ValueBindingForStatement && inferred_type is SimpleType simple && simple.Name == "dictionary"){
+                    var tuple_type = AstType.MakeSimpleType("tuple", simple.TypeArguments.Select(ta => ta.Clone()));
+                    left_type.ReplaceWith(tuple_type);
+                }else{
+                    left_type.ReplaceWith(inferred_type.Clone());
+                }
                 left_type = inferred_type;
             }
 
@@ -1590,8 +1593,7 @@ namespace Expresso.Ast.Analysis
         /// <param name="type">Type.</param>
         static bool IsCollectionType(AstType type)
         {
-            var simple = type as SimpleType;
-            if(simple != null)
+            if(type is SimpleType simple)
                 return simple.Identifier == "array" || simple.Identifier == "vector" || simple.Identifier == "dictionary" || simple.Identifier == "tuple" || simple.Identifier == "slice";
             else
                 return false;
@@ -1604,8 +1606,7 @@ namespace Expresso.Ast.Analysis
         /// <param name="type">Type.</param>
         static bool IsTupleType(AstType type)
         {
-            var simple = type as SimpleType;
-            if(simple != null)
+            if(type is SimpleType simple)
                 return simple.Identifier == "tuple";
             else
                 return false;
@@ -1618,8 +1619,7 @@ namespace Expresso.Ast.Analysis
         /// <param name="type">Type.</param>
         static bool IsContainerType(AstType type)
         {
-            var simple = type as SimpleType;
-            if(simple != null)
+            if(type is SimpleType simple)
                 return simple.Identifier == "array" || simple.Identifier == "vector";
             else
                 return false;
@@ -1632,8 +1632,7 @@ namespace Expresso.Ast.Analysis
         /// <param name="type">Type.</param>
         static bool IsDictionaryType(AstType type)
         {
-            var simple = type as SimpleType;
-            if(simple != null)
+            if(type is SimpleType simple)
                 return simple.Identifier == "dictionary";
             else
                 return false;
@@ -1667,8 +1666,7 @@ namespace Expresso.Ast.Analysis
 
         static bool IsSequenceType(AstType type)
         {
-            var primitive = type as PrimitiveType;
-            if(primitive != null && primitive.KnownTypeCode == KnownTypeCode.IntSeq)
+            if(type is PrimitiveType primitive && primitive.KnownTypeCode == KnownTypeCode.IntSeq)
                 return true;
             else
                 return IsCollectionType(type);
@@ -1676,18 +1674,16 @@ namespace Expresso.Ast.Analysis
 
         static AstType MakeOutElementType(AstType type)
         {
-            var primitive = type as PrimitiveType;
-            if(primitive != null && primitive.KnownTypeCode == KnownTypeCode.IntSeq)
+            if(type is PrimitiveType primitive && primitive.KnownTypeCode == KnownTypeCode.IntSeq)
                 return AstType.MakePrimitiveType("int");
 
-            var simple = type as SimpleType;
-            if(simple != null){
+            if(type is SimpleType simple){
                 if(simple.Identifier == "slice")
                     return simple.TypeArguments.Last().Clone();
                 else if(simple.TypeArguments.Count == 1)
                     return simple.TypeArguments.FirstOrNullObject().Clone();
                 else
-                    return AstType.MakeSimpleType("tuple", simple.TypeArguments);
+                    return AstType.MakeSimpleType("tuple", simple.TypeArguments.Select(ta => ta.Clone()));
             }
 
             return AstType.Null;

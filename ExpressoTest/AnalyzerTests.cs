@@ -1341,6 +1341,13 @@ namespace Expresso.Test
                         ),
                         Statement.MakeValueBindingForStmt(
                             Modifiers.Immutable,
+                            Helpers.MakePaticularPatternWithType("p", Helpers.MakePrimitiveType("int")),
+                            Expression.MakeIntSeq(
+                                Expression.MakeConstant("int", 0),
+                                Helpers.MakeIdentifierPath("y", Helpers.MakePrimitiveType("int")),
+                                Expression.MakeConstant("int", 1),
+                                false
+                            ),
                             Statement.MakeBlock(
                                 Statement.MakeExprStmt(
                                     Expression.MakeSingleAugmentedAssignment(
@@ -1379,16 +1386,6 @@ namespace Expresso.Test
                                             Helpers.MakePrimitiveType("int")
                                         )
                                     )
-                                )
-                            ),
-                            TextLocation.Empty,
-                            AstNode.MakeVariableInitializer(
-                                Helpers.MakePaticularPatternWithType("p", Helpers.MakePrimitiveType("int")),
-                                Expression.MakeIntSeq(
-                                    Expression.MakeConstant("int", 0),
-                                    Helpers.MakeIdentifierPath("y", Helpers.MakePrimitiveType("int")),
-                                    Expression.MakeConstant("int", 1),
-                                    false
                                 )
                             )
                         ),
@@ -1571,9 +1568,41 @@ namespace Expresso.Test
                         ),
                         Statement.MakeValueBindingForStmt(
                             Modifiers.Immutable,
+                            Helpers.MakePaticularPatternWithType(
+                                "i",
+                                Helpers.MakePrimitiveType("int")
+                            ),
+                            Expression.MakeSequenceInitializer(
+                                Helpers.MakeGenericType(
+                                    "vector",
+                                    Helpers.MakePrimitiveType("int")
+                                ),
+                                TextLocation.Empty,
+                                TextLocation.Empty,
+                                Expression.MakeConstant("int", 0),
+                                Expression.MakeConstant("int", 1),
+                                Expression.MakeConstant("int", 2),
+                                Expression.MakeConstant("int", 3),
+                                Expression.MakeConstant("int", 4),
+                                Expression.MakeConstant("int", 5),
+                                Expression.MakeConstant("int", 6),
+                                Expression.MakeConstant("int", 7),
+                                Expression.MakeConstant("int", 8),
+                                Expression.MakeConstant("int", 9)
+                            ),
                             Statement.MakeBlock(
                                 Statement.MakeValueBindingForStmt(
                                     Modifiers.Immutable,
+                                    Helpers.MakePaticularPatternWithType(
+                                        "j",
+                                        Helpers.MakePrimitiveType("int")
+                                    ),
+                                    Expression.MakeIntSeq(
+                                        Expression.MakeConstant("int", 0),
+                                        Expression.MakeConstant("int", 10),
+                                        Expression.MakeConstant("int", 1),
+                                        false
+                                    ),
                                     Statement.MakeBlock(
                                         Statement.MakeIfStmt(
                                             PatternConstruct.MakeExpressionPattern(
@@ -1701,45 +1730,7 @@ namespace Expresso.Test
                                                 )
                                             )
                                         )
-                                    ),
-                                    TextLocation.Empty,
-                                    AstNode.MakeVariableInitializer(
-                                        Helpers.MakePaticularPatternWithType(
-                                            "j",
-                                            Helpers.MakePrimitiveType("int")
-                                        ),
-                                        Expression.MakeIntSeq(
-                                            Expression.MakeConstant("int", 0),
-                                            Expression.MakeConstant("int", 10),
-                                            Expression.MakeConstant("int", 1),
-                                            false
-                                        )
                                     )
-                                )
-                            ),
-                            TextLocation.Empty,
-                            AstNode.MakeVariableInitializer(
-                                Helpers.MakePaticularPatternWithType(
-                                    "i",
-                                    Helpers.MakePrimitiveType("int")
-                                ),
-                                Expression.MakeSequenceInitializer(
-                                    Helpers.MakeGenericType(
-                                        "vector",
-                                        Helpers.MakePrimitiveType("int")
-                                    ),
-                                    TextLocation.Empty,
-                                    TextLocation.Empty,
-                                    Expression.MakeConstant("int", 0),
-                                    Expression.MakeConstant("int", 1),
-                                    Expression.MakeConstant("int", 2),
-                                    Expression.MakeConstant("int", 3),
-                                    Expression.MakeConstant("int", 4),
-                                    Expression.MakeConstant("int", 5),
-                                    Expression.MakeConstant("int", 6),
-                                    Expression.MakeConstant("int", 7),
-                                    Expression.MakeConstant("int", 8),
-                                    Expression.MakeConstant("int", 9)
                                 )
                             )
                         ),
@@ -3595,6 +3586,17 @@ namespace Expresso.Test
                         ),
                         Statement.MakeValueBindingForStmt(
                             Modifiers.Immutable,
+                            Helpers.MakePaticularPatternWithType(
+                                "tmp",
+                                AstType.MakeParameterType("T")
+                            ),
+                            Helpers.MakeIdentifierPath(
+                                "rest",
+                                Helpers.MakeGenericType(
+                                    "array",
+                                    AstType.MakeParameterType("T")
+                                )
+                            ),
                             Statement.MakeBlock(
                                 Statement.MakeExprStmt(
                                     Helpers.MakeCallExpression(
@@ -3621,20 +3623,6 @@ namespace Expresso.Test
                                             "tmp",
                                             AstType.MakeParameterType("T")
                                         )
-                                    )
-                                )
-                            ),
-                            TextLocation.Empty,
-                            AstNode.MakeVariableInitializer(
-                                Helpers.MakePaticularPatternWithType(
-                                    "tmp",
-                                    AstType.MakeParameterType("T")
-                                ),
-                                Helpers.MakeIdentifierPath(
-                                    "rest",
-                                    Helpers.MakeGenericType(
-                                        "array",
-                                        AstType.MakeParameterType("T")
                                     )
                                 )
                             )
@@ -4942,6 +4930,19 @@ namespace Expresso.Test
                                         ),
                                         Statement.MakeValueBindingForStmt(
                                             Modifiers.Immutable,
+                                            Helpers.MakePaticularPatternWithType(
+                                                "j",
+                                                Helpers.MakePrimitiveType("int")
+                                            ),
+                                            Expression.MakeIntSeq(
+                                                Expression.MakeConstant("int", 0),
+                                                Helpers.MakeIdentifierPath(
+                                                    "i",
+                                                    Helpers.MakePrimitiveType("int")
+                                                ),
+                                                Expression.MakeConstant("int", 1),
+                                                false
+                                            ),
                                             Statement.MakeBlock(
                                                 Statement.MakeExprStmt(
                                                     Expression.MakeSingleAugmentedAssignment(
@@ -4955,22 +4956,6 @@ namespace Expresso.Test
                                                             Helpers.MakePrimitiveType("int")
                                                         )
                                                     )
-                                                )
-                                            ),
-                                            TextLocation.Empty,
-                                            AstNode.MakeVariableInitializer(
-                                                Helpers.MakePaticularPatternWithType(
-                                                    "j",
-                                                    Helpers.MakePrimitiveType("int")
-                                                ),
-                                                Expression.MakeIntSeq(
-                                                    Expression.MakeConstant("int", 0),
-                                                    Helpers.MakeIdentifierPath(
-                                                        "i",
-                                                        Helpers.MakePrimitiveType("int")
-                                                    ),
-                                                    Expression.MakeConstant("int", 1),
-                                                    false
                                                 )
                                             )
                                         ),
@@ -5917,6 +5902,21 @@ namespace Expresso.Test
                         ),
                         Statement.MakeValueBindingForStmt(
                             Modifiers.Immutable,
+                            Helpers.MakePaticularPatternWithType(
+                                "x",
+                                Helpers.MakePrimitiveType("int")
+                            ),
+                            Helpers.MakeIdentifierPath(
+                                "d",
+                                Helpers.MakeGenericType(
+                                    "slice",
+                                    Helpers.MakeGenericType(
+                                        "array",
+                                        Helpers.MakePrimitiveType("int")
+                                    ),
+                                    Helpers.MakePrimitiveType("int")
+                                )
+                            ),
                             Statement.MakeBlock(
                                 Statement.MakeExprStmt(
                                     Helpers.MakeCallExpression(
@@ -5964,24 +5964,6 @@ namespace Expresso.Test
                                             "x",
                                             Helpers.MakePrimitiveType("int")
                                         )
-                                    )
-                                )
-                            ),
-                            TextLocation.Empty,
-                            AstNode.MakeVariableInitializer(
-                                Helpers.MakePaticularPatternWithType(
-                                    "x",
-                                    Helpers.MakePrimitiveType("int")
-                                ),
-                                Helpers.MakeIdentifierPath(
-                                    "d",
-                                    Helpers.MakeGenericType(
-                                        "slice",
-                                        Helpers.MakeGenericType(
-                                            "array",
-                                            Helpers.MakePrimitiveType("int")
-                                        ),
-                                        Helpers.MakePrimitiveType("int")
                                     )
                                 )
                             )

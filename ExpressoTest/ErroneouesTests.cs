@@ -248,14 +248,14 @@ namespace Expresso.Test
         }
 
         [Test]
-        public void NotCompatible()
+        public void InconsistentTypes()
         {
-            var parser = new Parser(new Scanner("../../sources/for_unit_tests/erroneous/not_compatible.exs"));
+            var parser = new Parser(new Scanner("../../sources/for_unit_tests/erroneous/inconsistent_types.exs"));
             parser.DoPostParseProcessing = true;
             parser.Parse();
 
             // Assert.That isn't needed here because the above code doesn't throw an exception
-            Assert.AreEqual(1, parser.errors.count);
+            Assert.AreEqual(2, parser.errors.count);
         }
 
         [Test]

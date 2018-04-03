@@ -32,7 +32,7 @@ namespace Expresso.Ast
         public static readonly Role<EntityDeclaration> TypeMember =
             new Role<EntityDeclaration>("TypeMember");
         public static readonly Role<VariableInitializer> Variable =
-            new Role<VariableInitializer>("Variable");
+            new Role<VariableInitializer>("Variable", VariableInitializer.Null);
         public static readonly Role<PatternConstruct> Pattern =
             new Role<PatternConstruct>("Pattern", PatternConstruct.Null);
         public static readonly Role<SimpleType> GenericType =

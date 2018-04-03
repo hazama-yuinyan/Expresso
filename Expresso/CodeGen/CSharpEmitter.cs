@@ -118,28 +118,56 @@ namespace Expresso.CodeGen
                 throw new EmitterException("Type `{0}` has to implement IEnumerable<> interface", type.FullName);
         }
 
-        static IEnumerable<CSharpExpr> MakeEnumeratorCreations(IEnumerable<CSharpExpr> iterators, out List<ExprTree.ParameterExpression> parameters)
+        static Tuple<CSharpExpr, ExprTree.ParameterExpression> MakeEnumeratorCreations(CSharpExpr iterator)
         {
-            var creations = new List<CSharpExpr>();
-            parameters = new List<ExprTree.ParameterExpression>();
-            int counter = 1;
-            foreach(var iterator in iterators){
-                var get_enumerator_method = iterator.Type.GetMethod("GetEnumerator");
-                var param = CSharpExpr.Parameter(get_enumerator_method.ReturnType, "__iter" + counter.ToString());
-                ++counter;
+            ExprTree.ParameterExpression param;
+            CSharpExpr creation;
 
-                parameters.Add(param);
-                creations.Add(CSharpExpr.Assign(param, CSharpExpr.Call(iterator, get_enumerator_method)));
+            if(iterator.Type.Name.Contains("Dictionary")){
+                var type = typeof(DictionaryEnumerator<,>);
+                var iterator_type = iterator.Type;
+                var substituted_type = type.MakeGenericType(iterator_type.GetGenericArguments());
+                var ctor = substituted_type.GetConstructors().First();
+
+                param = CSharpExpr.Parameter(substituted_type, "__iter");
+                creation = CSharpExpr.Assign(param, CSharpExpr.New(ctor, iterator));
+            }else{
+                var get_enumerator_method = typeof(IEnumerable<>).MakeGenericType(iterator.Type.IsArray ? iterator.Type.GetElementType() : iterator.Type.GenericTypeArguments.First())
+                                                                 .GetMethod("GetEnumerator");
+                param = CSharpExpr.Parameter(get_enumerator_method.ReturnType, "__iter");
+
+                creation = CSharpExpr.Assign(param, CSharpExpr.Call(iterator, get_enumerator_method));
             }
 
-            return creations;
+            return new Tuple<CSharpExpr, ExprTree.ParameterExpression>(creation, param);
         }
 
-        static IEnumerable<CSharpExpr> MakeIterableAssignments(IEnumerable<ExprTree.ParameterExpression> variables, IEnumerable<ExprTree.ParameterExpression> enumerators,
+        static IEnumerable<CSharpExpr> MakeIterableAssignments(IEnumerable<ExprTree.ParameterExpression> variables, ExprTree.ParameterExpression enumerator,
             ExprTree.LabelTarget breakTarget)
         {
             var contents = new List<CSharpExpr>();
-            foreach(var pair in variables.Zip(enumerators,
+            var iterator_type = enumerator.Type;
+            var move_method = iterator_type.GetInterface("IEnumerator").GetMethod("MoveNext");
+            var move_call = CSharpExpr.Call(enumerator, move_method);
+            var check_failure = CSharpExpr.IfThen(CSharpExpr.IsFalse(move_call), CSharpExpr.Goto(breakTarget));
+            contents.Add(check_failure);
+
+            var current_property = iterator_type.GetProperty("Current");
+            if(variables.Count() == 1){
+                contents.Add(CSharpExpr.Assign(variables.First(), CSharpExpr.Property(enumerator, current_property)));
+            }else{
+                var current_access = CSharpExpr.Property(enumerator, current_property);
+                var tuple_type = current_property.PropertyType;
+                if(!tuple_type.Name.Contains("Tuple"))
+                    throw new InvalidOperationException("iterators must return a tuple type when assigned to a tuple pattern");
+                
+                foreach(var pair in Enumerable.Range(1, variables.Count() + 1).Zip(variables, (l, r) => new Tuple<int, ExprTree.ParameterExpression>(l, r))){
+                    var item_property = tuple_type.GetProperty("Item" + pair.Item1);
+                    var item_access = CSharpExpr.Property(current_access, item_property);
+                    contents.Add(CSharpExpr.Assign(pair.Item2, item_access));
+                }
+            }
+            /*foreach(var pair in variables.Zip(enumerator,
                 (l, r) => new Tuple<ExprTree.ParameterExpression, CSharpExpr>(l, r))){
                 var iterator_type = typeof(IEnumerator<>).MakeGenericType(pair.Item1.Type);
                 var move_method = iterator_type.GetInterface("IEnumerator").GetMethod("MoveNext");
@@ -149,7 +177,7 @@ namespace Expresso.CodeGen
 
                 var current_property = iterator_type.GetProperty("Current");
                 contents.Add(CSharpExpr.Assign(pair.Item1, CSharpExpr.Property(pair.Item2, current_property)));
-            }
+            }*/
 
             return contents;
         }
@@ -163,7 +191,7 @@ namespace Expresso.CodeGen
                 Symbols.Add(ident.IdentifierId, symbol);
             }
             catch(ArgumentException){
-                throw new InvalidOperationException(string.Format("The native symbol for '{0}' is already added", ident.Name));
+                throw new InvalidOperationException(string.Format("The native symbol for '{0}' @ <id: {1}> is already added", ident.Name, ident.IdentifierId));
             }
         }
 
@@ -368,7 +396,6 @@ namespace Expresso.CodeGen
 
             forStmt.Left.AcceptWalker(this, context);
             var iterator = forStmt.Target.AcceptWalker(this, context);
-            var iterators = new List<CSharpExpr>{iterator};
 
             var break_target = CSharpExpr.Label("__EndFor" + LoopCounter.ToString());
             var continue_target = CSharpExpr.Label("__StartFor" + LoopCounter.ToString());
@@ -379,12 +406,13 @@ namespace Expresso.CodeGen
             // Here, `Body` represents just the body block itself
             // In a for statement, we must move the iterator a step forward
             // and assign the result to inner-scope variables
-            var real_body = forStmt.Body.AcceptWalker(this, context) as ExprTree.BlockExpression;
+            var real_body = (ExprTree.BlockExpression)VisitBlock(forStmt.Body, context);
 
-            List<ExprTree.ParameterExpression> enumerators;
             var variables = ConvertSymbolsToParameters();
-            var creations = MakeEnumeratorCreations(iterators, out enumerators);
-            var assignments = MakeIterableAssignments(variables, enumerators, break_target);
+            var tmp = MakeEnumeratorCreations(iterator);
+            var creation = tmp.Item1;
+            var enumerator = tmp.Item2;
+            var assignments = MakeIterableAssignments(variables, enumerator, break_target);
 
             var body = CSharpExpr.Block(variables,
                 assignments.Concat(real_body.Expressions)
@@ -396,9 +424,9 @@ namespace Expresso.CodeGen
             scope_counter = tmp_counter + 1;
 
             var contents = new List<CSharpExpr>();
-            contents.AddRange(creations);
+            contents.Add(creation);
             contents.Add(loop);
-            return CSharpExpr.Block(enumerators, contents);
+            return CSharpExpr.Block(new []{enumerator}, contents);
         }
 
         public CSharpExpr VisitValueBindingForStatement(ValueBindingForStatement valueBindingForStatement, CSharpEmitterContext context)
@@ -408,14 +436,18 @@ namespace Expresso.CodeGen
             scope_counter = 0;
 
             // TODO: Implement it in a more formal way(take multiple items into account)
-            var bound_variables = new List<ExprTree.ParameterExpression>();
-            var iterators = new List<CSharpExpr>();
-            foreach(var variable in valueBindingForStatement.Variables){
+            var parent_params = context.AdditionalParameters;
+            context.AdditionalParameters = new List<ExprTree.ParameterExpression>();
+            valueBindingForStatement.Initializer.Pattern.AcceptWalker(this, context);
+            var bound_variables = context.AdditionalParameters;
+            context.AdditionalParameters = parent_params;
+            /*foreach(var variable in valueBindingForStatement.Pattern){
                 var bound_variable = CSharpExpr.Variable(CSharpCompilerHelper.GetNativeType(variable.NameToken.Type), variable.Name);
                 AddSymbol(variable.NameToken, new ExpressoSymbol{Parameter = bound_variable});
                 bound_variables.Add(bound_variable);
                 iterators.Add(variable.Initializer.AcceptWalker(this, context));
-            }
+            }*/
+            var iterator = valueBindingForStatement.Initializer.Initializer.AcceptWalker(this, context);
 
             var break_target = CSharpExpr.Label("__EndFor" + LoopCounter.ToString());
             var continue_target = CSharpExpr.Label("__StartFor" + LoopCounter.ToString());
@@ -426,11 +458,12 @@ namespace Expresso.CodeGen
             // Here, `body` represents just the body block itself
             // In a for statement, we must move the iterator a step forward
             // and assign the result to inner-scope variables
-            var real_body = valueBindingForStatement.Body.AcceptWalker(this, context) as ExprTree.BlockExpression;
+            var real_body = (ExprTree.BlockExpression)VisitBlock(valueBindingForStatement.Body, context);
 
-            List<ExprTree.ParameterExpression> enumerators;
-            var creations = MakeEnumeratorCreations(iterators, out enumerators);
-            var assignments = MakeIterableAssignments(bound_variables, enumerators, break_target);
+            var tmp = MakeEnumeratorCreations(iterator);
+            var creation = tmp.Item1;
+            var enumerator = tmp.Item2;
+            var assignments = MakeIterableAssignments(bound_variables, enumerator, break_target);
             var parameters = ConvertSymbolsToParameters();
 
             var body = CSharpExpr.Block(parameters,
@@ -443,9 +476,9 @@ namespace Expresso.CodeGen
             scope_counter = tmp_counter + 1;
 
             var contents = new List<CSharpExpr>();
-            contents.AddRange(creations);
+            contents.Add(creation);
             contents.Add(loop);
-            return CSharpExpr.Block(enumerators, contents);
+            return CSharpExpr.Block(new []{enumerator}, contents);
         }
 
         public CSharpExpr VisitIfStatement(IfStatement ifStmt, CSharpEmitterContext context)
@@ -1453,7 +1486,7 @@ namespace Expresso.CodeGen
                 var import_path = pair.Item1;
                 var alias = pair.Item2;
 
-                var last_index = import_path.Name.LastIndexOf("::");
+                var last_index = import_path.Name.LastIndexOf("::", StringComparison.CurrentCulture);
                 var type_name = import_path.Name.Substring(last_index == -1 ? 0 : last_index + 2);
                 var type = ('a' <= type_name[0] && type_name[0] <= 'z') ? null : CSharpCompilerHelper.GetNativeType(AstType.MakeSimpleType(CSharpCompilerHelper.ConvertToPascalCase(type_name)));
 
@@ -1621,9 +1654,9 @@ namespace Expresso.CodeGen
         {
             var variables = new List<ExprTree.ParameterExpression>();
             if(initializer.Pattern is PatternWithType pattern)
-                MakePatternAddVariables(pattern.Pattern, variables);
+                MakePatternMakeVariables(pattern.Pattern, variables);
             else
-                MakePatternAddVariables(initializer.Pattern, variables);
+                MakePatternMakeVariables(initializer.Pattern, variables);
 
             var init = initializer.Initializer.AcceptWalker(this, context);
             if(context.ContextAst is VariableDeclarationStatement){
@@ -1685,20 +1718,26 @@ namespace Expresso.CodeGen
         public CSharpExpr VisitIdentifierPattern(IdentifierPattern identifierPattern, CSharpEmitterContext context)
         {
             // An identifier pattern can arise by itself or as a child
-            var ident = identifierPattern.Identifier.AcceptWalker(this, context);
-            //if(context.Additionals != null){
-            //    context.AdditionalParameters.Add(ident);
-            //}
+            ExprTree.ParameterExpression param = null;
+            if(!(context.ContextAst is MatchStatement)){
+                param = CSharpExpr.Parameter(CSharpCompilerHelper.GetNativeType(identifierPattern.Identifier.Type), identifierPattern.Identifier.Name);
+                AddSymbol(identifierPattern.Identifier, new ExpressoSymbol{Parameter = param});
+                if(context.AdditionalParameters != null)
+                    context.AdditionalParameters.Add(param);
+            }else{
+                param = (ExprTree.ParameterExpression)identifierPattern.Identifier.AcceptWalker(this, context);
+            }
 
             if(identifierPattern.Parent is MatchPatternClause){
                 // Set context.ContextExpression to a block
                 //var native_type = CSharpCompilerHelper.GetNativeType(identifierPattern.Identifier.Type);
-                var param = ident as ExprTree.ParameterExpression;
-                var assignment = CSharpExpr.Assign(ident, context.TemporaryVariable);
+                param = GetRuntimeSymbol(identifierPattern.Identifier).Parameter;
+                var assignment = CSharpExpr.Assign(param, context.TemporaryVariable);
                 context.ContextExpression = CSharpExpr.Block(new []{param}, new []{assignment, context.ContextExpression});
             }
 
-            if(context.PropertyOrField == null && context.TargetType != null && (identifierPattern.Parent is DestructuringPattern || identifierPattern.Parent is TuplePattern)){
+            if(context.PropertyOrField == null && context.TargetType != null && context.ContextAst is MatchStatement 
+               && (identifierPattern.Parent is DestructuringPattern || identifierPattern.Parent is TuplePattern)){
                 // context.TargetType is supposed to be set in CSharpEmitter.VisitIdentifier
                 var field = context.TargetType.GetField(identifierPattern.Identifier.Name, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static);
                 if(field == null){
@@ -1713,7 +1752,7 @@ namespace Expresso.CodeGen
             if(!identifierPattern.InnerPattern.IsNull)
                 return identifierPattern.InnerPattern.AcceptWalker(this, context);
             else
-                return ident;
+                return param;
         }
 
         public CSharpExpr VisitValueBindingPattern(ValueBindingPattern valueBindingPattern, CSharpEmitterContext context)
@@ -1877,75 +1916,82 @@ namespace Expresso.CodeGen
         public CSharpExpr VisitTuplePattern(TuplePattern tuplePattern, CSharpEmitterContext context)
         {
             // Tuple patterns should always be combined with value binding patterns
-            var prev_additionals = context.Additionals;
-            context.Additionals = new List<object>();
-            var prev_addtional_params = context.AdditionalParameters;
-            context.AdditionalParameters = new List<ExprTree.ParameterExpression>();
+            if(tuplePattern.Ancestors.Any(a => a is MatchStatement)){
+                var prev_additionals = context.Additionals;
+                context.Additionals = new List<object>();
+                var prev_addtional_params = context.AdditionalParameters;
+                context.AdditionalParameters = new List<ExprTree.ParameterExpression>();
 
-            var element_types = new List<Type>();
-            var block_params = new List<ExprTree.ParameterExpression>();
-            var block = new List<CSharpExpr>();
-            CSharpExpr res = null;
-            int i = 1;
-            foreach(var pattern in tuplePattern.Patterns){
-                var item_ast_type = pattern.AcceptWalker(item_type_inferencer);
-                if(item_ast_type == null)
-                    continue;
-                
-                var item_type = CSharpCompilerHelper.GetNativeType(item_ast_type);
-                //var tmp_param = CSharpExpr.Parameter(item_type, "__" + VariableCount++);
-                var prop_name = "Item" + i++;
-                var property_access = CSharpExpr.Property(context.TemporaryExpression, prop_name);
-                //var assignment = CSharpExpr.Assign(tmp_param, property_access);
-                element_types.Add(item_type);
-                //context.Additionals.Add(assignment);
-                //context.AdditionalParameters.Add(tmp_param);
-                //block.Add(assignment);
-                //block_params.Add(tmp_param);
+                var element_types = new List<Type>();
+                var block_params = new List<ExprTree.ParameterExpression>();
+                var block = new List<CSharpExpr>();
+                CSharpExpr res = null;
+                int i = 1;
+                foreach(var pattern in tuplePattern.Patterns){
+                    var item_ast_type = pattern.AcceptWalker(item_type_inferencer);
+                    if(item_ast_type == null)
+                        continue;
+                    
+                    var item_type = CSharpCompilerHelper.GetNativeType(item_ast_type);
+                    //var tmp_param = CSharpExpr.Parameter(item_type, "__" + VariableCount++);
+                    var prop_name = "Item" + i++;
+                    var property_access = CSharpExpr.Property(context.TemporaryExpression, prop_name);
+                    //var assignment = CSharpExpr.Assign(tmp_param, property_access);
+                    element_types.Add(item_type);
+                    //context.Additionals.Add(assignment);
+                    //context.AdditionalParameters.Add(tmp_param);
+                    //block.Add(assignment);
+                    //block_params.Add(tmp_param);
 
-                var prev_tmp_expr = context.TemporaryExpression;
-                context.TemporaryExpression = property_access;
-                var expr = pattern.AcceptWalker(this, context);
-                context.TemporaryExpression = prev_tmp_expr;
+                    var prev_tmp_expr = context.TemporaryExpression;
+                    context.TemporaryExpression = property_access;
+                    var expr = pattern.AcceptWalker(this, context);
+                    context.TemporaryExpression = prev_tmp_expr;
 
-                var param = expr as ExprTree.ParameterExpression;
-                if(param != null){
-                    var assignment2 = CSharpExpr.Assign(param, property_access);
-                    block.Add(assignment2);
-                    block_params.Add(param);
-                }else{
-                    if(context.Additionals.Any()){
-                        var block_contents = context.Additionals.OfType<ExprTree.Expression>().ToList();
-                        if(expr != null){
-                            var if_content = CSharpExpr.IfThen(expr, context.ContextExpression);
-                            block_contents.Add(if_content);
-                        }
-                        context.ContextExpression = CSharpExpr.Block(context.AdditionalParameters, block_contents);
-                    }else if(res == null){
-                        res = expr;
+                    var param = expr as ExprTree.ParameterExpression;
+                    if(param != null){
+                        var assignment2 = CSharpExpr.Assign(param, property_access);
+                        block.Add(assignment2);
+                        block_params.Add(param);
                     }else{
-                        res = CSharpExpr.AndAlso(res, expr);
+                        if(context.Additionals.Any()){
+                            var block_contents = context.Additionals.OfType<ExprTree.Expression>().ToList();
+                            if(expr != null){
+                                var if_content = CSharpExpr.IfThen(expr, context.ContextExpression);
+                                block_contents.Add(if_content);
+                            }
+                            context.ContextExpression = CSharpExpr.Block(context.AdditionalParameters, block_contents);
+                        }else if(res == null){
+                            res = expr;
+                        }else{
+                            res = CSharpExpr.AndAlso(res, expr);
+                        }
                     }
                 }
+
+                if(res == null){
+                    var tuple_type = CSharpCompilerHelper.GuessTupleType(element_types);
+                    res = CSharpExpr.TypeIs(context.TemporaryVariable, tuple_type);
+                }
+
+                if(res != null)
+                    block.Add(CSharpExpr.IfThen(res, context.ContextExpression));
+                else
+                    block.Add(context.ContextExpression);
+
+                context.Additionals = prev_additionals;
+                context.AdditionalParameters = prev_addtional_params;
+                
+                if(block.Any())
+                    context.ContextExpression = CSharpExpr.Block(block_params, block);
+
+                return res;//CSharpExpr.TypeIs(context.TemporaryVariable, tuple_type);
+            }else{
+                foreach(var pattern in tuplePattern.Patterns)
+                    pattern.AcceptWalker(this, context);
+
+                return null;
             }
-
-            if(res == null){
-                var tuple_type = CSharpCompilerHelper.GuessTupleType(element_types);
-                res = CSharpExpr.TypeIs(context.TemporaryVariable, tuple_type);
-            }
-
-            if(res != null)
-                block.Add(CSharpExpr.IfThen(res, context.ContextExpression));
-            else
-                block.Add(context.ContextExpression);
-
-            context.Additionals = prev_additionals;
-            context.AdditionalParameters = prev_addtional_params;
-            
-            if(block.Any())
-                context.ContextExpression = CSharpExpr.Block(block_params, block);
-
-            return res;//CSharpExpr.TypeIs(context.TemporaryVariable, tuple_type);
         }
 
         public CSharpExpr VisitExpressionPattern(ExpressionPattern exprPattern, CSharpEmitterContext context)
@@ -2314,7 +2360,7 @@ namespace Expresso.CodeGen
                 return CSharpExpr.IfThenElse(exprs[index].Test, exprs[index].IfTrue, inner);
         }
 
-        void MakePatternAddVariables(PatternConstruct pattern, IList<ExprTree.ParameterExpression> variables)
+        void MakePatternMakeVariables(PatternConstruct pattern, IList<ExprTree.ParameterExpression> variables)
         {
             if(pattern is IdentifierPattern ident_pat){
                 variables.Add(CSharpExpr.Variable(CSharpCompilerHelper.GetNativeType(ident_pat.Identifier.Type), ident_pat.Identifier.Name));

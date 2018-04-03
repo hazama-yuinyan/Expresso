@@ -1,11 +1,10 @@
-using System;
 
 
 namespace Expresso.Ast
 {
     /// <summary>
     /// コメント。
-    /// A Comment node holds the content of comments.
+    /// A Comment node holds the contents of comments.
     /// </summary>
     public class CommentNode : AstNode
     {

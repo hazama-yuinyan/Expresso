@@ -414,7 +414,7 @@ namespace Expresso.Ast.Analysis
                 checker.DescendScope();
                 checker.scope_counter = 0;
 
-                valueBindingForStmt.Variables.AcceptWalker(this);
+                valueBindingForStmt.Initializer.AcceptWalker(this);
                 VisitBlock(valueBindingForStmt.Body);
 
                 checker.AscendScope();
