@@ -2543,14 +2543,14 @@ string cur_class_name;
 	}
 
 	void Atom(out Expression expr) {
-		var exprs = new List<Expression>(); expr = null; bool seen_trailing_comma = false; var loc = CurrentLocation; 
+		var exprs = new List<Expression>(); expr = null; bool seen_trailing_comma = false; var loc = NextLocation; 
 		if (StartOf(22)) {
 			Literal(out expr);
 		} else if (la.kind == 7) {
 			Get();
 			if (la.kind == 10) {
 				Get();
-				expr = Expression.MakeParen(Expression.MakeSequenceExpression(null)); 
+				expr = Expression.MakeParen(Expression.MakeSequenceExpression(null), loc, NextLocation); 
 			} else if (StartOf(15)) {
 				CondExpr(out expr);
 				exprs.Add(expr); 
@@ -2565,9 +2565,9 @@ string cur_class_name;
 				}
 				Expect(10);
 				if(exprs.Count == 1)
-				   expr = Expression.MakeParen(seen_trailing_comma ? Expression.MakeSequenceExpression(exprs[0]) : exprs[0]);
+				   expr = Expression.MakeParen(seen_trailing_comma ? Expression.MakeSequenceExpression(exprs[0]) : exprs[0], loc, NextLocation);
 				else
-				   expr = Expression.MakeParen(Expression.MakeSequenceExpression(exprs));
+				   expr = Expression.MakeParen(Expression.MakeSequenceExpression(exprs), loc, NextLocation);
 				
 			} else SynErr(170);
 		} else if (la.kind == 9) {

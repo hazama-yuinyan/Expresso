@@ -363,9 +363,9 @@ namespace Expresso.Ast
             return new PathExpression(paths);
         }
 
-        public static ParenthesizedExpression MakeParen(Expression expr)
+        public static ParenthesizedExpression MakeParen(Expression expr, TextLocation start = default(TextLocation), TextLocation end = default(TextLocation))
         {
-            return new ParenthesizedExpression(expr);
+            return new ParenthesizedExpression(expr, start, end);
         }
 
         public static IndexerExpression MakeIndexer(Expression target, IEnumerable<Expression> args, TextLocation loc = default(TextLocation))

@@ -1,5 +1,5 @@
 ﻿using System;
-
+using ICSharpCode.NRefactory;
 
 namespace Expresso.Ast
 {
@@ -34,7 +34,8 @@ namespace Expresso.Ast
             get{return GetChildByRole(Roles.RParenthesisToken);}
         }
 
-        public ParenthesizedExpression(Expression expression)
+        public ParenthesizedExpression(Expression expression, TextLocation start, TextLocation end)
+            : base(start, end)
         {
             Expression = expression;
         }
