@@ -1009,9 +1009,6 @@ namespace Expresso.Ast.Analysis
             foreach(var pair in importDecl.ImportPaths.Zip(importDecl.AliasTokens, (l, r) => new Tuple<Identifier, Identifier>(l, r))){
                 var module_type = AstType.MakeSimpleType(pair.Item1.Name);
                 pair.Item1.Type.ReplaceWith(module_type);
-
-                //var module_type2 = pair.Item1.AcceptWalker(this);
-                //pair.Item2.IdentifierId = module_type2.IdentifierNode.IdentifierId;
             }
             return null;
         }
@@ -1262,9 +1259,15 @@ namespace Expresso.Ast.Analysis
                         pair.Item1.Identifier.Type.ReplaceWith(pair.Item2.Clone());
                     }
                 }
-                if(initializer.Parent is ValueBindingForStatement && inferred_type is SimpleType simple && simple.Name == "dictionary"){
-                    var tuple_type = AstType.MakeSimpleType("tuple", simple.TypeArguments.Select(ta => ta.Clone()));
-                    left_type.ReplaceWith(tuple_type);
+
+                if(initializer.Parent is ValueBindingForStatement && inferred_type is SimpleType simple){
+                    if(simple.Name == "dictionary"){
+                        var tuple_type = AstType.MakeSimpleType("tuple", simple.TypeArguments.Select(ta => ta.Clone()));
+                        left_type.ReplaceWith(tuple_type);
+                    }else{
+                        var inner_type = simple.TypeArguments.First().Clone();
+                        left_type.ReplaceWith(inner_type);
+                    }
                 }else{
                     left_type.ReplaceWith(inferred_type.Clone());
                 }
