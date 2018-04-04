@@ -3962,7 +3962,10 @@ namespace Expresso.Test
                             Helpers.MakeSeq(
                                 Helpers.MakePaticularPatternWithType(
                                     "b",
-                                    Helpers.MakeGenericType("TestClass3")
+                                    Helpers.MakeGenericTypeWithRealName(
+                                        "TestClass3",
+                                        "TestModule::TestClass3"
+                                    )
                                 )
                             ),
                             Helpers.MakeSeq(
@@ -3973,7 +3976,10 @@ namespace Expresso.Test
                                             "createTest",
                                             AstType.MakeFunctionType(
                                                 "createTest",
-                                                Helpers.MakeGenericType("TestClass3"),
+                                                Helpers.MakeGenericTypeWithRealName(
+                                                    "TestClass3",
+                                                    "TestModule::TestClass3"
+                                                ),
                                                 Helpers.MakeSeq(
                                                     Helpers.MakePrimitiveType("int"),
                                                     Helpers.MakePrimitiveType("int")
@@ -4040,6 +4046,36 @@ namespace Expresso.Test
                             ),
                             Modifiers.Immutable
                         ),
+                        Statement.MakeVarDecl(
+                            Helpers.MakeSeq(
+                                Helpers.MakePaticularPatternWithType(
+                                    "e",
+                                    Helpers.MakePrimitiveType("int")
+                                )
+                            ),
+                            Helpers.MakeSeq(
+                                Helpers.MakeCallExpression(
+                                    Expression.MakeMemRef(
+                                        Helpers.MakeIdentifierPath(
+                                            "a",
+                                            AstType.MakeMemberType(
+                                                Helpers.MakeGenericType("TestModule"),
+                                                Helpers.MakeGenericType("TestClass3")
+                                            )
+                                        ),
+                                        AstNode.MakeIdentifier(
+                                            "getX",
+                                            AstType.MakeFunctionType(
+                                                "getX",
+                                                Helpers.MakePrimitiveType("int"),
+                                                Enumerable.Empty<AstType>()
+                                            )
+                                        )
+                                    )
+                                )
+                            ),
+                            Modifiers.Immutable
+                        ),
                         Statement.MakeExprStmt(
                             Helpers.MakeCallExpression(
                                 Helpers.MakeIdentifierPath(
@@ -4064,7 +4100,10 @@ namespace Expresso.Test
                                 ),
                                 Helpers.MakeIdentifierPath(
                                     "b",
-                                    Helpers.MakeGenericType("TestClass3")
+                                    Helpers.MakeGenericTypeWithRealName(
+                                        "TestClass3",
+                                        "TestModule::TestClass3"
+                                    )
                                 ),
                                 Helpers.MakeIdentifierPath(
                                     "c",
@@ -4077,6 +4116,10 @@ namespace Expresso.Test
                                 Helpers.MakeIdentifierPath(
                                     "d",
                                     Helpers.MakePrimitiveType("double")
+                                ),
+                                Helpers.MakeIdentifierPath(
+                                    "e",
+                                    Helpers.MakePrimitiveType("int")
                                 )
                             )
                         )

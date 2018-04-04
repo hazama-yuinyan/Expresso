@@ -564,7 +564,7 @@ namespace Expresso.Ast.Analysis
                     var return_type = func_type.ReturnType;
                     var return_type_table = externalTable.GetTypeTable(return_type.IdentifierNode.Type.IsNull ? return_type.Name : return_type.IdentifierNode.Type.Name);
                     if(!return_type_table.IsNetType && externalTable.GetTypeSymbol(return_type.Name) != null)
-                        return_type.IdentifierNode.Type = AstType.MakeSimpleType(AstNode.MakeIdentifier(return_type.Name, AstType.MakeSimpleType(aliasName + "::" + return_type.Name)));
+                        return_type.IdentifierNode.Type = AstType.MakeSimpleType(aliasName + "::" + return_type.Name);
                 }
             }
 
