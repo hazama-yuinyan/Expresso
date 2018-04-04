@@ -360,10 +360,7 @@ namespace Expresso.CodeGen
 
             public void VisitVariableInitializer(VariableInitializer initializer)
             {
-                if(initializer.Pattern is PatternWithType pattern)
-                    MakePatternAddSymbols(pattern.Pattern);
-                else
-                    MakePatternAddSymbols(initializer.Pattern, initializer.Name);
+                initializer.Pattern.AcceptWalker(this);
             }
 
             public void VisitWhileStatement(WhileStatement whileStmt)
@@ -383,23 +380,6 @@ namespace Expresso.CodeGen
             public void VisitYieldStatement(YieldStatement yieldStmt)
             {
                 throw new InvalidOperationException("Can not work on that node");
-            }
-
-            void MakePatternAddSymbols(PatternConstruct pattern, string name = null)
-            {
-                if(pattern is IdentifierPattern ident_pat){
-                    var native_type = CSharpCompilerHelper.GetNativeType(ident_pat.Identifier.Type);
-                    var native_param = CSharpExpr.Parameter(native_type, name);
-                    AddSymbol(ident_pat.Identifier, new ExpressoSymbol{Parameter = native_param});
-                }else if(pattern is TuplePattern tuple_pat){
-                    foreach(var pat in tuple_pat.Patterns){
-                        if(pat is IdentifierPattern ident_pat2){
-                            var native_type = CSharpCompilerHelper.GetNativeType(ident_pat2.Identifier.Type);
-                            var native_param = CSharpExpr.Parameter(native_type, ident_pat2.Identifier.Name);
-                            AddSymbol(ident_pat2.Identifier, new ExpressoSymbol{Parameter = native_param});
-                        }
-                    }
-                }
             }
         }
     }

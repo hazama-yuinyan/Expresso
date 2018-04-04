@@ -181,7 +181,6 @@
     <Compile Include="Ast\Expressions\OperatorType.cs" />
     <Compile Include="Ast\Expressions\PathExpression.cs" />
     <Compile Include="Ast\Expressions\KeyValueLikeExpression.cs" />
-    <Compile Include="Analysis\TypeInferenceContext.cs" />
     <Compile Include="Ast\MemberType.cs" />
     <Compile Include="Ast\ReferenceType.cs" />
     <Compile Include="CodeGen\EmitterException.cs" />

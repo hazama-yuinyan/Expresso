@@ -544,8 +544,8 @@ namespace Expresso.Ast.Analysis
         static bool IsExportedItem(string name, IEnumerable<Identifier> importPaths)
         {
             return importPaths.Any(ident => {
-                var tmp = ident.Name.Substring(ident.Name.LastIndexOf("::") + 2);
-                var target_name = tmp.Substring(tmp.LastIndexOf(".") + 1);
+                var tmp = ident.Name.Substring(ident.Name.LastIndexOf("::", StringComparison.CurrentCulture) + "..".Length);
+                var target_name = tmp.Substring(tmp.LastIndexOf(".", StringComparison.CurrentCulture) + ".".Length);
                 return target_name == name;
             });
         }

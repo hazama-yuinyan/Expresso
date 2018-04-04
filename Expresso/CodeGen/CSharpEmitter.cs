@@ -1656,19 +1656,13 @@ namespace Expresso.CodeGen
 
         public CSharpExpr VisitVariableInitializer(VariableInitializer initializer, CSharpEmitterContext context)
         {
-            var variables = new List<ExprTree.ParameterExpression>();
-            if(initializer.Pattern is PatternWithType pattern)
-                MakePatternMakeVariables(pattern.Pattern, variables);
-            else
-                MakePatternMakeVariables(initializer.Pattern, variables);
+            var prev_params = context.AdditionalParameters;
+            context.AdditionalParameters = new List<ExprTree.ParameterExpression>();
+            initializer.Pattern.AcceptWalker(this, context);
+            var variables = context.AdditionalParameters;
+            context.AdditionalParameters = prev_params;
 
             var init = initializer.Initializer.AcceptWalker(this, context);
-            if(context.ContextAst is VariableDeclarationStatement){
-                if(initializer.Pattern is PatternWithType pattern2)
-                    MakePatternAddSymbols(pattern2.Pattern, variables);
-                else
-                    MakePatternAddSymbols(initializer.Pattern, variables);
-            }
 
             CSharpExpr result;
             if(init == null){
@@ -1832,6 +1826,7 @@ namespace Expresso.CodeGen
         {
             context.TargetType = null;
             destructuringPattern.TypePath.AcceptWalker(this, context);
+
             var type = context.TargetType;
             context.RequestPropertyOrField = true;
             var prev_additionals = context.Additionals;
@@ -2349,30 +2344,6 @@ namespace Expresso.CodeGen
                 return exprs[index];
             else
                 return CSharpExpr.IfThenElse(exprs[index].Test, exprs[index].IfTrue, inner);
-        }
-
-        void MakePatternMakeVariables(PatternConstruct pattern, IList<ExprTree.ParameterExpression> variables)
-        {
-            if(pattern is IdentifierPattern ident_pat){
-                variables.Add(CSharpExpr.Variable(CSharpCompilerHelper.GetNativeType(ident_pat.Identifier.Type), ident_pat.Identifier.Name));
-            }else if(pattern is TuplePattern tuple_pat){
-                foreach(var pat in tuple_pat.Patterns){
-                    if(pat is IdentifierPattern ident_pat2)
-                        variables.Add(CSharpExpr.Variable(CSharpCompilerHelper.GetNativeType(ident_pat2.Identifier.Type), ident_pat2.Identifier.Name));
-                }                            
-            }
-        }
-
-        void MakePatternAddSymbols(PatternConstruct pattern, IList<ExprTree.ParameterExpression> variables)
-        {
-            if(pattern is IdentifierPattern ident_pat3){
-                AddSymbol(ident_pat3.Identifier, new ExpressoSymbol{Parameter = variables[0]});
-            }else if(pattern is TuplePattern tuple_pat2){
-                foreach(var pair in tuple_pat2.Patterns.Zip(variables, (l, r) => new Tuple<PatternConstruct, ExprTree.ParameterExpression>(l, r))){
-                    if(pair.Item1 is IdentifierPattern ident_pat4)
-                        AddSymbol(ident_pat4.Identifier, new ExpressoSymbol{Parameter = pair.Item2});
-                }
-            }
         }
 		#endregion
 	}

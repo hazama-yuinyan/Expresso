@@ -739,10 +739,7 @@ namespace Expresso.Ast.Analysis
                 }
 
                 var init_type = initializer.Initializer.AcceptWalker(this);
-                if(initializer.Pattern is PatternWithType pattern)
-                    MakePatternTypeAware(pattern.Pattern, init_type);
-                else
-                    MakePatternTypeAware(initializer.Pattern, init_type);
+                MakePatternTypeAware(initializer.Pattern.Pattern, init_type);
                 
                 return init_type;
             }
