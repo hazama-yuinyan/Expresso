@@ -39,6 +39,7 @@ namespace Expresso.Ast
 		}
 
         public ComprehensionExpression(Expression itemExpr, ComprehensionForClause bodyExpr, SimpleType objType)
+            : base(itemExpr.StartLocation, bodyExpr.EndLocation)
 		{
             ObjectType = objType;
             Item = itemExpr;
@@ -109,6 +110,11 @@ namespace Expresso.Ast
         public static readonly Role<ComprehensionIter> CompBody = new Role<ComprehensionIter>("CompBody", ComprehensionIter.Null);
 
         protected ComprehensionIter()
+        {
+        }
+
+        protected ComprehensionIter(TextLocation start, TextLocation end)
+            : base(start, end)
         {
         }
 	}
@@ -192,6 +198,7 @@ namespace Expresso.Ast
         }
 
         public ComprehensionForClause(PatternConstruct lhs, Expression targetExpr, ComprehensionIter bodyExpr)
+            : base(lhs.StartLocation, bodyExpr == null ? targetExpr.EndLocation : bodyExpr.EndLocation)
 		{
             Left = lhs;
             Target = targetExpr;
@@ -250,6 +257,7 @@ namespace Expresso.Ast
 		}
 
 		public ComprehensionIfClause(Expression test, ComprehensionIter bodyExpr)
+            : base(test.StartLocation, bodyExpr.EndLocation)
 		{
             Condition = test;
             Body = bodyExpr;

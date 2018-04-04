@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.Serialization;
+using System.Text.RegularExpressions;
 using Expresso.CodeGen;
 using ICSharpCode.NRefactory;
 using ICSharpCode.NRefactory.PatternMatching;
@@ -208,9 +209,10 @@ namespace Expresso.Ast.Analysis
             
             var tmp = parent.Children[0];
             var class_name = TypeTablePrefix + name;
+            var regex = new Regex($@"{class_name.Replace(".", "\\.")}(?![:\.\w]+)");
             int child_counter = 1;
             while(tmp != null){
-                if(tmp.Name.StartsWith(class_name, StringComparison.CurrentCulture))
+                if(regex.IsMatch(tmp.Name))
                     return tmp;
 
                 if(child_counter >= parent.Children.Count){
@@ -544,13 +546,37 @@ namespace Expresso.Ast.Analysis
 
         /// <summary>
         /// Adds external symbols as a new scope.
+        /// It will put functions and variables under the external symbol table
+        /// and will put external types on the 'programRoot' table, modifying the name.
         /// </summary>
         /// <param name="externalTable">External table.</param>
         /// <param name="aliasName">Alias name.</param>
         public void AddExternalSymbols(SymbolTable externalTable, string aliasName)
         {
+            Debug.Assert(Name == "programRoot", "External symbols must be added on 'programRoot'.");
+
             var cloned = externalTable.Clone();
-            cloned.Name = TypeTablePrefix + aliasName;
+            var imported_name = TypeTablePrefix + aliasName;
+            cloned.Name = imported_name;
+
+            foreach(var symbol in cloned.Symbols){
+                if(symbol.Type is FunctionType func_type){
+                    var return_type = func_type.ReturnType;
+                    var return_type_table = externalTable.GetTypeTable(return_type.IdentifierNode.Type.IsNull ? return_type.Name : return_type.IdentifierNode.Type.Name);
+                    if(!return_type_table.IsNetType && externalTable.GetTypeSymbol(return_type.Name) != null)
+                        return_type.IdentifierNode.Type = AstType.MakeSimpleType(AstNode.MakeIdentifier(return_type.Name, AstType.MakeSimpleType(aliasName + "::" + return_type.Name)));
+                }
+            }
+
+            foreach(var external_type_table in externalTable.Children){
+                if(external_type_table.TypeKind != ClassType.Class && external_type_table.TypeKind != ClassType.Interface)
+                    continue;
+                
+                var cloned2 = external_type_table.Clone();
+                cloned2.Name = TypeTablePrefix + aliasName + "::" + external_type_table.Name.Substring(TypeTablePrefix.Length);
+                cloned2.Parent = this;
+                Children.Add(cloned2);
+            }
 
             var tmp = this;
             while(tmp.Parent != null)
@@ -562,6 +588,7 @@ namespace Expresso.Ast.Analysis
 
         /// <summary>
         /// Adds external tables and symbols with certain paths to this table with alias names.
+        /// It will put external symbols on 'programRoot'.
         /// </summary>
         /// <param name="externalTable">External table.</param>
         /// <param name="importPaths">Import paths.</param>
@@ -574,11 +601,11 @@ namespace Expresso.Ast.Analysis
 
             foreach(var pair in importPaths.Zip(aliasTokens, (l, r) => new Tuple<Identifier, Identifier>(l, r))){
                 var last_index = pair.Item1.Name.LastIndexOf("::", StringComparison.CurrentCulture);
-                var target_name = (last_index == -1) ? pair.Item1.Name : pair.Item1.Name.Substring(last_index + 2);
+                var target_name = (last_index == -1) ? pair.Item1.Name : pair.Item1.Name.Substring(last_index + "::".Length);
                 var external_target_table = externalTable.GetTypeTable(target_name);
 
                 if(external_target_table == null){
-                    var target_name2 = target_name.Substring(target_name.LastIndexOf(".", StringComparison.CurrentCulture) + 1);
+                    var target_name2 = target_name.Substring(target_name.LastIndexOf(".", StringComparison.CurrentCulture) + ".".Length);
                     var symbol = externalTable.GetSymbol(target_name2);
                     if(symbol == null){
                         throw new ParserException(

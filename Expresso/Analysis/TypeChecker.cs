@@ -158,15 +158,7 @@ namespace Expresso.Ast.Analysis
             DescendScope();
             scope_counter = 0;
 
-            var left_type = VisitVariableInitializer(valueBindingForStatment.Initializer);
-
-            if(!IsSequenceType(left_type)){
-                parser.ReportSemanticError(
-                    "Error ES1301: `{0}` isn't a sequence type! A for statemant can only be used for iterating over a sequence.",
-                    valueBindingForStatment.Initializer.Initializer,
-                    left_type
-                );
-            }
+            VisitVariableInitializer(valueBindingForStatment.Initializer);
 
             VisitBlock(valueBindingForStatment.Body);
 
@@ -457,7 +449,7 @@ namespace Expresso.Ast.Analysis
             argument_types = parent_types;
 
             // In order to resolve it so that it gets a fully qualified name
-            func_type.ReturnType.AcceptWalker(this);
+            //func_type.ReturnType.AcceptWalker(this);
 
             return func_type.ReturnType;
         }
@@ -707,7 +699,9 @@ namespace Expresso.Ast.Analysis
                 );
             }
 
-            var type_table = symbols.GetTypeTable(!type.IdentifierNode.Type.IsNull ? type.IdentifierNode.Type.Name : type.Name);
+            var name = (type is MemberType member) ? member.Target.Name + "::" + member.MemberName :
+                                                           !type.IdentifierNode.Type.IsNull ? type.IdentifierNode.Type.Name : type.Name;
+            var type_table = symbols.GetTypeTable(name);
             if(!type_table.IsNetType){
                 var symbol = type_table.GetSymbol(memRef.Member.Name);
                 if(memRef.Target is PathExpression path && path.AsIdentifier.Modifiers.HasFlag(Modifiers.Immutable) && symbol.Modifiers.HasFlag(Modifiers.Mutating)){
@@ -1258,15 +1252,26 @@ namespace Expresso.Ast.Analysis
                 }
 
                 if(initializer.Parent is ValueBindingForStatement){
+                    if(!IsSequenceType(inferred_type)){
+                        throw new ParserException(
+                            "Error ES1301: `{0}` isn't a sequence type! A for statemant can only be used for iterating over a sequence.",
+                            initializer.Initializer,
+                            inferred_type
+                        );
+                    }
                     var elem_type = MakeOutElementType(inferred_type);
                     left_type.ReplaceWith(elem_type);
+                    left_type = elem_type;
                 }else{
                     left_type.ReplaceWith(inferred_type.Clone());
+                    left_type = inferred_type;
                 }
-                left_type = inferred_type;
             }
 
             var rhs_type = initializer.Initializer.AcceptWalker(this);
+            if(initializer.Parent is ValueBindingForStatement)
+                rhs_type = MakeOutElementType(rhs_type);
+
             if(IsCollectionType(left_type) && ContainsPlaceholderType(left_type as SimpleType)){
                 // The laft-hand-side lacks the types of the contents so infer them from the right-hand-side
                 var lhs_simple = left_type as SimpleType;

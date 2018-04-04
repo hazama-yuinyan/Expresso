@@ -115,7 +115,7 @@ namespace Expresso.Ast
                                                               PatternConstruct inner = null, TextLocation loc = default(TextLocation))
         {
             // type.Clone is needed because Enumerator closures will be executed over twice
-            return new IdentifierPattern(AstNode.MakeIdentifier(name, type.Clone(), Modifiers.None, loc), inner);
+            return new IdentifierPattern(MakeIdentifier(name, type.Clone(), Modifiers.None, loc), inner);
         }
 
         public static IdentifierPattern MakeIdentifierPattern(Identifier ident, PatternConstruct inner = null)
@@ -167,7 +167,7 @@ namespace Expresso.Ast
 
         public static KeyValuePattern MakeKeyValuePattern(string key, PatternConstruct value)
         {
-            return new KeyValuePattern(AstNode.MakeIdentifier(key, new PlaceholderType(TextLocation.Empty)), value);
+            return new KeyValuePattern(MakeIdentifier(key, new PlaceholderType(TextLocation.Empty)), value);
         }
 
         public static KeyValuePattern MakeKeyValuePattern(Identifier key, PatternConstruct value)

@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-
+using System.Linq;
 using ICSharpCode.NRefactory;
 
 namespace Expresso.Ast
@@ -69,7 +69,8 @@ namespace Expresso.Ast
             get{return NodeType.TypeDeclaration;}
         }
 
-        public ExpressoAst(IEnumerable<EntityDeclaration> decls, IEnumerable<ImportDeclaration> imports, string maybeModuleName = null)
+        public ExpressoAst(IEnumerable<EntityDeclaration> decls, IEnumerable<ImportDeclaration> imports, string maybeModuleName)
+            : base(new TextLocation(1, 1), decls.Last().EndLocation)
         {
             NameToken = MakeIdentifier(maybeModuleName);
 

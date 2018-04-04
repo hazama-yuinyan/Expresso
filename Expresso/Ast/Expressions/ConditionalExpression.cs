@@ -1,13 +1,12 @@
-﻿using System;
-
-using ICSharpCode.NRefactory;
+﻿using ICSharpCode.NRefactory;
 
 namespace Expresso.Ast
 {
     /// <summary>
     /// 条件演算。
 	/// The conditional expression.
-    /// A conditional expression evaluates to either a value between question mark and colon or a value followed by colon.
+    /// A conditional expression evaluates to either a value between question mark and colon or a value followed by colon
+    /// and is often called the ternary operator.
     /// Expression '?' Expression ':' ConditionalExpression ;
     /// </summary>
     public class ConditionalExpression : Expression
@@ -43,6 +42,7 @@ namespace Expresso.Ast
 		}
 
 		public ConditionalExpression(Expression test, Expression trueExpr, Expression falseExpr)
+            : base(test.StartLocation, falseExpr.EndLocation)
 		{
             Condition = test;
             TrueExpression = trueExpr;

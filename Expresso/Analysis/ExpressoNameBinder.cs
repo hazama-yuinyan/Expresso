@@ -564,15 +564,7 @@ namespace Expresso.Ast.Analysis
 
         public void VisitImportDeclaration(ImportDeclaration importDecl)
         {
-            /*if(importDecl.AliasNameToken.IsNull){
-                importDecl.ModuleNameToken.AcceptWalker(this);
-                foreach(var ie in importDecl.ImportedEntities)
-                    UniqueIdGenerator.DefineNewId(ie.AsIdentifier);
-            }else{
-                importDecl.ModuleNameToken.AcceptWalker(this);
-
-                UniqueIdGenerator.DefineNewId(importDecl.AliasNameToken);
-            }*/
+            // no op
         }
 
         public void VisitTypeDeclaration(TypeDeclaration typeDecl)

@@ -16,7 +16,8 @@ namespace Expresso.Ast
     public class Identifier : AstNode
     {
         #region Null
-        public static new Identifier Null = new NullIdentifier();
+        public static readonly new Identifier Null = new NullIdentifier();
+
         sealed class NullIdentifier : Identifier
         {
             public override bool IsNull{

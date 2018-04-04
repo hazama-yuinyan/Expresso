@@ -1,9 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 using ICSharpCode.NRefactory;
 using ICSharpCode.NRefactory.TypeSystem;
-using System.Text;
 
 namespace Expresso.Ast
 {
@@ -39,16 +37,6 @@ namespace Expresso.Ast
             set{SetChildByRole(Roles.Body, value);}
         }
 		
-		/// <summary>
-		/// このクロージャが定義された時の環境。
-		/// The environment in which the function is defined. It can be null if the function isn't a closure.
-		/// </summary>
-        //public Stack<object> Environment{get; internal set;}
-
-        public TextLocation Header{get; internal set;}
-
-		internal bool HasReturn{get; set;}
-
 		/// <summary>
 		/// Indicates whether the function is static.
 		/// </summary>

@@ -84,6 +84,7 @@ namespace Expresso.Ast
         }
 
         public AssignmentExpression(Expression lhsExpr, Expression rhsExpr, OperatorType opType)
+            : base(lhsExpr.StartLocation, rhsExpr.EndLocation)
 		{
             Left = lhsExpr;
             Right = rhsExpr;

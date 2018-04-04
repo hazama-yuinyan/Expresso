@@ -118,26 +118,23 @@ namespace Expresso.Ast
 
         #region Factory methods
         public static ExpressionStatement MakeAugmentedAssignment(OperatorType opType, SequenceExpression targets,
-            SequenceExpression rhs, TextLocation start = default(TextLocation),
-            TextLocation end = default(TextLocation))
+                                                                  SequenceExpression rhs, TextLocation start = default(TextLocation),
+                                                                  TextLocation end = default(TextLocation))
         {
             return MakeExprStmt(Expression.MakeAugumentedAssignment(opType, targets, rhs), start, end);
         }
 
-        public static BreakStatement MakeBreakStmt(LiteralExpression count,
-            TextLocation start = default(TextLocation), TextLocation end = default(TextLocation))
+        public static BreakStatement MakeBreakStmt(LiteralExpression count, TextLocation start = default(TextLocation), TextLocation end = default(TextLocation))
         {
             return new BreakStatement(count, start, end);
         }
 
-        public static ContinueStatement MakeContinueStmt(LiteralExpression count,
-            TextLocation start = default(TextLocation), TextLocation end = default(TextLocation))
+        public static ContinueStatement MakeContinueStmt(LiteralExpression count, TextLocation start = default(TextLocation), TextLocation end = default(TextLocation))
         {
             return new ContinueStatement(count, start, end);
         }
 
-        public static BlockStatement MakeBlock(IEnumerable<Statement> stmts,
-            TextLocation start = default(TextLocation), TextLocation end = default(TextLocation))
+        public static BlockStatement MakeBlock(IEnumerable<Statement> stmts, TextLocation start = default(TextLocation), TextLocation end = default(TextLocation))
         {
             return new BlockStatement(stmts, start, end);
         }
@@ -148,19 +145,17 @@ namespace Expresso.Ast
         }
 
         public static VariableDeclarationStatement MakeVarDecl(IEnumerable<PatternWithType> lhs, IEnumerable<Expression> rhs,
-            Modifiers modifiers, TextLocation start = default(TextLocation), TextLocation end = default(TextLocation))
+                                                               Modifiers modifiers, TextLocation start = default(TextLocation), TextLocation end = default(TextLocation))
         {
             return new VariableDeclarationStatement(lhs, rhs, modifiers, start, end);
         }
 
-        public static ExpressionStatement MakeExprStmt(Expression expr,
-            TextLocation start = default(TextLocation), TextLocation end = default(TextLocation))
+        public static ExpressionStatement MakeExprStmt(Expression expr, TextLocation start = default(TextLocation), TextLocation end = default(TextLocation))
         {
             return new ExpressionStatement(Expression.MakeSequenceExpression(expr), start, end);
         }
 
-        public static ExpressionStatement MakeExprStmt(SequenceExpression seqExpr,
-            TextLocation start = default(TextLocation), TextLocation end = default(TextLocation))
+        public static ExpressionStatement MakeExprStmt(SequenceExpression seqExpr, TextLocation start = default(TextLocation), TextLocation end = default(TextLocation))
         {
             return new ExpressionStatement(seqExpr, start, end);
         }
@@ -171,13 +166,13 @@ namespace Expresso.Ast
         }
 
         public static IfStatement MakeIfStmt(PatternConstruct condition, BlockStatement trueBlock,
-            BlockStatement falseBlock, TextLocation loc = default(TextLocation))
+                                             BlockStatement falseBlock, TextLocation loc = default(TextLocation))
         {
             return new IfStatement(condition, trueBlock, falseBlock ?? BlockStatement.Null, loc);
         }
 
         public static WhileStatement MakeWhileStmt(Expression condition, BlockStatement body,
-            TextLocation loc = default(TextLocation))
+                                                   TextLocation loc = default(TextLocation))
         {
             return new WhileStatement(condition, body, loc);
         }
@@ -189,7 +184,7 @@ namespace Expresso.Ast
         }
 
         public static ForStatement MakeForStmt(PatternConstruct pattern, Expression rvalue,
-            BlockStatement body, TextLocation loc = default(TextLocation))
+                                               BlockStatement body, TextLocation loc = default(TextLocation))
         {
             return new ForStatement(pattern, rvalue, body, loc);
         }
@@ -206,7 +201,7 @@ namespace Expresso.Ast
         }
 
         public static MatchStatement MakeMatchStmt(Expression target, IEnumerable<MatchPatternClause> clauses,
-            TextLocation start = default(TextLocation), TextLocation end = default(TextLocation))
+                                                   TextLocation start = default(TextLocation), TextLocation end = default(TextLocation))
         {
             return new MatchStatement(target, clauses, start, end);
         }

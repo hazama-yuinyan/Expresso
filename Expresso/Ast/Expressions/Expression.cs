@@ -316,7 +316,8 @@ namespace Expresso.Ast
             return new MemberReferenceExpression(target, subscript);
         }
 
-        public static IntegerSequenceExpression MakeIntSeq(Expression start, Expression end, Expression step, bool upperInclusive)
+        public static IntegerSequenceExpression MakeIntSeq(Expression start, Expression end, Expression step, bool upperInclusive,
+                                                           TextLocation startLoc = default(TextLocation), TextLocation endLoc = default(TextLocation))
         {
             if(start is LiteralExpression literal1 && literal1.Value is double){
                 throw new ParserException(
@@ -340,7 +341,7 @@ namespace Expresso.Ast
                 );
             }
 
-            return new IntegerSequenceExpression(start, end, step, upperInclusive);
+            return new IntegerSequenceExpression(start, end, step, upperInclusive, startLoc, endLoc);
         }
 
         /// <summary>

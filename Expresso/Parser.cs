@@ -243,9 +243,9 @@ string cur_class_name;
         foreach(var item in path.Items){
             item.Remove();
             if(type == null)
-                type = AstType.MakeSimpleType(item.Name, TextLocation.Empty);
+                type = AstType.MakeSimpleType(item.Name, item.StartLocation);
             else
-                type = AstType.MakeMemberType(type, AstType.MakeSimpleType(item.Name, TextLocation.Empty), TextLocation.Empty);
+                type = AstType.MakeMemberType(type, AstType.MakeSimpleType(item.Name, item.StartLocation), item.EndLocation);
         }
 
         return type;
@@ -855,7 +855,7 @@ string cur_class_name;
 		} else SynErr(122);
 		while (!(la.kind == 0 || la.kind == 5)) {SynErr(123); Get();}
 		Expect(5);
-		decl = AstNode.MakeImportDecl(paths, aliases, target_file); 
+		decl = AstNode.MakeImportDecl(paths, aliases, target_file, start_loc, NextLocation); 
 	}
 
 	void ImportPaths(ref List<Identifier> paths, TextLocation startLoc) {
@@ -2278,7 +2278,7 @@ string cur_class_name;
 
 	void IntSeqExpr(out Expression expr) {
 		Expression start = null, end = null, step = null;
-		bool upper_inclusive = true;
+		bool upper_inclusive = true; var start_loc = NextLocation;
 		
 		BitOr(out start);
 		expr = start; 
@@ -2290,7 +2290,7 @@ string cur_class_name;
 				BitOr(out step);
 			}
 			if(step == null) step = Expression.MakeConstant("int", 1, TextLocation.Empty);
-			expr = Expression.MakeIntSeq(start, end, step, upper_inclusive);
+			expr = Expression.MakeIntSeq(start, end, step, upper_inclusive, start_loc, NextLocation);
 			
 		}
 	}
@@ -2498,7 +2498,7 @@ string cur_class_name;
 	}
 
 	void PathExpression(out PathExpression path) {
-		var paths = new List<Identifier>(); var loc = CurrentLocation; 
+		var paths = new List<Identifier>(); var loc = NextLocation; 
 		Expect(16);
 		var name = t.val;
 		if(CheckKeyword(name)){

@@ -11,7 +11,7 @@ namespace Expresso.Ast
     public class IgnoringRestPattern : PatternConstruct
     {
         public IgnoringRestPattern(TextLocation loc)
-            : base(loc, new TextLocation(loc.Line, loc.Column + 2))
+            : base(loc, new TextLocation(loc.Line, "..".Length + loc.Column))
         {
         }
 

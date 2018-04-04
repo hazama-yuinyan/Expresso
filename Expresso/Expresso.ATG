@@ -192,9 +192,9 @@ $namespace=Expresso
         foreach(var item in path.Items){
             item.Remove();
             if(type == null)
-                type = AstType.MakeSimpleType(item.Name, TextLocation.Empty);
+                type = AstType.MakeSimpleType(item.Name, item.StartLocation);
             else
-                type = AstType.MakeMemberType(type, AstType.MakeSimpleType(item.Name, TextLocation.Empty), TextLocation.Empty);
+                type = AstType.MakeMemberType(type, AstType.MakeSimpleType(item.Name, item.StartLocation), item.EndLocation);
         }
 
         return type;
@@ -601,7 +601,7 @@ ImportDecl<out ImportDeclaration decl>
       rcurly
     )
   )
-  SYNC ';'                      (. decl = AstNode.MakeImportDecl(paths, aliases, target_file); .).
+  SYNC ';'                      (. decl = AstNode.MakeImportDecl(paths, aliases, target_file, start_loc, NextLocation); .).
 /*------------------------------------------------------------------------*/
 ImportPaths<. ref List<Identifier> paths, TextLocation startLoc.>    (. var builder = new StringBuilder(); Identifier ident = null; .)
 =
@@ -1546,7 +1546,7 @@ ComparisonOperator<out OperatorType opType> (. opType = OperatorType.None; .)
   ).
 /*------------------------------------------------------------------------*/
 IntSeqExpr<out Expression expr>     (. Expression start = null, end = null, step = null;
-                                       bool upper_inclusive = true;
+                                       bool upper_inclusive = true; var start_loc = NextLocation;
                                     .)
 =
   BitOr<out start>                  (. expr = start; .)
@@ -1556,7 +1556,7 @@ IntSeqExpr<out Expression expr>     (. Expression start = null, end = null, step
       ':'
       BitOr<out step>
     ]                               (. if(step == null) step = Expression.MakeConstant("int", 1, TextLocation.Empty);
-                                       expr = Expression.MakeIntSeq(start, end, step, upper_inclusive);
+                                       expr = Expression.MakeIntSeq(start, end, step, upper_inclusive, start_loc, NextLocation);
                                     .)
   ].
 /*------------------------------------------------------------------------*/
@@ -1868,7 +1868,7 @@ TypePathExpression<out AstType type>
                .)
   }.
 /*------------------------------------------------------------------------*/
-PathExpression<out PathExpression path> (. var paths = new List<Identifier>(); var loc = CurrentLocation; .)
+PathExpression<out PathExpression path> (. var paths = new List<Identifier>(); var loc = NextLocation; .)
 =
   ident                                 (.
                                            var name = t.val;

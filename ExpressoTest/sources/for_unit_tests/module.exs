@@ -13,6 +13,7 @@ def main()
 	let b = TestModule::createTest(50, 100);
 	let c = TestModule::pair;
     let d = TestModule::mySin(0.0);
+    let e = a.getX();
 	
-	println(a, b, c, d);
+	println(a, b, c, d, e);
 }

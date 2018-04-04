@@ -49,7 +49,8 @@ namespace Expresso.Ast
             get; set;
         }
 
-        public IntegerSequenceExpression(Expression start, Expression end, Expression stepExpr, bool upperInclusive)
+        public IntegerSequenceExpression(Expression start, Expression end, Expression stepExpr, bool upperInclusive, TextLocation startLoc, TextLocation endLoc)
+            : base(startLoc, endLoc)
 		{
             Lower = start;
             Upper = end;

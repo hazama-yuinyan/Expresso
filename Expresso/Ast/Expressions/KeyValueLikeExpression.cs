@@ -34,6 +34,7 @@ namespace Expresso.Ast
         }
 
         public KeyValueLikeExpression(Expression key, Expression value)
+            : base(key.StartLocation, value.EndLocation)
         {
             KeyExpression = key;
             ValueExpression = value;

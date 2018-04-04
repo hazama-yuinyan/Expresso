@@ -382,12 +382,14 @@ namespace Expresso.Ast.Analysis
             public AstType VisitMemberReference(MemberReferenceExpression memRef)
             {
                 var target_type = memRef.Target.AcceptWalker(this);
-                var type_table = checker.symbols.GetTypeTable(!target_type.IdentifierNode.Type.IsNull ? target_type.IdentifierNode.Type.Name : target_type.Name);
+                var name = (target_type is MemberType member) ? member.Target.Name + "::" + member.MemberName :
+                                                                      !target_type.IdentifierNode.Type.IsNull ? target_type.IdentifierNode.Type.Name : target_type.Name;
+                var type_table = checker.symbols.GetTypeTable(name);
                 if(type_table == null){
                     throw new ParserException(
-                        "Error ES2000: Although the expression '{0}' is evaluated to the type `{1}`, there isn't any type with that name.",
+                        "Error ES2000: Although the expression '{0}' is evaluated to the type `{1}`, there isn't any type with that name in the scope '{2}'.",
                         memRef.Target,
-                        memRef.Target.ToString(), target_type
+                        memRef.Target.ToString(), target_type, checker.symbols.Name
                     );
                 }
                     

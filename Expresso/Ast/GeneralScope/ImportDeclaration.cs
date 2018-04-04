@@ -89,7 +89,8 @@ namespace Expresso.Ast
             get{return NodeType.Statement;}
         }
 
-        public ImportDeclaration(IEnumerable<Identifier> paths, IEnumerable<Identifier> aliases, Identifier targetFile = null)
+        public ImportDeclaration(IEnumerable<Identifier> paths, IEnumerable<Identifier> aliases, Identifier targetFile, TextLocation start, TextLocation end)
+            : base(start, end)
         {
             ImportPaths.AddRange(paths);
             AliasTokens.AddRange(aliases);
