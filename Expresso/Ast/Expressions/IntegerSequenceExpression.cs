@@ -16,21 +16,21 @@ namespace Expresso.Ast
         public static readonly Role<Expression> StepRole = new Role<Expression>("Step", Null);
 
 		/// <summary>
-		/// 整数列の下限.
-		/// The lower bound of the integer sequence.
+		/// 整数列の初期値.
+		/// The start value of the integer sequence.
 		/// The expression has to yield an integer.
 		/// </summary>
-		public Expression Lower{
+		public Expression Start{
             get{return GetChildByRole(LowerRole);}
             set{SetChildByRole(LowerRole, value);}
 		}
 
 		/// <summary>
-		/// 整数列の上限.
-		/// The upper bound of the integer sequence.
+		/// 整数列の終値.
+		/// The end value of the integer sequence.
 		/// The expression has to yield an integer.
 		/// </summary>
-		public Expression Upper{
+		public Expression End{
             get{return GetChildByRole(UpperRole);}
             set{SetChildByRole(UpperRole, value);}
 		}
@@ -52,8 +52,8 @@ namespace Expresso.Ast
         public IntegerSequenceExpression(Expression start, Expression end, Expression stepExpr, bool upperInclusive, TextLocation startLoc, TextLocation endLoc)
             : base(startLoc, endLoc)
 		{
-            Lower = start;
-            Upper = end;
+            Start = start;
+            End = end;
             Step = stepExpr;
             UpperInclusive = upperInclusive;
 		}
@@ -78,8 +78,8 @@ namespace Expresso.Ast
         protected internal override bool DoMatch(AstNode other, ICSharpCode.NRefactory.PatternMatching.Match match)
         {
             var o = other as IntegerSequenceExpression;
-            return o != null && Lower.DoMatch(o.Lower, match)
-                && Upper.DoMatch(o.Upper, match) && Step.DoMatch(o.Step, match)
+            return o != null && Start.DoMatch(o.Start, match)
+                && End.DoMatch(o.End, match) && Step.DoMatch(o.Step, match)
                 && UpperInclusive == o.UpperInclusive;
         }
 

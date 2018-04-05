@@ -6,7 +6,8 @@ namespace Expresso.Ast
     /// <summary>
     /// A special <see cref="Expresso.Ast.AstType"/> implementation that represents a placeholder node.
     /// It will be used in places where inference or type substitution (including functions, whether
-    /// they may contain inference-required types or not) is expected.
+    /// they may contain inference-required types or not) is expected or it may indicate that
+    /// any types will be matched.
     /// </summary>
     public class PlaceholderType : AstType
     {
@@ -42,7 +43,8 @@ namespace Expresso.Ast
 
         protected internal override bool DoMatch(AstNode other, ICSharpCode.NRefactory.PatternMatching.Match match)
         {
-            return other is PlaceholderType;
+            // A placeholder can be substituted for any type node
+            return true;
         }
 
         #endregion

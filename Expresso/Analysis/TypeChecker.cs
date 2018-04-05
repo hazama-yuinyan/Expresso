@@ -603,13 +603,13 @@ namespace Expresso.Ast.Analysis
 
         public AstType VisitIntegerSequenceExpression(IntegerSequenceExpression intSeq)
         {
-            var lower_type = intSeq.Lower.AcceptWalker(inference_runner);
-            var upper_type = intSeq.Upper.AcceptWalker(inference_runner);
+            var lower_type = intSeq.Start.AcceptWalker(inference_runner);
+            var upper_type = intSeq.End.AcceptWalker(inference_runner);
             var step_type = intSeq.Step.AcceptWalker(inference_runner);
             if(!IsSmallIntegerType(lower_type)){
                 parser.ReportSemanticError(
                     "Error ES4001: `{0}` is not an `Int` type! An integer sequence expression expects an `Int`.",
-                    intSeq.Lower,
+                    intSeq.Start,
                     lower_type
                 );
             }
@@ -617,7 +617,7 @@ namespace Expresso.Ast.Analysis
             if(!IsSmallIntegerType(upper_type)){
                 parser.ReportSemanticError(
                     "Error ES4001: `{0}` is not an `Int` type! An integer sequence expression expects an `Int`.",
-                    intSeq.Upper,
+                    intSeq.End,
                     upper_type
                 );
             }
@@ -630,10 +630,10 @@ namespace Expresso.Ast.Analysis
                 );
             }
 
-            if((intSeq.Lower is LiteralExpression || intSeq.Lower is UnaryExpression) && (intSeq.Upper is LiteralExpression || intSeq.Upper is UnaryExpression)
+            if((intSeq.Start is LiteralExpression || intSeq.Start is UnaryExpression) && (intSeq.End is LiteralExpression || intSeq.End is UnaryExpression)
                && (intSeq.Step is LiteralExpression || intSeq.Step is UnaryExpression)){
-                var lower = MakeOutIntFromIntSeq(intSeq.Lower);
-                var upper = MakeOutIntFromIntSeq(intSeq.Upper);
+                var lower = MakeOutIntFromIntSeq(intSeq.Start);
+                var upper = MakeOutIntFromIntSeq(intSeq.End);
                 var step = MakeOutIntFromIntSeq(intSeq.Step);
 
                 if(lower < upper && step < 0){
@@ -1383,7 +1383,7 @@ namespace Expresso.Ast.Analysis
 
         public AstType VisitIgnoringRestPattern(IgnoringRestPattern restPattern)
         {
-            return SimpleType.Null;
+            return AstType.MakePlaceholderType();
         }
 
         public AstType VisitKeyValuePattern(KeyValuePattern keyValuePattern)

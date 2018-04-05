@@ -425,9 +425,9 @@ namespace Expresso.Ast
 
         public void VisitIntegerSequenceExpression(IntegerSequenceExpression intSeq)
         {
-            intSeq.Lower.AcceptWalker(this);
+            intSeq.Start.AcceptWalker(this);
             writer.Write(intSeq.UpperInclusive ? "..." : "..");
-            intSeq.Upper.AcceptWalker(this);
+            intSeq.End.AcceptWalker(this);
             writer.Write(":");
             intSeq.Step.AcceptWalker(this);
         }

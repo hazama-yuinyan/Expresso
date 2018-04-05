@@ -80,6 +80,9 @@ namespace Expresso.Ast
 
         internal protected override bool DoMatch(AstNode other, ICSharpCode.NRefactory.PatternMatching.Match match)
         {
+            if(other is PlaceholderType)
+                return true;
+            
             var o = other as PrimitiveType;
             return o != null && Keyword == o.Keyword;
         }

@@ -1041,8 +1041,8 @@ namespace Expresso.CodeGen
         {
             var intseq_ctor = typeof(ExpressoIntegerSequence).GetConstructor(new []{typeof(int), typeof(int), typeof(int), typeof(bool)});
             var args = new List<CSharpExpr>{
-                intSeq.Lower.AcceptWalker(this, context),
-                intSeq.Upper.AcceptWalker(this, context),
+                intSeq.Start.AcceptWalker(this, context),
+                intSeq.End.AcceptWalker(this, context),
                 intSeq.Step.AcceptWalker(this, context),
                 CSharpExpr.Constant(intSeq.UpperInclusive)
             };

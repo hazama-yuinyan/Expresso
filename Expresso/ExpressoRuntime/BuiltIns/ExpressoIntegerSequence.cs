@@ -21,16 +21,16 @@ namespace Expresso.Runtime.Builtins
 	{
 		/// <summary>
 		/// 数列の開始点。
-		/// The lower bound.
+		/// The start value.
 		/// </summary>
-		int lower;
+        int start;
 		
 		/// <summary>
 		/// 数列の終点。int.MinValueのときは無限リストを生成する。
-		/// The upper bound. When set to "int.MinValue", it generates an infinite series of list.
+		/// The end value. When set to "int.MinValue", it generates an infinite series of list.
 		/// Note that the upper bound will not be included in the resulting sequence.
 		/// </summary>
-		int upper;
+        int end;
 		
 		/// <summary>
 		/// ステップ。
@@ -40,9 +40,9 @@ namespace Expresso.Runtime.Builtins
 		
         public IEnumerator<int> Val{
 			get{
-				int i = lower;
+				int i = start;
 				while(true){
-					if(upper != -1 && i >= upper)
+					if(end != -1 && i >= end)
 						yield break;
 					
 					yield return i;
@@ -51,18 +51,13 @@ namespace Expresso.Runtime.Builtins
 			}
 		}
 		
-        public ExpressoIntegerSequence(int start, int end, int inputStep, bool includesUpper)
+        public ExpressoIntegerSequence(int start, int end, int step, bool includesUpper)
 		{
-			lower = start;
-            upper = includesUpper ? end + 1 : end;
-			step = inputStep;
+			this.start = start;
+            this.end = includesUpper ? end + 1 : end;
+            this.step = step;
 		}
 
-        internal static ExpressoIntegerSequence Make(int start, int end, int step = 1, bool includesUpper = false)
-		{
-            return new ExpressoIntegerSequence(start, end, step, includesUpper);
-		}
-		
 		#region IEnumerable implementation
 		IEnumerator IEnumerable.GetEnumerator()
 		{
@@ -100,7 +95,7 @@ namespace Expresso.Runtime.Builtins
 			internal Enumerator(ExpressoIntegerSequence seq)
 			{
 				this.seq = seq;
-				next = seq.lower - seq.step;
+				next = seq.start - seq.step;
 				current = -127;
 			}
 			
@@ -110,7 +105,7 @@ namespace Expresso.Runtime.Builtins
 			
 			void IEnumerator.Reset()
 			{
-				next = seq.lower - seq.step;
+				next = seq.start - seq.step;
 				current = -127;
 			}
 			
@@ -119,7 +114,7 @@ namespace Expresso.Runtime.Builtins
 				if(next == int.MinValue)
 					return false;
 				
-                if(seq.upper == int.MinValue || Math.Abs(next + seq.step) < Math.Abs(seq.upper)){
+                if(seq.end == int.MinValue || Math.Abs(next + seq.step) < Math.Abs(seq.end)){
 					next += seq.step;
 					return true;
 				}
@@ -146,7 +141,7 @@ namespace Expresso.Runtime.Builtins
 		public bool Includes(int n)
 		{
 			var remaining = n % step;
-            return lower <= n && n < upper && remaining - lower == 0;
+            return start <= n && n < end && remaining - start == 0;
 		}
 		
 		/// <summary>
@@ -163,7 +158,7 @@ namespace Expresso.Runtime.Builtins
 
         public override string ToString()
         {
-            return string.Format("{0}..{1}:{2}", lower, upper, step);
+            return string.Format("{0}..{1}:{2}", start, end, step);
         }
 
         /// <summary>

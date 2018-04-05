@@ -245,8 +245,8 @@ namespace Expresso.Ast.Analysis
 
 	        public void VisitIntegerSequenceExpression(IntegerSequenceExpression intSeq)
 	        {
-                intSeq.Lower.AcceptWalker(this);
-                intSeq.Upper.AcceptWalker(this);
+                intSeq.Start.AcceptWalker(this);
+                intSeq.End.AcceptWalker(this);
                 intSeq.Step.AcceptWalker(this);
 	        }
 
