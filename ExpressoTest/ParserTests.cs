@@ -3507,6 +3507,122 @@ namespace Expresso.Test
                         ),
                         Statement.MakeVarDecl(
                             Helpers.MakeSeq(
+                                Helpers.MakeSomePatternWithType("e")
+                            ),
+                            Helpers.MakeSeq(
+                                Expression.MakeSequenceInitializer(
+                                    Helpers.MakeGenericType(
+                                        "array",
+                                        Helpers.MakePlaceholderType()
+                                    ),
+                                    TextLocation.Empty,
+                                    TextLocation.Empty,
+                                    Expression.MakeIntSeq(
+                                        Expression.MakeConstant("int", 0),
+                                        Expression.MakeConstant("int", 10),
+                                        Expression.MakeConstant("int", 1),
+                                        false
+                                    )
+                                )
+                            ),
+                            Modifiers.Immutable
+                        ),
+                        Statement.MakeVarDecl(
+                            Helpers.MakeSeq(
+                                Helpers.MakeSomePatternWithType("f")
+                            ),
+                            Helpers.MakeSeq(
+                                Expression.MakeSequenceInitializer(
+                                    Helpers.MakeGenericType(
+                                        "vector",
+                                        Helpers.MakePlaceholderType()
+                                    ),
+                                    TextLocation.Empty,
+                                    TextLocation.Empty,
+                                    Expression.MakeIntSeq(
+                                        Expression.MakeConstant("int", 0),
+                                        Expression.MakeConstant("int", 10),
+                                        Expression.MakeConstant("int", 1),
+                                        false
+                                    )
+                                )
+                            ),
+                            Modifiers.Immutable
+                        ),
+                        Statement.MakeVarDecl(
+                            Helpers.MakeSeq(
+                                Helpers.MakeSomePatternWithType("g")
+                            ),
+                            Helpers.MakeSeq(
+                                Expression.MakeSequenceInitializer(
+                                    Helpers.MakeGenericType(
+                                        "array",
+                                        Helpers.MakePlaceholderType()
+                                    ),
+                                    TextLocation.Empty,
+                                    TextLocation.Empty,
+                                    Expression.MakeIntSeq(
+                                        Expression.MakeConstant("int", 0),
+                                        Expression.MakeUnaryExpr(
+                                            OperatorType.Minus,
+                                            Expression.MakeConstant("int", 10)
+                                        ),
+                                        Expression.MakeUnaryExpr(
+                                            OperatorType.Minus,
+                                            Expression.MakeConstant("int", 1)
+                                        ),
+                                        false
+                                    )
+                                )
+                            ),
+                            Modifiers.Immutable
+                        ),
+                        Statement.MakeVarDecl(
+                            Helpers.MakeSeq(
+                                Helpers.MakeSomePatternWithType("h")
+                            ),
+                            Helpers.MakeSeq(
+                                Expression.MakeSequenceInitializer(
+                                    Helpers.MakeGenericType(
+                                        "array",
+                                        Helpers.MakePlaceholderType()
+                                    ),
+                                    TextLocation.Empty,
+                                    TextLocation.Empty,
+                                    Expression.MakeIntSeq(
+                                        Expression.MakeConstant("int", 0),
+                                        Expression.MakeConstant("int", 100),
+                                        Expression.MakeConstant("int", 2),
+                                        true
+                                    )
+                                )
+                            ),
+                            Modifiers.Immutable
+                        ),
+                        Statement.MakeVarDecl(
+                            Helpers.MakeSeq(
+                                Helpers.MakeSomePatternWithType("i")
+                            ),
+                            Helpers.MakeSeq(
+                                Expression.MakeSequenceInitializer(
+                                    Helpers.MakeGenericType(
+                                        "array",
+                                        Helpers.MakePlaceholderType()
+                                    ),
+                                    TextLocation.Empty,
+                                    TextLocation.Empty,
+                                    Expression.MakeIntSeq(
+                                        Expression.MakeConstant("int", 5),
+                                        Expression.MakeConstant("int", 15),
+                                        Expression.MakeConstant("int", 2),
+                                        false
+                                    )
+                                )
+                            ),
+                            Modifiers.Immutable
+                        ),
+                        Statement.MakeVarDecl(
+                            Helpers.MakeSeq(
                                 Helpers.MakeSomePatternWithType(
                                     "y",
                                     Helpers.MakeGenericType(
@@ -3555,6 +3671,16 @@ namespace Expresso.Test
                                 Helpers.MakeIdentifierPath("b"),
                                 Helpers.MakeIdentifierPath("c"),
                                 Helpers.MakeIdentifierPath("d"),
+                                Helpers.MakeIdentifierPath("e"),
+                                Helpers.MakeIdentifierPath("f"),
+                                Helpers.MakeIdentifierPath("g")
+                            )
+                        ),
+                        Statement.MakeExprStmt(
+                            Helpers.MakeCallExpression(
+                                Helpers.MakeIdentifierPath("println"),
+                                Helpers.MakeIdentifierPath("h"),
+                                Helpers.MakeIdentifierPath("i"),
                                 Helpers.MakeIdentifierPath("y")
                             )
                         )

@@ -68,6 +68,11 @@ namespace Expresso.Test
             var seq2 = new ExpressoIntegerSequence(0, -10, -1, false);
             var seq3 = new ExpressoIntegerSequence(0, 100, 2, true);
             var seq4 = new ExpressoIntegerSequence(5, 15, 2, false);
+            var seq5 = ExpressoIntegerSequence.CreateArrayFromIntSeq(seq1);
+            var seq6 = ExpressoIntegerSequence.CreateListFromIntSeq(seq1);
+            var seq7 = ExpressoIntegerSequence.CreateArrayFromIntSeq(seq2);
+            var seq8 = ExpressoIntegerSequence.CreateArrayFromIntSeq(seq3);
+            var seq9 = ExpressoIntegerSequence.CreateArrayFromIntSeq(seq4);
 
             List<int> expected = new List<int>{0, 1, 2, 3, 4, 5, 6, 7, 8, 9}, expected2 = new List<int>{0, -1, -2, -3, -4, -5, -6, -7, -8, -9};
             var expected3 =
@@ -75,6 +80,14 @@ namespace Expresso.Test
                     where i % 2 == 0
                 select i;
             var expected4 = new List<int>{5, 7, 9, 11, 13};
+            var expected5 = new []{0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
+            var expected6 = new List<int>{0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
+            var expected7 = new []{0, -1, -2, -3, -4, -5, -6, -7, -8, -9};
+            var expected8 =
+                from i in Enumerable.Range(0, 101)
+                                    where i % 2 == 0
+                                    select i;
+            var expected9 = new []{5, 7, 9, 11, 13};
             Assert.IsTrue(seq1.IsSequential());
             Assert.IsFalse(seq1.Includes(10));
             Assert.IsFalse(seq2.Includes(-10));
@@ -97,6 +110,13 @@ namespace Expresso.Test
             Assert.IsTrue(seq2_list.SequenceEqual(expected2));
             Assert.IsTrue(seq3_list.SequenceEqual(expected3));
             Assert.IsTrue(seq4_list.SequenceEqual(expected4));
+            Assert.IsTrue(seq5.GetType().IsArray);
+            Assert.IsTrue(seq5.SequenceEqual(expected5));
+            Assert.IsTrue(seq6.GetType().Name.StartsWith("List", StringComparison.CurrentCulture));
+            Assert.IsTrue(seq6.SequenceEqual(expected6));
+            Assert.IsTrue(seq7.SequenceEqual(expected7));
+            Assert.IsTrue(seq8.SequenceEqual(expected8));
+            Assert.IsTrue(seq9.SequenceEqual(expected9));
         }
 
         [Test]

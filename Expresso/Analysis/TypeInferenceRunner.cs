@@ -532,14 +532,13 @@ namespace Expresso.Ast.Analysis
                     if(first_elem == null)
                         throw new InvalidOperationException();
 
-                    AstType key_type, value_type;
-                    key_type = first_elem.KeyExpression.AcceptWalker(this);
-                    value_type = first_elem.ValueExpression.AcceptWalker(this);
+                    var key_type = first_elem.KeyExpression.AcceptWalker(this);
+                    var value_type = first_elem.ValueExpression.AcceptWalker(this);
                     foreach(var item in seqInitializer.Items.Skip(1).Cast<KeyValueLikeExpression>()){
                         var tmp_key = item.KeyExpression.AcceptWalker(this);
                         var tmp_value = item.ValueExpression.AcceptWalker(this);
-                        key_type = checker.FigureOutCommonType(key_type, tmp_key);
-                        value_type = checker.FigureOutCommonType(value_type, tmp_value);
+                        key_type = checker.FigureOutCommonStrictType(key_type, tmp_key);
+                        value_type = checker.FigureOutCommonStrictType(value_type, tmp_value);
                     }
                     seqInitializer.ObjectType.TypeArguments.FirstOrNullObject().ReplaceWith(key_type.Clone());
                     seqInitializer.ObjectType.TypeArguments.LastOrNullObject().ReplaceWith(value_type.Clone());
@@ -548,10 +547,14 @@ namespace Expresso.Ast.Analysis
                         key_type.Clone(), value_type.Clone()
                     });
                 }else{
-                    AstType first = seqInitializer.Items.FirstOrNullObject().AcceptWalker(this);
-                    var result = seqInitializer.Items.Skip(1)
-                        .Aggregate(first, (accum, item) => checker.FigureOutCommonType(accum, item.AcceptWalker(this)));
-                    seqInitializer.ObjectType.TypeArguments.FirstOrNullObject().ReplaceWith(result.Clone());
+                    var first = seqInitializer.Items.FirstOrNullObject().AcceptWalker(this);
+                    if(first is PrimitiveType primitive && primitive.KnownTypeCode == KnownTypeCode.IntSeq){
+                        seqInitializer.ObjectType.TypeArguments.FirstOrNullObject().ReplaceWith(AstType.MakePrimitiveType("int"));
+                    }else{
+                        var result = seqInitializer.Items.Skip(1)
+                                                   .Aggregate(first, (accum, item) => checker.FigureOutCommonStrictType(accum, item.AcceptWalker(this)));
+                        seqInitializer.ObjectType.TypeArguments.FirstOrNullObject().ReplaceWith(result.Clone());
+                    }
 
                     return seqInitializer.ObjectType.Clone();
                 }

@@ -327,7 +327,7 @@ namespace Expresso.CodeGen
             foreach(var stmt in block.Statements){
                 var tmp = stmt.AcceptWalker(this, context);
                 if(tmp == null){
-                    contents.AddRange(context.Additionals.Cast<ExprTree.Expression>());
+                    contents.AddRange(context.Additionals.Cast<CSharpExpr>());
                     context.Additionals.Clear();
                 }else{
                     contents.Add(tmp);
@@ -1212,43 +1212,54 @@ namespace Expresso.CodeGen
         {
             var obj_type = seqInitializer.ObjectType;
             var seq_type = CSharpCompilerHelper.GetContainerType(obj_type);
-            var exprs = new List<CSharpExpr>();
             // If this node represents a dictionary literal
             // context.Constructor will get set the appropriate constructor method.
             context.Constructor = null;
-            var additionals = context.Additionals;
+            var prev_additionals = context.Additionals;
             context.Additionals = new List<object>();
-            foreach(var item in seqInitializer.Items){
-                var tmp = item.AcceptWalker(this, context);
-                exprs.Add(tmp);
-            }
+            // In order to force execution we call ToArray here because otherwise it results in a different code in Dictionary case
+            var exprs = seqInitializer.Items.Select(item => item.AcceptWalker(this, context))
+                                      .ToArray();
 
             if(seq_type == typeof(Array)){
-                var elem_type = CSharpCompilerHelper.GetNativeType(obj_type.TypeArguments.FirstOrNullObject());
-                context.Additionals = additionals;
-                return CSharpExpr.NewArrayInit(elem_type, exprs);
+                var elem_type = exprs.Any() ? exprs.First().Type : CSharpCompilerHelper.GetNativeType(obj_type.TypeArguments.First());
+                context.Additionals = prev_additionals;
+
+                if(elem_type == typeof(ExpressoIntegerSequence)){
+                    var array_create_method = typeof(ExpressoIntegerSequence).GetMethod("CreateArrayFromIntSeq");
+                    return CSharpExpr.Call(array_create_method, exprs.First());
+                }else{
+                    return CSharpExpr.NewArrayInit(elem_type, exprs);
+                }
             }else if(seq_type == typeof(List<>)){
-                var elem_type = CSharpCompilerHelper.GetNativeType(obj_type.TypeArguments.FirstOrNullObject());
-                var list_type = seq_type.MakeGenericType(elem_type);
-                var constructor = list_type.GetConstructor(new Type[]{});
-                var new_expr = CSharpExpr.New(constructor);
-                context.Additionals = additionals;
-                return (exprs.Count == 0) ? new_expr : (CSharpExpr)CSharpExpr.ListInit(new_expr, exprs);
+                var elem_type = exprs.Any() ? exprs.First().Type : CSharpCompilerHelper.GetNativeType(obj_type.TypeArguments.First());
+                context.Additionals = prev_additionals;
+
+                if(elem_type == typeof(ExpressoIntegerSequence)){
+                    var list_create_method = typeof(ExpressoIntegerSequence).GetMethod("CreateListFromIntSeq");
+                    return CSharpExpr.Call(list_create_method, exprs.First());
+                }else{
+                    var list_type = seq_type.MakeGenericType(elem_type);
+                    var constructor = list_type.GetConstructor(new Type[]{});
+                    var new_expr = CSharpExpr.New(constructor);
+                    return !exprs.Any() ? new_expr : (CSharpExpr)CSharpExpr.ListInit(new_expr, exprs);
+                }
             }else if(seq_type == typeof(Dictionary<,>)){
                 var key_type = CSharpCompilerHelper.GetNativeType(obj_type.TypeArguments.FirstOrNullObject());
                 var value_type = CSharpCompilerHelper.GetNativeType(obj_type.TypeArguments.LastOrNullObject());
+
                 var elems = context.Additionals.Cast<ExprTree.ElementInit>();
                 var dict_type = seq_type.MakeGenericType(key_type, value_type);
                 var constructor = dict_type.GetConstructor(new Type[]{});
                 var new_expr = CSharpExpr.New(constructor);
-                context.Additionals = additionals;
-                return (exprs.Count == 0) ? new_expr : (CSharpExpr)CSharpExpr.ListInit(new_expr, elems);
+                context.Additionals = prev_additionals;
+                return !exprs.Any() ? new_expr : (CSharpExpr)CSharpExpr.ListInit(new_expr, elems);
             }else if(seq_type == typeof(Tuple)){
                 var child_types = 
                     from e in exprs
                     select e.Type;
                 var ctor_method = typeof(Tuple).GetMethod("Create", child_types.ToArray());
-                context.Additionals = additionals;
+                context.Additionals = prev_additionals;
                 return CSharpExpr.Call(ctor_method, exprs);
             }else{
                 throw new EmitterException("Could not emit code.");

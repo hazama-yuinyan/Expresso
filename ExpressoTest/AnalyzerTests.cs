@@ -5924,6 +5924,152 @@ namespace Expresso.Test
                         ),
                         Statement.MakeVarDecl(
                             Helpers.MakeSeq(
+                                Helpers.MakePaticularPatternWithType(
+                                    "e",
+                                    Helpers.MakeGenericType(
+                                        "array",
+                                        Helpers.MakePrimitiveType("int")
+                                    )
+                                )
+                            ),
+                            Helpers.MakeSeq(
+                                Expression.MakeSequenceInitializer(
+                                    Helpers.MakeGenericType(
+                                        "array",
+                                        Helpers.MakePrimitiveType("int")
+                                    ),
+                                    TextLocation.Empty,
+                                    TextLocation.Empty,
+                                    Expression.MakeIntSeq(
+                                        Expression.MakeConstant("int", 0),
+                                        Expression.MakeConstant("int", 10),
+                                        Expression.MakeConstant("int", 1),
+                                        false
+                                    )
+                                )
+                            ),
+                            Modifiers.Immutable
+                        ),
+                        Statement.MakeVarDecl(
+                            Helpers.MakeSeq(
+                                Helpers.MakePaticularPatternWithType(
+                                    "f",
+                                    Helpers.MakeGenericType(
+                                        "vector",
+                                        Helpers.MakePrimitiveType("int")
+                                    )
+                                )
+                            ),
+                            Helpers.MakeSeq(
+                                Expression.MakeSequenceInitializer(
+                                    Helpers.MakeGenericType(
+                                        "vector",
+                                        Helpers.MakePrimitiveType("int")
+                                    ),
+                                    TextLocation.Empty,
+                                    TextLocation.Empty,
+                                    Expression.MakeIntSeq(
+                                        Expression.MakeConstant("int", 0),
+                                        Expression.MakeConstant("int", 10),
+                                        Expression.MakeConstant("int", 1),
+                                        false
+                                    )
+                                )
+                            ),
+                            Modifiers.Immutable
+                        ),
+                        Statement.MakeVarDecl(
+                            Helpers.MakeSeq(
+                                Helpers.MakePaticularPatternWithType(
+                                    "g",
+                                    Helpers.MakeGenericType(
+                                        "array",
+                                        Helpers.MakePrimitiveType("int")
+                                    )
+                                )
+                            ),
+                            Helpers.MakeSeq(
+                                Expression.MakeSequenceInitializer(
+                                    Helpers.MakeGenericType(
+                                        "array",
+                                        Helpers.MakePrimitiveType("int")
+                                    ),
+                                    TextLocation.Empty,
+                                    TextLocation.Empty,
+                                    Expression.MakeIntSeq(
+                                        Expression.MakeConstant("int", 0),
+                                        Expression.MakeUnaryExpr(
+                                            OperatorType.Minus,
+                                            Expression.MakeConstant("int", 10)
+                                        ),
+                                        Expression.MakeUnaryExpr(
+                                            OperatorType.Minus,
+                                            Expression.MakeConstant("int", 1)
+                                        ),
+                                        false
+                                    )
+                                )
+                            ),
+                            Modifiers.Immutable
+                        ),
+                        Statement.MakeVarDecl(
+                            Helpers.MakeSeq(
+                                Helpers.MakePaticularPatternWithType(
+                                    "h",
+                                    Helpers.MakeGenericType(
+                                        "array",
+                                        Helpers.MakePrimitiveType("int")
+                                    )
+                                )
+                            ),
+                            Helpers.MakeSeq(
+                                Expression.MakeSequenceInitializer(
+                                    Helpers.MakeGenericType(
+                                        "array",
+                                        Helpers.MakePrimitiveType("int")
+                                    ),
+                                    TextLocation.Empty,
+                                    TextLocation.Empty,
+                                    Expression.MakeIntSeq(
+                                        Expression.MakeConstant("int", 0),
+                                        Expression.MakeConstant("int", 100),
+                                        Expression.MakeConstant("int", 2),
+                                        true
+                                    )
+                                )
+                            ),
+                            Modifiers.Immutable
+                        ),
+                        Statement.MakeVarDecl(
+                            Helpers.MakeSeq(
+                                Helpers.MakePaticularPatternWithType(
+                                    "i",
+                                    Helpers.MakeGenericType(
+                                        "array",
+                                        Helpers.MakePrimitiveType("int")
+                                    )
+                                )
+                            ),
+                            Helpers.MakeSeq(
+                                Expression.MakeSequenceInitializer(
+                                    Helpers.MakeGenericType(
+                                        "array",
+                                        Helpers.MakePrimitiveType("int")
+                                    ),
+                                    TextLocation.Empty,
+                                    TextLocation.Empty,
+                                    Expression.MakeIntSeq(
+                                        Expression.MakeConstant("int", 5),
+                                        Expression.MakeConstant("int", 15),
+                                        Expression.MakeConstant("int", 2),
+                                        false
+                                    )
+                                )
+                            ),
+                            Modifiers.Immutable
+                        ),
+                        Statement.MakeVarDecl(
+                            Helpers.MakeSeq(
                                 Helpers.MakeExactPatternWithType(
                                     "y",
                                     Helpers.MakeGenericType(
@@ -6059,6 +6205,58 @@ namespace Expresso.Test
                                             "array",
                                             Helpers.MakePrimitiveType("int")
                                         ),
+                                        Helpers.MakePrimitiveType("int")
+                                    )
+                                ),
+                                Helpers.MakeIdentifierPath(
+                                    "e",
+                                    Helpers.MakeGenericType(
+                                        "array",
+                                        Helpers.MakePrimitiveType("int")
+                                    )
+                                ),
+                                Helpers.MakeIdentifierPath(
+                                    "f",
+                                    Helpers.MakeGenericType(
+                                        "vector",
+                                        Helpers.MakePrimitiveType("int")
+                                    )
+                                ),
+                                Helpers.MakeIdentifierPath(
+                                    "g",
+                                    Helpers.MakeGenericType(
+                                        "array",
+                                        Helpers.MakePrimitiveType("int")
+                                    )
+                                )
+                            )
+                        ),
+                        Statement.MakeExprStmt(
+                            Helpers.MakeCallExpression(
+                                Helpers.MakeIdentifierPath(
+                                    "println",
+                                    AstType.MakeFunctionType(
+                                        "println",
+                                        Helpers.MakeVoidType(),
+                                        TextLocation.Empty,
+                                        TextLocation.Empty,
+                                        Helpers.MakeGenericType(
+                                            "array",
+                                            Helpers.MakeGenericType("object")
+                                        )
+                                    )
+                                ),
+                                Helpers.MakeIdentifierPath(
+                                    "h",
+                                    Helpers.MakeGenericType(
+                                        "array",
+                                        Helpers.MakePrimitiveType("int")
+                                    )
+                                ),
+                                Helpers.MakeIdentifierPath(
+                                    "i",
+                                    Helpers.MakeGenericType(
+                                        "array",
                                         Helpers.MakePrimitiveType("int")
                                     )
                                 ),

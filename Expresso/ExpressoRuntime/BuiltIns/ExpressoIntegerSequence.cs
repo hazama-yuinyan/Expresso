@@ -1,7 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-
+using System.Linq;
 
 namespace Expresso.Runtime.Builtins
 {
@@ -40,22 +40,22 @@ namespace Expresso.Runtime.Builtins
 		
         public IEnumerator<int> Val{
 			get{
-				int i = this.lower;
+				int i = lower;
 				while(true){
-					if(this.upper != -1 && i >= this.upper)
+					if(upper != -1 && i >= upper)
 						yield break;
 					
 					yield return i;
-					i += this.step;
+					i += step;
 				}
 			}
 		}
 		
         public ExpressoIntegerSequence(int start, int end, int inputStep, bool includesUpper)
 		{
-			this.lower = start;
-            this.upper = includesUpper ? end + 1 : end;
-			this.step = inputStep;
+			lower = start;
+            upper = includesUpper ? end + 1 : end;
+			step = inputStep;
 		}
 
         internal static ExpressoIntegerSequence Make(int start, int end, int step = 1, bool includesUpper = false)
@@ -83,7 +83,7 @@ namespace Expresso.Runtime.Builtins
 			
             object IEnumerator.Current{
                 get{
-					return this.Current;
+					return Current;
 				}
 			}
 			
@@ -92,16 +92,16 @@ namespace Expresso.Runtime.Builtins
 					if(next == int.MinValue)
 						throw new InvalidOperationException();
 					
-					this.current = this.next;
-					return this.current;
+					current = next;
+					return current;
 				}
 			}
 			
 			internal Enumerator(ExpressoIntegerSequence seq)
 			{
 				this.seq = seq;
-				this.next = seq.lower - seq.step;
-				this.current = -127;
+				next = seq.lower - seq.step;
+				current = -127;
 			}
 			
 			public void Dispose()
@@ -110,21 +110,21 @@ namespace Expresso.Runtime.Builtins
 			
 			void IEnumerator.Reset()
 			{
-				this.next = this.seq.lower - seq.step;
-				this.current = -127;
+				next = seq.lower - seq.step;
+				current = -127;
 			}
 			
 			public bool MoveNext()
 			{
-				if(this.next == int.MinValue)
+				if(next == int.MinValue)
 					return false;
 				
-                if(this.seq.upper == int.MinValue || Math.Abs(this.next + this.seq.step) < Math.Abs(this.seq.upper)){
-					this.next += this.seq.step;
+                if(seq.upper == int.MinValue || Math.Abs(next + seq.step) < Math.Abs(seq.upper)){
+					next += seq.step;
 					return true;
 				}
 				
-				this.next = int.MinValue;
+				next = int.MinValue;
 				return false;
 			}
 		}
@@ -158,12 +158,34 @@ namespace Expresso.Runtime.Builtins
         [ExpressoFunction("isSequential")]
 		public bool IsSequential()
 		{
-			return this.step == 1;
+			return step == 1;
 		}
 
         public override string ToString()
         {
             return string.Format("{0}..{1}:{2}", lower, upper, step);
+        }
+
+        /// <summary>
+        /// Expands the intseq to an array.
+        /// </summary>
+        /// <returns>The array from int seq.</returns>
+        /// <param name="intSeq">Int seq.</param>
+        public static int[] CreateArrayFromIntSeq(ExpressoIntegerSequence intSeq)
+        {
+            return intSeq.Select(s => s)
+                         .ToArray();
+        }
+
+        /// <summary>
+        /// Expands the intseq to a list.
+        /// </summary>
+        /// <returns>The list from int seq.</returns>
+        /// <param name="intSeq">Int seq.</param>
+        public static List<int> CreateListFromIntSeq(ExpressoIntegerSequence intSeq)
+        {
+            return intSeq.Select(s => s)
+                         .ToList();
         }
 	}
 }

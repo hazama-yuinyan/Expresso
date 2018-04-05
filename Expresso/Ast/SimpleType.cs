@@ -98,7 +98,7 @@ namespace Expresso.Ast
         public SimpleType(string identifier, TextLocation start)
             : base(start, new TextLocation(start.Line, start.Column + identifier.Length))
         {
-            IdentifierToken = AstNode.MakeIdentifier(identifier);
+            IdentifierToken = MakeIdentifier(identifier);
         }
 
         public SimpleType(Identifier identifier, TextLocation start)
@@ -118,7 +118,7 @@ namespace Expresso.Ast
         public SimpleType(string identifier, IEnumerable<AstType> typeArgs, TextLocation start, TextLocation end)
             : base(start, end)
         {
-            IdentifierToken = AstNode.MakeIdentifier(identifier);
+            IdentifierToken = MakeIdentifier(identifier);
             TypeArguments.AddRange(typeArgs);
         }
 

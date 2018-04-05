@@ -207,7 +207,7 @@ namespace Expresso.Ast.Analysis
                 var type = clause.AcceptWalker(this);
                 if(IsCompatibleWith(target_type, type) == TriBool.False){
                     parser.ReportSemanticErrorRegional(
-                        "Error ES1020: Mismatched types found! Expected {0}, found {1}.",
+                        "Error ES1023: Mismatched types found! Expected {0}, found {1}.",
                         matchStmt,
                         clause,
                         target_type, type
@@ -447,9 +447,6 @@ namespace Expresso.Ast.Analysis
             }
 
             argument_types = parent_types;
-
-            // In order to resolve it so that it gets a fully qualified name
-            //func_type.ReturnType.AcceptWalker(this);
 
             return func_type.ReturnType;
         }
@@ -836,11 +833,10 @@ namespace Expresso.Ast.Analysis
             DescendScope();
             scope_counter = 0;
 
-            AstType result = AstType.Null;
-            foreach(var pattern in matchClause.Patterns){
-                var tmp = pattern.AcceptWalker(this);
-                result = FigureOutCommonType(result, tmp);
-            }
+            var first = matchClause.Patterns.First().AcceptWalker(this);
+            var result = matchClause.Patterns
+                                    .Skip(1)
+                                    .Aggregate(first, (arg1, arg2) => FigureOutCommonStrictType(arg1, arg2.AcceptWalker(this)));
 
             matchClause.Body.AcceptWalker(this);
 
@@ -1542,7 +1538,71 @@ namespace Expresso.Ast.Analysis
             }
 
             parser.ReportWarning(
-                "Warning ES1200: Can not guess the common type between `{0}` and `{1}`.",
+                "Warning ES1202: Can not guess the common type between `{0}` and `{1}`.",
+                lhs,
+                lhs, rhs
+            );
+
+            return null;
+        }
+
+        /// <summary>
+        /// Given 2 expressions, it tries to figure out the most common and strict type.
+        /// </summary>
+        /// <returns>The common type between `lhs` and `rhs`.</returns>
+        AstType FigureOutCommonStrictType(AstType lhs, AstType rhs)
+        {
+            if(lhs == null)
+                throw new ArgumentNullException(nameof(lhs));
+
+            if(rhs == null)
+                throw new ArgumentNullException(nameof(rhs));
+
+            if(lhs.IsNull)
+                return rhs;
+
+            if(rhs.IsNull)
+                return lhs;
+
+            if(lhs is PrimitiveType primitive1 && rhs is PrimitiveType primitive2){
+                // If both are primitives, check first if both are exactly the same type
+                if(primitive1.KnownTypeCode == primitive2.KnownTypeCode){
+                    return primitive1;
+                }else if(IsNumericalType(primitive1) && IsNumericalType(primitive2)){
+                    // If not, then check if both are numeric types or not
+                    var common_typecode = primitive1.KnownTypeCode | primitive2.KnownTypeCode;
+                    return new PrimitiveType(common_typecode.ToString().ToLower(), TextLocation.Empty);
+                }else{
+                    // If both aren't the case, then we must say there is no common types between these 2 expressions
+                    return AstType.Null;
+                }
+            }
+
+            if(lhs is SimpleType simple1 && rhs is SimpleType simple2){
+                if(simple1.IsMatch(simple2))
+                    return simple1;
+                else if(simple1.TypeArguments.Count > simple2.TypeArguments.Count)
+                    return simple1;
+                else if(simple1.TypeArguments.Count < simple2.TypeArguments.Count)
+                    return simple2;
+                else if(simple1.IsNull)
+                    return simple2;
+                else if(simple2.IsNull)
+                    return simple1;
+                else if(simple1.TypeArguments.Any(ta => ta == SimpleType.Null))
+                    return simple2;
+                else if(simple2.TypeArguments.Any(ta => ta == SimpleType.Null))
+                    return simple1;
+                //TODO: implement the subclass case
+            }
+
+            if(lhs is ParameterType param1 && rhs is ParameterType param2){
+                if(param1.Name == param2.Name)
+                    return param1;
+            }
+
+            parser.ReportWarning(
+                "Warning ES1203: Can not guess the common and strict type between `{0}` and `{1}`.",
                 lhs,
                 lhs, rhs
             );

@@ -649,7 +649,7 @@ namespace Expresso.Ast.Analysis
 
         public override string ToString()
         {
-            return string.Format("<SymbolTable`{0}: symbolsCount={1}, typeSymbolsCount={2} childrenCount={3}>", Name, Symbols.Count(), type_table.Values.Count(), Children.Count);
+            return string.Format("<SymbolTable`{0}: symbolsCount={1} typeSymbolsCount={2} childrenCount={3} type={4}>", Name, Symbols.Count(), type_table.Values.Count(), Children.Count, TypeKind);
         }
 
         /// <summary>
