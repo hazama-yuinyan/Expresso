@@ -497,6 +497,14 @@ namespace Expresso.Test
             Assert.That(() => parser.Parse(), Throws.TypeOf<ParserException>().With.Message.Contains("ES4002"));
             Assert.AreEqual(1, parser.errors.count);
         }
+
+        [Test]
+        public void IntseqWarnings()
+        {
+            var parser = new Parser(new Scanner("../../sources/for_unit_tests/erroneous/intseq_warnings.exs"));
+            parser.DoPostParseProcessing = true;
+            parser.Parse();
+        }
     }
 }
 

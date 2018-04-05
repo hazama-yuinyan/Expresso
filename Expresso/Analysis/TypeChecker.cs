@@ -630,6 +630,37 @@ namespace Expresso.Ast.Analysis
                 );
             }
 
+            if((intSeq.Lower is LiteralExpression || intSeq.Lower is UnaryExpression) && (intSeq.Upper is LiteralExpression || intSeq.Upper is UnaryExpression)
+               && (intSeq.Step is LiteralExpression || intSeq.Step is UnaryExpression)){
+                var lower = MakeOutIntFromIntSeq(intSeq.Lower);
+                var upper = MakeOutIntFromIntSeq(intSeq.Upper);
+                var step = MakeOutIntFromIntSeq(intSeq.Step);
+
+                if(lower < upper && step < 0){
+                    parser.ReportWarning(
+                        "Warning ES4003: Although `step` is negative, `upper` is larger than `lower`.\n Did you mean {0}{1}{2}:{3}?",
+                        intSeq,
+                        upper, intSeq.UpperInclusive ? "..." : "..", lower, step
+                    );
+                }else if(lower > upper && step > 0){
+                    parser.ReportWarning(
+                        "Warning ES4003: Although `step` is positive, `upper` is smaller than `lower`.\n Did you mean {0}{1}{2}:{3}?",
+                        intSeq,
+                        upper, intSeq.UpperInclusive ? "..." : "..", lower, step
+                    );
+                }else if(step == 0){
+                    parser.ReportWarning(
+                        "Warning ES4004: `step` is 0! It will result in an inifite series of a sequence!",
+                        intSeq
+                    );
+                }else if(lower == upper){
+                    parser.ReportWarning(
+                        "Warning ES4005: `lower` is equal to `upper`. It will result in a sequence with zero element!",
+                        intSeq
+                    );
+                }
+            }
+
             return AstType.MakePrimitiveType("intseq", intSeq.StartLocation);
         }
 
@@ -1741,6 +1772,19 @@ namespace Expresso.Ast.Analysis
             }
 
             return AstType.Null;
+        }
+
+        static int MakeOutIntFromIntSeq(Expression expr)
+        {
+            if(expr is UnaryExpression unary){
+                var tmp = (int)((LiteralExpression)unary.Operand).Value;
+                if(unary.Operator == OperatorType.Minus)
+                    tmp = -tmp;
+
+                return tmp;
+            }
+
+            return (int)((LiteralExpression)expr).Value;
         }
 
         void BindTypeName(Identifier ident)

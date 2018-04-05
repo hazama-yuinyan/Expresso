@@ -13,4 +13,3 @@
 ・プロパティのセットの実装
 ・matchの挙動が一部Rustと違うのを修正する
 ・Windows上でLazyTypeBuilder.ctorのbuilder.GetMethods()が動かないのを修正する
-・let a = [0..10];みたいな表記ができるようにする
