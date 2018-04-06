@@ -337,6 +337,7 @@ namespace Expresso.Ast.Analysis
                     binaryExpr.Left, binaryExpr.Right,
                     binaryExpr.OperatorToken, lhs_type, rhs_type
                 );
+                return null;
             }
 
             var lhs_primitive = lhs_type as PrimitiveType;
@@ -358,14 +359,14 @@ namespace Expresso.Ast.Analysis
             case OperatorType.Divide:
             case OperatorType.Power:
             case OperatorType.Modulus:
-                if(!IsNumericalType(lhs_type) || !IsNumericalType(rhs_type)){
+                /*if(!IsNumericalType(lhs_type) || !IsNumericalType(rhs_type)){
                     parser.ReportSemanticErrorRegional(
                         "Error ES1005: Can not apply the operator '{0}' on `{1}` and `{2}`",
                         binaryExpr.Left, binaryExpr.Right,
                         binaryExpr.OperatorToken, lhs_type, rhs_type
                     );
                     return null;
-                }
+                }*/
 
                 return lhs_type;
 
@@ -374,7 +375,7 @@ namespace Expresso.Ast.Analysis
             case OperatorType.BitwiseShiftLeft:
             case OperatorType.BitwiseShiftRight:
             case OperatorType.ExclusiveOr:
-                if(lhs_primitive.KnownTypeCode == KnownTypeCode.Float || lhs_primitive.KnownTypeCode == KnownTypeCode.Double){
+                /*if(lhs_primitive.KnownTypeCode == KnownTypeCode.Float || lhs_primitive.KnownTypeCode == KnownTypeCode.Double){
                     parser.ReportSemanticError(
                         "Error ES1010: Can not apply the operator '{0}' on the left-hand-side '{1}'",
                         binaryExpr.Left,
@@ -388,9 +389,9 @@ namespace Expresso.Ast.Analysis
                         binaryExpr.OperatorToken, binaryExpr.Right
                     );
                     return null;
-                }else{
+                }else{*/
                     return lhs_type;
-                }
+                //}
 
             default:
                 throw new ArgumentException("Unknown operator found!");
@@ -607,26 +608,26 @@ namespace Expresso.Ast.Analysis
             var upper_type = intSeq.End.AcceptWalker(inference_runner);
             var step_type = intSeq.Step.AcceptWalker(inference_runner);
             if(!IsSmallIntegerType(lower_type)){
-                parser.ReportSemanticError(
+                throw new ParserException(
                     "Error ES4001: `{0}` is not an `Int` type! An integer sequence expression expects an `Int`.",
                     intSeq.Start,
-                    lower_type
+                    lower_type.ToString()
                 );
             }
 
             if(!IsSmallIntegerType(upper_type)){
-                parser.ReportSemanticError(
+                throw new ParserException(
                     "Error ES4001: `{0}` is not an `Int` type! An integer sequence expression expects an `Int`.",
                     intSeq.End,
-                    upper_type
+                    upper_type.ToString()
                 );
             }
 
             if(!IsSmallIntegerType(step_type)){
-                parser.ReportSemanticError(
+                throw new ParserException(
                     "Error ES4001: `{0}` is not an `Int` type! An integer sequence expression expects an `Int`.",
                     intSeq.Step,
-                    step_type
+                    step_type.ToString()
                 );
             }
 
@@ -691,7 +692,6 @@ namespace Expresso.Ast.Analysis
                             );
                         }
 
-                        // simple_type doesn't need to be cloned because it's already cloned
                         return AstType.MakeSimpleType("slice", new []{simple_type.Clone(), simple_type.TypeArguments.First().Clone()});
                     }
                 }
@@ -719,18 +719,18 @@ namespace Expresso.Ast.Analysis
                 type = inferred;
             }
 
-            if(type == null){
+            /*if(type == null){
                 throw new ParserException(
                     "Error ES3302: The expression '{0}' isn't resolved to a type",
                     memRef,
                     memRef.Target.ToString()
                 );
-            }
+            }*/
 
             var name = (type is MemberType member) ? member.Target.Name + "::" + member.MemberName :
                                                            !type.IdentifierNode.Type.IsNull ? type.IdentifierNode.Type.Name : type.Name;
             var type_table = symbols.GetTypeTable(name);
-            if(!type_table.IsNetType){
+            if(!type_table.IsForeignType){
                 var symbol = type_table.GetSymbol(memRef.Member.Name);
                 if(memRef.Target is PathExpression path && path.AsIdentifier.Modifiers.HasFlag(Modifiers.Immutable) && symbol.Modifiers.HasFlag(Modifiers.Mutating)){
                     throw new ParserException(
@@ -799,7 +799,7 @@ namespace Expresso.Ast.Analysis
                 if(key_path == null)
                     throw new InvalidOperationException();
 
-                if(type_table.IsNetType){
+                if(type_table.IsForeignType){
                     //FIXME: match against constructor parameters
                     var value_type = pair.Item2.ValueExpression.AcceptWalker(this);
                     arg_types[pair.Item1] = value_type.Clone();
@@ -904,15 +904,19 @@ namespace Expresso.Ast.Analysis
                             return inferred_type;
 
                         tmp.ReplaceWith(inferred_type);
+                        tmp = inferred_type;
                     }
 
                     var primitive_type = tmp as PrimitiveType;
-                    if(primitive_type == null || tmp.IsNull || primitive_type.KnownTypeCode == KnownTypeCode.Char){
+                    if(primitive_type == null || tmp.IsNull || primitive_type.KnownTypeCode == KnownTypeCode.Char || primitive_type.KnownTypeCode == KnownTypeCode.Bool
+                       || primitive_type.KnownTypeCode == KnownTypeCode.IntSeq){
                         parser.ReportSemanticError(
-                            "Error ES1201: Can not apply the operator '{0}' on type `{1}`.",
+                            "Error ES1201: Can not apply the operator '{0}' on the type `{1}`.",
                             unaryExpr,
                             unaryExpr.OperatorToken, tmp.Name
                         );
+
+                        return null;
                     }
                     return tmp;
                 }
@@ -921,10 +925,12 @@ namespace Expresso.Ast.Analysis
                 var operand_type = unaryExpr.Operand.AcceptWalker(this);
                 if(!(operand_type is PrimitiveType) || ((PrimitiveType)operand_type).KnownTypeCode != Expresso.TypeSystem.KnownTypeCode.Bool){
                     parser.ReportSemanticError(
-                        "Error ES1200: Can not apply the '!' operator on type `{0}`!\nThe operand must be of type `bool`.",
+                        "Error ES1200: Can not apply the '!' operator on the type `{0}`!\nThe operand must be of type `bool`.",
                         unaryExpr,
                         operand_type
                     );
+
+                    return null;
                 }
                 return operand_type;
 
@@ -1127,12 +1133,12 @@ namespace Expresso.Ast.Analysis
             if(funcDecl.Parent is TypeDeclaration){
                 var type_name = ((TypeDeclaration)funcDecl.Parent).Name;
                 if(funcDecl.Parameters.Any(p => p.ReturnType is SimpleType simple_type && simple_type.Name == type_name)){
-                    parser.ReportSemanticError(
+                    throw new ParserException(
                         "Error ES1020: In Expresso you can't define a method that takes the self class as a parameter that contains the method.\nUse module-level functions instead.",
                         funcDecl.Parameters.Where(p => p.ReturnType is SimpleType simple_type && simple_type.Name == type_name).First()
                     );
                 }else if(funcDecl.ReturnType is SimpleType simple_type && simple_type.Name == type_name){
-                    parser.ReportSemanticError(
+                    throw new ParserException(
                         "Error ES1021: In Expresso you can't define a method that returns the self class that contains the method.\nUse module-level functions instead.",
                         funcDecl.ReturnType
                     );
@@ -1283,7 +1289,7 @@ namespace Expresso.Ast.Analysis
                         throw new ParserException(
                             "Error ES1301: `{0}` isn't a sequence type! A for statemant can only be used for iterating over a sequence.",
                             initializer.Initializer,
-                            inferred_type
+                            inferred_type.ToString()
                         );
                     }
                     var elem_type = MakeOutElementType(inferred_type);

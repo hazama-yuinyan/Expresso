@@ -6,7 +6,7 @@ namespace Expresso.Ast
 {
 	/// <summary>
 	/// ExpressoのASTのトップレベルノード。ファイルから生成された場合はモジュールを表す。
-	/// Top-level ast for all Expresso code. Typically represents a module.
+	/// Top-level ast for all Expresso code. Represents a module.
     /// All module-level items can be considered as static because one module can import
     /// another module only once.
 	/// </summary>
@@ -41,18 +41,14 @@ namespace Expresso.Ast
         /// Gets the import declarations.
         /// It can be an empty collection if there is no import declarations.
         /// </summary>
-        public AstNodeCollection<ImportDeclaration> Imports{
-            get{return GetChildrenByRole(ImportRole);}
-        }
+        public AstNodeCollection<ImportDeclaration> Imports => GetChildrenByRole(ImportRole);
 
 		/// <summary>
 		/// 本体。このノードがモジュールだった場合にはモジュールの定義文が含まれる。
 		/// The body of this node. If this node represents a module, then the body includes
 		/// the definitions of the module.
 		/// </summary>
-        public AstNodeCollection<EntityDeclaration> Declarations{
-            get{return GetChildrenByRole(MemberRole);}
-		}
+        public AstNodeCollection<EntityDeclaration> Declarations => GetChildrenByRole(MemberRole);
 
         /// <summary>
         /// モジュール名(デバッグ用)

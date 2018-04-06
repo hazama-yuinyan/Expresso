@@ -40,8 +40,9 @@ In addition, even though we'll come back later to this topic, Expresso has strin
 
 Let's dive into the Expresso world. Because I mentioned at the beginning of this guide that Expresso looks a type-free language rather than a type-strict one,
 we'll use Expresso as a simple calculator first. 
-Note that from now on we'll not be including the `module main; def main(){` part because with it the examples will be too complex. Since it's boring to repeat
-writing the same thing over and over and it's considered hard to see if we include the magic header every time, we won't do that.
+Note that from now on we'll not be including the `module main; def main(){` part as long as we don't need to show the complete source code because with it
+the examples will be too complex. Since it's boring to repeat writing the same thing over and over and it's considered hard to see if we include
+the magic header every time, we won't do that.
 So if you follow this tutorial, don't forget to include the magic header at the beginning of source files.
 As the saying goes "A journey of a thousand miles begins with a single step", we'll be starting with a simple calculation.
 
@@ -87,17 +88,17 @@ In Expresso, there are 2 forms of variable bindings.
 Variables are useful considering the ability to keep track of values they hold. But sometimes we just want to give values descriptive names
 because we need the same values several times or because it is tedious to change all the literal values over and over when you try
 to guess the proper values for some programs. That's where immutable variables come into play.
-As a general term, an immutable variable is a constant value meaning that values that are bound to variables will never be changed during program execution.
+As a general term, an immutable variable is a constant value, meaning that values that are bound to variables will never be changed during program execution.
 Let bindings introduce tags, and tags are names which you use in order to refer to the values later on and immutable variables are considered to be the tags.
-By contrast, variable declarations introduce boxes that have certain shapes, and those boxes can be
-filled in with anything at any time as long as the shapes match.
+By contrast, variable declarations introduce boxes that have certain shapes, and those boxes can be filled in with anything at any time as long as
+the shapes match.
 
 In Listing 3, we introduced a new let binding stating `let n (- int = 4 * 5;`. This reads: We'll introduce a new let binding named 'n' whose type is `int` and
 the value of it will be `4 * 5`. Note that we explicitly annotate the type here. Because Expresso has a strong type inference system, you woudln't usually need
 to do so. But we'll generally do that here in the tutorial for clarity.
 
 Note that we use `(-` for separating the variable name and the type. It represents `∈` in ASCII-compatible characters and means exactly the mathematical `∈`.
-In other words, the right hand side includes the left hand side.
+In other words, the right hand side includes the left hand side as an element in a mathematical sense.
 
 By introducing let bindings, we can keep the results of some operations aside. And then we can perform other operations based on those values. I would suggest 
 you to prefer let bindings over variable declarations because let bindings tend to make the code clearer and more concise by making the code easier to read and
@@ -152,81 +153,7 @@ A `bigint` can store any arbitrary integer. This makes the `bigint` type suitabl
 ### The `string` type
 
 I realize that `char` and `string` types are the fundamental types because sometimes you would even need more string manipulations than you would integers.
-As with the `char` type, the `string` type also is in UTF-16. See the C#'s documantation for other details on the `string` type.
-
-### The `intseq` type
-
-One unique characteristic for Expresso is the built-in `intseq` type. As the name suggests, it produces a series of integers.
-The `intseq` type has 3 fields, `lower`, `upper` and `step`. `lower` represents the lower bound of the sequence,
-`upper` the upper bound and `step` the step by which an iteration proceeds at a time.
-The `intseq` type has the corresponding literal form and it is written as follows:
-`lower(..|...)upper[:step]`
-
-```expresso
-    let series = [1..10];   // `step` can be omitted and 1 is assumed if ommited and the double dots mean that the lower bound is
-                            // inclusive but the upper bound is exclusive
-    for let elem in seq {  // print "123456789"
-        print(elem);
-    }
-    println(series); // print "[1, 2, 3, 4, 5, 6, 7, 8, 9]"
-```
-
-<span class="caption">Listing 4: An intseq turns into a vector</span>
-
-An integer sequence expression does not create a vector of integers by itself. Instead, it creates a new object that is ready
-to produce integers that are in the range specified in the expression.
-
-```expresso
-    let negative_seq = -10..0;
-    let to_negative = 0..-10:-1;
-    println("Legend: (f(x) = x - 10, g(x) = -x)");
-    for let (x, to_n) in Enumerable.zip(negative_seq, to_negative, |l, r| => (l, r)) {
-        print("(f(x), g(x)) = (${x}, ${to_n}),");  // print "(f(x), g(x)) = (-10, 0),(f(x), g(x)) = (-9, -1)" and so on
-        if x == to_n {      // and when it reaches (-5, -5), it also prints "Crossed over!"
-            println("Crossed over!");
-        }
-    }
-```
-
-<span class="caption">Listing 5: Two graphs crossed over</span>
-
-We call such objects iterators because they iterate through a sequence-like object and yields an element at a time.
-It's very useful and it's one of the reasons that gives Expresso the power of expressiveness.
-An integer sequence expression can take negative values in any of its operands as long as they fit in the range of
-the built-in `int` type(which corresponds to [-2<sup>31</sup>, 2<sup>31</sup> - 1]).
-You may notice that the integer sequence expression looks like something, say, the conditional operator. And yes, that's right! 
-In Expresso, we have 2 types of ternary operators. One is the conditional operator(often called "the ternary operator"
-because most programming languages does have only one ternary operator) and the other is the integer sequence operator we have just introduced.
-
-### The `slice` type
-
-So far you may be sick of the tiring and boring explanations. But when combined with sequence types such as arrays or vectors,
-the `intseq` type reveals its funny yet powerful potential out to the public.
-
-```expresso
-    let some_array = [0..10, ...];
-    let first_half = some_array[0..5];
-    let second_half = some_array[5..10];
-    for let (a, b) in Enumerable.zip(first_half, second_half, |l, r| => (l, r)) {
-        print("(${a}, ${b}),");   // print "(0, 5),(1, 6),(2, 7)" and so on
-    }
-```
-
-<span class="caption">Listing 6: Spliting into 2 slices</span>
-
-In the above example, it seems that the latter 2 intseq objects extract elements from the same array object.
-You may be wondering that it is inefficient because it seems that we have 3 arrays in the end. Having 3 arrays means that
-Expresso first allocates 3 chunks of memory and fills the first chunk of memory with integers from 0 to 10, and then it copies
-the first half of elements of the previous array to the second chunk of memory and the second half of elements to the last chunk of memory.
-But Expresso is smart enough to solve this problem. Instead of returning a new array, it returns iterators that goes through
-the first half of the elements and the second half of the elements respectively.
-Note that the chunks of memory(`first_half` and `second_half` let-bindings in this snippet) are called `slice` in Expresso and that `slice` is another iterator
-(in .NET term it is also called an `enumerator`).
-
-Sometimes, it's useful to view into some sequence. That's the time when the `slice` type comes into play. The `slice` type, as the name implies,
-slices some sequence and allows you to view a portion of that sequence. Combining some sequence with an `intseq` using the indexer syntax
-creates a new `slice` object. The slice object, then, can be used to iterate through some portion of the sequence.
-Note that the `slice` is just an iterator of the sequence. Thus the `slice` object doesn't create a new copy of the original sequence.
+As with the `char` type, the `string` type also is in UTF-16. See the C#'s documentation for other details on the `string` type.
 
 ### The `tuple` type
 
@@ -265,9 +192,105 @@ For other methods available, see the API documentation for the .NET's List<T> cl
 The `array` type is another sequence type, which doesn't allow you to grow or shrink its size. Thus the compiler already knows the size of an array object
 when compiling. However, it currently doesn't take advantage of it.
 
+```expresso
+let some_array = [0..5];
+```
+
+<span class="caption">Listing 9: Initializing an array using an intseq exression</span>
+
+Note that we write it this time without trailing periods. As mentioned above, it will make an array, which has a different API from the vector.
+Note also that it uses an expression that is much like a range in other programming languages. We call it an intseq expression, but the functionality is
+almost the same as that of ranges. We'll come back later to this topic again.
+
 ### The `dictionary` type
 
 The dictionary type, which is sometimes called a HashMap or simply an object, is a collection of several keys and values.
+
+```expresso
+let dict = {"a": 10, "b": 20};
+```
+
+<span class="caption">Listing 10: Initializing a dictionary using a literal</span>
+
+Like Python, you can create a dictionary in literal form in Expresso.
+
+### The `intseq` type
+
+One unique characteristic for Expresso is the built-in `intseq` type. As the name suggests, it produces a series of integers.
+The `intseq` type has 3 fields, `start`, `end` and `step`. `start` represents the start value of the sequence,
+`end` the end value and `step` the step by which an iteration proceeds at a time.
+The `intseq` type has the corresponding literal form and it is written as follows:
+`start(..|...)end[:step]`
+
+```expresso
+    let series = [1..10];   // `step` can be omitted and 1 is assumed if ommited and the double dots mean that the start value is
+                            // inclusive but the end value is exclusive
+    for let elem in seq {
+        print(elem);        // print "123456789"
+    }
+    println(series); // print "[1, 2, 3, 4, 5, 6, 7, 8, 9]"
+```
+
+<span class="caption">Listing 4: An intseq turns into an array</span>
+
+An integer sequence expression does not create a vector of integers by itself. Instead, it creates a new object that is ready
+to produce integers that are in the range specified in the expression. Note in Listing 4 that the intseq expression initializes
+an array. This is a unique feature in Expresso. As far as I know, all the other programming languages don't support it.
+Of course, you can initialize a vector if you write it as `[1..10, ...];` instead.
+Unlike the LINQ operations(the methods defined on the System.Linq.Enumerable class), it is 'eager', meaning that objects will be created
+at where the expression is written.
+
+```expresso
+    let negative_seq = -10..0;
+    let to_negative = 0..-10:-1;                    // The compiler checks whether it is correct. That means that if you wrote it as `-10..0:-1`,
+    println("Legend: (f(x) = x - 10, g(x) = -x)");  // it would issue a warning that tells you it doesn't seem to be correct.
+    for let (x, to_n) in Enumerable.zip(negative_seq, to_negative, |l, r| => (l, r)) {
+        print("(f(x), g(x)) = (${x}, ${to_n}),");  // print "(f(x), g(x)) = (-10, 0),(f(x), g(x)) = (-9, -1)" and so on
+        if x == to_n {      // and when it reaches (-5, -5), it also prints "Crossed over!"
+            println("Crossed over!");
+        }
+    }
+```
+
+<span class="caption">Listing 5: Two graphs crossed over</span>
+
+We call such objects iterators because they iterate through a sequence-like object and yields an element at a time.
+It's very useful and it's one of the reasons that gives Expresso the power of expressiveness.
+An integer sequence expression can take negative values in any of its operands as long as they fit in the range of
+the built-in `int` type(which corresponds to [-2<sup>31</sup>, 2<sup>31</sup> - 1]).
+You may notice that the integer sequence expression looks like something, say, the conditional operator. And yes, that's right! 
+In Expresso, we have 2 types of ternary operators. One is the conditional operator(often called "the ternary operator"
+because most programming languages does have only one ternary operator) and the other is the integer sequence operator we have just introduced.
+
+### The `slice` type
+
+So far you may be sick of the tiring and boring explanations. But when combined with sequence types such as arrays or vectors,
+the `intseq` type reveals its funny yet powerful potential out to the public.
+
+```expresso
+    let some_array = [0..10];
+    let first_half = some_array[0..5];
+    let second_half = some_array[5..10];
+    for let (a, b) in Enumerable.zip(first_half, second_half, |l, r| => (l, r)) {
+        print("(${a}, ${b}),");   // print "(0, 5),(1, 6),(2, 7)" and so on
+    }
+```
+
+<span class="caption">Listing 6: Spliting into 2 slices</span>
+
+In the above example, it seems that the latter 2 intseq objects extract elements from the same array object.
+You may be wondering that it is inefficient because it seems that we have 3 arrays in the end. Having 3 arrays means that
+Expresso first allocates 3 chunks of memory and fills the first chunk of memory with integers from 0 to 10, and then it copies
+the first half of elements of the previous array to the second chunk of memory and the second half of elements to the last chunk of memory.
+But Expresso is smart enough to solve this problem. Instead of returning a new array, it returns iterators that goes through
+the first half of the elements and the second half of the elements respectively.
+Note that the chunks of memory(`first_half` and `second_half` let-bindings in this snippet) are called `slice` in Expresso and that `slice` is another iterator
+(in .NET term it is also called an `enumerator`).
+
+Sometimes, it's useful to view into some sequence. That's the time when the `slice` type comes into play. The `slice` type, as the name implies,
+slices some sequence and allows you to view a portion of that sequence. Combining some sequence with an `intseq` using the indexer syntax
+creates a new `slice` object. The slice object, then, can be used to iterate through some portion of the sequence.
+Note that the `slice` is just an iterator of the sequence. Thus the `slice` object doesn't create a new copy of the original sequence.
 
 OK, so far so good. We've explained the very basics of builtin types. next up is exponentiation. But we'll be doing it in a slightly different way. Even though Expresso has the operator for it, here we'll be doing it on our
 own, using while loop.
@@ -318,6 +341,66 @@ Of course, it can even suggest the propper usages when it encounters some errors
 In contrast, it can be considered as a disadvantage that supporting those types as builtin makes it hard to maintain the source code and
 it can lead to compiler size inflation.
 
+## Using .NET as the standard library
+
+Expresso runs on the CLR. That means that you can import .NET types and use them as if they were defined in Expresso. As an example, let's create a program that
+writes some text into a file.
+
+```expresso
+module main;
+
+
+import System.IO.{File, FileStream} as {File, FileStream};
+import System.Text.UTF8Encoding as UTF8Encoding;
+
+
+def main()
+{
+    var writer (- FileStream;
+    try{
+        writer = File.openWrite("./some_text.txt");
+        let bytes = UTF8Encoding{encoderShouldEmitUTF8Identifier: true}.getBytes("This is to test writing a file");
+        writer.write(bytes, 0, bytes.Length);
+    }
+    finally{
+        if writer != null {
+            writer.dispose();
+        }
+    }
+}
+```
+
+<span class="caption">Listing 11: Using the FileStream class defined in .NET to write some text into a file</span>
+
+Let's break down the code in Listing 11. First we need to import types that have a file handle and convert strings into another encoding from .NET.
+So the import statements.
+In `main` function, we declare a new variable that will hold a stream of a file and create and open a new file. And then we create a `UTF8Encoding` that converts strings
+into UTF-8 because strings in Expresso are in UTF-16. And we get a string as a byte sequence using the `UTF8Encoding.getBytes`(Note that the method is named
+`UTF8Encoding.GetBytes` in the native code, but we call it `UTF8Encoding.getBytes` from Expresso) method.
+Then we write the byte sequence to the file that we created just a short while ago. And finally, we check that the file is successfully created, and if so we dispose of
+the file stream.
+
+### The null literal
+
+First look at this code. 
+
+```expresso
+var some_instance (- SomeExpressoType = null;
+```
+
+<span class="caption">Listing 12: The use of `null`, which won't compile</span>
+
+What do you think of the above code? Ugh, the null literal! It's the null literal! Agh! You respond?
+I know, I know that you hate it. But fortunately, or maybe unfortunately, you usually don't see `null` in Expresso in source codes.
+This is because Expresso doesn't allow `null`, but there are places where `null` is allowed, which is unfortunate to most people.
+That's in contexts that involve foreign codes, including .NET.
+In Listing 11, we use `null` in `if writer != null` to check whether `writer` is successfully created and then we dispose of `writer` if it is created.
+Because `writer` is an instance of `FileStream` and `FileStream` is defined in .NET, we can use `null`. Other use cases include call expressions to foreign functions.
+In any other contexts, you can't use `null`. 
+
+Returning to Listing 12, it is intended to initialize an instance variable, but it won't compile because `SomeExpressoType` is a type defiend in Expresso and
+therefore the use of `null` is prohibited in that context. In such a case, use the `Option<T>` type defined in Expresso standard library, which isn't currently provided.
+
 ## Interoperability with other .NET languages
 
 Let's imagine a world without any borders. You could go anywhere, you could do anything and you could live anywhere. Such a world would be woderful, don't you think?
@@ -348,6 +431,7 @@ def main()
 <span class="caption">Listing : Interoperating with C#</span>
 
 First, we import types defined in the other language. Note that the file path in the from clause is relative to the source file that the declaration resides in.
+Note also that we specify the namespace when we import a C#'s type.
 Once the types are imported, you can do anything with them as if they were defined in Expresso, as with the types in the standard library. Oh, I forgot showing
 the C#'s code. Say we have the following C# code:
 

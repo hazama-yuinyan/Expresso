@@ -71,10 +71,10 @@ namespace Expresso.Ast.Analysis
         }
 
         /// <summary>
-        /// Gets the value indicating whether the symbol table represents a type in .NET.
+        /// Gets the value indicating whether the symbol table represents a type in foreign codes.
         /// </summary>
-        /// <value><c>true</c> if is net type; otherwise, <c>false</c>.</value>
-        public bool IsNetType{
+        /// <value><c>true</c> if it is a foreign type; otherwise, <c>false</c>.</value>
+        public bool IsForeignType{
             get;
         }
 
@@ -137,13 +137,13 @@ namespace Expresso.Ast.Analysis
             NativeMapping.Add("printFormat", printformat_ident);*/
         }
 
-        public SymbolTable(ClassType typeKind = ClassType.NotType, bool isNetType = false)
+        public SymbolTable(ClassType typeKind = ClassType.NotType, bool isForeignType = false)
         {
             type_table = new Dictionary<string, Identifier>();
             table = new MultiValueDictionary<string, Identifier>();
             Children = new List<SymbolTable>();
             TypeKind = typeKind;
-            IsNetType = isNetType;
+            IsForeignType = isForeignType;
         }
 
         /// <summary>
@@ -563,7 +563,7 @@ namespace Expresso.Ast.Analysis
                 if(symbol.Type is FunctionType func_type){
                     var return_type = func_type.ReturnType;
                     var return_type_table = externalTable.GetTypeTable(return_type.IdentifierNode.Type.IsNull ? return_type.Name : return_type.IdentifierNode.Type.Name);
-                    if(!return_type_table.IsNetType && externalTable.GetTypeSymbol(return_type.Name) != null)
+                    if(!return_type_table.IsForeignType && externalTable.GetTypeSymbol(return_type.Name) != null)
                         return_type.IdentifierNode.Type = AstType.MakeSimpleType(aliasName + "::" + return_type.Name);
                 }
             }
