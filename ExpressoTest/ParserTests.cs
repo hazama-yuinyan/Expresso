@@ -4667,5 +4667,83 @@ namespace Expresso.Test
             Assert.IsNotNull(ast);
             Helpers.AstStructuralEqual(ast, expected);
         }
+
+        [Test]
+        public void PropertyTests()
+        {
+            var parser = new Parser(new Scanner("../../sources/for_unit_tests/property_tests.exs"));
+            parser.Parse();
+
+            var ast = parser.TopmostAst;
+
+            var expected = AstNode.MakeModuleDef("main", new List<EntityDeclaration>{
+                EntityDeclaration.MakeFunc(
+                    "main",
+                    Enumerable.Empty<ParameterDeclaration>(),
+                    Statement.MakeBlock(
+                        Statement.MakeExprStmt(
+                            Helpers.MakeCallExpression(
+                                Helpers.MakeIdentifierPath("println"),
+                                Expression.MakeConstant("string", "before: ${PropertyTest.SomeProperty}")
+                            )
+                        ),
+                        Statement.MakeExprStmt(
+                            Expression.MakeSingleAssignment(
+                                Expression.MakeMemRef(
+                                    Helpers.MakeIdentifierPath("PropertyTest"),
+                                    Helpers.MakeSomeIdent("SomeProperty")
+                                ),
+                                Expression.MakeConstant("int", 100)
+                            )
+                        ),
+                        Statement.MakeExprStmt(
+                            Helpers.MakeCallExpression(
+                                Helpers.MakeIdentifierPath("println"),
+                                Expression.MakeConstant("string", "after: ${PropertyTest.SomeProperty}")
+                            )
+                        ),
+                        Statement.MakeVarDecl(
+                            Helpers.MakeSeq(
+                                Helpers.MakeSomePatternWithType("inst")
+                            ),
+                            Helpers.MakeSeq(
+                                Expression.MakeObjectCreation(
+                                    Helpers.MakeGenericType("PropertyTest"),
+                                    Enumerable.Empty<Identifier>(),
+                                    Enumerable.Empty<Expression>()
+                                )
+                            ),
+                            Modifiers.None
+                        ),
+                        Statement.MakeExprStmt(
+                            Helpers.MakeCallExpression(
+                                Helpers.MakeIdentifierPath("println"),
+                                Expression.MakeConstant("string", "before: ${inst.SomeInstanceProperty}")
+                            )
+                        ),
+                        Statement.MakeExprStmt(
+                            Expression.MakeSingleAssignment(
+                                Expression.MakeMemRef(
+                                    Helpers.MakeIdentifierPath("inst"),
+                                    Helpers.MakeSomeIdent("SomeInstanceProperty")
+                                ),
+                                Expression.MakeConstant("int", 1000)
+                            )
+                        ),
+                        Statement.MakeExprStmt(
+                            Helpers.MakeCallExpression(
+                                Helpers.MakeIdentifierPath("println"),
+                                Expression.MakeConstant("string", "after: ${inst.SomeInstanceProperty}")
+                            )
+                        )
+                    ),
+                    Helpers.MakePlaceholderType(),
+                    Modifiers.None
+                )
+            });
+
+            Assert.IsNotNull(ast);
+            Helpers.AstStructuralEqual(ast, expected);
+        }
     }
 }
