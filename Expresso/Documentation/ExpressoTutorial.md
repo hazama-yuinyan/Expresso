@@ -13,7 +13,7 @@ Even though it's a type-strict language, it looks rather in type-free way thanks
 ## Hello, Expresso world!
 
 OK, enough with pre-words. By far, we are all armed enough with concepts, goals and something like that so let's get started.
-First of all, we starts from the traditional "hello world" program.
+First of all, we starts from the traditional *hello world* program.
 You may expect it to be a one-liner program considering the fact that I've mentioned Expresso looks rather like a scripting language,
 but unfortunately it's two liners like the following:
 

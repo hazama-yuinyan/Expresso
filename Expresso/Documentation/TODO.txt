@@ -5,10 +5,11 @@
 ・overrideの実装
 ・ツールの提供(Language Server Protocol)
 ・シングルトン専用構文の実装
-・using, do...while構文の追加
+・usingの追加
 ・isによる型チェックとそれに伴う自動キャスト機能
 ・doc commentを追加する
 ・shadowingを実装する
 ・comprehensionの実装
 ・matchの挙動が一部Rustと違うのを修正する
 ・Windows上でLazyTypeBuilder.ctorのbuilder.GetMethods()が動かないのを修正する
+・FlowCheckerを実行するように変更する

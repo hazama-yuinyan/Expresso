@@ -26,7 +26,8 @@ namespace Expresso.Test
             var ast = parser.TopmostAst;
             var options = new ExpressoCompilerOptions{
                 OutputPath = "../../test_executables",
-                BuildType = BuildType.Debug | BuildType.Executable
+                BuildType = BuildType.Debug | BuildType.Executable,
+                ExecutableName = "main"
             };
             var emitter = new CSharpEmitter(parser, options);
             ast.AcceptWalker(emitter, null);
@@ -53,7 +54,8 @@ namespace Expresso.Test
             var ast = parser.TopmostAst;
             var options = new ExpressoCompilerOptions{
                 OutputPath = "../../test_executables",
-                BuildType = BuildType.Debug | BuildType.Executable
+                BuildType = BuildType.Debug | BuildType.Executable,
+                ExecutableName = "main"
             };
             var emitter = new CSharpEmitter(parser, options);
             ast.AcceptWalker(emitter, null);
@@ -83,7 +85,8 @@ namespace Expresso.Test
             var ast = parser.TopmostAst;
             var options = new ExpressoCompilerOptions{
                 OutputPath = "../../test_executables",
-                BuildType = BuildType.Debug | BuildType.Executable
+                BuildType = BuildType.Debug | BuildType.Executable,
+                ExecutableName = "main"
             };
             var emitter = new CSharpEmitter(parser, options);
             ast.AcceptWalker(emitter, null);
@@ -113,7 +116,8 @@ namespace Expresso.Test
             var ast = parser.TopmostAst;
             var options = new ExpressoCompilerOptions{
                 OutputPath = "../../test_executables",
-                BuildType = BuildType.Debug | BuildType.Executable
+                BuildType = BuildType.Debug | BuildType.Executable,
+                ExecutableName = "main"
             };
             var emitter = new CSharpEmitter(parser, options);
             ast.AcceptWalker(emitter, null);
@@ -143,7 +147,8 @@ namespace Expresso.Test
             var ast = parser.TopmostAst;
             var options = new ExpressoCompilerOptions{
                 OutputPath = "../../test_executables",
-                BuildType = BuildType.Debug | BuildType.Executable
+                BuildType = BuildType.Debug | BuildType.Executable,
+                ExecutableName = "main"
             };
             var emitter = new CSharpEmitter(parser, options);
             ast.AcceptWalker(emitter, null);
@@ -173,7 +178,8 @@ namespace Expresso.Test
             var ast = parser.TopmostAst;
             var options = new ExpressoCompilerOptions{
                 OutputPath = "../../test_executables",
-                BuildType = BuildType.Debug | BuildType.Executable
+                BuildType = BuildType.Debug | BuildType.Executable,
+                ExecutableName = "main"
             };
             var emitter = new CSharpEmitter(parser, options);
             ast.AcceptWalker(emitter, null);
@@ -203,7 +209,8 @@ namespace Expresso.Test
             var ast = parser.TopmostAst;
             var options = new ExpressoCompilerOptions{
                 OutputPath = "../../test_executables",
-                BuildType = BuildType.Debug | BuildType.Executable
+                BuildType = BuildType.Debug | BuildType.Executable,
+                ExecutableName = "main"
             };
             var emitter = new CSharpEmitter(parser, options);
             ast.AcceptWalker(emitter, null);
@@ -239,7 +246,8 @@ namespace Expresso.Test
             var ast = parser.TopmostAst;
             var options = new ExpressoCompilerOptions{
                 OutputPath = "../../test_executables",
-                BuildType = BuildType.Debug | BuildType.Executable
+                BuildType = BuildType.Debug | BuildType.Executable,
+                ExecutableName = "main"
             };
             var emitter = new CSharpEmitter(parser, options);
             ast.AcceptWalker(emitter, null);
@@ -270,7 +278,8 @@ namespace Expresso.Test
 
             var options = new ExpressoCompilerOptions{
                 OutputPath = "../../test_executables",
-                BuildType = BuildType.Debug | BuildType.Executable
+                BuildType = BuildType.Debug | BuildType.Executable,
+                ExecutableName = "main"
             };
             var emitter = new CSharpEmitter(parser, options);
             ast.AcceptWalker(emitter, null);
@@ -298,7 +307,8 @@ namespace Expresso.Test
 
             var options = new ExpressoCompilerOptions{
                 OutputPath = "../../test_executables",
-                BuildType = BuildType.Debug | BuildType.Executable
+                BuildType = BuildType.Debug | BuildType.Executable,
+                ExecutableName = "main"
             };
             var emitter = new CSharpEmitter(parser, options);
             ast.AcceptWalker(emitter, null);
@@ -326,7 +336,8 @@ namespace Expresso.Test
 
             var options = new ExpressoCompilerOptions{
                 OutputPath = "../../test_executables",
-                BuildType = BuildType.Debug | BuildType.Executable
+                BuildType = BuildType.Debug | BuildType.Executable,
+                ExecutableName = "main"
             };
             var emitter = new CSharpEmitter(parser, options);
             ast.AcceptWalker(emitter, null);
@@ -354,7 +365,8 @@ namespace Expresso.Test
 
             var options = new ExpressoCompilerOptions{
                 OutputPath = "../../test_executables",
-                BuildType = BuildType.Debug | BuildType.Executable
+                BuildType = BuildType.Debug | BuildType.Executable,
+                ExecutableName = "main"
             };
             var emitter = new CSharpEmitter(parser, options);
             ast.AcceptWalker(emitter, null);
@@ -382,7 +394,8 @@ namespace Expresso.Test
 
             var options = new ExpressoCompilerOptions{
                 OutputPath = "../../test_executables",
-                BuildType = BuildType.Debug | BuildType.Executable
+                BuildType = BuildType.Debug | BuildType.Executable,
+                ExecutableName = "main"
             };
             var emitter = new CSharpEmitter(parser, options);
             ast.AcceptWalker(emitter, null);
@@ -410,7 +423,8 @@ namespace Expresso.Test
 
             var options = new ExpressoCompilerOptions{
                 OutputPath = "../../test_executables",
-                BuildType = BuildType.Debug | BuildType.Executable
+                BuildType = BuildType.Debug | BuildType.Executable,
+                ExecutableName = "main"
             };
             var emitter = new CSharpEmitter(parser, options);
             ast.AcceptWalker(emitter, null);
@@ -438,7 +452,8 @@ namespace Expresso.Test
 
             var options = new ExpressoCompilerOptions{
                 OutputPath = "../../test_executables",
-                BuildType = BuildType.Debug | BuildType.Executable
+                BuildType = BuildType.Debug | BuildType.Executable,
+                ExecutableName = "main"
             };
             var emitter = new CSharpEmitter(parser, options);
             ast.AcceptWalker(emitter, null);
@@ -466,7 +481,8 @@ namespace Expresso.Test
 
             var options = new ExpressoCompilerOptions{
                 OutputPath = "../../test_executables",
-                BuildType = BuildType.Debug | BuildType.Executable
+                BuildType = BuildType.Debug | BuildType.Executable,
+                ExecutableName = "main"
             };
             var emitter = new CSharpEmitter(parser, options);
             ast.AcceptWalker(emitter, null);
@@ -494,7 +510,8 @@ namespace Expresso.Test
 
             var options = new ExpressoCompilerOptions{
                 OutputPath = "../../test_executables",
-                BuildType = BuildType.Debug | BuildType.Executable
+                BuildType = BuildType.Debug | BuildType.Executable,
+                ExecutableName = "main"
             };
             var emitter = new CSharpEmitter(parser, options);
             ast.AcceptWalker(emitter, null);
@@ -522,7 +539,8 @@ namespace Expresso.Test
 
             var options = new ExpressoCompilerOptions{
                 OutputPath = "../../test_executables",
-                BuildType = BuildType.Debug | BuildType.Executable
+                BuildType = BuildType.Debug | BuildType.Executable,
+                ExecutableName = "main"
             };
             var emitter = new CSharpEmitter(parser, options);
             ast.AcceptWalker(emitter, null);
@@ -550,7 +568,8 @@ namespace Expresso.Test
 
             var options = new ExpressoCompilerOptions{
                 OutputPath = "../../test_executables",
-                BuildType = BuildType.Debug | BuildType.Executable
+                BuildType = BuildType.Debug | BuildType.Executable,
+                ExecutableName = "main"
             };
             var emitter = new CSharpEmitter(parser, options);
             ast.AcceptWalker(emitter, null);
@@ -578,7 +597,8 @@ namespace Expresso.Test
 
             var options = new ExpressoCompilerOptions{
                 OutputPath = "../../test_executables",
-                BuildType = BuildType.Debug | BuildType.Executable
+                BuildType = BuildType.Debug | BuildType.Executable,
+                ExecutableName = "main"
             };
             var emitter = new CSharpEmitter(parser, options);
             ast.AcceptWalker(emitter, null);
@@ -606,7 +626,8 @@ namespace Expresso.Test
 
             var options = new ExpressoCompilerOptions{
                 OutputPath = "../../test_executables",
-                BuildType = BuildType.Debug | BuildType.Executable
+                BuildType = BuildType.Debug | BuildType.Executable,
+                ExecutableName = "main"
             };
             var emitter = new CSharpEmitter(parser, options);
             ast.AcceptWalker(emitter, null);
@@ -634,7 +655,8 @@ namespace Expresso.Test
 
             var options = new ExpressoCompilerOptions{
                 OutputPath = "../../test_executables",
-                BuildType = BuildType.Debug | BuildType.Executable
+                BuildType = BuildType.Debug | BuildType.Executable,
+                ExecutableName = "main"
             };
             var emitter = new CSharpEmitter(parser, options);
             ast.AcceptWalker(emitter, null);

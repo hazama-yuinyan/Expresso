@@ -14,7 +14,7 @@ namespace Expresso.Terminal
 				Console.WriteLine(
 @"Welcome to the Expresso Console!
 I can read both assembly files or source files.
-Usage: mono exsc file_name -o target_path"
+Usage: mono exsc.exe file_name [-o target_path -e executable_name]"
                 );
 				return;
 			}
@@ -23,6 +23,7 @@ Usage: mono exsc file_name -o target_path"
 
             if(file_name.EndsWith(".exs", StringComparison.CurrentCulture)){
                 var output_path = args[2];
+                var executable_name = args[4];
 
                 try{
                     var parser = new Parser(new Scanner(file_name));
@@ -33,13 +34,14 @@ Usage: mono exsc file_name -o target_path"
 
                     var options = new ExpressoCompilerOptions{
                         OutputPath = output_path,
-                        BuildType = BuildType.Debug | BuildType.Executable
+                        BuildType = BuildType.Debug | BuildType.Executable,
+                        ExecutableName = executable_name
                     };
                     var emitter = new CSharpEmitter(parser, options);
                     ast.AcceptWalker(emitter, null);
                 }
                 catch(ParserException e){
-                    Console.WriteLine(e.Message);
+                    Console.WriteLine(e.ToString());
                 }
             }else{
                 try{
@@ -63,7 +65,7 @@ Usage: mono exsc file_name -o target_path"
                     main_func.Invoke(null, args.Skip(1).ToArray());
                 }
                 catch(Exception e){
-                    Console.WriteLine(e.Message);
+                    Console.Error.WriteLine(e.Message);
                 }
             }
 		}

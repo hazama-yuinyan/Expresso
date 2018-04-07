@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 
 
 namespace Expresso.CodeGen
@@ -33,6 +32,15 @@ namespace Expresso.CodeGen
     /// </summary>
     public class ExpressoCompilerOptions
     {
+        /// <summary>
+        /// Represents the resulting executable name.
+        /// Note that this property doesn't include the file extension.
+        /// </summary>
+        /// <value>The name of the target.</value>
+        public string ExecutableName{
+            get; set;
+        }
+
         /// <summary>
         /// Specifies the build type.
         /// In debug build, no optimizations will be performed.

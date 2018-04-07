@@ -6,7 +6,6 @@ using System.Numerics;
 using System.Reflection;
 using System.Reflection.Emit;
 using System.Text;
-using System.Text.RegularExpressions;
 using System.Threading;
 using Expresso.Ast;
 using Expresso.Ast.Analysis;
@@ -96,28 +95,6 @@ namespace Expresso.CodeGen
             CSharpCompilerHelper.AddPrimitiveNativeSymbols();
         }
 
-        static Type GuessEnumeratorType(Type type)
-        {
-            var enumerator_type = type.GetNestedType("Enumerator");
-            if(enumerator_type != null){
-                foreach(var interface_type in enumerator_type.GetInterfaces()){
-                    if(interface_type.FullName.StartsWith("System.Collections.Generic.IEnumerator", StringComparison.CurrentCulture)){
-                        if(interface_type.ContainsGenericParameters)
-                            interface_type.MakeGenericType(type.GetGenericArguments());
-                        else
-                            return interface_type;
-                    }
-                }
-
-                throw new EmitterException("Type `{0}` has to implement IEnumerator<> interface", enumerator_type.FullName);
-            }
-
-            if(type.IsSubclassOf(typeof(IEnumerable)))
-                return typeof(IEnumerator<>).MakeGenericType(type.GetGenericArguments());
-            else
-                throw new EmitterException("Type `{0}` has to implement IEnumerable<> interface", type.FullName);
-        }
-
         static Tuple<CSharpExpr, ExprTree.ParameterExpression> MakeEnumeratorCreations(CSharpExpr iterator)
         {
             ExprTree.ParameterExpression param;
@@ -172,17 +149,6 @@ namespace Expresso.CodeGen
                     contents.Add(CSharpExpr.Assign(pair.Item2, item_access));
                 }
             }
-            /*foreach(var pair in variables.Zip(enumerator,
-                (l, r) => new Tuple<ExprTree.ParameterExpression, CSharpExpr>(l, r))){
-                var iterator_type = typeof(IEnumerator<>).MakeGenericType(pair.Item1.Type);
-                var move_method = iterator_type.GetInterface("IEnumerator").GetMethod("MoveNext");
-                var move_call = CSharpExpr.Call(pair.Item2, move_method);
-                var check_failure = CSharpExpr.IfThen(CSharpExpr.IsFalse(move_call), CSharpExpr.Goto(breakTarget));
-                contents.Add(check_failure);
-
-                var current_property = iterator_type.GetProperty("Current");
-                contents.Add(CSharpExpr.Assign(pair.Item1, CSharpExpr.Property(pair.Item2, current_property)));
-            }*/
 
             return contents;
         }
@@ -230,7 +196,7 @@ namespace Expresso.CodeGen
 
         string GetModuleName(ExpressoAst ast)
         {
-            return options.BuildType.HasFlag(BuildType.Assembly) ? ast.Name + ".dll" : ast.Name + ".exe";
+            return options.BuildType.HasFlag(BuildType.Assembly) ? ast.Name + ".dll" : options.ExecutableName + ".exe";
         }
 
         #region IAstWalker implementation
@@ -264,6 +230,9 @@ namespace Expresso.CodeGen
             context.ModuleBuilder = mod_builder;
             context.LazyTypeBuilder = type_builder;
 
+            if(ast.Name == "main")
+                options.BuildType = BuildType.Assembly;
+
             context.ExternalModuleType = null;
             ast.Imports.OrderBy(i => i.ImportPaths.First().Name, new ImportPathComparer());
             foreach(var pair in ast.ExternalModules.Zip(ast.Imports.SkipWhile(i => i.ImportPaths.First().Name.StartsWith("System.", StringComparison.CurrentCulture)),
@@ -284,6 +253,8 @@ namespace Expresso.CodeGen
                     context.ExternalModuleType = null;
                 }
             }
+            if(ast.Name == "main")
+                options.BuildType = BuildType.Executable;
 
             context.AssemblyBuilder = asm_builder;
             context.ModuleBuilder = mod_builder;
