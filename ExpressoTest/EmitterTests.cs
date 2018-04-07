@@ -25,7 +25,6 @@ namespace Expresso.Test
 
             var ast = parser.TopmostAst;
             var options = new ExpressoCompilerOptions{
-                LibraryPaths = new List<string>{""},
                 OutputPath = "../../test_executables",
                 BuildType = BuildType.Debug | BuildType.Executable
             };
@@ -53,7 +52,6 @@ namespace Expresso.Test
 
             var ast = parser.TopmostAst;
             var options = new ExpressoCompilerOptions{
-                LibraryPaths = new List<string>{""},
                 OutputPath = "../../test_executables",
                 BuildType = BuildType.Debug | BuildType.Executable
             };
@@ -84,7 +82,6 @@ namespace Expresso.Test
 
             var ast = parser.TopmostAst;
             var options = new ExpressoCompilerOptions{
-                LibraryPaths = new List<string>{""},
                 OutputPath = "../../test_executables",
                 BuildType = BuildType.Debug | BuildType.Executable
             };
@@ -115,7 +112,6 @@ namespace Expresso.Test
 
             var ast = parser.TopmostAst;
             var options = new ExpressoCompilerOptions{
-                LibraryPaths = new List<string>{""},
                 OutputPath = "../../test_executables",
                 BuildType = BuildType.Debug | BuildType.Executable
             };
@@ -146,7 +142,6 @@ namespace Expresso.Test
 
             var ast = parser.TopmostAst;
             var options = new ExpressoCompilerOptions{
-                LibraryPaths = new List<string>{""},
                 OutputPath = "../../test_executables",
                 BuildType = BuildType.Debug | BuildType.Executable
             };
@@ -177,7 +172,6 @@ namespace Expresso.Test
 
             var ast = parser.TopmostAst;
             var options = new ExpressoCompilerOptions{
-                LibraryPaths = new List<string>{""},
                 OutputPath = "../../test_executables",
                 BuildType = BuildType.Debug | BuildType.Executable
             };
@@ -208,7 +202,6 @@ namespace Expresso.Test
 
             var ast = parser.TopmostAst;
             var options = new ExpressoCompilerOptions{
-                LibraryPaths = new List<string>{""},
                 OutputPath = "../../test_executables",
                 BuildType = BuildType.Debug | BuildType.Executable
             };
@@ -245,7 +238,6 @@ namespace Expresso.Test
 
             var ast = parser.TopmostAst;
             var options = new ExpressoCompilerOptions{
-                LibraryPaths = new List<string>{""},
                 OutputPath = "../../test_executables",
                 BuildType = BuildType.Debug | BuildType.Executable
             };
@@ -277,7 +269,6 @@ namespace Expresso.Test
             var ast = parser.TopmostAst;
 
             var options = new ExpressoCompilerOptions{
-                LibraryPaths = new List<string>{""},
                 OutputPath = "../../test_executables",
                 BuildType = BuildType.Debug | BuildType.Executable
             };
@@ -306,7 +297,6 @@ namespace Expresso.Test
             var ast = parser.TopmostAst;
 
             var options = new ExpressoCompilerOptions{
-                LibraryPaths = new List<string>{""},
                 OutputPath = "../../test_executables",
                 BuildType = BuildType.Debug | BuildType.Executable
             };
@@ -335,7 +325,6 @@ namespace Expresso.Test
             var ast = parser.TopmostAst;
 
             var options = new ExpressoCompilerOptions{
-                LibraryPaths = new List<string>{""},
                 OutputPath = "../../test_executables",
                 BuildType = BuildType.Debug | BuildType.Executable
             };
@@ -364,7 +353,6 @@ namespace Expresso.Test
             var ast = parser.TopmostAst;
 
             var options = new ExpressoCompilerOptions{
-                LibraryPaths = new List<string>{""},
                 OutputPath = "../../test_executables",
                 BuildType = BuildType.Debug | BuildType.Executable
             };
@@ -393,7 +381,6 @@ namespace Expresso.Test
             var ast = parser.TopmostAst;
 
             var options = new ExpressoCompilerOptions{
-                LibraryPaths = new List<string>{""},
                 OutputPath = "../../test_executables",
                 BuildType = BuildType.Debug | BuildType.Executable
             };
@@ -422,7 +409,6 @@ namespace Expresso.Test
             var ast = parser.TopmostAst;
 
             var options = new ExpressoCompilerOptions{
-                LibraryPaths = new List<string>{""},
                 OutputPath = "../../test_executables",
                 BuildType = BuildType.Debug | BuildType.Executable
             };
@@ -451,7 +437,6 @@ namespace Expresso.Test
             var ast = parser.TopmostAst;
 
             var options = new ExpressoCompilerOptions{
-                LibraryPaths = new List<string>{""},
                 OutputPath = "../../test_executables",
                 BuildType = BuildType.Debug | BuildType.Executable
             };
@@ -480,7 +465,6 @@ namespace Expresso.Test
             var ast = parser.TopmostAst;
 
             var options = new ExpressoCompilerOptions{
-                LibraryPaths = new List<string>{""},
                 OutputPath = "../../test_executables",
                 BuildType = BuildType.Debug | BuildType.Executable
             };
@@ -509,7 +493,6 @@ namespace Expresso.Test
             var ast = parser.TopmostAst;
 
             var options = new ExpressoCompilerOptions{
-                LibraryPaths = new List<string>{""},
                 OutputPath = "../../test_executables",
                 BuildType = BuildType.Debug | BuildType.Executable
             };
@@ -538,7 +521,6 @@ namespace Expresso.Test
             var ast = parser.TopmostAst;
 
             var options = new ExpressoCompilerOptions{
-                LibraryPaths = new List<string>{""},
                 OutputPath = "../../test_executables",
                 BuildType = BuildType.Debug | BuildType.Executable
             };
@@ -567,7 +549,6 @@ namespace Expresso.Test
             var ast = parser.TopmostAst;
 
             var options = new ExpressoCompilerOptions{
-                LibraryPaths = new List<string>{""},
                 OutputPath = "../../test_executables",
                 BuildType = BuildType.Debug | BuildType.Executable
             };
@@ -596,7 +577,6 @@ namespace Expresso.Test
             var ast = parser.TopmostAst;
 
             var options = new ExpressoCompilerOptions{
-                LibraryPaths = new List<string>{""},
                 OutputPath = "../../test_executables",
                 BuildType = BuildType.Debug | BuildType.Executable
             };
@@ -625,7 +605,6 @@ namespace Expresso.Test
             var ast = parser.TopmostAst;
 
             var options = new ExpressoCompilerOptions{
-                LibraryPaths = new List<string>{""},
                 OutputPath = "../../test_executables",
                 BuildType = BuildType.Debug | BuildType.Executable
             };
@@ -654,7 +633,6 @@ namespace Expresso.Test
             var ast = parser.TopmostAst;
 
             var options = new ExpressoCompilerOptions{
-                LibraryPaths = new List<string>{""},
                 OutputPath = "../../test_executables",
                 BuildType = BuildType.Debug | BuildType.Executable
             };

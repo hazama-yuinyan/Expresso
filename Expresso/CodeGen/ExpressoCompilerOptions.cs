@@ -34,13 +34,6 @@ namespace Expresso.CodeGen
     public class ExpressoCompilerOptions
     {
         /// <summary>
-        /// Specifies the path to the libraries directory.
-        /// </summary>
-        public List<string> LibraryPaths{
-            get; set;
-        }
-
-        /// <summary>
         /// Specifies the build type.
         /// In debug build, no optimizations will be performed.
         /// </summary>
