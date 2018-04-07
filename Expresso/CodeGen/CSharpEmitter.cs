@@ -1087,7 +1087,13 @@ namespace Expresso.CodeGen
             VisitIdentifier(memRef.Member, context);
             context.RequestPropertyOrField = false;
             context.RequestMethod = false;
-            return (context.Method != null) ? expr : CSharpExpr.PropertyOrField(expr, context.PropertyOrField.Name);
+
+            if(context.Method != null)
+                return expr;
+            else if(context.PropertyOrField is PropertyInfo)
+                return CSharpExpr.Property(expr, (PropertyInfo)context.PropertyOrField);
+            else
+                return CSharpExpr.Field(expr, (FieldInfo)context.PropertyOrField);
         }
 
         public CSharpExpr VisitPathExpression(PathExpression pathExpr, CSharpEmitterContext context)

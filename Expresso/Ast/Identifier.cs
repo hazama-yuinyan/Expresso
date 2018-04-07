@@ -58,12 +58,6 @@ namespace Expresso.Ast
             get{return name;}
 		}
 
-        public bool IsVerbatim{
-            get{
-                return true;
-            }
-        }
-
         /// <summary>
         /// Gets or sets the identifier id. This id represents the identity or uniqueness of that node
         /// within a whole program.

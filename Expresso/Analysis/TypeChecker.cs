@@ -281,10 +281,12 @@ namespace Expresso.Ast.Analysis
                 assignment.Right.AcceptWalker(this);
                 // Don't validate the number of elements because we have already done that in parse phase.
                 for(int i = 0; i < left_types.Count; ++i){
-                    if(IsPlaceholderType(left_types[i])){
+                    var flattened = (left_types[i] is FunctionType func_type && func_type.Name.StartsWith("set_", StringComparison.CurrentCulture)) ? func_type.Parameters.First()
+                                                                                                                                                               : left_types[i];
+                    if(IsPlaceholderType(flattened)){
                         var inferred_type = TemporaryTypes[i].Clone();
                         left_types[i].ReplaceWith(inferred_type);
-                    }else if(IsCompatibleWith(left_types[i], TemporaryTypes[i]) == TriBool.False){
+                    }else if(IsCompatibleWith(flattened, TemporaryTypes[i]) == TriBool.False){
                         var lhs_seq = assignment.Left as SequenceExpression;
                         var rhs_seq = assignment.Right as SequenceExpression;
                         parser.ReportSemanticErrorRegional(

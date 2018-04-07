@@ -406,7 +406,15 @@ namespace Expresso.Ast.Analysis
                 }
 
                 if(symbol == null){
-                    symbol = type_table.GetSymbol("get_" + memRef.Member.Name);
+                    var assignment = memRef.Ancestors
+                                           .Where(ancestor => ancestor is AssignmentExpression)
+                                           .OfType<AssignmentExpression>()
+                                           .FirstOrDefault();
+                    if(assignment != null && assignment.Left.Descendants.Any(descendant => object.ReferenceEquals(descendant, memRef)))
+                        symbol = type_table.GetSymbol("set_" + memRef.Member.Name);
+                    else
+                        symbol = type_table.GetSymbol("get_" + memRef.Member.Name);
+
                     if(symbol == null){
                         throw new ParserException(
                             "Error ES2001: The type `{0}` doesn't have a field or a method '{1}'!",
