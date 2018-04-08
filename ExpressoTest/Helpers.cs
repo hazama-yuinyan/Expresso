@@ -349,6 +349,30 @@ namespace Expresso.Test
         }
 
         /// <summary>
+        /// Creates an <see cref="Identifier"/> that represents a function.
+        /// </summary>
+        /// <returns>The function identifier.</returns>
+        /// <param name="functionName">Function name.</param>
+        /// <param name="returnType">Return type.</param>
+        /// <param name="parameters">Parameters.</param>
+        public static Identifier MakeFunctionIdentifier(string functionName, AstType returnType, params AstType[] parameters)
+        {
+            return AstNode.MakeIdentifier(functionName, AstType.MakeFunctionType(functionName, returnType, TextLocation.Empty, TextLocation.Empty, parameters));
+        }
+
+        /// <summary>
+        /// Creates a <see cref="PathExpression"/> that represents a function.
+        /// </summary>
+        /// <returns>The function identifier path.</returns>
+        /// <param name="functionName">Function name.</param>
+        /// <param name="returnType">Return type.</param>
+        /// <param name="parameters">Parameters.</param>
+        public static PathExpression MakeFunctionIdentifierPath(string functionName, AstType returnType, params AstType[] parameters)
+        {
+            return MakeIdentifierPath(functionName, AstType.MakeFunctionType(functionName, returnType, TextLocation.Empty, TextLocation.Empty, parameters));
+        }
+
+        /// <summary>
         /// Makes a single-item return statement
         /// </summary>
         /// <returns>The single item return statement.</returns>
