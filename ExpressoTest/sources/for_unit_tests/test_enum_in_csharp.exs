@@ -5,13 +5,13 @@ import InteroperabilityTest.{EnumTest, TestEnum} from "./InteroperabilityTest.dl
 
 def main()
 {
-	if EnumTest.testEnumeration(TestEnum.SomeField) {
+	if EnumTest.TestEnumeration(TestEnum.SomeField) {
 		println("matched!");
 	}
 
 	var tester = EnumTest{};
 	tester.TestProperty = TestEnum.YetAnotherField;
-	if tester.testEnumerationOnInstance() {
+	if tester.TestEnumerationOnInstance() {
 		println("matched again!");
 	}
 }

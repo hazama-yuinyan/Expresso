@@ -985,7 +985,7 @@ namespace Expresso.Test
                                         Helpers.MakeCallExpression(
                                             Expression.MakeMemRef(
                                                 Helpers.MakeIdentifierPath("fibs"),
-                                                Helpers.MakeSomeIdent("add")
+                                                Helpers.MakeSomeIdent("Add")
                                             ),
                                             Helpers.MakeIdentifierPath("b")
                                         )
@@ -1125,7 +1125,7 @@ namespace Expresso.Test
                                             Helpers.MakeCallExpression(
                                                 Expression.MakeMemRef(
                                                     Helpers.MakeIdentifierPath("vec"),
-                                                    Helpers.MakeSomeIdent("add")
+                                                    Helpers.MakeSomeIdent("Add")
                                                 ),
                                                 Helpers.MakeIdentifierPath("i")
                                             )
@@ -1134,7 +1134,7 @@ namespace Expresso.Test
                                             Helpers.MakeCallExpression(
                                                 Expression.MakeMemRef(
                                                     Helpers.MakeIdentifierPath("vec"),
-                                                    Helpers.MakeSomeIdent("add")
+                                                    Helpers.MakeSomeIdent("Add")
                                                 ),
                                                 Helpers.MakeIdentifierPath("j")
                                             )
@@ -2351,7 +2351,7 @@ namespace Expresso.Test
                             Helpers.MakeCallExpression(
                                 Expression.MakeMemRef(
                                     Helpers.MakeIdentifierPath("Math"),
-                                    Helpers.MakeSomeIdent("sin")
+                                    Helpers.MakeSomeIdent("Sin")
                                 ),
                                 Helpers.MakeIdentifierPath("x")
                             )
@@ -3657,7 +3657,7 @@ namespace Expresso.Test
                                     Helpers.MakeCallExpression(
                                         Expression.MakeMemRef(
                                             Helpers.MakeIdentifierPath("y"),
-                                            Helpers.MakeSomeIdent("add")
+                                            Helpers.MakeSomeIdent("Add")
                                         ),
                                         Helpers.MakeIdentifierPath("x")
                                     )
@@ -4065,7 +4065,7 @@ namespace Expresso.Test
                                         Helpers.MakeCallExpression(
                                             Expression.MakeMemRef(
                                                 Helpers.MakeIdentifierPath("File"),
-                                                Helpers.MakeSomeIdent("openWrite")
+                                                Helpers.MakeSomeIdent("OpenWrite")
                                             ),
                                             Expression.MakeConstant("string", "./some_text.txt")
                                         )
@@ -4087,7 +4087,7 @@ namespace Expresso.Test
                                                         Expression.MakeConstant("bool", true)
                                                     )
                                                 ),
-                                                Helpers.MakeSomeIdent("getBytes")
+                                                Helpers.MakeSomeIdent("GetBytes")
                                             ),
                                             Expression.MakeConstant("string", "This is to test writing a file")
                                         )
@@ -4098,7 +4098,7 @@ namespace Expresso.Test
                                     Helpers.MakeCallExpression(
                                         Expression.MakeMemRef(
                                             Helpers.MakeIdentifierPath("writer"),
-                                            Helpers.MakeSomeIdent("write")
+                                            Helpers.MakeSomeIdent("Write")
                                         ),
                                         Helpers.MakeIdentifierPath("bytes"),
                                         Expression.MakeConstant("int", 0),
@@ -4124,7 +4124,7 @@ namespace Expresso.Test
                                                 Helpers.MakeCallExpression(
                                                     Expression.MakeMemRef(
                                                         Helpers.MakeIdentifierPath("writer"),
-                                                        Helpers.MakeSomeIdent("dispose")
+                                                        Helpers.MakeSomeIdent("Dispose")
                                                     )
                                                 )
                                             )
@@ -4436,7 +4436,7 @@ namespace Expresso.Test
                             Helpers.MakeCallExpression(
                                 Expression.MakeMemRef(
                                     Helpers.MakeIdentifierPath("t"),
-                                    Helpers.MakeSomeIdent("doSomething")
+                                    Helpers.MakeSomeIdent("DoSomething")
                                 )
                             )
                         ),
@@ -4448,7 +4448,7 @@ namespace Expresso.Test
                                 Helpers.MakeCallExpression(
                                     Expression.MakeMemRef(
                                         Helpers.MakeIdentifierPath("t"),
-                                        Helpers.MakeSomeIdent("getSomeInt")
+                                        Helpers.MakeSomeIdent("GetSomeInt")
                                     )
                                 )
                             ),
@@ -4462,7 +4462,7 @@ namespace Expresso.Test
                                 Helpers.MakeCallExpression(
                                     Expression.MakeMemRef(
                                         Helpers.MakeIdentifierPath("t"),
-                                        Helpers.MakeSomeIdent("getIntList")
+                                        Helpers.MakeSomeIdent("GetIntList")
                                     )
                                 )
                             ),
@@ -4472,7 +4472,7 @@ namespace Expresso.Test
                             Helpers.MakeCallExpression(
                                 Expression.MakeMemRef(
                                     Helpers.MakeIdentifierPath("StaticTest"),
-                                    Helpers.MakeSomeIdent("doSomething")
+                                    Helpers.MakeSomeIdent("DoSomething")
                                 )
                             )
                         ),
@@ -4484,7 +4484,7 @@ namespace Expresso.Test
                                 Helpers.MakeCallExpression(
                                     Expression.MakeMemRef(
                                         Helpers.MakeIdentifierPath("StaticTest"),
-                                        Helpers.MakeSomeIdent("getSomeBool")
+                                        Helpers.MakeSomeIdent("GetSomeBool")
                                     )
                                 )
                             ),
@@ -4498,7 +4498,7 @@ namespace Expresso.Test
                                 Helpers.MakeCallExpression(
                                     Expression.MakeMemRef(
                                         Helpers.MakeIdentifierPath("StaticTest"),
-                                        Helpers.MakeSomeIdent("getSomeIntSeq")
+                                        Helpers.MakeSomeIdent("GetSomeIntSeq")
                                     )
                                 )
                             ),
@@ -4744,6 +4744,49 @@ namespace Expresso.Test
 
             Assert.IsNotNull(ast);
             Helpers.AstStructuralEqual(ast, expected);
+        }
+
+        [Test]
+        public void TestEnumInCSharp()
+        {
+            var parser = new Parser(new Scanner("../../sources/for_unit_tests/test_enum_in_csharp.exs"));
+            parser.Parse();
+
+            var ast = parser.TopmostAst;
+
+            var expected = AstNode.MakeModuleDef("main", new List<EntityDeclaration>{
+                EntityDeclaration.MakeFunc(
+                    "main",
+                    Enumerable.Empty<ParameterDeclaration>(),
+                    Statement.MakeBlock(
+                        Statement.MakeIfStmt(
+                            PatternConstruct.MakeExpressionPattern(
+                                Helpers.MakeCallExpression(
+                                    Expression.MakeMemRef(
+                                        Helpers.MakeIdentifierPath("TestEnum"),
+                                        Helpers.MakeSomeIdent("TestEnumeration")
+                                    ),
+                                    Expression.MakeMemRef(
+                                        Helpers.MakeIdentifierPath("EnumTest"),
+                                        Helpers.MakeSomeIdent("SomeField")
+                                    )
+                                )
+                            ),
+                            Statement.MakeBlock(
+                                Statement.MakeExprStmt(
+                                    Helpers.MakeCallExpression(
+                                        Helpers.MakeIdentifierPath("println"),
+                                        Expression.MakeConstant("string", "matched!")
+                                    )
+                                )
+                            ),
+                            null
+                        )
+                    ),
+                    Helpers.MakePlaceholderType(),
+                    Modifiers.None
+                )
+            });
         }
     }
 }

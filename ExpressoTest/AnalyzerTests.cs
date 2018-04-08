@@ -1441,9 +1441,9 @@ namespace Expresso.Test
                                                 )
                                             ),
                                             AstNode.MakeIdentifier(
-                                                "add",
+                                                "Add",
                                                 AstType.MakeFunctionType(
-                                                    "add",
+                                                    "Add",
                                                     Helpers.MakeVoidType(),
                                                     TextLocation.Empty,
                                                     TextLocation.Empty,
@@ -1662,9 +1662,9 @@ namespace Expresso.Test
                                                         )
                                                     ),
                                                     AstNode.MakeIdentifier(
-                                                        "add",
+                                                        "Add",
                                                         AstType.MakeFunctionType(
-                                                            "add",
+                                                            "Add",
                                                             Helpers.MakeVoidType(),
                                                             TextLocation.Empty,
                                                             TextLocation.Empty,
@@ -1689,9 +1689,9 @@ namespace Expresso.Test
                                                         )
                                                     ),
                                                     AstNode.MakeIdentifier(
-                                                        "add",
+                                                        "Add",
                                                         AstType.MakeFunctionType(
-                                                            "add",
+                                                            "Add",
                                                             Helpers.MakeVoidType(),
                                                             TextLocation.Empty,
                                                             TextLocation.Empty,
@@ -2045,9 +2045,9 @@ namespace Expresso.Test
                                                         Helpers.MakePrimitiveType("string")
                                                     ),
                                                     AstNode.MakeIdentifier(
-                                                        "format",
+                                                        "Format",
                                                         AstType.MakeFunctionType(
-                                                            "format",
+                                                            "Format",
                                                             Helpers.MakePrimitiveType("string"),
                                                             TextLocation.Empty,
                                                             TextLocation.Empty,
@@ -2154,9 +2154,9 @@ namespace Expresso.Test
                                                         Helpers.MakePrimitiveType("string")
                                                     ),
                                                     AstNode.MakeIdentifier(
-                                                        "format",
+                                                        "Format",
                                                         AstType.MakeFunctionType(
-                                                            "format",
+                                                            "Format",
                                                             Helpers.MakePrimitiveType("string"),
                                                             TextLocation.Empty,
                                                             TextLocation.Empty,
@@ -2212,9 +2212,9 @@ namespace Expresso.Test
                                                         Helpers.MakePrimitiveType("string")
                                                     ),
                                                     AstNode.MakeIdentifier(
-                                                        "format",
+                                                        "Format",
                                                         AstType.MakeFunctionType(
-                                                            "format",
+                                                            "Format",
                                                             Helpers.MakePrimitiveType("string"),
                                                             TextLocation.Empty,
                                                             TextLocation.Empty,
@@ -2304,9 +2304,9 @@ namespace Expresso.Test
                                                         Helpers.MakePrimitiveType("string")
                                                     ),
                                                     AstNode.MakeIdentifier(
-                                                        "format",
+                                                        "Format",
                                                         AstType.MakeFunctionType(
-                                                            "format",
+                                                            "Format",
                                                             Helpers.MakePrimitiveType("string"),
                                                             TextLocation.Empty,
                                                             TextLocation.Empty,
@@ -2434,9 +2434,9 @@ namespace Expresso.Test
                                                         Helpers.MakePrimitiveType("string")
                                                     ),
                                                     AstNode.MakeIdentifier(
-                                                        "format",
+                                                        "Format",
                                                         AstType.MakeFunctionType(
-                                                            "format",
+                                                            "Format",
                                                             Helpers.MakePrimitiveType("string"),
                                                             TextLocation.Empty,
                                                             TextLocation.Empty,
@@ -2571,9 +2571,9 @@ namespace Expresso.Test
                                                         Helpers.MakePrimitiveType("string")
                                                     ),
                                                     AstNode.MakeIdentifier(
-                                                        "format",
+                                                        "Format",
                                                         AstType.MakeFunctionType(
-                                                            "format",
+                                                            "Format",
                                                             Helpers.MakePrimitiveType("string"),
                                                             TextLocation.Empty,
                                                             TextLocation.Empty,
@@ -2628,9 +2628,9 @@ namespace Expresso.Test
                                                         Helpers.MakePrimitiveType("string")
                                                     ),
                                                     AstNode.MakeIdentifier(
-                                                        "format",
+                                                        "Format",
                                                         AstType.MakeFunctionType(
-                                                            "format",
+                                                            "Format",
                                                             Helpers.MakePrimitiveType("string"),
                                                             TextLocation.Empty,
                                                             TextLocation.Empty,
@@ -3609,9 +3609,9 @@ namespace Expresso.Test
                                                 )
                                             ),
                                             AstNode.MakeIdentifier(
-                                                "add",
+                                                "Add",
                                                 AstType.MakeFunctionType(
-                                                    "add",
+                                                    "Add",
                                                     Helpers.MakeVoidType(),
                                                     TextLocation.Empty,
                                                     TextLocation.Empty,
@@ -3888,9 +3888,9 @@ namespace Expresso.Test
                                         AstType.MakeSimpleType("System.Math")
                                     ),
                                     AstNode.MakeIdentifier(
-                                        "sin",
+                                        "Sin",
                                         AstType.MakeFunctionType(
-                                            "sin",
+                                            "Sin",
                                             Helpers.MakePrimitiveType("double"), 
                                             TextLocation.Empty,
                                             TextLocation.Empty,
@@ -4449,9 +4449,9 @@ namespace Expresso.Test
                                             Helpers.MakePrimitiveType("string")
                                         ),
                                         AstNode.MakeIdentifier(
-                                            "format",
+                                            "Format",
                                             AstType.MakeFunctionType(
-                                                "format",
+                                                "Format",
                                                 Helpers.MakePrimitiveType("string"),
                                                 TextLocation.Empty,
                                                 TextLocation.Empty,
@@ -5368,9 +5368,9 @@ namespace Expresso.Test
                                                     Helpers.MakePrimitiveType("string")
                                                 ),
                                                 AstNode.MakeIdentifier(
-                                                    "format",
+                                                    "Format",
                                                     AstType.MakeFunctionType(
-                                                        "format",
+                                                        "Format",
                                                         Helpers.MakePrimitiveType("string"),
                                                         TextLocation.Empty,
                                                         TextLocation.Empty,
@@ -5458,9 +5458,9 @@ namespace Expresso.Test
                                             Helpers.MakePrimitiveType("string")
                                         ),
                                         AstNode.MakeIdentifier(
-                                            "format",
+                                            "Format",
                                             AstType.MakeFunctionType(
-                                                "format",
+                                                "Format",
                                                 Helpers.MakePrimitiveType("string"),
                                                 TextLocation.Empty,
                                                 TextLocation.Empty,
@@ -5516,9 +5516,9 @@ namespace Expresso.Test
                                                     Helpers.MakePrimitiveType("string")
                                                 ),
                                                 AstNode.MakeIdentifier(
-                                                    "format",
+                                                    "Format",
                                                     AstType.MakeFunctionType(
-                                                        "format",
+                                                        "Format",
                                                         Helpers.MakePrimitiveType("string"),
                                                         TextLocation.Empty,
                                                         TextLocation.Empty,
@@ -5678,9 +5678,9 @@ namespace Expresso.Test
                                             Helpers.MakePrimitiveType("string")
                                         ),
                                         AstNode.MakeIdentifier(
-                                            "format",
+                                            "Format",
                                             AstType.MakeFunctionType(
-                                                "format",
+                                                "Format",
                                                 Helpers.MakePrimitiveType("string"),
                                                 TextLocation.Empty,
                                                 TextLocation.Empty,
@@ -6139,9 +6139,9 @@ namespace Expresso.Test
                                                 )
                                             ),
                                             AstNode.MakeIdentifier(
-                                                "add",
+                                                "Add",
                                                 AstType.MakeFunctionType(
-                                                    "add",
+                                                    "Add",
                                                     Helpers.MakeVoidType(),
                                                     TextLocation.Empty,
                                                     TextLocation.Empty,
@@ -6414,9 +6414,9 @@ namespace Expresso.Test
                                             Helpers.MakePrimitiveType("string")
                                         ),
                                         AstNode.MakeIdentifier(
-                                            "format",
+                                            "Format",
                                             AstType.MakeFunctionType(
-                                                "format",
+                                                "Format",
                                                 Helpers.MakePrimitiveType("string"),
                                                 TextLocation.Empty,
                                                 TextLocation.Empty,
@@ -6828,9 +6828,9 @@ namespace Expresso.Test
                                                     Helpers.MakeGenericType("System.IO.File")
                                                 ),
                                                 AstNode.MakeIdentifier(
-                                                    "openWrite",
+                                                    "OpenWrite",
                                                     AstType.MakeFunctionType(
-                                                        "openWrite",
+                                                        "OpenWrite",
                                                         Helpers.MakeGenericType("FileStream"),
                                                         TextLocation.Empty,
                                                         TextLocation.Empty,
@@ -6871,9 +6871,9 @@ namespace Expresso.Test
                                                     )
                                                 ),
                                                 AstNode.MakeIdentifier(
-                                                    "getBytes",
+                                                    "GetBytes",
                                                     AstType.MakeFunctionType(
-                                                        "getBytes",
+                                                        "GetBytes",
                                                         Helpers.MakeGenericType(
                                                             "array",
                                                             Helpers.MakePrimitiveType("byte")
@@ -6903,9 +6903,9 @@ namespace Expresso.Test
                                                 )
                                             ),
                                             AstNode.MakeIdentifier(
-                                                "write",
+                                                "Write",
                                                 AstType.MakeFunctionType(
-                                                    "write",
+                                                    "Write",
                                                     Helpers.MakeVoidType(),
                                                     TextLocation.Empty,
                                                     TextLocation.Empty,
@@ -6974,9 +6974,9 @@ namespace Expresso.Test
                                                             )
                                                         ),
                                                         AstNode.MakeIdentifier(
-                                                            "dispose",
+                                                            "Dispose",
                                                             AstType.MakeFunctionType(
-                                                                "dispose",
+                                                                "Dispose",
                                                                 Helpers.MakeVoidType(),
                                                                 Enumerable.Empty<AstType>()
                                                             )
@@ -7171,9 +7171,9 @@ namespace Expresso.Test
                                             Helpers.MakePrimitiveType("string")
                                         ),
                                         AstNode.MakeIdentifier(
-                                            "format",
+                                            "Format",
                                             AstType.MakeFunctionType(
-                                                "format",
+                                                "Format",
                                                 Helpers.MakePrimitiveType("string"),
                                                 TextLocation.Empty,
                                                 TextLocation.Empty,
@@ -7219,9 +7219,9 @@ namespace Expresso.Test
                                             Helpers.MakePrimitiveType("string")
                                         ),
                                         AstNode.MakeIdentifier(
-                                            "format",
+                                            "Format",
                                             AstType.MakeFunctionType(
-                                                "format",
+                                                "Format",
                                                 Helpers.MakePrimitiveType("string"),
                                                 TextLocation.Empty,
                                                 TextLocation.Empty,
@@ -7286,9 +7286,9 @@ namespace Expresso.Test
                                             Helpers.MakePrimitiveType("string")
                                         ),
                                         AstNode.MakeIdentifier(
-                                            "format",
+                                            "Format",
                                             AstType.MakeFunctionType(
-                                                "format",
+                                                "Format",
                                                 Helpers.MakePrimitiveType("string"),
                                                 TextLocation.Empty,
                                                 TextLocation.Empty,
@@ -7337,9 +7337,9 @@ namespace Expresso.Test
                                             Helpers.MakePrimitiveType("string")
                                         ),
                                         AstNode.MakeIdentifier(
-                                            "format",
+                                            "Format",
                                             AstType.MakeFunctionType(
-                                                "format",
+                                                "Format",
                                                 Helpers.MakePrimitiveType("string"),
                                                 TextLocation.Empty,
                                                 TextLocation.Empty,
@@ -7567,9 +7567,9 @@ namespace Expresso.Test
                                         )
                                     ),
                                     AstNode.MakeIdentifier(
-                                        "doSomething",
+                                        "DoSomething",
                                         AstType.MakeFunctionType(
-                                            "doSomething",
+                                            "DoSomething",
                                             Helpers.MakeVoidType(),
                                             Enumerable.Empty<AstType>()
                                         )
@@ -7595,9 +7595,9 @@ namespace Expresso.Test
                                             )
                                         ),
                                         AstNode.MakeIdentifier(
-                                            "getSomeInt",
+                                            "GetSomeInt",
                                             AstType.MakeFunctionType(
-                                                "getSomeInt",
+                                                "GetSomeInt",
                                                 Helpers.MakePrimitiveType("int"),
                                                 Enumerable.Empty<AstType>()
                                             )
@@ -7629,9 +7629,9 @@ namespace Expresso.Test
                                             )
                                         ),
                                         AstNode.MakeIdentifier(
-                                            "getIntList",
+                                            "GetIntList",
                                             AstType.MakeFunctionType(
-                                                "getIntList",
+                                                "GetIntList",
                                                 Helpers.MakeGenericTypeWithRealName(
                                                     "vector",
                                                     "Vector",
@@ -7655,9 +7655,9 @@ namespace Expresso.Test
                                         )
                                     ),
                                     AstNode.MakeIdentifier(
-                                        "doSomething",
+                                        "DoSomething",
                                         AstType.MakeFunctionType(
-                                            "doSomething",
+                                            "DoSomething",
                                             Helpers.MakeVoidType(),
                                             Enumerable.Empty<AstType>()
                                         )
@@ -7682,9 +7682,9 @@ namespace Expresso.Test
                                             )
                                         ),
                                         AstNode.MakeIdentifier(
-                                            "getSomeBool",
+                                            "GetSomeBool",
                                             AstType.MakeFunctionType(
-                                                "getSomeBool",
+                                                "GetSomeBool",
                                                 Helpers.MakePrimitiveType("bool"),
                                                 Enumerable.Empty<AstType>()
                                             )
@@ -7711,9 +7711,9 @@ namespace Expresso.Test
                                             )
                                         ),
                                         AstNode.MakeIdentifier(
-                                            "getSomeIntSeq",
+                                            "GetSomeIntSeq",
                                             AstType.MakeFunctionType(
-                                                "getSomeIntSeq",
+                                                "GetSomeIntSeq",
                                                 Helpers.MakePrimitiveType("intseq"),
                                                 Enumerable.Empty<AstType>()
                                             )
@@ -7973,9 +7973,9 @@ namespace Expresso.Test
                                                     Helpers.MakePrimitiveType("string")
                                                 ),
                                                 AstNode.MakeIdentifier(
-                                                    "format",
+                                                    "Format",
                                                     AstType.MakeFunctionType(
-                                                        "format",
+                                                        "Format",
                                                         Helpers.MakePrimitiveType("string"),
                                                         TextLocation.Empty,
                                                         TextLocation.Empty,
@@ -8052,9 +8052,9 @@ namespace Expresso.Test
                                                     Helpers.MakePrimitiveType("string")
                                                 ),
                                                 AstNode.MakeIdentifier(
-                                                    "format",
+                                                    "Format",
                                                     AstType.MakeFunctionType(
-                                                        "format",
+                                                        "Format",
                                                         Helpers.MakePrimitiveType("string"),
                                                         TextLocation.Empty,
                                                         TextLocation.Empty,
@@ -8131,9 +8131,9 @@ namespace Expresso.Test
                                                     Helpers.MakePrimitiveType("string")
                                                 ),
                                                 AstNode.MakeIdentifier(
-                                                    "format",
+                                                    "Format",
                                                     AstType.MakeFunctionType(
-                                                        "format",
+                                                        "Format",
                                                         Helpers.MakePrimitiveType("string"),
                                                         TextLocation.Empty,
                                                         TextLocation.Empty,
@@ -8213,9 +8213,9 @@ namespace Expresso.Test
                                             Helpers.MakePrimitiveType("string")
                                         ),
                                         AstNode.MakeIdentifier(
-                                            "format",
+                                            "Format",
                                             AstType.MakeFunctionType(
-                                                "format",
+                                                "Format",
                                                 Helpers.MakePrimitiveType("string"),
                                                 TextLocation.Empty,
                                                 TextLocation.Empty,
@@ -8295,9 +8295,9 @@ namespace Expresso.Test
                                             Helpers.MakePrimitiveType("string")
                                         ),
                                         AstNode.MakeIdentifier(
-                                            "format",
+                                            "Format",
                                             AstType.MakeFunctionType(
-                                                "format",
+                                                "Format",
                                                 Helpers.MakePrimitiveType("string"),
                                                 TextLocation.Empty,
                                                 TextLocation.Empty,
@@ -8376,9 +8376,9 @@ namespace Expresso.Test
                                             Helpers.MakePrimitiveType("string")
                                         ),
                                         AstNode.MakeIdentifier(
-                                            "format",
+                                            "Format",
                                             AstType.MakeFunctionType(
-                                                "format",
+                                                "Format",
                                                 Helpers.MakePrimitiveType("string"),
                                                 TextLocation.Empty,
                                                 TextLocation.Empty,
@@ -8460,9 +8460,9 @@ namespace Expresso.Test
                                             Helpers.MakePrimitiveType("string")
                                         ),
                                         AstNode.MakeIdentifier(
-                                            "format",
+                                            "Format",
                                             AstType.MakeFunctionType(
-                                                "format",
+                                                "Format",
                                                 Helpers.MakePrimitiveType("string"),
                                                 TextLocation.Empty,
                                                 TextLocation.Empty,

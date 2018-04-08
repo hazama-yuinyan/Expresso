@@ -320,7 +320,7 @@ namespace Expresso.Ast.Analysis
                             Expression.MakePath(
                                 AstNode.MakeIdentifier("string", AstType.MakePlaceholderType())
                             ),
-                            AstNode.MakeIdentifier("format", AstType.MakePlaceholderType())
+                            AstNode.MakeIdentifier("Format", AstType.MakePlaceholderType())
                         ),
                         new []{literal.Clone()}.Concat(exprs),
                         literal.StartLocation

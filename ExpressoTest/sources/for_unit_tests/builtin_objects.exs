@@ -19,7 +19,7 @@ def main()
 	var y (- vector<int> = [...];
 	for let x in d {
 		print(x);
-		y.add(x);
+		y.Add(x);
 	}
 	//let e = c[2];
 	

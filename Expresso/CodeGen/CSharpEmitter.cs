@@ -985,8 +985,8 @@ namespace Expresso.CodeGen
                 }else if(context.TargetType != null && context.RequestMethod){
                     // For methods or functions in external modules
                     // We regard types containing namespaces as types from other assemblies
-                    var method_name = context.TargetType.FullName.Contains(".") ? CSharpCompilerHelper.ConvertToPascalCase(ident.Name) : ident.Name;
-                    var method = (context.ArgumentTypes != null) ? context.TargetType.GetMethod(method_name, context.ArgumentTypes) : context.TargetType.GetMethod(method_name);
+                    //var method_name = context.TargetType.FullName.Contains(".") ? CSharpCompilerHelper.ConvertToPascalCase(ident.Name) : ident.Name;
+                    var method = (context.ArgumentTypes != null) ? context.TargetType.GetMethod(ident.Name, context.ArgumentTypes) : context.TargetType.GetMethod(ident.Name);
                     if(method == null){
                         if(!context.RequestPropertyOrField)
                             throw new EmitterException("It is found that the native symbol '{0}' doesn't represent a method.", ident.Name);
@@ -1504,7 +1504,7 @@ namespace Expresso.CodeGen
                     }else{
                         var module_type_name = import_path.Name.Substring(0, last_index);
                         var module_type = CSharpCompilerHelper.GetNativeType(AstType.MakeSimpleType(module_type_name));
-                        var member_name = CSharpCompilerHelper.ConvertToPascalCase(type_name);
+                        var member_name = type_name;//CSharpCompilerHelper.ConvertToPascalCase(type_name);
 
                         if(module_type != null){
                             var flags = BindingFlags.Static | BindingFlags.NonPublic;
@@ -1563,7 +1563,7 @@ namespace Expresso.CodeGen
             else
                 attrs |= BindingFlags.NonPublic;
 
-            var interface_func = context.LazyTypeBuilder.GetInterfaceMethod(CSharpCompilerHelper.ConvertToPascalCase(funcDecl.Name), attrs);
+            var interface_func = context.LazyTypeBuilder.GetInterfaceMethod(funcDecl.Name, attrs);//context.LazyTypeBuilder.GetInterfaceMethod(CSharpCompilerHelper.ConvertToPascalCase(funcDecl.Name), attrs);
             AddSymbol(funcDecl.NameToken, new ExpressoSymbol{Method = interface_func});
 
             var body = funcDecl.Body.AcceptWalker(this, context);
@@ -2243,7 +2243,7 @@ namespace Expresso.CodeGen
                 }
 
                 if(entity is FunctionDeclaration 
-                   && context.LazyTypeBuilder.GetMethod(CSharpCompilerHelper.ConvertToPascalCase(entity.Name)) == null)
+                   && context.LazyTypeBuilder.GetMethod(entity.Name) == null)//context.LazyTypeBuilder.GetMethod(CSharpCompilerHelper.ConvertToPascalCase(entity.Name)) == null)
                     DefineFunctionSignature((FunctionDeclaration)entity, context);
                 else if(entity is FieldDeclaration
                         && context.LazyTypeBuilder.GetField(entity.Name) == null)
@@ -2282,7 +2282,8 @@ namespace Expresso.CodeGen
             var param_types =
                 from param in parameters
                 select param.Type;
-            context.LazyTypeBuilder.DefineMethod(CSharpCompilerHelper.ConvertToPascalCase(funcDecl.Name), attrs, return_type, param_types.ToArray());
+            context.LazyTypeBuilder.DefineMethod(funcDecl.Name, attrs, return_type, param_types.ToArray());
+            //context.LazyTypeBuilder.DefineMethod(CSharpCompilerHelper.ConvertToPascalCase(funcDecl.Name), attrs, return_type, param_types.ToArray());
 
             AscendScope();
             scope_counter = tmp_counter + 1;

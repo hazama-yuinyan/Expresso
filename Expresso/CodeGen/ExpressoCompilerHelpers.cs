@@ -155,7 +155,7 @@ namespace Expresso.CodeGen
                 // FIXME?: Think about changing the property methods' type
                 foreach(var public_method in type.GetMethods()){
                     var method_name = public_method.Name;
-                    method_name = ConvertToExpressoFunctionName(method_name);
+                    //method_name = ConvertToExpressoFunctionName(method_name);
                     if(IgnoreList.Contains(method_name) || method_name.StartsWith("op_", StringComparison.CurrentCulture))
                         continue;
 

@@ -25,7 +25,7 @@ def main()
 
 	var fibs (- vector<int> = [...], a = 0, b = 1;
 	while b < 1000 {
-		fibs.add(b);
+		fibs.Add(b);
 		a, b = b, a + b;
 	}
 
@@ -40,8 +40,8 @@ def main()
 		for let j in 0..10 {
 			if i == 3 || i == 6 {break;}
 			if j == 8 {continue upto 2;}
-			vec.add(i);
-			vec.add(j);
+			vec.Add(i);
+			vec.Add(j);
 			println(i, j);
 		}
 	}

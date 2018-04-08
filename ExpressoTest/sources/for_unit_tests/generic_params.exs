@@ -5,7 +5,7 @@ def createList<T>(a (- T, b (- T, rest... (- T[]) -> vector<T>
 {
     var tmp_vec = [a, b, ...];
     for let tmp in rest {
-        tmp_vec.add(tmp);
+        tmp_vec.Add(tmp);
     }
     return tmp_vec;
 }

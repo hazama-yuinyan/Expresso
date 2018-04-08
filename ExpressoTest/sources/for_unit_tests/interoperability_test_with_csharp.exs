@@ -6,13 +6,13 @@ import InteroperabilityTest.{InteroperabilityTest, StaticTest} from "./Interoper
 def main()
 {
 	let t = InteroperabilityTest{};
-	t.doSomething();
-	let i = t.getSomeInt();
-	let list = t.getIntList();
+	t.DoSomething();
+	let i = t.GetSomeInt();
+	let list = t.GetIntList();
 
-	StaticTest.doSomething();
-	let flag = StaticTest.getSomeBool();
-	let seq = StaticTest.getSomeIntSeq();
+	StaticTest.DoSomething();
+	let flag = StaticTest.GetSomeBool();
+	let seq = StaticTest.GetSomeIntSeq();
 
 	println(i, list, flag, seq);
 }
