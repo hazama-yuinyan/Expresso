@@ -11,7 +11,8 @@ namespace Expresso.Ast
     public class BlockStatement : Statement
     {
         #region Null
-        public static new BlockStatement Null = new NullBlockStatement();
+        public static readonly new BlockStatement Null = new NullBlockStatement();
+
         sealed class NullBlockStatement : BlockStatement
         {
             public override bool IsNull{

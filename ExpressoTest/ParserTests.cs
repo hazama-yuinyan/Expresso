@@ -4763,11 +4763,11 @@ namespace Expresso.Test
                             PatternConstruct.MakeExpressionPattern(
                                 Helpers.MakeCallExpression(
                                     Expression.MakeMemRef(
-                                        Helpers.MakeIdentifierPath("TestEnum"),
+                                        Helpers.MakeIdentifierPath("EnumTest"),
                                         Helpers.MakeSomeIdent("TestEnumeration")
                                     ),
                                     Expression.MakeMemRef(
-                                        Helpers.MakeIdentifierPath("EnumTest"),
+                                        Helpers.MakeIdentifierPath("TestEnum"),
                                         Helpers.MakeSomeIdent("SomeField")
                                     )
                                 )
@@ -4779,14 +4779,59 @@ namespace Expresso.Test
                                         Expression.MakeConstant("string", "matched!")
                                     )
                                 )
+                            )
+                        ),
+                        Statement.MakeVarDecl(
+                            Helpers.MakeSeq(
+                                Helpers.MakeSomePatternWithType("tester")
                             ),
-                            null
+                            Helpers.MakeSeq(
+                                Expression.MakeObjectCreation(
+                                    Helpers.MakeGenericType("EnumTest"),
+                                    Enumerable.Empty<Identifier>(),
+                                    Enumerable.Empty<Expression>()
+                                )
+                            ),
+                            Modifiers.None
+                        ),
+                        Statement.MakeExprStmt(
+                            Expression.MakeSingleAssignment(
+                                Expression.MakeMemRef(
+                                    Helpers.MakeIdentifierPath("tester"),
+                                    Helpers.MakeSomeIdent("TestProperty")
+                                ),
+                                Expression.MakeMemRef(
+                                    Helpers.MakeIdentifierPath("TestEnum"),
+                                    Helpers.MakeSomeIdent("YetAnotherField")
+                                )
+                            )
+                        ),
+                        Statement.MakeIfStmt(
+                            PatternConstruct.MakeExpressionPattern(
+                                Helpers.MakeCallExpression(
+                                    Expression.MakeMemRef(
+                                        Helpers.MakeIdentifierPath("tester"),
+                                        Helpers.MakeSomeIdent("TestEnumerationOnInstance")
+                                    )
+                                )
+                            ),
+                            Statement.MakeBlock(
+                                Statement.MakeExprStmt(
+                                    Helpers.MakeCallExpression(
+                                        Helpers.MakeIdentifierPath("println"),
+                                        Expression.MakeConstant("string", "matched again!")
+                                    )
+                                )
+                            )
                         )
                     ),
                     Helpers.MakePlaceholderType(),
                     Modifiers.None
                 )
             });
+
+            Assert.IsNotNull(ast);
+            Helpers.AstStructuralEqual(ast, expected);
         }
     }
 }

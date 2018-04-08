@@ -1,5 +1,3 @@
-using System;
-
 using ICSharpCode.NRefactory;
 
 namespace Expresso.Ast
@@ -91,9 +89,9 @@ namespace Expresso.Ast
         internal protected override bool DoMatch(AstNode other, ICSharpCode.NRefactory.PatternMatching.Match match)
         {
             IfStatement o = other as IfStatement;
-            return o != null && this.Condition.DoMatch(o.Condition, match)
-                && this.TrueBlock.DoMatch(o.TrueBlock, match)
-                && this.FalseBlock.DoMatch(o.FalseBlock, match);
+            return o != null && Condition.DoMatch(o.Condition, match)
+                && TrueBlock.DoMatch(o.TrueBlock, match)
+                && FalseBlock.DoMatch(o.FalseBlock, match);
         }
 	}
 }
