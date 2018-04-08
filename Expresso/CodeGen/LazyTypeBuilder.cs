@@ -188,7 +188,7 @@ namespace Expresso.CodeGen
             }
             
             ConstructorBuilder ctor = null;
-            if(!members.OfType<ConstructorBuilder>().Any()){
+            if(!members.OfType<ConstructorBuilder>().Any() && types.Any()){
                 var param_types = members.OfType<FieldBuilder>()
                                          .Where(t => !has_initializer_list.Any(name => t.Name == name))
                                          .Select(t => t.FieldType)
