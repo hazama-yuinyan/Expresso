@@ -34,6 +34,8 @@
     <Compile Include="InteroperabilityTest.cs" />
     <Compile Include="StaticTest.cs" />
     <Compile Include="PropertyTest.cs" />
+    <Compile Include="TestEnum.cs" />
+    <Compile Include="EnumTest.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Expresso\ExpressoRuntime\ExpressoRuntime.csproj">

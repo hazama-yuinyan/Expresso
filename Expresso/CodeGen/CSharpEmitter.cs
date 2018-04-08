@@ -974,7 +974,15 @@ namespace Expresso.CodeGen
                     throw new EmitterException("I can't guess what you want.");
                 }
             }else{
-                if(context.TargetType != null && context.RequestMethod){
+                if(context.TargetType.IsEnum){
+                    var enum_field = context.TargetType.GetField(ident.Name);
+                    if(enum_field == null)
+                        throw new EmitterException("It is found that the native symbol '{0}' doesn't represent an enum field.", ident.Name);
+
+                    context.PropertyOrField = enum_field;
+                    AddSymbol(ident, new ExpressoSymbol{PropertyOrField = enum_field});
+                    return null;
+                }else if(context.TargetType != null && context.RequestMethod){
                     // For methods or functions in external modules
                     // We regard types containing namespaces as types from other assemblies
                     var method_name = context.TargetType.FullName.Contains(".") ? CSharpCompilerHelper.ConvertToPascalCase(ident.Name) : ident.Name;
@@ -1978,8 +1986,8 @@ namespace Expresso.CodeGen
             context.Method = null;
             var expr = exprPattern.Expression.AcceptWalker(this, context);
             context.RequestMethod = false;
-            return (context.Method != null) ? CSharpExpr.Call(expr, context.Method, context.TemporaryVariable) as CSharpExpr :
-                (context.ContextAst is MatchStatement) ? CSharpExpr.Equal(context.TemporaryVariable, expr) as CSharpExpr : expr;
+            return (context.Method != null && context.Method.DeclaringType.Name == "ExpressoIntegerSequence") ? CSharpExpr.Call(expr, context.Method, context.TemporaryVariable) :
+                                                                                                                          (context.ContextAst is MatchStatement) ? CSharpExpr.Equal(context.TemporaryVariable, expr)  : expr;
         }
 
         public CSharpExpr VisitIgnoringRestPattern(IgnoringRestPattern restPattern, CSharpEmitterContext context)

@@ -121,6 +121,7 @@
     <None Include="sources\for_unit_tests\erroneous\intseq_warnings.exs" />
     <None Include="sources\for_unit_tests\erroneous\invalid_use_of_indexer_operator.exs" />
     <None Include="sources\for_unit_tests\property_tests.exs" />
+    <None Include="sources\for_unit_tests\test_enum_in_csharp.exs" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AnalyzerTests.cs" />

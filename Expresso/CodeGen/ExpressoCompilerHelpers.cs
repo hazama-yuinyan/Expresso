@@ -19,7 +19,6 @@ namespace Expresso.CodeGen
         static uint IdentifierId = StartOfIdentifierId + 16u;
         static readonly string TypePrefix = "type_";
         static readonly string[] IgnoreList = new []{"equals", "getHashCode"};
-        static readonly Tuple<string, string> ReplaceTypeStrings = new Tuple<string, string>("Object", "object");
 
         static Dictionary<string, Tuple<string, uint>> SpecialNamesMapInverse = new Dictionary<string, Tuple<string, uint>>{
             {"Expresso.Runtime.Builtins.ExpressoIntegerSequence", Tuple.Create("intseq", StartOfIdentifierId + 0)},
@@ -145,33 +144,42 @@ namespace Expresso.CodeGen
             new_table = new_table ?? new SymbolTable(ClassType.Class, true);
             new_table.Name = converted_name_full;
 
-            // FIXME?: Think about changing the property methods' type
-            foreach(var public_method in type.GetMethods()){
-                var method_name = public_method.Name;
-                method_name = ConvertToExpressoFunctionName(method_name);
-                if(IgnoreList.Contains(method_name) || method_name.StartsWith("op_", StringComparison.CurrentCulture))
-                    continue;
+            if(type.IsEnum){
+                var full_name = type.FullName;
+                foreach(var enum_name in type.GetEnumNames()){
+                    var ident = AstNode.MakeIdentifier(enum_name, AstType.MakeSimpleType(AstNode.MakeIdentifier(type_name, AstType.MakeSimpleType(full_name))));
+                    ident.IdentifierId = IdentifierId++;
+                    new_table.AddSymbol(enum_name, ident);
+                }
+            }else{
+                // FIXME?: Think about changing the property methods' type
+                foreach(var public_method in type.GetMethods()){
+                    var method_name = public_method.Name;
+                    method_name = ConvertToExpressoFunctionName(method_name);
+                    if(IgnoreList.Contains(method_name) || method_name.StartsWith("op_", StringComparison.CurrentCulture))
+                        continue;
 
-                var return_type = GetExpressoType(public_method.ReturnType);
-                var param_types =
-                    from param in public_method.GetParameters()
-                                               select GetExpressoType(param.ParameterType);
-                var method_type = AstType.MakeFunctionType(method_name, return_type, param_types);
-                new_table.AddSymbol(method_name, method_type);
+                    var return_type = GetExpressoType(public_method.ReturnType);
+                    var param_types =
+                        from param in public_method.GetParameters()
+                                                   select GetExpressoType(param.ParameterType);
+                    var method_type = AstType.MakeFunctionType(method_name, return_type, param_types);
+                    new_table.AddSymbol(method_name, method_type);
 
-                new_table.GetSymbol(method_name, method_type).IdentifierId = IdentifierId++;
-            }
+                    new_table.GetSymbol(method_name, method_type).IdentifierId = IdentifierId++;
+                }
 
-            foreach(var ctor in type.GetConstructors()){
-                var name = "constructor";
+                foreach(var ctor in type.GetConstructors()){
+                    var name = "constructor";
 
-                var return_type = AstType.MakeSimpleType("tuple");
-                var param_types =
-                    from p in ctor.GetParameters()
-                                  select GetExpressoType(p.ParameterType);
-                var ctor_type = AstType.MakeFunctionType(name, return_type, param_types);
-                new_table.AddSymbol(name, ctor_type);
-                new_table.GetSymbol(name, ctor_type).IdentifierId = IdentifierId++;
+                    var return_type = AstType.MakeSimpleType("tuple");
+                    var param_types =
+                        from p in ctor.GetParameters()
+                                      select GetExpressoType(p.ParameterType);
+                    var ctor_type = AstType.MakeFunctionType(name, return_type, param_types);
+                    new_table.AddSymbol(name, ctor_type);
+                    new_table.GetSymbol(name, ctor_type).IdentifierId = IdentifierId++;
+                }
             }
 
             if(!table_was_created){

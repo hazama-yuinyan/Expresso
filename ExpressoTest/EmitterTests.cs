@@ -672,6 +672,35 @@ namespace Expresso.Test
 
             main_method.Invoke(null, new object[]{});
         }
+
+        [Test]
+        public void TestEnumInCSharp()
+        {
+            var parser = new Parser(new Scanner("../../sources/for_unit_tests/test_enum_in_csharp.exs"));
+            parser.DoPostParseProcessing = true;
+            parser.Parse();
+
+            var ast = parser.TopmostAst;
+
+            var options = new ExpressoCompilerOptions{
+                OutputPath = "../../test_executables",
+                BuildType = BuildType.Debug | BuildType.Executable,
+                ExecutableName = "main"
+            };
+            var emitter = new CSharpEmitter(parser, options);
+            ast.AcceptWalker(emitter, null);
+
+            var asm = emitter.AssemblyBuilder;
+            var main_method = asm.GetModule("main.exe")
+                                 .GetType("Main")
+                                 .GetMethod("Main", BindingFlags.NonPublic | BindingFlags.Static);
+            Assert.AreEqual(main_method.Name, "Main");
+            Assert.IsTrue(main_method.IsStatic);
+            Assert.AreEqual(typeof(void), main_method.ReturnType);
+            Assert.AreEqual(0, main_method.GetParameters().Length);
+
+            main_method.Invoke(null, new object[]{});
+        }
     }
 }
 

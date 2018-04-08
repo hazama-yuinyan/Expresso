@@ -416,11 +416,19 @@ namespace Expresso.Ast.Analysis
                         symbol = type_table.GetSymbol("get_" + memRef.Member.Name);
 
                     if(symbol == null){
-                        throw new ParserException(
-                            "Error ES2001: The type `{0}` doesn't have a field or a method '{1}'!",
-                            memRef.Member,
-                            target_type.ToString(), memRef.Member.Name
-                        );
+                        if(memRef.Parent is CallExpression){
+                            throw new ParserException(
+                                "Error ES2002: The type `{0}` doesn't have a method '{1}'!",
+                                memRef.Member,
+                                target_type.ToString(), memRef.Member.Name
+                            );
+                        }else{
+                            throw new ParserException(
+                                "Error ES2001: The type `{0}` doesn't have a field or a property '{1}'!",
+                                memRef.Member,
+                                target_type.ToString(), memRef.Member.Name
+                            );
+                        }
                     }
                 }
                  

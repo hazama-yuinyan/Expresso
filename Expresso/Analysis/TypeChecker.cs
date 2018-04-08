@@ -750,8 +750,6 @@ namespace Expresso.Ast.Analysis
             if(pathExpr.Items.Count == 1){
                 return VisitIdentifier(pathExpr.AsIdentifier);
             }else{
-                //inference_runner.VisitPathExpression(pathExpr);
-
                 var old_table = symbols;
                 AstType result = null;
                 foreach(var item in pathExpr.Items){
