@@ -5320,10 +5320,9 @@ namespace Expresso.Test
                                                 ),
                                                 AstNode.MakeIdentifier(
                                                     "Message",
-                                                    AstType.MakeFunctionType(
-                                                        "get_Message",
-                                                        Helpers.MakePrimitiveType("string"),
-                                                        Enumerable.Empty<AstType>()
+                                                    Helpers.MakePropertyGetterType(
+                                                        "Message",
+                                                        Helpers.MakePrimitiveType("string")
                                                     )
                                                 )
                                             )
@@ -5644,10 +5643,9 @@ namespace Expresso.Test
                                                 ),
                                                 AstNode.MakeIdentifier(
                                                     "Message",
-                                                    AstType.MakeFunctionType(
-                                                        "get_Message",
-                                                        Helpers.MakePrimitiveType("string"),
-                                                        Enumerable.Empty<AstType>()
+                                                    Helpers.MakePropertyGetterType(
+                                                        "Message",
+                                                        Helpers.MakePrimitiveType("string")
                                                     )
                                                 )
                                             )
@@ -6936,10 +6934,9 @@ namespace Expresso.Test
                                             ),
                                             AstNode.MakeIdentifier(
                                                 "Length",
-                                                AstType.MakeFunctionType(
-                                                    "get_Length",
-                                                    Helpers.MakePrimitiveType("int"),
-                                                    Enumerable.Empty<AstType>()
+                                                Helpers.MakePropertyGetterType(
+                                                    "Length",
+                                                    Helpers.MakePrimitiveType("int")
                                                 )
                                             )
                                         )
@@ -8240,10 +8237,9 @@ namespace Expresso.Test
                                         ),
                                         AstNode.MakeIdentifier(
                                             "SomeProperty",
-                                            AstType.MakeFunctionType(
-                                                "get_SomeProperty",
-                                                Helpers.MakePrimitiveType("int"),
-                                                Enumerable.Empty<AstType>()
+                                            Helpers.MakePropertyGetterType(
+                                                "SomeProperty",
+                                                Helpers.MakePrimitiveType("int")
                                             )
                                         )
                                     )
@@ -8261,11 +8257,8 @@ namespace Expresso.Test
                                     ),
                                     AstNode.MakeIdentifier(
                                         "SomeProperty",
-                                        AstType.MakeFunctionType(
-                                            "set_SomeProperty",
-                                            Helpers.MakeVoidType(),
-                                            TextLocation.Empty,
-                                            TextLocation.Empty,
+                                        Helpers.MakePropertySetterType(
+                                            "SomeProperty",
                                             Helpers.MakePrimitiveType("int")
                                         )
                                     )
@@ -8322,10 +8315,9 @@ namespace Expresso.Test
                                         ),
                                         AstNode.MakeIdentifier(
                                             "SomeProperty",
-                                            AstType.MakeFunctionType(
-                                                "get_SomeProperty",
-                                                Helpers.MakePrimitiveType("int"),
-                                                Enumerable.Empty<AstType>()
+                                            Helpers.MakePropertyGetterType(
+                                                "SomeProperty",
+                                                Helpers.MakePrimitiveType("int")
                                             )
                                         )
                                     )
@@ -8404,10 +8396,9 @@ namespace Expresso.Test
                                         ),
                                         AstNode.MakeIdentifier(
                                             "SomeInstanceProperty",
-                                            AstType.MakeFunctionType(
-                                                "get_SomeInstanceProperty",
-                                                Helpers.MakePrimitiveType("int"),
-                                                Enumerable.Empty<AstType>()
+                                            Helpers.MakePropertyGetterType(
+                                                "SomeInstanceProperty",
+                                                Helpers.MakePrimitiveType("int")
                                             )
                                         )
                                     )
@@ -8426,11 +8417,8 @@ namespace Expresso.Test
                                     ),
                                     AstNode.MakeIdentifier(
                                         "SomeInstanceProperty",
-                                        AstType.MakeFunctionType(
-                                            "set_SomeInstanceProperty",
-                                            Helpers.MakeVoidType(),
-                                            TextLocation.Empty,
-                                            TextLocation.Empty,
+                                        Helpers.MakePropertySetterType(
+                                            "SomeInstanceProperty",
                                             Helpers.MakePrimitiveType("int")
                                         )
                                     )
@@ -8488,12 +8476,195 @@ namespace Expresso.Test
                                         ),
                                         AstNode.MakeIdentifier(
                                             "SomeInstanceProperty",
+                                            Helpers.MakePropertyGetterType(
+                                                "SomeInstanceProperty",
+                                                Helpers.MakePrimitiveType("int")
+                                            )
+                                        )
+                                    )
+                                )
+                            )
+                        )
+                    ),
+                    Helpers.MakeVoidType(),
+                    Modifiers.None
+                )
+            });
+
+            Assert.IsNotNull(ast);
+            Helpers.AstStructuralEqual(ast, expected);
+        }
+
+        [Test]
+        public void TestEnumInCSharp()
+        {
+            var parser = new Parser(new Scanner("../../sources/for_unit_tests/test_enum_in_csharp.exs")){
+                DoPostParseProcessing = true
+            };
+            parser.Parse();
+
+            var ast = parser.TopmostAst;
+
+            var expected = AstNode.MakeModuleDef("main", new List<EntityDeclaration>{
+                EntityDeclaration.MakeFunc(
+                    "main",
+                    Enumerable.Empty<ParameterDeclaration>(),
+                    Statement.MakeBlock(
+                        Statement.MakeIfStmt(
+                            PatternConstruct.MakeExpressionPattern(
+                                Helpers.MakeCallExpression(
+                                    Expression.MakeMemRef(
+                                        Helpers.MakeIdentifierPath(
+                                            "EnumTest",
+                                            Helpers.MakeGenericType("InteroperabilityTest.EnumTest")
+                                        ),
+                                        AstNode.MakeIdentifier(
+                                            "TestEnumeration",
                                             AstType.MakeFunctionType(
-                                                "get_SomeInstanceProperty",
-                                                Helpers.MakePrimitiveType("int"),
+                                                "TestEnumeration",
+                                                Helpers.MakePrimitiveType("bool"),
+                                                TextLocation.Empty,
+                                                TextLocation.Empty,
+                                                Helpers.MakeGenericTypeWithRealName(
+                                                    "TestEnum",
+                                                    "InteroperabilityTest.TestEnum"
+                                                )
+                                            )
+                                        )
+                                    ),
+                                    Expression.MakeMemRef(
+                                        Helpers.MakeIdentifierPath(
+                                            "TestEnum",
+                                            Helpers.MakeGenericType("InteroperabilityTest.TestEnum")
+                                        ),
+                                        AstNode.MakeIdentifier(
+                                            "SomeField",
+                                            Helpers.MakeGenericTypeWithRealName(
+                                                "TestEnum",
+                                                "InteroperabilityTest.TestEnum"
+                                            )
+                                        )
+                                    )
+                                )
+                            ),
+                            Statement.MakeBlock(
+                                Statement.MakeExprStmt(
+                                    Helpers.MakeCallExpression(
+                                        Helpers.MakeIdentifierPath(
+                                            "println",
+                                            AstType.MakeFunctionType(
+                                                "println",
+                                                Helpers.MakeVoidType(),
+                                                TextLocation.Empty,
+                                                TextLocation.Empty,
+                                                Helpers.MakeGenericType(
+                                                    "array",
+                                                    Helpers.MakeGenericType("object")
+                                                )
+                                            )
+                                        ),
+                                        Expression.MakeConstant("string", "matched!")
+                                    )
+                                )
+                            )
+                        ),
+                        Statement.MakeVarDecl(
+                            Helpers.MakeSeq(
+                                Helpers.MakePaticularPatternWithType(
+                                    "tester",
+                                    Helpers.MakeGenericTypeWithRealName(
+                                        "EnumTest",
+                                        "InteroperabilityTest.EnumTest"
+                                    )
+                                )
+                            ),
+                            Helpers.MakeSeq(
+                                Expression.MakeObjectCreation(
+                                    Helpers.MakeGenericTypeWithRealName(
+                                        "EnumTest",
+                                        "InteroperabilityTest.EnumTest"
+                                    ),
+                                    Enumerable.Empty<Identifier>(),
+                                    Enumerable.Empty<Expression>()
+                                )
+                            ),
+                            Modifiers.None
+                        ),
+                        Statement.MakeExprStmt(
+                            Expression.MakeSingleAssignment(
+                                Expression.MakeMemRef(
+                                    Helpers.MakeIdentifierPath(
+                                        "tester",
+                                        Helpers.MakeGenericTypeWithRealName(
+                                            "EnumTest",
+                                            "InteroperabilityTest.EnumTest"
+                                        )
+                                    ),
+                                    AstNode.MakeIdentifier(
+                                        "TestProperty",
+                                        Helpers.MakePropertySetterType(
+                                            "TestProperty",
+                                            Helpers.MakeGenericTypeWithRealName(
+                                                "TestEnum",
+                                                "InteroperabilityTest.TestEnum"
+                                            )
+                                        )
+                                    )
+                                ),
+                                Expression.MakeMemRef(
+                                    Helpers.MakeIdentifierPath(
+                                        "TestEnum",
+                                        Helpers.MakeGenericType("InteroperabilityTest.TestEnum")
+                                    ),
+                                    AstNode.MakeIdentifier(
+                                        "YetAnotherField",
+                                        Helpers.MakeGenericTypeWithRealName(
+                                            "TestEnum",
+                                            "InteroperabilityTest.TestEnum"
+                                        )
+                                    )
+                                )
+                            )
+                        ),
+                        Statement.MakeIfStmt(
+                            PatternConstruct.MakeExpressionPattern(
+                                Helpers.MakeCallExpression(
+                                    Expression.MakeMemRef(
+                                        Helpers.MakeIdentifierPath(
+                                            "tester",
+                                            Helpers.MakeGenericTypeWithRealName(
+                                                "EnumTest",
+                                                "InteroperabilityTest.EnumTest"
+                                            )
+                                        ),
+                                        AstNode.MakeIdentifier(
+                                            "TestEnumerationOnInstance",
+                                            AstType.MakeFunctionType(
+                                                "TestEnumerationOnInstance",
+                                                Helpers.MakePrimitiveType("bool"),
                                                 Enumerable.Empty<AstType>()
                                             )
                                         )
+                                    )
+                                )
+                            ),
+                            Statement.MakeBlock(
+                                Statement.MakeExprStmt(
+                                    Helpers.MakeCallExpression(
+                                        Helpers.MakeIdentifierPath(
+                                            "println",
+                                            AstType.MakeFunctionType(
+                                                "println",
+                                                Helpers.MakeVoidType(),
+                                                TextLocation.Empty,
+                                                TextLocation.Empty,
+                                                Helpers.MakeGenericType(
+                                                    "array",
+                                                    Helpers.MakeGenericType("object")
+                                                )
+                                            )
+                                        ),
+                                        Expression.MakeConstant("string", "matched again!")
                                     )
                                 )
                             )

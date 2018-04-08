@@ -327,6 +327,28 @@ namespace Expresso.Test
         }
 
         /// <summary>
+        /// Creates a <see cref="FunctionType"/> that represents a property setter.
+        /// </summary>
+        /// <returns>The property setter type.</returns>
+        /// <param name="propertyName">Property name.</param>
+        /// <param name="propertyType">Property type.</param>
+        public static FunctionType MakePropertySetterType(string propertyName, AstType propertyType)
+        {
+            return AstType.MakeFunctionType("set_" + propertyName, MakeVoidType(), TextLocation.Empty, TextLocation.Empty, propertyType);
+        }
+
+        /// <summary>
+        /// Creates a <see cref="FunctionType"/> that represents a property getter.
+        /// </summary>
+        /// <returns>The property getter type.</returns>
+        /// <param name="propertyName">Property name.</param>
+        /// <param name="propertyType">Property type.</param>
+        public static FunctionType MakePropertyGetterType(string propertyName, AstType propertyType)
+        {
+            return AstType.MakeFunctionType("get_" + propertyName, propertyType, Enumerable.Empty<AstType>());
+        }
+
+        /// <summary>
         /// Makes a single-item return statement
         /// </summary>
         /// <returns>The single item return statement.</returns>
