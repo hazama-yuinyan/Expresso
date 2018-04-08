@@ -236,14 +236,10 @@
     <None Include="Expresso.ATG" />
     <None Include="Documentation\Bugs.txt" />
     <None Include="Documentation\ExpressoDesignMemo.txt" />
-    <None Include="Ast\HelperNodes\ExpressoVariable.cs" />
-    <None Include="Ast\HelperNodes\ExpressoReference.cs" />
-    <None Include="Ast\HelperNodes\IReferencible.cs" />
     <None Include="Documentation\ExpressoLanguageSpecificationMemo.txt" />
     <None Include="OutputVisitor\TokenWriter.cs" />
     <None Include="OutputVisitor\InsertRequiredSpacesDecorator.cs" />
     <None Include="OutputVisitor\ExpressoOutputWalker.cs" />
-    <None Include="Analysis\InferenceHelper.cs" />
     <None Include="Documentation\ExpressoReference.md" />
     <None Include="Documentation\ExpressoTutorial.md" />
     <None Include="CodeGen\ParameterCollector.cs" />
@@ -252,7 +248,6 @@
     <None Include="Ast\Patterns\ValueBindingPattern.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Ast\HelperNodes\" />
     <Folder Include="Formatting\" />
     <Folder Include="OutputVisitor\" />
     <Folder Include="Ast\Statements\" />

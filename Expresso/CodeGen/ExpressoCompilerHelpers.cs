@@ -39,11 +39,6 @@ namespace Expresso.CodeGen
             {"System.Numerics.BigInteger", Tuple.Create("bigint", StartOfIdentifierId + 15u)}
         };
 
-        public static string ConvertToExpressoFunctionName(string name)
-        {
-            return name.Substring(0, 1).ToLower() + name.Substring(1);
-        }
-
         public static string GetExpressoTypeName(string csharpFullName)
         {
             //var start_index = (csharpFullName.LastIndexOf('.') != -1) ? csharpFullName.LastIndexOf('.') : 0;

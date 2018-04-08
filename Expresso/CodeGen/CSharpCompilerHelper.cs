@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using System.Reflection;
-using System.Text.RegularExpressions;
 using Expresso.Ast;
 using Expresso.TypeSystem;
 using Expresso.Runtime.Builtins;
@@ -47,12 +46,6 @@ namespace Expresso.CodeGen
         public static List<string> AssemblyNames{
             get{return _AssemblyNames;}
         }
-
-        /// <summary>
-        /// Gets the list of <see cref="Type"/> instances of dynamic interfaces.
-        /// </summary>
-        /// <value>The interface types.</value>
-        public static List<Type> InterfaceTypes{get;} = new List<Type>();
 
         /// <summary>
         /// Helper method to convert a PrimitiveType to a C#'s type.

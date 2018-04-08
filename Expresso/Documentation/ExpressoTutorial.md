@@ -179,9 +179,9 @@ Expresso allows you to construct a vector object in literal form, which most oth
 You can add or remove an item from the vector.
 
 ```expresso
-natural_numbers.add(6);
+natural_numbers.Add(6);
 println(natural_numbers);
-natural_numbers.remove(6);
+natural_numbers.Remove(6);
 println(natural_numbers);
 ```
 
@@ -246,7 +246,7 @@ at where the expression is written.
     let negative_seq = -10..0;
     let to_negative = 0..-10:-1;                    // The compiler checks whether it is correct. That means that if you wrote it as `-10..0:-1`,
     println("Legend: (f(x) = x - 10, g(x) = -x)");  // it would issue a warning that tells you it doesn't seem to be correct.
-    for let (x, to_n) in Enumerable.zip(negative_seq, to_negative, |l, r| => (l, r)) {
+    for let (x, to_n) in Enumerable.Zip(negative_seq, to_negative, |l, r| => (l, r)) {
         print("(f(x), g(x)) = (${x}, ${to_n}),");  // print "(f(x), g(x)) = (-10, 0),(f(x), g(x)) = (-9, -1)" and so on
         if x == to_n {      // and when it reaches (-5, -5), it also prints "Crossed over!"
             println("Crossed over!");
@@ -273,7 +273,7 @@ the `intseq` type reveals its funny yet powerful potential out to the public.
     let some_array = [0..10];
     let first_half = some_array[0..5];
     let second_half = some_array[5..10];
-    for let (a, b) in Enumerable.zip(first_half, second_half, |l, r| => (l, r)) {
+    for let (a, b) in Enumerable.Zip(first_half, second_half, |l, r| => (l, r)) {
         print("(${a}, ${b}),");   // print "(0, 5),(1, 6),(2, 7)" and so on
     }
 ```
@@ -315,7 +315,7 @@ we define the work flow as a chain of functions. So in Expresso, you can rewrite
 ```expresso
 // construct some array
 // and assume the array is named "a"
-let mapped = Enumerable.select(a, |elem| => /* do something on each element */);
+let mapped = Enumerable.Select(a, |elem| => /* do something on each element */);
 ```
 
 This reads: We're assigining the value that will be computed by iterating through the array and performing some calculations on each element of
@@ -360,13 +360,13 @@ def main()
 {
     var writer (- FileStream;
     try{
-        writer = File.openWrite("./some_text.txt");
-        let bytes = UTF8Encoding{encoderShouldEmitUTF8Identifier: true}.getBytes("This is to test writing a file");
-        writer.write(bytes, 0, bytes.Length);
+        writer = File.OpenWrite("./some_text.txt");
+        let bytes = UTF8Encoding{encoderShouldEmitUTF8Identifier: true}.GetBytes("This is to test writing a file");
+        writer.Write(bytes, 0, bytes.Length);
     }
     finally{
         if writer != null {
-            writer.dispose();
+            writer.Dispose();
         }
     }
 }
@@ -377,8 +377,7 @@ def main()
 Let's break down the code in Listing 11. First we need to import types that have a file handle and convert strings into another encoding from .NET.
 So the import statements.
 In `main` function, we declare a new variable that will hold a stream of a file and create and open a new file. And then we create a `UTF8Encoding` that converts strings
-into UTF-8 because strings in Expresso are in UTF-16. And we get a string as a byte sequence using the `UTF8Encoding.getBytes`(Note that the method is named
-`UTF8Encoding.GetBytes` in the native code, but we call it `UTF8Encoding.getBytes` from Expresso) method.
+into UTF-8 because strings in Expresso are in UTF-16. And we get a string as a byte sequence using the `UTF8Encoding.GetBytes` method.
 Then we write the byte sequence to the file that we created just a short while ago. And finally, we check that the file is successfully created, and if so we dispose of
 the file stream.
 
@@ -419,12 +418,12 @@ import OtherLanguageWorld.{TestClass, StaticTest} from "./CSharpDll.dll" as {Tes
 def main()
 {
     let t = TestClass{maximum: 1000};
-    let i = t.getSomeInt();
-    let seq = t.getSomeIntSeq(0);
+    let i = t.GetSomeInt();
+    let seq = t.GetSomeIntSeq(0);
 
-    StaticTest.greet();
-    let flag = StaticTest.getSomeFlag();
-    let vec = StaticTest.getSomeIntList();
+    StaticTest.Greet();
+    let flag = StaticTest.GetSomeFlag();
+    let vec = StaticTest.GetSomeIntList();
 
     println(i, seq, flag, vec);
 }

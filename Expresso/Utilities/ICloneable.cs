@@ -1,8 +1,7 @@
-﻿using System;
-namespace Expresso
+﻿namespace Expresso
 {
     /// <summary>
-    /// Public interface for an cloneable object.
+    /// Public interface for a cloneable object.
     /// </summary>
     public interface ICloneable<T>
     {
