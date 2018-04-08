@@ -1662,7 +1662,7 @@ namespace Expresso.CodeGen
 
             CSharpExpr result;
             if(init == null){
-                result = CSharpExpr.Block(variables);
+                result = CSharpExpr.Block(variables, CSharpExpr.Empty());
             }else{
                 if(variables.Count > 1){
                     if(init is ExprTree.MethodCallExpression call_expr){
