@@ -1,0 +1,26 @@
+{
+    "name": "expressolanguageextension",
+    "displayName": "ExpressoLanguageExtension",
+    "description": "The language extension for Expresso",
+    "version": "0.0.1",
+    "publisher": "train12",
+    "engines": {
+        "vscode": "^1.22.0"
+    },
+    "categories": [
+        "Languages"
+    ],
+    "contributes": {
+        "languages": [{
+            "id": "expresso",
+            "aliases": ["Expresso", "expresso"],
+            "extensions": [".exs"],
+            "configuration": "./language-configuration.json"
+        }],
+        "grammars": [{
+            "language": "expresso",
+            "scopeName": "source.expresso",
+            "path": "./syntaxes/expresso.tmLanguage.json"
+        }]
+    }
+}

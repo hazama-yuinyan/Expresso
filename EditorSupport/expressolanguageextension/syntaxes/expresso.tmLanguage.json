@@ -1,0 +1,241 @@
+{
+	"$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+    "name": "Expresso",
+    "foldingStartMarker": "^\\s*/\\*|^(?![^{]*?//|[^{]*?/\\*(?!.*?\\*/.*?\\{)).*?\\{\\s*($|//|/\\*(?!.*?\\*/.*\\S))",
+    "foldingStopMarker": "^\\s*\\*/|^\\s*\\}",
+    "fileTypes": [
+        "exs"
+    ],
+    "uuid": "F0FD0FAA-A6A3-11E3-A1BD-A73DC654913E",
+	"patterns": [
+        {
+            "begin": "/\\*",
+            "captures": {
+                "0" : {
+                    "name" : "punctuation.definition.comment.multi.expresso"
+                }
+            },
+            "end": "\\*/",
+            "name" : "comment.block.expresso"
+        },
+        {
+            "begin": "//",
+            "captures": {
+                "0" : {
+                    "name" : "punctuation.definition.comment.line.expresso"
+                }
+            },
+            "end": "\\n$",
+            "name" : "comment.line.double-slash.expresso"
+        },
+        {
+            "begin": "^(import)\\s+([^:.]+)(?:::\\{?(?:,?([^.}]+))+}?)?",
+            "beginCaptures": {
+                "1" : {
+                    "name" : "keyword.other.import.source.expresso"
+                },
+                "2" : {
+                    "name" : "entity.name.type.source.expresso"
+                },
+                "3" : {
+                    "name" : "entity.name.type.source.expresso"
+                }
+            },
+            "end" : "\\s+(?:(from)\\s+(\"[^\"]+\")\\s+)?(as)\\s+\\{?(?:,?([^};]+))+}?;",
+            "endCaptures": {
+                "1" : {
+                    "name" : "keyword.other.from.source.expresso"
+                },
+                "2" : {
+                    "name" : "constant.character.source.expresso"
+                },
+                "3" : {
+                    "name" : "keyword.other.as.source.expresso"
+                },
+                "4" : {
+                    "name" : "entity.name.type.source.expresso"
+                }
+            },
+            "patterns": [
+                {
+                    "begin" : "\\.\\(?",
+                    "end" : "}?",
+                    "patterns": [
+                        {
+                            "match": "([^,.}\\s]+),?\\s*",
+                            "name" : "entity.name.type.source.expresso"
+                        }
+                    ]
+                }
+            ],
+            "name" : "meta.statement.import.source.expresso"
+        },
+        {
+            "match" : "^(module)\\s+(.*?);$",
+            "captures" : {
+                "1" : {
+                    "name" : "keyword.other.module.expresso"
+                },
+                "2" : {
+                    "name" : "entity.name.type.package.expresso"
+                }
+            },
+            "name" : "meta.keyword.module.expresso",
+            "comment" : "Match on module definition statements"
+        },
+        {
+            "match": "^\\s*(throw)\\s+(.+?){(?:(.+?)\\s*:\\s*.+?)*};",
+            "captures": {
+                "1" : {
+                    "name" : "keyword.control.throw.expresso"
+                },
+                "2" : {
+                    "name" : "entity.name.type.expresso"
+                },
+                "3" : {
+                    "name" : "entity.other.identifier.expresso"
+                }
+            }
+        },
+        {
+            "include": "#constants",
+            "name" : "constant.characte.source.expresso"
+        },
+        {
+            "match" : "\\b(true|false|null)\\b",
+            "name" : "constant.language.source.expresso"
+        },
+        {
+            "match": "\\b(self|super)\\b",
+            "name" : "variable.language.source.expresso"
+        },
+        {
+            "match" : "\\b((0(x|X)[0-9a-fA-F]*)|(([0-9]+\\.?[0-9]*)|(\\.[0-9]+))((e|E)(\\+|-)?[0-9]+)?)(L|l)?\\b",
+            "name" : "constant.numeric.source.expresso"
+        },
+        {
+            "match" : "\\b(if|else|for|while|return|continue|break|match|yield)\\b",
+            "name" : "keyword.control.source.expresso"
+        },
+        {
+            "match" : "\\b(override|as|let|var)\\b",
+            "name" : "keyword.operator.source.expresso"
+        },
+        {
+            "match" : "\\b(import|module|def|in|from)\\b",
+            "name" : "keyword.other.source.expresso"
+        },
+        {
+            "match" : "\\b(internal|public|protected|private|static|abstract|override|export|readonly)\\b",
+            "name" : "storage.modifier.source.expresso"
+        },
+        {
+            "match" : "\\b(bool|byte|float|double|int|uint|bigint|vector|dictionary|tuple|intseq|char|string|array|slice|function|void|class|interface)\\b",
+            "name" : "storage.type.expresso"
+        }
+    ],
+    "repository" : {
+        "classInheritance" : {
+            "patterns" : [
+                {
+                    "begin" : ":",
+                    "end" : "(?={)",
+                    "patterns" : [
+                        {
+                            "captures" : {
+                                "1" : {
+                                    "name" : "storage.type.source.expresso"
+                                }
+                            },
+                            "match" : "\\s*,?([A-Za-z_]\\w*)\\b"
+                        }
+                    ]
+                }
+            ]
+        },
+        "statementRemainder" : {
+            "begin" : "\\(",
+            "end" : "(?=\\))",
+            "name" : "meta.definition.param-list.source.expresso",
+            "patterns" : [
+                {
+                    "include" : "#builtinTypes"
+                }
+            ]
+        },
+        "constants" : {
+            "patterns": [
+                {
+                    "begin": "\"",
+                    "end": "\"",
+                    "patterns" : [
+                        {
+                            "match": "\\[artnv]",
+                            "name" : "constant.character.escape.source.expresso"
+                        },
+                        {
+                            "begin": "\\$\\{",
+                            "end": "}",
+                            "name" : "meta.expression.source.expression"
+                        },
+                        {
+                            "match": "[^$]|\\$\\$",
+                            "name" : "constant.character.source.expresso"
+                        }
+                    ],
+                    "name" : "string.quoted.double.source.expresso"
+                },
+                {
+                    "begin" : "(r[#]*)(\")",
+                    "beginCaptures" : {
+                        "1" : {
+                            "name" : "punctuation.definition.string.prefix.literal.expresso"
+                        },
+                        "2" : {
+                            "name" : "punctuation.definition.string.open.double-quote.expresso"
+                        }
+                    },
+                    "end" : "(\")([#]*)",
+                    "endCaptures" : {
+                        "0" : {
+                            "name" : "punctuation.definition.string.end.expresso"
+                        },
+                        "1" : {
+                            "name" : "punctuation.definition.string.close.double-quote.expresso"
+                        },
+                        "2" : {
+                            "name" : "punctuation.definition.string.postfix.literal.expresso"
+                        }
+                    },
+                    "name" : "string.quoted.double.raw.source.expresso",
+                    "patterns" : [
+                        {
+                            "match" : "\"",
+                            "name" : "constant.character.double-quote.expresso"
+                        },
+                        {
+                            "match" : ".",
+                            "name" : "constant.character.expresso"
+                        }
+                    ]
+                },
+                {
+                    "begin" : "'",
+                    "end" : "'",
+                    "name" : "string.quoted.single.source.expresso",
+                    "patterns" : [
+                        {
+                            "match" : "\\[atrnv]",
+                            "name" : "constant.character.escape.expresso"
+                        },
+                        {
+                            "match" : ".",
+                            "name" : "constant.character.expresso"
+                        }
+                    ]
+                }
+            ]
+        }
+    },
+	"scopeName": "source.expresso"
+}
