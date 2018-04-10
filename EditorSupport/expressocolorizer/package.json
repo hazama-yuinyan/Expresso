@@ -1,7 +1,7 @@
 {
-    "name": "expressolanguageextension",
-    "displayName": "ExpressoLanguageExtension",
-    "description": "The language extension for Expresso",
+    "name": "expressocolorizer",
+    "displayName": "ExpressoColorizer",
+    "description": "The syntax colorizer for Expresso",
     "version": "0.0.1",
     "publisher": "train12",
     "engines": {

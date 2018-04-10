@@ -2,7 +2,9 @@ module main;
 
 
 import System.{Math, Exception} as {Math, Exception};
-import System.RegularExpressions.Regex as Regex;
+import System.Text.RegularExpressions.Regex as Regex;
+import test_module::TestClass from "./testmodule.exs" as TestClass;
+import OtherLanguageWorld.{StaticClass, TestEnum} from "./InteroperabilityTest.dll" as {StaticClass, TestEnum};
 
 export class TestClass
 {

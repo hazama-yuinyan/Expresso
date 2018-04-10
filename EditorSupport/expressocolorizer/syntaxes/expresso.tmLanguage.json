@@ -29,7 +29,7 @@
             "name" : "comment.line.double-slash.expresso"
         },
         {
-            "begin": "^(import)\\s+([^:.]+)(?:::\\{?(?:,?([^.}]+))+}?)?",
+            "begin": "^(import)\\s+([\\w0-9_]+)(?:::{?(?:,?([\\w0-9_]+))+}?)?",
             "beginCaptures": {
                 "1" : {
                     "name" : "keyword.other.import.source.expresso"
@@ -41,29 +41,54 @@
                     "name" : "entity.name.type.source.expresso"
                 }
             },
-            "end" : "\\s+(?:(from)\\s+(\"[^\"]+\")\\s+)?(as)\\s+\\{?(?:,?([^};]+))+}?;",
-            "endCaptures": {
-                "1" : {
-                    "name" : "keyword.other.from.source.expresso"
-                },
-                "2" : {
-                    "name" : "constant.character.source.expresso"
-                },
-                "3" : {
-                    "name" : "keyword.other.as.source.expresso"
-                },
-                "4" : {
-                    "name" : "entity.name.type.source.expresso"
-                }
-            },
+            "end" : "}?;$",
             "patterns": [
                 {
-                    "begin" : "\\.\\(?",
-                    "end" : "}?",
+                    "begin" : "\\.{?",
+                    "end" : "}?\\s+(?=from|as)",
+                    "endCaptures": {
+                        "1" : {
+                            "name" : "keyword.other.source.expresso"
+                        }
+                    },
                     "patterns": [
                         {
-                            "match": "([^,.}\\s]+),?\\s*",
-                            "name" : "entity.name.type.source.expresso"
+                            "match": "([\\w0-9_]+),?",
+                            "captures": {
+                                "1" : {
+                                    "name" : "entity.name.type.source.expresso"
+                                }
+                            }
+                        }
+                    ]
+                },
+                {
+                    "match": "(from) (\"[^\"]+\")\\s+(?=as)",
+                    "captures": {
+                        "1" : {
+                            "name" : "keyword.other.from.source.expresso"
+                        },
+                        "2" : {
+                            "name" : "constant.character.source.expresso"
+                        }
+                    }
+                },
+                {
+                    "begin": "(as) {?",
+                    "beginCaptures": {
+                        "1" : {
+                            "name" : "keyword.other.as.source.expresso"
+                        }
+                    },
+                    "end": "(?=}?;$)",
+                    "patterns": [
+                        {
+                            "match": "([\\w0-9_]+),?",
+                            "captures": {
+                                "1" : {
+                                    "name" : "entity.name.type.source.expresso"
+                                }
+                            }
                         }
                     ]
                 }
@@ -118,11 +143,11 @@
             "name" : "keyword.control.source.expresso"
         },
         {
-            "match" : "\\b(override|as|let|var)\\b",
+            "match" : "\\b(override|as)\\b",
             "name" : "keyword.operator.source.expresso"
         },
         {
-            "match" : "\\b(import|module|def|in|from)\\b",
+            "match" : "\\b(import|module|def|in|from|let|var)\\b",
             "name" : "keyword.other.source.expresso"
         },
         {
