@@ -209,8 +209,8 @@ namespace Expresso.CodeGen
             var name = new AssemblyName("exs_" + ast.Name);
 
             var asm_builder = Thread.GetDomain().DefineDynamicAssembly(name, AssemblyBuilderAccess.RunAndSave, options.OutputPath);
-            var file_name = (ast.Name == "main") ? ast.Name + ".exe" : ast.Name + ".dll";
-            var mod_builder = asm_builder.DefineDynamicModule(file_name);
+            var file_name = options.BuildType.HasFlag(BuildType.Assembly) ? ast.Name : options.ExecutableName;
+            var mod_builder = asm_builder.DefineDynamicModule(file_name, options.BuildType.HasFlag(BuildType.Assembly) ? file_name + ".dll" : file_name + ".exe");
             // Leave the ast.Name as is because otherwise we can't refer to it later when visiting ImportDeclarations
             var type_builder = new LazyTypeBuilder(mod_builder, CSharpCompilerHelper.ConvertToPascalCase(ast.Name), TypeAttributes.Class | TypeAttributes.Public, Enumerable.Empty<Type>(), true);
             var local_parser = parser;
