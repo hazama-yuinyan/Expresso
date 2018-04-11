@@ -214,6 +214,11 @@ namespace Expresso.CodeGen
                 }
             }
 
+            if(astType is ReferenceType reference){
+                var native_type = GetNativeType(reference.BaseType);
+                return native_type.MakeByRefType();
+            }
+
             if(astType is PlaceholderType placeholder)
                 throw new EmitterException("Unresolved type found!");
 

@@ -596,11 +596,8 @@ namespace Expresso.Ast.Analysis
             {
                 var tmp = unaryExpr.Operand.AcceptWalker(this);
                 switch(unaryExpr.Operator){
-                case OperatorType.Dereference:
-                    return null;
-
                 case OperatorType.Reference:
-                    return null;
+                    return AstType.MakeReferenceType(tmp.Clone());
 
                 case OperatorType.Plus:
                 case OperatorType.Minus:

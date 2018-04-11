@@ -283,6 +283,8 @@ namespace Expresso.Ast.Analysis
                 for(int i = 0; i < left_types.Count; ++i){
                     var flattened = (left_types[i] is FunctionType func_type && func_type.Name.StartsWith("set_", StringComparison.CurrentCulture)) ? func_type.Parameters.First()
                                                                                                                                                                : left_types[i];
+                    flattened = (left_types[i] is ReferenceType ref_type) ? ref_type.BaseType : flattened;
+
                     if(IsPlaceholderType(flattened)){
                         var inferred_type = TemporaryTypes[i].Clone();
                         left_types[i].ReplaceWith(inferred_type);
@@ -407,13 +409,13 @@ namespace Expresso.Ast.Analysis
                 var arg_type = pair.Item2.AcceptWalker(this);
                 // FIXME?: Think about changing the property methods' types
                 // arg_type doesn't need to be cloned because the user of this field clones them
-                arg_types[pair.Item1] = (arg_type is FunctionType func_type2 && func_type2.Name.StartsWith("get_", StringComparison.CurrentCulture)) ? func_type2.ReturnType : arg_type;
+                arg_types[pair.Item1] = (arg_type is FunctionType func_type && func_type.Name.StartsWith("get_", StringComparison.CurrentCulture)) ? func_type.ReturnType : arg_type;
             }
 
             var parent_types = argument_types;
             argument_types = arg_types;
 
-            var func_type = callExpr.Target.AcceptWalker(this) as FunctionType;
+            var func_type2 = callExpr.Target.AcceptWalker(this) as FunctionType;
             // Don't call inference_runner.VisitCallExpression here
             // because doing so causes VisitIdentifier to be invoked two times
             // and show the same messages twice
@@ -424,7 +426,7 @@ namespace Expresso.Ast.Analysis
                 return inferred;
             }*/
 
-            if(func_type == null){
+            if(func_type2 == null){
                 throw new ParserException(
                     "Error ES1805: {0} turns out not to be a function.",
                     callExpr,
@@ -432,11 +434,11 @@ namespace Expresso.Ast.Analysis
                 );
             }
 
-            foreach(var triple in Enumerable.Range(0, func_type.Parameters.Count)
-                                            .Zip(func_type.Parameters, (l, r) => new Tuple<int, AstType>(l, r))
+            foreach(var triple in Enumerable.Range(0, func_type2.Parameters.Count)
+                                            .Zip(func_type2.Parameters, (l, r) => new Tuple<int, AstType>(l, r))
                                             .Zip(argument_types, (l, r) => new Tuple<int, AstType, AstType>(l.Item1, l.Item2, r))){
                 // If this parameter is the last and the type is an array we think of it as the variadic parameter
-                var param_type = (triple.Item2 is SimpleType array && array.Name == "array" && triple.Item1 == func_type.Parameters.Count - 1) ? array.TypeArguments.First() : triple.Item2;
+                var param_type = (triple.Item2 is SimpleType array && array.Name == "array" && triple.Item1 == func_type2.Parameters.Count - 1) ? array.TypeArguments.First() : triple.Item2;
                 var arg_type = triple.Item3;
                 if(IsCompatibleWith(param_type, arg_type) == TriBool.False){
                     throw new ParserException(
@@ -451,7 +453,7 @@ namespace Expresso.Ast.Analysis
 
             argument_types = parent_types;
 
-            return func_type.ReturnType;
+            return func_type2.ReturnType;
         }
 
         public AstType VisitCastExpression(CastExpression castExpr)
@@ -889,10 +891,8 @@ namespace Expresso.Ast.Analysis
         {
             switch(unaryExpr.Operator){
             case OperatorType.Reference:
-                return null;
-
-            case OperatorType.Dereference:
-                return null;
+                var type = unaryExpr.Operand.AcceptWalker(this);
+                return AstType.MakeReferenceType(type.Clone());
 
             case OperatorType.Plus:
             case OperatorType.Minus:
@@ -1521,6 +1521,11 @@ namespace Expresso.Ast.Analysis
 
             if(first is FunctionType func1 && second is FunctionType func2){
                 if(first.IsMatch(func2))
+                    return TriBool.True;
+            }
+
+            if(first is ReferenceType ref1 && second is ReferenceType ref2){
+                if(ref1.BaseType.IsMatch(ref2.BaseType))
                     return TriBool.True;
             }
 

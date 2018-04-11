@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Numerics;
 using System.Reflection;
@@ -10,7 +11,6 @@ using System.Threading;
 using Expresso.Ast;
 using Expresso.Ast.Analysis;
 using Expresso.Runtime.Builtins;
-using System.Collections;
 
 namespace Expresso.CodeGen
 {
@@ -18,7 +18,7 @@ namespace Expresso.CodeGen
     using ExprTree = System.Linq.Expressions;
 
     /// <summary>
-    /// An <see cref="IComparer"/> implementation that sorts import paths.
+    /// An <see cref="IComparer&lt;T&gt;"/> implementation that sorts import paths.
     /// With it, paths to the standard library come first and others come second.
     /// </summary>
     class ImportPathComparer : IComparer<string>
@@ -61,6 +61,7 @@ namespace Expresso.CodeGen
         static ExprTree.LabelTarget ReturnTarget = null;
         static CSharpExpr DefaultReturnValue = null;
         static int VariableCount = 0;
+        static Guid LanguageGuid = Guid.Parse("408e5e88-0566-4b8a-9c69-4d2f7c74baf9");
 		
         const string ClosureMethodName = "__Apply";
         const string ClosureDelegateName = "__ApplyMethod";
@@ -76,6 +77,8 @@ namespace Expresso.CodeGen
         List<ExprTree.LabelTarget> continue_targets = new List<ExprTree.LabelTarget>();
 
         int scope_counter = 0;
+
+        ExprTree.SymbolDocumentInfo document_info;
 
         /// <summary>
         /// Gets the generated assembly.
@@ -185,6 +188,13 @@ namespace Expresso.CodeGen
             return surrounding_func == null || surrounding_func != null && surrounding_func.Name != "main";
         }
 
+        static BuildType PersistBuildType(BuildType previous, BuildType newConfig)
+        {
+            var new_build_config = newConfig;
+            new_build_config |= previous.HasFlag(BuildType.Debug) ? BuildType.Debug : BuildType.Release;
+            return new_build_config;
+        }
+
         ExpressoSymbol GetRuntimeSymbol(Identifier ident)
         {
             ExpressoSymbol symbol;
@@ -194,9 +204,21 @@ namespace Expresso.CodeGen
                 return null;
         }
 
-        string GetModuleName(ExpressoAst ast)
+        string GetAssemblyFileName(ExpressoAst ast)
         {
             return options.BuildType.HasFlag(BuildType.Assembly) ? ast.Name + ".dll" : options.ExecutableName + ".exe";
+        }
+
+        string GetAssemblyFilePath(ExpressoAst ast)
+        {
+            return options.BuildType.HasFlag(BuildType.Assembly) ? Path.Combine(options.OutputPath, ast.Name + ".dll") :
+                          Path.Combine(options.OutputPath, options.ExecutableName + ".exe");
+        }
+
+        string GetPdbFilePath(ExpressoAst ast)
+        {
+            return options.BuildType.HasFlag(BuildType.Assembly) ? Path.Combine(options.OutputPath, ast.Name + ".pdb") :
+                          Path.Combine(options.OutputPath, options.ExecutableName + ".pdb");
         }
 
         #region IAstWalker implementation
@@ -211,6 +233,19 @@ namespace Expresso.CodeGen
             var asm_builder = Thread.GetDomain().DefineDynamicAssembly(name, AssemblyBuilderAccess.RunAndSave, options.OutputPath);
             var file_name = options.BuildType.HasFlag(BuildType.Assembly) ? ast.Name : options.ExecutableName;
             var mod_builder = asm_builder.DefineDynamicModule(file_name, options.BuildType.HasFlag(BuildType.Assembly) ? file_name + ".dll" : file_name + ".exe");
+
+            if(options.BuildType.HasFlag(BuildType.Debug)){
+                var attrs = DebuggableAttribute.DebuggingModes.Default | DebuggableAttribute.DebuggingModes.DisableOptimizations | DebuggableAttribute.DebuggingModes.IgnoreSymbolStoreSequencePoints;
+                var attr_arg_types = new []{typeof(DebuggableAttribute.DebuggingModes)};
+                var attr_arg_values = new object[]{attrs};
+                asm_builder.SetCustomAttribute(new CustomAttributeBuilder(
+                    typeof(DebuggableAttribute).GetConstructor(attr_arg_types), attr_arg_values
+                ));
+                mod_builder.SetCustomAttribute(new CustomAttributeBuilder(
+                    typeof(DebuggableAttribute).GetConstructor(attr_arg_types), attr_arg_values
+                ));
+            }
+
             // Leave the ast.Name as is because otherwise we can't refer to it later when visiting ImportDeclarations
             var type_builder = new LazyTypeBuilder(mod_builder, CSharpCompilerHelper.ConvertToPascalCase(ast.Name), TypeAttributes.Class | TypeAttributes.Public, Enumerable.Empty<Type>(), true);
             var local_parser = parser;
@@ -231,7 +266,7 @@ namespace Expresso.CodeGen
             context.LazyTypeBuilder = type_builder;
 
             if(ast.Name == "main")
-                options.BuildType = BuildType.Assembly;
+                options.BuildType = PersistBuildType(options.BuildType, BuildType.Assembly);
 
             context.ExternalModuleType = null;
             ast.Imports.OrderBy(i => i.ImportPaths.First().Name, new ImportPathComparer());
@@ -254,7 +289,7 @@ namespace Expresso.CodeGen
                 }
             }
             if(ast.Name == "main")
-                options.BuildType = BuildType.Executable;
+                options.BuildType = PersistBuildType(options.BuildType, BuildType.Executable);
 
             context.AssemblyBuilder = asm_builder;
             context.ModuleBuilder = mod_builder;
@@ -263,6 +298,8 @@ namespace Expresso.CodeGen
                 parser = local_parser;
                 symbol_table = parser.Symbols;
             }
+
+            document_info = CSharpExpr.SymbolDocument(ast.Name + ".exs", LanguageGuid);
 
             Console.WriteLine("Emitting code on {0}...", ast.ModuleName);
             foreach(var import in ast.Imports)
@@ -275,7 +312,21 @@ namespace Expresso.CodeGen
             }
 
             context.ExternalModuleType = type_builder.CreateType();
-            asm_builder.Save(GetModuleName(ast));
+            asm_builder.Save(GetAssemblyFileName(ast));
+
+            if(options.BuildType.HasFlag(BuildType.Debug)){
+                var pdb_path = GetPdbFilePath(ast);
+                Console.WriteLine("Emitting .pdb file at {0}...", pdb_path);
+                var writer_provider = new Mono.Cecil.Cil.PortablePdbWriterProvider();
+                var module_def = Mono.Cecil.ModuleDefinition.ReadModule(GetAssemblyFilePath(ast));
+                var pdb_writer = writer_provider.GetSymbolWriter(module_def, pdb_path);
+                foreach(var type in module_def.GetTypes()){
+                    foreach(var method in type.Methods){
+                        if(method.DebugInformation.HasSequencePoints)
+                            pdb_writer.Write(method.DebugInformation);
+                    }
+                }
+            }
 
             AssemblyBuilder = asm_builder;
 
@@ -951,7 +1002,8 @@ namespace Expresso.CodeGen
                 if(symbol.Parameter != null){
                     if(context.RequestType)
                         context.TargetType = symbol.Parameter.Type;
-                    
+
+                    //CSharpExpr.DebugInfo(new ExprTree.SymbolDocumentInfo())
                     return symbol.Parameter;
                 }else if(context.RequestPropertyOrField && symbol.PropertyOrField != null){
                     context.PropertyOrField = symbol.PropertyOrField;
@@ -1524,8 +1576,6 @@ namespace Expresso.CodeGen
                     }
                 }
             }
-            
-
 
             return null;
         }
@@ -1653,22 +1703,27 @@ namespace Expresso.CodeGen
         public CSharpExpr VisitVariableInitializer(VariableInitializer initializer, CSharpEmitterContext context)
         {
             var prev_params = context.AdditionalParameters;
+            var prev_addtionals = context.Additionals;
             context.AdditionalParameters = new List<ExprTree.ParameterExpression>();
+            context.Additionals = new List<object>();
             initializer.Pattern.AcceptWalker(this, context);
             var variables = context.AdditionalParameters;
+            var debug_infos = context.Additionals.OfType<CSharpExpr>();
             context.AdditionalParameters = prev_params;
+            context.Additionals = prev_addtionals;
 
             var init = initializer.Initializer.AcceptWalker(this, context);
 
             CSharpExpr result;
             if(init == null){
-                result = CSharpExpr.Block(variables, CSharpExpr.Empty());
+                result = CSharpExpr.Block(variables, options.BuildType.HasFlag(BuildType.Debug) ? debug_infos : new []{CSharpExpr.Empty()});
             }else{
                 if(variables.Count > 1){
                     if(init is ExprTree.MethodCallExpression call_expr){
                         // let (t1, t2) = Tuple.Create(...);
-                        result = CSharpExpr.Block(variables.Zip(call_expr.Arguments, (l, r) => new Tuple<ExprTree.ParameterExpression, CSharpExpr>(l, r))
-                                                  .Select(pair => CSharpExpr.Assign(pair.Item1, pair.Item2)));
+                        var assignments = variables.Zip(call_expr.Arguments, (l, r) => new Tuple<ExprTree.ParameterExpression, CSharpExpr>(l, r))
+                                                   .Select(pair => CSharpExpr.Assign(pair.Item1, pair.Item2));
+                        result = options.BuildType.HasFlag(BuildType.Debug) ? CSharpExpr.Block(debug_infos.Concat(assignments)) : CSharpExpr.Block(assignments);
                     }else{
                         // let (t1, t2) = t where t is Tuple
                         var tmps = new List<CSharpExpr>();
@@ -1678,10 +1733,17 @@ namespace Expresso.CodeGen
                             ++i;
                         }
 
-                        result = CSharpExpr.Block(tmps);
+                        result = options.BuildType.HasFlag(BuildType.Debug) ? CSharpExpr.Block(debug_infos.Concat(tmps)) : CSharpExpr.Block(tmps);
                     }
                 }else{
-                    result = CSharpExpr.Assign(variables[0], init);
+                    var assignment = CSharpExpr.Assign(variables[0], init);
+                    if(options.BuildType.HasFlag(BuildType.Debug)){
+                        var debug_info_list = debug_infos.ToList();
+                        debug_info_list.Add(assignment);
+                        result = CSharpExpr.Block(debug_infos);
+                    }else{
+                        result = assignment;
+                    }
                 }
             }
 
@@ -1716,8 +1778,15 @@ namespace Expresso.CodeGen
             if(!(context.ContextAst is MatchStatement)){
                 param = CSharpExpr.Parameter(CSharpCompilerHelper.GetNativeType(identifierPattern.Identifier.Type), identifierPattern.Identifier.Name);
                 AddSymbol(identifierPattern.Identifier, new ExpressoSymbol{Parameter = param});
+
+                var start_loc = identifierPattern.Identifier.StartLocation;
+                var end_loc = identifierPattern.Identifier.EndLocation;
+                var debug_info = CSharpExpr.DebugInfo(document_info, start_loc.Line, start_loc.Column, end_loc.Line, end_loc.Column);
                 if(context.AdditionalParameters != null)
                     context.AdditionalParameters.Add(param);
+
+                if(context.Additionals != null)
+                    context.Additionals.Add(debug_info);
             }else{
                 param = (ExprTree.ParameterExpression)identifierPattern.Identifier.AcceptWalker(this, context);
             }
@@ -2120,10 +2189,9 @@ namespace Expresso.CodeGen
 		{
 			switch(opType){
             case OperatorType.Reference:
-                return null;    // The parameter modifier "ref" is the primary candidate for this operator
-
-            case OperatorType.Dereference:
-                return null;    // There is no alternatives to dereferencing in C#
+                // The parameter modifier "ref" is the primary candidate for this operator and it is expressed as a type
+                // So we don't need to do anything here :-)
+                return operand;
 
 			case OperatorType.Plus:
 				return CSharpExpr.UnaryPlus(operand);
@@ -2223,7 +2291,7 @@ namespace Expresso.CodeGen
                 }else{
                     foreach(var pair in Enumerable.Range(0, args.Length).Zip(method.GetParameters(), (l, r) => new Tuple<int, ParameterInfo>(l, r))){
                         var arg = args[pair.Item1];
-                        if(pair.Item2.ParameterType != arg.Type)
+                        if(pair.Item2.ParameterType != arg.Type && !pair.Item2.ParameterType.IsByRef)
                             args[pair.Item1] = CSharpExpr.Convert(arg, pair.Item2.ParameterType);
                     }
                 }
@@ -2262,7 +2330,7 @@ namespace Expresso.CodeGen
             DescendScope();
             scope_counter = 0;
 
-            var formal_parameters = funcDecl.Parameters.Select(param => param.AcceptWalker(this, context))
+            var formal_parameters = funcDecl.Parameters.Select(param => VisitParameterDeclaration(param, context))
                                             .OfType<ExprTree.ParameterExpression>();
 
             var return_type = CSharpCompilerHelper.GetNativeType(funcDecl.ReturnType);
@@ -2281,7 +2349,7 @@ namespace Expresso.CodeGen
 
             var param_types =
                 from param in parameters
-                select param.Type;
+                select param.IsByRef ? param.Type.MakeByRefType() : param.Type;
             context.LazyTypeBuilder.DefineMethod(funcDecl.Name, attrs, return_type, param_types.ToArray());
             //context.LazyTypeBuilder.DefineMethod(CSharpCompilerHelper.ConvertToPascalCase(funcDecl.Name), attrs, return_type, param_types.ToArray());
 

@@ -1,7 +1,4 @@
-﻿using System;
-
-
-namespace Expresso.Ast
+﻿namespace Expresso.Ast
 {
     /// <summary>
     /// 演算子のタイプ。
@@ -18,10 +15,6 @@ namespace Expresso.Ast
         /// Represents the reference operator `&amp;`
         /// </summary>
         Reference,
-        /// <summary>
-        /// Represents the dereference operator `&amp;`
-        /// </summary>
-        Dereference,
         /// <summary>
         /// Represents the add operator `+`
         /// </summary>

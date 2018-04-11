@@ -927,22 +927,24 @@ Type<out AstType type>				(. var start_loc = NextLocation; type = new Placeholde
 =
  ( [ '&'                            (. is_reference = true; .)
    ]
-   ( "int"                			(. type = CreateType(t.val, start_loc, is_reference); .)
-   | "uint"                         (. type = CreateType(t.val, start_loc, is_reference); .)
-   | "bool"               			(. type = CreateType(t.val, start_loc, is_reference); .)
-   | "float"						(. type = CreateType(t.val, start_loc, is_reference); .)
-   | "double"                       (. type = CreateType(t.val, start_loc, is_reference); .)
-   | "bigint"						(. type = CreateType(t.val, start_loc, is_reference); .)
-   | "string"						(. type = CreateType(t.val, start_loc, is_reference); .)
-   | "byte"						    (. type = CreateType(t.val, start_loc, is_reference); .)
-   | "char"                         (. type = CreateType(t.val, start_loc, is_reference); .)
+   ( "int"                			(. type = CreateType(t.val, is_reference ? new TextLocation(start_loc.Line, start_loc.Column + 1) : start_loc, is_reference); .)
+   | "uint"                         (. type = CreateType(t.val, is_reference ? new TextLocation(start_loc.Line, start_loc.Column + 1) : start_loc, is_reference); .)
+   | "bool"               			(. type = CreateType(t.val, is_reference ? new TextLocation(start_loc.Line, start_loc.Column + 1) : start_loc, is_reference); .)
+   | "float"						(. type = CreateType(t.val, is_reference ? new TextLocation(start_loc.Line, start_loc.Column + 1) : start_loc, is_reference); .)
+   | "double"                       (. type = CreateType(t.val, is_reference ? new TextLocation(start_loc.Line, start_loc.Column + 1) : start_loc, is_reference); .)
+   | "bigint"						(. type = CreateType(t.val, is_reference ? new TextLocation(start_loc.Line, start_loc.Column + 1) : start_loc, is_reference); .)
+   | "string"						(. type = CreateType(t.val, is_reference ? new TextLocation(start_loc.Line, start_loc.Column + 1) : start_loc, is_reference); .)
+   | "byte"						    (. type = CreateType(t.val, is_reference ? new TextLocation(start_loc.Line, start_loc.Column + 1) : start_loc, is_reference); .)
+   | "char"                         (. type = CreateType(t.val, is_reference ? new TextLocation(start_loc.Line, start_loc.Column + 1) : start_loc, is_reference); .)
    | TupleTypeSignature<out type>
    | "vector"						(. name = t.val; .)
    | "dictionary"					(. name = t.val; .)
    | "slice"                        (. name = t.val; .)
-   | "intseq"						(. type = CreateType(t.val, start_loc, is_reference); .)
+   | "intseq"						(. type = CreateType(t.val, is_reference ? new TextLocation(start_loc.Line, start_loc.Column + 1) : start_loc, is_reference); .)
    | "void"							(. type = AstType.MakeSimpleType("tuple", Enumerable.Empty<AstType>(), start_loc, CurrentLocation); .)
-   | TypePathExpression<out type>   (. if(is_reference) type = AstType.MakeReferenceType(type, TextLocation.Empty); .)
+   | TypePathExpression<out type>   (. if(is_reference)
+                                           type = AstType.MakeReferenceType(type, start_loc);
+                                    .)
    )                                (. start_loc = NextLocation; .)
    [ /*IF(IsGenericTypeSignature())*/       /* For ambiguity in Comparison on '<' */
      GenericTypeSignature<name, is_reference, start_loc, out type>
@@ -1376,10 +1378,11 @@ WildcardPattern<out PatternConstruct pattern>
 =
   '_'                               (. pattern = PatternConstruct.MakeWildcardPattern(); .).
 /*------------------------------------------------------------------------*/
-IdentifierPattern<out PatternConstruct pattern> (. PatternConstruct inner = null; string name; AstType type = new PlaceholderType(TextLocation.Empty); var loc = CurrentLocation; .)
+IdentifierPattern<out PatternConstruct pattern> (. PatternConstruct inner = null; string name; var loc = NextLocation; .)
 =
   ident                             (.
                                        name = t.val;
+                                       var type = new PlaceholderType(NextLocation);
                                        var ident = AstNode.MakeIdentifier(name, type, cur_modifiers, loc);
                                        Symbols.AddSymbol(name, ident);
                                     .)
@@ -1647,7 +1650,6 @@ UnaryOperator<out OperatorType opType>  (. opType = OperatorType.None; .)
   ( AdditiveOperator<out opType>
   | '!'                             (. opType = OperatorType.Not; .)
   | '&'                             (. opType = OperatorType.Reference; .)
-  | '*'                             (. opType = OperatorType.Dereference; .)
   ).
 /*------------------------------------------------------------------------*/
 Primary<out Expression expr>		    (. expr = null; PathExpression path; AstType type_path = null; .)
@@ -1788,24 +1790,24 @@ LiteralIntSeqExpr<out Expression expr>  (. Expression start = null, end = null, 
 /*------------------------------------------------------------------------*/
 ObjectCreation<AstType typePath, out Expression expr>
                                         (.
-                                           var fields = new List<Identifier>(); var values = new List<Expression>(); var start_loc = CurrentLocation;
+                                           var fields = new List<Identifier>(); var values = new List<Expression>(); var start_loc = NextLocation;
                                            /*Symbols.AddScope();
                                            GoDownScope();
                                            Symbols.Name = "ObjectCreation`" + ScopeId++;*/
                                         .)
 =
   lcurly
-  [ ident                               (. fields.Add(AstNode.MakeIdentifier(t.val, ExpressoModifiers.None, CurrentLocation)); .)
+  [ ident                               (. fields.Add(AstNode.MakeIdentifier(t.val, ExpressoModifiers.None, NextLocation)); .)
     ':'
     CondExpr<out expr>                  (. values.Add(expr); .)
   ]
   { ','
-    ident                               (. fields.Add(AstNode.MakeIdentifier(t.val, ExpressoModifiers.None, CurrentLocation)); .)
+    ident                               (. fields.Add(AstNode.MakeIdentifier(t.val, ExpressoModifiers.None, NextLocation)); .)
     ':'
     CondExpr<out expr>                  (. values.Add(expr); .)
   }
   SYNC rcurly                           (.
-                                           expr = Expression.MakeObjectCreation(typePath, fields, values, start_loc, CurrentLocation);
+                                           expr = Expression.MakeObjectCreation(typePath, fields, values, start_loc, NextLocation);
                                            //GoUpScope();
                                         .).
 /*------------------------------------------------------------------------*/
@@ -1973,7 +1975,7 @@ Identifier<out Identifier ident>    (. string name; var loc = CurrentLocation; .
                                             ident = null;
                                             return;
                                         }
-                                        AstType type = AstType.MakePlaceholderType(CurrentLocation);
+                                        AstType type = AstType.MakePlaceholderType(NextLocation);
                                     .)
   [ "(-"
     Type<out type>

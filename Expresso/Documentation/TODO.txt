@@ -12,3 +12,5 @@
 ・comprehensionの実装
 ・matchの挙動が一部Rustと違うのを修正する
 ・FlowCheckerを実行するように変更する
+・string interpolationの式のTextLocationを修正する
+・キーワードを間違っても、コンパイルが進んでしまうのを修正する

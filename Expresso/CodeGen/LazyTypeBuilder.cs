@@ -4,7 +4,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Reflection.Emit;
-
+using System.Runtime.CompilerServices;
 
 namespace Expresso.CodeGen
 {
@@ -241,11 +241,20 @@ namespace Expresso.CodeGen
             if(is_created)
                 return type_cache;
 
+#if _WINDOWS
+            var debug_info_generator = DebugInfoGenerator.CreatePdbGenerator();
+            foreach(var implementer in implementers){
+                var expr = implementer.Item1 as LambdaExpression;
+                var lambda = expr ?? Expression.Lambda(implementer.Item1);
+                lambda.CompileToMethod(implementer.Item2, debug_info_generator);
+            }
+#else
             foreach(var implementer in implementers){
                 var expr = implementer.Item1 as LambdaExpression;
                 var lambda = expr ?? Expression.Lambda(implementer.Item1);
                 lambda.CompileToMethod(implementer.Item2);
             }
+            #endif
 
             prologue.GetILGenerator().Emit(OpCodes.Ret);
             static_prologue.GetILGenerator().Emit(OpCodes.Ret);

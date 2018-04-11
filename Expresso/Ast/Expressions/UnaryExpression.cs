@@ -14,7 +14,6 @@ namespace Expresso.Ast
 	{
         public static readonly TokenRole NotRole = new TokenRole("!", ExpressoTokenNode.Null);
         public static readonly TokenRole ReferenceRole = new TokenRole("&", ExpressoTokenNode.Null);
-        public static readonly TokenRole DereferenceRole = new TokenRole("*", ExpressoTokenNode.Null);
 
         readonly OperatorType op;
 
@@ -85,8 +84,6 @@ namespace Expresso.Ast
                 return NotRole;
             case OperatorType.Reference:
                 return ReferenceRole;
-            case OperatorType.Dereference:
-                return DereferenceRole;
             default:
                 throw new NotSupportedException("Invalid value for UnaryOperatorType");
             }
