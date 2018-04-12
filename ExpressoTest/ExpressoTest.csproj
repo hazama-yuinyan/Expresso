@@ -122,12 +122,12 @@
     <None Include="sources\for_unit_tests\property_tests.exs" />
     <None Include="sources\for_unit_tests\test_enum_in_csharp.exs" />
     <None Include="sources\for_unit_tests\test_reference.exs" />
+    <None Include="EvaluationTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AnalyzerTests.cs" />
     <Compile Include="EmitterTests.cs" />
     <Compile Include="ErroneouesTests.cs" />
-    <Compile Include="EvaluationTests.cs" />
     <Compile Include="Helpers.cs" />
     <Compile Include="NativeTests.cs" />
     <Compile Include="ParserTests.cs" />

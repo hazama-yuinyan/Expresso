@@ -532,6 +532,9 @@ string cur_class_name;
 		  
 		ModuleBody(out module_decl);
 		Debug.Assert(Symbols.Parent.Name == "root", "The symbol table should indicate \"programRoot\" before name binding ");
+		if(errors.count > 0)
+		   throw new FatalError("Invalid syntax found!");
+		
 		if(DoPostParseProcessing){
 		   PreProcessor.PerformPreProcess(module_decl, this);
 		   ExpressoNameBinder.BindAst(module_decl, this); //Here's the start of post-parse processing
@@ -1629,11 +1632,7 @@ string cur_class_name;
 	}
 
 	void ObjectCreation(AstType typePath, out Expression expr) {
-		var fields = new List<Identifier>(); var values = new List<Expression>(); var start_loc = NextLocation;
-		/*Symbols.AddScope();
-		GoDownScope();
-		Symbols.Name = "ObjectCreation`" + ScopeId++;*/
-		
+		var fields = new List<Identifier>(); var values = new List<Expression>(); var start_loc = NextLocation; 
 		Expect(6);
 		if (la.kind == 16) {
 			Get();
@@ -1652,9 +1651,7 @@ string cur_class_name;
 		}
 		while (!(la.kind == 0 || la.kind == 11)) {SynErr(146); Get();}
 		Expect(11);
-		expr = Expression.MakeObjectCreation(typePath, fields, values, start_loc, NextLocation);
-		//GoUpScope();
-		
+		expr = Expression.MakeObjectCreation(typePath, fields, values, start_loc, NextLocation); 
 	}
 
 	void AugmentedAssignOperators(ref OperatorType type) {
@@ -1860,7 +1857,7 @@ string cur_class_name;
 	}
 
 	void PatternWithType(out PatternWithType typed_pattern) {
-		typed_pattern = null; PatternConstruct pattern = null; AstType type = new PlaceholderType(NextLocation); 
+		typed_pattern = null; var pattern = PatternConstruct.Null; 
 		if (la.kind == 86) {
 			WildcardPattern(out pattern);
 		} else if (IsIdentifierPattern()) {
@@ -1870,6 +1867,7 @@ string cur_class_name;
 		} else if (la.kind == 9 || la.kind == 16) {
 			DestructuringPattern(out pattern);
 		} else SynErr(150);
+		AstType type = new PlaceholderType(NextLocation); 
 		if (la.kind == 46) {
 			Get();
 			Type(out type);
@@ -2016,7 +2014,7 @@ string cur_class_name;
 		Expect(16);
 		name = t.val;
 		if(CheckKeyword(t.val)){
-		   ident = null;
+		   ident = Ast.Identifier.Null;
 		   return;
 		}
 		AstType type = AstType.MakePlaceholderType(NextLocation);
@@ -2068,6 +2066,10 @@ string cur_class_name;
 		PatternConstruct inner = null; string name; var loc = NextLocation; 
 		Expect(16);
 		name = t.val;
+		if(CheckKeyword(name)){
+		   pattern = PatternConstruct.Null;
+		   return;
+		}
 		var type = new PlaceholderType(NextLocation);
 		var ident = AstNode.MakeIdentifier(name, type, cur_modifiers, loc);
 		Symbols.AddSymbol(name, ident);

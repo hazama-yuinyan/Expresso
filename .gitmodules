@@ -1,3 +1,6 @@
 [submodule "Libraries/NRefactory"]
 	path = Libraries/NRefactory
 	url = https://github.com/icsharpcode/NRefactory.git
+[submodule "Libraries/Mono.Cecil"]
+	path = Libraries/Mono.Cecil
+	url = https://github.com/jbevain/cecil.git

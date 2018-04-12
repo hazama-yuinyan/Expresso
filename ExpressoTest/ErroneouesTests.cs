@@ -14,7 +14,7 @@ namespace Expresso.Test
             };
             parser.Parse();
 
-            //Assert.That(() => parser.Parse(), Throws.TypeOf<ParserException>().With.Message.Contains("ES1000"));
+            //Assert.That(() => parser.Parse(), Throws.TypeOf<FatalError>().With.Message.Contains("Invalid syntax found"));
             Assert.AreEqual(9, parser.errors.count);
         }
 

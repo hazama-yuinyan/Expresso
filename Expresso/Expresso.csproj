@@ -231,18 +231,6 @@
     <Reference Include="Microsoft.Experimental.Collections">
       <HintPath>..\packages\Microsoft.Experimental.Collections.1.0.3-alpha\lib\portable-net45+win8+wp8\Microsoft.Experimental.Collections.dll</HintPath>
     </Reference>
-    <Reference Include="Mono.Cecil">
-      <HintPath>..\packages\Mono.Cecil.0.10.0\lib\net40\Mono.Cecil.dll</HintPath>
-    </Reference>
-    <Reference Include="Mono.Cecil.Mdb">
-      <HintPath>..\packages\Mono.Cecil.0.10.0\lib\net40\Mono.Cecil.Mdb.dll</HintPath>
-    </Reference>
-    <Reference Include="Mono.Cecil.Pdb">
-      <HintPath>..\packages\Mono.Cecil.0.10.0\lib\net40\Mono.Cecil.Pdb.dll</HintPath>
-    </Reference>
-    <Reference Include="Mono.Cecil.Rocks">
-      <HintPath>..\packages\Mono.Cecil.0.10.0\lib\net40\Mono.Cecil.Rocks.dll</HintPath>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
     <None Include="Expresso.ATG" />
@@ -293,6 +281,10 @@
     <ProjectReference Include="ExpressoRuntime\ExpressoRuntime.csproj">
       <Project>{D60E49D6-6CBA-4D54-A009-6A0528181C88}</Project>
       <Name>ExpressoRuntime</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Libraries\Mono.Cecil\Mono.Cecil.csproj">
+      <Project>{D68133BD-1E63-496E-9EDE-4FBDBF77B486}</Project>
+      <Name>Mono.Cecil</Name>
     </ProjectReference>
   </ItemGroup>
 </Project>

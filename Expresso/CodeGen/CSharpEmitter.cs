@@ -221,6 +221,26 @@ namespace Expresso.CodeGen
                           Path.Combine(options.OutputPath, options.ExecutableName + ".pdb");
         }
 
+        void EmitPdb(ExpressoAst ast)
+        {
+            var pdb_path = GetPdbFilePath(ast);
+            Console.WriteLine("Emitting .pdb file at {0}...", pdb_path);
+            var writer_provider = new Mono.Cecil.Cil.PortablePdbWriterProvider();
+            var asm_resolver = new Mono.Cecil.DefaultAssemblyResolver();
+            asm_resolver.AddSearchDirectory(options.OutputPath);
+
+            var asm = Mono.Cecil.AssemblyDefinition.ReadAssembly(
+                GetAssemblyFilePath(ast), new Mono.Cecil.ReaderParameters{
+                    AssemblyResolver = asm_resolver
+                }
+            );
+
+            asm.Write(GetAssemblyFilePath(ast), new Mono.Cecil.WriterParameters{
+                WriteSymbols = true,
+                SymbolWriterProvider = writer_provider
+            });
+        }
+
         #region IAstWalker implementation
 
         public CSharpExpr VisitAst(ExpressoAst ast, CSharpEmitterContext context)
@@ -314,19 +334,8 @@ namespace Expresso.CodeGen
             context.ExternalModuleType = type_builder.CreateType();
             asm_builder.Save(GetAssemblyFileName(ast));
 
-            if(options.BuildType.HasFlag(BuildType.Debug)){
-                var pdb_path = GetPdbFilePath(ast);
-                Console.WriteLine("Emitting .pdb file at {0}...", pdb_path);
-                var writer_provider = new Mono.Cecil.Cil.PortablePdbWriterProvider();
-                var module_def = Mono.Cecil.ModuleDefinition.ReadModule(GetAssemblyFilePath(ast));
-                var pdb_writer = writer_provider.GetSymbolWriter(module_def, pdb_path);
-                foreach(var type in module_def.GetTypes()){
-                    foreach(var method in type.Methods){
-                        if(method.DebugInformation.HasSequencePoints)
-                            pdb_writer.Write(method.DebugInformation);
-                    }
-                }
-            }
+            //if(options.BuildType.HasFlag(BuildType.Debug))
+            //    EmitPdb(ast);
 
             AssemblyBuilder = asm_builder;
 
@@ -1723,7 +1732,9 @@ namespace Expresso.CodeGen
                         // let (t1, t2) = Tuple.Create(...);
                         var assignments = variables.Zip(call_expr.Arguments, (l, r) => new Tuple<ExprTree.ParameterExpression, CSharpExpr>(l, r))
                                                    .Select(pair => CSharpExpr.Assign(pair.Item1, pair.Item2));
-                        result = options.BuildType.HasFlag(BuildType.Debug) ? CSharpExpr.Block(debug_infos.Concat(assignments)) : CSharpExpr.Block(assignments);
+                        var debug_info_list = debug_infos.ToList();
+                        debug_info_list.AddRange(assignments);
+                        result = options.BuildType.HasFlag(BuildType.Debug) ? CSharpExpr.Block(debug_info_list) : CSharpExpr.Block(assignments);
                     }else{
                         // let (t1, t2) = t where t is Tuple
                         var tmps = new List<CSharpExpr>();
@@ -1733,14 +1744,16 @@ namespace Expresso.CodeGen
                             ++i;
                         }
 
-                        result = options.BuildType.HasFlag(BuildType.Debug) ? CSharpExpr.Block(debug_infos.Concat(tmps)) : CSharpExpr.Block(tmps);
+                        var debug_info_list = debug_infos.ToList();
+                        debug_info_list.AddRange(tmps);
+                        result = CSharpExpr.Block(debug_info_list);//options.BuildType.HasFlag(BuildType.Debug) ? CSharpExpr.Block(debug_info_list) : CSharpExpr.Block(tmps);
                     }
                 }else{
                     var assignment = CSharpExpr.Assign(variables[0], init);
                     if(options.BuildType.HasFlag(BuildType.Debug)){
                         var debug_info_list = debug_infos.ToList();
                         debug_info_list.Add(assignment);
-                        result = CSharpExpr.Block(debug_infos);
+                        result = CSharpExpr.Block(debug_info_list);
                     }else{
                         result = assignment;
                     }

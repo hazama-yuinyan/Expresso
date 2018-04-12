@@ -496,6 +496,9 @@ Expresso                    		(. ExpressoAst module_decl = null;
 = 
   ModuleBody<out module_decl>		(.
                                             Debug.Assert(Symbols.Parent.Name == "root", "The symbol table should indicate \"programRoot\" before name binding ");
+                                            if(errors.count > 0)
+                                                throw new FatalError("Invalid syntax found!");
+
                                             if(DoPostParseProcessing){
                                                 PreProcessor.PerformPreProcess(module_decl, this);
                                                 ExpressoNameBinder.BindAst(module_decl, this); //Here's the start of post-parse processing
@@ -1362,14 +1365,14 @@ RValuePattern<out PatternConstruct pattern>     (. Expression expr; .)
 =
   LiteralIntSeqExpr<out expr>                   (. pattern = PatternConstruct.MakeExpressionPattern(expr); .).
 /*------------------------------------------------------------------------*/
-PatternWithType<out PatternWithType typed_pattern>    (. typed_pattern = null; PatternConstruct pattern = null; AstType type = new PlaceholderType(NextLocation); .)
+PatternWithType<out PatternWithType typed_pattern>    (. typed_pattern = null; var pattern = PatternConstruct.Null; .)
 =
   ( WildcardPattern<out pattern>
   | IF(IsIdentifierPattern())
     IdentifierPattern<out pattern>
   | TuplePattern<out pattern>
   | DestructuringPattern<out pattern>
-  )
+  )                                             (. AstType type = new PlaceholderType(NextLocation); .)
   [ "(-"
     Type<out type>
   ]                                             (. typed_pattern = PatternConstruct.MakePatternWithType(pattern, type); .).
@@ -1382,6 +1385,10 @@ IdentifierPattern<out PatternConstruct pattern> (. PatternConstruct inner = null
 =
   ident                             (.
                                        name = t.val;
+                                       if(CheckKeyword(name)){
+                                           pattern = PatternConstruct.Null;
+                                           return;
+                                       }
                                        var type = new PlaceholderType(NextLocation);
                                        var ident = AstNode.MakeIdentifier(name, type, cur_modifiers, loc);
                                        Symbols.AddSymbol(name, ident);
@@ -1789,12 +1796,7 @@ LiteralIntSeqExpr<out Expression expr>  (. Expression start = null, end = null, 
   ].
 /*------------------------------------------------------------------------*/
 ObjectCreation<AstType typePath, out Expression expr>
-                                        (.
-                                           var fields = new List<Identifier>(); var values = new List<Expression>(); var start_loc = NextLocation;
-                                           /*Symbols.AddScope();
-                                           GoDownScope();
-                                           Symbols.Name = "ObjectCreation`" + ScopeId++;*/
-                                        .)
+                                        (. var fields = new List<Identifier>(); var values = new List<Expression>(); var start_loc = NextLocation; .)
 =
   lcurly
   [ ident                               (. fields.Add(AstNode.MakeIdentifier(t.val, ExpressoModifiers.None, NextLocation)); .)
@@ -1806,10 +1808,7 @@ ObjectCreation<AstType typePath, out Expression expr>
     ':'
     CondExpr<out expr>                  (. values.Add(expr); .)
   }
-  SYNC rcurly                           (.
-                                           expr = Expression.MakeObjectCreation(typePath, fields, values, start_loc, NextLocation);
-                                           //GoUpScope();
-                                        .).
+  SYNC rcurly                           (. expr = Expression.MakeObjectCreation(typePath, fields, values, start_loc, NextLocation); .).
 /*------------------------------------------------------------------------*/
 Trailer<ref Expression expr>	(. var args = new List<Expression>(); var loc = CurrentLocation; .)
 =
@@ -1972,7 +1971,7 @@ Identifier<out Identifier ident>    (. string name; var loc = CurrentLocation; .
   ident                             (.
                                         name = t.val;
                                         if(CheckKeyword(t.val)){
-                                            ident = null;
+                                            ident = Ast.Identifier.Null;
                                             return;
                                         }
                                         AstType type = AstType.MakePlaceholderType(NextLocation);
