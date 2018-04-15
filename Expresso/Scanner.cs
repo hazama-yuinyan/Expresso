@@ -209,7 +209,7 @@ public class Scanner {
 
 	public Buffer buffer; // scanner buffer
 	
-	string directoryName;  // file name that we've opened
+	string directoryName;  // directory name that we've opened
 	Token t;          // current token
 	int ch;           // current input character
 	int pos;          // byte position of current character
@@ -224,6 +224,13 @@ public class Scanner {
 	
 	char[] tval = new char[128]; // text of current token
 	int tlen;         // length of current token
+
+	/// <summary>
+	/// The file path that we've opened
+	/// </summary>
+	public string FilePath{
+		get; private set;
+	}
 	
 	static Scanner() {
 		start = new Hashtable(128);
@@ -267,6 +274,7 @@ public class Scanner {
 	
 	public Scanner (string fileName) {
 		this.directoryName = Path.GetDirectoryName(fileName);
+		FilePath = fileName;
 		try {
 			Stream stream = new FileStream(fileName, FileMode.Open, FileAccess.Read, FileShare.Read);
 			buffer = new UTF8Buffer(new Buffer(stream, false));

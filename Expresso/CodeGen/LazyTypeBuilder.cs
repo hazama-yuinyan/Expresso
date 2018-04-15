@@ -249,10 +249,11 @@ namespace Expresso.CodeGen
                 lambda.CompileToMethod(implementer.Item2, debug_info_generator);
             }
 #else
+            var debug_info_generator = SymbolDocumentGenerator.CreateSymbolDocumentGenerator();
             foreach(var implementer in implementers){
                 var expr = implementer.Item1 as LambdaExpression;
                 var lambda = expr ?? Expression.Lambda(implementer.Item1);
-                lambda.CompileToMethod(implementer.Item2);
+                lambda.CompileToMethod(implementer.Item2, debug_info_generator);
             }
             #endif
 

@@ -174,11 +174,10 @@ namespace Expresso.CodeGen
                         break;
                 }
 
-                if(type == null && !astType.IdentifierNode.Type.IsNull){
+                if(type == null && !astType.IdentifierNode.Type.IsNull)
                     return GetNativeType(astType.IdentifierNode.Type);
-                }else if(type == null){
+                else if(type == null)
                     throw new EmitterException("The simple type `{0}`(`{1}`) is not found!", simple, simple, name);
-                }
 
                 return type;
             }

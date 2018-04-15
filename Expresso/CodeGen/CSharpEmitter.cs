@@ -204,11 +204,6 @@ namespace Expresso.CodeGen
                 return null;
         }
 
-        string GetAssemblyFileName(ExpressoAst ast)
-        {
-            return options.BuildType.HasFlag(BuildType.Assembly) ? ast.Name + ".dll" : options.ExecutableName + ".exe";
-        }
-
         string GetAssemblyFilePath(ExpressoAst ast)
         {
             return options.BuildType.HasFlag(BuildType.Assembly) ? Path.Combine(options.OutputPath, ast.Name + ".dll") :
@@ -248,11 +243,11 @@ namespace Expresso.CodeGen
             if(context == null)
                 context = new CSharpEmitterContext();
 
-            var name = new AssemblyName("exs_" + ast.Name);
+            var assembly_name = options.BuildType.HasFlag(BuildType.Assembly) ? ast.Name : options.ExecutableName;
+            var name = new AssemblyName(assembly_name);
 
             var asm_builder = Thread.GetDomain().DefineDynamicAssembly(name, AssemblyBuilderAccess.RunAndSave, options.OutputPath);
-            var file_name = options.BuildType.HasFlag(BuildType.Assembly) ? ast.Name : options.ExecutableName;
-            var mod_builder = asm_builder.DefineDynamicModule(file_name, options.BuildType.HasFlag(BuildType.Assembly) ? file_name + ".dll" : file_name + ".exe");
+            var file_name = options.BuildType.HasFlag(BuildType.Assembly) ? assembly_name+ ".dll" : assembly_name + ".exe";
 
             if(options.BuildType.HasFlag(BuildType.Debug)){
                 var attrs = DebuggableAttribute.DebuggingModes.Default | DebuggableAttribute.DebuggingModes.DisableOptimizations | DebuggableAttribute.DebuggingModes.IgnoreSymbolStoreSequencePoints;
@@ -261,10 +256,10 @@ namespace Expresso.CodeGen
                 asm_builder.SetCustomAttribute(new CustomAttributeBuilder(
                     typeof(DebuggableAttribute).GetConstructor(attr_arg_types), attr_arg_values
                 ));
-                mod_builder.SetCustomAttribute(new CustomAttributeBuilder(
-                    typeof(DebuggableAttribute).GetConstructor(attr_arg_types), attr_arg_values
-                ));
             }
+
+            var mod_builder = asm_builder.DefineDynamicModule(assembly_name, file_name, options.BuildType.HasFlag(BuildType.Debug));
+            var doc = mod_builder.DefineDocument(Path.GetFileName(parser.scanner.FilePath), LanguageGuid, Guid.Empty, Guid.Empty);
 
             // Leave the ast.Name as is because otherwise we can't refer to it later when visiting ImportDeclarations
             var type_builder = new LazyTypeBuilder(mod_builder, CSharpCompilerHelper.ConvertToPascalCase(ast.Name), TypeAttributes.Class | TypeAttributes.Public, Enumerable.Empty<Type>(), true);
@@ -319,7 +314,7 @@ namespace Expresso.CodeGen
                 symbol_table = parser.Symbols;
             }
 
-            document_info = CSharpExpr.SymbolDocument(ast.Name + ".exs", LanguageGuid);
+            document_info = CSharpExpr.SymbolDocument(parser.scanner.FilePath, LanguageGuid);
 
             Console.WriteLine("Emitting code on {0}...", ast.ModuleName);
             foreach(var import in ast.Imports)
@@ -332,7 +327,7 @@ namespace Expresso.CodeGen
             }
 
             context.ExternalModuleType = type_builder.CreateType();
-            asm_builder.Save(GetAssemblyFileName(ast));
+            asm_builder.Save(file_name);
 
             //if(options.BuildType.HasFlag(BuildType.Debug))
             //    EmitPdb(ast);
