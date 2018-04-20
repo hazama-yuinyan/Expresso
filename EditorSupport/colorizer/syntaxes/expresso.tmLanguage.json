@@ -123,20 +123,97 @@
             }
         },
         {
-            "include": "#constants",
+            "begin": "(let|var)\\s+",
+            "beginCaptures": {
+                "1" : {
+                    "name" : "keyword.other.source.expresso"
+                }
+            },
+            "end": "(;)$",
+            "endCaptures": {
+                "1" : {
+                    "name" : "punctuation.definition.semicolon.source.expresso"
+                }
+            },
+            "patterns": [
+                {
+                    "match": "(,?)\\s*([\\w0-9_]+)\\s+(?:\\(-\\s+([\\w0-9_]+)\\s+)?(=)\\s+",
+                    "captures": {
+                        "1" : {
+                            "name" : "punctuation.defitnion.comma.source.expresso"
+                        },
+                        "2" : {
+                            "name" : "variable.name.source.expresso"
+                        },
+                        "3" : {
+                            "name" : "entity.name.class.source.expresso"
+                        },
+                        "4" : {
+                            "name" : "punctuation.defitnion.equal.source.expresso"
+                        }
+                    }
+                },
+                {
+                    "include": "#numberLiteral",
+                    "name" : "constant.numeric.source.expresso"
+                },
+                {
+                    "include": "#stringLiterals",
+                    "name":  "constant.character.source.expresso"
+                },
+                {
+                    "include": "#keywordVariables",
+                    "name" : "variable.language.source.expresso"
+                }
+            ]
+        },
+        {
+            "begin": "^\\s*(export)?\\s*(class)\\s+([\\w0-9_]+)\\s*(?:(:)\\s+)?",
+            "beginCaptures": {
+                "1" : {
+                    "name" : "keyword.other.export.source.expresso"
+                },
+                "2" : {
+                    "name" : "keyword.other.class.source.expresso"
+                },
+                "3" : {
+                    "name" : "entity.name.class.source.expresso"
+                },
+                "4" : {
+                    "name" : "punctuation.definition.colon.source.expresso"
+                }
+            },
+            "end": "\\n?\\s*({)",
+            "endCaptures": {
+                "1" : {
+                    "name" : "punctuation.defitinion.curly-brackets.source.expresso"
+                }
+            },
+            "patterns": [
+                {
+                    "match": "(,?)\\s*([\\w0-9_]+)",
+                    "captures": {
+                        "1" : {
+                            "name" : "punctuation.definition.comma.source.expresso"
+                        },
+                        "2" : {
+                            "name" : "entity.name.class.source.expresso"
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "include": "#stringLiterals",
             "name" : "constant.characte.source.expresso"
+        },
+        {
+            "include": "#numberLiteral",
+            "name": "constant.numeric.source.expresso"
         },
         {
             "match" : "\\b(true|false|null)\\b",
             "name" : "constant.language.source.expresso"
-        },
-        {
-            "match": "\\b(self|super)\\b",
-            "name" : "variable.language.source.expresso"
-        },
-        {
-            "match" : "\\b((0(x|X)[0-9a-fA-F]*)|(([0-9]+\\.?[0-9]*)|(\\.[0-9]+))((e|E)(\\+|-)?[0-9]+)?)(L|l)?\\b",
-            "name" : "constant.numeric.source.expresso"
         },
         {
             "match" : "\\b(if|else|for|while|return|continue|break|match|yield)\\b",
@@ -145,6 +222,10 @@
         {
             "match" : "\\b(override|as)\\b",
             "name" : "keyword.operator.source.expresso"
+        },
+        {
+            "include": "#keywordVariables",
+            "name" : "variable.language.source.expresso"
         },
         {
             "match" : "\\b(import|module|def|in|from|let|var)\\b",
@@ -188,7 +269,7 @@
                 }
             ]
         },
-        "constants" : {
+        "stringLiterals" : {
             "patterns": [
                 {
                     "begin": "\"",
@@ -260,6 +341,18 @@
                     ]
                 }
             ]
+        },
+        "numberLitral" : {
+           "patterns" : [{
+                "match" : "\\b((0(x|X)[0-9a-fA-F]*)|(([0-9]+\\.?[0-9]*)|(\\.[0-9]+))((e|E)(\\+|-)?[0-9]+)?)(L|l)?\\b",
+                "name" : "constant.numeric.source.expresso"
+            }]
+        },
+        "keywordVariables" : {
+                "patterns": [{
+                "match": "\\b(self|super)\\b",
+                "name" : "variable.language.source.expresso"
+            }]
         }
     },
 	"scopeName": "source.expresso"

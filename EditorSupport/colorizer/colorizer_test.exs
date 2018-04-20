@@ -16,6 +16,13 @@ export class TestClass
     }
 }
 
+class SomeDerivedClass : IInterface, IInterface2, TestClass
+{
+}
+
+class SomeDerivedClass2: IInterface, IInterface2{
+}
+
 def throwException()
 {
     throw Exception{message: "Some error occurred"};
@@ -34,6 +41,18 @@ def main()
     let raw_string = r"some raw stringあいうえお日本語
     blah blah";
     let interpolation = "$$sin: ${sin}あいうえお日本語";
+    let something = self.x;
+    let b = 10, c = 20, d = 30;
+
+    var a2 = 100;
+    var sin = Math.Sin(0.0);
+    var str = "\\tsome stringあいうえお日本語";
+    var chr = 'a';
+    var raw_string = r"some raw stringあいうえお日本語
+    blah blah";
+    var interpolation = "$$sin: ${sin}あいうえお日本語";
+    var something = self.x;
+    var b2 = 10, c2 = 20, d2 = 30;
     
     println(a, sin);
 }
