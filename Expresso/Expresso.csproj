@@ -53,6 +53,7 @@
       </CustomCommands>
     </CustomCommands>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <LangVersion>Latest</LangVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
     <DebugType>None</DebugType>
@@ -82,6 +83,7 @@
         </Command>
       </CustomCommands>
     </CustomCommands>
+    <LangVersion>Latest</LangVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <CheckForOverflowUnderflow>False</CheckForOverflowUnderflow>
@@ -221,6 +223,7 @@
     <Compile Include="Analysis\NullCheckWalker.cs" />
     <Compile Include="Analysis\PreProcessor.cs" />
     <Compile Include="Ast\Statements\DoWhileStatement.cs" />
+    <Compile Include="CodeGen\PortablePdbGenerator.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -231,6 +234,12 @@
       <HintPath>..\packages\Microsoft.Experimental.Collections.1.0.3-alpha\lib\portable-net45+win8+wp8\Microsoft.Experimental.Collections.dll</HintPath>
     </Reference>
     <Reference Include="Mono.CompilerServices.SymbolWriter" />
+    <Reference Include="System.Collections.Immutable">
+      <HintPath>..\packages\System.Collections.Immutable.1.5.0-preview2-26406-04\lib\portable-net45+win8+wp8+wpa81\System.Collections.Immutable.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Reflection.Metadata">
+      <HintPath>..\packages\System.Reflection.Metadata.1.6.0-preview2-26406-04\lib\portable-net45+win8\System.Reflection.Metadata.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <None Include="Expresso.ATG" />

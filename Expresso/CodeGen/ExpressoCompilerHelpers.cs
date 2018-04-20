@@ -16,6 +16,7 @@ namespace Expresso.CodeGen
     public static class ExpressoCompilerHelpers
     {
         internal static uint StartOfIdentifierId = 1_000_000_002u;
+        internal static Guid LanguageGuid = Guid.Parse("408e5e88-0566-4b8a-9c69-4d2f7c74baf9");
         static uint IdentifierId = StartOfIdentifierId + 16u;
         static readonly string TypePrefix = "type_";
         static readonly string[] IgnoreList = new []{"equals", "getHashCode"};

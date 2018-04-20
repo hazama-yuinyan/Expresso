@@ -61,7 +61,6 @@ namespace Expresso.CodeGen
         static ExprTree.LabelTarget ReturnTarget = null;
         static CSharpExpr DefaultReturnValue = null;
         static int VariableCount = 0;
-        static Guid LanguageGuid = Guid.Parse("408e5e88-0566-4b8a-9c69-4d2f7c74baf9");
 		
         const string ClosureMethodName = "__Apply";
         const string ClosureDelegateName = "__ApplyMethod";
@@ -247,7 +246,7 @@ namespace Expresso.CodeGen
             var name = new AssemblyName(assembly_name);
 
             var asm_builder = Thread.GetDomain().DefineDynamicAssembly(name, AssemblyBuilderAccess.RunAndSave, options.OutputPath);
-            var file_name = options.BuildType.HasFlag(BuildType.Assembly) ? assembly_name+ ".dll" : assembly_name + ".exe";
+            var file_name = options.BuildType.HasFlag(BuildType.Assembly) ? assembly_name + ".dll" : assembly_name + ".exe";
 
             if(options.BuildType.HasFlag(BuildType.Debug)){
                 var attrs = DebuggableAttribute.DebuggingModes.Default | DebuggableAttribute.DebuggingModes.DisableOptimizations | DebuggableAttribute.DebuggingModes.IgnoreSymbolStoreSequencePoints;
@@ -259,7 +258,7 @@ namespace Expresso.CodeGen
             }
 
             var mod_builder = asm_builder.DefineDynamicModule(assembly_name, file_name, options.BuildType.HasFlag(BuildType.Debug));
-            var doc = mod_builder.DefineDocument(Path.GetFileName(parser.scanner.FilePath), LanguageGuid, Guid.Empty, Guid.Empty);
+            //var doc = mod_builder.DefineDocument(Path.GetFileName(parser.scanner.FilePath), LanguageGuid, Guid.Empty, Guid.Empty);
 
             // Leave the ast.Name as is because otherwise we can't refer to it later when visiting ImportDeclarations
             var type_builder = new LazyTypeBuilder(mod_builder, CSharpCompilerHelper.ConvertToPascalCase(ast.Name), TypeAttributes.Class | TypeAttributes.Public, Enumerable.Empty<Type>(), true);
@@ -314,7 +313,7 @@ namespace Expresso.CodeGen
                 symbol_table = parser.Symbols;
             }
 
-            document_info = CSharpExpr.SymbolDocument(parser.scanner.FilePath, LanguageGuid);
+            document_info = CSharpExpr.SymbolDocument(parser.scanner.FilePath, ExpressoCompilerHelpers.LanguageGuid);
 
             Console.WriteLine("Emitting code on {0}...", ast.ModuleName);
             foreach(var import in ast.Imports)

@@ -4,7 +4,6 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Reflection.Emit;
-using System.Runtime.CompilerServices;
 
 namespace Expresso.CodeGen
 {
@@ -21,6 +20,7 @@ namespace Expresso.CodeGen
         readonly List<Tuple<Expression, MethodBuilder>> implementers;
         readonly List<MemberInfo> members;
         readonly List<string> has_initializer_list = new List<string>();
+        readonly string pdb_file_path = "./main.pdb";
         Type type_cache;
         bool is_created;
 
@@ -249,13 +249,15 @@ namespace Expresso.CodeGen
                 lambda.CompileToMethod(implementer.Item2, debug_info_generator);
             }
 #else
-            var debug_info_generator = SymbolDocumentGenerator.CreateSymbolDocumentGenerator();
+            var debug_info_generator = PortablePDBGenerator.CreatePortablePDBGenerator();
             foreach(var implementer in implementers){
                 var expr = implementer.Item1 as LambdaExpression;
                 var lambda = expr ?? Expression.Lambda(implementer.Item1);
                 lambda.CompileToMethod(implementer.Item2, debug_info_generator);
             }
             #endif
+
+            debug_info_generator.WriteToFile(pdb_file_path);
 
             prologue.GetILGenerator().Emit(OpCodes.Ret);
             static_prologue.GetILGenerator().Emit(OpCodes.Ret);

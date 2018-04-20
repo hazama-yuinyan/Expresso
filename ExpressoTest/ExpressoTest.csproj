@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="..\packages\NUnit.3.10.1\build\NUnit.props" Condition="Exists('..\packages\NUnit.3.10.1\build\NUnit.props')" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
@@ -34,7 +35,7 @@
     <Reference Include="System" />
     <Reference Include="System.Numerics" />
     <Reference Include="nunit.framework">
-      <HintPath>..\packages\NUnit.3.9.0\lib\net45\nunit.framework.dll</HintPath>
+      <HintPath>..\packages\NUnit.3.10.1\lib\net45\nunit.framework.dll</HintPath>
     </Reference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
@@ -100,7 +101,6 @@
     <None Include="sources\for_unit_tests\erroneous\protected_accessibility.exs" />
     <None Include="sources\for_unit_tests\erroneous\member_immutability.exs" />
     <None Include="sources\for_unit_tests\erroneous\different_access_modifier_on_methods.exs" />
-    <None Include="packages.config" />
     <None Include="sources\for_unit_tests\erroneous\types_mismatched_on_argument.exs" />
     <None Include="sources\for_unit_tests\erroneous\primitive_types_cant_be_derived.exs" />
     <None Include="sources\for_unit_tests\erroneous\cant_be_derived_from_standard_libraries_type.exs" />
@@ -123,6 +123,7 @@
     <None Include="sources\for_unit_tests\test_enum_in_csharp.exs" />
     <None Include="sources\for_unit_tests\test_reference.exs" />
     <None Include="EvaluationTests.cs" />
+    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AnalyzerTests.cs" />
