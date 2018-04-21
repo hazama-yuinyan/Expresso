@@ -249,7 +249,7 @@ namespace Expresso.CodeGen
             var file_name = options.BuildType.HasFlag(BuildType.Assembly) ? assembly_name + ".dll" : assembly_name + ".exe";
 
             if(options.BuildType.HasFlag(BuildType.Debug)){
-                var attrs = DebuggableAttribute.DebuggingModes.Default | DebuggableAttribute.DebuggingModes.DisableOptimizations | DebuggableAttribute.DebuggingModes.IgnoreSymbolStoreSequencePoints;
+                var attrs = DebuggableAttribute.DebuggingModes.Default | DebuggableAttribute.DebuggingModes.DisableOptimizations;
                 var attr_arg_types = new []{typeof(DebuggableAttribute.DebuggingModes)};
                 var attr_arg_values = new object[]{attrs};
                 asm_builder.SetCustomAttribute(new CustomAttributeBuilder(

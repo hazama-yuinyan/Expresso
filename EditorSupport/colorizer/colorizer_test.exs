@@ -28,6 +28,16 @@ def throwException()
     throw Exception{message: "Some error occurred"};
 }
 
+def getInt()
+{
+    return 10;
+}
+
+def returnInt(n (- int, j (- int)
+{
+    return n;
+}
+
 def main()
 {
     let a = 100;
@@ -43,6 +53,8 @@ def main()
     let interpolation = "$$sin: ${sin}あいうえお日本語";
     let something = self.x;
     let b = 10, c = 20, d = 30;
+    let e = getInt();
+    let f = returnInt(10, 20);
 
     var a2 = 100;
     var sin = Math.Sin(0.0);
@@ -53,6 +65,8 @@ def main()
     var interpolation = "$$sin: ${sin}あいうえお日本語";
     var something = self.x;
     var b2 = 10, c2 = 20, d2 = 30;
+    var e = getInt();
+    var f = returnInt(10, 20);
     
     println(a, sin);
 }

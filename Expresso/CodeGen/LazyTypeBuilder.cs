@@ -255,9 +255,10 @@ namespace Expresso.CodeGen
                 var lambda = expr ?? Expression.Lambda(implementer.Item1);
                 lambda.CompileToMethod(implementer.Item2, debug_info_generator);
             }
-            #endif
 
+            Console.WriteLine("Emitting a PDB on type {0}...", interface_type.Name);
             debug_info_generator.WriteToFile(pdb_file_path);
+            #endif
 
             prologue.GetILGenerator().Emit(OpCodes.Ret);
             static_prologue.GetILGenerator().Emit(OpCodes.Ret);

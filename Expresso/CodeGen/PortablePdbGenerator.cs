@@ -18,50 +18,38 @@ namespace Expresso.CodeGen
     public class PortablePDBGenerator : DebugInfoGenerator
     {
         static Dictionary<SymbolDocumentInfo, ISymbolDocumentWriter> symbol_writers = new Dictionary<SymbolDocumentInfo, ISymbolDocumentWriter>();
-        static List<MethodBuilder> seen_methods = new List<MethodBuilder>();
+        static List<LambdaExpression> seen_methods = new List<LambdaExpression>();
 
         int num_documents = 0, num_methods = 0;
         MetadataBuilder metadata_builder = new MetadataBuilder();
         List<Tuple<int, DebugInfoExpression>> sequence_points = new List<Tuple<int, DebugInfoExpression>>();
         DocumentHandle current_doc_handle;
 
-        internal void MarkSequencePoint(LambdaExpression method, MethodBase methodBase, ILGenerator ilg, DebugInfoExpression sequencePoint)
-        {
-            if(methodBase is MethodBuilder method_builder){
-                //ilg.MarkSequencePoint(GetSymbolWriter(method_builder, sequencePoint.Document), sequencePoint.StartLine, sequencePoint.StartColumn, sequencePoint.EndLine, sequencePoint.EndColumn);
-                if(seen_methods.IndexOf(method_builder) == -1){
-                    ++num_methods;
-                    metadata_builder.SetCapacity(TableIndex.MethodDebugInformation, num_methods);
-                    seen_methods.Add(method_builder);
-
-                    if(sequence_points.Count > 0){
-                        var sequence_points_blob = SerializeSequencePoints();
-                        metadata_builder.AddMethodDebugInformation(current_doc_handle, sequence_points_blob);
-                    }
-
-                    sequence_points.Add(new Tuple<int, DebugInfoExpression>(ilg.ILOffset, sequencePoint));
-                }else{
-                    sequence_points.Add(new Tuple<int, DebugInfoExpression>(ilg.ILOffset, sequencePoint));
-                }
-            }
-        }
-
         public override void MarkSequencePoint(LambdaExpression method, int ilOffset, DebugInfoExpression sequencePoint)
         {
-            throw new InvalidOperationException("MarkSequencePoint needs an Expression Compiler");
+            //ilg.MarkSequencePoint(GetSymbolWriter(method_builder, sequencePoint.Document), sequencePoint.StartLine, sequencePoint.StartColumn, sequencePoint.EndLine, sequencePoint.EndColumn);
+            if(seen_methods.IndexOf(method) == -1){
+                ++num_methods;
+                metadata_builder.SetCapacity(TableIndex.MethodDebugInformation, num_methods);
+                seen_methods.Add(method);
+
+                if(sequence_points.Count > 0){
+                    var sequence_points_blob = SerializeSequencePoints();
+                    metadata_builder.AddMethodDebugInformation(current_doc_handle, sequence_points_blob);
+                }
+
+                sequence_points.Add(new Tuple<int, DebugInfoExpression>(ilOffset, sequencePoint));
+            }else{
+                sequence_points.Add(new Tuple<int, DebugInfoExpression>(ilOffset, sequencePoint));
+            }
         }
 
         public void WriteToFile(string filePath)
         {
-            var builder = System.Collections.Immutable.ImmutableArray.CreateBuilder<int>(MetadataTokens.TableCount);
-            for(int i = 0; i < MetadataTokens.TableCount; ++i){
-                builder.Add(0);
-            }
-            var row_counts = builder.MoveToImmutable();
             var raw_pdb_id = new byte[]{0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01};
             var pdb_id = new BlobContentId(raw_pdb_id);
 
-            var pdb_builder = new PortablePdbBuilder(metadata_builder, row_counts, default, _ => pdb_id);
+            var pdb_builder = new PortablePdbBuilder(metadata_builder, metadata_builder.GetRowCounts(), default, _ => pdb_id);
             var blob_builder = new BlobBuilder();
             pdb_builder.Serialize(blob_builder);
             using(var file_stream = File.Create(filePath)){
