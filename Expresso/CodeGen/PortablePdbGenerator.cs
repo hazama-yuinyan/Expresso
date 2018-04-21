@@ -113,8 +113,8 @@ namespace Expresso.CodeGen
                 SerializeDeltaLineColumns(writer, seq_point);
 
                 // δLine and δColumn
-                writer.WriteCompressedInteger(seq_point.Item2.StartLine - prev_non_hidden_start_line);
-                writer.WriteCompressedInteger(seq_point.Item2.StartColumn - prev_non_hidden_start_column);
+                writer.WriteCompressedSignedInteger(seq_point.Item2.StartLine - prev_non_hidden_start_line);
+                writer.WriteCompressedSignedInteger(seq_point.Item2.StartColumn - prev_non_hidden_start_column);
 
                 prev_non_hidden_start_line = seq_point.Item2.StartLine;
                 prev_non_hidden_start_column = seq_point.Item2.StartColumn;
@@ -126,10 +126,14 @@ namespace Expresso.CodeGen
         static void SerializeDeltaLineColumns(BlobBuilder writer, Tuple<int, DebugInfoExpression> sequencePoint)
         {
             var debug_info = sequencePoint.Item2;
+            var delta_line = debug_info.EndLine - debug_info.StartLine;
             // ΔLine
-            writer.WriteCompressedInteger(debug_info.EndLine - debug_info.StartLine);
+            writer.WriteCompressedInteger(delta_line);
             // ΔColumn
-            writer.WriteCompressedInteger(debug_info.EndColumn - debug_info.StartColumn);
+            if(delta_line == 0)
+                writer.WriteCompressedInteger(debug_info.EndColumn - debug_info.StartColumn);
+            else
+                writer.WriteCompressedSignedInteger(debug_info.EndColumn - debug_info.StartColumn);
         }
 
         public static PortablePDBGenerator CreatePortablePDBGenerator()
