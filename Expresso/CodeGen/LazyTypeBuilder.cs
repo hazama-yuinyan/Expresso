@@ -74,7 +74,11 @@ namespace Expresso.CodeGen
             prologue = impl_type.DefineMethod("Prologue", MethodAttributes.Assembly | MethodAttributes.Static, typeof(void), types);
             static_prologue = impl_type.DefineMethod("StaticPrologue", MethodAttributes.Assembly | MethodAttributes.Static, typeof(void), null);
             implementers = new List<Tuple<Expression, MethodBuilder>>();
+#if WINDOWS
+            members = new List<MemberInfo>();
+#else
             members = new List<MemberInfo>().Concat(builder.GetMethods().OfType<MethodBuilder>()).ToList();
+#endif
             is_created = false;
         }
 

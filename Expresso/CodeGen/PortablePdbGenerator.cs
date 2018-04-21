@@ -36,6 +36,7 @@ namespace Expresso.CodeGen
                 if(sequence_points.Count > 0){
                     var sequence_points_blob = SerializeSequencePoints();
                     metadata_builder.AddMethodDebugInformation(current_doc_handle, sequence_points_blob);
+                    sequence_points.Clear();
                 }
 
                 sequence_points.Add(new Tuple<int, DebugInfoExpression>(ilOffset, sequencePoint));
@@ -46,6 +47,13 @@ namespace Expresso.CodeGen
 
         public void WriteToFile(string filePath)
         {
+            if(sequence_points.Count > 0){
+                // In order to mark sequence points on the last method
+                var sequence_points_blob = SerializeSequencePoints();
+                metadata_builder.AddMethodDebugInformation(current_doc_handle, sequence_points_blob);
+                sequence_points.Clear();
+            }
+
             var raw_pdb_id = new byte[]{0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01};
             var pdb_id = new BlobContentId(raw_pdb_id);
 

@@ -1,0 +1,300 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
+    <ProductVersion>8.0.30703</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{4E28200A-5808-419F-8A57-F504842991AF}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <RootNamespace>Expresso</RootNamespace>
+    <AssemblyName>Expresso</AssemblyName>
+    <ReleaseVersion>1.3</ReleaseVersion>
+    <NoWin32Manifest>False</NoWin32Manifest>
+    <SignAssembly>False</SignAssembly>
+    <RunPostBuildEvent>OnBuildSuccess</RunPostBuildEvent>
+    <AllowUnsafeBlocks>False</AllowUnsafeBlocks>
+    <NoStdLib>False</NoStdLib>
+    <TreatWarningsAsErrors>False</TreatWarningsAsErrors>
+    <IntermediateOutputPath>obj\$(Configuration)\</IntermediateOutputPath>
+    <RunCodeAnalysis>False</RunCodeAnalysis>
+    <SourceAnalysisOverrideSettingsFile>C:\Users\Ryouta\AppData\Roaming\ICSharpCode/SharpDevelop4\Settings.SourceAnalysis</SourceAnalysisOverrideSettingsFile>
+    <TargetFrameworkProfile />
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
+    <DebugSymbols>True</DebugSymbols>
+    <DebugType>Full</DebugType>
+    <Optimize>False</Optimize>
+    <OutputPath>bin\Debug</OutputPath>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <PlatformTarget>x86</PlatformTarget>
+    <ConsolePause>False</ConsolePause>
+    <BaseIntermediateOutputPath>obj\</BaseIntermediateOutputPath>
+    <StartAction>Project</StartAction>
+    <BaseAddress>4194304</BaseAddress>
+    <RegisterForComInterop>False</RegisterForComInterop>
+    <GenerateSerializationAssemblies>Auto</GenerateSerializationAssemblies>
+    <FileAlignment>4096</FileAlignment>
+    <DefineConstants>DEBUG; WINDOWS;</DefineConstants>
+    <CustomCommands>
+      <CustomCommands>
+        <Command>
+          <type>BeforeBuild</type>
+          <command>./parserCompile.sh</command>
+          <workingdir></workingdir>
+        </Command>
+        <Command>
+          <type>BeforeExecute</type>
+          <command>mono ./Coco Expresso.ATG -trace GJSP</command>
+          <workingdir>${ProjectDir}</workingdir>
+        </Command>
+      </CustomCommands>
+    </CustomCommands>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <LangVersion>Latest</LangVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
+    <DebugType>None</DebugType>
+    <Optimize>False</Optimize>
+    <OutputPath>bin\Release</OutputPath>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <ConsolePause>False</ConsolePause>
+    <BaseAddress>4194304</BaseAddress>
+    <RegisterForComInterop>False</RegisterForComInterop>
+    <GenerateSerializationAssemblies>Auto</GenerateSerializationAssemblies>
+    <FileAlignment>4096</FileAlignment>
+    <BaseIntermediateOutputPath>obj\</BaseIntermediateOutputPath>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <CustomCommands>
+      <CustomCommands>
+        <Command>
+          <type>BeforeBuild</type>
+          <command>./parserCompile.sh</command>
+          <workingdir></workingdir>
+        </Command>
+        <Command>
+          <type>BeforeExecute</type>
+          <command>mono ./Coco Expresso.ATG trace -GJSP</command>
+          <workingdir>${ProjectDir}</workingdir>
+        </Command>
+      </CustomCommands>
+    </CustomCommands>
+    <LangVersion>Latest</LangVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+    <CheckForOverflowUnderflow>False</CheckForOverflowUnderflow>
+    <BaseIntermediateOutputPath>obj\</BaseIntermediateOutputPath>
+    <StartAction>Project</StartAction>
+    <DefineConstants>DEBUG;</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Platform)' == 'x86' ">
+    <BaseAddress>4194304</BaseAddress>
+    <RegisterForComInterop>False</RegisterForComInterop>
+    <GenerateSerializationAssemblies>Auto</GenerateSerializationAssemblies>
+    <FileAlignment>4096</FileAlignment>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+    <CheckForOverflowUnderflow>False</CheckForOverflowUnderflow>
+    <BaseIntermediateOutputPath>obj\</BaseIntermediateOutputPath>
+  </PropertyGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <ItemGroup>
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Parser.cs" />
+    <Compile Include="Scanner.cs" />
+    <Compile Include="Ast\Identifier.cs" />
+    <Compile Include="Ast\ExpressoAst.cs" />
+    <Compile Include="ParserException.cs" />
+    <Compile Include="Ast\AstNode.cs" />
+    <Compile Include="Ast\NodeType.cs" />
+    <Compile Include="Ast\AstType.cs" />
+    <Compile Include="Formatting\ExpressoFormattingOptions.cs" />
+    <Compile Include="Formatting\FormattingOptionsFactory.cs" />
+    <Compile Include="OutputVisitor\DebugOutputWalker.cs" />
+    <Compile Include="Ast\Roles.cs" />
+    <Compile Include="Ast\Statements\BlockStatement.cs" />
+    <Compile Include="Ast\Statements\EmptyStatement.cs" />
+    <Compile Include="Ast\Statements\ForStatement.cs" />
+    <Compile Include="Ast\Statements\IfStatement.cs" />
+    <Compile Include="Ast\Statements\ReturnStatement.cs" />
+    <Compile Include="Ast\Statements\WhileStatement.cs" />
+    <Compile Include="Ast\Statements\YieldStatement.cs" />
+    <Compile Include="Ast\TypeMembers\EntityDeclaration.cs" />
+    <Compile Include="Ast\ExpressoTokenNode.cs" />
+    <Compile Include="Ast\TokenRole.cs" />
+    <Compile Include="Ast\ExpressoModifierToken.cs" />
+    <Compile Include="Ast\Modifiers.cs" />
+    <Compile Include="Ast\Expressions\BinaryExpression.cs" />
+    <Compile Include="Ast\Expressions\CallExpression.cs" />
+    <Compile Include="Ast\Expressions\CastExpression.cs" />
+    <Compile Include="Ast\Expressions\ConditionalExpression.cs" />
+    <Compile Include="Ast\Expressions\UnaryExpression.cs" />
+    <Compile Include="Ast\Expressions\SequenceExpression.cs" />
+    <Compile Include="Ast\Expressions\Expression.cs" />
+    <Compile Include="Ast\AstNodeCollection.cs" />
+    <Compile Include="Ast\GeneralScope\NewLineNode.cs" />
+    <Compile Include="Ast\GeneralScope\WhitespaceNode.cs" />
+    <Compile Include="Ast\TypeMembers\ParameterDeclaration.cs" />
+    <Compile Include="Ast\TypeMembers\FieldDeclaration.cs" />
+    <Compile Include="Ast\TypeMembers\VariableInitializer.cs" />
+    <Compile Include="Ast\GeneralScope\TypeDeclaration.cs" />
+    <Compile Include="Ast\Statements\BreakStatement.cs" />
+    <Compile Include="Ast\Statements\ContinueStatement.cs" />
+    <Compile Include="Ast\GeneralScope\FunctionDeclaration.cs" />
+    <Compile Include="Ast\PrimitiveType.cs" />
+    <Compile Include="TypeSystem\KnownTypeReference.cs" />
+    <Compile Include="Ast\SimpleType.cs" />
+    <Compile Include="TypeSystem\SimpleTypeOrModule.cs" />
+    <Compile Include="TypeSystem\TypeOrModuleReference.cs" />
+    <Compile Include="Resolver\ExpressoResolver.cs" />
+    <Compile Include="TypeSystem\ExpressoTypeResolveContext.cs" />
+    <Compile Include="TypeSystem\ExpressoUnresolvedFile.cs" />
+    <Compile Include="Ast\Expressions\IndexerExpression.cs" />
+    <Compile Include="Ast\Expressions\AssignmentExpression.cs" />
+    <Compile Include="Ast\Statements\Statement.cs" />
+    <Compile Include="Ast\Statements\VariableDeclarationStatement.cs" />
+    <Compile Include="Ast\Statements\ExpressionStatement.cs" />
+    <Compile Include="Ast\Expressions\ParenthesizedExpression.cs" />
+    <Compile Include="Ast\GeneralScope\TextNode.cs" />
+    <Compile Include="Ast\Expressions\ComprehensionExpression.cs" />
+    <Compile Include="Ast\GeneralScope\CommentNode.cs" />
+    <Compile Include="Ast\Expressions\LiteralExpression.cs" />
+    <Compile Include="Ast\Expressions\SequenceInitializer.cs" />
+    <Compile Include="Ast\Expressions\IntegerSequenceExpression.cs" />
+    <Compile Include="NameLookupMode.cs" />
+    <Compile Include="Ast\GeneralScope\ImportDeclaration.cs" />
+    <Compile Include="Ast\Patterns\WildcardPattern.cs" />
+    <Compile Include="Ast\Patterns\PatternConstruct.cs" />
+    <Compile Include="Ast\Patterns\IdentifierPattern.cs" />
+    <Compile Include="Ast\Patterns\TuplePattern.cs" />
+    <Compile Include="Ast\Patterns\ExpressionPattern.cs" />
+    <Compile Include="Ast\Statements\MatchStatement.cs" />
+    <Compile Include="Ast\Expressions\SelfReferenceExpression.cs" />
+    <Compile Include="Ast\Expressions\SuperReferenceExpression.cs" />
+    <Compile Include="Ast\Expressions\ObjectCreationExpression.cs" />
+    <Compile Include="Analysis\SymbolTable.cs" />
+    <Compile Include="Analysis\ExpressoNameBinder.cs" />
+    <Compile Include="Analysis\IAstWalker.cs" />
+    <Compile Include="Ast\PlaceholderType.cs" />
+    <Compile Include="Ast\Expressions\OperatorType.cs" />
+    <Compile Include="Ast\Expressions\PathExpression.cs" />
+    <Compile Include="Ast\Expressions\KeyValueLikeExpression.cs" />
+    <Compile Include="Ast\MemberType.cs" />
+    <Compile Include="Ast\ReferenceType.cs" />
+    <Compile Include="CodeGen\EmitterException.cs" />
+    <Compile Include="CodeGen\CSharpEmitter.cs" />
+    <Compile Include="CodeGen\CSharpCompilerHelper.cs" />
+    <Compile Include="Ast\GeneralScope\AliasDeclaration.cs" />
+    <Compile Include="CodeGen\CSharpEmitterContext.cs" />
+    <Compile Include="CodeGen\ExpressoSymbol.cs" />
+    <Compile Include="Ast\Patterns\DestructuringPattern.cs" />
+    <Compile Include="Ast\Patterns\CollectionPattern.cs" />
+    <Compile Include="ExpressoCompilerService.cs" />
+    <Compile Include="Analysis\FlowChecker.cs" />
+    <Compile Include="CodeGen\ExpressoCompilerOptions.cs" />
+    <Compile Include="Analysis\TypeChecker.cs" />
+    <Compile Include="Analysis\TypeInferenceRunner.cs" />
+    <Compile Include="Analysis\UniqueIdGenerator.cs" />
+    <Compile Include="Ast\FunctionType.cs" />
+    <Compile Include="Ast\Statements\ValueBindingForStatement.cs" />
+    <Compile Include="TriBool.cs" />
+    <Compile Include="Ast\Expressions\MemberReferenceExpression.cs" />
+    <Compile Include="Ast\ParameterType.cs" />
+    <Compile Include="CodeGen\LazyTypeBuilder.cs" />
+    <Compile Include="CodeGen\InterfaceTypeDefiner.cs" />
+    <Compile Include="Analysis\ParameterTypeReplacer.cs" />
+    <Compile Include="Utilities\ICloneable.cs" />
+    <Compile Include="Ast\Statements\ThrowStatement.cs" />
+    <Compile Include="Ast\Statements\TryStatement.cs" />
+    <Compile Include="Ast\Patterns\IgnoringRestPattern.cs" />
+    <Compile Include="Ast\Expressions\ClosureLiteralExpression.cs" />
+    <Compile Include="Analysis\ClosureParameterInferencer.cs" />
+    <Compile Include="Analysis\ClosureInspecter.cs" />
+    <Compile Include="Ast\Patterns\KeyValuePattern.cs" />
+    <Compile Include="Analysis\MatchClauseIdentifierDefiner.cs" />
+    <Compile Include="CodeGen\ItemTypeInferencer.cs" />
+    <Compile Include="CodeGen\ExpressoCompilerHelpers.cs" />
+    <Compile Include="Ast\Patterns\PatternWithType.cs" />
+    <Compile Include="Ast\Expressions\NullReferenceExpression.cs" />
+    <Compile Include="Analysis\NullCheckWalker.cs" />
+    <Compile Include="Analysis\PreProcessor.cs" />
+    <Compile Include="Ast\Statements\DoWhileStatement.cs" />
+    <Compile Include="CodeGen\PortablePdbGenerator.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Dynamic" />
+    <Reference Include="System.Numerics" />
+    <Reference Include="Microsoft.Experimental.Collections">
+      <HintPath>..\packages\Microsoft.Experimental.Collections.1.0.3-alpha\lib\portable-net45+win8+wp8\Microsoft.Experimental.Collections.dll</HintPath>
+    </Reference>
+    <Reference Include="Mono.CompilerServices.SymbolWriter" />
+    <Reference Include="System.Collections.Immutable">
+      <HintPath>..\packages\System.Collections.Immutable.1.5.0-preview2-26406-04\lib\portable-net45+win8+wp8+wpa81\System.Collections.Immutable.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Reflection.Metadata">
+      <HintPath>..\packages\System.Reflection.Metadata.1.6.0-preview2-26406-04\lib\portable-net45+win8\System.Reflection.Metadata.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Expresso.ATG" />
+    <None Include="Documentation\Bugs.txt" />
+    <None Include="Documentation\ExpressoDesignMemo.txt" />
+    <None Include="Documentation\ExpressoLanguageSpecificationMemo.txt" />
+    <None Include="OutputVisitor\TokenWriter.cs" />
+    <None Include="OutputVisitor\InsertRequiredSpacesDecorator.cs" />
+    <None Include="OutputVisitor\ExpressoOutputWalker.cs" />
+    <None Include="Documentation\ExpressoReference.md" />
+    <None Include="Documentation\ExpressoTutorial.md" />
+    <None Include="CodeGen\ParameterCollector.cs" />
+    <None Include="packages.config" />
+    <None Include="Documentation\TODO.txt" />
+    <None Include="Ast\Patterns\ValueBindingPattern.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Formatting\" />
+    <Folder Include="OutputVisitor\" />
+    <Folder Include="Ast\Statements\" />
+    <Folder Include="Ast\Expressions\" />
+    <Folder Include="Ast\TypeMembers\" />
+    <Folder Include="Ast\GeneralScope\" />
+    <Folder Include="TypeSystem\" />
+    <Folder Include="Resolver\" />
+    <Folder Include="Ast\Patterns\" />
+    <Folder Include="Documentation\" />
+    <Folder Include="Analysis\" />
+    <Folder Include="CodeGen\" />
+    <Folder Include="Utilities\" />
+    <Folder Include="SystemNamespace\" />
+  </ItemGroup>
+  <ProjectExtensions>
+    <MonoDevelop>
+      <Properties>
+        <Policies>
+          <TextStylePolicy TabWidth="4" IndentWidth="4" RemoveTrailingWhitespace="True" NoTabsAfterNonTabs="False" FileWidth="80" TabsToSpaces="True" EolMarker="Unix" scope="text/x-csharp" />
+          <CSharpFormattingPolicy IndentBlock="True" IndentBraces="False" IndentSwitchCaseSection="True" LabelPositioning="OneLess" NewLinesForBracesInTypes="True" NewLinesForBracesInMethods="True" SpaceWithinMethodDeclarationParenthesis="False" SpaceBetweenEmptyMethodDeclarationParentheses="False" SpaceWithinMethodCallParentheses="False" SpaceBetweenEmptyMethodCallParentheses="False" SpaceAfterControlFlowStatementKeyword="True" SpaceWithinExpressionParentheses="False" SpaceWithinCastParentheses="False" SpaceWithinOtherParentheses="False" SpaceAfterCast="False" SpacesIgnoreAroundVariableDeclaration="False" SpaceBetweenEmptySquareBrackets="False" SpaceWithinSquareBrackets="False" SpaceAfterColonInBaseTypeDeclaration="True" SpaceAfterComma="True" SpaceAfterDot="False" SpaceAfterSemicolonsInForStatement="True" SpaceBeforeColonInBaseTypeDeclaration="True" SpaceBeforeComma="False" SpaceBeforeDot="False" SpaceBeforeSemicolonsInForStatement="False" SpacingAroundBinaryOperator="Single" WrappingPreserveSingleLine="True" WrappingKeepStatementsOnSingleLine="True" PlaceSystemDirectiveFirst="True" IndentSwitchSection="False" NewLinesForBracesInProperties="False" NewLinesForBracesInAccessors="False" NewLinesForBracesInAnonymousMethods="False" NewLinesForBracesInControlBlocks="False" NewLinesForBracesInAnonymousTypes="False" NewLinesForBracesInObjectCollectionArrayInitializers="False" NewLinesForBracesInLambdaExpressionBody="False" NewLineForElse="False" NewLineForCatch="False" NewLineForFinally="False" NewLineForMembersInObjectInit="False" NewLineForMembersInAnonymousTypes="False" NewLineForClausesInQuery="False" SpacingAfterMethodDeclarationName="True" SpaceAfterMethodCallName="True" SpaceBeforeOpenSquareBracket="True" scope="text/x-csharp" />
+          <TextStylePolicy TabWidth="4" IndentWidth="4" RemoveTrailingWhitespace="True" NoTabsAfterNonTabs="False" FileWidth="80" TabsToSpaces="True" EolMarker="Unix" scope="text/plain" />
+        </Policies>
+      </Properties>
+    </MonoDevelop>
+  </ProjectExtensions>
+  <ItemGroup>
+    <ProjectReference Include="..\Libraries\NRefactory\ICSharpCode.NRefactory\ICSharpCode.NRefactory.csproj">
+      <Project>{3B2A5653-EC97-4001-BB9B-D90F1AF2C371}</Project>
+      <Name>ICSharpCode.NRefactory</Name>
+    </ProjectReference>
+    <ProjectReference Include="ExpressoRuntime\ExpressoRuntime.csproj">
+      <Project>{D60E49D6-6CBA-4D54-A009-6A0528181C88}</Project>
+      <Name>ExpressoRuntime</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Libraries\Mono.Cecil\Mono.Cecil.csproj">
+      <Project>{D68133BD-1E63-496E-9EDE-4FBDBF77B486}</Project>
+      <Name>Mono.Cecil</Name>
+    </ProjectReference>
+  </ItemGroup>
+</Project>
