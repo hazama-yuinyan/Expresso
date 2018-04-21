@@ -76,9 +76,9 @@
       <Project>{D60E49D6-6CBA-4D54-A009-6A0528181C88}</Project>
       <Name>ExpressoRuntime</Name>
     </ProjectReference>
-    <ProjectReference Include="Expresso\Expresso.csproj">
+    <ProjectReference Include="Expresso\Expresso_Win.csproj">
       <Project>{4E28200A-5808-419F-8A57-F504842991AF}</Project>
-      <Name>Expresso</Name>
+      <Name>Expresso_Win</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
