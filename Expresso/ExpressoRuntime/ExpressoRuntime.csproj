@@ -46,15 +46,12 @@
     <Compile Include="BuiltIns\Functions.cs" />
     <Compile Include="BuiltIns\Library.cs" />
     <Compile Include="NativeDebugger\CollectionDebugView.cs" />
-    <Compile Include="Attributes\ExpressoHiddenAttribute.cs" />
-    <Compile Include="Attributes\ExpressoModuleAttibute.cs" />
-    <Compile Include="Attributes\ExpressoTypeAttribute.cs" />
-    <Compile Include="Attributes\ExpressoFunctionAttribute.cs" />
     <Compile Include="Runtime\ExpressoRuntimeHelper.cs" />
     <Compile Include="Runtime\TypeMapper.cs" />
     <Compile Include="Runtime\Exceptions\PanickedException.cs" />
     <Compile Include="BuiltIns\Slice.cs" />
     <Compile Include="BuiltIns\DictionaryEnumerator.cs" />
+    <Compile Include="Utilities.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>

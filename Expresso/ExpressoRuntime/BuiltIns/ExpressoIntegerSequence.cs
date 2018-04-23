@@ -16,7 +16,6 @@ namespace Expresso.Runtime.Builtins
     /// of the original sequence. It just returns an iterator that views into the original sequence.
     /// If you do need another copy of the array, then consider using the clone method.
 	/// </summary>
-	[ExpressoType("intseq")]
     public class ExpressoIntegerSequence : IEnumerable<int>
 	{
 		/// <summary>
@@ -137,7 +136,6 @@ namespace Expresso.Runtime.Builtins
         /// n = k * x + a where n is an element of the resulting sequence,
         /// k is the step and a is the lower bound.
         /// </remarks>
-        [ExpressoFunction("includes")]
 		public bool Includes(int n)
 		{
 			var remaining = n % step;
@@ -150,7 +148,6 @@ namespace Expresso.Runtime.Builtins
 		/// <returns>
 		/// <c>true</c>; if the sequence is sequential, that is, the step is 1; otherwise, <c>false</c>.
 		/// </returns>
-        [ExpressoFunction("isSequential")]
 		public bool IsSequential()
 		{
 			return step == 1;

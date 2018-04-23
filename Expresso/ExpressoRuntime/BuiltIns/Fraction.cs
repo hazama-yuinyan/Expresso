@@ -1,14 +1,13 @@
 ﻿using System;
 using System.Numerics;
 
-using Expresso.Utils;
+using Expresso.Runtime.Utils;
 
 namespace Expresso.Runtime.Builtins
 {
 	/// <summary>
 	/// The built-in fraction class, which represents a fraction as it is.
 	/// </summary>
-	[ExpressoType("rational")]
 	public struct Fraction : IComparable
 	{
 		/// <summary>
