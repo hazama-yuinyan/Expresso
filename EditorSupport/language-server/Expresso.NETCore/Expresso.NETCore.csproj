@@ -1,0 +1,38 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.0</TargetFramework>
+    <AssemblyName>Expresso</AssemblyName>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <LangVersion>Latest</LangVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <LangVersion>Latest</LangVersion>
+  </PropertyGroup>
+  <ItemGroup>
+    <Folder Include="Analysis\" />
+    <Folder Include="Ast\" />
+    <Folder Include="Formatting\" />
+    <Folder Include="OutputVisitor\" />
+    <Folder Include="Properties\" />
+    <Folder Include="TypeSystem\" />
+    <Folder Include="Utilities\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Remove="Ast\Patterns\ValueBindingPattern.cs" />
+    <Compile Remove="OutputVisitor\ExpressoOutputWalker.cs" />
+    <Compile Remove="OutputVisitor\InsertRequiredSpacesDecorator.cs" />
+    <Compile Remove="OutputVisitor\TokenWriter.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Ast\Patterns\ValueBindingPattern.cs" />
+    <None Include="OutputVisitor\ExpressoOutputWalker.cs" />
+    <None Include="OutputVisitor\InsertRequiredSpacesDecorator.cs" />
+    <None Include="OutputVisitor\TokenWriter.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\NRefactory_NETCore\ICSharpCode.NRefactory.NETCore.csproj" />
+  </ItemGroup>
+</Project>

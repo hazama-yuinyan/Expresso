@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.0</TargetFramework>
+    <RootNamespace>Expresso</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Folder Include="TypeSystem\" />
+    <Folder Include="Resolver\" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\NRefactory_NETCore\ICSharpCode.NRefactory.NETCore.csproj" />
+    <ProjectReference Include="..\Expresso.NETCore\Expresso.NETCore.csproj" />
+  </ItemGroup>
+</Project>

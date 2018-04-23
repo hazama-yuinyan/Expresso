@@ -46,13 +46,6 @@
     <Compile Include="BuiltIns\Functions.cs" />
     <Compile Include="BuiltIns\Library.cs" />
     <Compile Include="NativeDebugger\CollectionDebugView.cs" />
-    <Compile Include="Micellaneous\ArgumentInfo.cs" />
-    <Compile Include="Micellaneous\ArrayUtils.cs" />
-    <Compile Include="Micellaneous\Assert.cs" />
-    <Compile Include="Micellaneous\CallSignature.cs" />
-    <Compile Include="Micellaneous\ContractUtils.cs" />
-    <Compile Include="Micellaneous\Interfaces.cs" />
-    <Compile Include="Micellaneous\Utils.cs" />
     <Compile Include="Attributes\ExpressoHiddenAttribute.cs" />
     <Compile Include="Attributes\ExpressoModuleAttibute.cs" />
     <Compile Include="Attributes\ExpressoTypeAttribute.cs" />
@@ -65,13 +58,10 @@
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
-    <None Include="Micellaneous\SourceSpan.cs" />
-    <None Include="Interpreter\Interpreter.cs" />
     <None Include="Interpreter\InterpreterFlowManager.cs" />
-    <None Include="Meta\TypeDefinition.cs" />
     <None Include="Runtime\Types\BuiltinFunction.cs" />
     <None Include="Runtime\Operations\ExpressoOps.cs" />
     <None Include="Runtime\Operations\ExpressoTypeOps.cs" />
-    <None Include="Meta\SystemTypeDefinition.cs" />
+    <None Include="Interpreter\Interpreter.cs" />
   </ItemGroup>
 </Project>
