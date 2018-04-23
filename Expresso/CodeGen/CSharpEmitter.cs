@@ -215,7 +215,7 @@ namespace Expresso.CodeGen
                           Path.Combine(options.OutputPath, options.ExecutableName + ".pdb");
         }
 
-        void EmitPdb(ExpressoAst ast)
+        /*void EmitPdb(ExpressoAst ast)
         {
             var pdb_path = GetPdbFilePath(ast);
             Console.WriteLine("Emitting .pdb file at {0}...", pdb_path);
@@ -233,7 +233,7 @@ namespace Expresso.CodeGen
                 WriteSymbols = true,
                 SymbolWriterProvider = writer_provider
             });
-        }
+        }*/
 
         #region IAstWalker implementation
 

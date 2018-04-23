@@ -98,10 +98,10 @@ namespace Expresso.CodeGen
 
             // first IL offset
             writer.WriteCompressedInteger(first_seq_point.Item1);
-            // ΔLine and ΔColumns
+            // first ΔLine and ΔColumns
             SerializeDeltaLineColumns(writer, first_seq_point);
 
-            // δLine and δColumn
+            // first δLine and δColumn
             writer.WriteCompressedInteger(first_seq_point.Item2.StartLine);
             writer.WriteCompressedInteger(first_seq_point.Item2.StartColumn);
 

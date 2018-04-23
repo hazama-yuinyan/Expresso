@@ -105,7 +105,7 @@ namespace Expresso.Ast
 		}
 
         public Identifier(string name, AstType type, ExpressoModifiers modifiers, TextLocation loc)
-            : base(loc, type.EndLocation)
+            : base(loc, type is PlaceholderType ? new TextLocation(loc.Line, loc.Column + name.Length) : type.EndLocation)
         {
             this.name = name;
             Modifiers = modifiers;

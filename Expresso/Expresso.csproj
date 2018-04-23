@@ -9,7 +9,6 @@
     <OutputType>Library</OutputType>
     <RootNamespace>Expresso</RootNamespace>
     <AssemblyName>Expresso</AssemblyName>
-    <ReleaseVersion>1.3</ReleaseVersion>
     <NoWin32Manifest>False</NoWin32Manifest>
     <SignAssembly>False</SignAssembly>
     <RunPostBuildEvent>OnBuildSuccess</RunPostBuildEvent>
@@ -21,6 +20,7 @@
     <SourceAnalysisOverrideSettingsFile>C:\Users\Ryouta\AppData\Roaming\ICSharpCode/SharpDevelop4\Settings.SourceAnalysis</SourceAnalysisOverrideSettingsFile>
     <TargetFrameworkProfile />
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <ReleaseVersion>1.3</ReleaseVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
     <DebugSymbols>True</DebugSymbols>
@@ -147,11 +147,6 @@
     <Compile Include="Ast\PrimitiveType.cs" />
     <Compile Include="TypeSystem\KnownTypeReference.cs" />
     <Compile Include="Ast\SimpleType.cs" />
-    <Compile Include="TypeSystem\SimpleTypeOrModule.cs" />
-    <Compile Include="TypeSystem\TypeOrModuleReference.cs" />
-    <Compile Include="Resolver\ExpressoResolver.cs" />
-    <Compile Include="TypeSystem\ExpressoTypeResolveContext.cs" />
-    <Compile Include="TypeSystem\ExpressoUnresolvedFile.cs" />
     <Compile Include="Ast\Expressions\IndexerExpression.cs" />
     <Compile Include="Ast\Expressions\AssignmentExpression.cs" />
     <Compile Include="Ast\Statements\Statement.cs" />
@@ -263,13 +258,11 @@
     <Folder Include="Ast\TypeMembers\" />
     <Folder Include="Ast\GeneralScope\" />
     <Folder Include="TypeSystem\" />
-    <Folder Include="Resolver\" />
     <Folder Include="Ast\Patterns\" />
     <Folder Include="Documentation\" />
     <Folder Include="Analysis\" />
     <Folder Include="CodeGen\" />
     <Folder Include="Utilities\" />
-    <Folder Include="SystemNamespace\" />
   </ItemGroup>
   <ProjectExtensions>
     <MonoDevelop>
@@ -283,17 +276,13 @@
     </MonoDevelop>
   </ProjectExtensions>
   <ItemGroup>
-    <ProjectReference Include="..\Libraries\NRefactory\ICSharpCode.NRefactory\ICSharpCode.NRefactory.csproj">
-      <Project>{3B2A5653-EC97-4001-BB9B-D90F1AF2C371}</Project>
-      <Name>ICSharpCode.NRefactory</Name>
-    </ProjectReference>
     <ProjectReference Include="ExpressoRuntime\ExpressoRuntime.csproj">
       <Project>{D60E49D6-6CBA-4D54-A009-6A0528181C88}</Project>
       <Name>ExpressoRuntime</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Libraries\Mono.Cecil\Mono.Cecil.csproj">
-      <Project>{D68133BD-1E63-496E-9EDE-4FBDBF77B486}</Project>
-      <Name>Mono.Cecil</Name>
+    <ProjectReference Include="..\Libraries\NRefactory\ICSharpCode.NRefactory\ICSharpCode.NRefactory.csproj">
+      <Project>{3B2A5653-EC97-4001-BB9B-D90F1AF2C371}</Project>
+      <Name>ICSharpCode.NRefactory</Name>
     </ProjectReference>
   </ItemGroup>
 </Project>
