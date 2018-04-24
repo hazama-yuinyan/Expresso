@@ -12,11 +12,11 @@ namespace Expresso.Ast
     /// </summary>
     public class DebugOutputWalker : IAstWalker
     {
-        static Dictionary<Type, string[]> Enclosures = new Dictionary<Type, string[]>{
-            {typeof(List<>), new []{"[", "]"}},
-            {typeof(Array), new []{"[", "]"}},
-            {typeof(Dictionary<,>), new []{"{", "}"}},
-            {typeof(Tuple), new []{"(", ")"}}
+        static Dictionary<string, string[]> Enclosures = new Dictionary<string, string[]>{
+            {"vector", new []{"[", "]"}},
+            {"array", new []{"[", "]"}},
+            {"dictionary", new []{"{", "}"}},
+            {"tuple", new []{"(", ")"}}
         };
 
         readonly TextWriter writer;
@@ -247,8 +247,7 @@ namespace Expresso.Ast
 
         public void VisitSequenceInitializer(SequenceInitializer seqInitializer)
         {
-            var type = CSharpCompilerHelper.GetContainerType(seqInitializer.ObjectType);
-            var enclosures = Enclosures[type];
+            var enclosures = Enclosures[seqInitializer.ObjectType.Name];
             writer.Write(enclosures[0]);
 
             PrintLongList(seqInitializer.Items, "~~");

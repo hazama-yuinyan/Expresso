@@ -1553,6 +1553,18 @@ namespace Expresso.Test
                                 Expression.MakeConstant("int", 9)
                             ),
                             Statement.MakeBlock(
+                                Statement.MakeVarDecl(
+                                    Helpers.MakeSeq(
+                                        Helpers.MakePaticularPatternWithType(
+                                            "MAX_J",
+                                            Helpers.MakePrimitiveType("int")
+                                        )
+                                    ),
+                                    Helpers.MakeSeq(
+                                        Expression.MakeConstant("int", 8)
+                                    ),
+                                    Modifiers.Immutable
+                                ),
                                 Statement.MakeValueBindingForStmt(
                                     Modifiers.Immutable,
                                     Helpers.MakePaticularPatternWithType(
@@ -1603,7 +1615,10 @@ namespace Expresso.Test
                                                         "j",
                                                         Helpers.MakePrimitiveType("int")
                                                     ),
-                                                    Expression.MakeConstant("int", 8)
+                                                    Helpers.MakeIdentifierPath(
+                                                        "MAX_J",
+                                                        Helpers.MakePrimitiveType("int")
+                                                    )
                                                 )
                                             ),
                                             Statement.MakeBlock(

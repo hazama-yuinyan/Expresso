@@ -4,6 +4,7 @@ using System.Linq;
 using ICSharpCode.NRefactory;
 using ICSharpCode.NRefactory.PatternMatching;
 using Expresso.TypeSystem;
+using Expresso.CodeGen;
 
 namespace Expresso.Ast.Analysis
 {
@@ -81,12 +82,16 @@ namespace Expresso.Ast.Analysis
         public AstType VisitBreakStatement(BreakStatement breakStmt)
         {
             int loop_count = (int)breakStmt.Count.Value;
-            if(breakStmt.Ancestors.Count(node => node is WhileStatement || node is ForStatement || node is ValueBindingForStatement) < loop_count){
+            int actual_count = breakStmt.Ancestors.Count(n => n is WhileStatement || n is DoWhileStatement || n is ForStatement || n is ValueBindingForStatement);
+            if(actual_count < loop_count){
                 throw new ParserException(
-                    "Error ES4010: If we break out of loops {0} times with the break statement, we'll enter into nothing.",
+                    "If we break out of loops {0} times with the break statement at this point, we'll enter into nothing.",
+                    "ES4010",
                     breakStmt,
                     loop_count
-                );
+                ){
+                    HelpObject = actual_count
+                };
             }
 
             return null;
@@ -95,12 +100,16 @@ namespace Expresso.Ast.Analysis
         public AstType VisitContinueStatement(ContinueStatement continueStmt)
         {
             int loop_count = (int)continueStmt.Count.Value;
-            if(continueStmt.Ancestors.Count(node => node is WhileStatement || node is ForStatement || node is ValueBindingForStatement) < loop_count){
+            int actual_count = continueStmt.Ancestors.Count(n => n is WhileStatement || n is DoWhileStatement || n is ForStatement || n is ValueBindingForStatement);
+            if(actual_count < loop_count){
                 throw new ParserException(
-                    "Error ES4011: If we break out of loops {0} times with the continue statement, we'll enter into nothing.",
+                    "If we break out of loops {0} times with the continue statement at this point, we'll enter into nothing.",
+                    "ES4011",
                     continueStmt,
                     loop_count
-                );
+                ){
+                    HelpObject = actual_count
+                };
             }
 
             return null;
@@ -136,7 +145,8 @@ namespace Expresso.Ast.Analysis
 
             if(!IsSequenceType(target_type)){
                 parser.ReportSemanticError(
-                    "Error ES1301: `{0}` isn't a sequence type! A for statement can only be used for iterating over a sequence.",
+                    "`{0}` isn't a sequence type!",
+                    "ES1301",
                     forStmt.Target,
                     left_type
                 );
@@ -176,7 +186,8 @@ namespace Expresso.Ast.Analysis
             var condition_type = ifStmt.Condition.AcceptWalker(this) as PrimitiveType;
             if(condition_type == null || condition_type.KnownTypeCode != KnownTypeCode.Bool){
                 parser.ReportSemanticError(
-                    "Error ES4000: The conditional expression has to be of type `bool`.",
+                    "The conditional expression has to be of type `bool`.",
+                    "ES4000",
                     ifStmt.Condition
                 );
             }
@@ -207,7 +218,8 @@ namespace Expresso.Ast.Analysis
                 var type = clause.AcceptWalker(this);
                 if(IsCompatibleWith(target_type, type) == TriBool.False){
                     parser.ReportSemanticErrorRegional(
-                        "Error ES1023: Mismatched types found! Expected {0}, found {1}.",
+                        "Mismatched types found! Expected {0}, found {1}.",
+                        "ES1023",
                         matchStmt,
                         clause,
                         target_type, type
@@ -292,7 +304,8 @@ namespace Expresso.Ast.Analysis
                         var lhs_seq = assignment.Left as SequenceExpression;
                         var rhs_seq = assignment.Right as SequenceExpression;
                         parser.ReportSemanticErrorRegional(
-                            "Error ES1100: There is a type mismatch; left=`{0}`, right=`{1}`",
+                            "There is a type mismatch; left=`{0}`, right=`{1}`",
+                            "ES1100",
                             lhs_seq.Items.ElementAt(i), rhs_seq.Items.ElementAt(i),
                             left_types[i], TemporaryTypes[i]
                         );
@@ -308,7 +321,8 @@ namespace Expresso.Ast.Analysis
                 var right_type = assignment.Right.AcceptWalker(this);
                 if(IsCompatibleWith(left_type, right_type) == TriBool.False){
                     parser.ReportSemanticErrorRegional(
-                        "Error ES1001: Type `{0}` on left-hand-side isn't compatible with type `{1}` on right-hand-side.",
+                        "The type `{0}` on the left-hand-side isn't compatible with the type `{1}` on the right-hand-side.",
+                        "ES1001",
                         assignment.Left, assignment.Right,
                         left_type, right_type
                     );
@@ -337,7 +351,8 @@ namespace Expresso.Ast.Analysis
             if(IsCompatibleWith(lhs_type, rhs_type) == TriBool.False){
                 // Invalid operators must lead to this code path
                 parser.ReportSemanticErrorRegional(
-                    "Error ES1002: Can not apply the operator '{0}' on `{1}` and `{2}`.",
+                    "Can not apply the operator '{0}' on `{1}` and `{2}`.",
+                    "ES1002",
                     binaryExpr.Left, binaryExpr.Right,
                     binaryExpr.OperatorToken, lhs_type, rhs_type
                 );
@@ -428,7 +443,8 @@ namespace Expresso.Ast.Analysis
 
             if(func_type2 == null){
                 throw new ParserException(
-                    "Error ES1805: {0} turns out not to be a function.",
+                    "{0} turns out not to be a function.",
+                    "ES1805",
                     callExpr,
                     callExpr.Target.ToString()
                 );
@@ -442,7 +458,8 @@ namespace Expresso.Ast.Analysis
                 var arg_type = triple.Item3;
                 if(IsCompatibleWith(param_type, arg_type) == TriBool.False){
                     throw new ParserException(
-                        "Error ES1303: Types mismatched; expected `{0}`, found `{1}`.",
+                        "Types mismatched; expected `{0}`, found `{1}`.",
+                        "ES1303",
                         triple.Item3,
                         // .ToString() is needed because otherwise it will call another overload of the constructor
                         param_type.ToString(),
@@ -462,7 +479,8 @@ namespace Expresso.Ast.Analysis
             var expression_type = castExpr.Target.AcceptWalker(this);
             if(IsCastable(expression_type, target_type) == TriBool.False){
                 throw new ParserException(
-                    "Error ES1003: Can not cast the type `{0}` to the type `{1}`.",
+                    "Can not cast the type `{0}` to the type `{1}`.",
+                    "ES1003",
                     castExpr.Target, castExpr.ToExpression,
                     expression_type, target_type
                 );
@@ -568,7 +586,8 @@ namespace Expresso.Ast.Analysis
             var false_type = condExpr.FalseExpression.AcceptWalker(this);
             if(IsCompatibleWith(true_type, false_type) == TriBool.False){
                 parser.ReportSemanticErrorRegional(
-                    "Error ES1006: An conditional expression must return one type! But `{0}` is not compatible with `{1}`.",
+                    "An conditional expression must return one type! But `{0}` is not compatible with `{1}`.",
+                    "ES1006",
                     condExpr.Condition, condExpr.FalseExpression,
                     true_type, false_type
                 );
@@ -598,7 +617,8 @@ namespace Expresso.Ast.Analysis
             inference_runner.VisitIdentifier(ident);
             if(inspecting_immutability && ident.Modifiers.HasFlag(Modifiers.Immutable)){
                 throw new ParserException(
-                    "Error ES1900: Re-assignment on an immutable variable '{0}'.",
+                    "Re-assignment on an immutable variable '{0}'.",
+                    "ES1900",
                     ident,
                     ident.Name
                 );
@@ -613,7 +633,8 @@ namespace Expresso.Ast.Analysis
             var step_type = intSeq.Step.AcceptWalker(inference_runner);
             if(!IsSmallIntegerType(lower_type)){
                 throw new ParserException(
-                    "Error ES4001: `{0}` is not an `Int` type! An integer sequence expression expects an `Int`.",
+                    "`{0}` is not an `Int` type!",
+                    "ES4001",
                     intSeq.Start,
                     lower_type.ToString()
                 );
@@ -621,7 +642,8 @@ namespace Expresso.Ast.Analysis
 
             if(!IsSmallIntegerType(upper_type)){
                 throw new ParserException(
-                    "Error ES4001: `{0}` is not an `Int` type! An integer sequence expression expects an `Int`.",
+                    "`{0}` is not an `Int` type!",
+                    "ES4001",
                     intSeq.End,
                     upper_type.ToString()
                 );
@@ -629,7 +651,8 @@ namespace Expresso.Ast.Analysis
 
             if(!IsSmallIntegerType(step_type)){
                 throw new ParserException(
-                    "Error ES4001: `{0}` is not an `Int` type! An integer sequence expression expects an `Int`.",
+                    "`{0}` is not an `Int` type!",
+                    "ES4001",
                     intSeq.Step,
                     step_type.ToString()
                 );
@@ -680,7 +703,8 @@ namespace Expresso.Ast.Analysis
             if(type is SimpleType simple_type){
                 if(simple_type.Name != "array" && simple_type.Name != "vector" && simple_type.Name != "dictionary"){
                     throw new ParserException(
-                        "Error ES3011: Can not apply the indexer operator on the type `{0}`.",
+                        "Can not apply the indexer operator on the type `{0}`.",
+                        "ES3011",
                         indexExpr,
                         simple_type.ToString()
                     );
@@ -691,7 +715,8 @@ namespace Expresso.Ast.Analysis
                     if(arg_type is PrimitiveType primitive && primitive.KnownTypeCode == KnownTypeCode.IntSeq){
                         if(simple_type.Identifier == "dictionary"){
                             throw new ParserException(
-                                "Error ES3012: Can not apply the indexer operator on a dictionary with an `intseq`.",
+                                "Can not apply the indexer operator on a dictionary with an `intseq`.",
+                                "ES3012",
                                 indexExpr
                             );
                         }
@@ -704,7 +729,8 @@ namespace Expresso.Ast.Analysis
             }
 
             throw new ParserException(
-                "Error ES3013: Can not index into a value of type `{0}`",
+                "Can not index into a value of type `{0}`",
+                "ES3013",
                 indexExpr,
                 type.ToString()
             );
@@ -725,7 +751,8 @@ namespace Expresso.Ast.Analysis
 
             /*if(type == null){
                 throw new ParserException(
-                    "Error ES3302: The expression '{0}' isn't resolved to a type",
+                    "The expression '{0}' isn't resolved to a type",
+                    "ES3302",
                     memRef,
                     memRef.Target.ToString()
                 );
@@ -738,7 +765,8 @@ namespace Expresso.Ast.Analysis
                 var symbol = type_table.GetSymbol(memRef.Member.Name);
                 if(memRef.Target is PathExpression path && path.AsIdentifier.Modifiers.HasFlag(Modifiers.Immutable) && symbol.Modifiers.HasFlag(Modifiers.Mutating)){
                     throw new ParserException(
-                        "Error ES2100: A mutating method '{0}' can't be called on an immutable variable.",
+                        "A mutating method '{0}' can't be called on an immutable variable.",
+                        "ES2100",
                         memRef,
                         symbol.Name
                     );
@@ -789,7 +817,8 @@ namespace Expresso.Ast.Analysis
             if(type_table == null){
                 // Report type table missing error because InferenceRunner doesn't always do that
                 throw new ParserException(
-                    "Error ES1501: The type `{0}` isn't found or accessible from the scope {1}.",
+                    "The type `{0}` isn't found or accessible from the scope {1}.",
+                    "ES1501",
                     creation,
                     creation.TypePath.ToString(), symbols.Name
                 );
@@ -809,7 +838,8 @@ namespace Expresso.Ast.Analysis
                     var key = type_table.GetSymbol(key_path.AsIdentifier.Name);
                     if(key == null){
                         throw new ParserException(
-                            "Error ES1502: The type `{0}` doesn't have a field named '{1}'.",
+                            "The type `{0}` doesn't have a field named '{1}'.",
+                            "ES1502",
                             pair.Item2.KeyExpression,
                             creation.TypePath.ToString(), key_path.AsIdentifier.Name
                         );
@@ -819,7 +849,8 @@ namespace Expresso.Ast.Analysis
                     arg_types[pair.Item1] = value_type.Clone();
                     if(IsCastable(value_type, key.Type) == TriBool.False){
                         parser.ReportSemanticErrorRegional(
-                            "Error ES2002: The field '{0}' expects the value to be of type `{1}`, but it actually is `{2}`.",
+                            "The field '{0}' expects the value to be of type `{1}`, but it actually is `{2}`.",
+                            "ES2003",
                             pair.Item2.KeyExpression, pair.Item2.ValueExpression,
                             key_path.AsIdentifier.Name, key.Type, value_type
                         );
@@ -832,10 +863,10 @@ namespace Expresso.Ast.Analysis
             var ctor_symbol = type_table.GetSymbol(ctor_name, ctor_type);
             if(ctor_symbol == null){
                 throw new ParserException(
-                    "Error ES2010: There are no constructors in the type `{0}` whose parameter types are {1}.",
+                    "There are no constructors in the type `{0}` whose parameter types are ({1}).",
+                    "ES2010",
                     creation,
-                    creation.TypePath.ToString(),
-                    ctor_type
+                    creation.TypePath.ToString(), ExpressoCompilerHelpers.StringifyList(ctor_type.Parameters)
                 );
             }
             creation.CtorType = (FunctionType)ctor_symbol.Type.Clone();
@@ -911,7 +942,8 @@ namespace Expresso.Ast.Analysis
                     if(primitive_type == null || tmp.IsNull || primitive_type.KnownTypeCode == KnownTypeCode.Char || primitive_type.KnownTypeCode == KnownTypeCode.Bool
                        || primitive_type.KnownTypeCode == KnownTypeCode.IntSeq){
                         parser.ReportSemanticError(
-                            "Error ES1201: Can not apply the operator '{0}' on the type `{1}`.",
+                            "Can not apply the operator '{0}' on the type `{1}`.",
+                            "ES1201",
                             unaryExpr,
                             unaryExpr.OperatorToken, tmp.Name
                         );
@@ -925,7 +957,8 @@ namespace Expresso.Ast.Analysis
                 var operand_type = unaryExpr.Operand.AcceptWalker(this);
                 if(!(operand_type is PrimitiveType) || ((PrimitiveType)operand_type).KnownTypeCode != Expresso.TypeSystem.KnownTypeCode.Bool){
                     parser.ReportSemanticError(
-                        "Error ES1200: Can not apply the '!' operator on the type `{0}`!\nThe operand must be of type `bool`.",
+                        "Can not apply the '!' operator on the type `{0}`!",
+                        "ES1200",
                         unaryExpr,
                         operand_type
                     );
@@ -962,7 +995,8 @@ namespace Expresso.Ast.Analysis
             }
             catch(InvalidOperationException){
                 throw new ParserException(
-                    "Error ES1022: In Expresso, null literals can only be used in contexts with .NET.",
+                    "In Expresso, null literals can only be used in contexts with .NET.",
+                    "ES1022",
                     nullRef
                 );
             }
@@ -1048,7 +1082,8 @@ namespace Expresso.Ast.Analysis
                     var ident = parent_type.GetSymbol(funcDecl.Name);
                     if(ident != null && !ident.Modifiers.Equals(funcDecl.Modifiers)){
                         throw new ParserException(
-                            "Error ES1030: The parent type's '{0}' is {1} but this type's '{0}' is {2}.",
+                            "The parent type's '{0}' is {1} but this type's '{0}' is {2}.",
+                            "ES1030",
                             funcDecl,
                             funcDecl.Name, ident.Modifiers, funcDecl.Modifiers
                         );
@@ -1064,11 +1099,14 @@ namespace Expresso.Ast.Analysis
                     if(!param.Option.IsNull){
                         var option_type = param.Option.AcceptWalker(this);
                         if(IsCastable(option_type, param_type) == TriBool.False){
-                            parser.ReportSemanticErrorRegional(
-                                "Error ES1110: Invalid optional value; `{0}` is not compatible with `{1}`.",
+                            throw new ParserException(
+                                "Invalid optional value; `{0}` is not compatible with `{1}`.",
+                                "ES1110",
                                 param.NameToken, param.Option,
                                 option_type, param_type
-                            );
+                            ){
+                                HelpObject = param.NameToken.Type.Name
+                            };
                         }
                     }
                 }
@@ -1089,7 +1127,8 @@ namespace Expresso.Ast.Analysis
                 var next = funcDecl.GetNextNode();
                 if(next != null && next is FunctionDeclaration){
                     parser.ReportSemanticError(
-                        "Error ES1101: Can't define functions after the main function.",
+                        "Can't define functions after the main function.",
+                        "ES1101",
                         next
                     );
                 }
@@ -1102,7 +1141,8 @@ namespace Expresso.Ast.Analysis
             if(IsPlaceholderType(funcDecl.ReturnType)){
                 if(funcDecl.Parent is TypeDeclaration type_decl2 && type_decl2.TypeKind == ClassType.Interface){
                     throw new ParserException(
-                        "Error ES1602: The method signature '{0}' in an interface must make the return type explicit.",
+                        "The method signature '{0}' in an interface must make the return type explicit.",
+                        "ES1602",
                         funcDecl,
                         funcDecl.Name
                     );
@@ -1110,7 +1150,8 @@ namespace Expresso.Ast.Analysis
 
                 if(funcDecl.Body.Statements.Count == 0){
                     throw new ParserException(
-                        "Error ES1901: Can not infer the return type of '{0}' because the body is empty!",
+                        "Can not infer the return type of '{0}' because the body is empty!",
+                        "ES1901",
                         funcDecl,
                         funcDecl.Name
                     );
@@ -1134,12 +1175,14 @@ namespace Expresso.Ast.Analysis
                 var type_name = ((TypeDeclaration)funcDecl.Parent).Name;
                 if(funcDecl.Parameters.Any(p => p.ReturnType is SimpleType simple_type && simple_type.Name == type_name)){
                     throw new ParserException(
-                        "Error ES1020: In Expresso you can't define a method that takes the self class as a parameter that contains the method.\nUse module-level functions instead.",
+                        "In Expresso you can't define a method that takes the self class as a parameter that contains the method.",
+                        "ES1020",
                         funcDecl.Parameters.Where(p => p.ReturnType is SimpleType simple_type && simple_type.Name == type_name).First()
                     );
                 }else if(funcDecl.ReturnType is SimpleType simple_type && simple_type.Name == type_name){
                     throw new ParserException(
-                        "Error ES1021: In Expresso you can't define a method that returns the self class that contains the method.\nUse module-level functions instead.",
+                        "In Expresso you can't define a method that returns the self class that contains the method.",
+                        "ES1021",
                         funcDecl.ReturnType
                     );
                 }
@@ -1164,7 +1207,8 @@ namespace Expresso.Ast.Analysis
                     var super_type_table = symbols.GetTypeTable(super_type.Name);
                     if(super_type_table == null){
                         throw new ParserException(
-                            "Error ES1912: `{0}` isn't derivable.",
+                            "`{0}` isn't derivable.",
+                            "ES1912",
                             super_type,
                             super_type.Name
                         );
@@ -1174,7 +1218,8 @@ namespace Expresso.Ast.Analysis
                         require_methods.AddRange(super_type_table.Symbols.Select(s => s.Name));
                 }else{
                     throw new ParserException(
-                        "Error ES1911: A class can't be derived from `{0}`",
+                        "A class can't be derived from `{0}`",
+                        "ES1911",
                         super_type,
                         super_type.Name
                     );
@@ -1197,7 +1242,8 @@ namespace Expresso.Ast.Analysis
             if(require_methods.Any()){
                 foreach(var require_method_name in require_methods){
                     parser.ReportSemanticError(
-                        "Error ES1910: The class '{0}' doesn't implement '{1}' but an interface requires you to implement it.",
+                        "The class '{0}' doesn't implement a method '{1}' but an interface requires you to implement it.",
+                        "ES1910",
                         typeDecl,
                         typeDecl.Name, require_method_name
                     );
@@ -1229,9 +1275,10 @@ namespace Expresso.Ast.Analysis
                         var init_type = field.Initializer.AcceptWalker(this);
                         if(IsCastable(init_type, field_type) == TriBool.False){
                             parser.ReportSemanticErrorRegional(
-                                "Error ES0110: Can not implicitly cast type `{0}` to type `{1}`.",
+                                "Can not initialize the field '{0}' with a value that's of type `{1}`.",
+                                "ES0110",
                                 field.Pattern, field.Initializer,
-                                init_type, field_type
+                                field.Pattern, field_type
                             );
                         }
                     }
@@ -1252,12 +1299,12 @@ namespace Expresso.Ast.Analysis
         {
             var left_type = initializer.Pattern.AcceptWalker(this);
             var tuple = left_type as SimpleType;
-            if(left_type == null){
+            /*if(left_type == null){
                 throw new ParserException(
                     "(Internal) Error ES0900: The left-hand-side of a VariableInitializer is inferred as null.",
                     initializer
                 );
-            }
+            }*/
 
             if(IsPlaceholderType(left_type) || tuple != null && ContainsPlaceholderType(tuple)){
                 inference_runner.InspectsClosure = true;
@@ -1266,7 +1313,8 @@ namespace Expresso.Ast.Analysis
                 inference_runner.InspectsClosure = true;
                 if(IsCollectionType(inferred_type) && ((SimpleType)inferred_type).TypeArguments.Any(t => t is PlaceholderType)){
                     parser.ReportSemanticErrorRegional(
-                        "Error ES1312: Can not infer the inner type of the container `{0}` because it lacks initial values.",
+                        "Can not infer the inner type of the container `{0}` because it lacks an initial value.",
+                        "ES1312",
                         initializer.Pattern,
                         initializer.Initializer,
                         inferred_type.Name
@@ -1287,7 +1335,8 @@ namespace Expresso.Ast.Analysis
                 if(initializer.Parent is ValueBindingForStatement){
                     if(!IsSequenceType(inferred_type)){
                         throw new ParserException(
-                            "Error ES1301: `{0}` isn't a sequence type! A for statemant can only be used for iterating over a sequence.",
+                            "`{0}` isn't a sequence type!",
+                            "ES1301",
                             initializer.Initializer,
                             inferred_type.ToString()
                         );
@@ -1322,7 +1371,8 @@ namespace Expresso.Ast.Analysis
                 }
             }else if(rhs_type != null && IsCompatibleWith(left_type, rhs_type) == TriBool.False){
                 parser.ReportSemanticErrorRegional(
-                    "Error ES1300: The type `{0}` on the left-hand-side is not compatible with `{1}` on the right-hand-side.",
+                    "The type `{0}` on the left-hand-side is not compatible with `{1}` on the right-hand-side.",
+                    "ES1300",
                     initializer.Pattern,
                     initializer.Initializer,
                     left_type, rhs_type
@@ -1447,10 +1497,26 @@ namespace Expresso.Ast.Analysis
         /// <returns><c>true</c> if <c>fromType</c> can be casted to <c>totype</c>; otherwise, <c>false</c>.</returns>
         static TriBool IsCastable(AstType fromType, AstType toType)
         {
-            if(fromType.Name == toType.Name)
+            if(fromType.Name == toType.Name){
                 return TriBool.True;
-            else
+            }else if(fromType is PrimitiveType primitive1 && toType is PrimitiveType primitive2){
+                if(primitive1.KnownTypeCode == KnownTypeCode.Int && primitive2.KnownTypeCode == KnownTypeCode.Float || primitive2.KnownTypeCode == KnownTypeCode.Double)
+                    return TriBool.True;
+                else if(primitive1.KnownTypeCode == KnownTypeCode.UInt && primitive2.KnownTypeCode == KnownTypeCode.Float || primitive2.KnownTypeCode == KnownTypeCode.Double)
+                    return TriBool.True;
+                else if((primitive1.KnownTypeCode == KnownTypeCode.Double || primitive1.KnownTypeCode == KnownTypeCode.Float) && primitive2.KnownTypeCode == KnownTypeCode.Int)
+                    return TriBool.True;
+                else if((primitive1.KnownTypeCode == KnownTypeCode.Double || primitive1.KnownTypeCode == KnownTypeCode.Float) && primitive2.KnownTypeCode == KnownTypeCode.UInt)
+                    return TriBool.True;
+                else if((primitive1.KnownTypeCode == KnownTypeCode.Int || primitive1.KnownTypeCode == KnownTypeCode.UInt) && primitive2.KnownTypeCode == KnownTypeCode.Byte)
+                    return TriBool.True;
+                else if(primitive1.KnownTypeCode == KnownTypeCode.Byte && primitive2.KnownTypeCode == KnownTypeCode.Int || primitive2.KnownTypeCode == KnownTypeCode.UInt)
+                    return TriBool.True;
+                else
+                    return TriBool.False;
+            }else{
                 return IsCompatibleWith(fromType, toType);
+            }
         }
 
         /// <summary>
@@ -1814,7 +1880,8 @@ namespace Expresso.Ast.Analysis
 
             if(ident.IdentifierId == 0){
                 parser.ReportSemanticError(
-                    "Error ES0101: The type name `{0}` turns out not to be declared in the current scope {1}!",
+                    "The type name `{0}` turns out not to be declared in the current scope {1}!",
+                    "ES0101",
                     ident,
                     ident.Name, symbols.Name
                 );

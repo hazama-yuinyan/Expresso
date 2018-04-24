@@ -10,7 +10,6 @@
     <RootNamespace>ExpressoConsole</RootNamespace>
     <AssemblyName>exsc</AssemblyName>
     <StartupObject>Expresso.Terminal.ExpressoMain</StartupObject>
-    <ReleaseVersion>1.3</ReleaseVersion>
     <NoWin32Manifest>False</NoWin32Manifest>
     <AllowUnsafeBlocks>False</AllowUnsafeBlocks>
     <NoStdLib>False</NoStdLib>

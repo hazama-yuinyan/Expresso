@@ -15,6 +15,9 @@ namespace Expresso.CodeGen
     /// </summary>
     public static class ExpressoCompilerHelpers
     {
+        static List<string> _AssemblyNames =
+            new List<string>{"System.Numerics, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089", "ExpressoRuntime"};
+        
         internal static uint StartOfIdentifierId = 1_000_000_002u;
         internal static Guid LanguageGuid = Guid.Parse("408e5e88-0566-4b8a-9c69-4d2f7c74baf9");
         static uint IdentifierId = StartOfIdentifierId + 16u;
@@ -57,7 +60,7 @@ namespace Expresso.CodeGen
                 var type_code = PrimitiveType.GetActualKnownTypeCodeForPrimitiveType(type, null);
                 return AstType.MakePrimitiveType(type);
             }
-            catch(ParserException){
+            catch(InvalidOperationException){
                 return null;
             }
         }
@@ -83,10 +86,408 @@ namespace Expresso.CodeGen
                 if(type != null)
                     break;
             }
-            if(type == null)
-                throw new ParserException("Error ES5000: The type '{0}' is not a native type", identifier, identifier.Name);
+            if(type == null){
+                throw new ParserException(
+                    "The type '{0}' is not a native type",
+                    "ES5000",
+                    identifier,
+                    identifier.Name
+                );
+            }
                 
             PopulateSymbolTable(table, type);
+        }
+
+        /// <summary>
+        /// Stringifies a list of items.
+        /// </summary>
+        /// <returns>The list.</returns>
+        /// <param name="enumerable">Enumerable.</param>
+        /// <typeparam name="T">The 1st type parameter.</typeparam>
+        public static string StringifyList<T>(IEnumerable<T> enumerable)
+        {
+            var first_item = enumerable.First();
+            var builder = new StringBuilder(first_item.ToString());
+            foreach(var item in enumerable){
+                builder.Append(", ");
+                builder.Append(item.ToString());
+            }
+
+            return builder.ToString();
+        }
+
+        /// <summary>
+        /// Loads appropriate assemblies to prepare for code analyzing.
+        /// </summary>
+        public static void Prepare()
+        {
+            foreach(var name in _AssemblyNames){
+                var an = new AssemblyName(name);
+                Assembly.Load(an);
+            }
+        }
+
+        internal static void DisplayHelp(ParserException e)
+        {
+            var error_number = e.ErrorCode.Substring(2);
+            if(error_number == "1000" || error_number == "1022" || error_number == "2000")
+                return;
+            
+            var prev_color = Console.ForegroundColor;
+            Console.ForegroundColor = ConsoleColor.Blue;
+            Console.Write("help: ");
+
+            switch(error_number){
+            case "0001":
+                Console.WriteLine("Otherwise you can't receive all the parameters.");
+                break;
+
+            case "0002":
+                Console.WriteLine("Because we don't have named parameters it isn't allowed.");
+                break;
+
+            case "0003":
+                Console.WriteLine("I can't do nothing if there is no values from which I'll infer the type of the expression.");
+                break;
+
+            case "0004":
+                Console.WriteLine("At least one of them have to be placed so that the compiler can detemine the type of the parameter.");
+                break;
+
+            case "0005":
+                Console.WriteLine("Otherwise I can't determine where the string ends.");
+                break;
+
+            /*case "0006":
+                Console.WriteLine("");
+                break;*/
+
+            case "0007":
+                Console.WriteLine("Unknown type is just unknown!");
+                break;
+
+            case "0008":
+                Console.WriteLine("Otherwise some values won't be assigned.");
+                break;
+
+            case "0009":
+                Console.WriteLine("For a keyword list, see the online documentation.");
+                break;
+
+            case "0010":
+                Console.WriteLine("This isn't due to a technical issue.");
+                break;
+
+            case "0011":
+                Console.WriteLine("This is obviously a restriction but supporting it will definitly make the implementation more complex.");
+                break;
+
+            case "0020":
+                Console.WriteLine("Please make sure that the file exists.");
+                break;
+
+            case "0021":
+                Console.WriteLine("Other patterns don't make sense, do they?");
+                break;
+
+            case "0040":
+                Console.WriteLine("See the C# documentation for the format of uint literals.");
+                break;
+
+            case "0050":
+                Console.WriteLine("See the C# documentation for the format of float literals.");
+                break;
+
+            case "0051":
+                Console.WriteLine("See the C# documentation for the format of number literals.");
+                break;
+
+            case "0100":
+                Console.WriteLine("It's most likely that you misspelled the identifier name.");
+                Console.WriteLine("So check for spelling, taking casing into account.");
+                break;
+
+            case "0101":
+                Console.WriteLine("It's most likely that you misspelled the type symbol.");
+                Console.WriteLine("So check for spelling, taking casing into account.");
+                break;
+
+            case "0102":
+                Console.WriteLine("It's most likely that you misspelled the symbol.");
+                Console.WriteLine("So check for spelling, taking casing into account.");
+                break;
+
+            case "0103":
+                Console.WriteLine("It's most likely that you misspelled the symbol name.");
+                Console.WriteLine("So check for spelling, taking casing into account.");
+                break;
+
+            case "0110":
+                Console.WriteLine("Can not cast the value to the field's type.");
+                Console.WriteLine("With explicit casting, it may pass compilation.");
+                break;
+
+            case "0200":
+                Console.WriteLine("Please make sure that the variable is initialized.");
+                break;
+
+            case "1000":
+                break;
+
+            case "1001":
+                Console.WriteLine("The variable or field should be compatible with the value on the right-hand-side when assigned.");
+                Console.WriteLine("In this context, 'compatible' means that the types of the both values match");
+                Console.WriteLine("or the right-hand-side can be implicitly casted to the left-hand-side.");
+                break;
+
+            case "1002":
+                Console.WriteLine("For combinations of the operators and the types that can be used with them, see the online documentation.");
+                break;
+
+            case "1003":
+                Console.WriteLine("Aren't you trying to cast an object to the type the class isn't derived from?");
+                Console.WriteLine("For combinations in which primitive types can be casted, see the online documentation.");
+                break;
+
+            case "1006":
+                Console.WriteLine("Every expression has one type. So the conditional expression is.");
+                Console.WriteLine("That's why we should determine the one type that the conditional expression will be.");
+                break;
+
+            case "1020":
+                Console.WriteLine("Use module-level functions instead.");
+                break;
+
+            case "1021":
+                Console.WriteLine("Use module-level functions instead.");
+                break;
+
+            case "1022":
+                break;
+
+            case "1023":
+                Console.WriteLine("The value against which the value is tested must be exactly one type.");
+                Console.WriteLine("Otherwise the compiler issues an compiler error at that point.");
+                break;
+
+            case "1030":
+                Console.WriteLine("It's because methods that implement interfaces should have exactly the same signatures.");
+                break;
+
+            case "1100":
+                Console.WriteLine("The variable or field should be compatible with the value on the right-hand-side when assigned.");
+                Console.WriteLine("In this context, 'compatible' means that the types of the both values match");
+                Console.WriteLine("or the right-hand-side can be implicitly casted to the left-hand-side.");
+                break;
+
+            case "1101":
+                Console.WriteLine("This is an error because we can't take those functions into account.");
+                break;
+
+            case "1110":
+                Console.WriteLine("Please specify a value with type `{0}`", e.HelpObject);
+                break;
+
+            case "1200":
+                Console.WriteLine("The operand must be of type `bool`.");
+                break;
+
+            case "1201":
+                Console.WriteLine("For combinations of the operators and types that can be used with the operators, see the online documentation.");
+                break;
+
+            case "1300":
+                Console.WriteLine("This generally means that you have no ways to make it runnable as it is.");
+                break;
+
+            case "1301":
+                Console.WriteLine("For statemants can only be used for iterating over a sequence.");
+                break;
+
+            case "1302":
+                Console.WriteLine("A comprehension expects a sequence object.");
+                break;
+
+            case "1303":
+                Console.WriteLine("Expresso doesn't implicitly cast objects to other types.");
+                Console.WriteLine("So consider adding an explicit casting.");
+                break;
+
+            case "1306":
+                Console.WriteLine("Have you changed the expression? Because it's most likely to cause the problem.");
+                Console.WriteLine("Of course, you can use type inference!");
+                break;
+
+            case "1310":
+                Console.WriteLine("In Expresso you can only omit parameter types when there are optional values.");
+                break;
+
+            case "1311":
+                Console.WriteLine("Without the initial value, I have no ways to infer the type of this variable!");
+                break;
+
+            case "1312":
+                Console.WriteLine("Consider specifying the initial value or adding the type annotation.");
+                break;
+
+            case "1500":
+                Console.WriteLine("It's most likely that you misspelled it.");
+                Console.WriteLine("So check for spelling, taking casing into account.");
+                break;
+
+            case "1501":
+                Console.WriteLine("Did you forget to import the module that the type was defined?");
+                Console.WriteLine("Also you can check for spelling. Don't forget to take casing into account.");
+                break;
+
+            case "1502":
+                Console.WriteLine("It's most likely that you misspelled the field name. So check for spelling, taking casing into account.");
+                break;
+
+            case "1602":
+                Console.WriteLine("Unlike methods and functions, you may not omit the return types of method signatures in interfaces.");
+                Console.WriteLine("This is due to the trouble implementing it and because interfaces should be explicit.");
+                break;
+
+            case "1700":
+                Console.WriteLine("It's most likely that you forget to import some module.");
+                Console.WriteLine("Or maybe you misspelled the type or symbol name. Check for spelling, taking casing into account.");
+                break;
+
+            case "1800":
+                Console.WriteLine("Otherwise the return type of the function becomes void.");
+                break;
+
+            case "1805":
+                Console.WriteLine("In Expresso callables include functions and closures.");
+                break;
+
+            case "1900":
+                Console.WriteLine("Immutable variables are immutable becuase it's how it is.");
+                Console.WriteLine("If you absolutely need to change the value, then consider changing the `let` keyword to `var` in the variable declaration.");
+                Console.WriteLine("But think twice before doing so because mutability can cause evil things.");
+                break;
+
+            case "1901":
+                Console.WriteLine("You can't omit the return type when there is no statements in the body!");
+                break;
+
+            case "1902":
+                Console.WriteLine("Immutable fields can't be assigned values more than 1 time because it is the fate that the fields are imposed.");
+                break;
+
+            case "1910":
+                Console.WriteLine("A derived class must implement all the functions that an interface defines.");
+                break;
+
+            case "1911":
+                Console.WriteLine("In Expresso you can't derive classes from primitive types like int, uint and intseq");
+                break;
+
+            case "1912":
+                Console.WriteLine("It's most likely that the type you are deriving is not exported.");
+                Console.WriteLine("So consider adding the `export` modifier to the type.");
+                break;
+
+            case "2000":
+                break;
+
+            case "2001":
+                Console.WriteLine("It's most likely that you misspelled the field or the property name. So check for spelling, taking casing into account.");
+                break;
+
+            case "2002":
+                Console.WriteLine("It's most likely that you misspelled the method name. So check for spelling, taking casing into account.");
+                Console.WriteLine("The second most likely is you specifying invalid signatures. So check for the argument' types.");
+                break;
+
+            case "2003":
+                Console.WriteLine("It's most likely that you forget to cast the object to the field type.");
+                Console.WriteLine("Consider adding one.");
+                break;
+
+            case "2010":
+                Console.WriteLine("Types are mismatched. Do you forget to cast arguments?");
+                break;
+
+            case "2100":
+                Console.WriteLine("You can't call a mutable method on an immutable variable because it modifies the state of the object.");
+                Console.WriteLine("If you absolutely need to do so, consider changing the `let` keyword to `var` in the variable declaration.");
+                break;
+
+            case "3000":
+                Console.WriteLine("Currently you may not understand the cause of the problem. It's due to the weakness in reporting a string interpolation error.");
+                Console.WriteLine("In future versions, it would be more clear what is problems in string interpolations.");
+                break;
+
+            case "3010":
+                Console.WriteLine("In Expresso you can only omit the parameter and return types if and only if they are directly passed to functions or methods that take closures.");
+                Console.WriteLine("This is obviously a restriction of the current implementation. So it may be eased off in the future.");
+                break;
+
+            case "3011":
+                Console.WriteLine("In Expresso you can only apply the indexer operator on `vectors`, `arrays` and `dictionaries`");
+                break;
+
+            case "3012":
+                Console.WriteLine("You can only use an intseq with the indexer operator on arrays or vectors.");
+                break;
+
+            case "3013":
+                Console.WriteLine("In Expresso you can't use the indexer operator on an arbitrary object.");
+                break;
+
+            case "3014":
+                Console.WriteLine("Currently Expresso doesn't allow you to declare more than 1 variable with the same name in the same scope.");
+                Console.WriteLine("But in the future you would be able to use shadowing, though.");
+                break;
+
+            case "3200":
+                Console.WriteLine("For combinations of the unary operators and the types, see the online documentation.");
+                break;
+
+            case "3300":
+                Console.WriteLine("That is what it is.");
+                break;
+
+            case "3301":
+                Console.WriteLine("That is what it is.");
+                break;
+
+            case "3303":
+                Console.WriteLine("Consider adding `export` flag to the type.");
+                break;
+
+            case "4000":
+                Console.WriteLine("Unfortunately for you, it's illegal in Expresso to write an expression that's evaluated to other types than `bool`.");
+                break;
+
+            case "4001":
+                Console.WriteLine("An integer sequence expression expects an `Int`.");
+                break;
+
+            case "4002":
+                Console.WriteLine("You are trying to pass {0} to the intseq constructor.", e.HelpObject);
+                break;
+
+            case "4010":
+                Console.WriteLine("You can break out of loops {0} times at this point.", e.HelpObject);
+                break;
+
+            case "4011":
+                Console.WriteLine("You can continue out of loops {0} times at this point.", e.HelpObject);
+                break;
+
+            case "5000":
+                Console.WriteLine("Did you misspelled the name? Check for spelling, taking casing into account.");
+                Console.WriteLine("We leave the external names as they are.");
+                break;
+
+            default:
+                throw new InvalidOperationException("Unreachable");
+            }
+
+            Console.ForegroundColor = prev_color;
         }
 
         public static SymbolTable GetSymbolTableForAssembly(string assemblyPath)

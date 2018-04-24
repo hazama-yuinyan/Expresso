@@ -309,7 +309,7 @@ namespace Expresso.CodeGen
 
                 var param_types = funcDecl.Parameters.Select(param => param.AcceptWalker(emitter, context).Type);
 
-                var return_type = CSharpCompilerHelper.GetNativeType(funcDecl.ReturnType);
+                var return_type = CSharpCompilerHelpers.GetNativeType(funcDecl.ReturnType);
 
                 var attr = (context.LazyTypeBuilder != null) ? MethodAttributes.Private : MethodAttributes.Static | MethodAttributes.Private;
                 if(funcDecl.Modifiers.HasFlag(Modifiers.Public)){
@@ -352,7 +352,7 @@ namespace Expresso.CodeGen
 
                 foreach(var base_type in typeDecl.BaseTypes){
                     if(base_type is SimpleType simple){
-                        var native_type = CSharpCompilerHelper.GetNativeType(!simple.IdentifierNode.Type.IsNull ? simple.IdentifierNode.Type : simple);
+                        var native_type = CSharpCompilerHelpers.GetNativeType(!simple.IdentifierNode.Type.IsNull ? simple.IdentifierNode.Type : simple);
                         if(!Symbols.ContainsKey(base_type.IdentifierNode.IdentifierId))
                             AddSymbol(base_type.IdentifierNode, new ExpressoSymbol{Type = native_type});
                     }
@@ -420,7 +420,7 @@ namespace Expresso.CodeGen
                     attr ^= FieldAttributes.Private;
 
                 foreach(var init in fieldDecl.Initializers){
-                    var type = CSharpCompilerHelper.GetNativeType(init.NameToken.Type);
+                    var type = CSharpCompilerHelpers.GetNativeType(init.NameToken.Type);
                     var field_builder = context.LazyTypeBuilder.DefineField(init.Name, type, !Expression.IsNullNode(init.Initializer), attr);
                     AddSymbol(init.NameToken, new ExpressoSymbol{PropertyOrField = field_builder});
                 }

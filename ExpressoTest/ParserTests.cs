@@ -1077,6 +1077,15 @@ namespace Expresso.Test
                                 Expression.MakeConstant("int", 9)
                             ),
                             Statement.MakeBlock(
+                                Statement.MakeVarDecl(
+                                    Helpers.MakeSeq(
+                                        Helpers.MakeSomePatternWithType("MAX_J")
+                                    ),
+                                    Helpers.MakeSeq(
+                                        Expression.MakeConstant("int", 8)
+                                    ),
+                                    Modifiers.Immutable
+                                ),
                                 Statement.MakeValueBindingForStmt(
                                     Modifiers.Immutable,
                                     Helpers.MakeSomePatternWithType("j"),
@@ -1113,7 +1122,7 @@ namespace Expresso.Test
                                                 Expression.MakeBinaryExpr(
                                                     OperatorType.Equality,
                                                     Helpers.MakeIdentifierPath("j"),
-                                                    Expression.MakeConstant("int", 8)
+                                                    Helpers.MakeIdentifierPath("MAX_J")
                                                 )
                                             ),
                                             Statement.MakeBlock(

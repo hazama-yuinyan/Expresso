@@ -20,7 +20,6 @@
     <SourceAnalysisOverrideSettingsFile>C:\Users\Ryouta\AppData\Roaming\ICSharpCode/SharpDevelop4\Settings.SourceAnalysis</SourceAnalysisOverrideSettingsFile>
     <TargetFrameworkProfile />
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
-    <ReleaseVersion>1.3</ReleaseVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
     <DebugSymbols>True</DebugSymbols>
@@ -181,7 +180,7 @@
     <Compile Include="Ast\ReferenceType.cs" />
     <Compile Include="CodeGen\EmitterException.cs" />
     <Compile Include="CodeGen\CSharpEmitter.cs" />
-    <Compile Include="CodeGen\CSharpCompilerHelper.cs" />
+    <Compile Include="CodeGen\CSharpCompilerHelpers.cs" />
     <Compile Include="Ast\GeneralScope\AliasDeclaration.cs" />
     <Compile Include="CodeGen\CSharpEmitterContext.cs" />
     <Compile Include="CodeGen\ExpressoSymbol.cs" />
@@ -209,7 +208,6 @@
     <Compile Include="Analysis\ClosureParameterInferencer.cs" />
     <Compile Include="Analysis\ClosureInspecter.cs" />
     <Compile Include="Ast\Patterns\KeyValuePattern.cs" />
-    <Compile Include="Analysis\MatchClauseIdentifierDefiner.cs" />
     <Compile Include="CodeGen\ItemTypeInferencer.cs" />
     <Compile Include="CodeGen\ExpressoCompilerHelpers.cs" />
     <Compile Include="Ast\Patterns\PatternWithType.cs" />
@@ -218,6 +216,7 @@
     <Compile Include="Analysis\PreProcessor.cs" />
     <Compile Include="Ast\Statements\DoWhileStatement.cs" />
     <Compile Include="CodeGen\PortablePdbGenerator.cs" />
+    <Compile Include="CodeGen\MatchClauseIdentifierDefiner.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -245,7 +244,6 @@
     <None Include="OutputVisitor\ExpressoOutputWalker.cs" />
     <None Include="Documentation\ExpressoReference.md" />
     <None Include="Documentation\ExpressoTutorial.md" />
-    <None Include="CodeGen\ParameterCollector.cs" />
     <None Include="packages.config" />
     <None Include="Documentation\TODO.txt" />
     <None Include="Ast\Patterns\ValueBindingPattern.cs" />

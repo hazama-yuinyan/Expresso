@@ -321,24 +321,30 @@ namespace Expresso.Ast
         {
             if(start is LiteralExpression literal1 && literal1.Value is double){
                 throw new ParserException(
-                    "Error ES4002: An intseq expression can't handle numbers outside of the int range; {0}.",
-                    start,
-                    literal1.Value
-                );
+                    "An intseq expression can't handle numbers outside of the int range.",
+                    "ES4002",
+                    start
+                ){
+                    HelpObject = literal1.Value
+                };
             }
             if(end is LiteralExpression literal2 && literal2.Value is double){
                 throw new ParserException(
-                    "Error ES4002: An intseq expression can't handle numbers outside of the int range; {0}.",
-                    end,
-                    literal2.Value
-                );
+                    "An intseq expression can't handle numbers outside of the int range.",
+                    "ES4002",
+                    end
+                ){
+                    HelpObject = literal2.Value
+                };
             }
             if(step is LiteralExpression literal3 && literal3.Value is double){
                 throw new ParserException(
-                    "Error ES4002: An intseq expression can't handle numbers outside of the int range; {0}.",
-                    step,
-                    literal3.Value
-                );
+                    "An intseq expression can't handle numbers outside of the int range.",
+                    "ES4002",
+                    step
+                ){
+                    HelpObject = literal3.Value
+                };
             }
 
             return new IntegerSequenceExpression(start, end, step, upperInclusive, startLoc, endLoc);

@@ -14,3 +14,7 @@
 ・FlowCheckerを実行するように変更する
 ・string interpolationの式のTextLocationを修正する
 ・キーワードを間違っても、コンパイルが進んでしまうのを修正する
+・if letをなんとかする
+・else ifをパースできるようにする
+・アトリビュートの追加
+・戻り値の整合性チェックを追加する

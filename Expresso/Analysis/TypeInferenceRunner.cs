@@ -150,7 +150,8 @@ namespace Expresso.Ast.Analysis
                 var func_type = callExpr.Target.AcceptWalker(this) as FunctionType;
                 if(func_type == null){
                     throw new ParserException(
-                        "Error ES1805: {0} turns out not to be a function.",
+                        "{0} turns out not to be a callable.",
+                        "ES1805",
                         callExpr,
                         callExpr.Target.ToString()
                     );
@@ -247,7 +248,8 @@ namespace Expresso.Ast.Analysis
                     // See if it is a IntSeq object
                     if(inferred_primitive.KnownTypeCode != KnownTypeCode.IntSeq){
                         parser.ReportSemanticError(
-                            "Error ES1302: '{0}' isn't a sequence type! A comprehension expects a sequence object.",
+                            "'{0}' isn't a sequence type!",
+                            "ES1302",
                             inferred_primitive,
                             inferred_primitive
                         );
@@ -261,7 +263,8 @@ namespace Expresso.Ast.Analysis
                     // See if it is a sequence object like array or vector
                     if(inferred_simple.Name != "array" && inferred_simple.Name != "vector"){
                         parser.ReportSemanticError(
-                            "Error ES1302: '{0}' isn't a sequence type! A comprehension expects a sequence object.",
+                            "'{0}' isn't a sequence type! A comprehension expects a sequence object.",
+                            "ES1302",
                             inferred_simple,
                             inferred_simple
                         );
@@ -327,7 +330,8 @@ namespace Expresso.Ast.Analysis
                     var symbol2 = checker.symbols.GetTypeSymbolInAnyScope(ident.Name);
                     if(symbol2 == null){
                         throw new ParserException(
-                            "Error ES1000: The symbol '{0}' at {1} is not defined in the current scope {2}.",
+                            "The symbol '{0}' at {1} is not defined in the current scope {2}.",
+                            "ES1000",
                             ident,
                             ident.Name, ident.StartLocation, checker.symbols.Name
                         );
@@ -354,7 +358,8 @@ namespace Expresso.Ast.Analysis
                         // We need to duplicate the following error messages on InferenceRunner and TypeChecker
                         // because we won't be reaching some code paths
                         throw new ParserException(
-                            "Error ES3011: Can not apply the indexer operator on type `{0}`",
+                            "Can not apply the indexer operator on type `{0}`",
+                            "ES3011",
                             indexExpr,
                             simple_type.ToString()
                         );
@@ -387,7 +392,8 @@ namespace Expresso.Ast.Analysis
                 var type_table = checker.symbols.GetTypeTable(name);
                 if(type_table == null){
                     throw new ParserException(
-                        "Error ES2000: Although the expression '{0}' is evaluated to the type `{1}`, there isn't any type with that name in the scope '{2}'.",
+                        "Although the expression '{0}' is evaluated to the type `{1}`, there isn't any type with that name in the scope '{2}'.",
+                        "ES2000",
                         memRef.Target,
                         memRef.Target.ToString(), target_type, checker.symbols.Name
                     );
@@ -410,7 +416,7 @@ namespace Expresso.Ast.Analysis
                                            .Where(ancestor => ancestor is AssignmentExpression)
                                            .OfType<AssignmentExpression>()
                                            .FirstOrDefault();
-                    if(assignment != null && assignment.Left.Descendants.Any(descendant => object.ReferenceEquals(descendant, memRef)))
+                    if(assignment != null && assignment.Left.Descendants.Any(descendant => ReferenceEquals(descendant, memRef)))
                         symbol = type_table.GetSymbol("set_" + memRef.Member.Name);
                     else
                         symbol = type_table.GetSymbol("get_" + memRef.Member.Name);
@@ -418,13 +424,15 @@ namespace Expresso.Ast.Analysis
                     if(symbol == null){
                         if(memRef.Parent is CallExpression){
                             throw new ParserException(
-                                "Error ES2002: The type `{0}` doesn't have a method '{1}'!",
+                                "The type `{0}` doesn't have a method '{1}({2})'!",
+                                "ES2002",
                                 memRef.Member,
-                                target_type.ToString(), memRef.Member.Name
+                                target_type.ToString(), memRef.Member.Name, CodeGen.ExpressoCompilerHelpers.StringifyList(checker.argument_types)
                             );
                         }else{
                             throw new ParserException(
-                                "Error ES2001: The type `{0}` doesn't have a field or a property '{1}'!",
+                                "The type `{0}` doesn't have a field or a property '{1}'!",
+                                "ES2001",
                                 memRef.Member,
                                 target_type.ToString(), memRef.Member.Name
                             );
@@ -437,7 +445,8 @@ namespace Expresso.Ast.Analysis
                 if(modifiers.HasFlag(Modifiers.Private)){
                     if(!(memRef.Target is SelfReferenceExpression)){
                         parser.ReportSemanticError(
-                            "Error ES3300: A private field can't be accessed from outside its surrounding scope: `{0}`.",
+                            "A private field can't be accessed from outside its surrounding scope: `{0}`.",
+                            "ES3300",
                             memRef.Member,
                             memRef
                         );
@@ -448,7 +457,8 @@ namespace Expresso.Ast.Analysis
                 if(modifiers.HasFlag(Modifiers.Protected)){
                     if(!(memRef.Target is SelfReferenceExpression) && !(memRef.Target is SuperReferenceExpression)){
                         parser.ReportSemanticError(
-                            "Error ES3301: A protected field can't be accessed from outside its surrounding or derived classes: `{0}`.",
+                            "A protected field can't be accessed from outside its surrounding or derived classes: `{0}`.",
+                            "ES3301",
                             memRef.Member,
                             memRef
                         );
@@ -458,7 +468,8 @@ namespace Expresso.Ast.Analysis
 
                 if(checker.inspecting_immutability && modifiers.HasFlag(Modifiers.Immutable)){
                     parser.ReportSemanticError(
-                        "Error ES1902: Re-assignment on an immutable field: `{0}`.",
+                        "Re-assignment on an immutable field: `{0}`.",
+                        "ES1902",
                         memRef.Member,
                         memRef
                     );
@@ -496,7 +507,8 @@ namespace Expresso.Ast.Analysis
                             item.Type.ReplaceWith(result);
                         }else{
                             throw new ParserException(
-                                "Error ES1700: The type or symbol name '{0}' is not declared.",
+                                "The type or symbol name '{0}' is not declared.",
+                                "ES1700",
                                 item,
                                 item.Name
                             );
@@ -518,7 +530,8 @@ namespace Expresso.Ast.Analysis
                 var referenced = table.GetTypeSymbolInAnyScope(creation.TypePath.Name);
                 if(referenced == null){
                     throw new ParserException(
-                        "Error ES1501: The type `{0}` isn't found or accessible from the scope {1}.",
+                        "The type `{0}` isn't found or accessible from the scope {1}.",
+                        "ES1501",
                         creation,
                         creation.TypePath.ToString(),
                         creation.TypePath.Name
@@ -614,7 +627,8 @@ namespace Expresso.Ast.Analysis
                         }
 
                         parser.ReportSemanticError(
-                            "Error ES3200: Can not apply the unary operator '{0}' on type `{1}`.",
+                            "Can not apply the unary operator '{0}' on type `{1}`.",
+                            "ES3200",
                             unaryExpr,
                             unaryExpr.OperatorToken,
                             tmp.Name
@@ -626,7 +640,7 @@ namespace Expresso.Ast.Analysis
                     return new PrimitiveType("bool", TextLocation.Empty);
 
                 default:
-                    throw new ParserException("Unknown unary operator!", unaryExpr);
+                    throw new InvalidOperationException("Unknown unary operator!");
                 };
             }
 
@@ -733,7 +747,8 @@ namespace Expresso.Ast.Analysis
             {
                 if(parameterDecl.Option.IsNull){
                     parser.ReportSemanticErrorRegional(
-                        "Error ES1310: Can not infer the type of the parameter '{0}' because it doesn't have an optional value.",
+                        "Can not infer the type of the parameter '{0}' because it doesn't have an optional value.",
+                        "ES1310",
                         parameterDecl.NameToken, parameterDecl.NameToken,
                         parameterDecl.Name
                     );
@@ -748,7 +763,8 @@ namespace Expresso.Ast.Analysis
             {
                 if(initializer.Initializer.IsNull){
                     parser.ReportSemanticErrorRegional(
-                        "Error ES1311: Can not infer the expression '{0}' because it doesn't have any context.",
+                        "Can not infer the expression '{0}' because it doesn't have any context.",
+                        "ES1311",
                         initializer.Pattern, initializer.Initializer,
                         initializer
                     );
@@ -794,7 +810,8 @@ namespace Expresso.Ast.Analysis
                         var table = checker.symbols.GetTypeTable(type.Name);
                         if(table == null){
                             parser.ReportSemanticError(
-                                "Error ES0101: The type symbol '{0}' turns out not to be declared or accessible in the current scope {1}!",
+                                "The type symbol '{0}' turns out not to be declared or accessible in the current scope {1}!",
+                                "ES0101",
                                 identifierPattern,
                                 type.Name, checker.symbols.Name
                             );
@@ -866,7 +883,8 @@ namespace Expresso.Ast.Analysis
                     return pattern.Type;
                 }else if(type is SimpleType val_tuple2 && !(pattern.Type is PlaceholderType) || pattern.Type is SimpleType tuple2 && !(type is PlaceholderType)){
                     throw new ParserException(
-                        "Error ES1306: The type in the type annotation `{0}` conflicts with the expression type `{1}`",
+                        "The type in the type annotation `{0}` conflicts with the expression type `{1}`",
+                        "ES1306",
                         pattern,
                         pattern.Type.ToString(), type
                     );
@@ -955,8 +973,9 @@ namespace Expresso.Ast.Analysis
                             if(true_return == null && false_return == null)
                                 return AstType.MakeSimpleType("tuple");
                             
-                            checker.parser.ReportSemanticErrorRegional(
-                                "Error ES1800: All code paths must return something. {0} returns nothing.",
+                            parser.ReportSemanticErrorRegional(
+                                "All code paths must return something. {0} returns nothing.",
+                                "ES1800",
                                 last_if.TrueBlock, last_if.FalseBlock,
                                 (true_return != null) ? "The false block" : "The true block"
                             );

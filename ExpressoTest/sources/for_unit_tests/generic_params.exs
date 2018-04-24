@@ -1,13 +1,9 @@
 module main;
 
 
-def createList<T>(a (- T, b (- T, rest... (- T[]) -> vector<T>
+def createList<T>(a (- T, b (- T, c (- T) -> vector<T>
 {
-    var tmp_vec = [a, b, ...];
-    for let tmp in rest {
-        tmp_vec.Add(tmp);
-    }
-    return tmp_vec;
+    return [a, b, c, ...];
 }
 
 

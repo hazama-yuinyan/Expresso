@@ -112,7 +112,7 @@ string cur_class_name;
 	Parser()
 	{
         DoPostParseProcessing = false;
-        CSharpCompilerHelper.Prepare();
+        ExpressoCompilerHelpers.Prepare();
         Symbols = SymbolTable.Create();
 	}
 	
@@ -146,8 +146,7 @@ string cur_class_name;
 			break;
 
 		default:
-			SemanticError("Error ES0030: Unknown object type");
-			break;
+			throw new InvalidOperationException("Unknown object type");
 		}
 		
 		return result;
@@ -178,7 +177,7 @@ string cur_class_name;
             if(uint.TryParse(numerics.Substring(0, numerics.Length - 1), out u))
                 obj = u;
             else
-                SemanticError("Error ES0040: Invalid uint representation!");
+                SemanticError(loc, "ES0040", "Invalid uint representation!");
             break;
         }
 
@@ -196,7 +195,7 @@ string cur_class_name;
             if(float.TryParse(numerics.Substring(0, numerics.Length - 1), out f))
                 obj = f;
             else
-                SemanticError("Error ES0050: Invalid float representation!");
+                SemanticError(loc, "ES0050", "Invalid float representation!");
             break; 
         }
 
@@ -211,7 +210,7 @@ string cur_class_name;
                 obj = d;
                 type_name = "double";
             }else{
-                SemanticError("Error ES0051: Unknown sequence for numeric literals! Make sure that you write a number!");
+                SemanticError(loc, "ES0051", "Unknown string for numeric literals! Make sure that you write a number!");
             }
             break;
         }
@@ -412,7 +411,7 @@ string cur_class_name;
     bool CheckKeyword(string name)
     {
         if(KnownTypeReference.Keywords.Contains(name)){
-            SemanticError("Error ES0005: {0} is reserverd for a keyword.", name);
+            SemanticError("ES0009", "{0} is reserverd for a keyword.", name);
             return true;
         }
 
@@ -423,19 +422,44 @@ string cur_class_name;
     /// Reports a semantic error message.
     /// It is intended to be used inside the Parser class.
     /// </summary>
-	public void SemanticError(string format, params object[] args)
+    /// <param name="errorCode">The error code. It must contain the string "ES" at the head.</param>
+    /// <param name="format">The format string according to which args will be formatted.</param>
+    /// <param name="args">Values that are formatted into `format`.</param>
+	public void SemanticError(string errorCode, string format, params object[] args)
 	{
 		//Convenient method for printing a semantic error with a format string
-		errors.SemErr(string.Format(format, args));
+        var body = string.Format("{0} -- {1}", CurrentLocation, string.Format(format, args));
+		errors.SemErr(string.Format("{0}: {1}", errorCode, body));
 	}
+
+    /// <summary>
+    /// Reports a semantic error message.
+    /// It is intended to be used inside the Parser class.
+    /// </summary>
+    /// <param name="loc">The location at which the error occurred.</param>
+    /// <param name="errorCode">The error code. It must contain the string "ES" at the head.</param>
+    /// <param name="format">The format string according to which args will be formatted.</param>
+    /// <param name="args">Values that are formatted into `format`.</param>
+    public void SemanticError(TextLocation loc, string errorCode, string format, params object[] args)
+    {
+        var body = string.Format("{0} -- {1}", loc, string.Format(format, args));
+        errors.SemErr(string.Format("{0}: {1}", errorCode, body));
+    }
 
     /// <summary>
     /// Reports a semantic error message with a range.
     /// It is intended to be used inside the Parser class.
     /// </summary>
-    public void SemanticError(TextLocation loc, string format, params object[] args)
+    /// <param name="start">The location which is the start of the error range.</param>
+    /// <param name="end">The location which is the end of the error range.</param>
+    /// <param name="errorCode">The error code. It must contain the string "ES" at the head.</param>
+    /// <param name="format">The format string according to which args will be formatted</param>
+    /// <param name="args">Values that are formatted into `format`</param>
+    public void SemanticError(TextLocation start, TextLocation end, string errorCode, string format, params object[] args)
     {
-        errors.SemErr(string.Format("{0} ~ {1} -- {2}", loc, CurrentLocation, string.Format(format, args)));
+        var body = string.Format("{0} ~ {1} -- {2}", start, end, string.Format(format, args));
+        errors.SemErr(string.Format("{0}: {1}", errorCode, body));
+        ExpressoCompilerHelpers.DisplayHelp(new ParserException(null, errorCode, null));
     }
 
     /// <summary>
@@ -451,19 +475,21 @@ string cur_class_name;
     /// Reports a semantic error message.
     /// It is intended to be used from outside the Parser class.
     /// </summary>
-    public void ReportSemanticError(string format, AstNode node, params object[] objects)
+    public void ReportSemanticError(string format, string errorCode, AstNode node, params object[] objects)
     {
-        errors.SemErr(string.Format("{0} -- {1}", node.StartLocation, string.Format(format, objects)));
+        errors.SemErr(string.Format("Error {0}: {1}", errorCode, string.Format("{0} -- {1}", node.StartLocation, string.Format(format, objects))));
+        ExpressoCompilerHelpers.DisplayHelp(new ParserException(null, errorCode, node));
     }
 
     /// <summary>
     /// Reports a semantic error message with a range information.
     /// It is intended to be used from outside the Parser class.
     /// </summary>
-    public void ReportSemanticErrorRegional(string format, AstNode start, AstNode end, params object[] objects)
+    public void ReportSemanticErrorRegional(string format, string errorCode, AstNode start, AstNode end, params object[] objects)
     {
         var real_message = string.Format("{0} ~ {1} -- {2}", start.StartLocation, end.EndLocation, string.Format(format, objects));
-        errors.SemErr(real_message);
+        errors.SemErr(string.Format("Error {0}: {1}", errorCode, real_message));
+        ExpressoCompilerHelpers.DisplayHelp(new ParserException(null, errorCode, start, end));
     }
 	
 /*--------------------------------------------------------------------------*/
@@ -542,6 +568,7 @@ string cur_class_name;
 		}
 		catch(ParserException e){
 		errors.SemErr(e.ToString());
+		ExpressoCompilerHelpers.DisplayHelp(e);
 		throw e;
 		}
 		catch(FatalError ex){
@@ -686,7 +713,7 @@ string cur_class_name;
 		} else SynErr(115);
 		VarDef(out typed_pattern, out rhs);
 		if(!(typed_pattern.Pattern is IdentifierPattern))
-		  SemanticError("Error ES0021: A field can only contain an identifier pattern; `{0}`", typed_pattern.Pattern);
+		  SemanticError("ES0021", "A field can only contain an identifier pattern; actual: `{0}`", typed_pattern.Pattern);
 		
 		patterns.Add(typed_pattern);
 		exprs.Add(rhs);
@@ -695,7 +722,7 @@ string cur_class_name;
 			Get();
 			VarDef(out typed_pattern, out rhs);
 			if(!(typed_pattern.Pattern is IdentifierPattern))
-			  SemanticError("Error ES0021: A field can only contain an indentifier pattern; `{0}`", typed_pattern.Pattern);
+			  SemanticError("ES0021", "A field can only contain an indentifier pattern; actual: `{0}`", typed_pattern.Pattern);
 			
 			patterns.Add(typed_pattern);
 			exprs.Add(rhs);
@@ -829,7 +856,7 @@ string cur_class_name;
 			Expect(22);
 			var name = t.val.Substring(1, t.val.Length - 2);
 			if(!scanner.ChildFileExists(name)){
-			   SemanticError("Error ES0020: The external file '{0}' doesn't exist.", name);
+			   SemanticError(file_start_loc, "ES0020", "The external file '{0}' doesn't exist.", name);
 			}
 			target_file = AstNode.MakeIdentifier(name, ExpressoModifiers.None, file_start_loc);
 			
@@ -1041,17 +1068,13 @@ string cur_class_name;
 			start_loc = NextLocation; 
 			if (la.kind == 8) {
 				GenericTypeSignature(name, is_reference, start_loc, out type);
-				if(!IsPrimitiveGenericType(name)){
-				   SemanticError("Error ES0006: `{0}` is not a generic type!", name);
-				   return;
-				}
 				
 			}
 			while (IsArrayTypeSignature()) {
 				Expect(9);
 				Expect(13);
 				if(type.IsNull)
-				   SemanticError("Error ES0007: Array of unknown type is specified. Unknown type is just unknown!");
+				   SemanticError("ES0007", "Array of unknown type is specified.");
 				
 				type = AstType.MakeSimpleType("array", start_loc, CurrentLocation, type);
 				
@@ -1126,7 +1149,7 @@ string cur_class_name;
 		while (WeakSeparator(14,5,6) ) {
 			Parameter(out param);
 			if(seen_option && param.Option.IsNull)
-			   SemanticError("Error ES0002: You can't put optional parameters before non-optional parameters");
+			   SemanticError("ES0002", "You can't put optional parameters before non-optional parameters.");
 			else if(!seen_option && !param.Option.IsNull)
 			   seen_option = true;
 			
@@ -1217,9 +1240,9 @@ string cur_class_name;
 			Get();
 			Type(out type);
 			if(is_variadic && la.kind == _ident)
-			SemanticError("Error ES0010: The variadic parameter has to be placed in the last position of a parameter list");
+			SemanticError("ES0010", "The variadic parameter has to be placed in the last position of a parameter list.");
 			else if(is_variadic && (type == null || !(type is SimpleType simple) || simple.Name != "array"))
-			SemanticError("Error ES0001: The variadic parameter must be an array!");
+			SemanticError("ES0001", "The variadic parameter must be an array!");
 			
 		}
 		if (la.kind == 47) {
@@ -1228,7 +1251,7 @@ string cur_class_name;
 		}
 		identifier = AstNode.MakeIdentifier(name, type ?? new PlaceholderType(CurrentLocation), ExpressoModifiers.None, start_loc);
 		if(!defining_closure_parameters && type == null && option == null)
-		SemanticError("Error ES0004: You can't omit both the type annotation and the default value in a function parameter definition!; `{0}`", name);
+		SemanticError("ES0004", "You can't omit both the type annotation and the default value in a function parameter definition!; `{0}`", name);
 		
 		Symbols.AddSymbol(name, identifier);
 		param = EntityDeclaration.MakeParameter(identifier, option, is_variadic, start_loc);
@@ -1279,7 +1302,7 @@ string cur_class_name;
 			   int start_end_hashes = tmp.Length - index_double_quote - 1;
 			   int index_end_double_quote = tmp.LastIndexOf('"');
 			   if(start_end_hashes != index_end_double_quote + 1)
-			       SemanticError("Error ES0008: The number of opening and closing hash symbols in a raw string must match!");
+			       SemanticError(start_loc, "ES0005", "The number of opening and closing hash symbols in a raw string must match!");
 			
 			   tmp = tmp.Substring(index_double_quote, tmp.Length - index_end_double_quote - index_double_quote);
 			}
@@ -1324,7 +1347,7 @@ string cur_class_name;
 		}
 		if(typed_pattern.Pattern is IdentifierPattern ident_pat){
 		   if(typed_pattern.Type is PlaceholderType && option == null)
-		       SemanticError(loc, "Error ES0003: Give me some context or I can't infer the type of {0}", ident_pat.Identifier.Name);
+		       SemanticError(loc, "ES0003", "Give me some context or I can't infer the type of {0}", ident_pat.Identifier.Name);
 		}
 		
 	}
@@ -1482,7 +1505,7 @@ string cur_class_name;
 				AugmentedAssignOperators(ref op_type);
 				RValueList(out seq);
 				if(lhs.Count != seq.Count)  //See if both sides have the same number of items or not
-				   SemanticError("Error ES0007: An augmented assignment must have both sides balanced.");
+				   SemanticError("ES0008", "An augmented assignment must have both sides balanced.");
 				
 				stmt = Statement.MakeAugmentedAssignment(op_type, lhs, seq, start_loc, CurrentLocation);
 				
@@ -1999,7 +2022,7 @@ string cur_class_name;
 		
 		Identifier(out ident);
 		if(ident.Type is PlaceholderType)
-		   SemanticError(start_loc, "Error ES0010: A CatchClause identifier has to be explicitly type annotated; {0}", ident.Name);
+		   SemanticError(start_loc, "ES0011", "A CatchClause identifier has to be explicitly type annotated; {0}", ident.Name);
 		
 		Symbols.AddSymbol(ident.Name, ident);
 		
@@ -3122,26 +3145,41 @@ public class Errors {
 
 			default: s = "error " + n; break;
 		}
+		var prev_color = Console.ForegroundColor;
+		Console.ForegroundColor = ConsoleColor.Red;
 		errorStream.WriteLine(errMsgFormat, line, col, s);
+		Console.ForegroundColor = prev_color;
 		count++;
 	}
 
 	public virtual void SemErr (int line, int col, string s) {
+		var prev_color = Console.ForegroundColor;
+		Console.ForegroundColor = ConsoleColor.Red;
 		errorStream.WriteLine(errMsgFormat, line, col, s);
+		Console.ForegroundColor = prev_color;
 		count++;
 	}
 	
 	public virtual void SemErr (string s) {
+		var prev_color = Console.ForegroundColor;
+		Console.ForegroundColor = ConsoleColor.Red;
 		errorStream.WriteLine(s);
+		Console.ForegroundColor = prev_color;
 		count++;
 	}
 	
 	public virtual void Warning (int line, int col, string s) {
+		var prev_color = Console.ForegroundColor;
+		Console.ForegroundColor = ConsoleColor.Yellow;
 		errorStream.WriteLine(errMsgFormat, line, col, s);
+		Console.ForegroundColor = prev_color;
 	}
 	
 	public virtual void Warning(string s) {
+		var prev_color = Console.ForegroundColor;
+		Console.ForegroundColor = ConsoleColor.Yellow;
 		errorStream.WriteLine(s);
+		Console.ForegroundColor = prev_color;
 	}
 } // Errors
 

@@ -10,7 +10,9 @@
     <Folder Include="Resolver\" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\NRefactory_NETCore\ICSharpCode.NRefactory.NETCore.csproj" />
     <ProjectReference Include="..\Expresso.NETCore\Expresso.NETCore.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="ICSharpCode.NRefactory" Version="5.5.1" />
   </ItemGroup>
 </Project>

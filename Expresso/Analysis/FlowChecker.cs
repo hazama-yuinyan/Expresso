@@ -381,6 +381,7 @@ namespace Expresso.Ast.Analysis
             if(!IsAssigned(ident)){
                 parser.ReportSemanticError(
                     "Use of a potentially uninitialized variable {0}",
+                    "ES0200",
                     ident,
                     ident.Name
                 );

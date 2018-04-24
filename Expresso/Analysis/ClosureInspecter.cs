@@ -199,7 +199,8 @@ namespace Expresso.Ast.Analysis
                     if(symbol == null){
                         if(!natives_searched){
 	                        parser.ReportSemanticError(
-	                            "Error ES0100: '{0}' turns out not to be declared or accessible in the current scope {1}!",
+	                            "'{0}' turns out not to be declared or accessible in the current scope {1}!",
+                                "ES0100",
 	                            ident,
 	                            ident.Name, checker.symbols.Name
 	                        );

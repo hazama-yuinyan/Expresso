@@ -37,9 +37,10 @@ def main()
 
 	var vec (- vector<int> = [...];
 	for let i in [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, ...] {
+        let MAX_J = 8;
 		for let j in 0..10 {
 			if i == 3 || i == 6 {break;}
-			if j == 8 {continue upto 2;}
+			if j == MAX_J {continue upto 2;}
 			vec.Add(i);
 			vec.Add(j);
 			println(i, j);

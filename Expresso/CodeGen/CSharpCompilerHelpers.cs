@@ -15,11 +15,8 @@ namespace Expresso.CodeGen
     /// <summary>
     /// Contains helper methods for Expresso compilation.
     /// </summary>
-    public static class CSharpCompilerHelper
+    public static class CSharpCompilerHelpers
     {
-        static List<string> _AssemblyNames =
-            new List<string>{"System.Numerics, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089", "ExpressoRuntime"};
-
         static Dictionary<string, Tuple<string, uint>> SpecialNamesMap = new Dictionary<string, Tuple<string, uint>>{
             {"intseq", Tuple.Create("Expresso.Runtime.Builtins.ExpressoIntegerSequence", ExpressoCompilerHelpers.StartOfIdentifierId + 0u)},
             {"slice", Tuple.Create("Expresso.Runtime.Builtins.Slice", ExpressoCompilerHelpers.StartOfIdentifierId + 1u)},
@@ -38,14 +35,6 @@ namespace Expresso.CodeGen
             {"dictionary", Tuple.Create("System.Collections.Generic.Dictionary", ExpressoCompilerHelpers.StartOfIdentifierId + 14u)},
             {"bigint", Tuple.Create("System.Numerics.BigInteger", ExpressoCompilerHelpers.StartOfIdentifierId + 15u)}
         };
-
-        /// <summary>
-        /// Gets the assembly name list.
-        /// </summary>
-        /// <value>The assembly names.</value>
-        public static List<string> AssemblyNames{
-            get{return _AssemblyNames;}
-        }
 
         /// <summary>
         /// Helper method to convert a PrimitiveType to a C#'s type.
@@ -102,34 +91,6 @@ namespace Expresso.CodeGen
 
             default:
                 return typeof(object);
-            }
-        }
-
-        /// <summary>
-        /// Helper method to convert a SimpleType to a C#'s type.
-        /// </summary>
-        /// <returns>A <see cref="System.Type"/> object.</returns>
-        /// <param name="containerType">Container type.</param>
-        public static Type GetContainerType(SimpleType containerType)
-        {
-            if(containerType == null)
-                throw new ArgumentNullException(nameof(containerType));
-
-            switch(containerType.Name){
-            case "dictionary":
-                return typeof(Dictionary<,>);
-
-            case "array":
-                return typeof(Array);
-
-            case "tuple":
-                return typeof(Tuple);
-
-            case "vector":
-                return typeof(List<>);
-
-            default:
-                throw new EmitterException("Unknown container type!");
             }
         }
 
@@ -224,6 +185,31 @@ namespace Expresso.CodeGen
             throw new EmitterException("Unknown AstType!");
         }
 
+        /// <summary>
+        /// Returns the container type that `type` represents.
+        /// </summary>
+        /// <returns>The container type.</returns>
+        /// <param name="type">Type.</param>
+        public static Type GetContainerType(SimpleType type)
+        {
+            switch(type.Identifier){
+            case "vector":
+                return typeof(List<>);
+
+            case "array":
+                return typeof(Array);
+
+            case "dictionary":
+                return typeof(Dictionary<,>);
+
+            case "tuple":
+                return typeof(Tuple);
+
+            default:
+                throw new EmitterException("Unknown container type");
+            }
+        }
+
         public static Type GuessTupleType(IEnumerable<Type> elementTypes)
         {
             var types = elementTypes.ToArray();
@@ -311,14 +297,6 @@ namespace Expresso.CodeGen
                 return SpecialNamesMap[originalName].Item1;
             else
                 return originalName;
-        }
-
-        public static void Prepare()
-        {
-            foreach(var name in _AssemblyNames){
-                var an = new AssemblyName(name);
-                Assembly.Load(an);
-            }
         }
 
         public static string ConvertToPascalCase(string name)

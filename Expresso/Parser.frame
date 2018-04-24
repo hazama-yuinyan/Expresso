@@ -139,26 +139,41 @@ public class Errors {
 -->errors
 			default: s = "error " + n; break;
 		}
+		var prev_color = Console.ForegroundColor;
+		Console.ForegroundColor = ConsoleColor.Red;
 		errorStream.WriteLine(errMsgFormat, line, col, s);
+		Console.ForegroundColor = prev_color;
 		count++;
 	}
 
 	public virtual void SemErr (int line, int col, string s) {
+		var prev_color = Console.ForegroundColor;
+		Console.ForegroundColor = ConsoleColor.Red;
 		errorStream.WriteLine(errMsgFormat, line, col, s);
+		Console.ForegroundColor = prev_color;
 		count++;
 	}
 	
 	public virtual void SemErr (string s) {
+		var prev_color = Console.ForegroundColor;
+		Console.ForegroundColor = ConsoleColor.Red;
 		errorStream.WriteLine(s);
+		Console.ForegroundColor = prev_color;
 		count++;
 	}
 	
 	public virtual void Warning (int line, int col, string s) {
+		var prev_color = Console.ForegroundColor;
+		Console.ForegroundColor = ConsoleColor.Yellow;
 		errorStream.WriteLine(errMsgFormat, line, col, s);
+		Console.ForegroundColor = prev_color;
 	}
 	
 	public virtual void Warning(string s) {
+		var prev_color = Console.ForegroundColor;
+		Console.ForegroundColor = ConsoleColor.Yellow;
 		errorStream.WriteLine(s);
+		Console.ForegroundColor = prev_color;
 	}
 } // Errors
 

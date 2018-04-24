@@ -56,34 +56,39 @@ def main()
     let y = 1;
 	x += 5;
 	let z = x * y - 1;
-	println("(x, y, z) = {}, {}, {}", x, y, z);
+	println("(x, y, z) = ${x}, ${y}, ${z}");
 	var w (- int;
 	w, y = x, z;
 	let str = "This is a test. blah blah...", str2 = "これはテストです。あーあー";
 	let flag = true;
-	printInt(100);
-	println("(x, y, z, w) = {}, {}, {}, {}", x, y, z, w);
+
+    printInt(100);
+	println("(x, y, z, w) = ${x}, ${y}, ${z}, ${w}");
 	print(str, str2);
 	print(flag);
-	if flag {
+
+    if flag {
 		w = getInt();
 		print(w);
 	}
-	while x > 0 {
+
+    while x > 0 {
 		printInt(x);
 		x -= 1;
 	}
-	let list_obj = makeList();
+
+    let list_obj = makeList();
 	let dict_obj = makeDict();
 	let tuple_obj = makeTuple(), tuple_obj2 = ("あかりちゃん", "ちなつちゃん", 2424);
-	print("Print range object:");
+	print("Print intseq object:");
 	for let x in 1..5:1 {
 		print(x);
     }
 	
     let int_seq = foo.bar()..baz[2]:30+10*20;
-	/*for(let item in dict_obj)
-		print item;*/
+	/*for let item in dict_obj {
+		print item;
+    }*/
 	
 	printList(list_obj);
     // Applying an intseq object on sequence types yields an iterator that views only on the elements
@@ -91,8 +96,8 @@ def main()
     // So you can use it without any worries of memory comsumption and performance deterioration
 	let list_obj2 = list_obj[0..2];
 	printList(list_obj2, "Sliced list:");
-	println("Left shift:{}", w << 1);
-	println("x + 1 + 3 * 2 = {}", x + 1 + 3 * 2);
+	println("Left shift:${w << 1}");
+	println("x + 1 + 3 * 2 = ${x + 1 + 3 * 2}");
 	testMatch("abc");
 	testMatch(5);
 	testMatch(tuple_obj2[0]);

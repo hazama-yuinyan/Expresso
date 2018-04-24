@@ -263,7 +263,8 @@ namespace Expresso.Ast.Analysis
             var call_expr = closure_expr.Parent as CallExpression;
             if(call_expr == null){
                 parser.ReportSemanticError(
-                    "Error ES3010: Closure literals can contain parameters with no types only if they are directly passed to functions or methods.",
+                    "Closure literals can contain parameters with no types only if they are directly passed to functions or methods.",
+                    "ES3010",
                     parameterDecl
                 );
             }

@@ -38,11 +38,15 @@ To execute the resulting binary: mono the_name_of_the_executable"
                 var emitter = new CSharpEmitter(parser, options);
                 ast.AcceptWalker(emitter, null);
             }
-            catch(ParserException e){
-                Console.Error.WriteLine(e);
+            catch(ParserException){
+                // Ignore the exception because the parser already handled this case
+                //Console.Error.WriteLine(e);
             }
             catch(Exception e){
+                var prev_color = Console.ForegroundColor;
+                Console.ForegroundColor = ConsoleColor.Red;
                 Console.Error.WriteLine(e.Message);
+                Console.ForegroundColor = prev_color;
             }
 		}
 	}

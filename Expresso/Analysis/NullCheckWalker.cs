@@ -38,7 +38,8 @@ namespace Expresso.Ast.Analysis
                 var table = checker.symbols.GetTypeTable(!left_type.IdentifierNode.Type.IsNull ? left_type.IdentifierNode.Type.Name : left_type.Name);
                 if(!table.IsForeignType){
                     throw new ParserException(
-                        "Error ES1022: In Expresso, null literals can only be used in contexts with .NET.",
+                        "In Expresso, null literals can only be used in contexts with .NET.",
+                        "ES1022",
                         binaryExpr
                     );
                 }
@@ -60,7 +61,8 @@ namespace Expresso.Ast.Analysis
                 var table = checker.symbols.GetTypeTable(!target_type.IdentifierNode.Type.IsNull ? target_type.IdentifierNode.Type.Name : target_type.Name);
                 if(!table.IsForeignType){
                     throw new ParserException(
-                        "Error ES1022: In Expresso, null literals can only be used in contexts with .NET.",
+                        "In Expresso, null literals can only be used in contexts with .NET.",
+                        "ES1022",
                         callExpr
                     );
                 }

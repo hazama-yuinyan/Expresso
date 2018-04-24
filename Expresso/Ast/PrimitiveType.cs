@@ -157,7 +157,7 @@ namespace Expresso.Ast
                 return ExpressoTypeCode.Slice;
 
             default:
-                throw new ParserException("{0} is an unknown primitive type!", node, keyword);
+                throw new InvalidOperationException(keyword + " is an unknown primitive type!");
             }
         }
 
@@ -208,7 +208,7 @@ namespace Expresso.Ast
                 return ExpressoTypeCode.String;
 
             default:
-                throw new ParserException("{0} is an unknown primitive type!", node, keyword);
+                throw new InvalidOperationException(keyword + " is an unknown primitive type!");
             }
         }
     }

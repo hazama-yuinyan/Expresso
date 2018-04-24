@@ -302,7 +302,8 @@ namespace Expresso.Ast.Analysis
                     }
                     catch(ParserException e){
                         parser.ReportSemanticError(
-                            "Error ES3000: A string interpolation error: {0}",
+                            "A string interpolation error: {0}",
+                            "ES3000",
                             literal,
                             e.Message
                         );

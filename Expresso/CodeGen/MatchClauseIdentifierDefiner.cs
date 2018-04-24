@@ -1,22 +1,18 @@
 ﻿using System;
 using ICSharpCode.NRefactory.PatternMatching;
+using Expresso.Ast;
 
-namespace Expresso.Ast.Analysis
+namespace Expresso.CodeGen
 {
-    partial class TypeChecker : IAstWalker<AstType>
+    using CSharpExpr = System.Linq.Expressions.Expression;
+
+    public partial class CSharpEmitter : IAstWalker<CSharpEmitterContext, CSharpExpr>
     {
         /// <summary>
-        /// This class is responsible for determining context and prohibiting the use of null in contexts without .NET
+        /// This class is responsible for defining inner variables before inspecting the body statements of a match clause.
         /// </summary>
-        public class NullCheckWalker : IAstWalker
-        {
-            TypeChecker checker;
-
-            internal NullCheckWalker(TypeChecker checker)
-            {
-                this.checker = checker;
-            }
-
+        public class MatchClauseIdentifierDefiner : IAstWalker
+	    {
             public void VisitAliasDeclaration(AliasDeclaration aliasDecl)
             {
                 throw new InvalidOperationException("Can not work on that node");
@@ -34,14 +30,7 @@ namespace Expresso.Ast.Analysis
 
             public void VisitBinaryExpression(BinaryExpression binaryExpr)
             {
-                var left_type = binaryExpr.Left.AcceptWalker(checker);
-                var table = checker.symbols.GetTypeTable(!left_type.IdentifierNode.Type.IsNull ? left_type.IdentifierNode.Type.Name : left_type.Name);
-                if(!table.IsForeignType){
-                    throw new ParserException(
-                        "Error ES1022: In Expresso, null literals can only be used in contexts with .NET.",
-                        binaryExpr
-                    );
-                }
+                throw new InvalidOperationException("Can not work on that node");
             }
 
             public void VisitBlock(BlockStatement block)
@@ -56,14 +45,7 @@ namespace Expresso.Ast.Analysis
 
             public void VisitCallExpression(CallExpression callExpr)
             {
-                var target_type = callExpr.Target.AcceptWalker(checker);
-                var table = checker.symbols.GetTypeTable(!target_type.IdentifierNode.Type.IsNull ? target_type.IdentifierNode.Type.Name : target_type.Name);
-                if(!table.IsForeignType){
-                    throw new ParserException(
-                        "Error ES1022: In Expresso, null literals can only be used in contexts with .NET.",
-                        callExpr
-                    );
-                }
+                throw new InvalidOperationException("Can not work on that node");
             }
 
             public void VisitCastExpression(CastExpression castExpr)
@@ -83,7 +65,7 @@ namespace Expresso.Ast.Analysis
 
             public void VisitCollectionPattern(CollectionPattern collectionPattern)
             {
-                throw new InvalidOperationException("Can not work on that node");
+                collectionPattern.Items.AcceptWalker(this);
             }
 
             public void VisitCommentNode(CommentNode comment)
@@ -118,7 +100,7 @@ namespace Expresso.Ast.Analysis
 
             public void VisitDestructuringPattern(DestructuringPattern destructuringPattern)
             {
-                throw new InvalidOperationException("Can not work on that node");
+                destructuringPattern.Items.AcceptWalker(this);
             }
 
             public void VisitDoWhileStatement(DoWhileStatement doWhileStmt)
@@ -133,7 +115,6 @@ namespace Expresso.Ast.Analysis
 
             public void VisitExpressionPattern(ExpressionPattern exprPattern)
             {
-                throw new InvalidOperationException("Can not work on that node");
             }
 
             public void VisitExpressionStatement(ExpressionStatement exprStmt)
@@ -178,7 +159,9 @@ namespace Expresso.Ast.Analysis
 
             public void VisitIdentifierPattern(IdentifierPattern identifierPattern)
             {
-                throw new InvalidOperationException("Can not work on that node");
+                var native_type = CSharpCompilerHelpers.GetNativeType(identifierPattern.Identifier.Type);
+                var native_param = CSharpExpr.Parameter(native_type, identifierPattern.Identifier.Name);
+                AddSymbol(identifierPattern.Identifier, new ExpressoSymbol{Parameter = native_param});
             }
 
             public void VisitIfStatement(IfStatement ifStmt)
@@ -188,7 +171,6 @@ namespace Expresso.Ast.Analysis
 
             public void VisitIgnoringRestPattern(IgnoringRestPattern restPattern)
             {
-                throw new InvalidOperationException("Can not work on that node");
             }
 
             public void VisitImportDeclaration(ImportDeclaration importDecl)
@@ -213,7 +195,7 @@ namespace Expresso.Ast.Analysis
 
             public void VisitKeyValuePattern(KeyValuePattern keyValuePattern)
             {
-                throw new InvalidOperationException("Can not work on that node");
+                keyValuePattern.Value.AcceptWalker(this);
             }
 
             public void VisitLiteralExpression(LiteralExpression literal)
@@ -223,7 +205,7 @@ namespace Expresso.Ast.Analysis
 
             public void VisitMatchClause(MatchPatternClause matchClause)
             {
-                throw new InvalidOperationException("Can not work on that node");
+                matchClause.Patterns.AcceptWalker(this);
             }
 
             public void VisitMatchStatement(MatchStatement matchStmt)
@@ -253,10 +235,15 @@ namespace Expresso.Ast.Analysis
 
             public void VisitNullReferenceExpression(NullReferenceExpression nullRef)
             {
-                nullRef.Parent.AcceptWalker(this);
+                throw new InvalidOperationException("Can not work on that node");
             }
 
             public void VisitObjectCreationExpression(ObjectCreationExpression creation)
+            {
+                throw new InvalidOperationException("Can not work on that node");
+            }
+
+            public void VisitPatternWithType(PatternWithType pattern)
             {
                 throw new InvalidOperationException("Can not work on that node");
             }
@@ -282,11 +269,6 @@ namespace Expresso.Ast.Analysis
             }
 
             public void VisitPatternPlaceholder(AstNode placeholder, Pattern child)
-            {
-                throw new InvalidOperationException("Can not work on that node");
-            }
-
-            public void VisitPatternWithType(PatternWithType pattern)
             {
                 throw new InvalidOperationException("Can not work on that node");
             }
@@ -353,7 +335,7 @@ namespace Expresso.Ast.Analysis
 
             public void VisitTuplePattern(TuplePattern tuplePattern)
             {
-                throw new InvalidOperationException("Can not work on that node");
+                tuplePattern.Patterns.AcceptWalker(this);
             }
 
             public void VisitTypeDeclaration(TypeDeclaration typeDecl)
@@ -378,7 +360,7 @@ namespace Expresso.Ast.Analysis
 
             public void VisitVariableInitializer(VariableInitializer initializer)
             {
-                throw new InvalidOperationException("Can not work on that node");
+                initializer.Pattern.AcceptWalker(this);
             }
 
             public void VisitWhileStatement(WhileStatement whileStmt)
@@ -393,7 +375,6 @@ namespace Expresso.Ast.Analysis
 
             public void VisitWildcardPattern(WildcardPattern wildcardPattern)
             {
-                throw new InvalidOperationException("Can not work on that node");
             }
 
             public void VisitYieldStatement(YieldStatement yieldStmt)

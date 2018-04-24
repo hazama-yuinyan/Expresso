@@ -94,7 +94,7 @@ namespace Expresso.CodeGen
             identifier_definer = new MatchClauseIdentifierDefiner();
             item_type_inferencer = new ItemTypeInferencer(this);
 
-            CSharpCompilerHelper.AddPrimitiveNativeSymbols();
+            CSharpCompilerHelpers.AddPrimitiveNativeSymbols();
         }
 
         static Tuple<CSharpExpr, ExprTree.ParameterExpression> MakeEnumeratorCreations(CSharpExpr iterator)
@@ -241,7 +241,7 @@ namespace Expresso.CodeGen
         {
             if(context == null)
                 context = new CSharpEmitterContext();
-
+            
             var assembly_name = options.BuildType.HasFlag(BuildType.Assembly) ? ast.Name : options.ExecutableName;
             var name = new AssemblyName(assembly_name);
 
@@ -261,7 +261,7 @@ namespace Expresso.CodeGen
             //var doc = mod_builder.DefineDocument(Path.GetFileName(parser.scanner.FilePath), LanguageGuid, Guid.Empty, Guid.Empty);
 
             // Leave the ast.Name as is because otherwise we can't refer to it later when visiting ImportDeclarations
-            var type_builder = new LazyTypeBuilder(mod_builder, CSharpCompilerHelper.ConvertToPascalCase(ast.Name), TypeAttributes.Class | TypeAttributes.Public, Enumerable.Empty<Type>(), true);
+            var type_builder = new LazyTypeBuilder(mod_builder, CSharpCompilerHelpers.ConvertToPascalCase(ast.Name), TypeAttributes.Class | TypeAttributes.Public, Enumerable.Empty<Type>(), true);
             var local_parser = parser;
             if(ast.ExternalModules.Any()){
                 context.CurrentModuleCount = ast.ExternalModules.Count;
@@ -495,7 +495,7 @@ namespace Expresso.CodeGen
             var assignments = MakeIterableAssignments(bound_variables, enumerator, break_target);
             var parameters = ConvertSymbolsToParameters();
 
-            var body = CSharpExpr.Block(parameters,
+            var body = CSharpExpr.Block(parameters.Concat(real_body.Variables),
                 assignments.Concat(real_body.Expressions)
             );
             var loop = CSharpExpr.Loop(body, break_target, continue_target);
@@ -508,6 +508,7 @@ namespace Expresso.CodeGen
             contents.Add(creation);
             contents.Add(loop);
             return CSharpExpr.Block(new []{enumerator}, contents);
+            // for let x in some_sequence {} => (enumerator){ creation (loop_variables, block_variables){ loop_variable_initializer { real_body } } }
         }
 
         public CSharpExpr VisitIfStatement(IfStatement ifStmt, CSharpEmitterContext context)
@@ -798,7 +799,7 @@ namespace Expresso.CodeGen
                                     .Select(arg => arg.AcceptWalker(this, context))
                                     .ToArray();
             var parent_args = context.ArgumentTypes;
-            context.ArgumentTypes = call.OverloadSignature.Parameters.Select(p => CSharpCompilerHelper.GetNativeType(p)).ToArray();// compiled_args.Select(arg => arg.Type).ToArray();
+            context.ArgumentTypes = call.OverloadSignature.Parameters.Select(p => CSharpCompilerHelpers.GetNativeType(p)).ToArray();// compiled_args.Select(arg => arg.Type).ToArray();
 
             context.RequestMethod = true;
             context.Method = null;
@@ -811,14 +812,14 @@ namespace Expresso.CodeGen
         public CSharpExpr VisitCastExpression(CastExpression castExpr, CSharpEmitterContext context)
         {
             var target = castExpr.Target.AcceptWalker(this, context);
-            var to_type = CSharpCompilerHelper.GetNativeType(castExpr.ToExpression);
+            var to_type = CSharpCompilerHelpers.GetNativeType(castExpr.ToExpression);
             return CSharpExpr.Convert(target, to_type);
         }
 
         public CSharpExpr VisitCatchClause(CatchClause catchClause, CSharpEmitterContext context)
         {
             var ident = catchClause.Identifier;
-            var exception_type = CSharpCompilerHelper.GetNativeType((ident.Type.IdentifierNode.Type != null) ? ident.Type.IdentifierNode.Type : ident.Type);
+            var exception_type = CSharpCompilerHelpers.GetNativeType((ident.Type.IdentifierNode.Type != null) ? ident.Type.IdentifierNode.Type : ident.Type);
             var param = CSharpExpr.Parameter(exception_type, ident.Name);
             AddSymbol(ident, new ExpressoSymbol{Parameter = param});
 
@@ -846,7 +847,7 @@ namespace Expresso.CodeGen
             var prev_context_closure = context.ContextClosureLiteral;
             context.ContextClosureLiteral = closure;
 
-            var return_type = CSharpCompilerHelper.GetNativeType(closure.ReturnType);
+            var return_type = CSharpCompilerHelpers.GetNativeType(closure.ReturnType);
             var prev_return_target = ReturnTarget;
             var prev_default_return_value = DefaultReturnValue;
             ReturnTarget = CSharpExpr.Label(return_type, "ReturnTarget");
@@ -855,13 +856,13 @@ namespace Expresso.CodeGen
             var closure_method_buider = closure_type_builder.DefineMethod(ClosureMethodName, MethodAttributes.Public, return_type, param_types);
 
             var field_idents = closure.LiftedIdentifiers
-                                      .Select(ident => new {Name = ident.Name, Type = CSharpCompilerHelper.GetNativeType(ident.Type)});
+                                      .Select(ident => new {Name = ident.Name, Type = CSharpCompilerHelpers.GetNativeType(ident.Type)});
             foreach(var ctor_param in field_idents)
                 closure_type_builder.DefineField(ctor_param.Name, ctor_param.Type, false);
 
             var param_ast_types = closure.Parameters.Select(p => p.ReturnType.Clone());
             var closure_func_type = AstType.MakeFunctionType("closure", closure.ReturnType.Clone(), param_ast_types);
-            var closure_native_type = CSharpCompilerHelper.GetNativeType(closure_func_type);
+            var closure_native_type = CSharpCompilerHelpers.GetNativeType(closure_func_type);
             var delegate_ctor = closure_native_type.GetConstructors().First();
 
             var closure_delegate_field = closure_type_builder.DefineField(ClosureDelegateName, closure_native_type, true);
@@ -988,7 +989,7 @@ namespace Expresso.CodeGen
                 });
                 return CSharpExpr.Call(ctor, CSharpExpr.Constant(literal.LiteralValue));
             }else{
-                var native_type = CSharpCompilerHelper.GetNativeType(literal.Type);
+                var native_type = CSharpCompilerHelpers.GetNativeType(literal.Type);
                 return CSharpExpr.Constant(literal.Value, native_type);
             }
         }
@@ -1213,10 +1214,10 @@ namespace Expresso.CodeGen
             //    throw new EmitterException("")
             var arg_types =
                 from p in creation.CtorType.Parameters
-                                  select CSharpCompilerHelper.GetNativeType(p);
+                                  select CSharpCompilerHelpers.GetNativeType(p);
             context.Constructor = context.TargetType.GetConstructor(arg_types.ToArray());
             if(context.Constructor == null)
-                throw new EmitterException("No constructors found for the path `{0}` with arguments {1}", creation, creation.TypePath, CSharpCompilerHelper.ExpandContainer(arg_types));
+                throw new EmitterException("No constructors found for the path `{0}` with arguments {1}", creation, creation.TypePath, CSharpCompilerHelpers.ExpandContainer(arg_types));
 
             var formal_params = context.Constructor.GetParameters();
             // TODO: make object creation arguments pair to constructor parameters
@@ -1251,7 +1252,7 @@ namespace Expresso.CodeGen
         public CSharpExpr VisitSequenceInitializer(SequenceInitializer seqInitializer, CSharpEmitterContext context)
         {
             var obj_type = seqInitializer.ObjectType;
-            var seq_type = CSharpCompilerHelper.GetContainerType(obj_type);
+            var seq_type = CSharpCompilerHelpers.GetContainerType(obj_type);
             // If this node represents a dictionary literal
             // context.Constructor will get set the appropriate constructor method.
             context.Constructor = null;
@@ -1262,7 +1263,7 @@ namespace Expresso.CodeGen
                                       .ToArray();
 
             if(seq_type == typeof(Array)){
-                var elem_type = exprs.Any() ? exprs.First().Type : CSharpCompilerHelper.GetNativeType(obj_type.TypeArguments.First());
+                var elem_type = exprs.Any() ? exprs.First().Type : CSharpCompilerHelpers.GetNativeType(obj_type.TypeArguments.First());
                 context.Additionals = prev_additionals;
 
                 if(elem_type == typeof(ExpressoIntegerSequence)){
@@ -1272,7 +1273,7 @@ namespace Expresso.CodeGen
                     return CSharpExpr.NewArrayInit(elem_type, exprs);
                 }
             }else if(seq_type == typeof(List<>)){
-                var elem_type = exprs.Any() ? exprs.First().Type : CSharpCompilerHelper.GetNativeType(obj_type.TypeArguments.First());
+                var elem_type = exprs.Any() ? exprs.First().Type : CSharpCompilerHelpers.GetNativeType(obj_type.TypeArguments.First());
                 context.Additionals = prev_additionals;
 
                 if(elem_type == typeof(ExpressoIntegerSequence)){
@@ -1285,8 +1286,8 @@ namespace Expresso.CodeGen
                     return !exprs.Any() ? new_expr : (CSharpExpr)CSharpExpr.ListInit(new_expr, exprs);
                 }
             }else if(seq_type == typeof(Dictionary<,>)){
-                var key_type = CSharpCompilerHelper.GetNativeType(obj_type.TypeArguments.FirstOrNullObject());
-                var value_type = CSharpCompilerHelper.GetNativeType(obj_type.TypeArguments.LastOrNullObject());
+                var key_type = CSharpCompilerHelpers.GetNativeType(obj_type.TypeArguments.FirstOrNullObject());
+                var value_type = CSharpCompilerHelpers.GetNativeType(obj_type.TypeArguments.LastOrNullObject());
 
                 var elems = context.Additionals.Cast<ExprTree.ElementInit>();
                 var dict_type = seq_type.MakeGenericType(key_type, value_type);
@@ -1543,7 +1544,7 @@ namespace Expresso.CodeGen
 
                 var last_index = import_path.Name.LastIndexOf("::", StringComparison.CurrentCulture);
                 var type_name = import_path.Name.Substring(last_index == -1 ? 0 : last_index + 2);
-                var type = ('a' <= type_name[0] && type_name[0] <= 'z') ? null : CSharpCompilerHelper.GetNativeType(AstType.MakeSimpleType(CSharpCompilerHelper.ConvertToPascalCase(type_name)));
+                var type = ('a' <= type_name[0] && type_name[0] <= 'z') ? null : CSharpCompilerHelpers.GetNativeType(AstType.MakeSimpleType(CSharpCompilerHelpers.ConvertToPascalCase(type_name)));
 
                 if(type != null){
                     var expresso_symbol = new ExpressoSymbol{Type = type};
@@ -1558,7 +1559,7 @@ namespace Expresso.CodeGen
                         //AddSymbol(alias, symbol);
                     }else{
                         var module_type_name = import_path.Name.Substring(0, last_index);
-                        var module_type = CSharpCompilerHelper.GetNativeType(AstType.MakeSimpleType(module_type_name));
+                        var module_type = CSharpCompilerHelpers.GetNativeType(AstType.MakeSimpleType(module_type_name));
                         var member_name = type_name;//CSharpCompilerHelper.ConvertToPascalCase(type_name);
 
                         if(module_type != null){
@@ -1599,7 +1600,7 @@ namespace Expresso.CodeGen
             var formal_parameters = funcDecl.Parameters.Select(param => param.AcceptWalker(this, context))
                                             .OfType<ExprTree.ParameterExpression>();
 
-            var return_type = CSharpCompilerHelper.GetNativeType(funcDecl.ReturnType);
+            var return_type = CSharpCompilerHelpers.GetNativeType(funcDecl.ReturnType);
             ReturnTarget = CSharpExpr.Label(return_type, "returnTarget");
             DefaultReturnValue = CSharpExpr.Default(return_type);
 
@@ -1691,7 +1692,7 @@ namespace Expresso.CodeGen
         {
             ExprTree.ParameterExpression param;
             if(!Symbols.ContainsKey(parameterDecl.NameToken.IdentifierId)){
-                var native_type = CSharpCompilerHelper.GetNativeType(parameterDecl.ReturnType);
+                var native_type = CSharpCompilerHelpers.GetNativeType(parameterDecl.ReturnType);
                 param = CSharpExpr.Parameter(native_type, parameterDecl.Name);
                 AddSymbol(parameterDecl.NameToken, new ExpressoSymbol{Parameter = param});
             }else{
@@ -1783,7 +1784,7 @@ namespace Expresso.CodeGen
             // An identifier pattern can arise by itself or as a child
             ExprTree.ParameterExpression param = null;
             if(!(context.ContextAst is MatchStatement)){
-                param = CSharpExpr.Parameter(CSharpCompilerHelper.GetNativeType(identifierPattern.Identifier.Type), identifierPattern.Identifier.Name);
+                param = CSharpExpr.Parameter(CSharpCompilerHelpers.GetNativeType(identifierPattern.Identifier.Type), identifierPattern.Identifier.Name);
                 AddSymbol(identifierPattern.Identifier, new ExpressoSymbol{Parameter = param});
 
                 var start_loc = identifierPattern.Identifier.StartLocation;
@@ -1828,8 +1829,8 @@ namespace Expresso.CodeGen
         public CSharpExpr VisitCollectionPattern(CollectionPattern collectionPattern, CSharpEmitterContext context)
         {
             // First, make type validation expression
-            var collection_type = CSharpCompilerHelper.GetContainerType(collectionPattern.CollectionType);
-            var item_type = CSharpCompilerHelper.GetNativeType(collectionPattern.CollectionType.TypeArguments.First());
+            var collection_type = CSharpCompilerHelpers.GetContainerType(collectionPattern.CollectionType);
+            var item_type = CSharpCompilerHelpers.GetNativeType(collectionPattern.CollectionType.TypeArguments.First());
             var prev_additionals = context.Additionals;
             context.Additionals = new List<object>();
             var prev_additional_params = context.AdditionalParameters;
@@ -1876,7 +1877,7 @@ namespace Expresso.CodeGen
             }
 
             if(res == null){
-                var native_type = CSharpCompilerHelper.GetNativeType(collectionPattern.CollectionType);
+                var native_type = CSharpCompilerHelpers.GetNativeType(collectionPattern.CollectionType);
                 res = CSharpExpr.TypeIs(context.TemporaryVariable, native_type);
             }
 
@@ -1914,7 +1915,7 @@ namespace Expresso.CodeGen
                 if(item_ast_type == null)
                     continue;
                 
-                var item_type = CSharpCompilerHelper.GetNativeType(item_ast_type);
+                var item_type = CSharpCompilerHelpers.GetNativeType(item_ast_type);
                 //var tmp_param = CSharpExpr.Parameter(item_type, "__" + VariableCount++);
 
                 //var prev_tmp_variable = context.TemporaryVariable;
@@ -1952,7 +1953,7 @@ namespace Expresso.CodeGen
             }
 
             if(res == null){
-                var native_type = CSharpCompilerHelper.GetNativeType(destructuringPattern.TypePath);
+                var native_type = CSharpCompilerHelpers.GetNativeType(destructuringPattern.TypePath);
                 res = CSharpExpr.TypeIs(context.TemporaryVariable, native_type);
             }
 
@@ -1990,7 +1991,7 @@ namespace Expresso.CodeGen
                     if(item_ast_type == null)
                         continue;
                     
-                    var item_type = CSharpCompilerHelper.GetNativeType(item_ast_type);
+                    var item_type = CSharpCompilerHelpers.GetNativeType(item_ast_type);
                     //var tmp_param = CSharpExpr.Parameter(item_type, "__" + VariableCount++);
                     var prop_name = "Item" + i++;
                     var property_access = CSharpExpr.Property(context.TemporaryExpression, prop_name);
@@ -2028,7 +2029,7 @@ namespace Expresso.CodeGen
                 }
 
                 if(res == null){
-                    var tuple_type = CSharpCompilerHelper.GuessTupleType(element_types);
+                    var tuple_type = CSharpCompilerHelpers.GuessTupleType(element_types);
                     res = CSharpExpr.TypeIs(context.TemporaryVariable, tuple_type);
                 }
 
@@ -2243,7 +2244,7 @@ namespace Expresso.CodeGen
                 return CSharpExpr.Invoke(inst, args);
             }else if(method.DeclaringType.Name == "Console" && (method.Name == "Write" || method.Name == "WriteLine")){
                 var first = args.First();
-                var expand_method = typeof(CSharpCompilerHelper).GetMethod("ExpandContainer");
+                var expand_method = typeof(CSharpCompilerHelpers).GetMethod("ExpandContainer");
                 var first_string = first as ExprTree.ConstantExpression;
                 /*if(first.Type == typeof(string) && first_string != null && ((string)first_string.Value).Contains("{0}")){
                     return CSharpExpr.Call(method, first, CSharpExpr.NewArrayInit(
@@ -2340,7 +2341,7 @@ namespace Expresso.CodeGen
             var formal_parameters = funcDecl.Parameters.Select(param => VisitParameterDeclaration(param, context))
                                             .OfType<ExprTree.ParameterExpression>();
 
-            var return_type = CSharpCompilerHelper.GetNativeType(funcDecl.ReturnType);
+            var return_type = CSharpCompilerHelpers.GetNativeType(funcDecl.ReturnType);
 
             var is_global_function = !funcDecl.Modifiers.HasFlag(Modifiers.Public) && !funcDecl.Modifiers.HasFlag(Modifiers.Protected) && !funcDecl.Modifiers.HasFlag(Modifiers.Private);
             var self_param = CSharpExpr.Parameter(context.LazyTypeBuilder.InterfaceTypeBuilder, "self");
@@ -2379,7 +2380,7 @@ namespace Expresso.CodeGen
 
             foreach(var init in fieldDecl.Initializers){
                 if(init.Pattern is PatternWithType inner && inner.Pattern is IdentifierPattern ident_pat){
-                    var type = CSharpCompilerHelper.GetNativeType(ident_pat.Identifier.Type);
+                    var type = CSharpCompilerHelpers.GetNativeType(ident_pat.Identifier.Type);
                     var field_builder = context.LazyTypeBuilder.DefineField(init.Name, type, !Expression.IsNullNode(init.Initializer), attr);
                     AddSymbol(ident_pat.Identifier, new ExpressoSymbol{PropertyOrField = field_builder});
                 }else{

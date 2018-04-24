@@ -538,7 +538,8 @@ namespace Expresso.Ast.Analysis
                         var type_symbol = symbol_table.GetTypeSymbolInAnyScope(ident.Name);
                         if(type_symbol == null){
                             parser.ReportSemanticError(
-                                "Error ES1500: `{0}` in the path '{1}' doesn't represent a type or a module. You misspelled it?",
+                                "`{0}` in the path '{1}' doesn't represent a type or a module.",
+                                "ES1500",
                                 ident,
                                 ident.Name, pathExpr
                             );
@@ -652,7 +653,8 @@ namespace Expresso.Ast.Analysis
                 var native = SymbolTable.GetNativeSymbol(ident.Name);
                 if(native == null){
                     parser.ReportSemanticError(
-                        "Error ES0100: '{0}' turns out not to be declared or accessible in the current scope {1}!",
+                        "The name'{0}' turns out not to be declared or accessible in the current scope {1}!",
+                        "ES0100",
                         ident,
                         ident.Name, symbol_table.Name
                     );
@@ -670,7 +672,8 @@ namespace Expresso.Ast.Analysis
 
             if(ident.IdentifierId == 0){
                 parser.ReportSemanticError(
-                    "Error ES0101: The type symbol '{0}' turns out not to be declared or accessible in the current scope {1}!",
+                    "The type symbol '{0}' turns out not to be declared or accessible in the current scope {1}!",
+                    "ES0101",
                     ident,
                     ident.Name, symbol_table.Name
                 );
@@ -697,7 +700,8 @@ namespace Expresso.Ast.Analysis
 
             if(ident.IdentifierId == 0){
                 parser.ReportSemanticError(
-                    "Error ES0102: The symbol '{0}' turns out not to be declared or accessible in the current scope {1}!",
+                    "The symbol '{0}' turns out not to be declared or accessible in the current scope {1}!",
+                    "ES0102",
                     ident,
                     ident.Name, symbol_table.Name
                 );

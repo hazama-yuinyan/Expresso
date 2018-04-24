@@ -312,7 +312,12 @@ namespace Expresso.Ast.Analysis
                 type_table.Add(name, ident);
             }
             catch(ArgumentException){
-                throw new ParserException("Error ES3014: The name `{0}` is already defined in the type namespace in the current scope '{1}'.", ident, name, Name);
+                throw new ParserException(
+                    "The name `{0}` is already defined in the type namespace in the current scope '{1}'.",
+                    "ES3014",
+                    ident,
+                    name, Name
+                );
             }
         }
 
@@ -337,7 +342,12 @@ namespace Expresso.Ast.Analysis
                 table.Add(name, ident);
             }
             catch(ArgumentException){
-                throw new ParserException("Error ES3014: The name `{0}` is already defined in the current scope {1}.", ident, name, Name);
+                throw new ParserException(
+                    "The name `{0}` is already defined in the current scope {1}.",
+                    "ES3014",
+                    ident,
+                    name, Name
+                );
             }
         }
 
@@ -609,7 +619,8 @@ namespace Expresso.Ast.Analysis
                     var symbol = externalTable.GetSymbol(target_name2);
                     if(symbol == null){
                         throw new ParserException(
-                            "Error ES0103: An external symbol '{0}' isn't found.",
+                            "An external symbol '{0}' isn't found.",
+                            "ES0103",
                             pair.Item1,
                             pair.Item1.ToString()
                         );
@@ -687,7 +698,8 @@ namespace Expresso.Ast.Analysis
         static void ReportExportMissingError(Identifier ident)
         {
             throw new ParserException(
-                "Error ES3303: '{0}' doesn't have the export flag.\nYou can't import an unexported item.",
+                "'{0}' doesn't have the export flag.\nYou can't import an unexported item.",
+                "ES3303",
                 ident,
                 ident.Name
             );
