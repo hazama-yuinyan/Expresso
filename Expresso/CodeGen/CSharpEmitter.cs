@@ -315,7 +315,7 @@ namespace Expresso.CodeGen
 
             document_info = CSharpExpr.SymbolDocument(parser.scanner.FilePath, ExpressoCompilerHelpers.LanguageGuid);
 
-            Console.WriteLine("Emitting code on {0}...", ast.ModuleName);
+            Console.WriteLine("Emitting code in {0}...", ast.ModuleName);
             foreach(var import in ast.Imports)
                 import.AcceptWalker(this, context);
 

@@ -92,7 +92,7 @@ namespace Expresso.Ast.Analysis
             Debug.Assert(symbol_table.Name == "programRoot", "When entering VisitAst, symbol_table should be programRoot");
             scope_counter = 0;
 
-            Console.WriteLine("Resolving names on {0}...", ast.ModuleName);
+            Console.WriteLine("Resolving names in {0}...", ast.ModuleName);
 
             ast.Imports.AcceptWalker(this);
             ast.Declarations.AcceptWalker(this);

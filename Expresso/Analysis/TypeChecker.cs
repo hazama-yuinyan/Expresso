@@ -55,7 +55,7 @@ namespace Expresso.Ast.Analysis
 
         public AstType VisitAst(ExpressoAst ast)
         {
-            Console.WriteLine("Checking types on {0}...", ast.ModuleName);
+            Console.WriteLine("Checking types in {0}...", ast.ModuleName);
             foreach(var decl in ast.Declarations)
                 decl.AcceptWalker(this);
 
