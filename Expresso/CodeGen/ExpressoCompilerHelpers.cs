@@ -134,7 +134,7 @@ namespace Expresso.CodeGen
                 return;
             
             var prev_color = Console.ForegroundColor;
-            Console.ForegroundColor = ConsoleColor.Blue;
+            Console.ForegroundColor = ConsoleColor.Green;
             Console.Write("help: ");
 
             switch(error_number){
@@ -294,6 +294,14 @@ namespace Expresso.CodeGen
 
             case "1201":
                 Console.WriteLine("For combinations of the operators and types that can be used with the operators, see the online documentation.");
+                break;
+
+            case "1202":
+                Console.WriteLine("This is a warning because this fact by itself doesn't cause any problems.");
+                break;
+
+            case "1203":
+                Console.WriteLine("This is a warning because this fact by itself doesn't cause any problems.");
                 break;
 
             case "1300":
@@ -468,6 +476,30 @@ namespace Expresso.CodeGen
 
             case "4002":
                 Console.WriteLine("You are trying to pass {0} to the intseq constructor.", e.HelpObject);
+                break;
+
+            case "4003":
+                Console.WriteLine("If you mean that the integer underflows and then reach `upper`, you can safely ignore this warning.");
+                Console.WriteLine("I'm displaying this warning because it entirely consists of literal expressions.");
+                Console.WriteLine("Otherwise I can't show this warning due to a technical difficulty.");
+                break;
+
+            case "4004":
+                Console.WriteLine("If you mean that the integer overflows and then reach `upper`, you can safely ignore this warning.");
+                Console.WriteLine("I'm displaying this warning because it entirely consists of literal expressions.");
+                Console.WriteLine("Otherwise I can't show this warning due to a technical difficulty.");
+                break;
+
+            case "4005":
+                Console.WriteLine("If you are making an inifinite series of integers, you can safely ignore this warning.");
+                Console.WriteLine("I'm displaying this warning because it entirely consists of literal expressions.");
+                Console.WriteLine("Otherwise I can't show this warning due to a technical difficulty.");
+                break;
+
+            case "4006":
+                Console.WriteLine("Usually this is not an intended behavior. So consider changing either `lower` or `upper`.");
+                Console.WriteLine("I'm displaying this warning because it entirely consists of literal expressions.");
+                Console.WriteLine("Otherwise I can't show this warning due to a technical difficulty.");
                 break;
 
             case "4010":

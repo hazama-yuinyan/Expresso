@@ -429,7 +429,7 @@ string cur_class_name;
 	{
 		//Convenient method for printing a semantic error with a format string
         var body = string.Format("{0} -- {1}", CurrentLocation, string.Format(format, args));
-		errors.SemErr(string.Format("{0}: {1}", errorCode, body));
+		errors.SemErr(string.Format("Error {0}: {1}", errorCode, body));
 	}
 
     /// <summary>
@@ -443,7 +443,7 @@ string cur_class_name;
     public void SemanticError(TextLocation loc, string errorCode, string format, params object[] args)
     {
         var body = string.Format("{0} -- {1}", loc, string.Format(format, args));
-        errors.SemErr(string.Format("{0}: {1}", errorCode, body));
+        errors.SemErr(string.Format("Error {0}: {1}", errorCode, body));
     }
 
     /// <summary>
@@ -453,12 +453,12 @@ string cur_class_name;
     /// <param name="start">The location which is the start of the error range.</param>
     /// <param name="end">The location which is the end of the error range.</param>
     /// <param name="errorCode">The error code. It must contain the string "ES" at the head.</param>
-    /// <param name="format">The format string according to which args will be formatted</param>
+    /// <param name="format">The format string according to which `args` will be formatted.</param>
     /// <param name="args">Values that are formatted into `format`</param>
     public void SemanticError(TextLocation start, TextLocation end, string errorCode, string format, params object[] args)
     {
         var body = string.Format("{0} ~ {1} -- {2}", start, end, string.Format(format, args));
-        errors.SemErr(string.Format("{0}: {1}", errorCode, body));
+        errors.SemErr(string.Format("Error {0}: {1}", errorCode, body));
         ExpressoCompilerHelpers.DisplayHelp(new ParserException(null, errorCode, null));
     }
 
@@ -466,18 +466,29 @@ string cur_class_name;
     /// Reports a warning message.
     /// It is intended to be used from outside the Parser class.
     /// </summary>
-    public void ReportWarning(string format, AstNode node, params object[] objects)
+    /// <param name="format">The format string according to which `args` will be formatted.</param>
+    /// <param name="errorCode">The error code. It must contain the string "ES" at the head.</param>
+    /// <param name="node">The node on which the warning occurred.</param>
+    /// <param name="args">Values that are formatted into `format`</param>
+    public void ReportWarning(string format, string errorCode, AstNode node, params object[] args)
     {
-        errors.Warning(string.Format("{0} -- {1}", node.StartLocation, string.Format(format, objects)));
+        var msg = string.Format("{0} -- {1}", node.StartLocation, string.Format(format, args));
+        errors.Warning(string.Format("Warning {0}: {1}", errorCode, msg));
+        ExpressoCompilerHelpers.DisplayHelp(new ParserException(null, errorCode, node));
     }
 
     /// <summary>
     /// Reports a semantic error message.
     /// It is intended to be used from outside the Parser class.
     /// </summary>
-    public void ReportSemanticError(string format, string errorCode, AstNode node, params object[] objects)
+    /// <param name="format">The format string according to which `args` will be formatted.</param>
+    /// <param name="errorCode">The error code. It must contain the string "ES" at the head.</param>
+    /// <param name="node">The node on which the error occurred.</param>
+    /// <param name="args">Values that are formatted into `format`.</param>
+    public void ReportSemanticError(string format, string errorCode, AstNode node, params object[] args)
     {
-        errors.SemErr(string.Format("Error {0}: {1}", errorCode, string.Format("{0} -- {1}", node.StartLocation, string.Format(format, objects))));
+        var msg = string.Format("{0} -- {1}", node.StartLocation, string.Format(format, args));
+        errors.SemErr(string.Format("Error {0}: {1}", errorCode, msg));
         ExpressoCompilerHelpers.DisplayHelp(new ParserException(null, errorCode, node));
     }
 
@@ -485,9 +496,14 @@ string cur_class_name;
     /// Reports a semantic error message with a range information.
     /// It is intended to be used from outside the Parser class.
     /// </summary>
-    public void ReportSemanticErrorRegional(string format, string errorCode, AstNode start, AstNode end, params object[] objects)
+    /// <param name="format">The format string according to which `args` will be formatted.</param>
+    /// <param name="errorCode">The error code. It must contain the string "ES" at the head.</param>
+    /// <param name="start">The node which is the start of the error range.</param>
+    /// <param name="end">The node which is the end of the error range.</param>
+    /// <param name="args">Values that are formatted into `format`.</param>
+    public void ReportSemanticErrorRegional(string format, string errorCode, AstNode start, AstNode end, params object[] args)
     {
-        var real_message = string.Format("{0} ~ {1} -- {2}", start.StartLocation, end.EndLocation, string.Format(format, objects));
+        var real_message = string.Format("{0} ~ {1} -- {2}", start.StartLocation, end.EndLocation, string.Format(format, args));
         errors.SemErr(string.Format("Error {0}: {1}", errorCode, real_message));
         ExpressoCompilerHelpers.DisplayHelp(new ParserException(null, errorCode, start, end));
     }

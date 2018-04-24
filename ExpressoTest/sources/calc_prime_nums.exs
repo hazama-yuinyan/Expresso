@@ -21,7 +21,7 @@ def main()
             }
 		}
 	}
-	
+
 	print("Results: ");
 	for let j in results {
 		print("${j}, ");

@@ -658,32 +658,37 @@ namespace Expresso.Ast.Analysis
                 );
             }
 
-            if((intSeq.Start is LiteralExpression || intSeq.Start is UnaryExpression) && (intSeq.End is LiteralExpression || intSeq.End is UnaryExpression)
-               && (intSeq.Step is LiteralExpression || intSeq.Step is UnaryExpression)){
+            if((intSeq.Start is LiteralExpression || intSeq.Start is UnaryExpression unary && unary.Operand is LiteralExpression) &&
+               (intSeq.End is LiteralExpression || intSeq.End is UnaryExpression unary2 && unary2.Operand is LiteralExpression)
+               && (intSeq.Step is LiteralExpression || intSeq.Step is UnaryExpression unary3 && unary3.Operand is LiteralExpression)){
                 var lower = MakeOutIntFromIntSeq(intSeq.Start);
                 var upper = MakeOutIntFromIntSeq(intSeq.End);
                 var step = MakeOutIntFromIntSeq(intSeq.Step);
 
                 if(lower < upper && step < 0){
                     parser.ReportWarning(
-                        "Warning ES4003: Although `step` is negative, `upper` is larger than `lower`.\n Did you mean {0}{1}{2}:{3}?",
+                        "Although `step` is negative, `upper` is larger than `lower`.\n Did you mean {0}{1}{2}:{3}?",
+                        "ES4003",
                         intSeq,
                         upper, intSeq.UpperInclusive ? "..." : "..", lower, step
                     );
                 }else if(lower > upper && step > 0){
                     parser.ReportWarning(
-                        "Warning ES4003: Although `step` is positive, `upper` is smaller than `lower`.\n Did you mean {0}{1}{2}:{3}?",
+                        "Although `step` is positive, `upper` is smaller than `lower`.\n Did you mean {0}{1}{2}:{3}?",
+                        "ES4004",
                         intSeq,
                         upper, intSeq.UpperInclusive ? "..." : "..", lower, step
                     );
                 }else if(step == 0){
                     parser.ReportWarning(
-                        "Warning ES4004: `step` is 0! It will result in an inifite series of a sequence!",
+                        "`step` is 0! It will result in an inifite series of a sequence!",
+                        "ES4005",
                         intSeq
                     );
                 }else if(lower == upper){
                     parser.ReportWarning(
-                        "Warning ES4005: `lower` is equal to `upper`. It will result in a sequence with zero element!",
+                        "`lower` is equal to `upper`. It will result in a sequence with zero element!",
+                        "ES4006",
                         intSeq
                     );
                 }
@@ -1646,7 +1651,8 @@ namespace Expresso.Ast.Analysis
             }
 
             parser.ReportWarning(
-                "Warning ES1202: Can not guess the common type between `{0}` and `{1}`.",
+                "Can not guess the common type between `{0}` and `{1}`.",
+                "ES1202",
                 lhs,
                 lhs, rhs
             );
@@ -1710,7 +1716,8 @@ namespace Expresso.Ast.Analysis
             }
 
             parser.ReportWarning(
-                "Warning ES1203: Can not guess the common and strict type between `{0}` and `{1}`.",
+                "Can not guess the common and strict type between `{0}` and `{1}`.",
+                "ES1203",
                 lhs,
                 lhs, rhs
             );
