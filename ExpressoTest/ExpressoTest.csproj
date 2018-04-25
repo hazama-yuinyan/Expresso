@@ -16,10 +16,11 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\Debug</OutputPath>
-    <DefineConstants>DEBUG; UNIT_TEST;</DefineConstants>
+    <DefineConstants>DEBUG;</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <ConsolePause>false</ConsolePause>
+    <LangVersion>Latest</LangVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <Optimize>true</Optimize>
@@ -28,6 +29,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <ConsolePause>false</ConsolePause>
+    <LangVersion>Latest</LangVersion>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -113,7 +115,6 @@
     <None Include="sources\for_unit_tests\test_module2.exs" />
     <None Include="sources\for_unit_tests\erroneous\out_of_int_range_intseq.exs" />
     <None Include="sources\for_unit_tests\advanced_for_loops.exs" />
-    <None Include="sources\for_unit_tests\erroneous\intseq_warnings.exs" />
     <None Include="sources\for_unit_tests\erroneous\invalid_use_of_indexer_operator.exs" />
     <None Include="sources\for_unit_tests\property_tests.exs" />
     <None Include="sources\for_unit_tests\test_enum_in_csharp.exs" />
@@ -132,6 +133,10 @@
     <None Include="sources\for_unit_tests\erroneous\unbalanced_raw_string.exs" />
     <None Include="sources\for_unit_tests\erroneous\no_context_let.exs" />
     <None Include="sources\for_unit_tests\erroneous\invalid_unary_plus_operator.exs" />
+    <None Include="sources\for_unit_tests\erroneous\intseq_warning4.exs" />
+    <None Include="sources\for_unit_tests\erroneous\intseq_warning3.exs" />
+    <None Include="sources\for_unit_tests\erroneous\intseq_warning2.exs" />
+    <None Include="sources\for_unit_tests\erroneous\intseq_warning1.exs" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AnalyzerTests.cs" />

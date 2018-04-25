@@ -185,7 +185,7 @@ namespace Expresso.Ast
         /// <returns>A call expression.</returns>
         /// <param name="target">The target expression to call. It has to be a callable object.</param>
         /// <param name="args">Arguments.</param>
-        public static CallExpression MakeCallExpr(Expression target, IEnumerable<Expression> args, TextLocation loc = default(TextLocation))
+        public static CallExpression MakeCallExpr(Expression target, IEnumerable<Expression> args, TextLocation loc = default)
         {
             return new CallExpression(target, args, loc);
         }
@@ -225,7 +225,7 @@ namespace Expresso.Ast
         /// <returns>An expression.</returns>
         /// <param name="op">The operator type.</param>
         /// <param name="operand">The operand.</param>
-        public static UnaryExpression MakeUnaryExpr(OperatorType op, Expression operand, TextLocation loc = default(TextLocation))
+        public static UnaryExpression MakeUnaryExpr(OperatorType op, Expression operand, TextLocation loc = default)
         {
             return new UnaryExpression(op, operand, loc);
         }
@@ -242,8 +242,8 @@ namespace Expresso.Ast
             return new BinaryExpression(lhs, rhs, op);
         }
 
-        public static SequenceInitializer MakeSequenceInitializer(SimpleType type, IEnumerable<Expression> initializers, TextLocation start = default(TextLocation),
-                                                                  TextLocation end = default(TextLocation))
+        public static SequenceInitializer MakeSequenceInitializer(SimpleType type, IEnumerable<Expression> initializers, TextLocation start = default,
+                                                                  TextLocation end = default)
         {
             return new SequenceInitializer(type, initializers, start, end);
         }
@@ -254,7 +254,7 @@ namespace Expresso.Ast
         }
 
         public static ObjectCreationExpression MakeObjectCreation(AstType path, IEnumerable<Identifier> names,
-            IEnumerable<Expression> values, TextLocation start = default(TextLocation), TextLocation end = default(TextLocation))
+            IEnumerable<Expression> values, TextLocation start = default, TextLocation end = default)
         {
             return new ObjectCreationExpression(path, names.Select(ident => new PathExpression(ident)), values, start, end);
         }
@@ -291,22 +291,22 @@ namespace Expresso.Ast
         }
 
         public static LiteralExpression MakeConstant(string typeName, object val,
-            TextLocation loc = default(TextLocation))
+            TextLocation loc = default)
         {
             return new LiteralExpression(val, new PrimitiveType(typeName, TextLocation.Empty), loc);
         }
 
-        public static SelfReferenceExpression MakeSelfRef(TextLocation start = default(TextLocation))
+        public static SelfReferenceExpression MakeSelfRef(TextLocation start = default)
         {
             return new SelfReferenceExpression(start);
         }
 
-        public static SuperReferenceExpression MakeSuperRef(TextLocation start = default(TextLocation))
+        public static SuperReferenceExpression MakeSuperRef(TextLocation start = default)
         {
             return new SuperReferenceExpression(start);
         }
 
-        public static NullReferenceExpression MakeNullRef(TextLocation loc = default(TextLocation))
+        public static NullReferenceExpression MakeNullRef(TextLocation loc = default)
         {
             return new NullReferenceExpression(loc);
         }
@@ -317,7 +317,7 @@ namespace Expresso.Ast
         }
 
         public static IntegerSequenceExpression MakeIntSeq(Expression start, Expression end, Expression step, bool upperInclusive,
-                                                           TextLocation startLoc = default(TextLocation), TextLocation endLoc = default(TextLocation))
+                                                           TextLocation startLoc = default, TextLocation endLoc = default)
         {
             if(start is LiteralExpression literal1 && literal1.Value is double){
                 throw new ParserException(
@@ -370,12 +370,12 @@ namespace Expresso.Ast
             return new PathExpression(paths);
         }
 
-        public static ParenthesizedExpression MakeParen(Expression expr, TextLocation start = default(TextLocation), TextLocation end = default(TextLocation))
+        public static ParenthesizedExpression MakeParen(Expression expr, TextLocation start = default, TextLocation end = default)
         {
             return new ParenthesizedExpression(expr, start, end);
         }
 
-        public static IndexerExpression MakeIndexer(Expression target, IEnumerable<Expression> args, TextLocation loc = default(TextLocation))
+        public static IndexerExpression MakeIndexer(Expression target, IEnumerable<Expression> args, TextLocation loc = default)
         {
             return new IndexerExpression(target, args, loc);
         }
@@ -386,13 +386,13 @@ namespace Expresso.Ast
         }
 
         public static ClosureLiteralExpression MakeClosureExpression(IEnumerable<ParameterDeclaration> parameters, AstType returnType,
-                                                                     BlockStatement body, TextLocation loc = default(TextLocation), List<Identifier> liftedIdentifiers = null)
+                                                                     BlockStatement body, TextLocation loc = default, List<Identifier> liftedIdentifiers = null)
         {
             return new ClosureLiteralExpression(parameters, returnType, body, loc, liftedIdentifiers);
         }
 
         public static ClosureLiteralExpression MakeClosureExpression(AstType returnType, BlockStatement body,
-                                                                     TextLocation loc = default(TextLocation), List<Identifier> liftedIdentifiers = null,
+                                                                     TextLocation loc = default, List<Identifier> liftedIdentifiers = null,
                                                                      params ParameterDeclaration[] parameters)
         {
             return new ClosureLiteralExpression(parameters, returnType, body, loc, liftedIdentifiers);

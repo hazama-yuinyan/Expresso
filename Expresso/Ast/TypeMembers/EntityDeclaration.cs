@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using ICSharpCode.NRefactory;
 using ICSharpCode.NRefactory.TypeSystem;
 using System.Collections.Generic;
@@ -93,31 +93,31 @@ namespace Expresso.Ast
 
         #region Factory methods
         public static FieldDeclaration MakeField(IEnumerable<PatternWithType> lhs, IEnumerable<Expression> rhs,
-            Modifiers modifiers, TextLocation start = default(TextLocation), TextLocation end = default(TextLocation))
+            Modifiers modifiers, TextLocation start = default, TextLocation end = default)
         {
             return new FieldDeclaration(lhs, rhs, modifiers, start, end);
         }
 
-        public static ParameterDeclaration MakeParameter(string name, AstType type, Expression option = null, bool isVariadic = false, TextLocation loc = default(TextLocation))
+        public static ParameterDeclaration MakeParameter(string name, AstType type, Expression option = null, bool isVariadic = false, TextLocation loc = default)
         {
             return new ParameterDeclaration(MakeIdentifier(name, type), option ?? Expression.Null, isVariadic, loc);
         }
 
-        public static ParameterDeclaration MakeParameter(Identifier identifier, Expression option = null, bool isVariadic = false, TextLocation loc = default(TextLocation))
+        public static ParameterDeclaration MakeParameter(Identifier identifier, Expression option = null, bool isVariadic = false, TextLocation loc = default)
         {
             return new ParameterDeclaration(identifier, option ?? Expression.Null, isVariadic, loc);
         }
 
         public static TypeDeclaration MakeClassDecl(string className, IEnumerable<AstType> bases,
             IEnumerable<EntityDeclaration> decls, Modifiers modifiers,
-            TextLocation start = default(TextLocation), TextLocation end = default(TextLocation))
+            TextLocation start = default, TextLocation end = default)
         {
             return new TypeDeclaration(ClassType.Class, MakeIdentifier(className), bases, decls, modifiers, start, end);
         }
 
         public static TypeDeclaration MakeClassDecl(Identifier ident, IEnumerable<AstType> bases,
             IEnumerable<EntityDeclaration> decls, Modifiers modifiers,
-            TextLocation start = default(TextLocation), TextLocation end = default(TextLocation))
+            TextLocation start = default, TextLocation end = default)
         {
             return new TypeDeclaration(ClassType.Class, ident, bases, decls, modifiers, start, end);
         }
@@ -130,14 +130,14 @@ namespace Expresso.Ast
 
         public static TypeDeclaration MakeInterfaceDecl(string interfaceName, IEnumerable<AstType> bases,
                                                         IEnumerable<EntityDeclaration> decls, Modifiers modifiers,
-                                                        TextLocation start = default(TextLocation), TextLocation end = default(TextLocation))
+                                                        TextLocation start = default, TextLocation end = default)
         {
             return new TypeDeclaration(ClassType.Interface, MakeIdentifier(interfaceName), bases, decls, modifiers, start, end);
         }
 
         public static TypeDeclaration MakeInterfaceDecl(Identifier ident, IEnumerable<AstType> bases,
                                                         IEnumerable<EntityDeclaration> decls, Modifiers modifiers,
-                                                        TextLocation start = default(TextLocation), TextLocation end = default(TextLocation))
+                                                        TextLocation start = default, TextLocation end = default)
         {
             return new TypeDeclaration(ClassType.Interface, ident, bases, decls, modifiers, start, end);
         }
@@ -149,13 +149,13 @@ namespace Expresso.Ast
         }
 
         public static FunctionDeclaration MakeFunc(string name, IEnumerable<ParameterDeclaration> parameters, BlockStatement body,
-            AstType returnType, Modifiers modifiers, TextLocation loc = default(TextLocation))
+            AstType returnType, Modifiers modifiers, TextLocation loc = default)
         {
             return MakeFunc(MakeIdentifier(name), parameters, body, returnType, modifiers, loc);;
         }
 
         public static FunctionDeclaration MakeFunc(Identifier ident, IEnumerable<ParameterDeclaration> parameters,
-            BlockStatement body, AstType returnType, Modifiers modifiers, TextLocation loc = default(TextLocation))
+            BlockStatement body, AstType returnType, Modifiers modifiers, TextLocation loc = default)
         {
             return new FunctionDeclaration(ident, parameters, body, returnType, modifiers, loc);
         }

@@ -577,8 +577,10 @@ string cur_class_name;
 		  
 		ModuleBody(out module_decl);
 		Debug.Assert(Symbols.Parent.Name == "root", "The symbol table should indicate \"programRoot\" before name binding ");
+		#if !DEBUG
 		if(errors.count > 0)
 		   throw new FatalError("Invalid syntax found!");
+		#endif
 		
 		if(DoPostParseProcessing){
 		   PreProcessor.PerformPreProcess(module_decl, this);
@@ -2555,7 +2557,7 @@ string cur_class_name;
 		
 		while (la.kind == 4) {
 			Get();
-			loc = CurrentLocation; 
+			loc = NextLocation; 
 			Expect(16);
 			name = t.val;
 			if(CheckKeyword(name)){

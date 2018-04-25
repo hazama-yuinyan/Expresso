@@ -9,7 +9,6 @@
     <OutputType>Library</OutputType>
     <RootNamespace>Expresso</RootNamespace>
     <AssemblyName>Expresso</AssemblyName>
-    <ReleaseVersion>1.3</ReleaseVersion>
     <NoWin32Manifest>False</NoWin32Manifest>
     <SignAssembly>False</SignAssembly>
     <RunPostBuildEvent>OnBuildSuccess</RunPostBuildEvent>
@@ -37,7 +36,7 @@
     <RegisterForComInterop>False</RegisterForComInterop>
     <GenerateSerializationAssemblies>Auto</GenerateSerializationAssemblies>
     <FileAlignment>4096</FileAlignment>
-    <DefineConstants>DEBUG; WINDOWS;</DefineConstants>
+    <DefineConstants>DEBUG;WINDOWS;</DefineConstants>
     <CustomCommands>
       <CustomCommands>
         <Command>

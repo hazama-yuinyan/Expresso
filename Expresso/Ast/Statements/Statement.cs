@@ -118,23 +118,23 @@ namespace Expresso.Ast
 
         #region Factory methods
         public static ExpressionStatement MakeAugmentedAssignment(OperatorType opType, SequenceExpression targets,
-                                                                  SequenceExpression rhs, TextLocation start = default(TextLocation),
-                                                                  TextLocation end = default(TextLocation))
+                                                                  SequenceExpression rhs, TextLocation start = default,
+                                                                  TextLocation end = default)
         {
             return MakeExprStmt(Expression.MakeAugumentedAssignment(opType, targets, rhs), start, end);
         }
 
-        public static BreakStatement MakeBreakStmt(LiteralExpression count, TextLocation start = default(TextLocation), TextLocation end = default(TextLocation))
+        public static BreakStatement MakeBreakStmt(LiteralExpression count, TextLocation start = default, TextLocation end = default)
         {
             return new BreakStatement(count, start, end);
         }
 
-        public static ContinueStatement MakeContinueStmt(LiteralExpression count, TextLocation start = default(TextLocation), TextLocation end = default(TextLocation))
+        public static ContinueStatement MakeContinueStmt(LiteralExpression count, TextLocation start = default, TextLocation end = default)
         {
             return new ContinueStatement(count, start, end);
         }
 
-        public static BlockStatement MakeBlock(IEnumerable<Statement> stmts, TextLocation start = default(TextLocation), TextLocation end = default(TextLocation))
+        public static BlockStatement MakeBlock(IEnumerable<Statement> stmts, TextLocation start = default, TextLocation end = default)
         {
             return new BlockStatement(stmts, start, end);
         }
@@ -145,63 +145,63 @@ namespace Expresso.Ast
         }
 
         public static VariableDeclarationStatement MakeVarDecl(IEnumerable<PatternWithType> lhs, IEnumerable<Expression> rhs,
-                                                               Modifiers modifiers, TextLocation start = default(TextLocation), TextLocation end = default(TextLocation))
+                                                               Modifiers modifiers, TextLocation start = default, TextLocation end = default)
         {
             return new VariableDeclarationStatement(lhs, rhs, modifiers, start, end);
         }
 
-        public static ExpressionStatement MakeExprStmt(Expression expr, TextLocation start = default(TextLocation), TextLocation end = default(TextLocation))
+        public static ExpressionStatement MakeExprStmt(Expression expr, TextLocation start = default, TextLocation end = default)
         {
             return new ExpressionStatement(Expression.MakeSequenceExpression(expr), start, end);
         }
 
-        public static ExpressionStatement MakeExprStmt(SequenceExpression seqExpr, TextLocation start = default(TextLocation), TextLocation end = default(TextLocation))
+        public static ExpressionStatement MakeExprStmt(SequenceExpression seqExpr, TextLocation start = default, TextLocation end = default)
         {
             return new ExpressionStatement(seqExpr, start, end);
         }
 
-        public static ReturnStatement MakeReturnStmt(Expression expr, TextLocation loc = default(TextLocation))
+        public static ReturnStatement MakeReturnStmt(Expression expr, TextLocation loc = default)
         {
             return new ReturnStatement(expr, loc);
         }
 
         public static IfStatement MakeIfStmt(PatternConstruct condition, BlockStatement trueBlock,
-                                             BlockStatement falseBlock = null, TextLocation loc = default(TextLocation))
+                                             BlockStatement falseBlock = null, TextLocation loc = default)
         {
             return new IfStatement(condition, trueBlock, falseBlock, loc);
         }
 
         public static WhileStatement MakeWhileStmt(Expression condition, BlockStatement body,
-                                                   TextLocation loc = default(TextLocation))
+                                                   TextLocation loc = default)
         {
             return new WhileStatement(condition, body, loc);
         }
 
-        public static DoWhileStatement MakeDoWhileStmt(Expression condition, BlockStatement body, TextLocation start = default(TextLocation),
-                                                       TextLocation end = default(TextLocation))
+        public static DoWhileStatement MakeDoWhileStmt(Expression condition, BlockStatement body, TextLocation start = default,
+                                                       TextLocation end = default)
         {
             return new DoWhileStatement(MakeWhileStmt(condition, body, start), start, end);
         }
 
         public static ForStatement MakeForStmt(PatternConstruct pattern, Expression rvalue,
-                                               BlockStatement body, TextLocation loc = default(TextLocation))
+                                               BlockStatement body, TextLocation loc = default)
         {
             return new ForStatement(pattern, rvalue, body, loc);
         }
 
         public static ValueBindingForStatement MakeValueBindingForStmt(Modifiers modifiers, PatternWithType pattern, Expression expr, BlockStatement body,
-                                                                       TextLocation loc = default(TextLocation))
+                                                                       TextLocation loc = default)
         {
             return new ValueBindingForStatement(modifiers, AstNode.MakeVariableInitializer(pattern, expr), body, loc);
         }
 
-        public static EmptyStatement MakeEmptyStmt(TextLocation loc = default(TextLocation))
+        public static EmptyStatement MakeEmptyStmt(TextLocation loc = default)
         {
             return new EmptyStatement(loc);
         }
 
         public static MatchStatement MakeMatchStmt(Expression target, IEnumerable<MatchPatternClause> clauses,
-                                                   TextLocation start = default(TextLocation), TextLocation end = default(TextLocation))
+                                                   TextLocation start = default, TextLocation end = default)
         {
             return new MatchStatement(target, clauses, start, end);
         }
@@ -221,17 +221,17 @@ namespace Expresso.Ast
             return new MatchPatternClause(patterns, guard, body);
         }
 
-        public static YieldStatement MakeYieldStmt(Expression expr, TextLocation start = default(TextLocation), TextLocation end = default(TextLocation))
+        public static YieldStatement MakeYieldStmt(Expression expr, TextLocation start = default, TextLocation end = default)
         {
             return new YieldStatement(expr, start, end);
         }
 
-        public static ThrowStatement MakeThrowStmt(ObjectCreationExpression objExpr, TextLocation loc = default(TextLocation))
+        public static ThrowStatement MakeThrowStmt(ObjectCreationExpression objExpr, TextLocation loc = default)
         {
             return new ThrowStatement(objExpr, loc);
         }
 
-        public static TryStatement MakeTryStmt(BlockStatement block, IEnumerable<CatchClause> catches, FinallyClause @finally, TextLocation loc = default(TextLocation))
+        public static TryStatement MakeTryStmt(BlockStatement block, IEnumerable<CatchClause> catches, FinallyClause @finally, TextLocation loc = default)
         {
             return new TryStatement(block, catches, @finally, loc);
         }
@@ -241,12 +241,12 @@ namespace Expresso.Ast
             return new TryStatement(body, catches, @finally, loc);
         }
 
-        public static CatchClause MakeCatchClause(Identifier ident, BlockStatement block, TextLocation loc = default(TextLocation))
+        public static CatchClause MakeCatchClause(Identifier ident, BlockStatement block, TextLocation loc = default)
         {
             return new CatchClause(ident, block, loc);
         }
 
-        public static FinallyClause MakeFinallyClause(BlockStatement body, TextLocation loc = default(TextLocation))
+        public static FinallyClause MakeFinallyClause(BlockStatement body, TextLocation loc = default)
         {
             return new FinallyClause(body, loc);
         }

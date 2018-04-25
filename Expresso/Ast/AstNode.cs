@@ -1262,12 +1262,12 @@ namespace Expresso.Ast
 
 		#region AST node factory methods
 		
-        public static Identifier MakeIdentifier(string name, ExpressoModifiers modifiers = ExpressoModifiers.None, TextLocation loc = default(TextLocation))
+        public static Identifier MakeIdentifier(string name, ExpressoModifiers modifiers = ExpressoModifiers.None, TextLocation loc = default)
 		{
             return new Identifier(name, modifiers, loc);
 		}
 
-        public static Identifier MakeIdentifier(string name, AstType type, ExpressoModifiers modifiers = ExpressoModifiers.None, TextLocation loc = default(TextLocation))
+        public static Identifier MakeIdentifier(string name, AstType type, ExpressoModifiers modifiers = ExpressoModifiers.None, TextLocation loc = default)
         {
             return new Identifier(name, type, modifiers, loc);
         }
@@ -1278,48 +1278,48 @@ namespace Expresso.Ast
             return new ExpressoAst(decls, imports, moduleName);
 		}
 
-        public static ImportDeclaration MakeImportDecl(Identifier path, string aliasName, TextLocation start = default(TextLocation), TextLocation end = default(TextLocation))
+        public static ImportDeclaration MakeImportDecl(Identifier path, string aliasName, TextLocation start = default, TextLocation end = default)
 		{
             return new ImportDeclaration(new []{path}, new []{MakeIdentifier(aliasName)}, null, start, end);
 		}
 
-        public static ImportDeclaration MakeImportDecl(Identifier path, Identifier alias, TextLocation start = default(TextLocation), TextLocation end = default(TextLocation))
+        public static ImportDeclaration MakeImportDecl(Identifier path, Identifier alias, TextLocation start = default, TextLocation end = default)
         {
             return new ImportDeclaration(new []{path}, new []{alias}, null, start, end);
         }
 
-        public static ImportDeclaration MakeImportDecl(IEnumerable<Identifier> paths, IEnumerable<string> aliasNames, TextLocation start = default(TextLocation),
-                                                       TextLocation end = default(TextLocation))
+        public static ImportDeclaration MakeImportDecl(IEnumerable<Identifier> paths, IEnumerable<string> aliasNames, TextLocation start = default,
+                                                       TextLocation end = default)
         {
             return new ImportDeclaration(paths, aliasNames.Select(n => MakeIdentifier(n)), null, start, end);
         }
 
-        public static ImportDeclaration MakeImportDecl(IEnumerable<Identifier> paths, IEnumerable<Identifier> aliases, TextLocation start = default(TextLocation),
-                                                       TextLocation end = default(TextLocation))
+        public static ImportDeclaration MakeImportDecl(IEnumerable<Identifier> paths, IEnumerable<Identifier> aliases, TextLocation start = default,
+                                                       TextLocation end = default)
         {
             return new ImportDeclaration(paths, aliases, null, start, end);
         }
 
-        public static ImportDeclaration MakeImportDecl(Identifier path, string alias, string fileName, TextLocation start = default(TextLocation),
-                                                       TextLocation end = default(TextLocation))
+        public static ImportDeclaration MakeImportDecl(Identifier path, string alias, string fileName, TextLocation start = default,
+                                                       TextLocation end = default)
         {
             return new ImportDeclaration(new []{path}, new []{MakeIdentifier(alias)}, MakeIdentifier(fileName), start, end);
         }
 
-        public static ImportDeclaration MakeImportDecl(Identifier path, Identifier alias, Identifier file, TextLocation start = default(TextLocation),
-                                                       TextLocation end = default(TextLocation))
+        public static ImportDeclaration MakeImportDecl(Identifier path, Identifier alias, Identifier file, TextLocation start = default,
+                                                       TextLocation end = default)
         {
             return new ImportDeclaration(new []{path}, new []{alias}, file, start, end);
         }
 
-        public static ImportDeclaration MakeImportDecl(IEnumerable<Identifier> paths, IEnumerable<string> aliasNames, string fileName, TextLocation start = default(TextLocation),
-                                                       TextLocation end = default(TextLocation))
+        public static ImportDeclaration MakeImportDecl(IEnumerable<Identifier> paths, IEnumerable<string> aliasNames, string fileName, TextLocation start = default,
+                                                       TextLocation end = default)
         {
             return new ImportDeclaration(paths, aliasNames.Select(n => MakeIdentifier(n)), MakeIdentifier(fileName), start, end);
         }
 
         public static ImportDeclaration MakeImportDecl(IEnumerable<Identifier> paths, IEnumerable<Identifier> aliases, Identifier file,
-                                                       TextLocation start = default(TextLocation), TextLocation end = default(TextLocation))
+                                                       TextLocation start = default, TextLocation end = default)
         {
             return new ImportDeclaration(paths, aliases, file, start, end);
         }

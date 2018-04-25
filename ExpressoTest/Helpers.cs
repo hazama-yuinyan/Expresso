@@ -321,7 +321,7 @@ namespace Expresso.Test
         /// </summary>
         /// <returns>The void type.</returns>
         /// <param name="loc">Location.</param>
-        public static AstType MakeVoidType(TextLocation loc = default(TextLocation))
+        public static AstType MakeVoidType(TextLocation loc = default)
         {
             return AstType.MakeSimpleType("tuple", loc);
         }

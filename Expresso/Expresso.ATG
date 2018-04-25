@@ -541,8 +541,10 @@ Expresso                    		(. ExpressoAst module_decl = null;
 = 
   ModuleBody<out module_decl>		(.
                                             Debug.Assert(Symbols.Parent.Name == "root", "The symbol table should indicate \"programRoot\" before name binding ");
+#if !DEBUG
                                             if(errors.count > 0)
                                                 throw new FatalError("Invalid syntax found!");
+#endif
 
                                             if(DoPostParseProcessing){
                                                 PreProcessor.PerformPreProcess(module_decl, this);
@@ -1930,7 +1932,7 @@ PathExpression<out PathExpression path> (. var paths = new List<Identifier>(); v
   										   var ident = AstNode.MakeIdentifier(name, AstType.MakePlaceholderType(new TextLocation(loc.Line, loc.Column + name.Length)), ExpressoModifiers.None, loc);
   										   paths.Add(ident);
   										.)
-  { "::"                                (. loc = CurrentLocation; .)
+  { "::"                                (. loc = NextLocation; .)
     ident                               (.
                                            name = t.val;
                                            if(CheckKeyword(name)){

@@ -247,28 +247,28 @@ namespace Expresso.Ast
         }
 
         #region Factory methods
-        public static PlaceholderType MakePlaceholderType(TextLocation loc = default(TextLocation))
+        public static PlaceholderType MakePlaceholderType(TextLocation loc = default)
         {
             return new PlaceholderType(loc);
         }
 
-        public static PrimitiveType MakePrimitiveType(string name, TextLocation loc = default(TextLocation))
+        public static PrimitiveType MakePrimitiveType(string name, TextLocation loc = default)
         {
             return new PrimitiveType(name, loc);
         }
 
-        public static SimpleType MakeSimpleType(string name, TextLocation loc = default(TextLocation))
+        public static SimpleType MakeSimpleType(string name, TextLocation loc = default)
         {
             return new SimpleType(name, loc);
         }
 
-        public static SimpleType MakeSimpleType(Identifier identifier, TextLocation loc = default(TextLocation))
+        public static SimpleType MakeSimpleType(Identifier identifier, TextLocation loc = default)
         {
             return new SimpleType(identifier, loc);
         }
 
         public static SimpleType MakeSimpleType(string name, IEnumerable<AstType> typeArgs,
-            TextLocation start = default(TextLocation), TextLocation end = default(TextLocation))
+            TextLocation start = default, TextLocation end = default)
         {
             return new SimpleType(name, typeArgs, start, end);
         }
@@ -278,25 +278,25 @@ namespace Expresso.Ast
             return new SimpleType(name, typeArgs, start, end);
         }
 
-        public static SimpleType MakeSimpleType(Identifier ident, IEnumerable<AstType> typeArgs, TextLocation start = default(TextLocation),
-                                                TextLocation end = default(TextLocation))
+        public static SimpleType MakeSimpleType(Identifier ident, IEnumerable<AstType> typeArgs, TextLocation start = default,
+                                                TextLocation end = default)
         {
             return new SimpleType(ident, typeArgs, start, end);
         }
 
-        public static ReferenceType MakeReferenceType(AstType baseType, TextLocation start = default(TextLocation))
+        public static ReferenceType MakeReferenceType(AstType baseType, TextLocation start = default)
         {
             return new ReferenceType(baseType, start);
         }
 
         public static MemberType MakeMemberType(AstType superType, SimpleType childType,
-            TextLocation end = default(TextLocation))
+            TextLocation end = default)
         {
             return new MemberType(superType, childType, end);
         }
 
         public static FunctionType MakeFunctionType(string name, AstType returnType, IEnumerable<AstType> parameters,
-            TextLocation start = default(TextLocation), TextLocation end = default(TextLocation))
+            TextLocation start = default, TextLocation end = default)
         {
             return new FunctionType(MakeIdentifier(name, Modifiers.None, start), returnType, parameters, start, end);
         }
@@ -307,7 +307,7 @@ namespace Expresso.Ast
             return new FunctionType(MakeIdentifier(name, Modifiers.None, start), returnType, parameters, start, end);
         }
 
-        public static ParameterType MakeParameterType(string name, TextLocation loc = default(TextLocation))
+        public static ParameterType MakeParameterType(string name, TextLocation loc = default)
         {
             return new ParameterType(
                 MakeIdentifier(name, Modifiers.None, loc)

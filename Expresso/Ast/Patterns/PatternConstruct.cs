@@ -106,13 +106,13 @@ namespace Expresso.Ast
         #endregion
 
         #region Factory methods
-        public static WildcardPattern MakeWildcardPattern(TextLocation loc = default(TextLocation))
+        public static WildcardPattern MakeWildcardPattern(TextLocation loc = default)
         {
             return new WildcardPattern(loc);
         }
 
         public static IdentifierPattern MakeIdentifierPattern(string name, AstType type,
-                                                              PatternConstruct inner = null, TextLocation loc = default(TextLocation))
+                                                              PatternConstruct inner = null, TextLocation loc = default)
         {
             // type.Clone is needed because Enumerator closures will be executed over twice
             return new IdentifierPattern(MakeIdentifier(name, type.Clone(), Modifiers.None, loc), inner);
@@ -160,7 +160,7 @@ namespace Expresso.Ast
             return new ExpressionPattern(inner);
         }
 
-        public static IgnoringRestPattern MakeIgnoringRestPattern(TextLocation loc = default(TextLocation))
+        public static IgnoringRestPattern MakeIgnoringRestPattern(TextLocation loc = default)
         {
             return new IgnoringRestPattern(loc);
         }

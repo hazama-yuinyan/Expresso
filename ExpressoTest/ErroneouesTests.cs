@@ -80,6 +80,7 @@ namespace Expresso.Test
                 DoPostParseProcessing = true
             };
 
+            // TODO: consider it again
             Assert.That(() => parser.Parse(), Throws.TypeOf<ParserException>().With.Message.Contains("ES1602"));
             Assert.AreEqual(2, parser.errors.count);
         }
@@ -91,8 +92,8 @@ namespace Expresso.Test
                 DoPostParseProcessing = true
             };
 
-            Assert.That(() => parser.Parse(), Throws.TypeOf<ParserException>().With.Message.Contains("ES1805"));
-            Assert.AreEqual(3, parser.errors.count);
+            Assert.That(() => parser.Parse(), Throws.TypeOf<ParserException>().With.Message.Contains("ES0102"));
+            Assert.AreEqual(1, parser.errors.count);
         }
 
         [Test]
@@ -514,12 +515,47 @@ namespace Expresso.Test
         }
 
         [Test]
-        public void IntseqWarnings()
+        public void IntseqWarning1()
         {
-            var parser = new Parser(new Scanner("../../sources/for_unit_tests/erroneous/intseq_warnings.exs")){
+            var parser = new Parser(new Scanner("../../sources/for_unit_tests/erroneous/intseq_warning1.exs")){
                 DoPostParseProcessing = true
             };
-            parser.Parse();
+
+            Assert.That(() => parser.Parse(), Throws.TypeOf<ParserException>().With.Message.Contains("ES4003"));
+            Assert.AreEqual(1, parser.errors.count);
+        }
+
+        [Test]
+        public void IntseqWarning2()
+        {
+            var parser = new Parser(new Scanner("../../sources/for_unit_tests/erroneous/intseq_warning2.exs")){
+                DoPostParseProcessing = true
+            };
+
+            Assert.That(() => parser.Parse(), Throws.TypeOf<ParserException>().With.Message.Contains("ES4004"));
+            Assert.AreEqual(1, parser.errors.count);
+        }
+
+        [Test]
+        public void IntseqWarning3()
+        {
+            var parser = new Parser(new Scanner("../../sources/for_unit_tests/erroneous/intseq_warning3.exs")){
+                DoPostParseProcessing = true
+            };
+
+            Assert.That(() => parser.Parse(), Throws.TypeOf<ParserException>().With.Message.Contains("ES4005"));
+            Assert.AreEqual(1, parser.errors.count);
+        }
+
+        [Test]
+        public void IntseqWarning4()
+        {
+            var parser = new Parser(new Scanner("../../sources/for_unit_tests/erroneous/intseq_warning4.exs")){
+                DoPostParseProcessing = true
+            };
+
+            Assert.That(() => parser.Parse(), Throws.TypeOf<ParserException>().With.Message.Contains("ES4006"));
+            Assert.AreEqual(1, parser.errors.count);
         }
 
         [Test]
