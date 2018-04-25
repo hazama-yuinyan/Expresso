@@ -160,11 +160,11 @@ namespace Expresso.CodeGen
 
             /*case "0006":
                 Console.WriteLine("");
-                break;*/
+                break;
 
             case "0007":
                 Console.WriteLine("Unknown type is just unknown!");
-                break;
+                break;*/
 
             case "0008":
                 Console.WriteLine("Otherwise some values won't be assigned.");
@@ -190,13 +190,13 @@ namespace Expresso.CodeGen
                 Console.WriteLine("Other patterns don't make sense, do they?");
                 break;
 
-            case "0040":
+            /*case "0040":
                 Console.WriteLine("See the C# documentation for the format of uint literals.");
                 break;
 
             case "0050":
                 Console.WriteLine("See the C# documentation for the format of float literals.");
-                break;
+                break;*/
 
             case "0051":
                 Console.WriteLine("See the C# documentation for the format of number literals.");
@@ -285,7 +285,7 @@ namespace Expresso.CodeGen
                 break;
 
             case "1110":
-                Console.WriteLine("Please specify a value with type `{0}`", e.HelpObject);
+                Console.WriteLine("Please specify a value with type `{0}`.", e.HelpObject);
                 break;
 
             case "1200":
@@ -467,7 +467,8 @@ namespace Expresso.CodeGen
                 break;
 
             case "4000":
-                Console.WriteLine("Unfortunately for you, it's illegal in Expresso to write an expression that's evaluated to other types than `bool`.");
+                Console.WriteLine("Unfortunately for you, it's illegal in Expresso to write an expression that's evaluated to other types than `bool`");
+                Console.WriteLine("in a conditional expression of an if statement.");
                 break;
 
             case "4001":

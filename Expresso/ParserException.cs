@@ -35,7 +35,7 @@ namespace Expresso.Ast.Analysis
         /// </summary>
         /// <param name="message">The message string.</param>
         /// <param name="errorCode">The error code. It must contain the string "ES" at the head.</param>
-        /// <param name="node">The node at which the error happened.</param>
+        /// <param name="node">The node at which the error happened. The <see cref="AstNode.StartLocation"/> property for this node will be used.</param>
         public ParserException(string message, string errorCode, AstNode node) : base(string.Format("Error {0}: {1}", errorCode, message))
         {
             this.node = node;
@@ -48,7 +48,7 @@ namespace Expresso.Ast.Analysis
         /// </summary>
         /// <param name="formatMessage">The format string according to which the values are formatted.</param>
         /// <param name="errorCode">The rrror code. It must contain the string "ES" at the head.</param>
-        /// <param name="node">The node at which the error happened.</param>
+        /// <param name="node">The node at which the error happened. The <see cref="AstNode.StartLocation"/> property for this node will be used.</param>
         /// <param name="values">Values which are formatted into `formatMessage`.</param>
         public ParserException(string formatMessage, string errorCode, AstNode node, params object[] values)
             : base(string.Format("Error {0}: {1}", errorCode, string.Format(formatMessage, values)))
@@ -63,8 +63,8 @@ namespace Expresso.Ast.Analysis
         /// </summary>
         /// <param name="format">The format string according to which the values are formatted.</param>
         /// <param name="errorCode">The error code. It must contain the string "ES" at the head.</param>
-        /// <param name="node">The node which is the start of the error range.</param>
-        /// <param name="node2">The node which is the end of the error range.</param>
+        /// <param name="node">The node which is the start of the error range. The <see cref="AstNode.StartLocation"/> property for this node will be used.</param>
+        /// <param name="node2">The node which is the end of the error range. The <see cref="AstNode.StartLocation"/> property for this node will be used.</param>
         /// <param name="values">Values which are formatted into `format`.</param>
         public ParserException(string format, string errorCode, AstNode node, AstNode node2, params object[] values)
             : base(string.Format("Error {0}: {1}", errorCode, string.Format(format, values)))
@@ -80,7 +80,7 @@ namespace Expresso.Ast.Analysis
         /// </summary>
         /// <param name="message">The message string.</param>
         /// <param name="errorCode">The error code. It must contain the string "ES" at the head.</param>
-        /// <param name="node">The node at which this exception happened.</param>
+        /// <param name="node">The node at which this exception happened. The <see cref="AstNode.StartLocation"/> property for this node will be used.</param>
         /// <param name="exception">The inner exception.</param>
         public ParserException(string message, string errorCode, AstNode node, Exception exception)
             : base(string.Format("Error {0}: {1}", errorCode, message), exception)

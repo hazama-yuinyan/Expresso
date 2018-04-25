@@ -4,7 +4,6 @@
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
     <ProductVersion>8.0.30703</ProductVersion>
-    <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{4E28200A-5808-419F-8A57-F504842991AF}</ProjectGuid>
     <OutputType>Library</OutputType>
     <RootNamespace>Expresso</RootNamespace>
@@ -17,7 +16,6 @@
     <TreatWarningsAsErrors>False</TreatWarningsAsErrors>
     <IntermediateOutputPath>obj\$(Configuration)\</IntermediateOutputPath>
     <RunCodeAnalysis>False</RunCodeAnalysis>
-    <SourceAnalysisOverrideSettingsFile>C:\Users\Ryouta\AppData\Roaming\ICSharpCode/SharpDevelop4\Settings.SourceAnalysis</SourceAnalysisOverrideSettingsFile>
     <TargetFrameworkProfile />
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
   </PropertyGroup>
@@ -36,7 +34,7 @@
     <RegisterForComInterop>False</RegisterForComInterop>
     <GenerateSerializationAssemblies>Auto</GenerateSerializationAssemblies>
     <FileAlignment>4096</FileAlignment>
-    <DefineConstants>DEBUG;</DefineConstants>
+    <DefineConstants>DEBUG;UNIT_TEST,</DefineConstants>
     <CustomCommands>
       <CustomCommands>
         <Command>

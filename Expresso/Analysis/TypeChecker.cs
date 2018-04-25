@@ -218,7 +218,7 @@ namespace Expresso.Ast.Analysis
                 var type = clause.AcceptWalker(this);
                 if(IsCompatibleWith(target_type, type) == TriBool.False){
                     parser.ReportSemanticErrorRegional(
-                        "Mismatched types found! Expected {0}, found {1}.",
+                        "Mismatched types found! Expected `{0}`, found `{1}`.",
                         "ES1023",
                         matchStmt,
                         clause,
@@ -586,7 +586,7 @@ namespace Expresso.Ast.Analysis
             var false_type = condExpr.FalseExpression.AcceptWalker(this);
             if(IsCompatibleWith(true_type, false_type) == TriBool.False){
                 parser.ReportSemanticErrorRegional(
-                    "An conditional expression must return one type! But `{0}` is not compatible with `{1}`.",
+                    "A conditional expression must return one type! But `{0}` is not compatible with `{1}`.",
                     "ES1006",
                     condExpr.Condition, condExpr.FalseExpression,
                     true_type, false_type

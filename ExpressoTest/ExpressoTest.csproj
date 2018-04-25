@@ -5,7 +5,6 @@
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>8.0.30703</ProductVersion>
-    <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{EB393D0B-8183-45EF-89E8-822BC29F097D}</ProjectGuid>
     <OutputType>Library</OutputType>
     <RootNamespace>ExpressoTest</RootNamespace>
@@ -17,15 +16,15 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\Debug</OutputPath>
-    <DefineConstants>DEBUG;</DefineConstants>
+    <DefineConstants>DEBUG; UNIT_TEST;</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <ConsolePause>false</ConsolePause>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType>full</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release</OutputPath>
+    <DefineConstants>UNIT_TEST;</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <ConsolePause>false</ConsolePause>
@@ -92,9 +91,7 @@
     <None Include="sources\for_unit_tests\erroneous\invalid_continue_statement.exs" />
     <None Include="sources\for_unit_tests\erroneous\invalid_break_statement.exs" />
     <None Include="sources\for_unit_tests\erroneous\missing_element_type.exs" />
-    <None Include="sources\for_unit_tests\erroneous\function_without_options.exs" />
-    <None Include="sources\for_unit_tests\erroneous\invalid_unary_minus_plus_operators.exs" />
-    <None Include="sources\for_unit_tests\erroneous\invalid_unary_not_operator.exs" />
+    <None Include="sources\for_unit_tests\erroneous\invalid_unary_minus_operator.exs" />
     <None Include="sources\for_unit_tests\erroneous\unknown_field.exs" />
     <None Include="sources\for_unit_tests\erroneous\private_accessibility.exs" />
     <None Include="sources\for_unit_tests\erroneous\protected_accessibility.exs" />
@@ -123,6 +120,18 @@
     <None Include="sources\for_unit_tests\test_reference.exs" />
     <None Include="EvaluationTests.cs" />
     <None Include="packages.config" />
+    <None Include="sources\for_unit_tests\erroneous\keyword_identifier.exs" />
+    <None Include="sources\for_unit_tests\erroneous\non_optional_parameter_after_optional_parameter.exs" />
+    <None Include="sources\for_unit_tests\erroneous\import_unknown_file.exs" />
+    <None Include="sources\for_unit_tests\erroneous\invalid_variadic_parameter.exs" />
+    <None Include="sources\for_unit_tests\erroneous\non_array_variadic_parameter.exs" />
+    <None Include="sources\for_unit_tests\erroneous\type_annotation_and_optional_value_omitted.exs" />
+    <None Include="sources\for_unit_tests\erroneous\tuple_field.exs" />
+    <None Include="sources\for_unit_tests\erroneous\not_balanced_augmented_assignment.exs" />
+    <None Include="sources\for_unit_tests\erroneous\untyped_catch_identifier.exs" />
+    <None Include="sources\for_unit_tests\erroneous\unbalanced_raw_string.exs" />
+    <None Include="sources\for_unit_tests\erroneous\no_context_let.exs" />
+    <None Include="sources\for_unit_tests\erroneous\invalid_unary_plus_operator.exs" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AnalyzerTests.cs" />

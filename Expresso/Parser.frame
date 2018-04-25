@@ -139,6 +139,7 @@ public class Errors {
 -->errors
 			default: s = "error " + n; break;
 		}
+		
 		var prev_color = Console.ForegroundColor;
 		Console.ForegroundColor = ConsoleColor.Red;
 		errorStream.WriteLine(errMsgFormat, line, col, s);

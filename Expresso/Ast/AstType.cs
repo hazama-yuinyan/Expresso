@@ -10,7 +10,7 @@ namespace Expresso.Ast
     /// <summary>
     /// A type reference in Expresso AST.
     /// An AstType is an ast node, while a TypeReference is an internal and public representation.
-    /// The AstType.Null property can be used to represent the unit type, but we use an empty tuple type as the unit type.
+    /// The <see cref="AstType.Null"/> property can be used to represent the unit type, but we use an empty tuple type as the unit type.
     /// AstType nodes must be cloned when needed.
     /// </summary>
     public abstract class AstType : AstNode
@@ -199,7 +199,7 @@ namespace Expresso.Ast
         }
 
         /// <summary>
-        /// Create an ITypeReference for this AstType.
+        /// Creates an ITypeReference for this AstType.
         /// Uses the context (ancestors of this node) to determine the correct <see cref="NameLookupMode"/>.
         /// </summary>
         /// <remarks>
@@ -215,7 +215,7 @@ namespace Expresso.Ast
         }
 
         /// <summary>
-        /// Create an ITypeReference for this AstType.
+        /// Creates an ITypeReference for this AstType.
         /// </summary>
         /// <remarks>
         /// The resulting type reference will read the context information from the
