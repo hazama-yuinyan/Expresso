@@ -24,8 +24,10 @@ namespace ExpressoLanguageServer.Services
             await Task.Delay(1000, ct);
             var ast = Session.AstDictionary[textDocument.Uri];
             var file = Session.FileDictionary[textDocument.Uri];
-            var ast_resolver = Session.AstResolver;
-            return HoverGenerator.GenerateHover(ast, file, ast_resolver, position);
+            var project_content = new ExpressoProjectContent();
+            project_content.AddOrUpdateFiles(file);
+            project_content.AddAssemblyReferences(LanguageServerSession.BuiltinLibs.Value);
+            return HoverGenerator.GenerateHover(ast, project_content, file, position);
         }
 
         [JsonRpcMethod]
@@ -52,8 +54,6 @@ namespace ExpressoLanguageServer.Services
             var file = ast.ToTypeSystem();
             Session.FileDictionary.Add(textDocument.Uri, file);
 
-            if(Session.AstResolver == null)
-                Session.AstResolver = new ExpressoAstResolver(new ExpressoResolver(file), ast, file);
             /*var session = Session;
             doc.DocumentChanged += async (sender, args) => {
                 // Lint the document when it's changed.

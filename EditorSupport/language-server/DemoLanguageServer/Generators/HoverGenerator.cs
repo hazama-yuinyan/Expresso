@@ -37,15 +37,14 @@ namespace ExpressoLanguageServer.Generators
 {
     internal static class HoverGenerator
     {
-        internal static Hover GenerateHover(ExpressoAst ast, ExpressoUnresolvedFile file, ExpressoAstResolver astResolver, Position position)
+        internal static Hover GenerateHover(ExpressoAst ast, ExpressoProjectContent projectContent, ExpressoUnresolvedFile file, Position position)
         {
-            var project_content = new ExpressoProjectContent();
-            project_content.AddOrUpdateFiles(file);
-            var compilation = project_content.CreateCompilation();
+            var compilation = projectContent.CreateCompilation();
 
             var location = new TextLocation(position.Line, position.Character);
             var hovered_node = ast.GetNodeAt(location);
-            var rr = astResolver.Resolve(hovered_node);
+            var ast_resolver = new ExpressoAstResolver(new ExpressoResolver(compilation), ast, file);
+            var rr = ast_resolver.Resolve(hovered_node);
             if(rr is InvocationResolveResult irr){
                 var contents = string.Format("{0}({1}) -> {2}", irr.Member.Name, GeneratorHelpers.StringifyResolveResults(irr.Arguments), irr.Member.ReturnType.Name);
                 return new Hover{Contents = contents};

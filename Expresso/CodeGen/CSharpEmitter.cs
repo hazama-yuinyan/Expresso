@@ -379,7 +379,7 @@ namespace Expresso.CodeGen
 
         public CSharpExpr VisitBreakStatement(BreakStatement breakStmt, CSharpEmitterContext context)
         {
-            int count = (int)breakStmt.Count.Value;
+            int count = (int)breakStmt.CountExpression.Value;
             if(count > break_targets.Count)
                 throw new EmitterException("Can not break out of loops that many times!");
 
@@ -389,7 +389,7 @@ namespace Expresso.CodeGen
 
         public CSharpExpr VisitContinueStatement(ContinueStatement continueStmt, CSharpEmitterContext context)
         {
-            int count = (int)continueStmt.Count.Value;
+            int count = (int)continueStmt.CountExpression.Value;
             if(count > continue_targets.Count)
                 throw new EmitterException("Can not break out of loops that many times!");
 

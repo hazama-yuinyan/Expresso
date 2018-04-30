@@ -164,10 +164,17 @@ namespace Expresso.TypeSystem
             this.baseType = baseType;
         }
 
+#if NETCOREAPP2_0
         public IType Resolve(ITypeResolveContext context)
         {
             return KnownTypeCache.FindType(context.Compilation, known_type_code);
         }
+#else 
+        public IType Resolve(ITypeResolveContext context)
+        {
+            throw new NotImplementedException();
+        }
+        #endif
 
         public override string ToString()
         {
