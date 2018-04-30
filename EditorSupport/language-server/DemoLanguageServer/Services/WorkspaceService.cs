@@ -7,10 +7,10 @@ using JsonRpc.Standard.Contracts;
 using LanguageServer.VsCode.Contracts;
 using Newtonsoft.Json.Linq;
 
-namespace DemoLanguageServer.Services
+namespace ExpressoLanguageServer.Services
 {
     [JsonRpcScope(MethodPrefix = "workspace/")]
-    public class WorkspaceService : DemoLanguageServiceBase
+    public class WorkspaceService : ExpressoLanguageServiceBase
     {
         [JsonRpcMethod(IsNotification = true)]
         public async Task DidChangeConfiguration(SettingsRoot settings)

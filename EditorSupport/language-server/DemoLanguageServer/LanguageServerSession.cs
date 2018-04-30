@@ -5,6 +5,9 @@ using System.Linq;
 using System.Runtime.InteropServices.ComTypes;
 using System.Threading;
 using System.Threading.Tasks;
+using Expresso.Ast;
+using Expresso.Resolver;
+using Expresso.TypeSystem;
 using JsonRpc.DynamicProxy.Client;
 using JsonRpc.Standard.Client;
 using JsonRpc.Standard.Contracts;
@@ -13,7 +16,7 @@ using LanguageServer.VsCode.Contracts;
 using LanguageServer.VsCode.Contracts.Client;
 using LanguageServer.VsCode.Server;
 
-namespace DemoLanguageServer
+namespace ExpressoLanguageServer
 {
     public class LanguageServerSession
     {
@@ -21,8 +24,7 @@ namespace DemoLanguageServer
 
         public LanguageServerSession(JsonRpcClient rpcClient, IJsonRpcContractResolver contractResolver)
         {
-            if (rpcClient == null) throw new ArgumentNullException(nameof(rpcClient));
-            RpcClient = rpcClient;
+            RpcClient = rpcClient ?? throw new ArgumentNullException(nameof(rpcClient));
             var builder = new JsonRpcProxyBuilder {ContractResolver = contractResolver};
             Client = new ClientProxy(builder, rpcClient);
             Documents = new ConcurrentDictionary<Uri, SessionDocument>();
@@ -40,6 +42,17 @@ namespace DemoLanguageServer
         public DiagnosticProvider DiagnosticProvider { get; }
 
         public LanguageServerSettings Settings { get; set; } = new LanguageServerSettings();
+
+        public Dictionary<Uri, ExpressoAst> AstDictionary{
+            get;
+        } = new Dictionary<Uri, ExpressoAst>();
+        public Dictionary<Uri, ExpressoUnresolvedFile> FileDictionary{
+            get;
+        } = new Dictionary<Uri, ExpressoUnresolvedFile>();
+
+        public ExpressoAstResolver AstResolver{
+            get; set;
+        }
 
         public void StopServer()
         {
@@ -72,15 +85,13 @@ namespace DemoLanguageServer
 
         public void NotifyChanges(IEnumerable<TextDocumentContentChangeEvent> changes)
         {
-            lock (syncLock)
-            {
+            lock(syncLock){
                 if (impendingChanges == null)
                     impendingChanges = changes.ToList();
                 else
                     impendingChanges.AddRange(changes);
             }
-            if (updateChangesDelayTask == null || updateChangesDelayTask.IsCompleted)
-            {
+            if(updateChangesDelayTask == null || updateChangesDelayTask.IsCompleted){
                 updateChangesDelayTask = Task.Delay(RenderChangesDelay);
                 updateChangesDelayTask.ContinueWith(t => Task.Run((Action)MakeChanges));
             }
@@ -89,22 +100,23 @@ namespace DemoLanguageServer
         private void MakeChanges()
         {
             List<TextDocumentContentChangeEvent> localChanges;
-            lock (syncLock)
-            {
+            lock (syncLock){
                 localChanges = impendingChanges;
-                if (localChanges == null || localChanges.Count == 0) return;
+                if(localChanges == null || localChanges.Count == 0)
+                    return;
+                
                 impendingChanges = null;
             }
+
             Document = Document.ApplyChanges(localChanges);
-            if (impendingChanges == null)
-            {
+            if(impendingChanges == null){
                 localChanges.Clear();
-                lock (syncLock)
-                {
-                    if (impendingChanges == null)
+                lock (syncLock){
+                    if(impendingChanges == null)
                         impendingChanges = localChanges;
                 }
             }
+
             OnDocumentChanged();
         }
 

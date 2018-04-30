@@ -1,10 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 using LanguageServer.VsCode.Contracts;
 using LanguageServer.VsCode.Server;
 
-namespace DemoLanguageServer
+namespace ExpressoLanguageServer
 {
     public class DiagnosticProvider
     {

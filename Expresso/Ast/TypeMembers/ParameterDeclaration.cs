@@ -31,7 +31,7 @@ namespace Expresso.Ast
         }
 
         /// <summary>
-        /// Represents the parameter is variadic or not.
+        /// Represents whether the parameter is variadic or not.
         /// </summary>
         /// <value><c>true</c> if it is variadic; otherwise, <c>false</c>.</value>
         public bool IsVariadic{

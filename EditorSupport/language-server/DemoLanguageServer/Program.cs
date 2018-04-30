@@ -1,4 +1,4 @@
-﻿//#define WAIT_FOR_DEBUGGER
+﻿#define WAIT_FOR_DEBUGGER
 
 using System;
 using System.Diagnostics;
@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
+using Expresso.Ast.Analysis;
 using JsonRpc.Standard.Client;
 using JsonRpc.Standard.Contracts;
 using JsonRpc.Standard.Server;
@@ -14,7 +15,7 @@ using LanguageServer.VsCode;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Debug;
 
-namespace DemoLanguageServer
+namespace ExpressoLanguageServer
 {
     static class Program
     {
@@ -78,20 +79,27 @@ namespace DemoLanguageServer
         {
             var loggerFactory = new LoggerFactory();
             loggerFactory.AddProvider(new DebugLoggerProvider(null));
-            var builder = new JsonRpcServiceHostBuilder
-            {
+          
+            var builder = new JsonRpcServiceHostBuilder{
                 ContractResolver = contractResolver,
                 LoggerFactory = loggerFactory
             };
             builder.UseCancellationHandling();
             builder.Register(typeof(Program).GetTypeInfo().Assembly);
-            if (debugMode)
-            {
+
+            if(debugMode){
                 // Log all the client-to-server calls.
-                builder.Intercept(async (context, next) =>
-                {
+                builder.Intercept(async (context, next) => {
                     lock (logWriter) logWriter.WriteLine("> {0}", context.Request);
-                    await next();
+                    try{
+                        await next();
+                    }
+                    catch(ParserException e){
+                        Console.WriteLine(e.ToString());
+                    }
+                    catch(Exception e){
+                        Console.WriteLine(e.Message);
+                    }
                     lock (logWriter) logWriter.WriteLine("< {0}", context.Response);
                 });
             }

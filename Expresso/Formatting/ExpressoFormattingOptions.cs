@@ -74,13 +74,11 @@ namespace Expresso.Formatting
     public class ExpressoFormattingOptions
     {
         public string Name{
-            get;
-            set;
+            get; set;
         }
 
         public bool IsBuiltIn{
-            get;
-            set;
+            get; set;
         }
 
         public ExpressoFormattingOptions Clone()
@@ -91,63 +89,51 @@ namespace Expresso.Formatting
         #region Indentation
 
         public bool IndentClassBody{
-            get;
-            set;
+            get; set;
         }
 
         public bool IndentInterfaceBody{
-            get;
-            set;
+            get; set;
         }
 
         public bool IndentEnumBody{
-            get;
-            set;
+            get; set;
         }
 
         public bool IndentMethodBody{
-            get;
-            set;
+            get; set;
         }
 
         public bool IndentBlocks{
-            get;
-            set;
+            get; set;
         }
 
         public bool IndentMatchBody{
-            get;
-            set;
+            get; set;
         }
 
         public bool IndentMatchPatternBody{
-            get;
-            set;
+            get; set;
         }
 
         public bool IndentBreakStatements{
-            get;
-            set;
+            get; set;
         }
 
         public bool AlignEmbeddedStatements{
-            get;
-            set;
+            get; set;
         }
 
         public bool AlignElseInIfStatements{
-            get;
-            set;
+            get; set;
         }
 
         public bool AlignToMemberReferenceDot{
-            get;
-            set;
+            get; set;
         }
 
         public bool IndentBlocksInsideExpressions{
-            get;
-            set;
+            get; set;
         }
 
         #endregion
@@ -155,38 +141,31 @@ namespace Expresso.Formatting
         #region Braces
 
         public BraceStyle ClassBraceStyle{ // tested
-            get;
-            set;
+            get; set;
         }
 
         public BraceStyle InterfaceBraceStyle{ // tested
-            get;
-            set;
+            get; set;
         }
 
         public BraceStyle EnumBraceStyle{ // tested
-            get;
-            set;
+            get; set;
         }
 
         public BraceStyle MethodBraceStyle{ // tested
-            get;
-            set;
+            get; set;
         }
 
         public BraceStyle AnonymousMethodBraceStyle{
-            get;
-            set;
+            get; set;
         }
 
         public BraceStyle StatementBraceStyle{ // tested
-            get;
-            set;
+            get; set;
         }
 
         public bool AllowIfBlockInline{
-            get;
-            set;
+            get; set;
         }
 
         bool allowOneLinedArrayInitialziers = true;
@@ -205,18 +184,15 @@ namespace Expresso.Formatting
         #region NewLines
 
         public NewLinePlacement ElseNewLinePlacement{ // tested
-            get;
-            set;
+            get; set;
         }
 
         public NewLinePlacement ElseIfNewLinePlacement{ // tested
-            get;
-            set;
+            get; set;
         }
 
         public NewLinePlacement WhileNewLinePlacement{ // tested
-            get;
-            set;
+            get; set;
         }
 
         NewLinePlacement embeddedStatementPlacement = NewLinePlacement.NewLine;
@@ -236,428 +212,343 @@ namespace Expresso.Formatting
 
         // Methods
         public bool SpaceBeforeMethodDeclarationParentheses{ // tested
-            get;
-            set;
+            get; set;
         }
 
         public bool SpaceBetweenEmptyMethodDeclarationParentheses{
-            get;
-            set;
+            get; set;
         }
 
         public bool SpaceBeforeMethodDeclarationParameterComma{ // tested
-            get;
-            set;
+            get; set;
         }
 
         public bool SpaceAfterMethodDeclarationParameterComma{ // tested
-            get;
-            set;
+            get; set;
         }
 
         public bool SpaceWithinMethodDeclarationParentheses{ // tested
-            get;
-            set;
+            get; set;
         }
         // Method calls
         public bool SpaceBeforeMethodCallParentheses{ // tested
-            get;
-            set;
+            get; set;
         }
 
         public bool SpaceBetweenEmptyMethodCallParentheses{ // tested
-            get;
-            set;
+            get; set;
         }
 
         public bool SpaceBeforeMethodCallParameterComma{ // tested
-            get;
-            set;
+            get; set;
         }
 
         public bool SpaceAfterMethodCallParameterComma{ // tested
-            get;
-            set;
+            get; set;
         }
 
         public bool SpaceWithinMethodCallParentheses{ // tested
-            get;
-            set;
+            get; set;
         }
         // fields
         public bool SpaceBeforeFieldDeclarationComma{ // tested
-            get;
-            set;
+            get; set;
         }
 
         public bool SpaceAfterFieldDeclarationComma{ // tested
-            get;
-            set;
+            get; set;
         }
         // local variables
         public bool SpaceBeforeLocalVariableDeclarationComma{ // tested
-            get;
-            set;
+            get; set;
         }
 
         public bool SpaceAfterLocalVariableDeclarationComma{ // tested
-            get;
-            set;
+            get; set;
         }
         // constructors
         public bool SpaceBeforeConstructorDeclarationParentheses{ // tested
-            get;
-            set;
+            get; set;
         }
 
         public bool SpaceBetweenEmptyConstructorDeclarationParentheses{ // tested
-            get;
-            set;
+            get; set;
         }
 
         public bool SpaceBeforeConstructorDeclarationParameterComma{ // tested
-            get;
-            set;
+            get; set;
         }
 
         public bool SpaceAfterConstructorDeclarationParameterComma{ // tested
-            get;
-            set;
+            get; set;
         }
 
         public bool SpaceWithinConstructorDeclarationParentheses{ // tested
-            get;
-            set;
+            get; set;
         }
 
         public NewLinePlacement NewLineBeforeConstructorInitializerColon{
-            get;
-            set;
+            get; set;
         }
 
         public NewLinePlacement NewLineAfterConstructorInitializerColon{
-            get;
-            set;
+            get; set;
         }
         // indexer
         public bool SpaceBeforeIndexerDeclarationBracket{ // tested
-            get;
-            set;
+            get; set;
         }
 
         public bool SpaceWithinIndexerDeclarationBracket{ // tested
-            get;
-            set;
+            get; set;
         }
 
         public bool SpaceBeforeIndexerDeclarationParameterComma{
-            get;
-            set;
+            get; set;
         }
 
         public bool SpaceAfterIndexerDeclarationParameterComma{
-            get;
-            set;
+            get; set;
         }
         // delegates
         public bool SpaceBeforeDelegateDeclarationParentheses{
-            get;
-            set;
+            get; set;
         }
 
         public bool SpaceBetweenEmptyDelegateDeclarationParentheses{
-            get;
-            set;
+            get; set;
         }
 
         public bool SpaceBeforeDelegateDeclarationParameterComma{
-            get;
-            set;
+            get; set;
         }
 
         public bool SpaceAfterDelegateDeclarationParameterComma{
-            get;
-            set;
+            get; set;
         }
 
         public bool SpaceWithinDelegateDeclarationParentheses{
-            get;
-            set;
+            get; set;
         }
 
         public bool SpaceBeforeNewParentheses{ // tested
-            get;
-            set;
+            get; set;
         }
 
         public bool SpaceBeforeIfParentheses{ // tested
-            get;
-            set;
+            get; set;
         }
 
         public bool SpaceBeforeWhileParentheses{ // tested
-            get;
-            set;
+            get; set;
         }
 
         public bool SpaceBeforeForParentheses{ // tested
-            get;
-            set;
+            get; set;
         }
 
         public bool SpaceBeforeForeachParentheses{ // tested
-            get;
-            set;
+            get; set;
         }
 
         public bool SpaceBeforeCatchParentheses{ // tested
-            get;
-            set;
+            get; set;
         }
 
         public bool SpaceBeforeSwitchParentheses{ // tested
-            get;
-            set;
+            get; set;
         }
 
         public bool SpaceBeforeLockParentheses{ // tested
-            get;
-            set;
+            get; set;
         }
 
         public bool SpaceBeforeUsingParentheses{ // tested
-            get;
-            set;
+            get; set;
         }
 
         public bool SpaceAroundAssignment{ // tested
-            get;
-            set;
+            get; set;
         }
 
         public bool SpaceAroundLogicalOperator{ // tested
-            get;
-            set;
+            get; set;
         }
 
         public bool SpaceAroundEqualityOperator{ // tested
-            get;
-            set;
+            get; set;
         }
 
         public bool SpaceAroundRelationalOperator{ // tested
-            get;
-            set;
+            get; set;
         }
 
         public bool SpaceAroundBitwiseOperator{ // tested
-            get;
-            set;
+            get; set;
         }
 
         public bool SpaceAroundAdditiveOperator{ // tested
-            get;
-            set;
+            get; set;
         }
 
         public bool SpaceAroundMultiplicativeOperator{ // tested
-            get;
-            set;
+            get; set;
         }
 
         public bool SpaceAroundShiftOperator{ // tested
-            get;
-            set;
+            get; set;
         }
 
         public bool SpaceAroundNullCoalescingOperator{ // Tested
-            get;
-            set;
+            get; set;
         }
 
         public bool SpaceAfterUnsafeAddressOfOperator{ // Tested
-            get;
-            set;
+            get; set;
         }
 
         public bool SpaceAfterUnsafeAsteriskOfOperator{ // Tested
-            get;
-            set;
+            get; set;
         }
 
         public bool SpaceAroundUnsafeArrowOperator{ // Tested
-            get;
-            set;
+            get; set;
         }
 
         public bool SpacesWithinParentheses{ // tested
-            get;
-            set;
+            get; set;
         }
 
         public bool SpacesWithinIfParentheses{ // tested
-            get;
-            set;
+            get; set;
         }
 
         public bool SpacesWithinWhileParentheses{ // tested
-            get;
-            set;
+            get; set;
         }
 
         public bool SpacesWithinForParentheses{ // tested
-            get;
-            set;
+            get; set;
         }
 
         public bool SpacesWithinForeachParentheses{ // tested
-            get;
-            set;
+            get; set;
         }
 
         public bool SpacesWithinCatchParentheses{ // tested
-            get;
-            set;
+            get; set;
         }
 
         public bool SpacesWithinSwitchParentheses{ // tested
-            get;
-            set;
+            get; set;
         }
 
         public bool SpacesWithinLockParentheses{ // tested
-            get;
-            set;
+            get; set;
         }
 
         public bool SpacesWithinUsingParentheses{ // tested
-            get;
-            set;
+            get; set;
         }
 
         public bool SpacesWithinCastParentheses{ // tested
-            get;
-            set;
+            get; set;
         }
 
         public bool SpacesWithinSizeOfParentheses{ // tested
-            get;
-            set;
+            get; set;
         }
 
         public bool SpaceBeforeSizeOfParentheses{ // tested
-            get;
-            set;
+            get; set;
         }
 
         public bool SpacesWithinTypeOfParentheses{ // tested
-            get;
-            set;
+            get; set;
         }
 
         public bool SpacesWithinNewParentheses{ // tested
-            get;
-            set;
+            get; set;
         }
 
         public bool SpacesBetweenEmptyNewParentheses{ // tested
-            get;
-            set;
+            get; set;
         }
 
         public bool SpaceBeforeNewParameterComma{ // tested
-            get;
-            set;
+            get; set;
         }
 
         public bool SpaceAfterNewParameterComma{ // tested
-            get;
-            set;
+            get; set;
         }
 
         public bool SpaceBeforeTypeOfParentheses{ // tested
-            get;
-            set;
+            get; set;
         }
 
         public bool SpacesWithinCheckedExpressionParantheses{ // tested
-            get;
-            set;
+            get; set;
         }
 
         public bool SpaceBeforeConditionalOperatorCondition{ // tested
-            get;
-            set;
+            get; set;
         }
 
         public bool SpaceAfterConditionalOperatorCondition{ // tested
-            get;
-            set;
+            get; set;
         }
 
         public bool SpaceBeforeConditionalOperatorSeparator{ // tested
-            get;
-            set;
+            get; set;
         }
 
         public bool SpaceAfterConditionalOperatorSeparator{ // tested
-            get;
-            set;
+            get; set;
         }
         // brackets
         public bool SpacesWithinBrackets{ // tested
-            get;
-            set;
+            get; set;
         }
 
         public bool SpacesBeforeBrackets{ // tested
-            get;
-            set;
+            get; set;
         }
 
         public bool SpaceBeforeBracketComma{ // tested
-            get;
-            set;
+            get; set;
         }
 
         public bool SpaceAfterBracketComma{ // tested
-            get;
-            set;
+            get; set;
         }
 
         public bool SpaceBeforeForSemicolon{ // tested
-            get;
-            set;
+            get; set;
         }
 
         public bool SpaceAfterForSemicolon{ // tested
-            get;
-            set;
+            get; set;
         }
 
         public bool SpaceAfterTypecast{ // tested
-            get;
-            set;
+            get; set;
         }
 
         public bool SpaceBeforeArrayDeclarationBrackets{ // tested
-            get;
-            set;
+            get; set;
         }
 
         public bool SpaceInNamedArgumentAfterDoubleColon{
-            get;
-            set;
+            get; set;
         }
 
         public bool RemoveEndOfLineWhiteSpace{
-            get;
-            set;
+            get; set;
         }
 
         public bool SpaceBeforeSemicolon{
-            get;
-            set;
+            get; set;
         }
 
         #endregion
@@ -665,48 +556,39 @@ namespace Expresso.Formatting
         #region Blank Lines
 
         public int MinimumBlankLinesBeforeUsings{
-            get;
-            set;
+            get; set;
         }
 
         public int MinimumBlankLinesAfterUsings{
-            get;
-            set;
+            get; set;
         }
 
         public int MinimumBlankLinesBeforeFirstDeclaration{
-            get;
-            set;
+            get; set;
         }
 
         public int MinimumBlankLinesBetweenTypes{
-            get;
-            set;
+            get; set;
         }
 
         public int MinimumBlankLinesBetweenFields{
-            get;
-            set;
+            get; set;
         }
 
         public int MinimumBlankLinesBetweenEventFields{
-            get;
-            set;
+            get; set;
         }
 
         public int MinimumBlankLinesBetweenMembers{
-            get;
-            set;
+            get; set;
         }
 
         public int MinimumBlankLinesAroundRegion{
-            get;
-            set;
+            get; set;
         }
 
         public int MinimumBlankLinesInsideRegion{
-            get;
-            set;
+            get; set;
         }
 
         #endregion
@@ -714,8 +596,7 @@ namespace Expresso.Formatting
         #region Keep formatting
 
         public bool KeepCommentsAtFirstColumn{
-            get;
-            set;
+            get; set;
         }
 
         #endregion
@@ -723,103 +604,83 @@ namespace Expresso.Formatting
         #region Wrapping
 
         public Wrapping ArrayInitializerWrapping{
-            get;
-            set;
+            get; set;
         }
 
         public BraceStyle ArrayInitializerBraceStyle{
-            get;
-            set;
+            get; set;
         }
 
         public Wrapping ChainedMethodCallWrapping{
-            get;
-            set;
+            get; set;
         }
 
         public Wrapping MethodCallArgumentWrapping{
-            get;
-            set;
+            get; set;
         }
 
         public NewLinePlacement NewLineAferMethodCallOpenParentheses{
-            get;
-            set;
+            get; set;
         }
 
         public NewLinePlacement MethodCallClosingParenthesesOnNewLine{
-            get;
-            set;
+            get; set;
         }
 
         public Wrapping IndexerArgumentWrapping{
-            get;
-            set;
+            get; set;
         }
 
         public NewLinePlacement NewLineAferIndexerOpenBracket{
-            get;
-            set;
+            get; set;
         }
 
         public NewLinePlacement IndexerClosingBracketOnNewLine{
-            get;
-            set;
+            get; set;
         }
 
         public Wrapping MethodDeclarationParameterWrapping{
-            get;
-            set;
+            get; set;
         }
 
         public NewLinePlacement NewLineAferMethodDeclarationOpenParentheses{
-            get;
-            set;
+            get; set;
         }
 
         public NewLinePlacement MethodDeclarationClosingParenthesesOnNewLine{
-            get;
-            set;
+            get; set;
         }
 
         public Wrapping IndexerDeclarationParameterWrapping{
-            get;
-            set;
+            get; set;
         }
 
         public NewLinePlacement NewLineAferIndexerDeclarationOpenBracket{
-            get;
-            set;
+            get; set;
         }
 
         public NewLinePlacement IndexerDeclarationClosingBracketOnNewLine{
-            get;
-            set;
+            get; set;
         }
 
         public bool AlignToFirstIndexerArgument{
-            get;
-            set;
+            get; set;
         }
 
         public bool AlignToFirstIndexerDeclarationParameter{
-            get;
-            set;
+            get; set;
         }
 
         public bool AlignToFirstMethodCallArgument{
-            get;
-            set;
+            get; set;
         }
 
         public bool AlignToFirstMethodDeclarationParameter{
-            get;
-            set;
+            get; set;
         }
 
         public NewLinePlacement NewLineBeforeNewQueryClause{
-            get;
-            set;
+            get; set;
         }
 
         #endregion

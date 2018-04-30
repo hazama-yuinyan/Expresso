@@ -23,7 +23,7 @@ namespace Expresso.Ast
         /// This expression has to be evaluated to a positive integer.
         /// Otherwise a compilation error occurs.
         /// </summary>
-        public LiteralExpression Count{
+        public LiteralExpression CountExpression{
             get{return GetChildByRole(LiteralRole);}
             set{SetChildByRole(LiteralRole, value);}
         }
@@ -31,7 +31,7 @@ namespace Expresso.Ast
         public BreakStatement(LiteralExpression countExpr, TextLocation start, TextLocation end)
             : base(start, end)
         {
-            Count = countExpr;
+            CountExpression = countExpr;
         }
 
         public override void AcceptWalker(IAstWalker walker)
@@ -52,7 +52,7 @@ namespace Expresso.Ast
         protected internal override bool DoMatch(AstNode other, ICSharpCode.NRefactory.PatternMatching.Match match)
         {
             var o = other as BreakStatement;
-            return o != null && Count.DoMatch(o.Count, match);
+            return o != null && CountExpression.DoMatch(o.CountExpression, match);
         }
     }
 }

@@ -1,10 +1,19 @@
+using System;
 using System.Collections.Generic;
+#if NETCOREAPP2_0
+using System.Linq;
+using Expresso.TypeSystem;
+#endif
 using ICSharpCode.NRefactory;
 using ICSharpCode.NRefactory.TypeSystem;
 
 
 namespace Expresso.Ast
 {
+    #if NETCOREAPP2_0
+    using ExpressoKnownTypeReference = Expresso.TypeSystem.KnownTypeReference;
+    using ExpressoKnownTypeCode = Expresso.TypeSystem.KnownTypeCode;
+    #endif
     /// <summary>
     /// A simple type represents a user-defined type or a generic type that is composed of
     /// an identifier and type arguments.
@@ -153,23 +162,33 @@ namespace Expresso.Ast
             return o != null && IdentifierNode.DoMatch(o.IdentifierNode, match) && TypeArguments.DoMatch(o.TypeArguments, match);
         }
 
-        public override ITypeReference ToTypeReference(NameLookupMode lookupMode, InterningProvider interningProvider)
+#if NETCOREAPP2_0
+        public override ITypeReference ToTypeReference(NameLookupMode lookupMode, InterningProvider interningProvider = null)
         {
-            /*if(interningProvider == null)
+            if(Name == "tuple" && !TypeArguments.Any())
+                return ExpressoKnownTypeReference.Get(ExpressoKnownTypeCode.Void);
+
+            if(interningProvider == null)
                 interningProvider = InterningProvider.Dummy;
 
-            var type_args = 
-                from ta in TypeArguments
-                select ta.ToTypeReference(lookupMode, interningProvider);
+            var type_args = TypeArguments.Select(ta => ta.ToTypeReference(lookupMode, interningProvider))
+                                         .ToList();
 
             string identifier = interningProvider.Intern(Identifier);
             if(!type_args.Any() || string.IsNullOrEmpty(identifier)){
                 // empty SimpleType is used for typeof(List<>)
                 return SpecialType.UnboundTypeArgument;
-            }*/
+            }
 
-            return null; //TODO: implement it
+            var t = new SimpleTypeOrModuleReference(identifier, interningProvider.InternList(type_args), lookupMode);
+            return interningProvider.Intern(t);
         }
+#else
+        public override ITypeReference ToTypeReference(NameLookupMode lookupMode, InterningProvider interningProvider)
+        {
+            throw new NotImplementedException();
+        }
+#endif
     }
 }
 

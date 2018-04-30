@@ -7,22 +7,20 @@ using LanguageServer.VsCode.Contracts;
 using LanguageServer.VsCode.Contracts.Client;
 using Newtonsoft.Json.Linq;
 
-namespace DemoLanguageServer.Services
+namespace ExpressoLanguageServer.Services
 {
-    public class InitializaionService : DemoLanguageServiceBase
+    public class InitializaionService : ExpressoLanguageServiceBase
     {
 
         [JsonRpcMethod(AllowExtensionData = true)]
         public InitializeResult Initialize(int processId, Uri rootUri, ClientCapabilities capabilities,
             JToken initializationOptions = null, string trace = null)
         {
-            return new InitializeResult(new ServerCapabilities
-            {
+            return new InitializeResult(new ServerCapabilities{
                 HoverProvider = true,
                 SignatureHelpProvider = new SignatureHelpOptions("()"),
                 CompletionProvider = new CompletionOptions(true, "."),
-                TextDocumentSync = new TextDocumentSyncOptions
-                {
+                TextDocumentSync = new TextDocumentSyncOptions{
                     OpenClose = true,
                     WillSave = true,
                     Change = TextDocumentSyncKind.Incremental

@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Threading;
 using Expresso.Ast;
 using ICSharpCode.NRefactory;
 using ICSharpCode.NRefactory.PatternMatching;
@@ -76,7 +75,7 @@ namespace Expresso.Test
         /// <summary>
         /// Makes a list from a sequence of some objects.
         /// </summary>
-        /// <returns>A <see cref="System.Collections.Generic.List"/> instance.</returns>
+        /// <returns>A <see cref="List{T}"/> instance.</returns>
         /// <param name="objs">Objects.</param>
         /// <typeparam name="T">The type of the objects.</typeparam>
         public static List<T> MakeList<T>(params T[] objs)
@@ -160,14 +159,26 @@ namespace Expresso.Test
             );
         }
 
-        public static PatternWithType MakeExactPatternWithType(string name, SimpleType fullyQuialifiedType, string aliasTypeName)
+        /// <summary>
+        /// Makes a <see cref="PatternWithType"/> with fully qualified type.
+        /// </summary>
+        /// <returns>A <see cref="PatternWithType"/> instance with a fully qualified type.</returns>
+        /// <param name="name">The name of the identifier.</param>
+        /// <param name="fullyQualifiedType">The fully quialified type.</param>
+        /// <param name="aliasTypeName">Alias type name.</param>
+        public static PatternWithType MakeExactPatternWithType(string name, SimpleType fullyQualifiedType, string aliasTypeName)
         {
             return PatternConstruct.MakePatternWithType(
-                PatternConstruct.MakeIdentifierPattern(name, fullyQuialifiedType),
+                PatternConstruct.MakeIdentifierPattern(name, fullyQualifiedType),
                 AstType.MakeSimpleType(aliasTypeName)
             );
         }
 
+        /// <summary>
+        /// Makes a <see cref="PatternWithType"/> instance having a <see cref="PlaceholderType"/> as the types.
+        /// </summary>
+        /// <returns>A <see cref="PatternWithType"/> having <see cref="PlaceholderType"/>s as types.</returns>
+        /// <param name="names">The names of the tuple fields.</param>
         public static PatternWithType MakeSomeTuplePatternWithType(params string[] names)
         {
             return PatternConstruct.MakePatternWithType(
@@ -176,6 +187,12 @@ namespace Expresso.Test
             );
         }
 
+        /// <summary>
+        /// Makes a <see cref="PatternWithType"/> instance having <see cref="AstType"/>s as the types.
+        /// </summary>
+        /// <returns>A <see cref="PatternWithType"/> having <see cref="AstType"/>s as the types</returns>
+        /// <param name="names">The names of the tuple fields.</param>
+        /// <param name="types">The types of the tuple fields.</param>
         public static PatternWithType MakePaticularTuplePatternWithType(IEnumerable<string> names, params AstType[] types)
         {
             return PatternConstruct.MakePatternWithType(

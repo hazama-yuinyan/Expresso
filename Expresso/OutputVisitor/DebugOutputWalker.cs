@@ -157,13 +157,13 @@ namespace Expresso.Ast
         public void VisitBreakStatement(BreakStatement breakStmt)
         {
             writer.Write("break upto ");
-            breakStmt.Count.AcceptWalker(this);
+            breakStmt.CountExpression.AcceptWalker(this);
         }
 
         public void VisitContinueStatement(ContinueStatement continueStmt)
         {
             writer.Write("continue upto ");
-            continueStmt.Count.AcceptWalker(this);
+            continueStmt.CountExpression.AcceptWalker(this);
         }
 
         public void VisitDoWhileStatement(DoWhileStatement doWhileStmt)

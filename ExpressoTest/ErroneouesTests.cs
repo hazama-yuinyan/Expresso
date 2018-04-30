@@ -196,9 +196,9 @@ namespace Expresso.Test
         }
 
         [Test]
-        public void MissingType()
+        public void MissingTypeDeclaration()
         {
-            var parser = new Parser(new Scanner("../../sources/for_unit_tests/erroneous/missing_type.exs")){
+            var parser = new Parser(new Scanner("../../sources/for_unit_tests/erroneous/missing_type_declaration.exs")){
                 DoPostParseProcessing = true
             };
 

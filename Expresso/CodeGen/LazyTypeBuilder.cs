@@ -245,7 +245,7 @@ namespace Expresso.CodeGen
             if(is_created)
                 return type_cache;
 
-#if _WINDOWS
+#if WINDOWS
             var debug_info_generator = DebugInfoGenerator.CreatePdbGenerator();
             foreach(var implementer in implementers){
                 var expr = implementer.Item1 as LambdaExpression;

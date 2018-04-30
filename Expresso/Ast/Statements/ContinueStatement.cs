@@ -19,7 +19,7 @@ namespace Expresso.Ast
         /// continueの際に何階層分ループ構造を遡るか。
         /// Indicates how many loops we will break out.
         /// </summary>
-        public LiteralExpression Count{
+        public LiteralExpression CountExpression{
             get{return GetChildByRole(BreakStatement.LiteralRole);}
             set{SetChildByRole(BreakStatement.LiteralRole, value);}
         }
@@ -27,7 +27,7 @@ namespace Expresso.Ast
         public ContinueStatement(LiteralExpression countExpr, TextLocation start, TextLocation end)
             : base(start, end)
         {
-            Count = countExpr;
+            CountExpression = countExpr;
         }
 
         public override void AcceptWalker(IAstWalker walker)
@@ -48,7 +48,7 @@ namespace Expresso.Ast
         protected internal override bool DoMatch(AstNode other, ICSharpCode.NRefactory.PatternMatching.Match match)
         {
             var o = other as ContinueStatement;
-            return o != null && Count.DoMatch(o.Count, match);
+            return o != null && CountExpression.DoMatch(o.CountExpression, match);
         }
     }
 }

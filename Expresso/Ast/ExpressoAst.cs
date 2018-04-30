@@ -1,11 +1,15 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+#if NETCOREAPP2_0
+using System;
+using Expresso.TypeSystem;
+#endif
 using ICSharpCode.NRefactory;
 
 namespace Expresso.Ast
 {
 	/// <summary>
-	/// ExpressoのASTのトップレベルノード。ファイルから生成された場合はモジュールを表す。
+	/// ExpressoのASTのトップレベルノード。モジュールを表す。
 	/// Top-level ast for all Expresso code. Represents a module.
     /// All module-level items can be considered as static because one module can import
     /// another module only once.
@@ -101,16 +105,17 @@ namespace Expresso.Ast
 
         #endregion
 
-        /*public ExpressoUnresolvedFile ToTypeSystem()
+        #if NETCOREAPP2_0
+        public ExpressoUnresolvedFile ToTypeSystem()
         {
             if(string.IsNullOrEmpty(Name))
                 throw new InvalidOperationException("Can not use ToTypeSystem() on a syntax tree without file name.");
 
-            var type_def = new DefaultUnresolvedTypeDefinition("global");
-            var walker = new TypeSystemConvertWalker(new ExpressoUnresolvedFile(Name, type_def, null));
-            walker.AcceptWalker(this);
+            var walker = new TypeSystemConvertWalker(Name);
+            AcceptWalker(walker);
             return walker.UnresolvedFile;
-        }*/
+        }
+        #endif
 	}
 }
 

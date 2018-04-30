@@ -81,7 +81,7 @@ namespace Expresso.Ast.Analysis
 
         public AstType VisitBreakStatement(BreakStatement breakStmt)
         {
-            int loop_count = (int)breakStmt.Count.Value;
+            int loop_count = (int)breakStmt.CountExpression.Value;
             int actual_count = breakStmt.Ancestors.Count(n => n is WhileStatement || n is DoWhileStatement || n is ForStatement || n is ValueBindingForStatement);
             if(actual_count < loop_count){
                 throw new ParserException(
@@ -99,7 +99,7 @@ namespace Expresso.Ast.Analysis
 
         public AstType VisitContinueStatement(ContinueStatement continueStmt)
         {
-            int loop_count = (int)continueStmt.Count.Value;
+            int loop_count = (int)continueStmt.CountExpression.Value;
             int actual_count = continueStmt.Ancestors.Count(n => n is WhileStatement || n is DoWhileStatement || n is ForStatement || n is ValueBindingForStatement);
             if(actual_count < loop_count){
                 throw new ParserException(

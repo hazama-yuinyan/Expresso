@@ -149,7 +149,7 @@ namespace Expresso.Ast
         }
 
         /// <summary>
-        /// The K&R style, so named because it was used in Kernighan and Ritchie's book The C Programming Language,
+        /// The K&amp;R style, so named because it was used in Kernighan and Ritchie's book The C Programming Language,
         /// is commonly used in C. It is less common for C++, C#, and others.
         /// </summary>
         public static ExpressoFormattingOptions CreateKRStyle()

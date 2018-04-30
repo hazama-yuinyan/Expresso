@@ -7,6 +7,7 @@
     <Authors>train12</Authors>
     <Title>Expresso</Title>
     <Description>A custom programming language for education.</Description>
+    <RootNamespace>Expresso</RootNamespace>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
@@ -368,6 +369,9 @@
     <Compile Include="..\..\..\Expresso\CodeGen\ExpressoCompilerHelpers.cs">
       <Link>CodeGen\ExpressoCompilerHelpers.cs</Link>
     </Compile>
+    <Compile Include="..\..\..\Expresso\CodeGen\ExpressoCompilerOptions.cs">
+      <Link>CodeGen\ExpressoCompilerOptions.cs</Link>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <None Remove="Expresso.ATG" />
@@ -395,5 +399,8 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ExpressoRuntime.NETCore\ExpressoRuntime.NETCore.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Resolver\" />
   </ItemGroup>
 </Project>

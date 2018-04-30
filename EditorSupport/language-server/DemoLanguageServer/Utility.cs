@@ -4,12 +4,11 @@ using System.Text;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 
-namespace DemoLanguageServer
+namespace ExpressoLanguageServer
 {
     internal static class Utility
     {
-        public static readonly JsonSerializer CamelCaseJsonSerializer = new JsonSerializer
-        {
+        public static readonly JsonSerializer CamelCaseJsonSerializer = new JsonSerializer{
             ContractResolver = new CamelCasePropertyNamesContractResolver()
         };
     }

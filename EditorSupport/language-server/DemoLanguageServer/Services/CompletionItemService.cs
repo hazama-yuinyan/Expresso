@@ -5,10 +5,10 @@ using System.Threading.Tasks;
 using JsonRpc.Standard.Contracts;
 using LanguageServer.VsCode.Contracts;
 
-namespace DemoLanguageServer.Services
+namespace ExpressoLanguageServer.Services
 {
     [JsonRpcScope(MethodPrefix = "completionItem/")]
-    public class CompletionItemService : DemoLanguageServiceBase
+    public class CompletionItemService : ExpressoLanguageServiceBase
     {
         // The request is sent from the client to the server to resolve additional information
         // for a given completion item.

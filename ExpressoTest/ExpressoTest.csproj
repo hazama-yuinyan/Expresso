@@ -78,7 +78,7 @@
     <None Include="sources\for_unit_tests\erroneous\invalid_use_of_plus_operator.exs" />
     <None Include="sources\for_unit_tests\erroneous\type_mismatch_on_value_of_object_creation.exs" />
     <None Include="sources\for_unit_tests\erroneous\missing_field.exs" />
-    <None Include="sources\for_unit_tests\erroneous\missing_type.exs" />
+    <None Include="sources\for_unit_tests\erroneous\missing_type_delaration.exs" />
     <None Include="sources\for_unit_tests\erroneous\invalid_slice_on_dictionary.exs" />
     <None Include="sources\for_unit_tests\erroneous\invalid_slice_on_custom_type.exs" />
     <None Include="sources\for_unit_tests\type_cast.exs" />

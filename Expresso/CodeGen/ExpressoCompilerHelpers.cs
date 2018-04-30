@@ -56,13 +56,11 @@ namespace Expresso.CodeGen
 
         public static PrimitiveType GetPrimitiveAstType(string type)
         {
-            try{
-                var type_code = PrimitiveType.GetActualKnownTypeCodeForPrimitiveType(type, null);
-                return AstType.MakePrimitiveType(type);
-            }
-            catch(InvalidOperationException){
+            var type_code = PrimitiveType.GetActualKnownTypeCodeForPrimitiveType(type, null);
+            if(type_code == TypeSystem.KnownTypeCode.None)
                 return null;
-            }
+            
+            return AstType.MakePrimitiveType(type);
         }
 
         public static void AddPrimitiveTypesSymbolTables(SymbolTable table)

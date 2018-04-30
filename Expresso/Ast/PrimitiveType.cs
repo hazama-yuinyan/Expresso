@@ -5,6 +5,7 @@ using ICSharpCode.NRefactory.TypeSystem;
 using Expresso.Ast.Analysis;
 
 using ExpressoTypeCode = Expresso.TypeSystem.KnownTypeCode;
+using ICSharpCode.NRefactory.TypeSystem.Implementation;
 
 namespace Expresso.Ast
 {
@@ -88,11 +89,21 @@ namespace Expresso.Ast
         }
 
         #region implemented abstract members of AstType
-
+#if NETCOREAPP2_0
+        public override ITypeReference ToTypeReference(NameLookupMode lookupMode, InterningProvider interningProvider = null)
+        {
+            var type_code = GetKnownTypeCodeForPrimitiveType(Keyword, null);
+            if(type_code == ExpressoTypeCode.None)
+                return new UnknownType(null, Keyword);
+            else
+                return Expresso.TypeSystem.KnownTypeReference.Get(type_code);
+        }
+#else
         public override ITypeReference ToTypeReference(NameLookupMode lookupMode, InterningProvider interningProvider = null)
         {
             throw new NotImplementedException();
         }
+#endif
 
         #endregion
 
@@ -129,9 +140,6 @@ namespace Expresso.Ast
             case "bigint":
                 return ExpressoTypeCode.BigInteger;
 
-            case "function":
-                return ExpressoTypeCode.Function;
-
             case "array":
                 return ExpressoTypeCode.Array;
 
@@ -157,7 +165,7 @@ namespace Expresso.Ast
                 return ExpressoTypeCode.Slice;
 
             default:
-                throw new InvalidOperationException(keyword + " is an unknown primitive type!");
+                return ExpressoTypeCode.None;
             }
         }
 
@@ -195,9 +203,6 @@ namespace Expresso.Ast
             case "bigint":
                 return ExpressoTypeCode.BigInteger;
 
-            case "function":
-                return ExpressoTypeCode.Function;
-
             case "intseq":
                 return ExpressoTypeCode.IntSeq;
 
@@ -208,7 +213,7 @@ namespace Expresso.Ast
                 return ExpressoTypeCode.String;
 
             default:
-                throw new InvalidOperationException(keyword + " is an unknown primitive type!");
+                return ExpressoTypeCode.None;
             }
         }
     }

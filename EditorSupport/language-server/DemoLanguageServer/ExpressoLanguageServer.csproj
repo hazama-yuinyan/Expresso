@@ -5,10 +5,18 @@
     <TargetFramework>netcoreapp2.0</TargetFramework>
   </PropertyGroup>
 
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <LangVersion>Latest</LangVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <LangVersion>Latest</LangVersion>
+  </PropertyGroup>
   <ItemGroup>
     <Compile Remove="_private\**" />
     <EmbeddedResource Remove="_private\**" />
     <None Remove="_private\**" />
+    <None Remove=".DS_Store" />
+    <Compile Remove="Walkers\HoverWalker.cs" />
   </ItemGroup>
 
   <ItemGroup>
@@ -20,7 +28,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Expresso.NETCore\Expresso.NETCore.csproj" />
     <ProjectReference Include="..\LanguageServer.VsCode\LanguageServer.VsCode.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Generators\" />
+  </ItemGroup>
 </Project>
