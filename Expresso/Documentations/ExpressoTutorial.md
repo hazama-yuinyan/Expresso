@@ -295,7 +295,7 @@ creates a new `slice` object. The slice object, then, can be used to iterate thr
 Note that the `slice` is just an iterator of the sequence. Thus the `slice` object doesn't create a new copy of the original sequence.
 
 If you are familliar with C#, you might notice that `slice` is the same as the `Span<T>` class. And that's right. The job that the `slice` type is intended to do is the
-same as that of the `Span<T>` class. The difference is that the `slice` type is a class and the `slice` type might be slower than the `Span<T>` class.
+same as that of the `Span<T>` class. The differences are that the `slice` type is a class and the `slice` type might be slower than the `Span<T>` class.
 
 OK, so far so good. We've explained the very basics of builtin types. next up is exponentiation. But we'll be doing it in a slightly different way. Even though Expresso has the operator for it, here we'll be doing it on our
 own, using while loop.

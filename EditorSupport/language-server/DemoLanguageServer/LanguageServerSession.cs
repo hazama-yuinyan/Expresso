@@ -27,6 +27,7 @@ namespace ExpressoLanguageServer
         public static readonly Lazy<IList<IUnresolvedAssembly>> BuiltinLibs = new Lazy<IList<IUnresolvedAssembly>>(() => {
             var assemblies = new []{
                 typeof(object).Assembly,                    // mscorlib
+                typeof(Console).Assembly,                   // 
                 typeof(Uri).Assembly,                       // System.dll
                 typeof(Enumerable).Assembly,                // System.Core.dll
                 typeof(IProjectContent).Assembly

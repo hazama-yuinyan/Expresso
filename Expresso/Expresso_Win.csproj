@@ -149,7 +149,6 @@
     <Compile Include="Ast\SimpleType.cs" />
     <Compile Include="TypeSystem\SimpleTypeOrModule.cs" />
     <Compile Include="TypeSystem\TypeOrModuleReference.cs" />
-    <Compile Include="Resolver\ExpressoResolver.cs" />
     <Compile Include="TypeSystem\ExpressoTypeResolveContext.cs" />
     <Compile Include="TypeSystem\ExpressoUnresolvedFile.cs" />
     <Compile Include="Ast\Expressions\IndexerExpression.cs" />
@@ -186,7 +185,6 @@
     <Compile Include="Ast\ReferenceType.cs" />
     <Compile Include="CodeGen\EmitterException.cs" />
     <Compile Include="CodeGen\CSharpEmitter.cs" />
-    <Compile Include="CodeGen\CSharpCompilerHelper.cs" />
     <Compile Include="Ast\GeneralScope\AliasDeclaration.cs" />
     <Compile Include="CodeGen\CSharpEmitterContext.cs" />
     <Compile Include="CodeGen\ExpressoSymbol.cs" />
@@ -214,7 +212,6 @@
     <Compile Include="Analysis\ClosureParameterInferencer.cs" />
     <Compile Include="Analysis\ClosureInspecter.cs" />
     <Compile Include="Ast\Patterns\KeyValuePattern.cs" />
-    <Compile Include="Analysis\MatchClauseIdentifierDefiner.cs" />
     <Compile Include="CodeGen\ItemTypeInferencer.cs" />
     <Compile Include="CodeGen\ExpressoCompilerHelpers.cs" />
     <Compile Include="Ast\Patterns\PatternWithType.cs" />
@@ -223,6 +220,8 @@
     <Compile Include="Analysis\PreProcessor.cs" />
     <Compile Include="Ast\Statements\DoWhileStatement.cs" />
     <Compile Include="CodeGen\PortablePdbGenerator.cs" />
+    <Compile Include="CodeGen\MatchClauseIdentifierDefiner.cs" />
+    <Compile Include="CodeGen\CSharpCompilerHelpers.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -250,7 +249,6 @@
     <None Include="OutputVisitor\ExpressoOutputWalker.cs" />
     <None Include="Documentation\ExpressoReference.md" />
     <None Include="Documentation\ExpressoTutorial.md" />
-    <None Include="CodeGen\ParameterCollector.cs" />
     <None Include="packages.config" />
     <None Include="Documentation\TODO.txt" />
     <None Include="Ast\Patterns\ValueBindingPattern.cs" />
@@ -263,13 +261,11 @@
     <Folder Include="Ast\TypeMembers\" />
     <Folder Include="Ast\GeneralScope\" />
     <Folder Include="TypeSystem\" />
-    <Folder Include="Resolver\" />
     <Folder Include="Ast\Patterns\" />
     <Folder Include="Documentation\" />
     <Folder Include="Analysis\" />
     <Folder Include="CodeGen\" />
     <Folder Include="Utilities\" />
-    <Folder Include="SystemNamespace\" />
   </ItemGroup>
   <ProjectExtensions>
     <MonoDevelop>
