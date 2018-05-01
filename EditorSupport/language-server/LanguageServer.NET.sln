@@ -11,6 +11,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExpressoRuntime.NETCore", "
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LanguageServer.VsCode", "LanguageServer.VsCode\LanguageServer.VsCode.csproj", "{263AE5B7-8DDD-41F7-BF03-FCAD625E7A56}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ICSharpCode.NRefactory.NETCore", "ICSharpCode.NRefactory.NETCore\ICSharpCode.NRefactory.NETCore.csproj", "{ED844127-96EA-44B4-AAF2-9C05AB7A5050}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ICSharpCode.NRefactory.Cecil.NETCore", "ICSharpCode.NRefactory.Cecil.NETCore\ICSharpCode.NRefactory.Cecil.NETCore.csproj", "{3FE9375F-18E6-420F-96DB-DE18FFA728B3}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -69,6 +73,30 @@ Global
 		{263AE5B7-8DDD-41F7-BF03-FCAD625E7A56}.net_4_5_Debug|Any CPU.Build.0 = Debug|Any CPU
 		{263AE5B7-8DDD-41F7-BF03-FCAD625E7A56}.net_4_5_Release|Any CPU.ActiveCfg = Debug|Any CPU
 		{263AE5B7-8DDD-41F7-BF03-FCAD625E7A56}.net_4_5_Release|Any CPU.Build.0 = Debug|Any CPU
+		{ED844127-96EA-44B4-AAF2-9C05AB7A5050}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{ED844127-96EA-44B4-AAF2-9C05AB7A5050}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{ED844127-96EA-44B4-AAF2-9C05AB7A5050}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{ED844127-96EA-44B4-AAF2-9C05AB7A5050}.Release|Any CPU.Build.0 = Release|Any CPU
+		{ED844127-96EA-44B4-AAF2-9C05AB7A5050}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{ED844127-96EA-44B4-AAF2-9C05AB7A5050}.Debug|x86.Build.0 = Debug|Any CPU
+		{ED844127-96EA-44B4-AAF2-9C05AB7A5050}.Release|x86.ActiveCfg = Release|Any CPU
+		{ED844127-96EA-44B4-AAF2-9C05AB7A5050}.Release|x86.Build.0 = Release|Any CPU
+		{ED844127-96EA-44B4-AAF2-9C05AB7A5050}.net_4_5_Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{ED844127-96EA-44B4-AAF2-9C05AB7A5050}.net_4_5_Debug|Any CPU.Build.0 = Debug|Any CPU
+		{ED844127-96EA-44B4-AAF2-9C05AB7A5050}.net_4_5_Release|Any CPU.ActiveCfg = Debug|Any CPU
+		{ED844127-96EA-44B4-AAF2-9C05AB7A5050}.net_4_5_Release|Any CPU.Build.0 = Debug|Any CPU
+		{3FE9375F-18E6-420F-96DB-DE18FFA728B3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3FE9375F-18E6-420F-96DB-DE18FFA728B3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3FE9375F-18E6-420F-96DB-DE18FFA728B3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3FE9375F-18E6-420F-96DB-DE18FFA728B3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3FE9375F-18E6-420F-96DB-DE18FFA728B3}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{3FE9375F-18E6-420F-96DB-DE18FFA728B3}.Debug|x86.Build.0 = Debug|Any CPU
+		{3FE9375F-18E6-420F-96DB-DE18FFA728B3}.Release|x86.ActiveCfg = Release|Any CPU
+		{3FE9375F-18E6-420F-96DB-DE18FFA728B3}.Release|x86.Build.0 = Release|Any CPU
+		{3FE9375F-18E6-420F-96DB-DE18FFA728B3}.net_4_5_Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3FE9375F-18E6-420F-96DB-DE18FFA728B3}.net_4_5_Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3FE9375F-18E6-420F-96DB-DE18FFA728B3}.net_4_5_Release|Any CPU.ActiveCfg = Debug|Any CPU
+		{3FE9375F-18E6-420F-96DB-DE18FFA728B3}.net_4_5_Release|Any CPU.Build.0 = Debug|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

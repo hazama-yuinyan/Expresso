@@ -294,6 +294,9 @@ slices some sequence and allows you to view a portion of that sequence. Combinin
 creates a new `slice` object. The slice object, then, can be used to iterate through some portion of the sequence.
 Note that the `slice` is just an iterator of the sequence. Thus the `slice` object doesn't create a new copy of the original sequence.
 
+If you are familliar with C#, you might notice that `slice` is the same as the `Span<T>` class. And that's right. The job that the `slice` type is intended to do is the
+same as that of the `Span<T>` class. The difference is that the `slice` type is a class and the `slice` type might be slower than the `Span<T>` class.
+
 OK, so far so good. We've explained the very basics of builtin types. next up is exponentiation. But we'll be doing it in a slightly different way. Even though Expresso has the operator for it, here we'll be doing it on our
 own, using while loop.
 
@@ -372,7 +375,7 @@ def main()
 }
 ```
 
-<span class="caption">Listing 11: Using the FileStream class defined in .NET to write some text into a file</span>
+<span class="caption">Listing 11: Using the `FileStream` class defined in .NET to write some text into a file.</span>
 
 Let's break down the code in Listing 11. First we need to import types that have a file handle and convert strings into another encoding from .NET.
 So the import statements.

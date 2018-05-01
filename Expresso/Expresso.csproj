@@ -234,16 +234,16 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Expresso.ATG" />
-    <None Include="Documentation\Bugs.txt" />
-    <None Include="Documentation\ExpressoDesignMemo.txt" />
-    <None Include="Documentation\ExpressoLanguageSpecificationMemo.txt" />
+    <None Include="Documentations\Bugs.txt" />
+    <None Include="Documentations\ExpressoDesignMemo.txt" />
+    <None Include="Documentations\ExpressoLanguageSpecificationMemo.txt" />
     <None Include="OutputVisitor\TokenWriter.cs" />
     <None Include="OutputVisitor\InsertRequiredSpacesDecorator.cs" />
     <None Include="OutputVisitor\ExpressoOutputWalker.cs" />
-    <None Include="Documentation\ExpressoReference.md" />
-    <None Include="Documentation\ExpressoTutorial.md" />
+    <None Include="Documentations\ExpressoReference.md" />
+    <None Include="Documentations\ExpressoTutorial.md" />
     <None Include="packages.config" />
-    <None Include="Documentation\TODO.txt" />
+    <None Include="Documentations\TODO.txt" />
     <None Include="Ast\Patterns\ValueBindingPattern.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -255,7 +255,7 @@
     <Folder Include="Ast\GeneralScope\" />
     <Folder Include="TypeSystem\" />
     <Folder Include="Ast\Patterns\" />
-    <Folder Include="Documentation\" />
+    <Folder Include="Documentations\" />
     <Folder Include="Analysis\" />
     <Folder Include="CodeGen\" />
     <Folder Include="Utilities\" />

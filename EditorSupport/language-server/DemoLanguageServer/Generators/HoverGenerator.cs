@@ -37,7 +37,7 @@ namespace ExpressoLanguageServer.Generators
 {
     internal static class HoverGenerator
     {
-        internal static Hover GenerateHover(ExpressoAst ast, ExpressoProjectContent projectContent, ExpressoUnresolvedFile file, Position position)
+        internal static Hover GenerateHover(ExpressoAst ast, IProjectContent projectContent, ExpressoUnresolvedFile file, Position position)
         {
             var compilation = projectContent.CreateCompilation();
 

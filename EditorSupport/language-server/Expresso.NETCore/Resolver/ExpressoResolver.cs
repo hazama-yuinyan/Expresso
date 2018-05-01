@@ -5,7 +5,6 @@ using Expresso.TypeSystem;
 using System.Collections.Generic;
 using System.Linq;
 using System.Collections.Immutable;
-using ICSharpCode.NRefactory.CSharp.Resolver;
 
 namespace Expresso.Resolver
 {

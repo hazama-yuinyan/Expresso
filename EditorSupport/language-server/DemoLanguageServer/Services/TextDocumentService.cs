@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Expresso;
 using Expresso.Resolver;
 using ExpressoLanguageServer.Generators;
+using ICSharpCode.NRefactory.TypeSystem;
 using JsonRpc.Standard.Contracts;
 using LanguageServer.VsCode;
 using LanguageServer.VsCode.Contracts;
@@ -24,9 +25,9 @@ namespace ExpressoLanguageServer.Services
             await Task.Delay(1000, ct);
             var ast = Session.AstDictionary[textDocument.Uri];
             var file = Session.FileDictionary[textDocument.Uri];
-            var project_content = new ExpressoProjectContent();
-            project_content.AddOrUpdateFiles(file);
-            project_content.AddAssemblyReferences(LanguageServerSession.BuiltinLibs.Value);
+            IProjectContent project_content = new ExpressoProjectContent();
+            project_content = project_content.AddOrUpdateFiles(file);
+            project_content = project_content.AddAssemblyReferences(LanguageServerSession.BuiltinLibs.Value);
             return HoverGenerator.GenerateHover(ast, project_content, file, position);
         }
 

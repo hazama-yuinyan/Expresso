@@ -36,7 +36,7 @@ namespace ExpressoLanguageServer
             var total = Stopwatch.StartNew();
             Parallel.For(0, assemblies.Length, (int i) => {
                 var w = Stopwatch.StartNew();
-                var loader = AssemblyLoader.Create();
+                var loader = new CecilLoader();
                 project_contents[i] = loader.LoadAssemblyFile(assemblies[i].Location);
                 Debug.WriteLine(Path.GetFileName(assemblies[i].Location) + ": " + w.Elapsed);
             });

@@ -31,7 +31,6 @@ using System.Threading;
 using Expresso.Ast;
 using Expresso.TypeSystem;
 using ICSharpCode.NRefactory;
-using ICSharpCode.NRefactory.CSharp.Resolver;
 using ICSharpCode.NRefactory.PatternMatching;
 using ICSharpCode.NRefactory.Semantics;
 using ICSharpCode.NRefactory.TypeSystem;
