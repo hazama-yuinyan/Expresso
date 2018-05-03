@@ -29,17 +29,21 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using Expresso.Ast;
+using Expresso.Ast.Analysis;
 using Expresso.TypeSystem;
 using ICSharpCode.NRefactory;
 using ICSharpCode.NRefactory.PatternMatching;
 using ICSharpCode.NRefactory.Semantics;
 using ICSharpCode.NRefactory.TypeSystem;
+using ICSharpCode.NRefactory.TypeSystem.Implementation;
 
 namespace Expresso.Resolver
 {
+    using ExpressoKnownTypeReference = Expresso.TypeSystem.KnownTypeReference;
+
     public class ResolveWalker : IAstWalker<ResolveResult>
     {
-        const uint PrintlnId = 1_000_000_000u;
+        const uint PrintId = 1_000_000_000u;
         static readonly ResolveResult errorResult = ErrorResolveResult.UnknownError;
         static readonly Dictionary<uint, Symbol> Symbols = new Dictionary<uint, Symbol>();
 
@@ -69,10 +73,7 @@ namespace Expresso.Resolver
         /// </summary>
         public ResolveWalker(ExpressoResolver resolver, ExpressoUnresolvedFile unresolvedFile)
         {
-            if(resolver == null)
-                throw new ArgumentNullException(nameof(resolver));
-            
-            this.resolver = resolver;
+            this.resolver = resolver ?? throw new ArgumentNullException(nameof(resolver));
             unresolved_file = unresolvedFile;
             navigator = skipAllNavigator;
 
@@ -86,11 +87,11 @@ namespace Expresso.Resolver
             var string_type_ref = compilation.FindType(typeof(string)).ToTypeReference();
             var object_array_type_ref = compilation.FindType(typeof(object[])).ToTypeReference();
 
-            var println_method = console_type.GetMethod("WriteLine", new []{string_type_ref, object_array_type_ref});
-            Symbols.Add(PrintlnId, new Symbol{Method = println_method, ResolveResult = new TypeResolveResult(console_type)});
-
             var print_method = console_type.GetMethod("Write", new []{string_type_ref, object_array_type_ref});
-            Symbols.Add(PrintlnId + 1u, new Symbol{Method = print_method, ResolveResult = new TypeResolveResult(console_type)});
+            Symbols.Add(PrintId, new Symbol{Method = print_method, ResolveResult = new TypeResolveResult(console_type)});
+
+            var println_method = console_type.GetMethod("WriteLine", new []{string_type_ref, object_array_type_ref});
+            Symbols.Add(PrintId + 1u, new Symbol{Method = println_method, ResolveResult = new TypeResolveResult(console_type)});
         }
 
         #region Symbols
@@ -377,12 +378,24 @@ namespace Expresso.Resolver
 
         ResolveResult IAstWalker<ResolveResult>.VisitAst(ExpressoAst ast)
         {
-            throw new NotImplementedException();
+            var prev_resolver = resolver;
+            /*try{
+                if(unresolved_file != null){
+                    
+                }
+            }finally{
+                resolver = prev_resolver;
+            }*/
+            ScanChildren(ast);
+            return voidResult;
         }
 
         ResolveResult IAstWalker<ResolveResult>.VisitBlock(BlockStatement block)
         {
-            throw new NotImplementedException();
+            resolver = resolver.PushBlock();
+            ScanChildren(block);
+            resolver = resolver.PopBlock();
+            return voidResult;
         }
 
         ResolveResult IAstWalker<ResolveResult>.VisitBreakStatement(BreakStatement breakStmt)
@@ -407,7 +420,8 @@ namespace Expresso.Resolver
 
         ResolveResult IAstWalker<ResolveResult>.VisitExpressionStatement(ExpressionStatement exprStmt)
         {
-            throw new NotImplementedException();
+            ScanChildren(exprStmt);
+            return voidResult;
         }
 
         ResolveResult IAstWalker<ResolveResult>.VisitForStatement(ForStatement forStmt)
@@ -457,7 +471,24 @@ namespace Expresso.Resolver
 
         ResolveResult IAstWalker<ResolveResult>.VisitVariableDeclarationStatement(VariableDeclarationStatement varDecl)
         {
-            throw new NotImplementedException();
+            bool is_immutable = varDecl.Modifiers.HasFlag(Modifiers.Immutable);
+            foreach(var variable in varDecl.Variables){
+                var ast_type = RetrieveTypeFromPattern(variable.Pattern);
+                var type = ResolveType(ast_type);
+                IVariable v;
+                if(is_immutable){
+                    var rr = Resolve(variable.Initializer);
+                    //rr = resolver.ResolveCast(type, rr);
+                    v = MakeConstant(type, variable.NameToken, rr.ConstantValue);
+                }else{
+                    v = MakeVariable(type, variable.NameToken);
+                }
+
+                resolver = resolver.AddVariable(v);
+                Scan(variable);
+            }
+
+            return voidResult;
         }
 
         ResolveResult IAstWalker<ResolveResult>.VisitAssignment(AssignmentExpression assignment)
@@ -483,7 +514,6 @@ namespace Expresso.Resolver
             var rrs = call.Arguments.Select(arg => arg.AcceptWalker(this))
                           .ToList();
             var rr = new InvocationResolveResult(target_rr, target_method, rrs);
-            StoreResult(call, rr);
             return rr;
         }
 
@@ -557,7 +587,7 @@ namespace Expresso.Resolver
                         throw new FormattedException("The symbol '{0}' isn't defined.", ident.Name);
 
                     context_method = symbol.Method;
-                    return symbol.ResolveResult;
+                    return new MemberResolveResult(symbol.ResolveResult, symbol.Method);
                 }else{
                     throw new FormattedException("I can't guess what you want: {0}.", ident.Name);
                 }
@@ -617,16 +647,6 @@ namespace Expresso.Resolver
             throw new NotImplementedException();
         }
 
-        #region PathExpression
-        List<IType> GetTypeArguments(IEnumerable<AstType> typeArguments)
-        {
-            var list = 
-                from type_arg in typeArguments
-                select ResolveType(type_arg);
-
-            return list.ToList();
-        }
-
         ResolveResult IAstWalker<ResolveResult>.VisitPathExpression(PathExpression pathExpr)
         {
             if(pathExpr.AsIdentifier != null && resolver_enabled){
@@ -642,15 +662,6 @@ namespace Expresso.Resolver
                 return null;
             }
         }
-
-        NameLookupMode GetNameLookupMode(Expression expr)
-        {
-            if(expr.Parent is CallExpression)
-                return NameLookupMode.InvocationTarget;
-            else
-                return NameLookupMode.Expression;
-        }
-        #endregion
 
         ResolveResult IAstWalker<ResolveResult>.VisitParenthesizedExpression(ParenthesizedExpression parensExpr)
         {
@@ -674,7 +685,8 @@ namespace Expresso.Resolver
 
         ResolveResult IAstWalker<ResolveResult>.VisitSequenceExpression(SequenceExpression seqExpr)
         {
-            throw new NotImplementedException();
+            ScanChildren(seqExpr);
+            return voidResult;
         }
 
         ResolveResult IAstWalker<ResolveResult>.VisitUnaryExpression(UnaryExpression unaryExpr)
@@ -714,7 +726,12 @@ namespace Expresso.Resolver
 
         ResolveResult IAstWalker<ResolveResult>.VisitPrimitiveType(PrimitiveType primitiveType)
         {
-            throw new NotImplementedException();
+            if(!resolver_enabled)
+                return null;
+
+            var type_code = primitiveType.KnownTypeCode;
+            var type = resolver.Compilation.FindType(type_code);
+            return new TypeResolveResult(type);
         }
 
         ResolveResult IAstWalker<ResolveResult>.VisitReferenceType(ReferenceType referenceType)
@@ -749,7 +766,27 @@ namespace Expresso.Resolver
 
         ResolveResult IAstWalker<ResolveResult>.VisitFunctionDeclaration(FunctionDeclaration funcDecl)
         {
-            throw new NotImplementedException();
+            var old_resolver = resolver;
+            try{
+                IMember member = null;
+                if(unresolved_file != null)
+                    member = GetMemberFromLocation(funcDecl);
+
+                if(member == null){
+                    
+                }
+
+                resolver = resolver.WithCurrentMember(member);
+                ScanChildren(funcDecl);
+
+                if(member != null)
+                    return new MemberResolveResult(null, member, false);
+                else
+                    return errorResult;
+            }
+            finally{
+                resolver = old_resolver;
+            }
         }
 
         ResolveResult IAstWalker<ResolveResult>.VisitTypeDeclaration(TypeDeclaration typeDecl)
@@ -861,6 +898,122 @@ namespace Expresso.Resolver
         }*/
         #endregion
 
+        #region Related Methods
+        DomRegion MakeRegion(AstNode node)
+        {
+            if(unresolved_file != null)
+                return new DomRegion(unresolved_file.FileName, node.StartLocation, node.EndLocation);
+            else
+                return node.GetRegion();
+        }
 
+        IMember GetMemberFromLocation(AstNode node)
+        {
+            var type_def = resolver.CurrentTypeDefinition;
+            if(type_def == null)
+                return null;
+
+            var location = node.StartLocation;
+            //var location = TypeSystemConvertWalker.GetStartLocationAfterAttributes(node);
+            return type_def.GetMembers(m => {
+                var region = m.Region;
+                return !region.IsEmpty && region.Begin <= location && location < region.End;
+            }).FirstOrDefault();
+        }
+
+        List<IType> GetTypeArguments(IEnumerable<AstType> typeArguments)
+        {
+            var list = 
+                from type_arg in typeArguments
+                select ResolveType(type_arg);
+
+            return list.ToList();
+        }
+
+        NameLookupMode GetNameLookupMode(Expression expr)
+        {
+            if(expr.Parent is CallExpression)
+                return NameLookupMode.InvocationTarget;
+            else
+                return NameLookupMode.Expression;
+        }
+
+        #region Local variable type inference
+        IVariable MakeVariable(IType type, Identifier identifier)
+        {
+            return new SimpleVariable(MakeRegion(identifier), type, identifier.Name);
+        }
+
+        IVariable MakeConstant(IType type, Identifier identifier, object constantValue)
+        {
+            return new SimpleConstant(MakeRegion(identifier), type, identifier.Name, constantValue);
+        }
+
+        class SimpleVariable : IVariable
+        {
+            readonly DomRegion region;
+            readonly IType type;
+            readonly string name;
+
+            public SymbolKind SymbolKind => SymbolKind.Variable;
+            public string Name => name;
+            public DomRegion Region => region;
+            public IType Type => type;
+            public virtual bool IsConst => false;
+            public virtual object ConstantValue => null;
+
+            public SimpleVariable(DomRegion region, IType type, string name)
+            {
+                Debug.Assert(type != null);
+                Debug.Assert(name != null);
+
+                this.region = region;
+                this.type = type;
+                this.name = name;
+            }
+
+            public override string ToString()
+            {
+                return string.Format("{0} (- {1};", name, type);
+            }
+
+            public ISymbolReference ToReference()
+            {
+                return new VariableReference(type.ToTypeReference(), Name, Region, IsConst, ConstantValue);
+            }
+        }
+
+        sealed class SimpleConstant : SimpleVariable
+        {
+            object constant_value;
+
+            public override bool IsConst => true;
+            public override object ConstantValue => constant_value;
+
+            public SimpleConstant(DomRegion region, IType type, string name, object constantValue)
+                : base(region, type, name)
+            {
+                constant_value = constantValue;
+            }
+
+            public override string ToString()
+            {
+                return string.Format("{0} (- {1} = {2};", Name, Type, ConstantValue);
+            }
+        }
+        #endregion
+
+        static AstType RetrieveTypeFromPattern(PatternConstruct patternConstruct)
+        {
+            if(patternConstruct is PatternWithType typed_pattern){
+                if(!(typed_pattern.Type is PlaceholderType))
+                    return typed_pattern.Type;
+                else if(typed_pattern.Pattern is IdentifierPattern ident_pattern)
+                    return ident_pattern.Identifier.Type;
+            }
+
+            return null;
+        }
+        #endregion
     }
 }

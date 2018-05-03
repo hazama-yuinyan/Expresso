@@ -88,6 +88,7 @@ namespace Expresso.Ast.Analysis
                     AstType.MakeSimpleType("tuple", TextLocation.Empty),    //The void type
                     TextLocation.Empty,
                     TextLocation.Empty,
+                    AstType.MakePrimitiveType("string"),
                     AstType.MakeSimpleType(
                         "array",
                         TextLocation.Empty,
@@ -106,6 +107,7 @@ namespace Expresso.Ast.Analysis
                     AstType.MakeSimpleType("tuple", TextLocation.Empty),    //The void type
                     TextLocation.Empty,
                     TextLocation.Empty,
+                    AstType.MakePrimitiveType("string"),
                     AstType.MakeSimpleType(
                         "array",
                         TextLocation.Empty,

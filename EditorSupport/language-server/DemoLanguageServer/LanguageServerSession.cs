@@ -75,6 +75,14 @@ namespace ExpressoLanguageServer
             get;
         } = new Dictionary<Uri, ExpressoUnresolvedFile>();
 
+        /// <summary>
+        /// A stream that we write log messages to.
+        /// </summary>
+        /// <value>The debug message queue.</value>
+        public StreamWriter LogStream{
+            get; set;
+        }
+
         public void StopServer()
         {
             cts.Cancel();

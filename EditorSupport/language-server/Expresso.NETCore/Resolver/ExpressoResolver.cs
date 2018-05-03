@@ -65,11 +65,11 @@ namespace Expresso.Resolver
         public ExpressoResolver PopBlock()
         {
             var stack = local_variable_stack;
-            IVariable removedVar;
+            IVariable removed_var;
             do{
-                removedVar = stack.Peek();
+                removed_var = stack.Peek();
                 stack = stack.Pop();
-            }while(removedVar != null);
+            }while(removed_var != null);
 
             return WithLocalVariableStack(stack);
         }
@@ -308,6 +308,13 @@ namespace Expresso.Resolver
                     return result;
             }
 
+            return null;
+        }
+        #endregion
+
+        #region ResolveCast
+        public ResolveResult ResolveCast(IType targetType, ResolveResult expression)
+        {
             return null;
         }
         #endregion

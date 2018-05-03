@@ -24,6 +24,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 using System;
+using System.Collections.Generic;
+using System.IO;
 using Expresso;
 using Expresso.Ast;
 using Expresso.Resolver;
@@ -37,7 +39,7 @@ namespace ExpressoLanguageServer.Generators
 {
     internal static class HoverGenerator
     {
-        internal static Hover GenerateHover(ExpressoAst ast, IProjectContent projectContent, ExpressoUnresolvedFile file, Position position)
+        internal static Hover GenerateHover(StreamWriter logger, ExpressoAst ast, IProjectContent projectContent, ExpressoUnresolvedFile file, Position position)
         {
             var compilation = projectContent.CreateCompilation();
 
@@ -45,8 +47,11 @@ namespace ExpressoLanguageServer.Generators
             var hovered_node = ast.GetNodeAt(location);
             var ast_resolver = new ExpressoAstResolver(new ExpressoResolver(compilation), ast, file);
             var rr = ast_resolver.Resolve(hovered_node);
-            if(rr is InvocationResolveResult irr){
-                var contents = string.Format("{0}({1}) -> {2}", irr.Member.Name, GeneratorHelpers.StringifyResolveResults(irr.Arguments), irr.Member.ReturnType.Name);
+            if(rr is MemberResolveResult mrr && mrr.Member is IParameterizedMember pm){
+                var contents = string.Format("{0}({1}) -> {2}", pm.Name, GeneratorHelpers.StringifyList(pm.Parameters), pm.ReturnType.Name);
+                lock(logger)
+                    logger.WriteLine("{0} resolved to {1}", hovered_node, contents);
+                
                 return new Hover{Contents = contents};
             }
 

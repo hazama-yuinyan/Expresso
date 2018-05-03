@@ -9,11 +9,11 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Expresso.NETCore", "Express
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExpressoRuntime.NETCore", "ExpressoRuntime.NETCore\ExpressoRuntime.NETCore.csproj", "{A5E2B2BB-C42E-4339-9E2D-FA9B4CBDA0EF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LanguageServer.VsCode", "LanguageServer.VsCode\LanguageServer.VsCode.csproj", "{263AE5B7-8DDD-41F7-BF03-FCAD625E7A56}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ICSharpCode.NRefactory.NETCore", "ICSharpCode.NRefactory.NETCore\ICSharpCode.NRefactory.NETCore.csproj", "{ED844127-96EA-44B4-AAF2-9C05AB7A5050}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ICSharpCode.NRefactory.Cecil.NETCore", "ICSharpCode.NRefactory.Cecil.NETCore\ICSharpCode.NRefactory.Cecil.NETCore.csproj", "{3FE9375F-18E6-420F-96DB-DE18FFA728B3}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LanguageServer.VsCode", "LanguageServer.VsCode\LanguageServer.VsCode.csproj", "{652AB51F-09E3-4FE8-9C1D-D79123B4C31F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -61,18 +61,6 @@ Global
 		{A5E2B2BB-C42E-4339-9E2D-FA9B4CBDA0EF}.net_4_5_Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A5E2B2BB-C42E-4339-9E2D-FA9B4CBDA0EF}.net_4_5_Release|Any CPU.ActiveCfg = Debug|Any CPU
 		{A5E2B2BB-C42E-4339-9E2D-FA9B4CBDA0EF}.net_4_5_Release|Any CPU.Build.0 = Debug|Any CPU
-		{263AE5B7-8DDD-41F7-BF03-FCAD625E7A56}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{263AE5B7-8DDD-41F7-BF03-FCAD625E7A56}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{263AE5B7-8DDD-41F7-BF03-FCAD625E7A56}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{263AE5B7-8DDD-41F7-BF03-FCAD625E7A56}.Release|Any CPU.Build.0 = Release|Any CPU
-		{263AE5B7-8DDD-41F7-BF03-FCAD625E7A56}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{263AE5B7-8DDD-41F7-BF03-FCAD625E7A56}.Debug|x86.Build.0 = Debug|Any CPU
-		{263AE5B7-8DDD-41F7-BF03-FCAD625E7A56}.Release|x86.ActiveCfg = Release|Any CPU
-		{263AE5B7-8DDD-41F7-BF03-FCAD625E7A56}.Release|x86.Build.0 = Release|Any CPU
-		{263AE5B7-8DDD-41F7-BF03-FCAD625E7A56}.net_4_5_Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{263AE5B7-8DDD-41F7-BF03-FCAD625E7A56}.net_4_5_Debug|Any CPU.Build.0 = Debug|Any CPU
-		{263AE5B7-8DDD-41F7-BF03-FCAD625E7A56}.net_4_5_Release|Any CPU.ActiveCfg = Debug|Any CPU
-		{263AE5B7-8DDD-41F7-BF03-FCAD625E7A56}.net_4_5_Release|Any CPU.Build.0 = Debug|Any CPU
 		{ED844127-96EA-44B4-AAF2-9C05AB7A5050}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{ED844127-96EA-44B4-AAF2-9C05AB7A5050}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{ED844127-96EA-44B4-AAF2-9C05AB7A5050}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -97,6 +85,18 @@ Global
 		{3FE9375F-18E6-420F-96DB-DE18FFA728B3}.net_4_5_Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3FE9375F-18E6-420F-96DB-DE18FFA728B3}.net_4_5_Release|Any CPU.ActiveCfg = Debug|Any CPU
 		{3FE9375F-18E6-420F-96DB-DE18FFA728B3}.net_4_5_Release|Any CPU.Build.0 = Debug|Any CPU
+		{652AB51F-09E3-4FE8-9C1D-D79123B4C31F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{652AB51F-09E3-4FE8-9C1D-D79123B4C31F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{652AB51F-09E3-4FE8-9C1D-D79123B4C31F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{652AB51F-09E3-4FE8-9C1D-D79123B4C31F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{652AB51F-09E3-4FE8-9C1D-D79123B4C31F}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{652AB51F-09E3-4FE8-9C1D-D79123B4C31F}.Debug|x86.Build.0 = Debug|Any CPU
+		{652AB51F-09E3-4FE8-9C1D-D79123B4C31F}.Release|x86.ActiveCfg = Release|Any CPU
+		{652AB51F-09E3-4FE8-9C1D-D79123B4C31F}.Release|x86.Build.0 = Release|Any CPU
+		{652AB51F-09E3-4FE8-9C1D-D79123B4C31F}.net_4_5_Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{652AB51F-09E3-4FE8-9C1D-D79123B4C31F}.net_4_5_Debug|Any CPU.Build.0 = Debug|Any CPU
+		{652AB51F-09E3-4FE8-9C1D-D79123B4C31F}.net_4_5_Release|Any CPU.ActiveCfg = Debug|Any CPU
+		{652AB51F-09E3-4FE8-9C1D-D79123B4C31F}.net_4_5_Release|Any CPU.Build.0 = Debug|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

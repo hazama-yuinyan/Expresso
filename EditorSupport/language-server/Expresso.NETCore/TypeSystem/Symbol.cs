@@ -72,5 +72,10 @@ namespace Expresso.TypeSystem
         public ResolveResult ResolveResult{
             get; set;
         }
+
+        public override string ToString()
+        {
+            return string.Format("[Symbol: Type={0}, Method={1}, Variable={2}, PropertyOrField={3}, ResolveResult={4}]", Type, Method, Variable, PropertyOrField, ResolveResult);
+        }
     }
 }

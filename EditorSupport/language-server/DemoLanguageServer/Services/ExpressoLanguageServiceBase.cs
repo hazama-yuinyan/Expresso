@@ -18,8 +18,9 @@ namespace ExpressoLanguageServer.Services
 
         protected TextDocument GetDocument(Uri uri)
         {
-            if (Session.Documents.TryGetValue(uri, out var sd))
+            if(Session.Documents.TryGetValue(uri, out var sd))
                 return sd.Document;
+            
             return null;
         }
 

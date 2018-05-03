@@ -25,18 +25,47 @@
 // THE SOFTWARE.
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using ICSharpCode.NRefactory.Semantics;
 
 namespace ExpressoLanguageServer.Generators
 {
+    /// <summary>
+    /// Contains helper methods for <see cref="HoverGenerator"/>.
+    /// </summary>
     public static class GeneratorHelpers
     {
+        /// <summary>
+        /// Stringifies the list.
+        /// </summary>
+        /// <returns>The list.</returns>
+        /// <param name="source">Source.</param>
+        /// <typeparam name="T">The 1st type parameter.</typeparam>
+        public static string StringifyList<T>(IEnumerable<T> source)
+        {
+            if(!source.Any())
+                return "";
+            
+            var builder = new StringBuilder(source.First().ToString());
+            foreach(var item in source.Skip(1)){
+                builder.Append(", ");
+                builder.Append(item);
+            }
+
+            return builder.ToString();
+        }
+
         public static string StringifyResolveResults(IEnumerable<ResolveResult> source)
         {
-            var builder = new StringBuilder();
-            foreach(var result in source)
+            if(!source.Any())
+                return "";
+            
+            var builder = new StringBuilder(source.First().ToString());
+            foreach(var result in source){
+                builder.Append(", ");
                 builder.Append(result.ToString());
+            }
 
             return builder.ToString();
         }

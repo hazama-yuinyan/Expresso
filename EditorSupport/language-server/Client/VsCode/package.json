@@ -1,6 +1,6 @@
 {
-    "name": "demolang",
-    "displayName": "demolang",
+    "name": "expressolang",
+    "displayName": "expressolang",
     "description": "",
     "version": "0.0.1",
     "publisher": "cxuesong",
@@ -10,7 +10,7 @@
     },
     "license": "MIT",
     "engines": {
-        "vscode": "^1.18.x"
+        "vscode": "^1.22.0"
     },
     "categories": [
         "Languages",
@@ -43,12 +43,12 @@
             "type": "object",
             "title": "Example configuration",
             "properties": {
-                "demoLanguageServer.maxNumberOfProblems": {
+                "expressoLanguageServer.maxNumberOfProblems": {
                     "type": "number",
                     "default": 100,
                     "description": "Controls the maximum number of problems produced by the server."
                 },
-                "demoLanguageServer.trace.server": {
+                "expressoLanguageServer.trace.server": {
                     "scope": "window",
                     "type": "string",
                     "enum": [
@@ -71,12 +71,12 @@
     },
     "devDependencies": {
         "typescript": "^2.5.2",
-        "vscode": "^1.1.5",
+        "vscode": "^1.1.14",
         "mocha": "^2.3.3",
         "@types/node": "^6.0.40",
         "@types/mocha": "^2.2.32"
     },
     "dependencies": {
-        "vscode-languageclient": "^3.4.2"
+        "vscode-languageclient": "^4.1.3"
     }
 }

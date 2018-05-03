@@ -24,6 +24,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using ICSharpCode.NRefactory.TypeSystem;
 
@@ -56,7 +57,7 @@ namespace Expresso.TypeSystem
         /// <param name="type">Type.</param>
         /// <param name="methodName">Method name.</param>
         /// <param name="parameterTypes">Parameter types.</param>
-        public static IMethod GetMethod(this IType type, string methodName, ITypeReference[] parameterTypes)
+        public static IMethod GetMethod(this IType type, string methodName, IEnumerable<ITypeReference> parameterTypes)
         {
             return type.GetMethods(m => {
                 return m.Name == methodName && m.Parameters.Zip(parameterTypes, (param, paramType) => new {paramType = param.Type, type = paramType})

@@ -23,12 +23,18 @@ namespace ExpressoLanguageServer.Services
         {
             // Note that Hover is cancellable.
             await Task.Delay(1000, ct);
-            var ast = Session.AstDictionary[textDocument.Uri];
+
+            var contents = "Test text @ " + position + " in " + textDocument;
+            await Session.Client.Window.ShowMessage(MessageType.Info, contents);
+            Session.LogStream.WriteLine("Hover requested");
+            return new Hover{Contents = contents};
+            /*var ast = Session.AstDictionary[textDocument.Uri];
             var file = Session.FileDictionary[textDocument.Uri];
+
             IProjectContent project_content = new ExpressoProjectContent();
             project_content = project_content.AddOrUpdateFiles(file);
             project_content = project_content.AddAssemblyReferences(LanguageServerSession.BuiltinLibs.Value);
-            return HoverGenerator.GenerateHover(ast, project_content, file, position);
+            return HoverGenerator.GenerateHover(Session.LogStream, ast, project_content, file, position);*/
         }
 
         [JsonRpcMethod]
@@ -64,10 +70,10 @@ namespace ExpressoLanguageServer.Services
                     // In case the document has been closed when we were linting…
                     await session.Client.Document.PublishDiagnostics(doc1.Uri, diag1);
                 }
-            };
+            };*/
             Session.Documents.TryAdd(textDocument.Uri, doc);
-            var diag = Session.DiagnosticProvider.LintDocument(doc.Document, Session.Settings.MaxNumberOfProblems);
-            await Client.Document.PublishDiagnostics(textDocument.Uri, diag);*/
+            //var diag = Session.DiagnosticProvider.LintDocument(doc.Document, Session.Settings.MaxNumberOfProblems);
+            //await Client.Document.PublishDiagnostics(textDocument.Uri, diag);
         }
 
         [JsonRpcMethod(IsNotification = true)]
@@ -123,6 +129,7 @@ namespace ExpressoLanguageServer.Services
         [JsonRpcMethod]
         public CompletionList Completion(TextDocumentIdentifier textDocument, Position position)
         {
+            Session.LogStream.WriteLine("Completion requested");
             return new CompletionList(PredefinedCompletionItems);
         }
 

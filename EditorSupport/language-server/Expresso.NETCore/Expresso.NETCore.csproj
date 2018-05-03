@@ -54,6 +54,7 @@
     <Compile Remove="ParserException.cs" />
     <Compile Remove="Scanner.cs" />
     <Compile Remove="TriBool.cs" />
+    <Compile Remove="TypeSystem\SimpleCompilationExtensions.cs" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.Experimental.Collections" Version="1.0.3-alpha" />
