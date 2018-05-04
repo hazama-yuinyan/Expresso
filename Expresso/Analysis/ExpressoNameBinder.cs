@@ -171,7 +171,7 @@ namespace Expresso.Ast.Analysis
             VisitBlock(ifStmt.TrueBlock);
             // We can't rewrite this to VisitBlock(ifStmt.FalseBlock);
             // because doing so can continue execution even if the node is null
-            ifStmt.FalseBlock.AcceptWalker(this);
+            ifStmt.FalseStatement.AcceptWalker(this);
 
             AscendScope();
             scope_counter = tmp_counter + 1;

@@ -224,7 +224,7 @@ namespace Expresso.Ast.Analysis
 
                 ifStmt.Condition.AcceptWalker(this);
                 VisitBlock(ifStmt.TrueBlock);
-                VisitBlock(ifStmt.FalseBlock);
+                ifStmt.FalseStatement.AcceptWalker(this);
 
                 checker.AscendScope();
                 checker.scope_counter = tmp_counter;

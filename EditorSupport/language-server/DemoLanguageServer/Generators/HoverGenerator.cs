@@ -43,7 +43,7 @@ namespace ExpressoLanguageServer.Generators
         {
             var compilation = projectContent.CreateCompilation();
 
-            var location = new TextLocation(position.Line, position.Character);
+            var location = Utility.GetTextLocationFromPosition(position);
             var hovered_node = ast.GetNodeAt(location);
             var ast_resolver = new ExpressoAstResolver(new ExpressoResolver(compilation), ast, file);
             var rr = ast_resolver.Resolve(hovered_node);

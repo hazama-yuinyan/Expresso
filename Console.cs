@@ -13,7 +13,7 @@ namespace Expresso.Terminal
 @"Welcome to the Expresso Console!
 I can read Expresso source files and compile them into assembly files that mono can execute.
 But to run the executable, currently you have to first copy the runtime assemblies(Expresso.dll and ExpressoRuntime.dll). 
-Usage: mono exsc.exe file_name -o target_path -e executable_name
+Usage: mono exsc.exe source_file_name -o target_path -e executable_name
 To execute the resulting binary: mono the_name_of_the_executable"
                 );
 				return;

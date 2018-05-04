@@ -166,9 +166,9 @@ namespace Expresso.Ast
         }
 
         public static IfStatement MakeIfStmt(PatternConstruct condition, BlockStatement trueBlock,
-                                             BlockStatement falseBlock = null, TextLocation loc = default)
+                                             Statement falseStmt = null, TextLocation loc = default)
         {
-            return new IfStatement(condition, trueBlock, falseBlock, loc);
+            return new IfStatement(condition, trueBlock, falseStmt, loc);
         }
 
         public static WhileStatement MakeWhileStmt(Expression condition, BlockStatement body,

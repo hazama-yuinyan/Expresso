@@ -1192,8 +1192,8 @@ Block<out BlockStatement block>  (. List<Statement> stmts = new List<Statement>(
                                     GoUpScope();
                                  .).
 /*------------------------------------------------------------------------*/
-IfStmt<out Statement stmt>			(. PatternConstruct pattern = null; BlockStatement true_block, false_block = null;
-                                       var start_loc = NextLocation;
+IfStmt<out Statement stmt>			(. PatternConstruct pattern = null; BlockStatement true_block = null, false_block = null;
+                                       var start_loc = NextLocation; Statement else_stmt = null;
                                     .)
 =
   "if"                              (. Symbols.AddScope();
@@ -1205,8 +1205,10 @@ IfStmt<out Statement stmt>			(. PatternConstruct pattern = null; BlockStatement 
   )
   Block<out true_block>
   [ "else"
-    Block<out false_block>
-  ]                      			(. stmt = Statement.MakeIfStmt(pattern, true_block, false_block, start_loc);
+    ( Block<out false_block>
+    | IfStmt<out else_stmt>
+    )
+  ]                      			(. stmt = Statement.MakeIfStmt(pattern, true_block, false_block ?? else_stmt, start_loc);
                                        GoUpScope();
                                     .).
 /*------------------------------------------------------------------------*/

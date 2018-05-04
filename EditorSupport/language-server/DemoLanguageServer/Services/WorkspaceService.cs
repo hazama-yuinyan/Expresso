@@ -16,8 +16,7 @@ namespace ExpressoLanguageServer.Services
         public async Task DidChangeConfiguration(SettingsRoot settings)
         {
             Session.Settings = settings.DemoLanguageServer;
-            foreach (var doc in Session.Documents.Values)
-            {
+            foreach(var doc in Session.Documents.Values){
                 var diag = Session.DiagnosticProvider.LintDocument(doc.Document, Session.Settings.MaxNumberOfProblems);
                 await Client.Document.PublishDiagnostics(doc.Document.Uri, diag);
             }
@@ -26,16 +25,15 @@ namespace ExpressoLanguageServer.Services
         [JsonRpcMethod(IsNotification = true)]
         public async Task DidChangeWatchedFiles(ICollection<FileEvent> changes)
         {
-            foreach (var change in changes)
-            {
-                if (!change.Uri.IsFile) continue;
+            foreach(var change in changes){
+                if(!change.Uri.IsFile)
+                    continue;
+                
                 var localPath = change.Uri.AbsolutePath;
-                if (string.Equals(Path.GetExtension(localPath), ".demo"))
-                {
+                if(string.Equals(Path.GetExtension(localPath), ".demo")){
                     // If the file has been removed, we will clear the lint result about it.
-                    // Note that pass null to PublishDiagnostics may mess up the client.
-                    if (change.Type == FileChangeType.Deleted)
-                    {
+                    // Note that passing null to PublishDiagnostics may mess up the client.
+                    if(change.Type == FileChangeType.Deleted){
                         await Client.Document.PublishDiagnostics(change.Uri, new Diagnostic[0]);
                     }
                 }

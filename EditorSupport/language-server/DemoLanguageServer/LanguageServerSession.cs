@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices.ComTypes;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Expresso.Ast;
@@ -74,6 +75,10 @@ namespace ExpressoLanguageServer
         public Dictionary<Uri, ExpressoUnresolvedFile> FileDictionary{
             get;
         } = new Dictionary<Uri, ExpressoUnresolvedFile>();
+
+        public UTF8Encoding UTF8Encoding{
+            get;
+        } = new UTF8Encoding();
 
         /// <summary>
         /// A stream that we write log messages to.

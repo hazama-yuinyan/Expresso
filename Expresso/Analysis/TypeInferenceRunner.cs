@@ -954,7 +954,7 @@ namespace Expresso.Ast.Analysis
                         return closure.ReturnType;
                     }
 
-                    if(last_if.FalseBlock.IsNull){
+                    if(last_if.FalseStatement.IsNull){
                         var last_return = last_if.TrueBlock.Statements.Last() as ReturnStatement;
                         if(last_return != null)
                             return last_return.Expression.IsNull ? AstType.MakeSimpleType("tuple", last_return.StartLocation) : last_return.Expression.AcceptWalker(this);
@@ -963,7 +963,7 @@ namespace Expresso.Ast.Analysis
                         // REVISE: A series of if statements becomes a tree construct
                         // so we may ignore the above statement
                         var true_return = last_if.TrueBlock.Statements.Last() as ReturnStatement;
-                        var false_return = last_if.FalseBlock.Statements.Last() as ReturnStatement;
+                        var false_return = (last_if.FalseStatement is BlockStatement false_block) ? false_block.Statements.Last() as ReturnStatement : null;
                         if(true_return != null && false_return != null){
                             var true_return_type = true_return.Expression.IsNull ? AstType.MakeSimpleType("tuple", true_return.StartLocation) : true_return.Expression.AcceptWalker(this);
                             var false_return_type = false_return.Expression.IsNull ? AstType.MakeSimpleType("tuple", false_return.StartLocation) : false_return.Expression.AcceptWalker(this);
@@ -976,7 +976,7 @@ namespace Expresso.Ast.Analysis
                             parser.ReportSemanticErrorRegional(
                                 "All code paths must return something. {0} returns nothing.",
                                 "ES1800",
-                                last_if.TrueBlock, last_if.FalseBlock,
+                                last_if.TrueBlock, last_if.FalseStatement,
                                 (true_return != null) ? "The false block" : "The true block"
                             );
                         }

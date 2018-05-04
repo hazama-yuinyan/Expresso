@@ -1782,8 +1782,8 @@ string cur_class_name;
 	}
 
 	void IfStmt(out Statement stmt) {
-		PatternConstruct pattern = null; BlockStatement true_block, false_block = null;
-		      var start_loc = NextLocation;
+		PatternConstruct pattern = null; BlockStatement true_block = null, false_block = null;
+		      var start_loc = NextLocation; Statement else_stmt = null;
 		   
 		Expect(76);
 		Symbols.AddScope();
@@ -1794,9 +1794,13 @@ string cur_class_name;
 		Block(out true_block);
 		if (la.kind == 77) {
 			Get();
-			Block(out false_block);
+			if (la.kind == 6) {
+				Block(out false_block);
+			} else if (la.kind == 76) {
+				IfStmt(out else_stmt);
+			} else SynErr(149);
 		}
-		stmt = Statement.MakeIfStmt(pattern, true_block, false_block, start_loc);
+		stmt = Statement.MakeIfStmt(pattern, true_block, false_block ?? else_stmt, start_loc);
 		       GoUpScope();
 		    
 	}
@@ -1845,7 +1849,7 @@ string cur_class_name;
 			cur_modifiers = ExpressoModifiers.Immutable; 
 		} else if (la.kind == 43) {
 			Get();
-		} else SynErr(149);
+		} else SynErr(150);
 		PatternWithType(out left);
 		Expect(80);
 		CondExpr(out rvalue);
@@ -1911,7 +1915,7 @@ string cur_class_name;
 			TuplePattern(out pattern);
 		} else if (la.kind == 9 || la.kind == 16) {
 			DestructuringPattern(out pattern);
-		} else SynErr(150);
+		} else SynErr(151);
 		AstType type = new PlaceholderType(NextLocation); 
 		if (la.kind == 40) {
 			Get();
@@ -1950,7 +1954,7 @@ string cur_class_name;
 		Pattern(out tmp);
 		patterns.Add(tmp); 
 		while (la.kind == 59) {
-			while (!(la.kind == 0 || la.kind == 59)) {SynErr(151); Get();}
+			while (!(la.kind == 0 || la.kind == 59)) {SynErr(152); Get();}
 			Get();
 			Pattern(out tmp);
 			patterns.Add(tmp); 
@@ -1998,7 +2002,7 @@ string cur_class_name;
 			ThrowStmt(out stmt);
 			break;
 		}
-		default: SynErr(152); break;
+		default: SynErr(153); break;
 		}
 	}
 
@@ -2014,7 +2018,7 @@ string cur_class_name;
 			DestructuringPattern(out pattern);
 		} else if (StartOf(21)) {
 			RValuePattern(out pattern);
-		} else SynErr(153);
+		} else SynErr(154);
 	}
 
 	void CatchClauses(out List<CatchClause> catches ) {
@@ -2100,7 +2104,7 @@ string cur_class_name;
 			} else if (la.kind == 1) {
 				Get();
 				pattern = PatternConstruct.MakeIgnoringRestPattern(CurrentLocation); 
-			} else SynErr(154);
+			} else SynErr(155);
 			inners.Add(pattern); 
 		}
 		Expect(10);
@@ -2167,7 +2171,7 @@ string cur_class_name;
 				} else if (la.kind == 1) {
 					Get();
 					patterns.Add(PatternConstruct.MakeIgnoringRestPattern(CurrentLocation)); 
-				} else SynErr(155);
+				} else SynErr(156);
 			}
 			Expect(11);
 			pattern = PatternConstruct.MakeDestructuringPattern(type_path, patterns); 
@@ -2185,7 +2189,7 @@ string cur_class_name;
 				} else if (la.kind == 1) {
 					Get();
 					patterns.Add(PatternConstruct.MakeIgnoringRestPattern(CurrentLocation)); 
-				} else SynErr(156);
+				} else SynErr(157);
 			}
 			if (la.kind == 14) {
 				Get();
@@ -2194,7 +2198,7 @@ string cur_class_name;
 			}
 			Expect(13);
 			pattern = PatternConstruct.MakeCollectionPattern(patterns, is_vector); 
-		} else SynErr(157);
+		} else SynErr(158);
 	}
 
 	void RValuePattern(out PatternConstruct pattern) {
@@ -2244,7 +2248,7 @@ string cur_class_name;
 			DestructuringPattern(out pattern);
 		} else if (StartOf(25)) {
 			ExpressionPattern(out pattern);
-		} else SynErr(158);
+		} else SynErr(159);
 	}
 
 	void OrTest(out Expression expr) {
@@ -2296,7 +2300,7 @@ string cur_class_name;
 			var seq_expr = Expression.MakeSequenceExpression(body_expr);
 			body_block = Statement.MakeBlock(Statement.MakeReturnStmt(seq_expr, seq_expr.StartLocation));
 			
-		} else SynErr(159);
+		} else SynErr(160);
 		expr = Expression.MakeClosureExpression(parameters, return_type, body_block, start_loc);
 		if(t.val != "}")
 		   GoUpScope();
@@ -2378,7 +2382,7 @@ string cur_class_name;
 			opType = OperatorType.GreaterThanOrEqual; 
 			break;
 		}
-		default: SynErr(160); break;
+		default: SynErr(161); break;
 		}
 	}
 
@@ -2399,7 +2403,7 @@ string cur_class_name;
 		} else if (la.kind == 2) {
 			Get();
 			upper_inclusive = true; 
-		} else SynErr(161);
+		} else SynErr(162);
 	}
 
 	void BitXor(out Expression expr) {
@@ -2450,7 +2454,7 @@ string cur_class_name;
 		} else if (la.kind == 97) {
 			Get();
 			opType = OperatorType.BitwiseShiftRight; 
-		} else SynErr(162);
+		} else SynErr(163);
 	}
 
 	void Term(out Expression expr) {
@@ -2471,7 +2475,7 @@ string cur_class_name;
 		} else if (la.kind == 99) {
 			Get();
 			opType = OperatorType.Minus; 
-		} else SynErr(163);
+		} else SynErr(164);
 	}
 
 	void PowerOp(out Expression expr) {
@@ -2495,7 +2499,7 @@ string cur_class_name;
 		} else if (la.kind == 102) {
 			Get();
 			opType = OperatorType.Modulus; 
-		} else SynErr(164);
+		} else SynErr(165);
 	}
 
 	void Factor(out Expression expr) {
@@ -2506,7 +2510,7 @@ string cur_class_name;
 			UnaryOperator(out type);
 			Factor(out factor);
 			expr = Expression.MakeUnaryExpr(type, factor, start_loc); 
-		} else SynErr(165);
+		} else SynErr(166);
 	}
 
 	void Primary(out Expression expr) {
@@ -2520,7 +2524,7 @@ string cur_class_name;
 			}
 		} else if (StartOf(29)) {
 			Atom(out expr);
-		} else SynErr(166);
+		} else SynErr(167);
 		while (la.kind == 7 || la.kind == 9 || la.kind == 15) {
 			Trailer(ref expr);
 		}
@@ -2541,7 +2545,7 @@ string cur_class_name;
 		} else if (la.kind == 44) {
 			Get();
 			opType = OperatorType.Reference; 
-		} else SynErr(167);
+		} else SynErr(168);
 	}
 
 	void PathExpression(out PathExpression path) {
@@ -2598,13 +2602,13 @@ string cur_class_name;
 				else
 				   expr = Expression.MakeParen(Expression.MakeSequenceExpression(exprs), loc, NextLocation);
 				
-			} else SynErr(168);
+			} else SynErr(169);
 		} else if (la.kind == 9) {
 			Get();
 			if (StartOf(31)) {
 				SequenceMaker(out expr);
 			}
-			while (!(la.kind == 0 || la.kind == 13)) {SynErr(169); Get();}
+			while (!(la.kind == 0 || la.kind == 13)) {SynErr(170); Get();}
 			Expect(13);
 			if(expr == null){
 			                     var type = CreateTypeWithArgs("array", AstType.MakePlaceholderType(loc));
@@ -2616,14 +2620,14 @@ string cur_class_name;
 			if (StartOf(16)) {
 				DictMaker(out expr);
 			}
-			while (!(la.kind == 0 || la.kind == 11)) {SynErr(170); Get();}
+			while (!(la.kind == 0 || la.kind == 11)) {SynErr(171); Get();}
 			Expect(11);
 			if(expr == null){
 			   var type = CreateTypeWithArgs("dictionary", AstType.MakePlaceholderType(loc), AstType.MakePlaceholderType(loc));
 			   expr = Expression.MakeSequenceInitializer(type, Enumerable.Empty<Expression>());
 			}
 			
-		} else SynErr(171);
+		} else SynErr(172);
 	}
 
 	void Trailer(ref Expression expr) {
@@ -2644,7 +2648,7 @@ string cur_class_name;
 			Get();
 			Expect(16);
 			expr = Expression.MakeMemRef(expr, AstNode.MakeIdentifier(t.val, AstType.MakePlaceholderType(new TextLocation(loc.Line, loc.Column + t.val.Length)), ExpressoModifiers.None, loc)); 
-		} else SynErr(172);
+		} else SynErr(173);
 	}
 
 	void PatternAndTest(out Expression expr) {
@@ -2764,7 +2768,7 @@ string cur_class_name;
 			UnaryOperator(out type);
 			PatternFactor(out factor);
 			expr = Expression.MakeUnaryExpr(type, factor, start_loc); 
-		} else SynErr(173);
+		} else SynErr(174);
 	}
 
 	void PatternPrimary(out Expression expr) {
@@ -2774,7 +2778,7 @@ string cur_class_name;
 			expr = path; 
 		} else if (StartOf(21)) {
 			Literal(out expr);
-		} else SynErr(174);
+		} else SynErr(175);
 		while (la.kind == 7 || la.kind == 9 || la.kind == 15) {
 			Trailer(ref expr);
 		}
@@ -2841,8 +2845,8 @@ string cur_class_name;
 				GoUpScope();
 				is_first_comprehension_for_clause = true;
 				
-			} else SynErr(175);
-		} else SynErr(176);
+			} else SynErr(176);
+		} else SynErr(177);
 	}
 
 	void DictMaker(out Expression expr) {
@@ -2872,7 +2876,7 @@ string cur_class_name;
 			GoDownScope();
 			is_first_comprehension_for_clause = true;
 			
-		} else SynErr(177);
+		} else SynErr(178);
 	}
 
 	void CompFor(out ComprehensionIter expr) {
@@ -2901,7 +2905,7 @@ string cur_class_name;
 			CompFor(out expr);
 		} else if (la.kind == 76) {
 			CompIf(out expr);
-		} else SynErr(178);
+		} else SynErr(179);
 	}
 
 	void CompIf(out ComprehensionIter expr) {
@@ -3134,36 +3138,37 @@ public class Errors {
 			case 146: s = "this symbol not expected in ObjectCreation"; break;
 			case 147: s = "invalid AugmentedAssignOperators"; break;
 			case 148: s = "invalid LhsPrimary"; break;
-			case 149: s = "invalid ForStmt"; break;
-			case 150: s = "invalid PatternWithType"; break;
-			case 151: s = "this symbol not expected in PatternList"; break;
-			case 152: s = "invalid MatchArmStmt"; break;
-			case 153: s = "invalid Pattern"; break;
-			case 154: s = "invalid TuplePattern"; break;
-			case 155: s = "invalid DestructuringPattern"; break;
+			case 149: s = "invalid IfStmt"; break;
+			case 150: s = "invalid ForStmt"; break;
+			case 151: s = "invalid PatternWithType"; break;
+			case 152: s = "this symbol not expected in PatternList"; break;
+			case 153: s = "invalid MatchArmStmt"; break;
+			case 154: s = "invalid Pattern"; break;
+			case 155: s = "invalid TuplePattern"; break;
 			case 156: s = "invalid DestructuringPattern"; break;
 			case 157: s = "invalid DestructuringPattern"; break;
-			case 158: s = "invalid TupleElementPattern"; break;
-			case 159: s = "invalid ClosureLiteral"; break;
-			case 160: s = "invalid ComparisonOperator"; break;
-			case 161: s = "invalid RangeOperator"; break;
-			case 162: s = "invalid ShiftOperator"; break;
-			case 163: s = "invalid AdditiveOperator"; break;
-			case 164: s = "invalid MultiplicativeOperator"; break;
-			case 165: s = "invalid Factor"; break;
-			case 166: s = "invalid Primary"; break;
-			case 167: s = "invalid UnaryOperator"; break;
-			case 168: s = "invalid Atom"; break;
-			case 169: s = "this symbol not expected in Atom"; break;
+			case 158: s = "invalid DestructuringPattern"; break;
+			case 159: s = "invalid TupleElementPattern"; break;
+			case 160: s = "invalid ClosureLiteral"; break;
+			case 161: s = "invalid ComparisonOperator"; break;
+			case 162: s = "invalid RangeOperator"; break;
+			case 163: s = "invalid ShiftOperator"; break;
+			case 164: s = "invalid AdditiveOperator"; break;
+			case 165: s = "invalid MultiplicativeOperator"; break;
+			case 166: s = "invalid Factor"; break;
+			case 167: s = "invalid Primary"; break;
+			case 168: s = "invalid UnaryOperator"; break;
+			case 169: s = "invalid Atom"; break;
 			case 170: s = "this symbol not expected in Atom"; break;
-			case 171: s = "invalid Atom"; break;
-			case 172: s = "invalid Trailer"; break;
-			case 173: s = "invalid PatternFactor"; break;
-			case 174: s = "invalid PatternPrimary"; break;
-			case 175: s = "invalid SequenceMaker"; break;
+			case 171: s = "this symbol not expected in Atom"; break;
+			case 172: s = "invalid Atom"; break;
+			case 173: s = "invalid Trailer"; break;
+			case 174: s = "invalid PatternFactor"; break;
+			case 175: s = "invalid PatternPrimary"; break;
 			case 176: s = "invalid SequenceMaker"; break;
-			case 177: s = "invalid DictMaker"; break;
-			case 178: s = "invalid CompIter"; break;
+			case 177: s = "invalid SequenceMaker"; break;
+			case 178: s = "invalid DictMaker"; break;
+			case 179: s = "invalid CompIter"; break;
 
 			default: s = "error " + n; break;
 		}

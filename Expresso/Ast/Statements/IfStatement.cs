@@ -20,8 +20,8 @@ namespace Expresso.Ast
         public static readonly Role<BlockStatement> TrueBlockRole =
             new Role<BlockStatement>("TrueBlock", BlockStatement.Null);
         public static readonly TokenRole ElseKeywordRole = new TokenRole("else", ExpressoTokenNode.Null);
-        public static readonly Role<BlockStatement> FalseBlockRole =
-            new Role<BlockStatement>("FalseBlock", BlockStatement.Null);
+        public static readonly Role<Statement> FalseStmtRole =
+            new Role<Statement>("FalseStmt", Statement.Null);
 
         public ExpressoTokenNode IfToken{
             get{return GetChildByRole(Roles.IfToken);}
@@ -57,18 +57,18 @@ namespace Expresso.Ast
 		/// The block statement to be taken if the condition is evaluated to false.
         /// It can be a null node if the statement has no else clause.
         /// </summary>
-        public BlockStatement FalseBlock{
-            get{return GetChildByRole(FalseBlockRole);}
-            set{SetChildByRole(FalseBlockRole, value);}
+        public Statement FalseStatement{
+            get{return GetChildByRole(FalseStmtRole);}
+            set{SetChildByRole(FalseStmtRole, value);}
         }
 
-        public IfStatement(PatternConstruct test, BlockStatement trueBlock, BlockStatement falseBlock,
+        public IfStatement(PatternConstruct test, BlockStatement trueBlock, Statement falseStmt,
             TextLocation loc)
-            : base(loc, (falseBlock == null) ? trueBlock.EndLocation : falseBlock.EndLocation)
+            : base(loc, (falseStmt == null) ? trueBlock.EndLocation : falseStmt.EndLocation)
 		{
             Condition = test;
             TrueBlock = trueBlock;
-            FalseBlock = falseBlock;
+            FalseStatement = falseStmt;
 		}
 
         public override void AcceptWalker(IAstWalker walker)
@@ -91,7 +91,7 @@ namespace Expresso.Ast
             IfStatement o = other as IfStatement;
             return o != null && Condition.DoMatch(o.Condition, match)
                 && TrueBlock.DoMatch(o.TrueBlock, match)
-                && FalseBlock.DoMatch(o.FalseBlock, match);
+                && FalseStatement.DoMatch(o.FalseStatement, match);
         }
 	}
 }

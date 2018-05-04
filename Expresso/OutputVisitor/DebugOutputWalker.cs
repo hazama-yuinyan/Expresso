@@ -133,27 +133,6 @@ namespace Expresso.Ast
             writer.Write("{...}");
         }
 
-        public void VisitConstant(LiteralExpression literal)
-        {
-            var value_type = literal.Value.GetType();
-            string enclosure = null;
-            switch(value_type.Name.ToLower()){
-            case "string":
-                enclosure = "\"";
-                break;
-
-            case "char":
-                enclosure = "'";
-                break;
-
-            default:
-                enclosure = "";
-                break;
-            }
-
-            writer.Write("{0}{1}{2}", enclosure, literal.Value, enclosure);
-        }
-
         public void VisitBreakStatement(BreakStatement breakStmt)
         {
             writer.Write("break upto ");
@@ -225,7 +204,7 @@ namespace Expresso.Ast
             writer.Write("if ");
             ifStmt.Condition.AcceptWalker(this);
             writer.Write("{...}");
-            if(!ifStmt.FalseBlock.IsNull)
+            if(!ifStmt.FalseStatement.IsNull)
                 writer.Write("else{...}");
         }
 
@@ -419,7 +398,23 @@ namespace Expresso.Ast
 
         public void VisitLiteralExpression(LiteralExpression literal)
         {
-            writer.Write(literal.LiteralValue);
+            var value_type = literal.Value.GetType();
+            string enclosure = null;
+            switch(value_type.Name.ToLower()){
+            case "string":
+                enclosure = "\"";
+                break;
+
+            case "char":
+                enclosure = "'";
+                break;
+
+            default:
+                enclosure = "";
+                break;
+            }
+
+            writer.Write("{0}{1}{2}", enclosure, literal.Value, enclosure);
         }
 
         public void VisitIntegerSequenceExpression(IntegerSequenceExpression intSeq)

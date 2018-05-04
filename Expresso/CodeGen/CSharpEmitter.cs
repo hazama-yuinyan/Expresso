@@ -520,12 +520,12 @@ namespace Expresso.CodeGen
             var cond = ifStmt.Condition.AcceptWalker(this, context);
             var true_block = ifStmt.TrueBlock.AcceptWalker(this, context);
 
-            if(ifStmt.FalseBlock.IsNull){
+            if(ifStmt.FalseStatement.IsNull){
                 AscendScope();
                 scope_counter = tmp_counter + 1;
                 return CSharpExpr.IfThen(cond, true_block);
             }else{
-                var false_block = ifStmt.FalseBlock.AcceptWalker(this, context);
+                var false_block = ifStmt.FalseStatement.AcceptWalker(this, context);
                 AscendScope();
                 scope_counter = tmp_counter + 1;
                 return CSharpExpr.IfThenElse(cond, true_block, false_block);
@@ -2242,16 +2242,20 @@ namespace Expresso.CodeGen
         {
             if(method == null){
                 return CSharpExpr.Invoke(inst, args);
-            }else if(method.DeclaringType.Name == "Console" && (method.Name == "Write" || method.Name == "WriteLine")){
+            }else if(method.DeclaringType.Name == "Console" && (method.Name == "Write" || method.Name == "WriteLine") ||
+                     method.DeclaringType.Name == "String" && method.Name == "Format"){
                 var first = args.First();
                 var expand_method = typeof(CSharpCompilerHelpers).GetMethod("ExpandContainer");
                 var first_string = first as ExprTree.ConstantExpression;
-                /*if(first.Type == typeof(string) && first_string != null && ((string)first_string.Value).Contains("{0}")){
+                if(first.Type == typeof(string) && first_string != null && ((string)first_string.Value).Contains("{0}")){
                     return CSharpExpr.Call(method, first, CSharpExpr.NewArrayInit(
                         typeof(string),
                         args.Skip(1).Select(a => CSharpExpr.Call(expand_method, CSharpExpr.Convert(a, typeof(object))))
                     ));
-                }else{*/
+                }
+
+                throw new InvalidOperationException("not reachable");
+                /*else{
                     var builder = new StringBuilder();
                     for(int i = 0; i < args.Count(); ++i){
                         if(i != 0)
@@ -2264,7 +2268,7 @@ namespace Expresso.CodeGen
                         typeof(string),
                         args.Select(a => CSharpExpr.Call(expand_method, CSharpExpr.Convert(a, typeof(object))))
                     ));
-                //}
+                }*/
             }else{
                 if(method.ContainsGenericParameters){
                     var parameters = method.GetParameters();

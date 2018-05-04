@@ -1,4 +1,4 @@
-﻿#define WAIT_FOR_DEBUGGER
+﻿//#define WAIT_FOR_DEBUGGER
 
 using System;
 using System.Diagnostics;
@@ -29,7 +29,7 @@ namespace ExpressoLanguageServer
             #endif
 
             StreamWriter log_writer = null;
-            if (debug_mode){
+            if(debug_mode){
                 log_writer = File.CreateText("messages-" + DateTime.Now.ToString("yyyyMMddHHmmss") + ".log");
                 log_writer.AutoFlush = true;
             }
@@ -50,10 +50,12 @@ namespace ExpressoLanguageServer
                 if(debug_mode){
                     // We want to capture log all the LSP server-to-client calls as well
                     client_handler.MessageSending += (_, e) => {
-                        lock (log_writer) log_writer.WriteLine("<C{0}", e.Message);
+                        lock(log_writer)
+                            log_writer.WriteLine("<C{0}", e.Message);
                     };
                     client_handler.MessageReceiving += (_, e) => {
-                        lock (log_writer) log_writer.WriteLine(">C{0}", e.Message);
+                        lock(log_writer)
+                            log_writer.WriteLine(">C{0}", e.Message);
                     };
                 }
                 // Configure & build service host

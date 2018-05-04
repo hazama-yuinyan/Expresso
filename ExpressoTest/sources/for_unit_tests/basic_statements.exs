@@ -9,18 +9,20 @@ def main()
 	let x = 100, y = 20, z = 300, w = 400;
 	var flag (- bool;
 
-	print(x, y, z, w);
+	print("${x}, ${y}, ${z}, ${w}");
 
 	if x == 100 {
 		flag = true;
-	}else{
+	}else if x == 0{
+        flag = false;
+    }else{
 		flag = false;
     }
 
 	var sum = 0;
 	for let p in 0..y {
 		sum += p;
-		println(p, sum);
+		println("${p}, ${sum}");
 	}
 
 	var fibs (- vector<int> = [...], a = 0, b = 1;
@@ -32,7 +34,7 @@ def main()
     var n = 100;
     do{
         n -= 40;
-        println(n);
+        println("${n}");
     }while n > 0;
 
 	var vec (- vector<int> = [...];
@@ -43,9 +45,9 @@ def main()
 			if j == MAX_J {continue upto 2;}
 			vec.Add(i);
 			vec.Add(j);
-			println(i, j);
+			println("${i}, ${j}");
 		}
 	}
 
-	println(flag, sum, a, b, fibs, vec);
+	println("${flag}, ${sum}, ${a}, ${b}, ${fibs}, ${vec}");
 }

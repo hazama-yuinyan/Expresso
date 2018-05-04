@@ -3,7 +3,7 @@
     "displayName": "expressolang",
     "description": "",
     "version": "0.0.1",
-    "publisher": "cxuesong",
+    "publisher": "train12",
     "repository": {
         "type": "git",
         "url": "https://github.com/CXuesong/LanguageServer.NET"
@@ -13,7 +13,7 @@
         "vscode": "^1.22.0"
     },
     "categories": [
-        "Languages",
+        "Programming Languages",
         "Linters"
     ],
     "activationEvents": [
@@ -56,7 +56,7 @@
                         "messages",
                         "verbose"
                     ],
-                    "default": "off",
+                    "default": "messages",
                     "description": "Traces the communication between VSCode and the demoLanguageServer service."
                 }
             }
@@ -70,11 +70,11 @@
         "test": "node ./node_modules/vscode/bin/test"
     },
     "devDependencies": {
-        "typescript": "^2.5.2",
-        "vscode": "^1.1.14",
-        "mocha": "^2.3.3",
-        "@types/node": "^6.0.40",
-        "@types/mocha": "^2.2.32"
+        "typescript": "^2.8.3",
+        "vscode": "^1.1.17",
+        "mocha": "^5.1.1",
+        "@types/node": "^10.0.3",
+        "@types/mocha": "^5.2.0"
     },
     "dependencies": {
         "vscode-languageclient": "^4.1.3"

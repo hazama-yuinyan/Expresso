@@ -15,6 +15,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ICSharpCode.NRefactory.Ceci
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LanguageServer.VsCode", "LanguageServer.VsCode\LanguageServer.VsCode.csproj", "{652AB51F-09E3-4FE8-9C1D-D79123B4C31F}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LanguageServer.VsCode.NETCore", "LanguageServer.VsCode.NETCore\LanguageServer.VsCode.NETCore.csproj", "{4D783E39-9031-4581-B3D8-E1EA1FAE6D70}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -97,6 +99,18 @@ Global
 		{652AB51F-09E3-4FE8-9C1D-D79123B4C31F}.net_4_5_Debug|Any CPU.Build.0 = Debug|Any CPU
 		{652AB51F-09E3-4FE8-9C1D-D79123B4C31F}.net_4_5_Release|Any CPU.ActiveCfg = Debug|Any CPU
 		{652AB51F-09E3-4FE8-9C1D-D79123B4C31F}.net_4_5_Release|Any CPU.Build.0 = Debug|Any CPU
+		{4D783E39-9031-4581-B3D8-E1EA1FAE6D70}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4D783E39-9031-4581-B3D8-E1EA1FAE6D70}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4D783E39-9031-4581-B3D8-E1EA1FAE6D70}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4D783E39-9031-4581-B3D8-E1EA1FAE6D70}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4D783E39-9031-4581-B3D8-E1EA1FAE6D70}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{4D783E39-9031-4581-B3D8-E1EA1FAE6D70}.Debug|x86.Build.0 = Debug|Any CPU
+		{4D783E39-9031-4581-B3D8-E1EA1FAE6D70}.Release|x86.ActiveCfg = Release|Any CPU
+		{4D783E39-9031-4581-B3D8-E1EA1FAE6D70}.Release|x86.Build.0 = Release|Any CPU
+		{4D783E39-9031-4581-B3D8-E1EA1FAE6D70}.net_4_5_Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4D783E39-9031-4581-B3D8-E1EA1FAE6D70}.net_4_5_Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4D783E39-9031-4581-B3D8-E1EA1FAE6D70}.net_4_5_Release|Any CPU.ActiveCfg = Debug|Any CPU
+		{4D783E39-9031-4581-B3D8-E1EA1FAE6D70}.net_4_5_Release|Any CPU.Build.0 = Debug|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

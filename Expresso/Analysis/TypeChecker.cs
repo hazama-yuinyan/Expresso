@@ -194,7 +194,7 @@ namespace Expresso.Ast.Analysis
             VisitBlock(ifStmt.TrueBlock);
             // We can't rewrite this to VisitBlock(ifStmt.FalseBlock);
             // because doing so can continue execution even if it is null.
-            ifStmt.FalseBlock.AcceptWalker(this);
+            ifStmt.FalseStatement.AcceptWalker(this);
 
             AscendScope();
             scope_counter = tmp_counter + 1;
@@ -457,10 +457,20 @@ namespace Expresso.Ast.Analysis
                 var param_type = (triple.Item2 is SimpleType array && array.Name == "array" && triple.Item1 == func_type2.Parameters.Count - 1) ? array.TypeArguments.First() : triple.Item2;
                 var arg_type = triple.Item3;
                 if(IsCompatibleWith(param_type, arg_type) == TriBool.False){
+                    int index = 0;
+                    argument_types.Where((type, n) => {
+                        if(type == arg_type){
+                            index = n;
+                            return true;
+                        }
+
+                        return false;
+                    });
+
                     throw new ParserException(
                         "Types mismatched; expected `{0}`, found `{1}`.",
                         "ES1303",
-                        triple.Item3,
+                        callExpr.Arguments.ElementAt(index),
                         // .ToString() is needed because otherwise it will call another overload of the constructor
                         param_type.ToString(),
                         arg_type

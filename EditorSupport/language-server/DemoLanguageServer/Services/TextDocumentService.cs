@@ -16,16 +16,13 @@ namespace ExpressoLanguageServer.Services
     [JsonRpcScope(MethodPrefix = "textDocument/")]
     public class TextDocumentService : ExpressoLanguageServiceBase
     {
-        UTF8Encoding encoding = new UTF8Encoding();
-
         [JsonRpcMethod]
         public async Task<Hover> Hover(TextDocumentIdentifier textDocument, Position position, CancellationToken ct)
         {
             // Note that Hover is cancellable.
             await Task.Delay(1000, ct);
 
-            var contents = "Test text @ " + position + " in " + textDocument;
-            await Session.Client.Window.ShowMessage(MessageType.Info, contents);
+            var contents = "Test text @" + position;
             Session.LogStream.WriteLine("Hover requested");
             return new Hover{Contents = contents};
             /*var ast = Session.AstDictionary[textDocument.Uri];
@@ -40,8 +37,7 @@ namespace ExpressoLanguageServer.Services
         [JsonRpcMethod]
         public SignatureHelp SignatureHelp(TextDocumentIdentifier textDocument, Position position)
         {
-            return new SignatureHelp(new List<SignatureInformation>
-            {
+            return new SignatureHelp(new List<SignatureInformation>{
                 new SignatureInformation("**Function1**", "Documentation1"),
                 new SignatureInformation("**Function2** <strong>test</strong>", "Documentation2"),
             });
@@ -51,7 +47,7 @@ namespace ExpressoLanguageServer.Services
         public /*async Task*/ void DidOpen(TextDocumentItem textDocument)
         {
             var doc = new SessionDocument(textDocument);
-            var parser = new Parser(new Scanner(new MemoryStream(encoding.GetBytes(textDocument.Text)))){
+            var parser = new Parser(new Scanner(new MemoryStream(Session.UTF8Encoding.GetBytes(textDocument.Text)))){
                 DoPostParseProcessing = true
             };
             parser.Parse();
@@ -82,7 +78,7 @@ namespace ExpressoLanguageServer.Services
         {
             var session_doc = Session.Documents[textDocument.Uri];
             session_doc.NotifyChanges(contentChanges);
-            var new_parser = new Parser(new Scanner(new MemoryStream(encoding.GetBytes(session_doc.Document.Content)))){
+            var new_parser = new Parser(new Scanner(new MemoryStream(Session.UTF8Encoding.GetBytes(session_doc.Document.Content)))){
                 DoPostParseProcessing = true
             };
             new_parser.Parse();

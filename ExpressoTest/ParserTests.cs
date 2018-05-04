@@ -907,8 +907,23 @@ namespace Expresso.Test
                                     )
                                 )
                             ),
-                            Statement.MakeBlock(
-                                Helpers.MakeSeq(
+                            Statement.MakeIfStmt(
+                                PatternConstruct.MakeExpressionPattern(
+                                    Expression.MakeBinaryExpr(
+                                        OperatorType.Equality,
+                                        Helpers.MakeIdentifierPath("x"),
+                                        Expression.MakeConstant("int", 0)
+                                    )
+                                ),
+                                Statement.MakeBlock(
+                                    Statement.MakeExprStmt(
+                                        Expression.MakeSingleAssignment(
+                                            Helpers.MakeIdentifierPath("flag"),
+                                            Expression.MakeConstant("bool", false)
+                                        )
+                                    )
+                                ),
+                                Statement.MakeBlock(
                                     Statement.MakeExprStmt(
                                         Expression.MakeSingleAssignment(
                                             Helpers.MakeIdentifierPath("flag"),
