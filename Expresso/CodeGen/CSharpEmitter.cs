@@ -2248,19 +2248,38 @@ namespace Expresso.CodeGen
                 var expand_method = typeof(CSharpCompilerHelpers).GetMethod("ExpandContainer");
                 var first_string = first as ExprTree.ConstantExpression;
                 if(first.Type == typeof(string) && first_string != null && ((string)first_string.Value).Contains("{0}")){
-                    return CSharpExpr.Call(method, first, CSharpExpr.NewArrayInit(
-                        typeof(string),
-                        args.Skip(1).Select(a => CSharpExpr.Call(expand_method, CSharpExpr.Convert(a, typeof(object))))
-                    ));
-                }
+                    // Only string.Format takes this path
+                    var parameters = method.GetParameters();
+                    switch(parameters.Length){
+                    case 2:
+                        if(parameters[1].ParameterType.IsArray){
+                            return CSharpExpr.Call(method, first, CSharpExpr.NewArrayInit(
+                                typeof(object),
+                                args.Skip(1).Select(a => CSharpExpr.Call(expand_method, CSharpExpr.Convert(a, typeof(object))))
+                            ));
+                        }else{
+                            var second_arg = CSharpExpr.Call(expand_method, CSharpExpr.Convert(args.ElementAt(1), typeof(object)));
+                            return CSharpExpr.Call(method, first, second_arg);
+                        }
 
-                throw new InvalidOperationException("not reachable");
-                /*else{
-                    var builder = new StringBuilder();
-                    for(int i = 0; i < args.Count(); ++i){
-                        if(i != 0)
-                            builder.Append(", ");
-                        
+                    case 3:
+                        var second_arg2 = CSharpExpr.Call(expand_method, CSharpExpr.Convert(args.ElementAt(1), typeof(object)));
+                        var third_arg = CSharpExpr.Call(expand_method, CSharpExpr.Convert(args.ElementAt(2), typeof(object)));
+                        return CSharpExpr.Call(method, first, second_arg2, third_arg);
+
+                    case 4:
+                        var second_arg3 = CSharpExpr.Call(expand_method, CSharpExpr.Convert(args.ElementAt(1), typeof(object)));
+                        var third_arg2 = CSharpExpr.Call(expand_method, CSharpExpr.Convert(args.ElementAt(2), typeof(object)));
+                        var forth_arg = CSharpExpr.Call(expand_method, CSharpExpr.Convert(args.ElementAt(3), typeof(object)));
+                        return CSharpExpr.Call(method, first, second_arg3, third_arg2, forth_arg);
+
+                    default:
+                        throw new InvalidOperationException("Unreachable");
+                    }
+                }else{
+                    var builder = new StringBuilder("{0}");
+                    for(int i = 1; i < args.Count(); ++i){
+                        builder.Append(", ");
                         builder.Append("{" + i.ToString() + "}");
                     }
 
@@ -2268,7 +2287,7 @@ namespace Expresso.CodeGen
                         typeof(string),
                         args.Select(a => CSharpExpr.Call(expand_method, CSharpExpr.Convert(a, typeof(object))))
                     ));
-                }*/
+                }
             }else{
                 if(method.ContainsGenericParameters){
                     var parameters = method.GetParameters();

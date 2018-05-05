@@ -882,10 +882,7 @@ namespace Expresso.Test
                             Expression.MakeSequenceExpression(
                                 Helpers.MakeCallExpression(
                                     Helpers.MakeIdentifierPath("print"),
-                                    Helpers.MakeIdentifierPath("x"),
-                                    Helpers.MakeIdentifierPath("y"),
-                                    Helpers.MakeIdentifierPath("z"),
-                                    Helpers.MakeIdentifierPath("w")
+                                    Expression.MakeConstant("string", "${x}, ${y}, ${z}, ${w}")
                                 )
                             )
                         ),
@@ -958,8 +955,7 @@ namespace Expresso.Test
                                         Expression.MakeSequenceExpression(
                                             Helpers.MakeCallExpression(
                                                 Helpers.MakeIdentifierPath("println"),
-                                                Helpers.MakeIdentifierPath("p"),
-                                                Helpers.MakeIdentifierPath("sum")
+                                                Expression.MakeConstant("string", "${p}, ${sum}")
                                             )
                                         )
                                     )
@@ -1050,7 +1046,7 @@ namespace Expresso.Test
                                 Statement.MakeExprStmt(
                                     Helpers.MakeCallExpression(
                                         Helpers.MakeIdentifierPath("println"),
-                                        Helpers.MakeIdentifierPath("n")
+                                        Expression.MakeConstant("string", "${n}")
                                     )
                                 )
                             )
@@ -1166,8 +1162,7 @@ namespace Expresso.Test
                                         Statement.MakeExprStmt(
                                             Helpers.MakeCallExpression(
                                                 Helpers.MakeIdentifierPath("println"),
-                                                Helpers.MakeIdentifierPath("i"),
-                                                Helpers.MakeIdentifierPath("j")
+                                                Expression.MakeConstant("string", "${i}, ${j}")
                                             )
                                         )
                                     )
@@ -1177,12 +1172,7 @@ namespace Expresso.Test
                         Statement.MakeExprStmt(
                             Helpers.MakeCallExpression(
                                 Helpers.MakeIdentifierPath("println"),
-                                Helpers.MakeIdentifierPath("flag"),
-                                Helpers.MakeIdentifierPath("sum"),
-                                Helpers.MakeIdentifierPath("a"),
-                                Helpers.MakeIdentifierPath("b"),
-                                Helpers.MakeIdentifierPath("fibs"),
-                                Helpers.MakeIdentifierPath("vec")
+                                Expression.MakeConstant("string", "${flag}, ${sum}, ${a}, ${b}, ${fibs}, ${vec}")
                             )
                         )
                     ),
@@ -3674,7 +3664,7 @@ namespace Expresso.Test
                                 Statement.MakeExprStmt(
                                     Helpers.MakeCallExpression(
                                         Helpers.MakeIdentifierPath("print"),
-                                        Helpers.MakeIdentifierPath("x")
+                                        Expression.MakeConstant("string", "${x}")
                                     )
                                 ),
                                 Statement.MakeExprStmt(
@@ -3691,21 +3681,13 @@ namespace Expresso.Test
                         Statement.MakeExprStmt(
                             Helpers.MakeCallExpression(
                                 Helpers.MakeIdentifierPath("println"),
-                                Helpers.MakeIdentifierPath("a"),
-                                Helpers.MakeIdentifierPath("b"),
-                                Helpers.MakeIdentifierPath("c"),
-                                Helpers.MakeIdentifierPath("d"),
-                                Helpers.MakeIdentifierPath("e"),
-                                Helpers.MakeIdentifierPath("f"),
-                                Helpers.MakeIdentifierPath("g")
+                                Expression.MakeConstant("string", "${a}, ${b}, ${c}, ${d}, ${e}, ${f}, ${g}")
                             )
                         ),
                         Statement.MakeExprStmt(
                             Helpers.MakeCallExpression(
                                 Helpers.MakeIdentifierPath("println"),
-                                Helpers.MakeIdentifierPath("h"),
-                                Helpers.MakeIdentifierPath("i"),
-                                Helpers.MakeIdentifierPath("y")
+                                Expression.MakeConstant("string", "${h}, ${i}, ${y}")
                             )
                         )
                     ),

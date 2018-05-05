@@ -17,7 +17,7 @@ namespace Expresso.Ast.Analysis
     /// </summary>
     class PreProcessor : IAstWalker
     {
-        static Regex InterpolationTargetFinder = new Regex(@"\${([^}]+)}", RegexOptions.Compiled);
+        static Regex InterpolationTargetFinder = new Regex(@"\$\{([^}]+)}", RegexOptions.Compiled);
         Parser parser;
 
         PreProcessor(Parser parser)

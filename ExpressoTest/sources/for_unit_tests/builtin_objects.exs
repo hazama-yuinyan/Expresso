@@ -18,11 +18,11 @@ def main()
     let i = [5..15:2];
 	var y (- vector<int> = [...];
 	for let x in d {
-		print(x);
+		print("${x}");
 		y.Add(x);
 	}
 	//let e = c[2];
 	
-    println(a, b, c, d, e, f, g);
-    println(h, i, y);
+    println("${a} ${b}, ${c}, ${d}, ${e}, ${f}, ${g}");
+    println("${h}, ${i}, ${y}");
 }
