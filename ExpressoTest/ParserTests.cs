@@ -378,49 +378,13 @@ namespace Expresso.Test
                         Statement.MakeExprStmt(
                             Helpers.MakeCallExpression(
                                 Helpers.MakeIdentifierPath("println"),
-                                Helpers.MakeIdentifierPath("a"),
-                                Helpers.MakeIdentifierPath("h_a"),
-                                Helpers.MakeIdentifierPath("h_a_"),
-                                Helpers.MakeIdentifierPath("b"),
-                                Helpers.MakeIdentifierPath("f_b"),
-                                Helpers.MakeIdentifierPath("f_b_"),
-                                Helpers.MakeIdentifierPath("c"),
-                                Helpers.MakeIdentifierPath("f_c"),
-                                Helpers.MakeIdentifierPath("f_c2"),
-                                Helpers.MakeIdentifierPath("d"),
-                                Helpers.MakeIdentifierPath("d_"),
-                                Helpers.MakeIdentifierPath("d2"),
-                                Helpers.MakeIdentifierPath("e"),
-                                Helpers.MakeIdentifierPath("u"),
-                                Helpers.MakeIdentifierPath("u_"),
-                                Helpers.MakeIdentifierPath("f_a"),
-                                Helpers.MakeIdentifierPath("f_a_"),
-                                Helpers.MakeIdentifierPath("f"),
-                                Helpers.MakeIdentifierPath("f_"),
-                                Helpers.MakeIdentifierPath("f2"),
-                                Helpers.MakeIdentifierPath("f2_"),
-                                //Helpers.MakeIdentifierPath("f3"),
-                                Helpers.MakeIdentifierPath("f3_"),
-                                Helpers.MakeIdentifierPath("f3_a"),
-                                Helpers.MakeIdentifierPath("f3_b"),
-                                Helpers.MakeIdentifierPath("f3_c"),
-                                Helpers.MakeIdentifierPath("g"),
-                                Helpers.MakeIdentifierPath("g_"),
-                                Helpers.MakeIdentifierPath("h"),
-                                Helpers.MakeIdentifierPath("h2"),
-                                Helpers.MakeIdentifierPath("h3"),
-                                Helpers.MakeIdentifierPath("i"),
-                                Helpers.MakeIdentifierPath("i2"),
-                                Helpers.MakeIdentifierPath("i3"),
-                                Helpers.MakeIdentifierPath("i4"),
-                                Helpers.MakeIdentifierPath("i5"),
-                                Helpers.MakeIdentifierPath("i6"),
-                                Helpers.MakeIdentifierPath("i6_"),
-                                Helpers.MakeIdentifierPath("j"),
-                                Helpers.MakeIdentifierPath("j2"),
-                                Helpers.MakeIdentifierPath("j3"),
-                                Helpers.MakeIdentifierPath("j_2"),
-                                Helpers.MakeIdentifierPath("j_2_")
+                                Expression.MakeConstant("string", "${a}, ${h_a}, ${h_a_}, ${b}, ${f_b}, ${f_b_}, ${c}, ${f_c}, ${f_c2}, ${d}, ${d_}, ${d2}, ${e}, ${u}, ${u_}, ${f_a}, ${f_a_}, ${f}, ${f_}, ${f2}, ${f2_}")
+                            )
+                        ),
+                        Statement.MakeExprStmt(
+                            Helpers.MakeCallExpression(
+                                Helpers.MakeIdentifierPath("println"),
+                                Expression.MakeConstant("string", "${f3_}, ${f3_a}, ${f3_b}, ${f3_c}, ${g}, ${g_}, ${h}, ${h2}, ${h3}, ${i}, ${i2}, ${i3}, ${i4}, ${i5}, ${i6}, ${i6_}, ${j}, ${j2}, ${j3}, ${j_2}, ${j_2_}")
                             )
                         )
                     ),
@@ -588,19 +552,7 @@ namespace Expresso.Test
                         Statement.MakeExprStmt(
                             Helpers.MakeCallExpression(
                                 Helpers.MakeIdentifierPath("println"),
-                                Helpers.MakeIdentifierPath("x"),
-                                Helpers.MakeIdentifierPath("a"),
-                                Helpers.MakeIdentifierPath("b"),
-                                Helpers.MakeIdentifierPath("c"),
-                                Helpers.MakeIdentifierPath("d"),
-                                Helpers.MakeIdentifierPath("e"),
-                                Helpers.MakeIdentifierPath("f"),
-                                Helpers.MakeIdentifierPath("xp"),
-                                Helpers.MakeIdentifierPath("xm"),
-                                Helpers.MakeIdentifierPath("xt"),
-                                Helpers.MakeIdentifierPath("xd"),
-                                Helpers.MakeIdentifierPath("xmod"),
-                                Helpers.MakeIdentifierPath("xpower")
+                                Expression.MakeConstant("string", "${x}, ${a}, ${b}, ${c}, ${d}, ${e}, ${f}, ${xp}, ${xm}, ${xt}, ${xd}, ${xmod}, ${xpower}")
                             )
                         )
                     ),
@@ -820,20 +772,7 @@ namespace Expresso.Test
                         Statement.MakeExprStmt(
                             Helpers.MakeCallExpression(
                                 Helpers.MakeIdentifierPath("println"),
-                                Helpers.MakeIdentifierPath("ary"),
-                                Helpers.MakeIdentifierPath("d"),
-                                Helpers.MakeIdentifierPath("m"),
-                                Helpers.MakeIdentifierPath("m2"),
-                                Helpers.MakeIdentifierPath("x"),
-                                Helpers.MakeIdentifierPath("p"),
-                                Helpers.MakeIdentifierPath("q"),
-                                Helpers.MakeIdentifierPath("r"),
-                                Helpers.MakeIdentifierPath("s"),
-                                Helpers.MakeIdentifierPath("t"),
-                                Helpers.MakeIdentifierPath("v"),
-                                Helpers.MakeIdentifierPath("w"),
-                                Helpers.MakeIdentifierPath("y"),
-                                Helpers.MakeIdentifierPath("z")
+                                Expression.MakeConstant("string", "${ary}, ${d}, ${m}, ${m2}, ${x}, ${p}, ${q}, ${r}, ${s}, ${t}, ${v}, ${w}, ${y}, ${z}")
                             )
                         )
                     ),
@@ -1761,10 +1700,7 @@ namespace Expresso.Test
                         Statement.MakeExprStmt(
                             Helpers.MakeCallExpression(
                                 Helpers.MakeIdentifierPath("println"),
-                                Helpers.MakeIdentifierPath("a"),
-                                Helpers.MakeIdentifierPath("b"),
-                                Helpers.MakeIdentifierPath("c"),
-                                Helpers.MakeIdentifierPath("d")
+                                Expression.MakeConstant("string", "${a}, ${b}, ${c}, ${d}")
                             )
                         )
                     ),
@@ -2478,11 +2414,7 @@ namespace Expresso.Test
                         Statement.MakeExprStmt(
                             Helpers.MakeCallExpression(
                                 Helpers.MakeIdentifierPath("println"),
-                                Helpers.MakeIdentifierPath("a"),
-                                Helpers.MakeIdentifierPath("b"),
-                                Helpers.MakeIdentifierPath("c"),
-                                Helpers.MakeIdentifierPath("d"),
-                                Helpers.MakeIdentifierPath("e")
+                                Expression.MakeConstant("string", "${a}, ${b}, ${c}, ${d}, ${e}")
                             )
                         )
                     ),
@@ -2931,10 +2863,7 @@ namespace Expresso.Test
                         Statement.MakeExprStmt(
                             Helpers.MakeCallExpression(
                                 Helpers.MakeIdentifierPath("println"),
-                                Helpers.MakeIdentifierPath("a"),
-                                Helpers.MakeIdentifierPath("b"),
-                                Helpers.MakeIdentifierPath("d"),
-                                Helpers.MakeIdentifierPath("f")
+                                Expression.MakeConstant("string", "${a}, ${b}, ${d}, ${f}")
                             )
                         )
                     ),
@@ -3093,7 +3022,7 @@ namespace Expresso.Test
                                                 Statement.MakeExprStmt(
                                                     Helpers.MakeCallExpression(
                                                         Helpers.MakeIdentifierPath("println"),
-                                                        Helpers.MakeIdentifierPath("j")
+                                                        Expression.MakeConstant("string", "${j}")
                                                     )
                                                 ),
                                                 Statement.MakeExprStmt(
@@ -3131,8 +3060,7 @@ namespace Expresso.Test
                         Statement.MakeExprStmt(
                             Helpers.MakeCallExpression(
                                 Helpers.MakeIdentifierPath("println"),
-                                Helpers.MakeIdentifierPath("a"),
-                                Helpers.MakeIdentifierPath("b")
+                                Expression.MakeConstant("string", "${a}, ${b}")
                             )
                         )
                     ),
@@ -3973,8 +3901,7 @@ namespace Expresso.Test
                         Statement.MakeExprStmt(
                             Helpers.MakeCallExpression(
                                 Helpers.MakeIdentifierPath("println"),
-                                Helpers.MakeIdentifierPath("b"),
-                                Helpers.MakeIdentifierPath("d")
+                                Expression.MakeConstant("string", "${b}, ${d}")
                             )
                         )
                     ),
@@ -4024,8 +3951,7 @@ namespace Expresso.Test
                         Statement.MakeExprStmt(
                             Helpers.MakeCallExpression(
                                 Helpers.MakeIdentifierPath("println"),
-                                Helpers.MakeIdentifierPath("a"),
-                                Helpers.MakeIdentifierPath("b")
+                                Expression.MakeConstant("string", "${a}, ${b}")
                             )
                         )
                     ),
@@ -4385,8 +4311,7 @@ namespace Expresso.Test
                         Statement.MakeExprStmt(
                             Helpers.MakeCallExpression(
                                 Helpers.MakeIdentifierPath("println"),
-                                Helpers.MakeIdentifierPath("t"),
-                                Helpers.MakeIdentifierPath("t2")
+                                Expression.MakeConstant("string", "${t}, ${t2}")
                             )
                         )
                     ),
@@ -4513,10 +4438,7 @@ namespace Expresso.Test
                         Statement.MakeExprStmt(
                             Helpers.MakeCallExpression(
                                 Helpers.MakeIdentifierPath("println"),
-                                Helpers.MakeIdentifierPath("i"),
-                                Helpers.MakeIdentifierPath("list"),
-                                Helpers.MakeIdentifierPath("flag"),
-                                Helpers.MakeIdentifierPath("seq")
+                                Expression.MakeConstant("string", "${i}, ${list}, ${flag}, ${seq}")
                             )
                         )
                     ),
