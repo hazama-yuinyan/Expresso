@@ -23,6 +23,6 @@ def main()
 	}
 	//let e = c[2];
 	
-    println("${a} ${b}, ${c}, ${d}, ${e}, ${f}, ${g}");
+    println("${a}, ${b}, ${c}, ${d}, ${e}, ${f}, ${g}");
     println("${h}, ${i}, ${y}");
 }
