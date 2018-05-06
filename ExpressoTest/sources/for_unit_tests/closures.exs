@@ -23,5 +23,5 @@ def main()
     let c3 = |x (- int| x + e;
     let f = c3(1);
 
-    println(a, b, d, f);
+    println("${a}, ${b}, ${d}, ${f}");
 }

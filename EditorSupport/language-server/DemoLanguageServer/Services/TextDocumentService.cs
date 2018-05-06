@@ -1,15 +1,13 @@
-﻿using System.Collections.Generic;
-using System.IO;
+﻿using System;
+using System.Collections.Generic;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Expresso;
-using Expresso.Resolver;
-using ExpressoLanguageServer.Generators;
-using ICSharpCode.NRefactory.TypeSystem;
 using JsonRpc.Standard.Contracts;
+using JsonRpc.Standard.Server;
 using LanguageServer.VsCode;
 using LanguageServer.VsCode.Contracts;
+using LanguageServer.VsCode.Server;
 
 namespace ExpressoLanguageServer.Services
 {
@@ -21,17 +19,7 @@ namespace ExpressoLanguageServer.Services
         {
             // Note that Hover is cancellable.
             await Task.Delay(1000, ct);
-
-            var contents = "Test text @" + position;
-            Session.LogStream.WriteLine("Hover requested");
-            return new Hover{Contents = contents};
-            /*var ast = Session.AstDictionary[textDocument.Uri];
-            var file = Session.FileDictionary[textDocument.Uri];
-
-            IProjectContent project_content = new ExpressoProjectContent();
-            project_content = project_content.AddOrUpdateFiles(file);
-            project_content = project_content.AddAssemblyReferences(LanguageServerSession.BuiltinLibs.Value);
-            return HoverGenerator.GenerateHover(Session.LogStream, ast, project_content, file, position);*/
+            return new Hover {Contents = "Test _hover_ @" + position + "\n\n" + textDocument};
         }
 
         [JsonRpcMethod]
@@ -47,26 +35,17 @@ namespace ExpressoLanguageServer.Services
         public /*async Task*/ void DidOpen(TextDocumentItem textDocument)
         {
             var doc = new SessionDocument(textDocument);
-            var parser = new Parser(new Scanner(new MemoryStream(Session.UTF8Encoding.GetBytes(textDocument.Text)))){
-                DoPostParseProcessing = true
-            };
-            parser.Parse();
-            var ast = parser.TopmostAst;
-            Session.AstDictionary.Add(textDocument.Uri, ast);
-
-            var file = ast.ToTypeSystem();
-            Session.FileDictionary.Add(textDocument.Uri, file);
-
-            /*var session = Session;
-            doc.DocumentChanged += async (sender, args) => {
+            var session = Session;
+            doc.DocumentChanged += /*async*/ (sender, args) => {
                 // Lint the document when it's changed.
-                var doc1 = ((SessionDocument) sender).Document;
+                /*var doc1 = ((SessionDocument) sender).Document;
                 var diag1 = session.DiagnosticProvider.LintDocument(doc1, session.Settings.MaxNumberOfProblems);
                 if(session.Documents.ContainsKey(doc1.Uri)){
                     // In case the document has been closed when we were linting…
                     await session.Client.Document.PublishDiagnostics(doc1.Uri, diag1);
-                }
-            };*/
+                }*/
+            };
+
             Session.Documents.TryAdd(textDocument.Uri, doc);
             //var diag = Session.DiagnosticProvider.LintDocument(doc.Document, Session.Settings.MaxNumberOfProblems);
             //await Client.Document.PublishDiagnostics(textDocument.Uri, diag);
@@ -76,17 +55,7 @@ namespace ExpressoLanguageServer.Services
         public void DidChange(TextDocumentIdentifier textDocument,
             ICollection<TextDocumentContentChangeEvent> contentChanges)
         {
-            var session_doc = Session.Documents[textDocument.Uri];
-            session_doc.NotifyChanges(contentChanges);
-            var new_parser = new Parser(new Scanner(new MemoryStream(Session.UTF8Encoding.GetBytes(session_doc.Document.Content)))){
-                DoPostParseProcessing = true
-            };
-            new_parser.Parse();
-            var ast = new_parser.TopmostAst;
-            Session.AstDictionary[textDocument.Uri] = ast;
-
-            var file = ast.ToTypeSystem();
-            Session.FileDictionary[textDocument.Uri] = file;
+            Session.Documents[textDocument.Uri].NotifyChanges(contentChanges);
         }
 
         [JsonRpcMethod(IsNotification = true)]
@@ -99,11 +68,9 @@ namespace ExpressoLanguageServer.Services
         [JsonRpcMethod(IsNotification = true)]
         public async Task DidClose(TextDocumentIdentifier textDocument)
         {
-            if(textDocument.Uri.IsUntitled())
+            if(textDocument.Uri.IsUntitled()){
                 await Client.Document.PublishDiagnostics(textDocument.Uri, new Diagnostic[0]);
-
-            Session.AstDictionary.Remove(textDocument.Uri);
-            Session.FileDictionary.Remove(textDocument.Uri);
+            }
             Session.Documents.TryRemove(textDocument.Uri, out _);
         }
 
@@ -125,7 +92,6 @@ namespace ExpressoLanguageServer.Services
         [JsonRpcMethod]
         public CompletionList Completion(TextDocumentIdentifier textDocument, Position position)
         {
-            Session.LogStream.WriteLine("Completion requested");
             return new CompletionList(PredefinedCompletionItems);
         }
 

@@ -1,0 +1,31 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.0</TargetFramework>
+        <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory.Cecil\Properties\AssemblyInfo.cs">
+      <Link>Properties\AssemblyInfo.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory.Cecil\CecilLoader.cs">
+      <Link>CecilLoader.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\TypeSystem\Implementation\BlobReader.cs">
+      <Link>BlobReader.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\Utils\ExtensionMethods.cs">
+      <Link>ExtensionMethods.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\TypeSystem\Implementation\AccessorOwnerMemberReference.cs">
+      <Link>AccessorOwnerMemberReference.cs</Link>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Mono.Cecil" Version="0.10.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\ICSharpCode.NRefactory.NETCore\ICSharpCode.NRefactory.NETCore.csproj" />
+  </ItemGroup>
+</Project>

@@ -12,9 +12,6 @@ namespace LanguageServer.VsCode.Contracts
     [JsonObject(MemberSerialization.OptIn)]
     public class FormattingOptions
     {
-        /// <summary>
-        /// Initializes a new instance of the <see cref="T:LanguageServer.VsCode.Contracts.FormattingOptions"/> class.
-        /// </summary>
         [JsonConstructor]
         public FormattingOptions()
         {

@@ -41,20 +41,11 @@ namespace LanguageServer.VsCode.Contracts
     /// </summary>
     public class ExecuteCommandRegistrationOptions : RegistrationOptions
     {
-        /// <summary>
-        /// Initializes a new instance of the
-        /// <see cref="T:LanguageServer.VsCode.Contracts.ExecuteCommandRegistrationOptions"/> class.
-        /// </summary>
         [JsonConstructor]
         public ExecuteCommandRegistrationOptions() : this(null)
         {
         }
 
-        /// <summary>
-        /// Initializes a new instance of the
-        /// <see cref="T:LanguageServer.VsCode.Contracts.ExecuteCommandRegistrationOptions"/> class.
-        /// </summary>
-        /// <param name="commands">Commands.</param>
         public ExecuteCommandRegistrationOptions(IEnumerable<string> commands)
         {
             Commands = commands;

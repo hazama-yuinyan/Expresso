@@ -23,5 +23,5 @@ def main()
     let y = ary[0] + ary[1] * d["a"];
     let z = v * w;
 
-    println(ary, d, m, m2, x, p, q, r, s, t, v, w, y, z);
+    println("${ary}, ${d}, ${m}, ${m2}, ${x}, ${p}, ${q}, ${r}, ${s}, ${t}, ${v}, ${w}, ${y}, ${z}");
 }

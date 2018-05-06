@@ -21,5 +21,5 @@ def main(args (- string[]) -> void
 	xmod %= 2;
 	xpower **= 2;
 
-	println(x, a, b, c, d, e, f, xp, xm, xt, xd, xmod, xpower);
+	println("${x}, ${a}, ${b}, ${c}, ${d}, ${e}, ${f}, ${xp}, ${xm}, ${xt}, ${xd}, ${xmod}, ${xpower}");
 }

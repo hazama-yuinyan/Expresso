@@ -6,9 +6,6 @@ using Newtonsoft.Json;
 
 namespace LanguageServer.VsCode.Contracts.Client
 {
-    /// <summary>
-    /// Represents a client.
-    /// </summary>
     [JsonRpcScope(MethodPrefix = "client/")]
     public interface IClient
     {

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text;
 using LanguageServer.VsCode.Contracts;
 using LanguageServer.VsCode.Server;
 

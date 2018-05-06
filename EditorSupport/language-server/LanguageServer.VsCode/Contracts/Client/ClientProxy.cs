@@ -51,40 +51,16 @@ namespace LanguageServer.VsCode.Contracts.Client
         private readonly Lazy<IWindow> _Window;
         private readonly Lazy<IWorkspace> _Workspace;
 
-        /// <summary>
-        /// Gets the client.
-        /// </summary>
-        /// <value>The client.</value>
         public IClient Client => _Client.Value;
 
-        /// <summary>
-        /// Gets the document.
-        /// </summary>
-        /// <value>The document.</value>
         public IDocument Document => _Document.Value;
 
-        /// <summary>
-        /// Gets the telemetry.
-        /// </summary>
-        /// <value>The telemetry.</value>
         public ITelemetry Telemetry => _Telemetry.Value;
 
-        /// <summary>
-        /// Gets the text document.
-        /// </summary>
-        /// <value>The text document.</value>
         public ITextDocument TextDocument => _TextDocument.Value;
 
-        /// <summary>
-        /// Gets the window.
-        /// </summary>
-        /// <value>The window.</value>
         public IWindow Window => _Window.Value;
 
-        /// <summary>
-        /// Gets the workspace.
-        /// </summary>
-        /// <value>The workspace.</value>
         public IWorkspace Workspace => _Workspace.Value;
 
     }

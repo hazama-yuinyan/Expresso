@@ -31,32 +31,18 @@ namespace LanguageServer.VsCode.Contracts
     /// </summary>
     public class DocumentLinkRegistrationOptions : TextDocumentRegistrationOptions
     {
-        /// <summary>
-        /// Initializes a new instance of the
-        /// <see cref="T:LanguageServer.VsCode.Contracts.DocumentLinkRegistrationOptions"/> class.
-        /// </summary>
+
         [JsonConstructor]
         public DocumentLinkRegistrationOptions()
             : this(false, null)
         {
         }
 
-        /// <summary>
-        /// Initializes a new instance of the
-        /// <see cref="T:LanguageServer.VsCode.Contracts.DocumentLinkRegistrationOptions"/> class.
-        /// </summary>
-        /// <param name="resolveProvider">If set to <c>true</c> resolve provider.</param>
         public DocumentLinkRegistrationOptions(bool resolveProvider)
             : this(resolveProvider, null)
         {
         }
 
-        /// <summary>
-        /// Initializes a new instance of the
-        /// <see cref="T:LanguageServer.VsCode.Contracts.DocumentLinkRegistrationOptions"/> class.
-        /// </summary>
-        /// <param name="resolveProvider">If set to <c>true</c> resolve provider.</param>
-        /// <param name="documentSelector">Document selector.</param>
         public DocumentLinkRegistrationOptions(bool resolveProvider, IEnumerable<DocumentFilter> documentSelector)
             : base(documentSelector)
         {

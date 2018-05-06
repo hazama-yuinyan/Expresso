@@ -6,9 +6,6 @@ using JsonRpc.Standard.Contracts;
 
 namespace LanguageServer.VsCode.Contracts.Client
 {
-    /// <summary>
-    /// Represents a workspace.
-    /// </summary>
     [JsonRpcScope(MethodPrefix = "workspace/")]
     public interface IWorkspace
     {

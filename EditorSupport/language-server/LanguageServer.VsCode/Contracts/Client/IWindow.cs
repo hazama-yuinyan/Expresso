@@ -5,9 +5,7 @@ using JsonRpc.Standard.Contracts;
 
 namespace LanguageServer.VsCode.Contracts.Client
 {
-    /// <summary>
-    /// Represents a window.
-    /// </summary>
+
     [JsonRpcScope(MethodPrefix = "window/")]
     public interface IWindow
     {

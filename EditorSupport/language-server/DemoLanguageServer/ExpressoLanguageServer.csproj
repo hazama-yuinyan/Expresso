@@ -3,22 +3,12 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>netcoreapp2.0</TargetFramework>
-    <StartupObject>ExpressoLanguageServer.Program</StartupObject>
   </PropertyGroup>
 
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <LangVersion>Latest</LangVersion>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <LangVersion>Latest</LangVersion>
-    <DebugType></DebugType>
-  </PropertyGroup>
   <ItemGroup>
     <Compile Remove="_private\**" />
     <EmbeddedResource Remove="_private\**" />
     <None Remove="_private\**" />
-    <None Remove=".DS_Store" />
-    <Compile Remove="Walkers\HoverWalker.cs" />
   </ItemGroup>
 
   <ItemGroup>
@@ -26,16 +16,11 @@
     <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="1.1.1" />
     <PackageReference Include="System.Diagnostics.TraceSource" Version="4.3.0" />
     <PackageReference Include="CXuesong.JsonRpc.Standard" Version="0.4.1" />
-    <PackageReference Include="CXuesong.JsonRpc.Streams" Version="0.4.1" />
+    <PackageReference Include="CXuesong.JsonRpc.Streams" Version="0.4.2" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Expresso.NETCore\Expresso.NETCore.csproj" />
-    <ProjectReference Include="..\ICSharpCode.NRefactory.NETCore\ICSharpCode.NRefactory.NETCore.csproj" />
-    <ProjectReference Include="..\LanguageServer.VsCode.NETCore\LanguageServer.VsCode.NETCore.csproj" />
+    <ProjectReference Include="..\LanguageServer.VsCode\LanguageServer.VsCode.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Generators\" />
-  </ItemGroup>
 </Project>

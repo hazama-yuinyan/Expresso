@@ -42,33 +42,15 @@ namespace LanguageServer.VsCode.Contracts
         /// </summary>
         public static readonly Diagnostic[] EmptyDiagnostics = { };
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="T:LanguageServer.VsCode.Contracts.Diagnostic"/> class.
-        /// </summary>
         [JsonConstructor]
         public Diagnostic()
         {
         }
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="T:LanguageServer.VsCode.Contracts.Diagnostic"/> class.
-        /// </summary>
-        /// <param name="severity">Severity.</param>
-        /// <param name="range">Range.</param>
-        /// <param name="source">Source.</param>
-        /// <param name="message">Message.</param>
         public Diagnostic(DiagnosticSeverity severity, Range range, string source, string message) : this(severity, range, source, null, message)
         {
         }
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="T:LanguageServer.VsCode.Contracts.Diagnostic"/> class.
-        /// </summary>
-        /// <param name="severity">Severity.</param>
-        /// <param name="range">Range.</param>
-        /// <param name="source">Source.</param>
-        /// <param name="code">Code.</param>
-        /// <param name="message">Message.</param>
         public Diagnostic(DiagnosticSeverity severity, Range range, string source, string code, string message)
         {
             Severity = severity;

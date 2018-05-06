@@ -1,0 +1,637 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.0</TargetFramework>
+        <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\Analysis\AbiComparer.cs">
+      <Link>Analysis\AbiComparer.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\Analysis\SymbolCollector.cs">
+      <Link>Analysis\SymbolCollector.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\Analysis\TypeGraph.cs">
+      <Link>Analysis\TypeGraph.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\Analysis\TypeGraphNode.cs">
+      <Link>Analysis\TypeGraphNode.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\Documentation\DocumentationComment.cs">
+      <Link>Documentation\DocumentationComment.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\Documentation\GetPotentiallyNestedClassTypeReference.cs">
+      <Link>Documentation\GetPotentiallyNestedClassTypeReference.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\Documentation\IDocumentationProvider.cs">
+      <Link>Documentation\IDocumentationProvider.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\Documentation\IdStringMemberReference.cs">
+      <Link>Documentation\IdStringMemberReference.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\Documentation\IdStringProvider.cs">
+      <Link>Documentation\IdStringProvider.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\Documentation\XmlDocumentationProvider.cs">
+      <Link>Documentation\XmlDocumentationProvider.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\Completion\CompletionCategory.cs">
+      <Link>Completion\CompletionCategory.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\Completion\CompletionExtensionMethods.cs">
+      <Link>Completion\CompletionExtensionMethods.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\Completion\DisplayFlags.cs">
+      <Link>Completion\DisplayFlags.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\Completion\FrameworkLookup.cs">
+      <Link>Completion\FrameworkLookup.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\Completion\ICompletionData.cs">
+      <Link>Completion\ICompletionData.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\Completion\IEntityCompletionData.cs">
+      <Link>Completion\IEntityCompletionData.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\Completion\IParameterDataProvider.cs">
+      <Link>Completion\IParameterDataProvider.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\Completion\IVariableCompletionData.cs">
+      <Link>Completion\IVariableCompletionData.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\Editor\IDocument.cs">
+      <Link>Editor\IDocument.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\Editor\IDocumentLine.cs">
+      <Link>Editor\IDocumentLine.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\Editor\ISegment.cs">
+      <Link>Editor\ISegment.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\Editor\ITextAnchor.cs">
+      <Link>Editor\ITextAnchor.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\Editor\ITextPasteHandler.cs">
+      <Link>Editor\ITextPasteHandler.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\Editor\ITextSource.cs">
+      <Link>Editor\ITextSource.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\Editor\ReadOnlyDocument.cs">
+      <Link>Editor\ReadOnlyDocument.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\Editor\StringBuilderDocument.cs">
+      <Link>Editor\StringBuilderDocument.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\Editor\StringTextSource.cs">
+      <Link>Editor\StringTextSource.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\Editor\TextChangeEventArgs.cs">
+      <Link>Editor\TextChangeEventArgs.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\Editor\TextSourceVersionProvider.cs">
+      <Link>Editor\TextSourceVersionProvider.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\Editor\UnicodeNewline.cs">
+      <Link>Editor\UnicodeNewline.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\PatternMatching\AnyNode.cs">
+      <Link>PatternMatching\AnyNode.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\PatternMatching\AnyNodeOrNull.cs">
+      <Link>PatternMatching\AnyNodeOrNull.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\PatternMatching\Backreference.cs">
+      <Link>PatternMatching\Backreference.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\PatternMatching\BacktrackingInfo.cs">
+      <Link>PatternMatching\BacktrackingInfo.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\PatternMatching\Choice.cs">
+      <Link>PatternMatching\Choice.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\PatternMatching\INode.cs">
+      <Link>PatternMatching\INode.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\PatternMatching\Match.cs">
+      <Link>PatternMatching\Match.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\PatternMatching\NamedNode.cs">
+      <Link>PatternMatching\NamedNode.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\PatternMatching\OptionalNode.cs">
+      <Link>PatternMatching\OptionalNode.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\PatternMatching\Pattern.cs">
+      <Link>PatternMatching\Pattern.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\PatternMatching\Repeat.cs">
+      <Link>PatternMatching\Repeat.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\Properties\AssemblyInfo.cs">
+      <Link>Properties\AssemblyInfo.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\Properties\GlobalAssemblyInfo.cs">
+      <Link>Properties\GlobalAssemblyInfo.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\Refactoring\IssueMarker.cs">
+      <Link>Refactoring\IssueMarker.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\Refactoring\Severity.cs">
+      <Link>Refactoring\Severity.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\Semantics\AmbiguousResolveResult.cs">
+      <Link>Semantics\AmbiguousResolveResult.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\Semantics\ArrayAccessResolveResult.cs">
+      <Link>Semantics\ArrayAccessResolveResult.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\Semantics\ArrayCreateResolveResult.cs">
+      <Link>Semantics\ArrayCreateResolveResult.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\Semantics\ByReferenceResolveResult.cs">
+      <Link>Semantics\ByReferenceResolveResult.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\Semantics\ConstantResolveResult.cs">
+      <Link>Semantics\ConstantResolveResult.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\Semantics\Conversion.cs">
+      <Link>Semantics\Conversion.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\Semantics\ConversionResolveResult.cs">
+      <Link>Semantics\ConversionResolveResult.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\Semantics\ErrorResolveResult.cs">
+      <Link>Semantics\ErrorResolveResult.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\Semantics\ForEachResolveResult.cs">
+      <Link>Semantics\ForEachResolveResult.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\Semantics\InitializedObjectResolveResult.cs">
+      <Link>Semantics\InitializedObjectResolveResult.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\Semantics\InvocationResolveResult.cs">
+      <Link>Semantics\InvocationResolveResult.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\Semantics\LocalResolveResult.cs">
+      <Link>Semantics\LocalResolveResult.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\Semantics\MemberResolveResult.cs">
+      <Link>Semantics\MemberResolveResult.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\Semantics\NamedArgumentResolveResult.cs">
+      <Link>Semantics\NamedArgumentResolveResult.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\Semantics\NamespaceResolveResult.cs">
+      <Link>Semantics\NamespaceResolveResult.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\Semantics\OperatorResolveResult.cs">
+      <Link>Semantics\OperatorResolveResult.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\Semantics\ResolveResult.cs">
+      <Link>Semantics\ResolveResult.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\Semantics\SizeOfResolveResult.cs">
+      <Link>Semantics\SizeOfResolveResult.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\Semantics\ThisResolveResult.cs">
+      <Link>Semantics\ThisResolveResult.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\Semantics\TypeIsResolveResult.cs">
+      <Link>Semantics\TypeIsResolveResult.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\Semantics\TypeOfResolveResult.cs">
+      <Link>Semantics\TypeOfResolveResult.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\Semantics\TypeResolveResult.cs">
+      <Link>Semantics\TypeResolveResult.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\Semantics\UnknownMemberResolveResult.cs">
+      <Link>Semantics\UnknownMemberResolveResult.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\TypeSystem\Accessibility.cs">
+      <Link>TypeSystem\Accessibility.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\TypeSystem\AnonymousType.cs">
+      <Link>TypeSystem\AnonymousType.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\TypeSystem\ArrayType.cs">
+      <Link>TypeSystem\ArrayType.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\TypeSystem\AssemblyLoader.cs">
+      <Link>TypeSystem\AssemblyLoader.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\TypeSystem\AssemblyQualifiedTypeName.cs">
+      <Link>TypeSystem\AssemblyQualifiedTypeName.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\TypeSystem\ByReferenceType.cs">
+      <Link>TypeSystem\ByReferenceType.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\TypeSystem\ComHelper.cs">
+      <Link>TypeSystem\ComHelper.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\TypeSystem\DefaultSolutionSnapshot.cs">
+      <Link>TypeSystem\DefaultSolutionSnapshot.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\TypeSystem\DomRegion.cs">
+      <Link>TypeSystem\DomRegion.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\TypeSystem\EntityType.cs">
+      <Link>TypeSystem\EntityType.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\TypeSystem\Error.cs">
+      <Link>TypeSystem\Error.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\TypeSystem\FullTypeName.cs">
+      <Link>TypeSystem\FullTypeName.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\TypeSystem\IAmbience.cs">
+      <Link>TypeSystem\IAmbience.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\TypeSystem\IAssembly.cs">
+      <Link>TypeSystem\IAssembly.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\TypeSystem\IAttribute.cs">
+      <Link>TypeSystem\IAttribute.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\TypeSystem\ICodeContext.cs">
+      <Link>TypeSystem\ICodeContext.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\TypeSystem\ICompilation.cs">
+      <Link>TypeSystem\ICompilation.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\TypeSystem\IConstantValue.cs">
+      <Link>TypeSystem\IConstantValue.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\TypeSystem\IEntity.cs">
+      <Link>TypeSystem\IEntity.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\TypeSystem\IEvent.cs">
+      <Link>TypeSystem\IEvent.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\TypeSystem\IField.cs">
+      <Link>TypeSystem\IField.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\TypeSystem\IFreezable.cs">
+      <Link>TypeSystem\IFreezable.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\TypeSystem\IInterningProvider.cs">
+      <Link>TypeSystem\IInterningProvider.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\TypeSystem\IMember.cs">
+      <Link>TypeSystem\IMember.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\TypeSystem\IMethod.cs">
+      <Link>TypeSystem\IMethod.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\TypeSystem\INamedElement.cs">
+      <Link>TypeSystem\INamedElement.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\TypeSystem\INamespace.cs">
+      <Link>TypeSystem\INamespace.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\TypeSystem\IParameter.cs">
+      <Link>TypeSystem\IParameter.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\TypeSystem\IParameterizedMember.cs">
+      <Link>TypeSystem\IParameterizedMember.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\TypeSystem\IProjectContent.cs">
+      <Link>TypeSystem\IProjectContent.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\TypeSystem\IProperty.cs">
+      <Link>TypeSystem\IProperty.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\TypeSystem\ISolutionSnapshot.cs">
+      <Link>TypeSystem\ISolutionSnapshot.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\TypeSystem\ISupportsInterning.cs">
+      <Link>TypeSystem\ISupportsInterning.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\TypeSystem\ISymbol.cs">
+      <Link>TypeSystem\ISymbol.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\TypeSystem\IType.cs">
+      <Link>TypeSystem\IType.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\TypeSystem\ITypeDefinition.cs">
+      <Link>TypeSystem\ITypeDefinition.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\TypeSystem\ITypeParameter.cs">
+      <Link>TypeSystem\ITypeParameter.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\TypeSystem\ITypeReference.cs">
+      <Link>TypeSystem\ITypeReference.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\TypeSystem\IUnresolvedFile.cs">
+      <Link>TypeSystem\IUnresolvedFile.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\TypeSystem\IVariable.cs">
+      <Link>TypeSystem\IVariable.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\TypeSystem\InheritanceHelper.cs">
+      <Link>TypeSystem\InheritanceHelper.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\TypeSystem\IntersectionType.cs">
+      <Link>TypeSystem\IntersectionType.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\TypeSystem\KnownTypeReference.cs">
+      <Link>TypeSystem\KnownTypeReference.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\TypeSystem\NullableType.cs">
+      <Link>TypeSystem\NullableType.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\TypeSystem\ParameterListComparer.cs">
+      <Link>TypeSystem\ParameterListComparer.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\TypeSystem\ParameterizedType.cs">
+      <Link>TypeSystem\ParameterizedType.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\TypeSystem\PointerType.cs">
+      <Link>TypeSystem\PointerType.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\TypeSystem\ProjectReference.cs">
+      <Link>TypeSystem\ProjectReference.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\TypeSystem\ReflectionHelper.cs">
+      <Link>TypeSystem\ReflectionHelper.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\TypeSystem\ReflectionNameParseException.cs">
+      <Link>TypeSystem\ReflectionNameParseException.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\TypeSystem\SimpleTypeResolveContext.cs">
+      <Link>TypeSystem\SimpleTypeResolveContext.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\TypeSystem\SpecialType.cs">
+      <Link>TypeSystem\SpecialType.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\TypeSystem\TaskType.cs">
+      <Link>TypeSystem\TaskType.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\TypeSystem\TopLevelTypeName.cs">
+      <Link>TypeSystem\TopLevelTypeName.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\TypeSystem\TypeKind.cs">
+      <Link>TypeSystem\TypeKind.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\TypeSystem\TypeParameterSubstitution.cs">
+      <Link>TypeSystem\TypeParameterSubstitution.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\TypeSystem\TypeSystemExtensions.cs">
+      <Link>TypeSystem\TypeSystemExtensions.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\TypeSystem\TypeVisitor.cs">
+      <Link>TypeSystem\TypeVisitor.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\TypeSystem\Implementation\AbstractFreezable.cs">
+      <Link>TypeSystem\Implementation\AbstractFreezable.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\TypeSystem\Implementation\AbstractResolvedEntity.cs">
+      <Link>TypeSystem\Implementation\AbstractResolvedEntity.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\TypeSystem\Implementation\AbstractResolvedMember.cs">
+      <Link>TypeSystem\Implementation\AbstractResolvedMember.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\TypeSystem\Implementation\AbstractResolvedTypeParameter.cs">
+      <Link>TypeSystem\Implementation\AbstractResolvedTypeParameter.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\TypeSystem\Implementation\AbstractType.cs">
+      <Link>TypeSystem\Implementation\AbstractType.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\TypeSystem\Implementation\AbstractUnresolvedEntity.cs">
+      <Link>TypeSystem\Implementation\AbstractUnresolvedEntity.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\TypeSystem\Implementation\AbstractUnresolvedMember.cs">
+      <Link>TypeSystem\Implementation\AbstractUnresolvedMember.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\TypeSystem\Implementation\AccessorOwnerMemberReference.cs">
+      <Link>TypeSystem\Implementation\AccessorOwnerMemberReference.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\TypeSystem\Implementation\BaseTypeCollector.cs">
+      <Link>TypeSystem\Implementation\BaseTypeCollector.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\TypeSystem\Implementation\BlobReader.cs">
+      <Link>TypeSystem\Implementation\BlobReader.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\TypeSystem\Implementation\DefaultAssemblyReference.cs">
+      <Link>TypeSystem\Implementation\DefaultAssemblyReference.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\TypeSystem\Implementation\DefaultAttribute.cs">
+      <Link>TypeSystem\Implementation\DefaultAttribute.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\TypeSystem\Implementation\DefaultMemberReference.cs">
+      <Link>TypeSystem\Implementation\DefaultMemberReference.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\TypeSystem\Implementation\DefaultParameter.cs">
+      <Link>TypeSystem\Implementation\DefaultParameter.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\TypeSystem\Implementation\DefaultResolvedEvent.cs">
+      <Link>TypeSystem\Implementation\DefaultResolvedEvent.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\TypeSystem\Implementation\DefaultResolvedField.cs">
+      <Link>TypeSystem\Implementation\DefaultResolvedField.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\TypeSystem\Implementation\DefaultResolvedMethod.cs">
+      <Link>TypeSystem\Implementation\DefaultResolvedMethod.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\TypeSystem\Implementation\DefaultResolvedProperty.cs">
+      <Link>TypeSystem\Implementation\DefaultResolvedProperty.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\TypeSystem\Implementation\DefaultResolvedTypeDefinition.cs">
+      <Link>TypeSystem\Implementation\DefaultResolvedTypeDefinition.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\TypeSystem\Implementation\DefaultResolvedTypeParameter.cs">
+      <Link>TypeSystem\Implementation\DefaultResolvedTypeParameter.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\TypeSystem\Implementation\DefaultUnresolvedAssembly.cs">
+      <Link>TypeSystem\Implementation\DefaultUnresolvedAssembly.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\TypeSystem\Implementation\DefaultUnresolvedAttribute.cs">
+      <Link>TypeSystem\Implementation\DefaultUnresolvedAttribute.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\TypeSystem\Implementation\DefaultUnresolvedEvent.cs">
+      <Link>TypeSystem\Implementation\DefaultUnresolvedEvent.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\TypeSystem\Implementation\DefaultUnresolvedField.cs">
+      <Link>TypeSystem\Implementation\DefaultUnresolvedField.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\TypeSystem\Implementation\DefaultUnresolvedMethod.cs">
+      <Link>TypeSystem\Implementation\DefaultUnresolvedMethod.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\TypeSystem\Implementation\DefaultUnresolvedParameter.cs">
+      <Link>TypeSystem\Implementation\DefaultUnresolvedParameter.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\TypeSystem\Implementation\DefaultUnresolvedProperty.cs">
+      <Link>TypeSystem\Implementation\DefaultUnresolvedProperty.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\TypeSystem\Implementation\DefaultUnresolvedTypeDefinition.cs">
+      <Link>TypeSystem\Implementation\DefaultUnresolvedTypeDefinition.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\TypeSystem\Implementation\DefaultUnresolvedTypeParameter.cs">
+      <Link>TypeSystem\Implementation\DefaultUnresolvedTypeParameter.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\TypeSystem\Implementation\DefaultVariable.cs">
+      <Link>TypeSystem\Implementation\DefaultVariable.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\TypeSystem\Implementation\DummyTypeParameter.cs">
+      <Link>TypeSystem\Implementation\DummyTypeParameter.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\TypeSystem\Implementation\ExplicitInterfaceImplementationMemberReference.cs">
+      <Link>TypeSystem\Implementation\ExplicitInterfaceImplementationMemberReference.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\TypeSystem\Implementation\FullNameAndTypeParameterCount.cs">
+      <Link>TypeSystem\Implementation\FullNameAndTypeParameterCount.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\TypeSystem\Implementation\GetClassTypeReference.cs">
+      <Link>TypeSystem\Implementation\GetClassTypeReference.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\TypeSystem\Implementation\GetMembersHelper.cs">
+      <Link>TypeSystem\Implementation\GetMembersHelper.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\TypeSystem\Implementation\KnownTypeCache.cs">
+      <Link>TypeSystem\Implementation\KnownTypeCache.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\TypeSystem\Implementation\MergedNamespace.cs">
+      <Link>TypeSystem\Implementation\MergedNamespace.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\TypeSystem\Implementation\MinimalCorlib.cs">
+      <Link>TypeSystem\Implementation\MinimalCorlib.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\TypeSystem\Implementation\NestedTypeReference.cs">
+      <Link>TypeSystem\Implementation\NestedTypeReference.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\TypeSystem\Implementation\ResolvedAttributeBlob.cs">
+      <Link>TypeSystem\Implementation\ResolvedAttributeBlob.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\TypeSystem\Implementation\SimpleCompilation.cs">
+      <Link>TypeSystem\Implementation\SimpleCompilation.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\TypeSystem\Implementation\SimpleConstantValue.cs">
+      <Link>TypeSystem\Implementation\SimpleConstantValue.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\TypeSystem\Implementation\SimpleInterningProvider.cs">
+      <Link>TypeSystem\Implementation\SimpleInterningProvider.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\TypeSystem\Implementation\SpecializedEvent.cs">
+      <Link>TypeSystem\Implementation\SpecializedEvent.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\TypeSystem\Implementation\SpecializedField.cs">
+      <Link>TypeSystem\Implementation\SpecializedField.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\TypeSystem\Implementation\SpecializedMember.cs">
+      <Link>TypeSystem\Implementation\SpecializedMember.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\TypeSystem\Implementation\SpecializedMethod.cs">
+      <Link>TypeSystem\Implementation\SpecializedMethod.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\TypeSystem\Implementation\SpecializedProperty.cs">
+      <Link>TypeSystem\Implementation\SpecializedProperty.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\TypeSystem\Implementation\SpecializingMemberReference.cs">
+      <Link>TypeSystem\Implementation\SpecializingMemberReference.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\TypeSystem\Implementation\TypeParameterReference.cs">
+      <Link>TypeSystem\Implementation\TypeParameterReference.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\TypeSystem\Implementation\TypeWithElementType.cs">
+      <Link>TypeSystem\Implementation\TypeWithElementType.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\TypeSystem\Implementation\UnknownType.cs">
+      <Link>TypeSystem\Implementation\UnknownType.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\TypeSystem\Implementation\UnresolvedAttributeBlob.cs">
+      <Link>TypeSystem\Implementation\UnresolvedAttributeBlob.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\TypeSystem\Implementation\UnresolvedSecurityDeclarationBlob.cs">
+      <Link>TypeSystem\Implementation\UnresolvedSecurityDeclarationBlob.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\TypeSystem\Implementation\VoidTypeDefinition.cs">
+      <Link>TypeSystem\Implementation\VoidTypeDefinition.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\Utils\7BitEncodedInts.cs">
+      <Link>Utils\7BitEncodedInts.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\Utils\BitVector16.cs">
+      <Link>Utils\BitVector16.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\Utils\BusyManager.cs">
+      <Link>Utils\BusyManager.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\Utils\CSharpPrimitiveCast.cs">
+      <Link>Utils\CSharpPrimitiveCast.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\Utils\CacheManager.cs">
+      <Link>Utils\CacheManager.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\Utils\CallbackOnDispose.cs">
+      <Link>Utils\CallbackOnDispose.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\Utils\ComparableList.cs">
+      <Link>Utils\ComparableList.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\Utils\EmptyList.cs">
+      <Link>Utils\EmptyList.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\Utils\ExtensionMethods.cs">
+      <Link>Utils\ExtensionMethods.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\Utils\FastSerializer.cs">
+      <Link>Utils\FastSerializer.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\Utils\GraphVizGraph.cs">
+      <Link>Utils\GraphVizGraph.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\Utils\ImmutableStack.cs">
+      <Link>Utils\ImmutableStack.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\Utils\KeyComparer.cs">
+      <Link>Utils\KeyComparer.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\Utils\LazyInit.cs">
+      <Link>Utils\LazyInit.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\Utils\MultiDictionary.cs">
+      <Link>Utils\MultiDictionary.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\Utils\Platform.cs">
+      <Link>Utils\Platform.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\Utils\ProjectedList.cs">
+      <Link>Utils\ProjectedList.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\Utils\ReferenceComparer.cs">
+      <Link>Utils\ReferenceComparer.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\Utils\TreeTraversal.cs">
+      <Link>Utils\TreeTraversal.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\Utils\CompositeFormatStringParser\CompositeFormatStringParser.cs">
+      <Link>Utils\CompositeFormatStringParser\CompositeFormatStringParser.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\Utils\CompositeFormatStringParser\FormatItem.cs">
+      <Link>Utils\CompositeFormatStringParser\FormatItem.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\Utils\CompositeFormatStringParser\FormatStringSegmentBase.cs">
+      <Link>Utils\CompositeFormatStringParser\FormatStringSegmentBase.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\Utils\CompositeFormatStringParser\IFormatStringError.cs">
+      <Link>Utils\CompositeFormatStringParser\IFormatStringError.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\Utils\CompositeFormatStringParser\IFormatStringSegment.cs">
+      <Link>Utils\CompositeFormatStringParser\IFormatStringSegment.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\Utils\CompositeFormatStringParser\TextSegment.cs">
+      <Link>Utils\CompositeFormatStringParser\TextSegment.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\TextLocation.cs">
+      <Link>TextLocation.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\Role.cs">
+      <Link>Role.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Libraries\NRefactory\ICSharpCode.NRefactory\IAnnotatable.cs">
+      <Link>IAnnotatable.cs</Link>
+    </Compile>
+  </ItemGroup>
+</Project>

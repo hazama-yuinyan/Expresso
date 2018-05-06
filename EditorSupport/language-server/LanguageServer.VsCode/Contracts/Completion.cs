@@ -12,94 +12,23 @@ namespace LanguageServer.VsCode.Contracts
     /// </summary>
     public enum CompletionItemKind
     {
-        /// <summary>
-        /// Represents a plain text.
-        /// </summary>
         Text = 1,
-
-        /// <summary>
-        /// Represents a method.
-        /// </summary>
         Method = 2,
-
-        /// <summary>
-        /// Represents a function.
-        /// </summary>
         Function = 3,
-
-        /// <summary>
-        /// Represents a constructor.
-        /// </summary>
         Constructor = 4,
-
-        /// <summary>
-        /// Represents a field.
-        /// </summary>
         Field = 5,
-
-        /// <summary>
-        /// Represents a variable.
-        /// </summary>
         Variable = 6,
-
-        /// <summary>
-        /// Represents a class.
-        /// </summary>
         Class = 7,
-
-        /// <summary>
-        /// Represents an interface.
-        /// </summary>
         Interface = 8,
-
-        /// <summary>
-        /// Represents a module.
-        /// </summary>
         Module = 9,
-
-        /// <summary>
-        /// Represents a property.
-        /// </summary>
         Property = 10,
-
-        /// <summary>
-        /// Represents a unit.
-        /// </summary>
         Unit = 11,
-
-        /// <summary>
-        /// Represents a value.
-        /// </summary>
         Value = 12,
-
-        /// <summary>
-        /// Represents an enum.
-        /// </summary>
         Enum = 13,
-
-        /// <summary>
-        /// Represents a keyword.
-        /// </summary>
         Keyword = 14,
-
-        /// <summary>
-        /// Represents a snippet.
-        /// </summary>
         Snippet = 15,
-
-        /// <summary>
-        /// Rerepsents a color.
-        /// </summary>
         Color = 16,
-
-        /// <summary>
-        /// Rerepsents a file.
-        /// </summary>
         File = 17,
-
-        /// <summary>
-        /// Represents a reference.
-        /// </summary>
         Reference = 18,
     }
 
@@ -133,28 +62,16 @@ namespace LanguageServer.VsCode.Contracts
     /// </summary>
     public class CompletionList
     {
-        /// <summary>
-        /// Initializes a new instance of the <see cref="T:LanguageServer.VsCode.Contracts.CompletionList"/> class.
-        /// </summary>
         [JsonConstructor]
         public CompletionList()
         {
             
         }
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="T:LanguageServer.VsCode.Contracts.CompletionList"/> class.
-        /// </summary>
-        /// <param name="items">Items.</param>
         public CompletionList(IEnumerable<CompletionItem> items) : this(items, false)
         {
         }
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="T:LanguageServer.VsCode.Contracts.CompletionList"/> class.
-        /// </summary>
-        /// <param name="items">Items.</param>
-        /// <param name="isIncomplete">If set to <c>true</c> is incomplete.</param>
         public CompletionList(IEnumerable<CompletionItem> items, bool isIncomplete)
         {
             IsIncomplete = isIncomplete;
@@ -180,44 +97,20 @@ namespace LanguageServer.VsCode.Contracts
     /// </summary>
     public class CompletionItem
     {
-        /// <summary>
-        /// Initializes a new instance of the <see cref="T:LanguageServer.VsCode.Contracts.CompletionItem"/> class.
-        /// </summary>
+
         [JsonConstructor]
         public CompletionItem()
         {
             
         }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="T:LanguageServer.VsCode.Contracts.CompletionItem"/> class.
-        /// </summary>
-        /// <param name="label">Label.</param>
-        /// <param name="kind">Kind.</param>
-        /// <param name="data">Data.</param>
         public CompletionItem(string label, CompletionItemKind kind, JToken data) : this(label, kind, null, null, data)
         {
         }
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="T:LanguageServer.VsCode.Contracts.CompletionItem"/> class.
-        /// </summary>
-        /// <param name="label">Label.</param>
-        /// <param name="kind">Kind.</param>
-        /// <param name="detail">Detail.</param>
-        /// <param name="data">Data.</param>
         public CompletionItem(string label, CompletionItemKind kind, string detail, JToken data) : this(label, kind, detail, null, data)
         {
         }
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="T:LanguageServer.VsCode.Contracts.CompletionItem"/> class.
-        /// </summary>
-        /// <param name="label">Label.</param>
-        /// <param name="kind">Kind.</param>
-        /// <param name="detail">Detail.</param>
-        /// <param name="documentation">Documentation.</param>
-        /// <param name="data">Data.</param>
         public CompletionItem(string label, CompletionItemKind kind, string detail, string documentation, JToken data)
         {
             Label = label;
@@ -329,44 +222,24 @@ namespace LanguageServer.VsCode.Contracts
     /// </summary>
     public class CompletionRegistrationOptions : TextDocumentRegistrationOptions
     {
-        /// <summary>
-        /// Initializes a new instance of the
-        /// <see cref="T:LanguageServer.VsCode.Contracts.CompletionRegistrationOptions"/> class.
-        /// </summary>
         [JsonConstructor]
         public CompletionRegistrationOptions()
             : this(false, null, null)
         {
         }
 
-        /// <summary>
-        /// Initializes a new instance of the
-        /// <see cref="T:LanguageServer.VsCode.Contracts.CompletionRegistrationOptions"/> class.
-        /// </summary>
-        /// <param name="resolveProvider">If set to <c>true</c> resolve provider.</param>
         public CompletionRegistrationOptions(bool resolveProvider)
             : this(resolveProvider, null, null)
         {
         }
 
-        /// <summary>
-        /// Initializes a new instance of the
-        /// <see cref="T:LanguageServer.VsCode.Contracts.CompletionRegistrationOptions"/> class.
-        /// </summary>
-        /// <param name="resolveProvider">If set to <c>true</c> resolve provider.</param>
-        /// <param name="triggerCharacters">Trigger characters.</param>
+
         public CompletionRegistrationOptions(bool resolveProvider, IEnumerable<char> triggerCharacters)
             : this(resolveProvider, triggerCharacters, null)
         {
         }
 
-        /// <summary>
-        /// Initializes a new instance of the
-        /// <see cref="T:LanguageServer.VsCode.Contracts.CompletionRegistrationOptions"/> class.
-        /// </summary>
-        /// <param name="resolveProvider">If set to <c>true</c> resolve provider.</param>
-        /// <param name="triggerCharacters">Trigger characters.</param>
-        /// <param name="documentSelector">Document selector.</param>
+
         public CompletionRegistrationOptions(bool resolveProvider, IEnumerable<char> triggerCharacters, IEnumerable<DocumentFilter> documentSelector)
             : base(documentSelector)
         {

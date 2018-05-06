@@ -6,9 +6,6 @@ using JsonRpc.Standard.Contracts;
 
 namespace LanguageServer.VsCode.Contracts.Client
 {
-    /// <summary>
-    /// Represents a text document.
-    /// </summary>
     [JsonRpcScope(MethodPrefix = "textDocument/")]
     public interface ITextDocument
     {

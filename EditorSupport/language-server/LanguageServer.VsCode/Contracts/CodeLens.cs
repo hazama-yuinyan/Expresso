@@ -27,29 +27,16 @@ namespace LanguageServer.VsCode.Contracts
     [JsonObject(MemberSerialization.OptIn)]
     public class CodeLens
     {
-        /// <summary>
-        /// Initializes a new instance of the <see cref="T:LanguageServer.VsCode.Contracts.CodeLens"/> class.
-        /// </summary>
+
         [JsonConstructor]
         public CodeLens()
         {
         }
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="T:LanguageServer.VsCode.Contracts.CodeLens"/> class.
-        /// </summary>
-        /// <param name="range">Range.</param>
-        /// <param name="command">Command.</param>
         public CodeLens(Range range, EditorCommand command) : this(range, command, null)
         {
         }
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="T:LanguageServer.VsCode.Contracts.CodeLens"/> class.
-        /// </summary>
-        /// <param name="range">Range.</param>
-        /// <param name="command">Command.</param>
-        /// <param name="data">Data.</param>
         public CodeLens(Range range, EditorCommand command, JToken data)
         {
             Range = range;
@@ -86,32 +73,18 @@ namespace LanguageServer.VsCode.Contracts
     /// </summary>
     public class CodeLensRegistrationOptions : TextDocumentRegistrationOptions
     {
-        /// <summary>
-        /// Initializes a new instance of the
-        /// <see cref="T:LanguageServer.VsCode.Contracts.CodeLensRegistrationOptions"/> class.
-        /// </summary>
+
         [JsonConstructor]
         public CodeLensRegistrationOptions()
             : this(false, null)
         {
         }
 
-        /// <summary>
-        /// Initializes a new instance of the
-        /// <see cref="T:LanguageServer.VsCode.Contracts.CodeLensRegistrationOptions"/> class.
-        /// </summary>
-        /// <param name="resolveProvider">If set to <c>true</c> resolve provider.</param>
         public CodeLensRegistrationOptions(bool resolveProvider)
             : this(resolveProvider, null)
         {
         }
 
-        /// <summary>
-        /// Initializes a new instance of the
-        /// <see cref="T:LanguageServer.VsCode.Contracts.CodeLensRegistrationOptions"/> class.
-        /// </summary>
-        /// <param name="resolveProvider">If set to <c>true</c> resolve provider.</param>
-        /// <param name="documentSelector">Document selector.</param>
         public CodeLensRegistrationOptions(bool resolveProvider, IEnumerable<DocumentFilter> documentSelector)
             : base(documentSelector)
         {

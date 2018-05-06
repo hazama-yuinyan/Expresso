@@ -15,5 +15,5 @@ def main()
     let d = TestModule::mySin(0.0);
     let e = a.getX();
 	
-	println(a, b, c, d, e);
+	println("${a}, ${b}, ${c}, ${d}, ${e}");
 }

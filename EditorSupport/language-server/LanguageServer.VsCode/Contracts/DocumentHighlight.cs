@@ -13,20 +13,12 @@ namespace LanguageServer.VsCode.Contracts
     [JsonObject(MemberSerialization.OptIn)]
     public class DocumentHighlight
     {
-        /// <summary>
-        /// Initializes a new instance of the <see cref="T:LanguageServer.VsCode.Contracts.DocumentHighlight"/> class.
-        /// </summary>
         [JsonConstructor]
         public DocumentHighlight()
         {
             
         }
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="T:LanguageServer.VsCode.Contracts.DocumentHighlight"/> class.
-        /// </summary>
-        /// <param name="range">Range.</param>
-        /// <param name="kind">Kind.</param>
         public DocumentHighlight(Range range, DocumentHighlightKind kind)
         {
             Range = range;

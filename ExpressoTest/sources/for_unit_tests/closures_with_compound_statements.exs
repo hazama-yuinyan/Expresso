@@ -27,12 +27,12 @@ def main()
 	let c3 = |i (- int| {
 	    var j = i;
 	    while j > 0 {
-	        println(j);
+	        println("${j}");
 	        j -= 1;
 	    }
 	    println("BOOM!");
 	};
 	c3(3);
 
-	println(a, b);
+	println("${a}, ${b}");
 }

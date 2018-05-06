@@ -4,31 +4,18 @@ using Newtonsoft.Json.Linq;
 
 namespace LanguageServer.VsCode.Contracts
 {
-    /// <summary>
-    /// Client capability.
-    /// </summary>
+
     [JsonObject(MemberSerialization.OptIn)]
     public class ClientCapability
     {
-        /// <summary>
-        /// The empty.
-        /// </summary>
         public static readonly ClientCapability Empty = new ClientCapability();
 
-        /// <summary>
-        /// Ops the implicit.
-        /// </summary>
-        /// <returns><c>true</c>, if implicit was oped, <c>false</c> otherwise.</returns>
-        /// <param name="cap">Cap.</param>
         public static implicit operator bool(ClientCapability cap)
         {
             return cap != null;
         }
     }
 
-    /// <summary>
-    /// Dynamic client capability.
-    /// </summary>
     public class DynamicClientCapability : ClientCapability
     {
         /// <summary>

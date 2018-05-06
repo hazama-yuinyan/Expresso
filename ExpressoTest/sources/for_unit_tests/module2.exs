@@ -8,5 +8,5 @@ def main()
 	let t = TestClass4{x: 1, y: 2};
 	let t2 = createTest(3, 4);
 
-	println(t, t2);
+	println("${t}, ${t2}");
 }

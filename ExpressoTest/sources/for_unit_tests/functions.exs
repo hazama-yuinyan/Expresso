@@ -36,5 +36,5 @@ def main()
 	let c = test3(20);
     let d = test4(80);
 
-	println(a, b, c, d);
+	println("${a}, ${b}, ${c}, ${d}");
 }

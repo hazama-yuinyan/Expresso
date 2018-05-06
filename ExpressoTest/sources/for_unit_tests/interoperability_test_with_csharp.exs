@@ -14,5 +14,5 @@ def main()
 	let flag = StaticTest.GetSomeBool();
 	let seq = StaticTest.GetSomeIntSeq();
 
-	println(i, list, flag, seq);
+	println("${i}, ${list}, ${flag}, ${seq}");
 }

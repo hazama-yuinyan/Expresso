@@ -9,7 +9,7 @@ import * as fs from "fs";
 
 // Defines the search path of your language server DLL. (.NET Core)
 const languageServerPaths = [
-	"server/ExpressoLanguageServer.dll",
+	"server/DemoLanguageServer.dll",
 	"../../DemoLanguageServer/bin/Debug/netcoreapp2.0/ExpressoLanguageServer.dll",
 ]
 
@@ -63,7 +63,7 @@ function activateLanguageServer(context: vscode.ExtensionContext) {
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
-	console.log("expresso extension is now activated.");
+	console.log("expressolang extension is now activated.");
 
 	activateLanguageServer(context);
 

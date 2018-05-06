@@ -320,7 +320,7 @@ namespace Expresso.TypeSystem
         {
             ifStmt.Condition.AcceptWalker(this);
             VisitBlock(ifStmt.TrueBlock);
-            VisitBlock(ifStmt.FalseBlock);
+            ifStmt.FalseStatement.AcceptWalker(this);
             return null;
         }
 

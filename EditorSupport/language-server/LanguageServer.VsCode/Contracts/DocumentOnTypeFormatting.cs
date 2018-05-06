@@ -10,45 +10,24 @@ namespace LanguageServer.VsCode.Contracts
     /// </summary>
     public class DocumentOnTypeFormattingRegistrationOptions : TextDocumentRegistrationOptions
     {
-        /// <summary>
-        /// Initializes a new instance of the
-        /// <see cref="T:LanguageServer.VsCode.Contracts.DocumentOnTypeFormattingRegistrationOptions"/> class.
-        /// </summary>
+
         [JsonConstructor]
         public DocumentOnTypeFormattingRegistrationOptions()
             : this(default(char), null, null)
         {
         }
 
-        /// <summary>
-        /// Initializes a new instance of the
-        /// <see cref="T:LanguageServer.VsCode.Contracts.DocumentOnTypeFormattingRegistrationOptions"/> class.
-        /// </summary>
-        /// <param name="firstTriggerCharacter">First trigger character.</param>
         public DocumentOnTypeFormattingRegistrationOptions(char firstTriggerCharacter)
             : this(firstTriggerCharacter, null, null)
         {
         }
 
-        /// <summary>
-        /// Initializes a new instance of the
-        /// <see cref="T:LanguageServer.VsCode.Contracts.DocumentOnTypeFormattingRegistrationOptions"/> class.
-        /// </summary>
-        /// <param name="firstTriggerCharacter">First trigger character.</param>
-        /// <param name="moreTriggerCharacter">More trigger character.</param>
         public DocumentOnTypeFormattingRegistrationOptions(char firstTriggerCharacter,
             ICollection<char> moreTriggerCharacter)
             : this(firstTriggerCharacter, moreTriggerCharacter, null)
         {
         }
 
-        /// <summary>
-        /// Initializes a new instance of the
-        /// <see cref="T:LanguageServer.VsCode.Contracts.DocumentOnTypeFormattingRegistrationOptions"/> class.
-        /// </summary>
-        /// <param name="firstTriggerCharacter">First trigger character.</param>
-        /// <param name="moreTriggerCharacter">More trigger character.</param>
-        /// <param name="documentSelector">Document selector.</param>
         public DocumentOnTypeFormattingRegistrationOptions(char firstTriggerCharacter,
             ICollection<char> moreTriggerCharacter, IEnumerable<DocumentFilter> documentSelector)
             : base(documentSelector)
