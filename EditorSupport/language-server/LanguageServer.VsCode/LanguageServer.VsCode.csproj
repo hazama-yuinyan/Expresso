@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netstandard1.1;net45</TargetFrameworks>
+    <TargetFramework>netstandard1.1</TargetFramework>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageId>CXuesong.LanguageServer.VsCode</PackageId>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
@@ -19,8 +19,6 @@
     <AssemblyVersion>0.2.0.0</AssemblyVersion>
     <FileVersion>0.2.0.0</FileVersion>
     <GenerateDocumentationFile>True</GenerateDocumentationFile>
-    <SignAssembly>true</SignAssembly>
-    <AssemblyOriginatorKeyFile>../LanguageServer.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
 
   <ItemGroup>
@@ -31,8 +29,8 @@
 
   <ItemGroup>
     <PackageReference Include="CXuesong.JsonRpc.DynamicProxy" Version="0.4.0" />
-    <PackageReference Include="Newtonsoft.Json" Version="10.0.2" />
     <PackageReference Include="CXuesong.JsonRpc.Standard" Version="0.4.1" />
+    <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
   </ItemGroup>
 
 </Project>

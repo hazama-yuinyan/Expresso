@@ -21,6 +21,9 @@
 
   <ItemGroup>
     <ProjectReference Include="..\LanguageServer.VsCode\LanguageServer.VsCode.csproj" />
+    <ProjectReference Include="..\Expresso.NETCore\Expresso.NETCore.csproj" />
+    <ProjectReference Include="..\ICSharpCode.NRefactory.NETCore\ICSharpCode.NRefactory.NETCore.csproj" />
+    <ProjectReference Include="..\ICSharpCode.NRefactory.Cecil.NETCore\ICSharpCode.NRefactory.Cecil.NETCore.csproj" />
   </ItemGroup>
 
 </Project>

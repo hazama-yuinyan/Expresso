@@ -31,6 +31,7 @@ using System.Threading;
 using Expresso.Ast;
 using Expresso.Ast.Analysis;
 using Expresso.TypeSystem;
+using Expresso.Utilities;
 using ICSharpCode.NRefactory;
 using ICSharpCode.NRefactory.PatternMatching;
 using ICSharpCode.NRefactory.Semantics;
@@ -505,16 +506,26 @@ namespace Expresso.Resolver
         {
             request_method = true;
             context_method = null;
-            var target_rr = call.Target.AcceptWalker(this);
 
-            var target_method = context_method;
-            request_method = false;
-            context_method = null;
+            if(resolver_enabled){
+                var target_rr = call.Target.AcceptWalker(this);
 
-            var rrs = call.Arguments.Select(arg => arg.AcceptWalker(this))
-                          .ToList();
-            var rr = new InvocationResolveResult(target_rr, target_method, rrs);
-            return rr;
+                var target_method = context_method;
+                request_method = false;
+                context_method = null;
+
+                var rrs = call.Arguments.Select(arg => arg.AcceptWalker(this))
+                              .ToList();
+                var rr = new InvocationResolveResult(target_rr, target_method, rrs);
+                return rr;
+            }else{
+                ScanChildren(call);
+
+                request_method = false;
+                context_method = null;
+
+                return null;
+            }
         }
 
         ResolveResult IAstWalker<ResolveResult>.VisitCastExpression(CastExpression castExpr)
@@ -575,24 +586,31 @@ namespace Expresso.Resolver
                     if(request_type)
                         context_type = symbol.Variable.Type;
                     
-                    return new LocalResolveResult(symbol.Variable);
+                    var rr = new LocalResolveResult(symbol.Variable);
+                    StoreResult(ident, rr);
+                    return rr;
                 }else if(request_property_or_field && symbol.PropertyOrField != null){
                     context_property_or_field = symbol.PropertyOrField;
+                    StoreResult(ident, symbol.ResolveResult);
                     return symbol.ResolveResult;
                 }else if(request_type && symbol.Type != null){
                     context_type = symbol.Type;
-                    return new LocalResolveResult(symbol.Variable);
+                    var rr = new LocalResolveResult(symbol.Variable);
+                    StoreResult(ident, rr);
+                    return rr;
                 }else if(request_method){
                     if(symbol.Method == null)
                         throw new FormattedException("The symbol '{0}' isn't defined.", ident.Name);
 
                     context_method = symbol.Method;
-                    return new MemberResolveResult(symbol.ResolveResult, symbol.Method);
+                    var rr = new MemberResolveResult(symbol.ResolveResult, symbol.Method);
+                    StoreResult(ident, rr);
+                    return rr;
                 }else{
                     throw new FormattedException("I can't guess what you want: {0}.", ident.Name);
                 }
             }else{
-                if(context_type.Kind == TypeKind.Enum){
+                if(context_type != null && context_type.Kind == TypeKind.Enum){
                     var enum_field = context_type.GetField(ident.Name);
                     if(enum_field == null)
                         throw new FormattedException("It is found that the symbol '{0}' doesn't represent an enum field.", ident.Name);
@@ -626,6 +644,10 @@ namespace Expresso.Resolver
                     // Don't add the method symbol so that we can find other overloads of it
                     //return new MethodGroupResolveResult(trr, ident.Name, );
                     return null;
+                }else if(context_type == null && request_type){
+                    var type = TypeHelpers.GetNativeType(ident.Type);
+                    context_type = type.ToTypeReference().Resolve(resolver.Compilation);
+                    return new TypeResolveResult(context_type);
                 }else{
                     throw new FormattedException("It is found that the symbol '{0}' isn't defined.", ident.Name);
                 }
@@ -644,7 +666,24 @@ namespace Expresso.Resolver
 
         ResolveResult IAstWalker<ResolveResult>.VisitMemberReference(MemberReferenceExpression memRef)
         {
-            throw new NotImplementedException();
+            if(resolver_enabled){
+                request_type = true;
+                context_type = null;
+                memRef.Target.AcceptWalker(this);
+
+                request_type = false;
+                request_method = true;
+                request_property_or_field = true;
+                context_method = null;
+                context_property_or_field = null;
+                var rr = memRef.Member.AcceptWalker(this);
+                StoreResult(memRef, rr);
+
+                return rr;
+            }else{
+                ScanChildren(memRef);
+                return null;
+            }
         }
 
         ResolveResult IAstWalker<ResolveResult>.VisitPathExpression(PathExpression pathExpr)

@@ -154,7 +154,7 @@ A `bigint` can store any arbitrary integer. This makes the `bigint` type suitabl
 
 ### The `string` type
 
-I realize that `char` and `string` types are the fundamental types because sometimes you would even need more string manipulations than you would integers.
+I realize that `char` and `string` types are the fundamental types because sometimes you would even need more string manipulations than you would on integers.
 As with the `char` type, the `string` type also is in UTF-16. See the C#'s documentation for other details on the `string` type.
 
 ### The `tuple` type
@@ -233,13 +233,13 @@ The `intseq` type has the corresponding literal form and it is written as follow
     println(series); // print "[1, 2, 3, 4, 5, 6, 7, 8, 9]"
 ```
 
-<span class="caption">Listing 4: An intseq turns into an array</span>
+<span class="caption">Listing 11: An intseq turns into an array</span>
 
 An integer sequence expression does not create a vector of integers by itself. Instead, it creates a new object that is ready
-to produce integers that are in the range specified in the expression. Note in Listing 4 that the intseq expression initializes
+to produce integers that are in the range specified in the expression. Note in Listing 11 that the intseq expression initializes
 an array. This is a unique feature in Expresso. As far as I know, all the other programming languages don't support it.
 Of course, you can initialize a vector if you write it as `[1..10, ...];` instead.
-Unlike the LINQ operations(the methods defined on the System.Linq.Enumerable class), it is 'eager', meaning that objects will be created
+Unlike the LINQ operations(the methods defined on the `System.Linq.Enumerable` class), it is 'eager', meaning that objects will be created
 at where the expression is written.
 
 ```expresso
@@ -254,7 +254,7 @@ at where the expression is written.
     }
 ```
 
-<span class="caption">Listing 5: Two graphs crossed over</span>
+<span class="caption">Listing 12: Two graphs crossed over</span>
 
 We call such objects iterators because they iterate through a sequence-like object and yields an element at a time.
 It's very useful and it's one of the reasons that gives Expresso the power of expressiveness.
@@ -278,7 +278,7 @@ the `intseq` type reveals its funny yet powerful potential out to the public.
     }
 ```
 
-<span class="caption">Listing 6: Spliting into 2 slices</span>
+<span class="caption">Listing 13: Spliting into 2 slices</span>
 
 In the above example, it seems that the latter 2 intseq objects extract elements from the same array object.
 You may be wondering that it is inefficient because it seems that we have 3 arrays in the end. Having 3 arrays means that
@@ -297,8 +297,8 @@ Note that the `slice` is just an iterator of the sequence. Thus the `slice` obje
 If you are familliar with C#, you might notice that `slice` is the same as the `Span<T>` class. And that's right. The job that the `slice` type is intended to do is the
 same as that of the `Span<T>` class. The differences are that the `slice` type is a class and the `slice` type might be slower than the `Span<T>` class.
 
-OK, so far so good. We've explained the very basics of builtin types. next up is exponentiation. But we'll be doing it in a slightly different way. Even though Expresso has the operator for it, here we'll be doing it on our
-own, using while loop.
+OK, so far so good. We've explained the very basics of builtin types. next up is exponentiation. But we'll be doing it in a slightly different way.
+Even though Expresso has the operator for it, here we'll be doing it on our own, using while loop.
 
 The main policy for Expresso is that "Programming languages must allow programmers to write what it does, not how it does something".
 In traditional C, we often end up writing something like the following:
@@ -375,13 +375,13 @@ def main()
 }
 ```
 
-<span class="caption">Listing 11: Using the `FileStream` class defined in .NET to write some text into a file.</span>
+<span class="caption">Listing (placeholder): Using the `FileStream` class defined in .NET to write some text into a file.</span>
 
-Let's break down the code in Listing 11. First we need to import types that have a file handle and convert strings into another encoding from .NET.
+Let's break down the code in Listing (placeholder). First we need to import types that have a file handle and convert strings into another encoding from .NET.
 So the import statements.
 In `main` function, we declare a new variable that will hold a stream of a file and create and open a new file. And then we create a `UTF8Encoding` that converts strings
-into UTF-8 because strings in Expresso are in UTF-16. And we get a string as a byte sequence using the `UTF8Encoding.GetBytes` method.
-Then we write the byte sequence to the file that we created just a short while ago. And finally, we check that the file is successfully created, and if so we dispose of
+into UTF-8 because strings in Expresso are encoded in UTF-16. We get a string as a byte sequence using the `UTF8Encoding.GetBytes` method.
+Then we write the byte sequence to the file that we created just a short while ago. Finally, we check that the file is successfully created, and if so we dispose of
 the file stream.
 
 ### The null literal
@@ -392,7 +392,7 @@ First look at this code.
 var some_instance (- SomeExpressoType = null;
 ```
 
-<span class="caption">Listing 12: The use of `null`, which won't compile</span>
+<span class="caption">Listing (placeholder): The use of `null`, which won't compile</span>
 
 What do you think of the above code? Ugh, the null literal! It's the null literal! Agh! You respond?
 I know, I know that you hate it. But fortunately, or maybe unfortunately, you usually don't see `null` in Expresso in source codes.
@@ -432,7 +432,7 @@ def main()
 }
 ```
 
-<span class="caption">Listing : Interoperating with C#</span>
+<span class="caption">Listing (placeholder): Interoperating with C#</span>
 
 First, we import types defined in the other language. Note that the file path in the from clause is relative to the source file that the declaration resides in.
 Note also that we specify the namespace when we import a C#'s type.

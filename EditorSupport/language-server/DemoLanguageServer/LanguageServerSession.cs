@@ -1,10 +1,16 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.ComTypes;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Expresso.Ast;
+using Expresso.TypeSystem;
+using ICSharpCode.NRefactory.TypeSystem;
 using JsonRpc.DynamicProxy.Client;
 using JsonRpc.Standard.Client;
 using JsonRpc.Standard.Contracts;
@@ -17,6 +23,28 @@ namespace ExpressoLanguageServer
 {
     public class LanguageServerSession
     {
+        public static readonly Lazy<IList<IUnresolvedAssembly>> BuiltinLibs = new Lazy<IList<IUnresolvedAssembly>>(() => {
+            var assemblies = new []{
+                typeof(object).Assembly,                    // mscorlib
+                typeof(Console).Assembly,                   // 
+                typeof(Uri).Assembly,                       // System.dll
+                typeof(Enumerable).Assembly,                // System.Core.dll
+                typeof(IProjectContent).Assembly
+            };
+
+            var project_contents = new IUnresolvedAssembly[assemblies.Length];
+            var total = Stopwatch.StartNew();
+            Parallel.For(0, assemblies.Length, (int i) => {
+                var w = Stopwatch.StartNew();
+                var loader = new CecilLoader();
+                project_contents[i] = loader.LoadAssemblyFile(assemblies[i].Location);
+                Debug.WriteLine(Path.GetFileName(assemblies[i].Location) + ": " + w.Elapsed);
+            });
+
+            Debug.WriteLine("Total: " + total.Elapsed);
+            return project_contents;
+        });
+
         private readonly CancellationTokenSource cts = new CancellationTokenSource();
 
         public LanguageServerSession(JsonRpcClient rpcClient, IJsonRpcContractResolver contractResolver)
@@ -40,6 +68,21 @@ namespace ExpressoLanguageServer
         public DiagnosticProvider DiagnosticProvider { get; }
 
         public LanguageServerSettings Settings { get; set; } = new LanguageServerSettings();
+
+        public Dictionary<Uri, ExpressoAst> AstDictionary{
+            get;
+        } = new Dictionary<Uri, ExpressoAst>();
+        public Dictionary<Uri, ExpressoUnresolvedFile> FileDictionary{
+            get;
+        } = new Dictionary<Uri, ExpressoUnresolvedFile>();
+
+        public UTF8Encoding UTF8Encoding{
+            get;
+        } = new UTF8Encoding();
+
+        public StreamWriter LogStream{
+            get; set;
+        }
 
         public void StopServer()
         {
