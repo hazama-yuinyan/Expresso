@@ -587,16 +587,13 @@ namespace Expresso.Resolver
                         context_type = symbol.Variable.Type;
                     
                     var rr = new LocalResolveResult(symbol.Variable);
-                    StoreResult(ident, rr);
                     return rr;
                 }else if(request_property_or_field && symbol.PropertyOrField != null){
                     context_property_or_field = symbol.PropertyOrField;
-                    StoreResult(ident, symbol.ResolveResult);
                     return symbol.ResolveResult;
                 }else if(request_type && symbol.Type != null){
                     context_type = symbol.Type;
                     var rr = new LocalResolveResult(symbol.Variable);
-                    StoreResult(ident, rr);
                     return rr;
                 }else if(request_method){
                     if(symbol.Method == null)
@@ -604,7 +601,6 @@ namespace Expresso.Resolver
 
                     context_method = symbol.Method;
                     var rr = new MemberResolveResult(symbol.ResolveResult, symbol.Method);
-                    StoreResult(ident, rr);
                     return rr;
                 }else{
                     throw new FormattedException("I can't guess what you want: {0}.", ident.Name);
