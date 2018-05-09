@@ -398,11 +398,11 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\ExpressoRuntime.NETCore\ExpressoRuntime.NETCore.csproj" />
-    <ProjectReference Include="..\ICSharpCode.NRefactory.NETCore\ICSharpCode.NRefactory.NETCore.csproj" />
-    <ProjectReference Include="..\ICSharpCode.NRefactory.Cecil.NETCore\ICSharpCode.NRefactory.Cecil.NETCore.csproj" />
+    <Folder Include="Resolver\" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Resolver\" />
+    <ProjectReference Include="..\ICSharpCode.NRefactory.NETCore\ICSharpCode.NRefactory.NETCore.csproj" />
+    <ProjectReference Include="..\ICSharpCode.NRefactory.Cecil.NETCore\ICSharpCode.NRefactory.Cecil.NETCore.csproj" />
+    <ProjectReference Include="..\ExpressoRuntime.NETCore\ExpressoRuntime.NETCore.csproj" />
   </ItemGroup>
 </Project>
