@@ -215,6 +215,8 @@
     <Compile Include="Ast\Statements\DoWhileStatement.cs" />
     <Compile Include="CodeGen\PortablePdbGenerator.cs" />
     <Compile Include="CodeGen\MatchClauseIdentifierDefiner.cs" />
+    <Compile Include="Ast\GeneralScope\AttributeSection.cs" />
+    <Compile Include="Ast\GeneralScope\AttributeNode.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System" />

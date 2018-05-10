@@ -13,6 +13,7 @@ namespace Expresso.Ast
     /// </summary>
     public abstract class EntityDeclaration : AstNode
     {
+        public static readonly Role<AttributeSection> AttributeRole = new Role<AttributeSection>("Attribute", AttributeSection.Null);
         public static readonly Role<ExpressoModifierToken> ModifierRole = new Role<ExpressoModifierToken>("Modifier");
 
         public override NodeType NodeType{
@@ -93,71 +94,73 @@ namespace Expresso.Ast
 
         #region Factory methods
         public static FieldDeclaration MakeField(IEnumerable<PatternWithType> lhs, IEnumerable<Expression> rhs,
-            Modifiers modifiers, TextLocation start = default, TextLocation end = default)
+                                                 Modifiers modifiers, AttributeSection attribute = null, TextLocation start = default, TextLocation end = default)
         {
-            return new FieldDeclaration(lhs, rhs, modifiers, start, end);
+            return new FieldDeclaration(lhs, rhs, attribute, modifiers, start, end);
         }
 
-        public static ParameterDeclaration MakeParameter(string name, AstType type, Expression option = null, bool isVariadic = false, TextLocation loc = default)
+        public static ParameterDeclaration MakeParameter(string name, AstType type, Expression option = null, bool isVariadic = false, AttributeSection attribute = null,
+                                                         TextLocation loc = default)
         {
-            return new ParameterDeclaration(MakeIdentifier(name, type), option ?? Expression.Null, isVariadic, loc);
+            return new ParameterDeclaration(MakeIdentifier(name, type), option ?? Expression.Null, isVariadic, attribute, loc);
         }
 
-        public static ParameterDeclaration MakeParameter(Identifier identifier, Expression option = null, bool isVariadic = false, TextLocation loc = default)
+        public static ParameterDeclaration MakeParameter(Identifier identifier, Expression option = null, bool isVariadic = false, AttributeSection attribute = null,
+                                                         TextLocation loc = default)
         {
-            return new ParameterDeclaration(identifier, option ?? Expression.Null, isVariadic, loc);
+            return new ParameterDeclaration(identifier, option ?? Expression.Null, isVariadic, attribute, loc);
         }
 
         public static TypeDeclaration MakeClassDecl(string className, IEnumerable<AstType> bases,
-            IEnumerable<EntityDeclaration> decls, Modifiers modifiers,
-            TextLocation start = default, TextLocation end = default)
+                                                    IEnumerable<EntityDeclaration> decls, Modifiers modifiers, AttributeSection attribute = null,
+                                                    TextLocation start = default, TextLocation end = default)
         {
-            return new TypeDeclaration(ClassType.Class, MakeIdentifier(className), bases, decls, modifiers, start, end);
+            return new TypeDeclaration(ClassType.Class, MakeIdentifier(className), bases, decls, attribute, modifiers, start, end);
         }
 
         public static TypeDeclaration MakeClassDecl(Identifier ident, IEnumerable<AstType> bases,
-            IEnumerable<EntityDeclaration> decls, Modifiers modifiers,
-            TextLocation start = default, TextLocation end = default)
+                                                    IEnumerable<EntityDeclaration> decls, Modifiers modifiers, AttributeSection attribute = null,
+                                                    TextLocation start = default, TextLocation end = default)
         {
-            return new TypeDeclaration(ClassType.Class, ident, bases, decls, modifiers, start, end);
+            return new TypeDeclaration(ClassType.Class, ident, bases, decls, attribute, modifiers, start, end);
         }
 
         public static TypeDeclaration MakeClassDecl(string name, IEnumerable<AstType> bases,
                                                     Modifiers modifiers, TextLocation start, TextLocation end, params EntityDeclaration[] decls)
         {
-            return new TypeDeclaration(ClassType.Class, MakeIdentifier(name), bases, decls, modifiers, start, end);
+            return new TypeDeclaration(ClassType.Class, MakeIdentifier(name), bases, decls, null, modifiers, start, end);
         }
 
         public static TypeDeclaration MakeInterfaceDecl(string interfaceName, IEnumerable<AstType> bases,
-                                                        IEnumerable<EntityDeclaration> decls, Modifiers modifiers,
+                                                        IEnumerable<EntityDeclaration> decls, Modifiers modifiers, AttributeSection attribute = null,
                                                         TextLocation start = default, TextLocation end = default)
         {
-            return new TypeDeclaration(ClassType.Interface, MakeIdentifier(interfaceName), bases, decls, modifiers, start, end);
+            return new TypeDeclaration(ClassType.Interface, MakeIdentifier(interfaceName), bases, decls, attribute, modifiers, start, end);
         }
 
         public static TypeDeclaration MakeInterfaceDecl(Identifier ident, IEnumerable<AstType> bases,
-                                                        IEnumerable<EntityDeclaration> decls, Modifiers modifiers,
+                                                        IEnumerable<EntityDeclaration> decls, Modifiers modifiers, AttributeSection attribute = null,
                                                         TextLocation start = default, TextLocation end = default)
         {
-            return new TypeDeclaration(ClassType.Interface, ident, bases, decls, modifiers, start, end);
+            return new TypeDeclaration(ClassType.Interface, ident, bases, decls, attribute, modifiers, start, end);
         }
 
         public static TypeDeclaration MakeInterfaceDecl(string name, IEnumerable<AstType> bases,
                                                         Modifiers modifiers, TextLocation start, TextLocation end, params EntityDeclaration[] decls)
         {
-            return new TypeDeclaration(ClassType.Interface, MakeIdentifier(name), bases, decls, modifiers, start, end);
+            return new TypeDeclaration(ClassType.Interface, MakeIdentifier(name), bases, decls, null, modifiers, start, end);
         }
 
-        public static FunctionDeclaration MakeFunc(string name, IEnumerable<ParameterDeclaration> parameters, BlockStatement body,
-            AstType returnType, Modifiers modifiers, TextLocation loc = default)
+        public static FunctionDeclaration MakeFunc(string name, IEnumerable<ParameterDeclaration> parameters, BlockStatement body, AstType returnType,
+                                                   Modifiers modifiers, AttributeSection attribute = null, TextLocation loc = default)
         {
-            return MakeFunc(MakeIdentifier(name), parameters, body, returnType, modifiers, loc);;
+            return new FunctionDeclaration(MakeIdentifier(name), parameters, body, returnType, attribute, modifiers, loc);;
         }
 
-        public static FunctionDeclaration MakeFunc(Identifier ident, IEnumerable<ParameterDeclaration> parameters,
-            BlockStatement body, AstType returnType, Modifiers modifiers, TextLocation loc = default)
+        public static FunctionDeclaration MakeFunc(Identifier ident, IEnumerable<ParameterDeclaration> parameters, BlockStatement body, AstType returnType,
+                                                   Modifiers modifiers, AttributeSection attribute = null, TextLocation loc = default)
         {
-            return new FunctionDeclaration(ident, parameters, body, returnType, modifiers, loc);
+            return new FunctionDeclaration(ident, parameters, body, returnType, attribute, modifiers, loc);
         }
         #endregion
     }

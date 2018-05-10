@@ -9,10 +9,19 @@ namespace Expresso.Ast
     /// Represents a parameter(which appears in function signatures).
     /// A ParameterDeclaration represents a parameter of a function or a method.
     /// Note that it doesn't represent a real argument.
-    /// ident [ "(-" Type ] [ "=" Expression ] ;
+    /// [ AttributeSection ] ident [ "(-" Type ] [ "=" Expression ] ;
     /// </summary>
     public class ParameterDeclaration : EntityDeclaration
     {
+        /// <summary>
+        /// Represents the attribute.
+        /// </summary>
+        /// <value>The attribute.</value>
+        public AttributeSection Attribute{
+            get{return GetChildByRole(AttributeRole);}
+            set{SetChildByRole(AttributeRole, value);}
+        }
+
         public override AstType ReturnType{
             get{return NameToken.Type;}
         }
@@ -48,12 +57,13 @@ namespace Expresso.Ast
 
         #endregion
 
-        public ParameterDeclaration(Identifier identifier, Expression option, bool isVariadic, TextLocation loc)
+        public ParameterDeclaration(Identifier identifier, Expression option, bool isVariadic, AttributeSection attribute, TextLocation loc)
             : base(loc, option != null ? option.EndLocation : identifier.EndLocation)
         {
             SetChildByRole(Roles.Identifier, identifier);
             Option = option;
             IsVariadic = isVariadic;
+            Attribute = attribute;
         }
 
         public override void AcceptWalker(IAstWalker walker)
@@ -75,7 +85,7 @@ namespace Expresso.Ast
         {
             var o = other as ParameterDeclaration;
             return o != null && ReturnType.DoMatch(o.ReturnType, match) && MatchString(Name, o.Name)
-                                          && Option.DoMatch(o.Option, match) && IsVariadic == o.IsVariadic;
+                                          && Option.DoMatch(o.Option, match) && IsVariadic == o.IsVariadic && Attribute.DoMatch(o.Attribute, match);
         }
     }
 }

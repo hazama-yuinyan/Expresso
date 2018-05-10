@@ -718,6 +718,16 @@ namespace Expresso.Ast.Analysis
                 throw new InvalidOperationException("Can not work on that node!");
             }
 
+            public AstType VisitAttributeSection(AttributeSection section)
+            {
+                throw new InvalidOperationException("Can not work on that node");
+            }
+
+            public AstType VisitAttributeNode(AttributeNode attribute)
+            {
+                throw new InvalidOperationException("Can not work on that node");
+            }
+
             public AstType VisitAliasDeclaration(AliasDeclaration aliasDecl)
             {
                 return aliasDecl.Path.AcceptWalker(this);

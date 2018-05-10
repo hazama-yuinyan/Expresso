@@ -32,6 +32,16 @@ namespace Expresso.Ast.Analysis
                 throw new InvalidOperationException("Can not work on that node");
             }
 
+            public void VisitAttributeSection(AttributeSection section)
+            {
+                throw new InvalidOperationException("Can not work on that node");
+            }
+
+            public void VisitAttributeNode(AttributeNode attribute)
+            {
+                throw new InvalidOperationException("Can not work on that node");
+            }
+
             public void VisitBinaryExpression(BinaryExpression binaryExpr)
             {
                 var left_type = binaryExpr.Left.AcceptWalker(checker);

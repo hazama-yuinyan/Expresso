@@ -20,6 +20,10 @@ namespace Expresso.Ast
         public static readonly Role<EntityDeclaration> MemberRole = new Role<EntityDeclaration>("Member");
         public static readonly Role<ImportDeclaration> ImportRole = new Role<ImportDeclaration>("Import");
 
+        /// <summary>
+        /// Represents the name token.
+        /// </summary>
+        /// <value>The name token.</value>
         public Identifier NameToken{
             get{return GetChildByRole(Roles.Identifier);}
             set{SetChildByRole(Roles.Identifier, value);}
@@ -48,11 +52,16 @@ namespace Expresso.Ast
         public AstNodeCollection<ImportDeclaration> Imports => GetChildrenByRole(ImportRole);
 
 		/// <summary>
-		/// 本体。このノードがモジュールだった場合にはモジュールの定義文が含まれる。
-		/// The body of this node. If this node represents a module, then the body includes
-		/// the definitions of the module.
+		/// 本体。
+		/// The body of this node.
 		/// </summary>
         public AstNodeCollection<EntityDeclaration> Declarations => GetChildrenByRole(MemberRole);
+
+        /// <summary>
+        /// Represents the attribute associated with the module.
+        /// </summary>
+        /// <value>The attribute.</value>
+        public AstNodeCollection<AttributeSection> Attributes => GetChildrenByRole(EntityDeclaration.AttributeRole);
 
         /// <summary>
         /// モジュール名(デバッグ用)
@@ -69,7 +78,7 @@ namespace Expresso.Ast
             get{return NodeType.TypeDeclaration;}
         }
 
-        public ExpressoAst(IEnumerable<EntityDeclaration> decls, IEnumerable<ImportDeclaration> imports, string maybeModuleName)
+        public ExpressoAst(IEnumerable<EntityDeclaration> decls, IEnumerable<ImportDeclaration> imports, string maybeModuleName, IEnumerable<AttributeSection> attributes)
             : base(new TextLocation(1, 1), decls.Last().EndLocation)
         {
             NameToken = MakeIdentifier(maybeModuleName);
@@ -78,6 +87,8 @@ namespace Expresso.Ast
                 Imports.AddRange(imports);
 
             Declarations.AddRange(decls);
+            if(attributes != null)
+                Attributes.AddRange(attributes);
 		}
 
         public override void AcceptWalker(IAstWalker walker)
@@ -100,7 +111,8 @@ namespace Expresso.Ast
         protected internal override bool DoMatch(AstNode other, ICSharpCode.NRefactory.PatternMatching.Match match)
         {
             var o = other as ExpressoAst;
-            return o != null && Declarations.DoMatch(o.Declarations, match) && NameToken.DoMatch(o.NameToken, match);
+            return o != null && Declarations.DoMatch(o.Declarations, match) && NameToken.DoMatch(o.NameToken, match)
+                                            && Attributes.DoMatch(o.Attributes, match);
         }
 
         #endregion

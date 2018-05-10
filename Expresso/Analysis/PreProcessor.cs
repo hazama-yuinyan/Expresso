@@ -50,6 +50,18 @@ namespace Expresso.Ast.Analysis
             ast.Declarations.AcceptWalker(this);
         }
 
+        public void VisitAttributeSection(AttributeSection section)
+        {
+            VisitIdentifier(section.AttributeTargetToken);
+            section.Attributes.AcceptWalker(this);
+        }
+
+        public void VisitAttributeNode(AttributeNode attribute)
+        {
+            attribute.Type.AcceptWalker(this);
+            attribute.Arguments.AcceptWalker(this);
+        }
+
         public void VisitBinaryExpression(BinaryExpression binaryExpr)
         {
             binaryExpr.Left.AcceptWalker(this);

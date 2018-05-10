@@ -46,13 +46,10 @@ namespace Expresso.Ast
         void PrintList<T>(IEnumerable<T> list)
             where T : AstNode
         {
-            bool first = true;
-            foreach(var elem in list){
-                if(first)
-                    first = false;
-                else
-                    writer.Write(", ");
-
+            var first = list.First();
+            first.AcceptWalker(this);
+            foreach(var elem in list.Skip(1)){
+                writer.Write(", ");
                 elem.AcceptWalker(this);
             }
         }
@@ -217,6 +214,9 @@ namespace Expresso.Ast
 
         public void VisitAst(ExpressoAst ast)
         {
+            if(!ast.Attributes.IsEmpty)
+                PrintList(ast.Attributes);
+            
             writer.Write("<module ");
             writer.Write(ast.Name);
             writer.Write(" : ");
@@ -543,6 +543,27 @@ namespace Expresso.Ast
             writer.Write("<placeholder type>");
         }
 
+        public void VisitAttributeSection(AttributeSection section)
+        {
+            writer.Write("[");
+            if(!section.AttributeTargetToken.IsNull){
+                writer.Write(section.AttributeTarget);
+                writer.Write(": ");
+            }
+                
+            PrintList(section.Attributes);
+        }
+
+        public void VisitAttributeNode(AttributeNode attribute)
+        {
+            attribute.Type.AcceptWalker(this);
+            if(!attribute.Arguments.IsEmpty){
+                writer.Write("(");
+                PrintList(attribute.Arguments);
+                writer.Write(")");
+            }
+        }
+
         public void VisitAliasDeclaration(AliasDeclaration aliasDecl)
         {
             writer.Write("alias ");
@@ -578,6 +599,9 @@ namespace Expresso.Ast
 
         public void VisitFunctionDeclaration(FunctionDeclaration funcDecl)
         {
+            if(!funcDecl.Attribute.IsNull)
+                VisitAttributeSection(funcDecl.Attribute);
+
             if(!funcDecl.Modifiers.HasFlag(Modifiers.None)){
                 writer.Write(funcDecl.Modifiers);
                 writer.Write(" ");
@@ -593,6 +617,9 @@ namespace Expresso.Ast
 
         public void VisitTypeDeclaration(TypeDeclaration typeDecl)
         {
+            if(!typeDecl.Attribute.IsNull)
+                VisitAttributeSection(typeDecl.Attribute);
+            
             writer.Write("{0} ", typeDecl.TypeKind.ToString());
             writer.Write(typeDecl.Name);
             if(typeDecl.BaseTypes.HasChildren){
@@ -604,6 +631,9 @@ namespace Expresso.Ast
 
         public void VisitFieldDeclaration(FieldDeclaration fieldDecl)
         {
+            if(!fieldDecl.Attribute.IsNull)
+                VisitAttributeSection(fieldDecl.Attribute);
+            
             if(fieldDecl.HasModifier(Modifiers.Public))
                 writer.Write("public ");
             else if(fieldDecl.HasModifier(Modifiers.Protected))
@@ -621,6 +651,9 @@ namespace Expresso.Ast
 
         public void VisitParameterDeclaration(ParameterDeclaration parameterDecl)
         {
+            if(!parameterDecl.Attribute.IsNull)
+                VisitAttributeSection(parameterDecl.Attribute);
+            
             VisitIdentifier(parameterDecl.NameToken);
             if(parameterDecl.IsVariadic)
                 writer.Write("...");

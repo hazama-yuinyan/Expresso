@@ -22,7 +22,7 @@ namespace Expresso.Ast
     /// 型定義。
     /// Represents a type declaration.
     /// A type declaration introduces a new type into the current scope.
-    /// [ "export" ] ("class" | "interface" | "enum") Identifier [':' {PathExpression}]
+    /// [ AttributeSection ] [ "export" ] ("class" | "interface" | "enum") Identifier [':' {PathExpression}]
     /// '{' {Decls} '}' ;
     /// </summary>
     public class TypeDeclaration : EntityDeclaration
@@ -87,6 +87,15 @@ namespace Expresso.Ast
         }
 
         /// <summary>
+        /// Represents the attribute.
+        /// </summary>
+        /// <value>The attribute.</value>
+        public AttributeSection Attribute{
+            get{return GetChildByRole(AttributeRole);}
+            set{SetChildByRole(AttributeRole, value);}
+        }
+
+        /// <summary>
         /// Gets all the base types.
         /// </summary>
         /// <value>The base types.</value>
@@ -111,13 +120,14 @@ namespace Expresso.Ast
         }
 
         public TypeDeclaration(ClassType classType, Identifier ident, IEnumerable<AstType> supers,
-            IEnumerable<EntityDeclaration> decls, Modifiers modifiers, TextLocation start, TextLocation end)
+                               IEnumerable<EntityDeclaration> decls, AttributeSection attribute, Modifiers modifiers, TextLocation start, TextLocation end)
             : base(start, end)
         {
             TypeKind = classType;
             SetChildByRole(Roles.Identifier, ident);
             BaseTypes.AddRange(supers);
             Members.AddRange(decls);
+            Attribute = attribute;
             SetModifiers(this, modifiers);
         }
 

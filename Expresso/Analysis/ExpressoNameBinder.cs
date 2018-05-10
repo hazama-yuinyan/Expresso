@@ -449,6 +449,16 @@ namespace Expresso.Ast.Analysis
             // no op
         }
 
+        public void VisitAttributeSection(AttributeSection section)
+        {
+            // no op
+        }
+
+        public void VisitAttributeNode(AttributeNode attribute)
+        {
+            // no op
+        }
+
         public void VisitAliasDeclaration(AliasDeclaration aliasDecl)
         {
             // An alias name is another name for an item

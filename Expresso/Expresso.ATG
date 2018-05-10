@@ -569,39 +569,81 @@ Expresso                    		(. ExpressoAst module_decl = null;
   									.).
 /*------------------------------------------------------------------------*/
 ModuleBody<out ExpressoAst ast>	    (.  var decls = new List<EntityDeclaration>();
-                                        string module_name;
+                                        string module_name; List<AttributeSection> attributes; AttributeSection item_attribute = null;
 										List<ImportDeclaration> prog_defs = null; EntityDeclaration decl = null;
 									.)
 =
-  ModuleNameDefinition<out module_name> (. Console.WriteLine("Parsing {0}...", module_name); .)
+  ModuleNameDefinition<out module_name, out attributes> (. Console.WriteLine("Parsing {0}...", module_name); .)
   [ ProgramDefinition<out prog_defs>
   ]
-  								
+
+  [ AttributeSection<out item_attribute>
+  ]								
   [ "export"						(. cur_modifiers = ExpressoModifiers.Export; .)
   ]
-  ( FuncDecl<out decl, cur_modifiers>
-  | FieldDecl<out decl>
-  | ClassDecl<out decl, cur_modifiers>
-  | InterfaceDecl<out decl, cur_modifiers>
+  ( FuncDecl<out decl, cur_modifiers, item_attribute>
+  | FieldDecl<out decl, item_attribute>
+  | ClassDecl<out decl, cur_modifiers, item_attribute>
+  | InterfaceDecl<out decl, cur_modifiers, item_attribute>
   )									(.  decls.Add(decl);
 										cur_modifiers = ExpressoModifiers.None;
 									.)
-  {
+  {                                 (. item_attribute = null; .)
+    [ AttributeSection<out item_attribute>
+    ]
     [ "export"						(. cur_modifiers = ExpressoModifiers.Export; .)
     ]
-    ( FuncDecl<out decl, cur_modifiers>
-    | FieldDecl<out decl>
-    | ClassDecl<out decl, cur_modifiers>
-    | InterfaceDecl<out decl, cur_modifiers>
+    ( FuncDecl<out decl, cur_modifiers, item_attribute>
+    | FieldDecl<out decl, item_attribute>
+    | ClassDecl<out decl, cur_modifiers, item_attribute>
+    | InterfaceDecl<out decl, cur_modifiers, item_attribute>
     )								(.  decls.Add(decl);
     									cur_modifiers = ExpressoModifiers.None;
     								.)
-  }									(.  ast = AstNode.MakeModuleDef(module_name, decls, prog_defs); .) .
+  }									(.  ast = AstNode.MakeModuleDef(module_name, decls, prog_defs, attributes); .) .
 /*------------------------------------------------------------------------*/
-ModuleNameDefinition<out string moduleName>
-=                               (. .)
+AttributeTarget<out string target>
+=
+  ( "assembly"
+  | "module"
+  | "type"
+  | "field"
+  | "method"
+  | "param"
+  | "return"
+  )                                     (. target = t.val; .).
+/*------------------------------------------------------------------------*/
+AttributeSection<. out AttributeSection section .>      (. var attributes = new List<AttributeNode>(); AttributeNode attribute = null; string target = null;
+                                                           var start_loc = NextLocation;
+                                                        .)
+=
+  '['
+  [ AttributeTarget<out target>
+    ':'
+  ]
+  Attribute<out attribute>                              (. attributes.Add(attribute); .)
+  { ','
+    Attribute<out attribute>                            (. attributes.Add(attribute); .)
+  }
+  ']'                                                   (. section = AstNode.MakeAttributeSection(target, attributes, start_loc, CurrentLocation); .).
+/*------------------------------------------------------------------------*/
+Attribute<out AttributeNode attribute>     (. Expression expr; var args = new List<Expression>(); string name = null; var start_loc = NextLocation; .)
+=
+  ident                                     (. name = !t.val.EndsWith("Attribute", StringComparison.CurrentCulture) ? t.val + "Attribute" : t.val; .)
+  [ '('
+    CondExpr<out expr>                      (. args.Add(expr); .)
+    { ','
+      CondExpr<out expr>                    (. args.Add(expr); .)
+    }
+    ')'
+  ]                                         (. attribute = AstNode.MakeAttributeNode(name, args, start_loc, CurrentLocation); .).
+/*------------------------------------------------------------------------*/
+ModuleNameDefinition<. out string moduleName, out List<AttributeSection> attributes .>
+=                                   (. attributes = new List<AttributeSection>(); AttributeSection attribute = null; .)
+  { AttributeSection<out attribute> (. attributes.Add(attribute); .)
+  }
   "module"
-  ident                         (. moduleName = t.val; .)
+  ident                             (. moduleName = t.val; .)
   SYNC ';'.
 /*------------------------------------------------------------------------*/
 ProgramDefinition<. out List<ImportDeclaration> imports .>	(. imports = new List<ImportDeclaration>();
@@ -712,9 +754,9 @@ ImportAlias<out Identifier ident, TextLocation startLoc>    (. ident = null; .)
                                    }
                                 .).
 /*------------------------------------------------------------------------*/
-InterfaceDecl<out EntityDeclaration decl, Modifiers modifiers>
+InterfaceDecl<out EntityDeclaration decl, ExpressoModifiers modifiers, AttributeSection attribute>
                                         (.
-                                            string name = null; Identifier ident = null;
+                                            string name = null; Identifier ident = null; AttributeSection item_attribute = null;
                                             AstType type_path = null;
                                             EntityDeclaration method = null;
                                             var bases = new List<AstType>();
@@ -742,18 +784,22 @@ InterfaceDecl<out EntityDeclaration decl, Modifiers modifiers>
   lcurly                                (. GoDownScope();
                                            Symbols.Name = "type_" + name + "`" + ScopeId++;
                                         .)
-  MethodSignature<out method>           (. decls.Add(method); .)
+  {
+    [ AttributeSection<out item_attribute>
+    ]
+    MethodSignature<out method, item_attribute>         (. decls.Add(method); .)
+  }
   rcurly                                (.
-                                           decl = EntityDeclaration.MakeInterfaceDecl(ident, bases, decls, modifiers, start_loc, CurrentLocation);
+                                           decl = EntityDeclaration.MakeInterfaceDecl(ident, bases, decls, modifiers, attribute, start_loc, CurrentLocation);
                                            GoUpScope();
                                         .).
 /*------------------------------------------------------------------------*/
-MethodSignature<out EntityDeclaration method>
+MethodSignature<out EntityDeclaration method, AttributeSection attribute>
                                 (. Identifier ident = null;
                                    string name = null; AstType type = null;
                                    var type_params = new List<ParameterType>();
                                    var @params = new List<ParameterDeclaration>();
-                                   var start_loc = CurrentLocation;
+                                   var start_loc = NextLocation;
                                 .)
 =
   SYNC
@@ -778,14 +824,14 @@ MethodSignature<out EntityDeclaration method>
   ')'
   "->"
   Type<out type>
-  ';'                           (. method = EntityDeclaration.MakeFunc(ident, @params, null, type, ExpressoModifiers.Public, start_loc);
+  ';'                           (. method = EntityDeclaration.MakeFunc(ident, @params, null, type, ExpressoModifiers.Public, attribute, start_loc);
                                    GoUpScope();
                                 .).
 /*------------------------------------------------------------------------*/
-ClassDecl<out EntityDeclaration decl, Modifiers modifiers>   
+ClassDecl<out EntityDeclaration decl, ExpressoModifiers modifiers, AttributeSection attribute>   
   (.  EntityDeclaration entity = null; var decls = new List<EntityDeclaration>(); AstType type_path;
       string name; var bases = new List<AstType>(); var start_loc = NextLocation;
-      Identifier ident = null;
+      Identifier ident = null; AttributeSection item_attribute = null;
   .)
 =
   SYNC
@@ -811,17 +857,21 @@ ClassDecl<out EntityDeclaration decl, Modifiers modifiers>
   lcurly                                       (. GoDownScope();
                                                   Symbols.Name = "type_" + name + "`" + ScopeId++;
                                                .)
-  {                                            (. cur_modifiers = ExpressoModifiers.Private; .)
+  {                                            (. cur_modifiers = ExpressoModifiers.Private; 
+                                                  item_attribute = null;
+                                               .)
+    [ AttributeSection<out item_attribute>
+    ]
     { Modifiers<>
     }
-    ( FuncDecl<out entity, cur_modifiers>      (. decls.Add(entity); .)
-    | FieldDecl<out entity>	                   (. decls.Add(entity); .)
-    | ClassDecl<out entity, cur_modifiers>     (. decls.Add(entity); .)
-    | InterfaceDecl<out entity, cur_modifiers> (. decls.Add(entity); .)
+    ( FuncDecl<out entity, cur_modifiers, item_attribute>      (. decls.Add(entity); .)
+    | FieldDecl<out entity, item_attribute>	                   (. decls.Add(entity); .)
+    | ClassDecl<out entity, cur_modifiers, item_attribute>     (. decls.Add(entity); .)
+    | InterfaceDecl<out entity, cur_modifiers, item_attribute> (. decls.Add(entity); .)
     )
   }
   SYNC rcurly							       (. 
-                                                  decl = EntityDeclaration.MakeClassDecl(ident, bases, decls, modifiers, start_loc, CurrentLocation);
+                                                  decl = EntityDeclaration.MakeClassDecl(ident, bases, decls, modifiers, attribute, start_loc, CurrentLocation);
                                                   GoUpScope();
                                                   cur_modifiers = ExpressoModifiers.None;
                                                .).
@@ -840,7 +890,7 @@ Modifiers<>
   | "override"              (. cur_modifiers |= ExpressoModifiers.Override; .)
   ).
 /*------------------------------------------------------------------------*/
-FuncDecl<out EntityDeclaration decl, Modifiers modifiers>
+FuncDecl<out EntityDeclaration decl, ExpressoModifiers modifiers, AttributeSection attribute>
                                 (.  Identifier ident = null;
 									string name; AstType type = null; BlockStatement block;
 									var type_params = new List<ParameterType>();
@@ -876,7 +926,7 @@ FuncDecl<out EntityDeclaration decl, Modifiers modifiers>
 
                                    type.AcceptWalker(replacer);
                                 .)
-  Block<out block> 				(. decl = EntityDeclaration.MakeFunc(ident, @params, block, type, modifiers, start_loc);
+  Block<out block> 				(. decl = EntityDeclaration.MakeFunc(ident, @params, block, type, modifiers, attribute, start_loc);
                                    GoUpScope();
                                 .).
 /*------------------------------------------------------------------------*/
@@ -908,8 +958,12 @@ ParamList<. List<ParameterType> typeParams, ref List<ParameterDeclaration> @para
                                 .)
   }.
 /*------------------------------------------------------------------------*/
-Parameter<out ParameterDeclaration param>   (. string name; Identifier identifier; Expression option = null; AstType type = null; bool is_variadic = false; var start_loc = CurrentLocation; .)
+Parameter<out ParameterDeclaration param>   (. string name; Identifier identifier; Expression option = null; AstType type = null; bool is_variadic = false;
+                                               var start_loc = NextLocation; AttributeSection attribute = null;
+                                            .)
 =
+  [ AttributeSection<out attribute>
+  ]
   ident										(.
   												name = t.val;
   												if(CheckKeyword(name)){
@@ -936,14 +990,15 @@ Parameter<out ParameterDeclaration param>   (. string name; Identifier identifie
   													SemanticError("ES0004", "You can't omit both the type annotation and the optional value in a function parameter definition!; `{0}`", name);
 
   												Symbols.AddSymbol(name, identifier);
-  												param = EntityDeclaration.MakeParameter(identifier, option, is_variadic, start_loc);
+  												param = EntityDeclaration.MakeParameter(identifier, option, is_variadic, attribute, start_loc);
   											.).
 /*------------------------------------------------------------------------*/
-FieldDecl<out EntityDeclaration field>
+FieldDecl<out EntityDeclaration field, AttributeSection attribute>
   (. Expression rhs; PatternWithType typed_pattern; var start_loc = NextLocation;
      var patterns = new List<PatternWithType>(); var exprs = new List<Expression>();
   .)
 = 
+  SYNC
   ( "let"                                 (. cur_modifiers |= ExpressoModifiers.Immutable; .)
   | "var"
   )
@@ -963,7 +1018,7 @@ FieldDecl<out EntityDeclaration field>
                                              exprs.Add(rhs);
                                           .)
   }
-  SYNC ';'							      (. field = EntityDeclaration.MakeField(patterns, exprs, cur_modifiers, start_loc, CurrentLocation);
+  SYNC ';'							      (. field = EntityDeclaration.MakeField(patterns, exprs, cur_modifiers, attribute, start_loc, CurrentLocation);
                                              cur_modifiers = ExpressoModifiers.None; 
                                           .).
 /*------------------------------------------------------------------------*/

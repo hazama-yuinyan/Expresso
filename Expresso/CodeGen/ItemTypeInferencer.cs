@@ -36,6 +36,16 @@ namespace Expresso.CodeGen
                 throw new InvalidOperationException("Can not work on that node");
             }
 
+            public AstType VisitAttributeSection(AttributeSection section)
+            {
+                throw new InvalidOperationException("Can not work on that node");
+            }
+
+            public AstType VisitAttributeNode(AttributeNode attribute)
+            {
+                throw new InvalidOperationException("Can not work on that node");
+            }
+
             public AstType VisitBinaryExpression(BinaryExpression binaryExpr)
             {
                 throw new InvalidOperationException("Can not work on that node");

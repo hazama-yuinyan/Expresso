@@ -18,6 +18,7 @@ namespace Expresso.Ast.Analysis
         static PlaceholderType PlaceholderTypeNode = new PlaceholderType(TextLocation.Empty);
         static List<AstType> TemporaryTypes = new List<AstType>();
         bool inspecting_immutability = false;
+        bool? is_main_function_defined;
         int scope_counter;
         Parser parser;
         SymbolTable symbols;  //keep a SymbolTable reference in a private field for convenience
@@ -56,9 +57,21 @@ namespace Expresso.Ast.Analysis
         public AstType VisitAst(ExpressoAst ast)
         {
             Console.WriteLine("Checking types in {0}...", ast.ModuleName);
+            if(ast.Name == "main")
+                is_main_function_defined = false;
+            
             foreach(var decl in ast.Declarations)
                 decl.AcceptWalker(this);
 
+            var does_main_function_exist = is_main_function_defined ?? false;
+            if(is_main_function_defined != null && !does_main_function_exist){
+                throw new ParserException(
+                    "Even though the module is named \"main\", there is no main function defined in the module.",
+                    "ES4020",
+                    ast
+                );
+            }
+                
             return null;
         }
 
@@ -1069,6 +1082,16 @@ namespace Expresso.Ast.Analysis
             return AstType.Null;
         }
 
+        public AstType VisitAttributeSection(AttributeSection section)
+        {
+            return null;
+        }
+
+        public AstType VisitAttributeNode(AttributeNode attribute)
+        {
+            return null;
+        }
+
         public AstType VisitAliasDeclaration(AliasDeclaration aliasDecl)
         {
             var original_type = aliasDecl.Path.AcceptWalker(this);
@@ -1147,6 +1170,9 @@ namespace Expresso.Ast.Analysis
                         next
                     );
                 }
+
+                if(is_main_function_defined != null)
+                    is_main_function_defined = true;
             }
 
             VisitBlock(funcDecl.Body);

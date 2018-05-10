@@ -4761,5 +4761,23 @@ namespace Expresso.Test
             Assert.IsNotNull(ast);
             Helpers.AstStructuralEqual(ast, expected);
         }
+
+        [Test]
+        public void Attributes()
+        {
+            /*var parser = new Parser(new Scanner("../../sources/for_unit_tests/attributes.exs"));
+            parser.Parse();
+
+            var ast = parser.TopmostAst;
+
+            var expected = AstNode.MakeModuleDef("main", new List<EntityDeclaration>{
+                EntityDeclaration.MakeClassDecl(
+                    "AttributeTest",
+                    Enumerable.Empty<AstType>(),
+                    Modifiers.None,
+
+                )
+            });*/
+        }
     }
 }

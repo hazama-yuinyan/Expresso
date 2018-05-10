@@ -11,7 +11,7 @@ namespace Expresso.Ast
     /// <summary>
     /// Represents a field declaration.
     /// A field declaration introduces a new field into the current scope.
-    /// Modifiers ("let" | "var") ident [ "(-" Type ] [ '=' Expression ] { ',' ident [ "(-" Type ] [ '=' Expression ] } ';' ;
+    /// [ AttributeSection ] Modifiers ("let" | "var") ident [ "(-" Type ] [ '=' Expression ] { ',' ident [ "(-" Type ] [ '=' Expression ] } ';' ;
     /// </summary>
     public class FieldDeclaration : EntityDeclaration
     {
@@ -19,6 +19,15 @@ namespace Expresso.Ast
             get{
                 return SymbolKind.Field;
             }
+        }
+
+        /// <summary>
+        /// Represents the attribute.
+        /// </summary>
+        /// <value>The attribute.</value>
+        public AttributeSection Attribute{
+            get{return GetChildByRole(AttributeRole);}
+            set{SetChildByRole(AttributeRole, value);}
         }
 
         // Initializers shouldn't be renamed to Identifiers because of module fields.
@@ -47,13 +56,14 @@ namespace Expresso.Ast
         }
 
         public FieldDeclaration(IEnumerable<PatternWithType> lhs, IEnumerable<Expression> rhs,
-            Modifiers modifiers, TextLocation start, TextLocation end)
+                                AttributeSection attribute, Modifiers modifiers, TextLocation start, TextLocation end)
             : base(start, end)
         {
             rhs = rhs ?? lhs.Select(arg => Expression.Null);
             foreach(var variable in lhs.Zip(rhs, (pattern, expr) => new Tuple<PatternWithType, Expression>(pattern, expr)))
                 Initializers.Add(new VariableInitializer(variable.Item1, variable.Item2));
 
+            Attribute = attribute;
             SetModifiers(this, modifiers);
         }
 

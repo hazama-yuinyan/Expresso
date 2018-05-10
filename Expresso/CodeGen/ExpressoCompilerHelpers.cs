@@ -86,7 +86,7 @@ namespace Expresso.CodeGen
             }
             if(type == null){
                 throw new ParserException(
-                    "The type '{0}' is not a native type",
+                    "The type '{0}' is not a native type.",
                     "ES5000",
                     identifier,
                     identifier.Name
@@ -507,6 +507,10 @@ namespace Expresso.CodeGen
 
             case "4011":
                 Console.WriteLine("You can continue out of loops {0} times at this point.", e.HelpObject);
+                break;
+
+            case "4020":
+                Console.WriteLine("The module that has the main function is usually called 'main' because it is the entry point to the program.");
                 break;
 
             case "5000":

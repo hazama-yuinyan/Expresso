@@ -1,0 +1,97 @@
+﻿using System.Collections.Generic;
+using ICSharpCode.NRefactory;
+using ICSharpCode.NRefactory.PatternMatching;
+
+namespace Expresso.Ast
+{
+    /// <summary>
+    /// Represents an attribute section.
+    /// '[' [ Idenitifer ':' ] Attributes ']' ;
+    /// </summary>
+    public class AttributeSection : AstNode
+    {
+        #region Null
+        public static readonly new AttributeSection Null = new NullAttributeSection();
+
+        sealed class NullAttributeSection : AttributeSection
+        {
+            public override bool IsNull => true;
+
+            public override void AcceptWalker(IAstWalker walker)
+            {
+                walker.VisitNullNode(this);
+            }
+
+            public override TResult AcceptWalker<TResult>(IAstWalker<TResult> walker)
+            {
+                return walker.VisitNullNode(this);
+            }
+
+            public override TResult AcceptWalker<TResult, TData>(IAstWalker<TData, TResult> walker, TData data)
+            {
+                return walker.VisitNullNode(this, data);
+            }
+
+            protected internal override bool DoMatch(AstNode other, Match match)
+            {
+                return other == null || other.IsNull;
+            }
+        }
+        #endregion
+
+        public override NodeType NodeType => NodeType.Unknown;
+
+        /// <summary>
+        /// Gets the attribute target as a string.
+        /// </summary>
+        /// <value>The attribute target.</value>
+        public string AttributeTarget => AttributeTargetToken.Name;
+
+        /// <summary>
+        /// Represents the attribute target.
+        /// </summary>
+        /// <value>The attribute target token.</value>
+        public Identifier AttributeTargetToken{
+            get{return GetChildByRole(Roles.Identifier);}
+            set{SetChildByRole(Roles.Identifier, value);}
+        }
+
+        /// <summary>
+        /// Represents the attributes.
+        /// </summary>
+        /// <value>The attributes.</value>
+        public AstNodeCollection<AttributeNode> Attributes => GetChildrenByRole(Roles.Attribute);
+
+        protected AttributeSection()
+        {
+        }
+
+        public AttributeSection(Identifier target, IEnumerable<AttributeNode> attributes, TextLocation start, TextLocation end)
+            : base(start, end)
+        {
+            AttributeTargetToken = target;
+            Attributes.AddRange(attributes);
+        }
+
+        public override void AcceptWalker(IAstWalker walker)
+        {
+            walker.VisitAttributeSection(this);
+        }
+
+        public override TResult AcceptWalker<TResult>(IAstWalker<TResult> walker)
+        {
+            return walker.VisitAttributeSection(this);
+        }
+
+        public override TResult AcceptWalker<TResult, TData>(IAstWalker<TData, TResult> walker, TData data)
+        {
+            return walker.VisitAttributeSection(this, data);
+        }
+
+        protected internal override bool DoMatch(AstNode other, Match match)
+        {
+            var o = other as AttributeSection;
+            return o != null && AttributeTargetToken.DoMatch(o.AttributeTargetToken, match) && Attributes.DoMatch(o.Attributes, match);
+        }
+    }
+}

@@ -15,3 +15,5 @@
 ・string interpolationの式のTextLocationを修正する
 ・if letをなんとかする
 ・アトリビュートの追加
+・1行のプロパティ宣言をexpression bodyに置き換える
+・Helpersにヘルパーメソッドを追加してTextLocationを明示的にセットしなくてもいいように変更する

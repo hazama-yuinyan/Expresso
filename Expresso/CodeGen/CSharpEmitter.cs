@@ -1518,6 +1518,16 @@ namespace Expresso.CodeGen
             return null;
         }
 
+        public CSharpExpr VisitAttributeSection(AttributeSection section, CSharpEmitterContext context)
+        {
+            return null;
+        }
+
+        public CSharpExpr VisitAttributeNode(AttributeNode attribute, CSharpEmitterContext context)
+        {
+            return null;
+        }
+
         public CSharpExpr VisitAliasDeclaration(AliasDeclaration aliasDecl, CSharpEmitterContext context)
         {
             context.TargetType = null;

@@ -9,7 +9,7 @@ namespace Expresso.Ast
     /// 関数定義。
     /// Represents a function declaration.
     /// A function declaration declares a new function into function namespace.
-    /// [ Modifiers ] "def" Name '(' [ Arguments ] ')' [ "->" ReturnType ] '{' Body '}' ;
+    /// [ AttributeSection ][ Modifiers ] "def" Name '(' [ Arguments ] ')' [ "->" ReturnType ] '{' Body '}' ;
     /// </summary>
     public class FunctionDeclaration : EntityDeclaration
     {
@@ -17,6 +17,15 @@ namespace Expresso.Ast
             get{
                 return SymbolKind.Method;
             }
+        }
+
+        /// <summary>
+        /// Represents the attribute.
+        /// </summary>
+        /// <value>The attribute.</value>
+        public AttributeSection Attribute{
+            get{return GetChildByRole(AttributeRole);}
+            set{SetChildByRole(AttributeRole, value);}
         }
 
         /// <summary>
@@ -50,10 +59,11 @@ namespace Expresso.Ast
         }
 
         public FunctionDeclaration(Identifier ident, IEnumerable<ParameterDeclaration> formalParameters,
-            BlockStatement body, AstType returnType, Modifiers modifiers, TextLocation loc)
+                                   BlockStatement body, AstType returnType, AttributeSection attribute, Modifiers modifiers, TextLocation loc)
             : base(loc, body == null ? returnType.EndLocation : body.EndLocation)
 		{
             SetChildByRole(Roles.Identifier, ident);
+            Attribute = attribute;
             if(formalParameters != null)
                 Parameters.AddRange(formalParameters);
 

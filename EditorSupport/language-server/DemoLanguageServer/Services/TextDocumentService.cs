@@ -70,6 +70,7 @@ namespace ExpressoLanguageServer.Services
             };
 
             Session.Documents.TryAdd(textDocument.Uri, doc);
+            Session.LogStream.WriteLine("Successfully opened {0}", textDocument.Uri);
             //var diag = Session.DiagnosticProvider.LintDocument(doc.Document, Session.Settings.MaxNumberOfProblems);
             //await Client.Document.PublishDiagnostics(textDocument.Uri, diag);
         }

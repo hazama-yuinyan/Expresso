@@ -7,6 +7,8 @@ namespace Expresso.Ast
     {
         public static readonly Role<AstNode> Root = AstNode.RootRole;
 
+        public static readonly Role<AttributeNode> Attribute =
+            new Role<AttributeNode>("Attribute");
         public static readonly Role<Identifier> Identifier =
             new Role<Identifier>("Identifier", Ast.Identifier.Null);
         public static readonly Role<PathExpression> Path =
