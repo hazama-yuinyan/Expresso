@@ -1,5 +1,5 @@
 ﻿using ICSharpCode.NRefactory;
-
+using ICSharpCode.NRefactory.TypeSystem;
 
 namespace Expresso.Ast
 {
@@ -11,13 +11,9 @@ namespace Expresso.Ast
     /// </summary>
     public class PlaceholderType : AstType
     {
-        public override string Name{
-            get{return null;}
-        }
+        public override string Name => null;
 
-        public override Identifier IdentifierNode{
-            get{return Identifier.Null;}
-        }
+        public override Identifier IdentifierNode => Identifier.Null;
 
         public PlaceholderType(TextLocation loc)
             : base(loc, loc)
@@ -51,7 +47,7 @@ namespace Expresso.Ast
 
         #region implemented abstract members of AstType
 
-        public override ICSharpCode.NRefactory.TypeSystem.ITypeReference ToTypeReference(NameLookupMode lookupMode, ICSharpCode.NRefactory.TypeSystem.InterningProvider interningProvider = null)
+        public override ITypeReference ToTypeReference(NameLookupMode lookupMode, InterningProvider interningProvider = null)
         {
             return null;
         }

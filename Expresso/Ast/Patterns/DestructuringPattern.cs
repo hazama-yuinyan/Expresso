@@ -25,9 +25,7 @@ namespace Expresso.Ast
         /// <summary>
         /// Gets the items.
         /// </summary>
-        public AstNodeCollection<PatternConstruct> Items{
-            get{return GetChildrenByRole(Roles.Pattern);}
-        }
+        public AstNodeCollection<PatternConstruct> Items => GetChildrenByRole(Roles.Pattern);
 
         public DestructuringPattern(AstType typePath, IEnumerable<PatternConstruct> patterns)
             : base(typePath.StartLocation, patterns.Last().EndLocation)

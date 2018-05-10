@@ -15,11 +15,7 @@ namespace Expresso.Ast
     /// </summary>
     public class FieldDeclaration : EntityDeclaration
     {
-        public override SymbolKind SymbolKind{
-            get{
-                return SymbolKind.Field;
-            }
-        }
+        public override SymbolKind SymbolKind => SymbolKind.Field;
 
         /// <summary>
         /// Represents the attribute.
@@ -35,25 +31,15 @@ namespace Expresso.Ast
         /// The initializers that actually initializes the fields.
         /// </summary>
         /// <value>The initializers.</value>
-        public AstNodeCollection<VariableInitializer> Initializers{
-            get{return GetChildrenByRole(Roles.Variable);}
-        }
+        public AstNodeCollection<VariableInitializer> Initializers => GetChildrenByRole(Roles.Variable);
 
         // Hide Name and NameToken properties from users; the actual field names 
         // are stored in VariableInitializers
         [EditorBrowsable(EditorBrowsableState.Never)]
-        public override string Name{
-            get{
-                return string.Empty;
-            }
-        }
+        public override string Name => string.Empty;
 
         [EditorBrowsable(EditorBrowsableState.Never)]
-        public override Identifier NameToken{
-            get{
-                return Identifier.Null;
-            }
-        }
+        public override Identifier NameToken => Identifier.Null;
 
         public FieldDeclaration(IEnumerable<PatternWithType> lhs, IEnumerable<Expression> rhs,
                                 AttributeSection attribute, Modifiers modifiers, TextLocation start, TextLocation end)

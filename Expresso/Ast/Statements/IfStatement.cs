@@ -23,9 +23,7 @@ namespace Expresso.Ast
         public static readonly Role<Statement> FalseStmtRole =
             new Role<Statement>("FalseStmt", Statement.Null);
 
-        public ExpressoTokenNode IfToken{
-            get{return GetChildByRole(Roles.IfToken);}
-        }
+        public ExpressoTokenNode IfToken => GetChildByRole(Roles.IfToken);
 
 		/// <summary>
         /// 条件式。
@@ -48,9 +46,7 @@ namespace Expresso.Ast
             set{SetChildByRole(TrueBlockRole, value);}
 		}
 
-        public ExpressoTokenNode ElseToken{
-            get{return GetChildByRole(ElseKeywordRole);}
-        }
+        public ExpressoTokenNode ElseToken => GetChildByRole(ElseKeywordRole);
 
         /// <summary>
         /// 条件が偽の時に評価するブロック文。

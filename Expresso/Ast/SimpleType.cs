@@ -30,11 +30,7 @@ namespace Expresso.Ast
 
         sealed class NullSimpleType : SimpleType
         {
-            public override bool IsNull{
-                get{
-                    return true;
-                }
-            }
+            public override bool IsNull => true;
 
             public override void AcceptWalker(IAstWalker walker)
             {
@@ -63,16 +59,12 @@ namespace Expresso.Ast
         }
         #endregion
 
-        public override string Name{
-            get{return Identifier;}
-        }
+        public override string Name => Identifier;
 
         /// <summary>
         /// Gets the identifier as string.
         /// </summary>
-        public string Identifier{
-            get{return GetChildByRole(Roles.Identifier).Name;}
-        }
+        public string Identifier => IdentifierToken.Name;
 
         /// <summary>
         /// Gets the identifier as it is.
@@ -82,17 +74,13 @@ namespace Expresso.Ast
             set{SetChildByRole(Roles.Identifier, value);}
         }
 
-        public override Identifier IdentifierNode{
-            get{return IdentifierToken;}
-        }
+        public override Identifier IdentifierNode => IdentifierToken;
 
         /// <summary>
         /// Gets the type arguments.
         /// </summary>
         /// <value>The type arguments.</value>
-        public AstNodeCollection<AstType> TypeArguments{
-            get{return GetChildrenByRole(Roles.TypeArgument);}
-        }
+        public AstNodeCollection<AstType> TypeArguments => GetChildrenByRole(Roles.TypeArgument);
 
         protected SimpleType()
         {

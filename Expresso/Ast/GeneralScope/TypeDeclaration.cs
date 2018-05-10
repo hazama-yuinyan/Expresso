@@ -31,17 +31,9 @@ namespace Expresso.Ast
         public static readonly TokenRole InterfaceKeywordRole = new TokenRole("interface", ExpressoTokenNode.Null);
         public static readonly TokenRole EnumKeywordRole = new TokenRole("enum", ExpressoTokenNode.Null);
 
-        public override NodeType NodeType{
-            get{
-                return NodeType.TypeDeclaration;
-            }
-        }
+        public override NodeType NodeType => NodeType.TypeDeclaration;
 
-        public override SymbolKind SymbolKind{
-            get{
-                return SymbolKind.TypeDefinition;
-            }
-        }
+        public override SymbolKind SymbolKind => SymbolKind.TypeDefinition;
 
         public ExpressoTokenNode TypeKindToken{
             get{
@@ -74,17 +66,11 @@ namespace Expresso.Ast
             }
         }
 
-        public override string Name{
-            get{return NameToken.Name;}
-        }
+        public override string Name => NameToken.Name;
 
-        public override Identifier NameToken{
-            get{return GetChildByRole(Roles.Identifier);}
-        }
+        public override Identifier NameToken => GetChildByRole(Roles.Identifier);
 
-        public ExpressoTokenNode ColonToken{
-            get{return GetChildByRole(Roles.ColonToken);}
-        }
+        public ExpressoTokenNode ColonToken => GetChildByRole(Roles.ColonToken);
 
         /// <summary>
         /// Represents the attribute.
@@ -99,25 +85,17 @@ namespace Expresso.Ast
         /// Gets all the base types.
         /// </summary>
         /// <value>The base types.</value>
-        public AstNodeCollection<AstType> BaseTypes{
-            get{return GetChildrenByRole(Roles.BaseType);}
-        }
+        public AstNodeCollection<AstType> BaseTypes => GetChildrenByRole(Roles.BaseType);
 
-        public ExpressoTokenNode LBrace{
-            get{return GetChildByRole(Roles.LBraceToken);}
-        }
+        public ExpressoTokenNode LBrace => GetChildByRole(Roles.LBraceToken);
 
         /// <summary>
         /// Gets all the members defined in this declaration.
         /// </summary>
         /// <value>The members.</value>
-        public AstNodeCollection<EntityDeclaration> Members{
-            get{return GetChildrenByRole(Roles.TypeMember);}
-        }
+        public AstNodeCollection<EntityDeclaration> Members => GetChildrenByRole(Roles.TypeMember);
 
-        public ExpressoTokenNode RBrace{
-            get{return GetChildByRole(Roles.RBraceToken);}
-        }
+        public ExpressoTokenNode RBrace => GetChildByRole(Roles.RBraceToken);
 
         public TypeDeclaration(ClassType classType, Identifier ident, IEnumerable<AstType> supers,
                                IEnumerable<EntityDeclaration> decls, AttributeSection attribute, Modifiers modifiers, TextLocation start, TextLocation end)

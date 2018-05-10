@@ -16,11 +16,7 @@ namespace Expresso.Ast
 
         sealed class NullLiteralExpression : LiteralExpression
         {
-            public override bool IsNull{
-                get{
-                    return true;
-                }
-            }
+            public override bool IsNull => true;
 
             public override void AcceptWalker(IAstWalker walker)
             {
@@ -71,9 +67,11 @@ namespace Expresso.Ast
             }
 		}
 
-        public string LiteralValue{
-            get{return literal_value ?? "";}
-        }
+        /// <summary>
+        /// Gets the value as a string.
+        /// </summary>
+        /// <value>The literal value.</value>
+        public string LiteralValue => literal_value ?? "";
 
         protected LiteralExpression()
         {

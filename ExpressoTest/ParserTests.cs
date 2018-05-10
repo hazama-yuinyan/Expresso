@@ -415,7 +415,7 @@ namespace Expresso.Test
                             "args",
                             Helpers.MakeGenericType(
                                 "array", 
-                                AstType.MakePrimitiveType("string", TextLocation.Empty)
+                                AstType.MakePrimitiveType("string")
                             )
                         )
                     ),
@@ -1613,7 +1613,7 @@ namespace Expresso.Test
                             )
                         )
                     ),
-                    AstType.MakePrimitiveType("int", TextLocation.Empty),
+                    AstType.MakePrimitiveType("int"),
                     Modifiers.None
                 ),
                 EntityDeclaration.MakeFunc(

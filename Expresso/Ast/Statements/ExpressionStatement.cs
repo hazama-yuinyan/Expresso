@@ -22,9 +22,7 @@ namespace Expresso.Ast
             set{SetChildByRole(Roles.Expression, value);}
 		}
 
-        public ExpressoTokenNode SemicolonToken{
-            get{return GetChildByRole(Roles.SemicolonToken);}
-        }
+        public ExpressoTokenNode SemicolonToken => GetChildByRole(Roles.SemicolonToken);
 
         public ExpressionStatement(Expression expr, TextLocation start, TextLocation end)
             : base(start, end)

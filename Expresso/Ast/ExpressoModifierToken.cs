@@ -54,9 +54,7 @@ namespace Expresso.Ast
             Modifiers.Any
         };
 
-        public static IEnumerable<Modifiers> AllModifiers {
-            get{return allModifiers;}
-        }
+        public static IEnumerable<Modifiers> AllModifiers => allModifiers;
 
         public ExpressoModifierToken(TextLocation loc, Modifiers modifier)
             : base(loc, GetTokenRole(modifier.ToString().ToLower()))

@@ -39,11 +39,7 @@ namespace Expresso.Ast
             }
         }
         #endregion
-        public override NodeType NodeType{
-            get{
-                return NodeType.Unknown;
-            }
-        }
+        public override NodeType NodeType => NodeType.Unknown;
 
         /// <summary>
         /// Convenient property for retrieving the inner identifier pattern.
@@ -78,9 +74,7 @@ namespace Expresso.Ast
             set{SetChildByRole(Roles.TypedPattern, value);}
         }
 
-        public ExpressoTokenNode AssignToken{
-            get{return GetChildByRole(Roles.AssignToken);}
-        }
+        public ExpressoTokenNode AssignToken => GetChildByRole(Roles.AssignToken);
 
         /// <summary>
         /// Represents the initialization code.

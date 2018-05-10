@@ -15,9 +15,7 @@ namespace Expresso.Ast
         /// <summary>
         /// Gets all the items.
         /// </summary>
-        public AstNodeCollection<PatternConstruct> Items{
-            get{return GetChildrenByRole(Roles.Pattern);}
-        }
+        public AstNodeCollection<PatternConstruct> Items => GetChildrenByRole(Roles.Pattern);
 
         /// <summary>
         /// Represents the collection type.

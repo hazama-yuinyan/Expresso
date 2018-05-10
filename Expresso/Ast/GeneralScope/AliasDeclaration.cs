@@ -11,6 +11,8 @@ namespace Expresso.Ast
     /// </summary>
     public class AliasDeclaration : AstNode
     {
+        public override NodeType NodeType => NodeType.TypeDeclaration;
+
         /// <summary>
         /// The target path to be aliased.
         /// </summary>
@@ -24,9 +26,7 @@ namespace Expresso.Ast
         /// The new name introduced by the declaration.
         /// </summary>
         /// <value>The name of the alias.</value>
-        public string AliasName{
-            get{return AliasToken.Name;}
-        }
+        public string AliasName => AliasToken.Name;
 
         /// <summary>
         /// Gets or sets the new name as an identifier.
@@ -63,12 +63,6 @@ namespace Expresso.Ast
         {
             var o = other as AliasDeclaration;
             return o != null && Path.DoMatch(o.Path, match) && MatchString(AliasName, o.AliasName);
-        }
-
-        public override NodeType NodeType{
-            get{
-                return NodeType.TypeDeclaration;
-            }
         }
 
         #endregion

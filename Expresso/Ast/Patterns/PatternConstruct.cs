@@ -15,11 +15,7 @@ namespace Expresso.Ast
 
         sealed class NullPatternConstruct : PatternConstruct
         {
-            public override bool IsNull{
-                get{
-                    return true;
-                }
-            }
+            public override bool IsNull => true;
 
             public override void AcceptWalker(IAstWalker walker)
             {
@@ -54,7 +50,7 @@ namespace Expresso.Ast
             readonly Pattern child;
 
             public PatternPlaceholder(Pattern child)
-                : base(default(TextLocation), default(TextLocation))
+                : base(default, default)
             {
                 this.child = child;
             }
@@ -88,11 +84,7 @@ namespace Expresso.Ast
 
         #region implemented abstract members of AstNode
 
-        public override NodeType NodeType{
-            get{
-                return NodeType.Expression;
-            }
-        }
+        public override NodeType NodeType => NodeType.Expression;
 
         protected PatternConstruct()
         {

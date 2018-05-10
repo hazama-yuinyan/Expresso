@@ -22,7 +22,7 @@ namespace Expresso.Ast
         public SuperReferenceExpression(TextLocation loc)
             : base(loc, new TextLocation(loc.Line, loc.Column + "super".Length))
         {
-            SuperIdentifier = AstNode.MakeIdentifier("super", new PlaceholderType(loc));
+            SuperIdentifier = MakeIdentifier("super", new PlaceholderType(loc));
         }
 
         #region implemented abstract members of AstNode

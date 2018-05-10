@@ -25,16 +25,12 @@ namespace Expresso.Ast
         /// Indicates whether the node doesn't have any child node.
         /// Just the inverse of HasChildren.
         /// </summary>
-        public bool IsEmpty{
-            get{return !node.HasChildren;}
-        }
+        public bool IsEmpty => !node.HasChildren;
 
         /// <summary>
         /// Indicates whether the node has children.
         /// </summary>
-        public bool HasChildren{
-            get{return node.HasChildren;}
-        }
+        public bool HasChildren => node.HasChildren;
 
         public AstNodeCollection(AstNode node, Role<T> role)
         {
@@ -107,11 +103,7 @@ namespace Expresso.Ast
             }
         }
 
-        public bool IsReadOnly{
-            get{
-                return false;
-            }
-        }
+        public bool IsReadOnly => false;
         #endregion
 
         #region IEnumerable implementation

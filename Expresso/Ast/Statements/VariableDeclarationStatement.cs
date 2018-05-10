@@ -19,9 +19,7 @@ namespace Expresso.Ast
         /// Variables that will be declared. Each node represents the variable declared and
         /// the corresponding initialization code.
 		/// </summary>
-        public AstNodeCollection<VariableInitializer> Variables{
-            get{return GetChildrenByRole(Roles.Variable);}
-		}
+        public AstNodeCollection<VariableInitializer> Variables => GetChildrenByRole(Roles.Variable);
 
         /// <summary>
         /// Gets or sets the modifiers.
@@ -31,9 +29,7 @@ namespace Expresso.Ast
             set{EntityDeclaration.SetModifiers(this, value);}
         }
 
-        public ExpressoTokenNode SemicolonToken{
-            get{return GetChildByRole(Roles.SemicolonToken);}
-        }
+        public ExpressoTokenNode SemicolonToken => GetChildByRole(Roles.SemicolonToken);
 
         public VariableDeclarationStatement(IEnumerable<PatternWithType> lhs, IEnumerable<Expression> rhs,
             Modifiers modifiers, TextLocation start, TextLocation end)

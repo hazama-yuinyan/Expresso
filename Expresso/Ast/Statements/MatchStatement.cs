@@ -17,9 +17,7 @@ namespace Expresso.Ast
         public static readonly TokenRole MatchKeywordRole = new TokenRole("match", ExpressoTokenNode.Null);
         public static readonly Role<MatchPatternClause> PatternClauseRole = new Role<MatchPatternClause>("PatternClause");
 
-        public ExpressoTokenNode MatchToken{
-            get{return GetChildByRole(MatchKeywordRole);}
-        }
+        public ExpressoTokenNode MatchToken => GetChildByRole(MatchKeywordRole);
 
 		/// <summary>
         /// 評価対象となる式。
@@ -34,9 +32,7 @@ namespace Expresso.Ast
         /// 分岐先となるパターン(郡)。
         /// Branches with patterns.
         /// </summary>
-        public AstNodeCollection<MatchPatternClause> Clauses{
-            get{return GetChildrenByRole(PatternClauseRole);}
-		}
+        public AstNodeCollection<MatchPatternClause> Clauses => GetChildrenByRole(PatternClauseRole);
 
         public MatchStatement(Expression targetExpr, IEnumerable<MatchPatternClause> patternClauses,
             TextLocation start, TextLocation end)
@@ -84,9 +80,7 @@ namespace Expresso.Ast
         /// 分岐条件となるパターン(郡)。
         /// Patterns used to determine whether the flow takes the corresponding branch or not.
         /// </summary>
-        public AstNodeCollection<PatternConstruct> Patterns{
-            get{return GetChildrenByRole(Roles.Pattern);}
-		}
+        public AstNodeCollection<PatternConstruct> Patterns => GetChildrenByRole(Roles.Pattern);
 
         /// <summary>
         /// ガード式。

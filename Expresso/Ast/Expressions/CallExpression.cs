@@ -24,17 +24,13 @@ namespace Expresso.Ast
             set{SetChildByRole(Roles.TargetExpression, value);}
 		}
 
-        public ExpressoTokenNode LPar{
-            get{return GetChildByRole(Roles.LParenthesisToken);}
-        }
+        public ExpressoTokenNode LPar => GetChildByRole(Roles.LParenthesisToken);
 
         /// <summary>
         /// 与える実引数リスト。
 		/// The argument list to be supplied to the call.
         /// </summary>
-        public AstNodeCollection<Expression> Arguments{
-            get{return GetChildrenByRole(Roles.Argument);}
-		}
+        public AstNodeCollection<Expression> Arguments => GetChildrenByRole(Roles.Argument);
 
         /// <summary>
         /// Represents the signature to call.
@@ -46,9 +42,7 @@ namespace Expresso.Ast
             set{SetChildByRole(OverloadSignatureRole, value);}
         }
 
-        public ExpressoTokenNode RPar{
-            get{return GetChildByRole(Roles.RParenthesisToken);}
-        }
+        public ExpressoTokenNode RPar => GetChildByRole(Roles.RParenthesisToken);
 
         public CallExpression(Expression targetExpr, IEnumerable<Expression> arguments, TextLocation loc)
             : base(targetExpr.StartLocation, loc)

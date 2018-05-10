@@ -16,11 +16,7 @@ namespace Expresso.Ast
         public static readonly Role<AttributeSection> AttributeRole = new Role<AttributeSection>("Attribute", AttributeSection.Null);
         public static readonly Role<ExpressoModifierToken> ModifierRole = new Role<ExpressoModifierToken>("Modifier");
 
-        public override NodeType NodeType{
-            get{
-                return NodeType.Member;
-            }
-        }
+        public override NodeType NodeType => NodeType.Member;
 
         public abstract SymbolKind SymbolKind{get;}
 
@@ -34,21 +30,25 @@ namespace Expresso.Ast
             return (Modifiers & modifier) == modifier;
         }
 
-        public virtual string Name{
-            get{return GetChildByRole(Roles.Identifier).Name;}
-        }
+        /// <summary>
+        /// Gets the name as as string.
+        /// </summary>
+        /// <value>The name.</value>
+        public virtual string Name => NameToken.Name;
 
-        public virtual Identifier NameToken{
-            get{return GetChildByRole(Roles.Identifier);}
-        }
+        /// <summary>
+        /// Gets the name token.
+        /// </summary>
+        /// <value>The name token.</value>
+        public virtual Identifier NameToken => GetChildByRole(Roles.Identifier);
 
-        public virtual AstType ReturnType{
-            get{return GetChildByRole(Roles.Type);}
-        }
+        /// <summary>
+        /// Gets the type of the entity.
+        /// </summary>
+        /// <value>The type of the return.</value>
+        public virtual AstType ReturnType => GetChildByRole(Roles.Type);
 
-        public ExpressoTokenNode SemicolonToken{
-            get{return GetChildByRole(Roles.SemicolonToken);}
-        }
+        public ExpressoTokenNode SemicolonToken => GetChildByRole(Roles.SemicolonToken);
 
         internal static Modifiers GetModifiers(AstNode node)
         {

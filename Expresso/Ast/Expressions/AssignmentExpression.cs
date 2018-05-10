@@ -79,9 +79,7 @@ namespace Expresso.Ast
             get; set;
         }
 
-        public ExpressoTokenNode OperatorToken{
-            get{return GetChildByRole(GetOperatorRole(Operator));}
-        }
+        public ExpressoTokenNode OperatorToken => GetChildByRole(GetOperatorRole(Operator));
 
         public AssignmentExpression(Expression lhsExpr, Expression rhsExpr, OperatorType opType)
             : base(lhsExpr.StartLocation, rhsExpr.EndLocation)

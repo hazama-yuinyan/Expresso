@@ -1,8 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
 using ICSharpCode.NRefactory;
 using ICSharpCode.NRefactory.PatternMatching;
-
+using ICSharpCode.NRefactory.TypeSystem;
 
 namespace Expresso.Ast
 {
@@ -12,7 +11,7 @@ namespace Expresso.Ast
     /// </summary>
     public class MemberType : AstType
     {
-        public static readonly Role<AstType> TargetRole = new Role<AstType>("Target", AstType.Null);
+        public static readonly Role<AstType> TargetRole = new Role<AstType>("Target", Null);
         public static readonly Role<SimpleType> ChildRole = new Role<SimpleType>("Child", SimpleType.Null);
 
         /// <summary>
@@ -27,17 +26,11 @@ namespace Expresso.Ast
         /// <summary>
         /// Gets the name of the member.
         /// </summary>
-        public string MemberName{
-            get{return ChildType.Name;}
-        }
+        public string MemberName => ChildType.Name;
 
-        public override string Name{
-            get{return MemberName;}
-        }
+        public override string Name => MemberName;
 
-        public override Identifier IdentifierNode{
-            get{return ChildType.IdentifierNode;}
-        }
+        public override Identifier IdentifierNode => ChildType.IdentifierNode;
 
         /// <summary>
         /// Gets or sets the child type.
@@ -82,7 +75,7 @@ namespace Expresso.Ast
 
         #region implemented abstract members of AstType
 
-        public override ICSharpCode.NRefactory.TypeSystem.ITypeReference ToTypeReference(NameLookupMode lookupMode, ICSharpCode.NRefactory.TypeSystem.InterningProvider interningProvider = null)
+        public override ITypeReference ToTypeReference(NameLookupMode lookupMode, InterningProvider interningProvider = null)
         {
             throw new NotImplementedException();
         }

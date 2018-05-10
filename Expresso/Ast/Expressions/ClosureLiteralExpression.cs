@@ -19,9 +19,7 @@ namespace Expresso.Ast
         /// Represents the parameters on this closure.
         /// </summary>
         /// <value>The parameters.</value>
-        public AstNodeCollection<ParameterDeclaration> Parameters{
-            get{return GetChildrenByRole(Roles.Parameter);}
-        }
+        public AstNodeCollection<ParameterDeclaration> Parameters => GetChildrenByRole(Roles.Parameter);
 
         /// <summary>
         /// The return type of this closure.
@@ -79,7 +77,8 @@ namespace Expresso.Ast
         {
             var o = other as ClosureLiteralExpression;
             return o != null && Parameters.DoMatch(o.Parameters, match) && ReturnType.DoMatch(o.ReturnType, match) && Body.DoMatch(o.Body, match)
-                                          && (LiftedIdentifiers == null && o.LiftedIdentifiers == null || LiftedIdentifiers.Zip(o.LiftedIdentifiers, (arg1, arg2) => Tuple.Create(arg1, arg2))
+                                          && (LiftedIdentifiers == null && o.LiftedIdentifiers == null ||
+                                              LiftedIdentifiers.Zip(o.LiftedIdentifiers, (arg1, arg2) => Tuple.Create(arg1, arg2))
                                               .All(t => t.Item1.DoMatch(t.Item2, match)));
         }
     }

@@ -11,27 +11,11 @@ namespace Expresso.Ast
 	/// </summary>
     public class SequenceInitializer : Expression
 	{
-        /*public override ICSharpCode.NRefactory.TextLocation StartLocation{
-            get{
-                var first_item = Items.FirstOrDefault();
-                return (first_item != null) ? first_item.StartLocation : base.StartLocation;
-            }
-        }
-
-        public override ICSharpCode.NRefactory.TextLocation EndLocation{
-            get{
-                var last_item = Items.LastOrDefault();
-                return (last_item != null) ? last_item.EndLocation : base.EndLocation;
-            }
-        }*/
-
 		/// <summary>
         /// シーケンス生成に使用する式群。
 		/// Expressions generating each element of a sequence object.
         /// </summary>
-        public AstNodeCollection<Expression> Items{
-            get{return GetChildrenByRole(Roles.Expression);}
-		}
+        public AstNodeCollection<Expression> Items => GetChildrenByRole(Roles.Expression);
 		
 		/// <summary>
 		/// この式群を評価した結果生成されるオブジェクトのタイプ。

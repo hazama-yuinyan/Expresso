@@ -9,11 +9,7 @@ namespace Expresso.Ast
     /// </summary>
     public sealed class NewLineNode : AstNode
     {
-        public override NodeType NodeType{
-            get{
-                return NodeType.Whitespace;
-            }
-        }
+        public override NodeType NodeType => NodeType.Whitespace;
 
         const uint NewLineMask = 0xfu << (int)AstNodeFlagsUsedBits;
         static readonly UnicodeNewline[] NewLineTypes = {

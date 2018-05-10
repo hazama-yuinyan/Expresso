@@ -18,11 +18,7 @@ namespace Expresso.Ast
 
         sealed class NullStatement : Statement
         {
-            public override bool IsNull{
-                get{
-                    return true;
-                }
-            }
+            public override bool IsNull => true;
 
             public override void AcceptWalker(IAstWalker walker)
             {
@@ -88,11 +84,7 @@ namespace Expresso.Ast
         }
         #endregion
 
-        public override NodeType NodeType{
-            get{
-                return NodeType.Statement;
-            }
-        }
+        public override NodeType NodeType => NodeType.Statement;
 
         protected Statement()
         {

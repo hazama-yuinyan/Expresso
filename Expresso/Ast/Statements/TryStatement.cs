@@ -15,19 +15,29 @@ namespace Expresso.Ast
     public class TryStatement : Statement
     {
         public static readonly Role<CatchClause> CatchRole =
-            new Role<CatchClause>("CatchClause", CatchClause.Null);
+            new Role<CatchClause>("CatchClause"/*, CatchClause.Null*/);
         public static readonly Role<FinallyClause> FinallyRole =
             new Role<FinallyClause>("FinallyClause", FinallyClause.Null);
-        
+
+        /// <summary>
+        /// Represents the body block.
+        /// </summary>
+        /// <value>The enclosing block.</value>
         public BlockStatement EnclosingBlock{
             get{return GetChildByRole(Roles.Body);}
             set{SetChildByRole(Roles.Body, value);}
         }
 
-        public AstNodeCollection<CatchClause> CatchClauses{
-            get{return GetChildrenByRole(CatchRole);}
-        }
+        /// <summary>
+        /// Represents the catch clauses.
+        /// </summary>
+        /// <value>The catch clauses.</value>
+        public AstNodeCollection<CatchClause> CatchClauses => GetChildrenByRole(CatchRole);
 
+        /// <summary>
+        /// Represents the finally clause.
+        /// </summary>
+        /// <value>The finally clause.</value>
         public FinallyClause FinallyClause{
             get{return GetChildByRole(FinallyRole);}
             set{SetChildByRole(FinallyRole, value);}
@@ -71,16 +81,12 @@ namespace Expresso.Ast
     /// </summary>
     public class CatchClause : Expression
     {
-        #region Null
+        /*#region Null
         public static new CatchClause Null = new NullCatchClause();
 
         sealed class NullCatchClause : CatchClause
         {
-            public override bool IsNull {
-                get {
-                    return true;
-                }
-            }
+            public override bool IsNull => true;
 
             public override void AcceptWalker(IAstWalker walker)
             {
@@ -102,7 +108,7 @@ namespace Expresso.Ast
                 return other == null || other.IsNull;
             } 
         }
-        #endregion
+        #endregion*/
 
         /// <summary>
         /// The identifier of the exception that this catch clause catches.
@@ -167,11 +173,7 @@ namespace Expresso.Ast
 
         sealed class NullFinallyClause : FinallyClause
         {
-            public override bool IsNull {
-                get {
-                    return true;
-                }
-            }
+            public override bool IsNull => true;
 
             public override void AcceptWalker(IAstWalker walker)
             {
@@ -196,7 +198,7 @@ namespace Expresso.Ast
         #endregion
 
         /// <summary>
-        /// The body of the finally clause
+        /// The body of the finally clause.
         /// </summary>
         /// <value>The body.</value>
         public BlockStatement Body{

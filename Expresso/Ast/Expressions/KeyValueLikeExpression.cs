@@ -1,5 +1,4 @@
-﻿using System;
-using ICSharpCode.NRefactory;
+﻿using ICSharpCode.NRefactory;
 
 
 namespace Expresso.Ast
@@ -11,7 +10,7 @@ namespace Expresso.Ast
     /// </summary>
     public class KeyValueLikeExpression : Expression
     {
-        public static readonly Role<Expression> KeyRole = new Role<Expression>("Key", Expression.Null);
+        public static readonly Role<Expression> KeyRole = new Role<Expression>("Key", Null);
 
         /// <summary>
         /// Represents the key.
@@ -21,9 +20,7 @@ namespace Expresso.Ast
             set{SetChildByRole(KeyRole, value);}
         }
 
-        public AstNodeCollection<ExpressoTokenNode> ColonToken{
-            get{return GetChildrenByRole(Roles.ColonToken);}
-        }
+        public AstNodeCollection<ExpressoTokenNode> ColonToken => GetChildrenByRole(Roles.ColonToken);
 
         /// <summary>
         /// Represents the value.

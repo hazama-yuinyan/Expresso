@@ -17,11 +17,7 @@ namespace Expresso.Ast
         public static new PathExpression Null = new NullPathExpression();
         sealed class NullPathExpression : PathExpression
         {
-            public override bool IsNull{
-                get{
-                    return true;
-                }
-            }
+            public override bool IsNull => true;
 
             public override void AcceptWalker(IAstWalker walker)
             {
@@ -48,9 +44,7 @@ namespace Expresso.Ast
         /// <summary>
         /// Gets the path items.
         /// </summary>
-        public AstNodeCollection<Identifier> Items{
-            get{return GetChildrenByRole(Roles.Identifier);}
-        }
+        public AstNodeCollection<Identifier> Items => GetChildrenByRole(Roles.Identifier);
 
         /// <summary>
         /// Just for convenience.
@@ -63,9 +57,7 @@ namespace Expresso.Ast
         /// Note that this property doesn't check whether the node is a wrapped-up identifier.
         /// So you must be careful when you plan to use it.
         /// </remarks>
-        public Identifier AsIdentifier{
-            get{return Items.FirstOrNullObject();}
-        }
+        public Identifier AsIdentifier => Items.FirstOrNullObject();
 
         protected PathExpression()
         {

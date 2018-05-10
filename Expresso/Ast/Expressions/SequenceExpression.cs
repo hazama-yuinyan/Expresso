@@ -17,17 +17,13 @@ namespace Expresso.Ast
         /// リストのアイテム。
 		/// The items of this list.
         /// </summary>
-        public AstNodeCollection<Expression> Items{
-            get{return GetChildrenByRole(Roles.Expression);}
-		}
+        public AstNodeCollection<Expression> Items => GetChildrenByRole(Roles.Expression);
 
         /// <summary>
         /// Gets the number of items.
         /// </summary>
         /// <value>The count.</value>
-		public int Count{
-            get{return Items.Count;}
-		}
+        public int Count => Items.Count;
 
         public SequenceExpression(IEnumerable<Expression> items)
             : base(items.First().StartLocation, items.Last().EndLocation)

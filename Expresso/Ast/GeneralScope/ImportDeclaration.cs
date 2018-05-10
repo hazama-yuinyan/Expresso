@@ -24,9 +24,7 @@ namespace Expresso.Ast
         public static readonly Role<Identifier> AliasNameRole =
             new Role<Identifier>("AliasName", Identifier.Null);
 
-        public ExpressoTokenNode ImportToken{
-            get{return GetChildByRole(ImportKeyword);}
-        }
+        public ExpressoTokenNode ImportToken => GetChildByRole(ImportKeyword);
 
         /// <summary>
         /// インポート対象となるモジュールパス。
@@ -43,13 +41,9 @@ namespace Expresso.Ast
         /// An import path can refer to a module, a type, a function or a module variable.
         /// </summary>
         /// <value>The import paths.</value>
-        public AstNodeCollection<Identifier> ImportPaths{
-            get{return GetChildrenByRole(ImportPathRole);}
-        }
+        public AstNodeCollection<Identifier> ImportPaths => GetChildrenByRole(ImportPathRole);
 
-        public string TargetFilePath{
-            get{return TargetFile.Name;}
-        }
+        public string TargetFilePath => TargetFile.Name;
 
         /// <summary>
         /// Represents the target file.
@@ -70,24 +64,16 @@ namespace Expresso.Ast
             get{return AliasTokens.Name;}
 		}*/
 
-        public ExpressoTokenNode AsToken{
-            get{return GetChildByRole(Roles.AsToken);}
-        }
+        public ExpressoTokenNode AsToken => GetChildByRole(Roles.AsToken);
 
         /// <summary>
         /// Gets alias names only valid within the current scope.
         /// </summary>
-        public AstNodeCollection<Identifier> AliasTokens{
-            get{return GetChildrenByRole(AliasNameRole);}
-        }
+        public AstNodeCollection<Identifier> AliasTokens => GetChildrenByRole(AliasNameRole);
 
-        public ExpressoTokenNode SemicolonToken{
-            get{return GetChildByRole(Roles.SemicolonToken);}
-        }
+        public ExpressoTokenNode SemicolonToken => GetChildByRole(Roles.SemicolonToken);
 
-        public override NodeType NodeType{
-            get{return NodeType.Statement;}
-        }
+        public override NodeType NodeType => NodeType.Statement;
 
         public ImportDeclaration(IEnumerable<Identifier> paths, IEnumerable<Identifier> aliases, Identifier targetFile, TextLocation start, TextLocation end)
             : base(start, end)

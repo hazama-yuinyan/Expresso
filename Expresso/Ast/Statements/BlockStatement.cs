@@ -15,11 +15,7 @@ namespace Expresso.Ast
 
         sealed class NullBlockStatement : BlockStatement
         {
-            public override bool IsNull{
-                get{
-                    return true;
-                }
-            }
+            public override bool IsNull => true;
 
             public override void AcceptWalker(IAstWalker walker)
             {
@@ -47,9 +43,7 @@ namespace Expresso.Ast
         /// ブロックの中身の文。
 		/// The body statements
         /// </summary>
-        public AstNodeCollection<Statement> Statements{
-            get{return GetChildrenByRole(Roles.EmbeddedStatement);}
-		}
+        public AstNodeCollection<Statement> Statements => GetChildrenByRole(Roles.EmbeddedStatement);
 
         protected BlockStatement()
         {

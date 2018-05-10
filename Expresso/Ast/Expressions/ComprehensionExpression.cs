@@ -79,11 +79,7 @@ namespace Expresso.Ast
 
         sealed class NullComprehensionIter : ComprehensionIter
         {
-            public override bool IsNull{
-                get{
-                    return true;
-                }
-            }
+            public override bool IsNull => true;
 
             public override void AcceptWalker(IAstWalker walker)
             {
@@ -130,11 +126,7 @@ namespace Expresso.Ast
 
         sealed class NullComprehensionForClause : ComprehensionForClause
         {
-            public override bool IsNull{
-                get{
-                    return true;
-                }
-            }
+            public override bool IsNull => true;
 
             public override void AcceptWalker(IAstWalker walker)
             {

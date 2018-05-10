@@ -18,9 +18,7 @@ namespace Expresso.Ast
     /// </remarks>
     public class ParenthesizedExpression : Expression
     {
-        public ExpressoTokenNode LPar{
-            get{return GetChildByRole(Roles.LParenthesisToken);}
-        }
+        public ExpressoTokenNode LPar => GetChildByRole(Roles.LParenthesisToken);
 
         /// <summary>
         /// The inner expression.
@@ -30,9 +28,7 @@ namespace Expresso.Ast
             set{SetChildByRole(Roles.Expression, value);}
         }
 
-        public ExpressoTokenNode RPar{
-            get{return GetChildByRole(Roles.RParenthesisToken);}
-        }
+        public ExpressoTokenNode RPar => GetChildByRole(Roles.RParenthesisToken);
 
         public ParenthesizedExpression(Expression expression, TextLocation start, TextLocation end)
             : base(start, end)

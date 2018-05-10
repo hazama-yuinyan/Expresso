@@ -17,25 +17,14 @@ namespace Expresso.Ast
     {
         #region Null
         public new static readonly AstType Null = new NullAstType();
+
         sealed class NullAstType : AstType
         {
-            public override bool IsNull{
-                get{
-                    return true;
-                }
-            }
+            public override bool IsNull => true;
 
-            public override string Name{
-                get{
-                    return null;
-                }
-            }
+            public override string Name => null;
 
-            public override Identifier IdentifierNode{
-                get{
-                    return Identifier.Null;
-                }
-            }
+            public override Identifier IdentifierNode => Identifier.Null;
 
             public override void AcceptWalker(IAstWalker walker)
             {
@@ -86,23 +75,11 @@ namespace Expresso.Ast
                 this.child = child;
             }
 
-            public override NodeType NodeType{
-                get{
-                    return NodeType.Pattern;
-                }
-            }
+            public override NodeType NodeType => NodeType.Pattern;
 
-            public override string Name{
-                get{
-                    return null;
-                }
-            }
+            public override string Name => null;
 
-            public override Identifier IdentifierNode{
-                get{
-                    return Identifier.Null;
-                }
-            }
+            public override Identifier IdentifierNode => Identifier.Null;
 
             #region INode implementation
 
@@ -116,11 +93,7 @@ namespace Expresso.Ast
                 return child.DoMatchCollection(role, pos, match, backtrackingInfo);
             }
 
-            public override bool IsNull{
-                get{
-                    return false;
-                }
-            }
+            public override bool IsNull => false;
 
             #endregion
 
@@ -159,11 +132,7 @@ namespace Expresso.Ast
         }
         #endregion
 
-        public override NodeType NodeType{
-            get{
-                return NodeType.TypeReference;
-            }
-        }
+        public override NodeType NodeType => NodeType.TypeReference;
 
         /// <summary>
         /// Gets the name of the type.

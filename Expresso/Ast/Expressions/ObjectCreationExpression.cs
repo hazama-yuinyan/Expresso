@@ -23,11 +23,7 @@ namespace Expresso.Ast
 
         sealed class NullObjectCreationExpression : ObjectCreationExpression
         {
-            public override bool IsNull{
-                get{
-                    return true;
-                }
-            }
+            public override bool IsNull => true;
 
             public override void AcceptWalker(IAstWalker walker)
             {
@@ -63,9 +59,7 @@ namespace Expresso.Ast
         /// Gets all the key-value pairs.
         /// </summary>
         /// <value>The field names.</value>
-        public AstNodeCollection<KeyValueLikeExpression> Items{
-            get{return GetChildrenByRole(Roles.KeyValue);}
-        }
+        public AstNodeCollection<KeyValueLikeExpression> Items => GetChildrenByRole(Roles.KeyValue);
 
         /// <summary>
         /// Gets or sets the type of the constructor.

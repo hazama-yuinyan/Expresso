@@ -38,9 +38,7 @@ namespace Expresso.Ast
         /// 演算子のタイプ。
 		/// The type of the operator.
         /// </summary>
-        public OperatorType Operator{
-			get{return op;}
-		}
+        public OperatorType Operator => op;
 
         /// <summary>
         /// 左辺のオペランド。

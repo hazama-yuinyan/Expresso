@@ -18,13 +18,9 @@ namespace Expresso.Ast
             set{SetChildByRole(Roles.Type, value);}
         }
 
-        public override string Name{
-            get{return BaseType.Name;}
-        }
+        public override string Name => BaseType.Name;
 
-        public override Identifier IdentifierNode{
-            get{return BaseType.IdentifierNode;}
-        }
+        public override Identifier IdentifierNode => BaseType.IdentifierNode;
 
         public ReferenceType(AstType type, TextLocation loc)
             : base(loc, type.EndLocation)

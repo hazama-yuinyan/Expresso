@@ -22,13 +22,9 @@ namespace Expresso.Ast
             set{SetChildByRole(AttributeRole, value);}
         }
 
-        public override AstType ReturnType{
-            get{return NameToken.Type;}
-        }
+        public override AstType ReturnType => NameToken.Type;
 
-        public ExpressoTokenNode AssignToken{
-            get{return GetChildByRole(Roles.AssignToken);}
-        }
+        public ExpressoTokenNode AssignToken => GetChildByRole(Roles.AssignToken);
 
         /// <summary>
         /// この引数のデフォルト値。
@@ -49,11 +45,7 @@ namespace Expresso.Ast
 
         #region implemented abstract members of EntityDeclaration
 
-        public override SymbolKind SymbolKind{
-            get{
-                return SymbolKind.Parameter;
-            }
-        }
+        public override SymbolKind SymbolKind => SymbolKind.Parameter;
 
         #endregion
 

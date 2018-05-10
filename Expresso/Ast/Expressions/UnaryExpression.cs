@@ -21,9 +21,7 @@ namespace Expresso.Ast
 		/// 演算子のタイプ。
 		/// The type of the operation.
 		/// </summary>
-		public OperatorType Operator{
-			get{return op;}
-		}
+		public OperatorType Operator => op;
 
         public ExpressoTokenNode OperatorToken{
             get{return GetChildByRole(GetOperatorRole(op));}
@@ -78,12 +76,16 @@ namespace Expresso.Ast
             switch(op){
             case OperatorType.Plus:
                 return Roles.PlusToken;
+
             case OperatorType.Minus:
                 return Roles.MinusToken;
+
             case OperatorType.Not:
                 return NotRole;
+
             case OperatorType.Reference:
                 return ReferenceRole;
+
             default:
                 throw new NotSupportedException("Invalid value for UnaryOperatorType");
             }

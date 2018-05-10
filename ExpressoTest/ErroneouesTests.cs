@@ -700,6 +700,17 @@ namespace Expresso.Test
             Assert.That(() => parser.Parse(), Throws.TypeOf<ParserException>().With.Message.Contains("ES0005"));
             Assert.AreEqual(1, parser.errors.count);
         }
+
+        [Test]
+        public void MissingMainFunction()
+        {
+            var parser = new Parser(new Scanner("../../sources/for_unit_tests/erroneous/missing_main_function.exs")){
+                DoPostParseProcessing = true
+            };
+
+            Assert.That(() => parser.Parse(), Throws.TypeOf<ParserException>().With.Message.Contains("ES4020"));
+            Assert.AreEqual(1, parser.errors.count);
+        }
     }
 }
 

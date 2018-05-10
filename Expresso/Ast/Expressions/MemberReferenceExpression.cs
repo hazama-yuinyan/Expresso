@@ -17,9 +17,7 @@ namespace Expresso.Ast
             set{SetChildByRole(Roles.TargetExpression, value);}
 		}
 
-        public ExpressoTokenNode DotToken{
-            get{return GetChildByRole(Roles.DotToken);}
-        }
+        public ExpressoTokenNode DotToken => GetChildByRole(Roles.DotToken);
 
 		/// <summary>
 		/// The member expression.

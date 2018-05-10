@@ -11,13 +11,10 @@ namespace Expresso.Ast
     {
         #region Null
         public static new readonly ExpressoTokenNode Null = new NullExpressoTokenNode();
+
         sealed class NullExpressoTokenNode : ExpressoTokenNode
         {
-            public override bool IsNull{
-                get{
-                    return true;
-                }
-            }
+            public override bool IsNull => true;
 
             public NullExpressoTokenNode() : base(TextLocation.Empty, null)
             {
@@ -48,22 +45,14 @@ namespace Expresso.Ast
         /// <summary>
         /// Gets the length.
         /// </summary>
-        public int TokenLength{
-            get{return TokenRole.TokenLengths[(int)flags >> (int)AstNodeFlagsUsedBits];}
-        }
+        public int TokenLength => TokenRole.TokenLengths[(int)flags >> (int)AstNodeFlagsUsedBits];
 
         /// <summary>
         /// Gets the token as a string.
         /// </summary>
-        public string Token{
-            get{return TokenRole.Tokens[(int)flags >> (int)AstNodeFlagsUsedBits];}
-        }
+        public string Token => TokenRole.Tokens[(int)flags >> (int)AstNodeFlagsUsedBits];
 
-        public override NodeType NodeType{
-            get{
-                return NodeType.Token;
-            }
-        }
+        public override NodeType NodeType => NodeType.Token;
 
         public ExpressoTokenNode(TextLocation location, TokenRole role)
             : base(location, new TextLocation(location.Line,

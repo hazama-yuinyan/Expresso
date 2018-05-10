@@ -14,11 +14,7 @@ namespace Expresso.Ast
             get; set;
         }
 
-        public override NodeType NodeType{
-            get{
-                return NodeType.Whitespace;
-            }
-        }
+        public override NodeType NodeType => NodeType.Whitespace;
 
         public TextNode(string text) : this(text, TextLocation.Empty, TextLocation.Empty)
         {

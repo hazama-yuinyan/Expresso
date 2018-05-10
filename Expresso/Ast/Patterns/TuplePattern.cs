@@ -15,9 +15,7 @@ namespace Expresso.Ast
         /// <summary>
         /// Gets all the child patterns.
         /// </summary>
-        public AstNodeCollection<PatternConstruct> Patterns{
-            get{return GetChildrenByRole(Roles.Pattern);}
-        }
+        public AstNodeCollection<PatternConstruct> Patterns => GetChildrenByRole(Roles.Pattern);
 
         public TuplePattern(IEnumerable<PatternConstruct> patterns)
             : base(patterns.First().StartLocation, patterns.Last().EndLocation)

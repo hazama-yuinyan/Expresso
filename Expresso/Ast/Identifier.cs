@@ -20,11 +20,7 @@ namespace Expresso.Ast
 
         sealed class NullIdentifier : Identifier
         {
-            public override bool IsNull{
-                get{
-                    return true;
-                }
-            }
+            public override bool IsNull => true;
 
             public override void AcceptWalker(IAstWalker walker)
             {
@@ -54,9 +50,7 @@ namespace Expresso.Ast
         /// 識別子名。
 		/// The name of the identifier.
         /// </summary>
-        public string Name{
-            get{return name;}
-		}
+        public string Name => name;
 
         /// <summary>
         /// Gets or sets the identifier id. This id represents the identity or uniqueness of that node
@@ -87,9 +81,7 @@ namespace Expresso.Ast
             set{EntityDeclaration.SetModifiers(this, value);}
         }
 
-        public override NodeType NodeType{
-            get{return NodeType.Unknown;}
-        }
+        public override NodeType NodeType => NodeType.Unknown;
 
         protected Identifier()
         {

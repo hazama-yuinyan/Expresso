@@ -15,13 +15,7 @@ namespace Expresso.Ast
 	{
         public static readonly Role<Expression> IterableRole = new Role<Expression>("Iterable", Expression.Null);
 
-        public ExpressoTokenNode ForToken{
-            get{return GetChildByRole(Roles.ForToken);}
-        }
-
-        public ExpressoTokenNode LPar{
-            get{return GetChildByRole(Roles.LParenthesisToken);}
-        }
+        public ExpressoTokenNode ForToken => GetChildByRole(Roles.ForToken);
 
 		/// <summary>
         /// body内で操作対象となるオブジェクトを参照するのに使用する式。

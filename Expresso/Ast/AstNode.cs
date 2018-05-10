@@ -26,17 +26,9 @@ namespace Expresso.Ast
 
         sealed class NullAstNode : AstNode
         {
-            public override NodeType NodeType{
-                get{
-                    return NodeType.Unknown;
-                }
-            }
+            public override NodeType NodeType => NodeType.Unknown;
 
-            public override bool IsNull{
-                get{
-                    return true;
-                }
-            }
+            public override bool IsNull => true;
 
             public override void AcceptWalker(IAstWalker walker)
             {
@@ -129,9 +121,7 @@ namespace Expresso.Ast
         /// the start location within the nodes.
         /// </remarks>
         /// <value>The start location in the source code.</value>
-        public virtual TextLocation StartLocation{
-            get{return start_loc;}
-        }
+        public virtual TextLocation StartLocation => start_loc;
 
         /// <summary>
         /// Gets the end location.
@@ -141,63 +131,45 @@ namespace Expresso.Ast
         /// the end location within the nodes.
         /// </remarks>
         /// <value>The end location in the source code.</value>
-        public virtual TextLocation EndLocation{
-            get{return end_loc;}
-        }
+        public virtual TextLocation EndLocation => end_loc;
 
         /// <summary>
         /// Gets the parent node.
         /// </summary>
         /// <value>The parent AST node.</value>
-        public AstNode Parent{
-            get{return parent;}
-        }
+        public AstNode Parent => parent;
 
         /// <summary>
         /// Gets the next node.
         /// </summary>
         /// <value>The next AST node.</value>
-        public AstNode NextSibling{
-            get{return next_sibling;}
-        }
+        public AstNode NextSibling => next_sibling;
 
         /// <summary>
         /// Gets the previous node.
         /// </summary>
         /// <value>The previous AST node.</value>
-        public AstNode PrevSibling{
-            get{return prev_sibling;}
-        }
+        public AstNode PrevSibling => prev_sibling;
 
         /// <summary>
         /// Gets the first child node.
         /// </summary>
         /// <value>The first child AST node.</value>
-        public AstNode FirstChild{
-            get{return first_child;}
-        }
+        public AstNode FirstChild => first_child;
 
         /// <summary>
         /// Gets the last child node.
         /// </summary>
         /// <value>The last child AST node.</value>
-        public AstNode LastChild{
-            get{return last_child;}
-        }
+        public AstNode LastChild => last_child;
 
         /// <summary>
         /// Determines whether this AST node has any child AST nodes.
         /// </summary>
         /// <value><c>true</c> if this node has children; otherwise, <c>false</c>.</value>
-        public bool HasChildren{
-            get{return first_child != null && !first_child.IsNull;}
-        }
+        public bool HasChildren => first_child != null && !first_child.IsNull;
 
-        public DomRegion Region{
-            get{
-                return new DomRegion(start_loc, end_loc);
-            }
-        }
+        public DomRegion Region => new DomRegion(start_loc, end_loc);
 
         /// <summary>
         /// ノードタイプ。
@@ -209,9 +181,7 @@ namespace Expresso.Ast
         /// Gets whether this node is a null node.
         /// </summary>
         /// <value><c>true</c> if this node is a null node; otherwise, <c>false</c>.</value>
-        public virtual bool IsNull{
-            get{return false;}
-        }
+        public virtual bool IsNull => false;
         #endregion
 
         protected AstNode()
@@ -236,11 +206,7 @@ namespace Expresso.Ast
             }
         }
 
-        public bool IsFrozen{
-            get{
-                return (flags & FrozenBits) != 0;
-            }
-        }
+        public bool IsFrozen => (flags & FrozenBits) != 0;
 
         #endregion
 
@@ -298,9 +264,7 @@ namespace Expresso.Ast
             }
         }
 
-        internal uint RoleIndex{
-            get{return flags & RoleIndexMask;}
-        }
+        internal uint RoleIndex => flags & RoleIndexMask;
 
         void SetRole(Role role)
         {
@@ -641,20 +605,12 @@ namespace Expresso.Ast
         /// <summary>
         /// Gets all decendant nodes of this node (excluding this node itself) in pre-order.
         /// </summary>
-        public IEnumerable<AstNode> Descendants{
-            get{
-                return GetDescendantNodesImpl(false);
-            }
-        }
+        public IEnumerable<AstNode> Descendants => GetDescendantNodesImpl(false);
 
         /// <summary>
         /// Gets all decendant nodes of this node (including this node itself) in pre-order.
         /// </summary>
-        public IEnumerable<AstNode> DescendantsAndSelf{
-            get{
-                return GetDescendantNodesImpl(true);
-            }
-        }
+        public IEnumerable<AstNode> DescendantsAndSelf => GetDescendantNodesImpl(true);
 
         static bool IsInsideRegion(DomRegion region, AstNode pos)
         {
@@ -696,7 +652,7 @@ namespace Expresso.Ast
         /// Gets all the descendant nodes specified by the predicate(inluding this node itself).
         /// </summary>
         /// <returns>All the descendant nodes found.</returns>
-        /// <param name="descendIntoChidlren">
+        /// <param name="descendIntoChildren">
         /// A delegate which determines whether it should descend into the children of the input node.
         /// If it is null, this method gives back all descendant nodes of this node.
         /// </param>
@@ -883,13 +839,9 @@ namespace Expresso.Ast
             return (pos == null || o != null) && DoMatch(o, match);
         }
 
-        INode INode.NextSibling{
-            get{return next_sibling;}
-        }
+        INode INode.NextSibling => next_sibling;
 
-        INode INode.FirstChild{
-            get{return first_child;}
-        }
+        INode INode.FirstChild => first_child;
         #endregion
 
         public AstNode GetNextNode()

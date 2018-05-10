@@ -19,11 +19,7 @@ namespace Expresso.Ast
 
         sealed class NullFunctionType : FunctionType
         {
-            public override bool IsNull {
-                get {
-                    return true;
-                }
-            }
+            public override bool IsNull => true;
 
             public override void AcceptWalker(IAstWalker walker)
             {
@@ -58,9 +54,7 @@ namespace Expresso.Ast
         /// <summary>
         /// The parameters for the function.
         /// </summary>
-        public AstNodeCollection<AstType> Parameters{
-            get{return GetChildrenByRole(Parameter);}
-        }
+        public AstNodeCollection<AstType> Parameters => GetChildrenByRole(Parameter);
 
         /// <summary>
         /// The identifier of the function.
@@ -69,6 +63,10 @@ namespace Expresso.Ast
             get{return GetChildByRole(Roles.Identifier);}
             set{SetChildByRole(Roles.Identifier, value);}
         }
+
+        public override string Name => Identifier.Name;
+
+        public override Identifier IdentifierNode => Identifier;
 
         protected FunctionType()
         {
@@ -107,26 +105,10 @@ namespace Expresso.Ast
 
         #endregion
 
-        #region implemented abstract members of AstType
-
         public override ICSharpCode.NRefactory.TypeSystem.ITypeReference ToTypeReference(NameLookupMode lookupMode, ICSharpCode.NRefactory.TypeSystem.InterningProvider interningProvider = null)
         {
             throw new NotImplementedException();
         }
-
-        public override string Name{
-            get{
-                return Identifier.Name;
-            }
-        }
-
-        public override Identifier IdentifierNode{
-            get{
-                return Identifier;
-            }
-        }
-
-        #endregion
     }
 }
 

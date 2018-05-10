@@ -11,13 +11,7 @@ namespace Expresso.Ast
 	/// </summary>
     public class ValueBindingForStatement : Statement
 	{
-        public ExpressoTokenNode ForToken{
-            get{return GetChildByRole(Roles.ForToken);}
-        }
-
-        public ExpressoTokenNode LPar{
-            get{return GetChildByRole(Roles.LParenthesisToken);}
-        }
+        public ExpressoTokenNode ForToken => GetChildByRole(Roles.ForToken);
 
         /// <summary>
         /// Gets or sets the modifiers.

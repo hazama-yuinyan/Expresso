@@ -33,35 +33,24 @@ namespace Expresso.Ast
     /// </summary>
     public class PrimitiveType : AstType
     {
-        string keyword;
+        readonly string keyword;
 
-        public ExpressoTypeCode KnownTypeCode{
-            get{return GetKnownTypeCodeForPrimitiveType(Keyword, this);}
-        }
+        public ExpressoTypeCode KnownTypeCode => GetKnownTypeCodeForPrimitiveType(Keyword, this);
 
-        public override string Name{
-            get{return keyword;}
-        }
+        public override string Name => keyword;
 
-        public string Keyword{
-            get{return keyword;}
-            set{
-                if(value == null)
-                    throw new ArgumentNullException();
+        /// <summary>
+        /// Gets the keyword.
+        /// </summary>
+        /// <value>The keyword.</value>
+        public string Keyword => keyword;
 
-                ThrowIfFrozen();
-                keyword = value;
-            }
-        }
-
-        public override Identifier IdentifierNode{
-            get{return Identifier.Null;}
-        }
+        public override Identifier IdentifierNode => Identifier.Null;
 
         public PrimitiveType(string keyword, TextLocation location)
             : base(location, new TextLocation(location.Line, location.Column + keyword.Length))
         {
-            Keyword = keyword;
+            this.keyword = keyword;
         }
 
         public override void AcceptWalker(IAstWalker walker)

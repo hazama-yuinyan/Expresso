@@ -15,11 +15,7 @@ namespace Expresso.Ast
             get; set;
         }
 
-        public override NodeType NodeType{
-            get{
-                return NodeType.Whitespace;
-            }
-        }
+        public override NodeType NodeType => NodeType.Whitespace;
 
         public CommentNode(string content)
         {

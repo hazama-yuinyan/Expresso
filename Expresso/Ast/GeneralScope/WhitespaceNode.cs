@@ -9,11 +9,7 @@ namespace Expresso.Ast
     /// </summary>
     public class WhitespaceNode : AstNode
     {
-        public override NodeType NodeType{
-            get{
-                return NodeType.Whitespace;
-            }
-        }
+        public override NodeType NodeType => NodeType.Whitespace;
 
         public string WhitespaceText{
             get; private set;

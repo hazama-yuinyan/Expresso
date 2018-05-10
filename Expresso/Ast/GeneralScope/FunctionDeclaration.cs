@@ -13,11 +13,7 @@ namespace Expresso.Ast
     /// </summary>
     public class FunctionDeclaration : EntityDeclaration
     {
-        public override SymbolKind SymbolKind{
-            get{
-                return SymbolKind.Method;
-            }
-        }
+        public override SymbolKind SymbolKind => SymbolKind.Method;
 
         /// <summary>
         /// Represents the attribute.
@@ -33,9 +29,7 @@ namespace Expresso.Ast
 		/// The formal parameter list.
         /// It can be empty if the function takes no parameters.
         /// </summary>
-        public AstNodeCollection<ParameterDeclaration> Parameters{
-            get{return GetChildrenByRole(Roles.Parameter);}
-		}
+        public AstNodeCollection<ParameterDeclaration> Parameters => GetChildrenByRole(Roles.Parameter);
 
         /// <summary>
         /// 関数本体。
@@ -52,11 +46,7 @@ namespace Expresso.Ast
 		/// <value>
 		/// <c>true</c> if this instance is static; otherwise, <c>false</c>.
 		/// </value>
-		public bool IsStatic{
-            get{
-                return HasModifier(Modifiers.Static);
-            }
-        }
+        public bool IsStatic => HasModifier(Modifiers.Static);
 
         public FunctionDeclaration(Identifier ident, IEnumerable<ParameterDeclaration> formalParameters,
                                    BlockStatement body, AstType returnType, AttributeSection attribute, Modifiers modifiers, TextLocation loc)

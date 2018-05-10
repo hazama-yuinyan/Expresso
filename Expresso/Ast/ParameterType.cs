@@ -9,17 +9,13 @@ namespace Expresso.Ast
     /// </summary>
     public class ParameterType : AstType
     {
-        public override string Name{
-            get{return Identifier;}
-        }
+        public override string Name => Identifier;
 
         /// <summary>
         /// Gets the identifier as string.
         /// </summary>
         /// <value>The identifier.</value>
-        public string Identifier{
-            get{return GetChildByRole(Roles.Identifier).Name;}
-        }
+        public string Identifier => IdentifierToken.Name;
 
         /// <summary>
         /// Gets or sets the identifier as it is.
@@ -29,9 +25,7 @@ namespace Expresso.Ast
             set{SetChildByRole(Roles.Identifier, value);}
         }
 
-        public override Identifier IdentifierNode{
-            get{return IdentifierToken;}
-        }
+        public override Identifier IdentifierNode => IdentifierToken;
 
         public ParameterType(Identifier identifier)
             : base(identifier.StartLocation, identifier.EndLocation)

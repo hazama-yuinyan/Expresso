@@ -23,21 +23,15 @@ namespace Expresso.Ast
             set{SetChildByRole(Roles.TargetExpression, value);}
         }
 
-        public ExpressoTokenNode LBracket{
-            get{return GetChildByRole(Roles.LBracketToken);}
-        }
+        public ExpressoTokenNode LBracket => GetChildByRole(Roles.LBracketToken);
 
         /// <summary>
         /// Gets the arguments.
         /// </summary>
         /// <value>The arguments.</value>
-        public AstNodeCollection<Expression> Arguments{
-            get{return GetChildrenByRole(Roles.Argument);}
-        }
+        public AstNodeCollection<Expression> Arguments => GetChildrenByRole(Roles.Argument);
 
-        public ExpressoTokenNode RBracket{
-            get{return GetChildByRole(Roles.RBracketToken);}
-        }
+        public ExpressoTokenNode RBracket => GetChildByRole(Roles.RBracketToken);
 
         public IndexerExpression(Expression target, IEnumerable<Expression> arguments, TextLocation loc)
             : base(target.StartLocation, loc)
