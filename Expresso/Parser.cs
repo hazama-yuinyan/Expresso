@@ -77,18 +77,8 @@ string cur_class_name;
     /// </summary>
     public bool DoPostParseProcessing{get; set;}
 	public ExpressoAst TopmostAst{get; private set;}	//the top-level AST the parser is parsing
-    public TextLocation CurrentLocation{
-        get{
-            return new TextLocation(t.line, t.col);
-        }
-    }
-
-    public TextLocation NextLocation{
-        get{
-            return new TextLocation(la.line, la.col);
-        }
-    }
-
+    public TextLocation CurrentLocation => new TextLocation(t.line, t.col);
+    public TextLocation NextLocation => new TextLocation(la.line, la.col);
     internal List<Parser> InnerParsers{get;} = new List<Parser>();
 
 	///<summary>

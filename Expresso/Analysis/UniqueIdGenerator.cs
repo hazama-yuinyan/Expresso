@@ -1,5 +1,4 @@
-﻿using System;
-
+﻿
 
 namespace Expresso.Ast.Analysis
 {
@@ -13,9 +12,7 @@ namespace Expresso.Ast.Analysis
         /// <summary>
         /// Peeks at the next unique id.
         /// </summary>
-        public static uint CurrentId{
-            get{return Id;}
-        }
+        public static uint CurrentId => Id;
 
         /// <summary>
         /// Assigns the next id to the given identifier.

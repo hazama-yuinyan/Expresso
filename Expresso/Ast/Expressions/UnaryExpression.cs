@@ -1,5 +1,6 @@
 ﻿using System;
 using ICSharpCode.NRefactory;
+using ICSharpCode.NRefactory.PatternMatching;
 
 
 namespace Expresso.Ast
@@ -24,8 +25,8 @@ namespace Expresso.Ast
 		public OperatorType Operator => op;
 
         public ExpressoTokenNode OperatorToken{
-            get{return GetChildByRole(GetOperatorRole(op));}
-            set{SetChildByRole(GetOperatorRole(op), value);}
+            get => GetChildByRole(GetOperatorRole(op));
+            set => SetChildByRole(GetOperatorRole(op), value);
         }
 
 		/// <summary>
@@ -33,8 +34,8 @@ namespace Expresso.Ast
 		/// The operand.
 		/// </summary>
 		public Expression Operand{
-            get{return GetChildByRole(Roles.TargetExpression);}
-            set{SetChildByRole(Roles.TargetExpression, value);}
+            get => GetChildByRole(Roles.TargetExpression);
+            set => SetChildByRole(Roles.TargetExpression, value);
 		}
 
         public UnaryExpression(OperatorType opType, Expression target, TextLocation loc)
@@ -62,7 +63,7 @@ namespace Expresso.Ast
 
         #region implemented abstract members of AstNode
 
-        protected internal override bool DoMatch(AstNode other, ICSharpCode.NRefactory.PatternMatching.Match match)
+        protected internal override bool DoMatch(AstNode other, Match match)
         {
             var o = other as UnaryExpression;
             return o != null && OperatorToken.DoMatch(o.OperatorToken, match)

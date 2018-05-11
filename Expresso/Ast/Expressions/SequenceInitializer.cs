@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using ICSharpCode.NRefactory.PatternMatching;
-using System.Linq;
 using ICSharpCode.NRefactory;
 
 namespace Expresso.Ast
@@ -24,8 +23,8 @@ namespace Expresso.Ast
         /// the type check phase.
 		/// </summary>
         public SimpleType ObjectType{
-            get{return GetChildByRole(Roles.GenericType);}
-            set{SetChildByRole(Roles.GenericType, value);}
+            get => GetChildByRole(Roles.GenericType);
+            set => SetChildByRole(Roles.GenericType, value);
 		}
 
         public SequenceInitializer(SimpleType objType, IEnumerable<Expression> seqItems, TextLocation start, TextLocation end)

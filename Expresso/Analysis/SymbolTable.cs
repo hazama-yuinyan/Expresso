@@ -49,18 +49,12 @@ namespace Expresso.Ast.Analysis
         /// <summary>
         /// Gets all the symbols as an enumerator.
         /// </summary>
-        public IEnumerable<Identifier> Symbols{
-            get{
-                return table.Values.SelectMany(col => col.Select(ident => ident));
-            }
-        }
+        public IEnumerable<Identifier> Symbols => table.Values.SelectMany(col => col.Select(ident => ident));
 
         /// <summary>
         /// Gets the number of symbols within this scope.
         /// </summary>
-        public int NumberOfSymbols{
-            get{return Symbols.Count();}
-        }
+        public int NumberOfSymbols => Symbols.Count();
 
         /// <summary>
         /// Represents the kind of the type.
@@ -512,41 +506,6 @@ namespace Expresso.Ast.Analysis
 
             return results.FirstOrDefault();
         }
-
-        /// <summary>
-        /// Gets the number of variables declared in the current scope.
-        /// </summary>
-        /*public int CountNames(Func<Identifier, bool> pred)
-        {
-            if(pred != null){
-                int num_type_names = type_table.Values.Count(pred);
-                int num_names = table.Values.Count(pred);
-                return num_type_names + num_names;
-            }else{
-                return type_table.Count + table.Count;
-            }
-        }*/
-
-        /// <summary>
-        /// Counts up identifiers that satisfy the specified predicate function.
-        /// </summary>
-        /// <param name="pred">Pred.</param>
-        /*public int Count(Func<Identifier, bool> pred)
-        {
-            if(pred != null)
-                return table.Values.Count(pred);
-            else
-                return table.Count;
-        }*/
-
-        /// <summary>
-        /// Counts all the variables that reside in this scope.
-        /// </summary>
-        /// <returns>The variables.</returns>
-        /*public int CountVariables()
-        {
-            return Count(null);
-        }*/
 
         public void AddScope(ClassType typeKind = ClassType.NotType)
         {

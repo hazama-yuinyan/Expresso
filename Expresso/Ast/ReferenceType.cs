@@ -14,8 +14,8 @@ namespace Expresso.Ast
     public class ReferenceType : AstType
     {
         public AstType BaseType{
-            get{return GetChildByRole(Roles.Type);}
-            set{SetChildByRole(Roles.Type, value);}
+            get => GetChildByRole(Roles.Type);
+            set => SetChildByRole(Roles.Type, value);
         }
 
         public override string Name => BaseType.Name;

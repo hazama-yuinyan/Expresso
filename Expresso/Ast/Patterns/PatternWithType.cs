@@ -17,36 +17,24 @@ namespace Expresso.Ast
         {
             public override bool IsNull => true;
 
-            public override void AcceptWalker(IAstWalker walker)
-            {
-                walker.VisitNullNode(this);
-            }
+            public override void AcceptWalker(IAstWalker walker) => walker.VisitNullNode(this);
 
-            public override TResult AcceptWalker<TResult>(IAstWalker<TResult> walker)
-            {
-                return walker.VisitNullNode(this);
-            }
+            public override TResult AcceptWalker<TResult>(IAstWalker<TResult> walker) => walker.VisitNullNode(this);
 
-            public override TResult AcceptWalker<TResult, TData>(IAstWalker<TData, TResult> walker, TData data)
-            {
-                return walker.VisitNullNode(this, data);
-            }
+            public override TResult AcceptWalker<TResult, TData>(IAstWalker<TData, TResult> walker, TData data) => walker.VisitNullNode(this, data);
 
-            protected internal override bool DoMatch (AstNode other, Match match)
-            {
-                return other == null || other.IsNull;
-            }
+            protected internal override bool DoMatch (AstNode other, Match match) => other == null || other.IsNull;
         }
         #endregion
 
         public PatternConstruct Pattern{
-            get{return GetChildByRole(Roles.Pattern);}
-            set{SetChildByRole(Roles.Pattern, value);}
+            get => GetChildByRole(Roles.Pattern);
+            set => SetChildByRole(Roles.Pattern, value);
         }
 
         public AstType Type{
-            get{return GetChildByRole(Roles.Type);}
-            set{SetChildByRole(Roles.Type, value);}
+            get => GetChildByRole(Roles.Type);
+            set => SetChildByRole(Roles.Type, value);
         }
 
         protected PatternWithType()

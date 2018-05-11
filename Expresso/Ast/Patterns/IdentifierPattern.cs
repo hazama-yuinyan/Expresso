@@ -1,4 +1,5 @@
-﻿
+﻿using ICSharpCode.NRefactory.PatternMatching;
+
 
 namespace Expresso.Ast
 {
@@ -13,16 +14,16 @@ namespace Expresso.Ast
         /// The identifier that the pattern refers to.
         /// </summary>
         public Identifier Identifier{
-            get{return GetChildByRole(Roles.Identifier);}
-            set{SetChildByRole(Roles.Identifier, value);}
+            get => GetChildByRole(Roles.Identifier);
+            set => SetChildByRole(Roles.Identifier, value);
         }
 
         /// <summary>
         /// With '@' mark followed, that identifier captures the immediately following pattern.
         /// </summary>
         public PatternConstruct InnerPattern{
-            get{return GetChildByRole(Roles.Pattern);}
-            set{SetChildByRole(Roles.Pattern, value);}
+            get => GetChildByRole(Roles.Pattern);
+            set => SetChildByRole(Roles.Pattern, value);
         }
 
         public IdentifierPattern(Identifier ident, PatternConstruct inner)
@@ -49,7 +50,7 @@ namespace Expresso.Ast
             return walker.VisitIdentifierPattern(this, data);
         }
 
-        protected internal override bool DoMatch(AstNode other, ICSharpCode.NRefactory.PatternMatching.Match match)
+        protected internal override bool DoMatch(AstNode other, Match match)
         {
             var o = other as IdentifierPattern;
             return o != null && Identifier.DoMatch(o.Identifier, match)

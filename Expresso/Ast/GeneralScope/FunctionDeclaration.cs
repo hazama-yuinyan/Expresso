@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 
 using ICSharpCode.NRefactory;
+using ICSharpCode.NRefactory.PatternMatching;
 using ICSharpCode.NRefactory.TypeSystem;
 
 namespace Expresso.Ast
@@ -20,8 +21,8 @@ namespace Expresso.Ast
         /// </summary>
         /// <value>The attribute.</value>
         public AttributeSection Attribute{
-            get{return GetChildByRole(AttributeRole);}
-            set{SetChildByRole(AttributeRole, value);}
+            get => GetChildByRole(AttributeRole);
+            set => SetChildByRole(AttributeRole, value);
         }
 
         /// <summary>
@@ -36,8 +37,8 @@ namespace Expresso.Ast
 		/// The body of the function.
         /// </summary>
         public BlockStatement Body{
-            get{return GetChildByRole(Roles.Body);}
-            set{SetChildByRole(Roles.Body, value);}
+            get => GetChildByRole(Roles.Body);
+            set => SetChildByRole(Roles.Body, value);
         }
 		
 		/// <summary>
@@ -77,7 +78,7 @@ namespace Expresso.Ast
             return walker.VisitFunctionDeclaration(this, data);
         }
 
-        internal protected override bool DoMatch(AstNode other, ICSharpCode.NRefactory.PatternMatching.Match match)
+        internal protected override bool DoMatch(AstNode other, Match match)
         {
             var o = other as FunctionDeclaration;
             return o != null && Name == o.Name && Parameters.DoMatch(o.Parameters, match)

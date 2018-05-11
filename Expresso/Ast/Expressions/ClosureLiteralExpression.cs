@@ -26,8 +26,8 @@ namespace Expresso.Ast
         /// </summary>
         /// <value>The type of the return.</value>
         public AstType ReturnType{
-            get{return GetChildByRole(Roles.Type);}
-            set{SetChildByRole(Roles.Type, value);}
+            get => GetChildByRole(Roles.Type);
+            set => SetChildByRole(Roles.Type, value);
         }
 
         /// <summary>
@@ -36,8 +36,8 @@ namespace Expresso.Ast
         /// </summary>
         /// <value>The body.</value>
         public BlockStatement Body{
-            get{return GetChildByRole(Roles.Body);}
-            set{SetChildByRole(Roles.Body, value);}
+            get => GetChildByRole(Roles.Body);
+            set => SetChildByRole(Roles.Body, value);
         }
 
         /// <summary>

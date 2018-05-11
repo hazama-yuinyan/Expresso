@@ -1,5 +1,6 @@
 using System;
 using ICSharpCode.NRefactory;
+using ICSharpCode.NRefactory.PatternMatching;
 
 namespace Expresso.Ast
 {
@@ -18,8 +19,8 @@ namespace Expresso.Ast
 		/// The expression to be evaluated.
         /// </summary>
         public Expression Expression{
-            get{return GetChildByRole(Roles.Expression);}
-            set{SetChildByRole(Roles.Expression, value);}
+            get => GetChildByRole(Roles.Expression);
+            set => SetChildByRole(Roles.Expression, value);
 		}
 
         public ExpressoTokenNode SemicolonToken => GetChildByRole(Roles.SemicolonToken);
@@ -47,7 +48,7 @@ namespace Expresso.Ast
 
         #region implemented abstract members of AstNode
 
-        protected internal override bool DoMatch(AstNode other, ICSharpCode.NRefactory.PatternMatching.Match match)
+        protected internal override bool DoMatch(AstNode other, Match match)
         {
             var o = other as ExpressionStatement;
             return o != null && Expression.DoMatch(o.Expression, match);

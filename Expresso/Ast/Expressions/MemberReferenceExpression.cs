@@ -1,4 +1,5 @@
 using System;
+using ICSharpCode.NRefactory.PatternMatching;
 
 namespace Expresso.Ast
 {
@@ -13,8 +14,8 @@ namespace Expresso.Ast
 		/// The target expression of which a member will be referenced.
 		/// </summary>
 		public Expression Target{
-            get{return GetChildByRole(Roles.TargetExpression);}
-            set{SetChildByRole(Roles.TargetExpression, value);}
+            get => GetChildByRole(Roles.TargetExpression);
+            set => SetChildByRole(Roles.TargetExpression, value);
 		}
 
         public ExpressoTokenNode DotToken => GetChildByRole(Roles.DotToken);
@@ -23,8 +24,8 @@ namespace Expresso.Ast
 		/// The member expression.
 		/// </summary>
         public Identifier Member{
-            get{return GetChildByRole(Roles.Identifier);}
-            set{SetChildByRole(Roles.Identifier, value);}
+            get => GetChildByRole(Roles.Identifier);
+            set => SetChildByRole(Roles.Identifier, value);
 		}
 
         public MemberReferenceExpression(Expression targetExpr, Identifier member)
@@ -51,7 +52,7 @@ namespace Expresso.Ast
 
         #region implemented abstract members of AstNode
 
-        protected internal override bool DoMatch(AstNode other, ICSharpCode.NRefactory.PatternMatching.Match match)
+        protected internal override bool DoMatch(AstNode other, Match match)
         {
             var o = other as MemberReferenceExpression;
             return o != null && Target.DoMatch(o.Target, match) && Member.DoMatch(o.Member, match);

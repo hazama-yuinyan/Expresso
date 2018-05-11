@@ -1,4 +1,5 @@
 ﻿using System;
+using ICSharpCode.NRefactory.PatternMatching;
 using ICSharpCode.NRefactory.TypeSystem;
 
 
@@ -21,8 +22,8 @@ namespace Expresso.Ast
         /// Gets or sets the identifier as it is.
         /// </summary>
         public Identifier IdentifierToken{
-            get{return GetChildByRole(Roles.Identifier);}
-            set{SetChildByRole(Roles.Identifier, value);}
+            get => GetChildByRole(Roles.Identifier);
+            set => SetChildByRole(Roles.Identifier, value);
         }
 
         public override Identifier IdentifierNode => IdentifierToken;
@@ -48,7 +49,7 @@ namespace Expresso.Ast
             return walker.VisitParameterType(this, data);
         }
 
-        protected internal override bool DoMatch(AstNode other, ICSharpCode.NRefactory.PatternMatching.Match match)
+        protected internal override bool DoMatch(AstNode other, Match match)
         {
             var o = other as ParameterType;
             if(o != null)

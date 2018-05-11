@@ -1,14 +1,14 @@
 using System;
 using Expresso.TypeSystem;
+using Expresso.Ast.Analysis;
 using ICSharpCode.NRefactory;
 using ICSharpCode.NRefactory.TypeSystem;
-using Expresso.Ast.Analysis;
-
-using ExpressoTypeCode = Expresso.TypeSystem.KnownTypeCode;
+using ICSharpCode.NRefactory.PatternMatching;
 using ICSharpCode.NRefactory.TypeSystem.Implementation;
 
 namespace Expresso.Ast
 {
+    using ExpressoTypeCode = Expresso.TypeSystem.KnownTypeCode;
     /// <summary>
     /// Represents a primitive type reference node.
     /// In Expresso, primitive types are listed as follows:
@@ -68,7 +68,7 @@ namespace Expresso.Ast
             return walker.VisitPrimitiveType(this, data);
         }
 
-        internal protected override bool DoMatch(AstNode other, ICSharpCode.NRefactory.PatternMatching.Match match)
+        internal protected override bool DoMatch(AstNode other, Match match)
         {
             if(other is PlaceholderType)
                 return true;

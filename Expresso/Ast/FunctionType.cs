@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using ICSharpCode.NRefactory;
+using ICSharpCode.NRefactory.PatternMatching;
 
 
 namespace Expresso.Ast
@@ -36,7 +37,7 @@ namespace Expresso.Ast
                 return walker.VisitNullNode(this, data);
             }
 
-            internal protected override bool DoMatch(AstNode other, ICSharpCode.NRefactory.PatternMatching.Match match)
+            internal protected override bool DoMatch(AstNode other, Match match)
             {
                 return other == null || other.IsNull;
             }
@@ -47,8 +48,8 @@ namespace Expresso.Ast
         /// Represents the return type.
         /// </summary>
         public AstType ReturnType{
-            get{return GetChildByRole(Roles.Type);}
-            set{SetChildByRole(Roles.Type, value);}
+            get => GetChildByRole(Roles.Type);
+            set => SetChildByRole(Roles.Type, value);
         }
 
         /// <summary>
@@ -60,8 +61,8 @@ namespace Expresso.Ast
         /// The identifier of the function.
         /// </summary>
         public Identifier Identifier{
-            get{return GetChildByRole(Roles.Identifier);}
-            set{SetChildByRole(Roles.Identifier, value);}
+            get => GetChildByRole(Roles.Identifier);
+            set => SetChildByRole(Roles.Identifier, value);
         }
 
         public override string Name => Identifier.Name;
@@ -97,7 +98,7 @@ namespace Expresso.Ast
             return walker.VisitFunctionType(this, data);
         }
 
-        protected internal override bool DoMatch(AstNode other, ICSharpCode.NRefactory.PatternMatching.Match match)
+        protected internal override bool DoMatch(AstNode other, Match match)
         {
             var o = other as FunctionType;
             return o != null && Parameters.DoMatch(o.Parameters, match);

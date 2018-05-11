@@ -1,5 +1,6 @@
 using System;
 using ICSharpCode.NRefactory;
+using ICSharpCode.NRefactory.PatternMatching;
 
 
 namespace Expresso.Ast
@@ -24,8 +25,8 @@ namespace Expresso.Ast
         /// Otherwise a compilation error occurs.
         /// </summary>
         public LiteralExpression CountExpression{
-            get{return GetChildByRole(LiteralRole);}
-            set{SetChildByRole(LiteralRole, value);}
+            get => GetChildByRole(LiteralRole);
+            set => SetChildByRole(LiteralRole, value);
         }
 
         public BreakStatement(LiteralExpression countExpr, TextLocation start, TextLocation end)
@@ -49,7 +50,7 @@ namespace Expresso.Ast
             return walker.VisitBreakStatement(this, data);
         }
 
-        protected internal override bool DoMatch(AstNode other, ICSharpCode.NRefactory.PatternMatching.Match match)
+        protected internal override bool DoMatch(AstNode other, Match match)
         {
             var o = other as BreakStatement;
             return o != null && CountExpression.DoMatch(o.CountExpression, match);

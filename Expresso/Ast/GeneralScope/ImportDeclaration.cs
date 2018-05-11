@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using ICSharpCode.NRefactory;
+using ICSharpCode.NRefactory.PatternMatching;
 
 namespace Expresso.Ast
 {
@@ -51,8 +52,8 @@ namespace Expresso.Ast
         /// </summary>
         /// <value>The target file.</value>
         public Identifier TargetFile{
-            get{return GetChildByRole(TargetFileRole);}
-            set{SetChildByRole(TargetFileRole, value);}
+            get => GetChildByRole(TargetFileRole);
+            set => SetChildByRole(TargetFileRole, value);
         }
 
 		/// <summary>
@@ -100,7 +101,7 @@ namespace Expresso.Ast
 
         #region implemented abstract members of AstNode
 
-        protected internal override bool DoMatch(AstNode other, ICSharpCode.NRefactory.PatternMatching.Match match)
+        protected internal override bool DoMatch(AstNode other, Match match)
         {
             var o = other as ImportDeclaration;
             return o != null && ImportPaths.DoMatch(o.ImportPaths, match)

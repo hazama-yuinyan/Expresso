@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 
 using ICSharpCode.NRefactory;
+using ICSharpCode.NRefactory.PatternMatching;
 
 namespace Expresso.Ast
 {
@@ -45,13 +46,13 @@ namespace Expresso.Ast
 		/// The left operand.
         /// </summary>
         public Expression Left{
-            get{return GetChildByRole(LhsRole);}
-            set{SetChildByRole(LhsRole, value);}
+            get => GetChildByRole(LhsRole);
+            set => SetChildByRole(LhsRole, value);
 		}
 
         public ExpressoTokenNode OperatorToken{
-            get{return GetChildByRole(GetOperatorRole(op));}
-            set{SetChildByRole(GetOperatorRole(op), value);}
+            get => GetChildByRole(GetOperatorRole(op));
+            set => SetChildByRole(GetOperatorRole(op), value);
         }
 
         /// <summary>
@@ -59,8 +60,8 @@ namespace Expresso.Ast
 		/// The right operand.
         /// </summary>
         public Expression Right{
-            get{return GetChildByRole(RhsRole);}
-            set{SetChildByRole(RhsRole, value);}
+            get => GetChildByRole(RhsRole);
+            set => SetChildByRole(RhsRole, value);
 		}
 
 		public BinaryExpression(Expression left, Expression right, OperatorType opType)
@@ -89,7 +90,7 @@ namespace Expresso.Ast
 
         #region implemented abstract members of AstNode
 
-        protected internal override bool DoMatch(AstNode other, ICSharpCode.NRefactory.PatternMatching.Match match)
+        protected internal override bool DoMatch(AstNode other, Match match)
         {
             var o = other as BinaryExpression;
             return o != null && OperatorToken.DoMatch(o.OperatorToken, match)
@@ -103,42 +104,61 @@ namespace Expresso.Ast
             switch(op){
             case OperatorType.BitwiseAnd:
                 return Roles.AmpersandToken;
+
             case OperatorType.BitwiseOr:
                 return BitwiseOrRole;
+
             case OperatorType.ConditionalAnd:
                 return ConditionalAndRole;
+
             case OperatorType.ConditionalOr:
                 return ConditionalOrRole;
+
             case OperatorType.ExclusiveOr:
                 return ExclusiveOrRole;
+
             case OperatorType.GreaterThan:
                 return GreaterThanRole;
+
             case OperatorType.GreaterThanOrEqual:
                 return GreaterThanOrEqualRole;
+
             case OperatorType.Equality:
                 return EqualityRole;
+
             case OperatorType.InEquality:
                 return InEqualityRole;
+
             case OperatorType.LessThan:
                 return LessThanRole;
+
             case OperatorType.LessThanOrEqual:
                 return LessThanOrEqualRole;
+
             case OperatorType.Plus:
                 return Roles.PlusToken;
+
             case OperatorType.Minus:
                 return Roles.MinusToken;
+
             case OperatorType.Times:
                 return MultiplyRole;
+
             case OperatorType.Divide:
                 return DivideRole;
+
             case OperatorType.Modulus:
                 return ModulusRole;
+
             case OperatorType.Power:
                 return PowerRole;
+
             case OperatorType.BitwiseShiftLeft:
                 return ShiftLeftRole;
+
             case OperatorType.BitwiseShiftRight:
                 return ShiftRightRole;
+
             default:
                 throw new NotSupportedException("Invalid value for BinaryOperatorType");
             }

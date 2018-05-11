@@ -1,11 +1,12 @@
 using System;
 using System.Collections.Generic;
+using ICSharpCode.NRefactory;
+using ICSharpCode.NRefactory.PatternMatching;
+using ICSharpCode.NRefactory.TypeSystem;
 #if NETCOREAPP2_0
 using System.Linq;
 using Expresso.TypeSystem;
 #endif
-using ICSharpCode.NRefactory;
-using ICSharpCode.NRefactory.TypeSystem;
 
 
 namespace Expresso.Ast
@@ -47,7 +48,7 @@ namespace Expresso.Ast
                 return walker.VisitNullNode(this, data);
             }
 
-            internal protected override bool DoMatch(AstNode other, ICSharpCode.NRefactory.PatternMatching.Match match)
+            internal protected override bool DoMatch(AstNode other, Match match)
             {
                 return other == null || other.IsNull;
             }
@@ -70,8 +71,8 @@ namespace Expresso.Ast
         /// Gets the identifier as it is.
         /// </summary>
         public Identifier IdentifierToken{
-            get{return GetChildByRole(Roles.Identifier);}
-            set{SetChildByRole(Roles.Identifier, value);}
+            get => GetChildByRole(Roles.Identifier);
+            set => SetChildByRole(Roles.Identifier, value);
         }
 
         public override Identifier IdentifierNode => IdentifierToken;
@@ -141,7 +142,7 @@ namespace Expresso.Ast
             return walker.VisitSimpleType(this, data);
         }
 
-        internal protected override bool DoMatch(AstNode other, ICSharpCode.NRefactory.PatternMatching.Match match)
+        internal protected override bool DoMatch(AstNode other, Match match)
         {
             if(other is PlaceholderType)
                 return true;

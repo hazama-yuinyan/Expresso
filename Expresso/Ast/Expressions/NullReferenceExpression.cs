@@ -12,8 +12,8 @@ namespace Expresso.Ast
     public class NullReferenceExpression : Expression
     {
         public Identifier NullIdentifier{
-            get{return GetChildByRole(Roles.Identifier);}
-            set{SetChildByRole(Roles.Identifier, value);}
+            get => GetChildByRole(Roles.Identifier);
+            set => SetChildByRole(Roles.Identifier, value);
         }
 
         public NullReferenceExpression(TextLocation loc)

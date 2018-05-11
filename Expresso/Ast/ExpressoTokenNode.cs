@@ -1,5 +1,6 @@
 using System;
 using ICSharpCode.NRefactory;
+using ICSharpCode.NRefactory.PatternMatching;
 
 
 namespace Expresso.Ast
@@ -35,7 +36,7 @@ namespace Expresso.Ast
                 return walker.VisitNullNode(this, data);
             }
 
-            internal protected override bool DoMatch(AstNode other, ICSharpCode.NRefactory.PatternMatching.Match match)
+            internal protected override bool DoMatch(AstNode other, Match match)
             {
                 return other == null || other.IsNull;
             }
@@ -77,7 +78,7 @@ namespace Expresso.Ast
             return walker.VisitExpressoTokenNode(this, data);
         }
 
-        internal protected override bool DoMatch(AstNode other, ICSharpCode.NRefactory.PatternMatching.Match match)
+        internal protected override bool DoMatch(AstNode other, Match match)
         {
             ExpressoTokenNode o = other as ExpressoTokenNode;
             return o != null && !o.IsNull && !(o is ExpressoModifierToken);

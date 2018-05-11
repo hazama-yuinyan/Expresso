@@ -1,5 +1,6 @@
 using System;
 using ICSharpCode.NRefactory;
+using ICSharpCode.NRefactory.PatternMatching;
 
 
 namespace Expresso.Ast
@@ -36,7 +37,7 @@ namespace Expresso.Ast
             return walker.VisitWhitespace(this, data);
         }
 
-        internal protected override bool DoMatch(AstNode other, ICSharpCode.NRefactory.PatternMatching.Match match)
+        internal protected override bool DoMatch(AstNode other, Match match)
         {
             var o = other as WhitespaceNode;
             return o != null && WhitespaceText == o.WhitespaceText;

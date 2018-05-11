@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 
 using ICSharpCode.NRefactory;
+using ICSharpCode.NRefactory.PatternMatching;
 
 
 namespace Expresso.Ast
@@ -62,8 +63,8 @@ namespace Expresso.Ast
         /// The target expression that will be bounded.
         /// </summary>
         public Expression Left{
-            get{return GetChildByRole(LhsRole);}
-            set{SetChildByRole(LhsRole, value);}
+            get => GetChildByRole(LhsRole);
+            set => SetChildByRole(LhsRole, value);
 		}
 
         /// <summary>
@@ -71,8 +72,8 @@ namespace Expresso.Ast
 		/// The expression that will be assigned.
         /// </summary>
         public Expression Right{
-            get{return GetChildByRole(RhsRole);}
-            set{SetChildByRole(RhsRole, value);}
+            get => GetChildByRole(RhsRole);
+            set => SetChildByRole(RhsRole, value);
 		}
 
         public OperatorType Operator{
@@ -104,7 +105,7 @@ namespace Expresso.Ast
             return walker.VisitAssignment(this, data);
         }
 
-        internal protected override bool DoMatch(AstNode other, ICSharpCode.NRefactory.PatternMatching.Match match)
+        internal protected override bool DoMatch(AstNode other, Match match)
         {
             AssignmentExpression o = other as AssignmentExpression;
             return o != null && (o.Operator == OperatorType.Any || Operator == o.Operator)

@@ -106,9 +106,7 @@ namespace Expresso.TypeSystem
             "slice"
         };
 
-        public static HashSet<string> Keywords{
-            get{return _Keywords;}
-        }
+        public static HashSet<string> Keywords => _Keywords;
 
         public const int KnownTypeCount = (int)KnownTypeCode.Slice + 1;
 

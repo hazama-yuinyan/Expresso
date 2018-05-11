@@ -1,7 +1,8 @@
 using System;
-using ICSharpCode.NRefactory;
 using System.Collections.Generic;
 using System.Diagnostics;
+using ICSharpCode.NRefactory;
+using ICSharpCode.NRefactory.PatternMatching;
 
 
 namespace Expresso.Ast
@@ -35,7 +36,7 @@ namespace Expresso.Ast
             }
         }
 
-        internal protected override bool DoMatch(AstNode other, ICSharpCode.NRefactory.PatternMatching.Match match)
+        internal protected override bool DoMatch(AstNode other, Match match)
         {
             ExpressoModifierToken o = other as ExpressoModifierToken;
             bool res = o != null && modifier == o.modifier;

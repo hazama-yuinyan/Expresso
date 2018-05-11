@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using ICSharpCode.NRefactory;
+using ICSharpCode.NRefactory.PatternMatching;
 
 namespace Expresso.Ast
 {
@@ -16,8 +17,8 @@ namespace Expresso.Ast
 		/// The expression generating the return value. It can be null if there is no return value.
         /// </summary>
         public Expression Expression{
-            get{return GetChildByRole(Roles.Expression);}
-            set{SetChildByRole(Roles.Expression, value);}
+            get => GetChildByRole(Roles.Expression);
+            set =>SetChildByRole(Roles.Expression, value);
 		}
 
 		public ReturnStatement(Expression expression, TextLocation loc)
@@ -43,7 +44,7 @@ namespace Expresso.Ast
 
         #region implemented abstract members of AstNode
 
-        protected internal override bool DoMatch(AstNode other, ICSharpCode.NRefactory.PatternMatching.Match match)
+        protected internal override bool DoMatch(AstNode other, Match match)
         {
             var o = other as ReturnStatement;
             return o != null && Expression.DoMatch(o.Expression, match);

@@ -8,14 +8,13 @@ namespace Expresso.Ast
     /// </summary>
     public class KeyValuePattern : PatternConstruct
     {
-        
         /// <summary>
         /// Gets or sets the identifier that represents the key.
         /// </summary>
         /// <value>The key identifier.</value>
         public Identifier KeyIdentifier{
-            get{return GetChildByRole(Roles.Identifier);}
-            set{SetChildByRole(Roles.Identifier, value);}
+            get => GetChildByRole(Roles.Identifier);
+            set => SetChildByRole(Roles.Identifier, value);
         }
 
         /// <summary>
@@ -23,8 +22,8 @@ namespace Expresso.Ast
         /// </summary>
         /// <value>The value expression.</value>
         public PatternConstruct Value{
-            get{return GetChildByRole(Roles.Pattern);}
-            set{SetChildByRole(Roles.Pattern, value);}
+            get => GetChildByRole(Roles.Pattern);
+            set => SetChildByRole(Roles.Pattern, value);
         }
 
         public KeyValuePattern(Identifier key, PatternConstruct value)

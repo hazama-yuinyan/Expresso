@@ -24,8 +24,8 @@ namespace Expresso.Ast
         /// </summary>
         /// <value>The enclosing block.</value>
         public BlockStatement EnclosingBlock{
-            get{return GetChildByRole(Roles.Body);}
-            set{SetChildByRole(Roles.Body, value);}
+            get => GetChildByRole(Roles.Body);
+            set => SetChildByRole(Roles.Body, value);
         }
 
         /// <summary>
@@ -39,8 +39,8 @@ namespace Expresso.Ast
         /// </summary>
         /// <value>The finally clause.</value>
         public FinallyClause FinallyClause{
-            get{return GetChildByRole(FinallyRole);}
-            set{SetChildByRole(FinallyRole, value);}
+            get => GetChildByRole(FinallyRole);
+            set => SetChildByRole(FinallyRole, value);
         }
 
         public TryStatement(BlockStatement block, IEnumerable<CatchClause> catches, FinallyClause @finally, TextLocation loc)
@@ -115,8 +115,8 @@ namespace Expresso.Ast
         /// </summary>
         /// <value>The pattern.</value>
         public Identifier Identifier{
-            get{return GetChildByRole(Roles.Identifier);}
-            set{SetChildByRole(Roles.Identifier, value);}
+            get => GetChildByRole(Roles.Identifier);
+            set => SetChildByRole(Roles.Identifier, value);
         }
 
         /// <summary>
@@ -124,8 +124,8 @@ namespace Expresso.Ast
         /// </summary>
         /// <value>The body.</value>
         public BlockStatement Body{
-            get{return GetChildByRole(Roles.Body);}
-            set{SetChildByRole(Roles.Body, value);}
+            get => GetChildByRole(Roles.Body);
+            set => SetChildByRole(Roles.Body, value);
         }
 
         public CatchClause()
@@ -175,25 +175,13 @@ namespace Expresso.Ast
         {
             public override bool IsNull => true;
 
-            public override void AcceptWalker(IAstWalker walker)
-            {
-                walker.VisitNullNode(this);
-            }
+            public override void AcceptWalker(IAstWalker walker) => walker.VisitNullNode(this);
 
-            public override TResult AcceptWalker<TResult>(IAstWalker<TResult> walker)
-            {
-                return walker.VisitNullNode(this);
-            }
+            public override TResult AcceptWalker<TResult>(IAstWalker<TResult> walker) => walker.VisitNullNode(this);
 
-            public override TResult AcceptWalker<TResult, TData>(IAstWalker<TData, TResult> walker, TData data)
-            {
-                return walker.VisitNullNode(this, data);
-            }
+            public override TResult AcceptWalker<TResult, TData>(IAstWalker<TData, TResult> walker, TData data) => walker.VisitNullNode(this, data);
 
-            internal protected override bool DoMatch (AstNode other, Match match)
-            {
-                return other == null || other.IsNull;
-            }
+            internal protected override bool DoMatch (AstNode other, Match match) => other == null || other.IsNull;
         }
         #endregion
 
@@ -202,8 +190,8 @@ namespace Expresso.Ast
         /// </summary>
         /// <value>The body.</value>
         public BlockStatement Body{
-            get{return GetChildByRole(Roles.Body);}
-            set{SetChildByRole(Roles.Body, value);}
+            get => GetChildByRole(Roles.Body);
+            set => SetChildByRole(Roles.Body, value);
         }
 
         public FinallyClause()

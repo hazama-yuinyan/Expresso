@@ -1,7 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using ICSharpCode.NRefactory;
+using ICSharpCode.NRefactory.PatternMatching;
 
 
 namespace Expresso.Ast
@@ -22,8 +22,8 @@ namespace Expresso.Ast
         /// Note that it doesn't contain any information about the element type until after type checked.
         /// </summary>
         public SimpleType CollectionType{
-            get{return GetChildByRole(Roles.GenericType);}
-            set{SetChildByRole(Roles.GenericType, value);}
+            get => GetChildByRole(Roles.GenericType);
+            set => SetChildByRole(Roles.GenericType, value);
         }
 
         public CollectionPattern(IEnumerable<PatternConstruct> patterns, bool isVector)
@@ -53,7 +53,7 @@ namespace Expresso.Ast
             return walker.VisitCollectionPattern(this, data);
         }
 
-        protected internal override bool DoMatch(AstNode other, ICSharpCode.NRefactory.PatternMatching.Match match)
+        protected internal override bool DoMatch(AstNode other, Match match)
         {
             var o = other as CollectionPattern;
             return o != null && Items.DoMatch(o.Items, match);

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Linq;
+using ICSharpCode.NRefactory.PatternMatching;
 
 
 /*
@@ -517,7 +518,7 @@ namespace Expresso.Ast.Analysis
             // no op
         }
 
-        public void VisitPatternPlaceholder(AstNode placeholder, ICSharpCode.NRefactory.PatternMatching.Pattern child)
+        public void VisitPatternPlaceholder(AstNode placeholder, Pattern child)
         {
             // no op
         }

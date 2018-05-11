@@ -1,4 +1,5 @@
 ﻿using ICSharpCode.NRefactory;
+using ICSharpCode.NRefactory.PatternMatching;
 using ICSharpCode.NRefactory.TypeSystem;
 
 namespace Expresso.Ast
@@ -37,7 +38,7 @@ namespace Expresso.Ast
             return walker.VisitPlaceholderType(this, data);
         }
 
-        protected internal override bool DoMatch(AstNode other, ICSharpCode.NRefactory.PatternMatching.Match match)
+        protected internal override bool DoMatch(AstNode other, Match match)
         {
             // A placeholder can be substituted for any type node
             return true;

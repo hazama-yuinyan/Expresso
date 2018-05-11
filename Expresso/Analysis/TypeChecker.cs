@@ -1522,7 +1522,7 @@ namespace Expresso.Ast.Analysis
             return null;
         }
 
-        public AstType VisitPatternPlaceholder(AstNode placeholder, ICSharpCode.NRefactory.PatternMatching.Pattern child)
+        public AstType VisitPatternPlaceholder(AstNode placeholder, Pattern child)
         {
             return null;
         }

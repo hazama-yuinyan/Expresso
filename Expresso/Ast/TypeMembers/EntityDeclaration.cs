@@ -21,8 +21,8 @@ namespace Expresso.Ast
         public abstract SymbolKind SymbolKind{get;}
 
         public Modifiers Modifiers{
-            get{return GetModifiers(this);}
-            private set{SetModifiers(this, value);}
+            get => GetModifiers(this);
+            private set => SetModifiers(this, value);
         }
 
         public bool HasModifier(Modifiers modifier)

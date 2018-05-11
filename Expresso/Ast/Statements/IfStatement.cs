@@ -1,4 +1,5 @@
 using ICSharpCode.NRefactory;
+using ICSharpCode.NRefactory.PatternMatching;
 
 namespace Expresso.Ast
 {
@@ -33,8 +34,8 @@ namespace Expresso.Ast
         /// statement.
         /// </summary>
         public PatternConstruct Condition{
-            get{return GetChildByRole(ConditionRole);}
-            set{SetChildByRole(ConditionRole, value);}
+            get => GetChildByRole(ConditionRole);
+            set => SetChildByRole(ConditionRole, value);
 		}
 
         /// <summary>
@@ -42,8 +43,8 @@ namespace Expresso.Ast
 		/// The block statement to be taken if the condition is evaluated to true.
         /// </summary>
         public BlockStatement TrueBlock{
-            get{return GetChildByRole(TrueBlockRole);}
-            set{SetChildByRole(TrueBlockRole, value);}
+            get => GetChildByRole(TrueBlockRole);
+            set => SetChildByRole(TrueBlockRole, value);
 		}
 
         public ExpressoTokenNode ElseToken => GetChildByRole(ElseKeywordRole);
@@ -54,8 +55,8 @@ namespace Expresso.Ast
         /// It can be a null node if the statement has no else clause.
         /// </summary>
         public Statement FalseStatement{
-            get{return GetChildByRole(FalseStmtRole);}
-            set{SetChildByRole(FalseStmtRole, value);}
+            get => GetChildByRole(FalseStmtRole);
+            set => SetChildByRole(FalseStmtRole, value);
         }
 
         public IfStatement(PatternConstruct test, BlockStatement trueBlock, Statement falseStmt,
@@ -82,7 +83,7 @@ namespace Expresso.Ast
             return walker.VisitIfStatement(this, data);
         }
 
-        internal protected override bool DoMatch(AstNode other, ICSharpCode.NRefactory.PatternMatching.Match match)
+        internal protected override bool DoMatch(AstNode other, Match match)
         {
             IfStatement o = other as IfStatement;
             return o != null && Condition.DoMatch(o.Condition, match)

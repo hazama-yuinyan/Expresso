@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
+using ICSharpCode.NRefactory.PatternMatching;
 
 
 /**
@@ -637,7 +638,7 @@ namespace Expresso.Ast.Analysis
             throw new NotImplementedException();
         }
 
-        public void VisitPatternPlaceholder(AstNode placeholder, ICSharpCode.NRefactory.PatternMatching.Pattern child)
+        public void VisitPatternPlaceholder(AstNode placeholder, Pattern child)
         {
             throw new NotImplementedException();
         }

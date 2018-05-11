@@ -1,5 +1,5 @@
-﻿using System;
-using ICSharpCode.NRefactory;
+﻿using ICSharpCode.NRefactory;
+using ICSharpCode.NRefactory.PatternMatching;
 
 
 namespace Expresso.Ast
@@ -43,7 +43,7 @@ namespace Expresso.Ast
             return walker.VisitTextNode(this, data);
         }
 
-        protected internal override bool DoMatch(AstNode other, ICSharpCode.NRefactory.PatternMatching.Match match)
+        protected internal override bool DoMatch(AstNode other, Match match)
         {
             var o = other as TextNode;
             return o != null && Text == o.Text;

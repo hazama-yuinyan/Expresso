@@ -1,10 +1,12 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using ICSharpCode.NRefactory;
+using ICSharpCode.NRefactory.PatternMatching;
 #if NETCOREAPP2_0
 using System;
 using Expresso.TypeSystem;
 #endif
-using ICSharpCode.NRefactory;
+
 
 namespace Expresso.Ast
 {
@@ -25,8 +27,8 @@ namespace Expresso.Ast
         /// </summary>
         /// <value>The name token.</value>
         public Identifier NameToken{
-            get{return GetChildByRole(Roles.Identifier);}
-            set{SetChildByRole(Roles.Identifier, value);}
+            get => GetChildByRole(Roles.Identifier);
+            set => SetChildByRole(Roles.Identifier, value);
         }
 
 		/// <summary>
@@ -34,9 +36,7 @@ namespace Expresso.Ast
 		/// The name of the module.
 		/// If the module contains the main function, it should be called the "main" module.
 		/// </summary>
-		public string Name{
-            get{return NameToken.Name;}
-		}
+        public string Name => NameToken.Name;
 
         /// <summary>
         /// Gets the external modules.
@@ -65,18 +65,12 @@ namespace Expresso.Ast
 
         /// <summary>
         /// モジュール名(デバッグ用)
-        /// Gets the name of the module as pretty string.
+        /// Gets the name of the module as pretty string.(especially for debugging)
         /// </summary>
         /// <value>The name of the module.</value>
-		public string ModuleName{
-			get{
-                return string.Format("<module {0}>", Name);
-			}
-		}
+        public string ModuleName => $"<module {Name}";
 
-		public override NodeType NodeType{
-            get{return NodeType.TypeDeclaration;}
-        }
+        public override NodeType NodeType => NodeType.TypeDeclaration;
 
         public ExpressoAst(IEnumerable<EntityDeclaration> decls, IEnumerable<ImportDeclaration> imports, string maybeModuleName, IEnumerable<AttributeSection> attributes)
             : base(new TextLocation(1, 1), decls.Last().EndLocation)
@@ -108,7 +102,7 @@ namespace Expresso.Ast
 
         #region implemented abstract members of AstNode
 
-        protected internal override bool DoMatch(AstNode other, ICSharpCode.NRefactory.PatternMatching.Match match)
+        protected internal override bool DoMatch(AstNode other, Match match)
         {
             var o = other as ExpressoAst;
             return o != null && Declarations.DoMatch(o.Declarations, match) && NameToken.DoMatch(o.NameToken, match)

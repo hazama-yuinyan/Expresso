@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using ICSharpCode.NRefactory;
+using ICSharpCode.NRefactory.PatternMatching;
 
 namespace Expresso.Ast
 {
@@ -24,8 +25,8 @@ namespace Expresso.Ast
 		/// The target expression on which we'll choose which path to go.
         /// </summary>
         public Expression Target{
-            get{return GetChildByRole(Roles.TargetExpression);}
-            set{SetChildByRole(Roles.TargetExpression, value);}
+            get => GetChildByRole(Roles.TargetExpression);
+            set => SetChildByRole(Roles.TargetExpression, value);
 		}
 
         /// <summary>
@@ -59,7 +60,7 @@ namespace Expresso.Ast
 
         #region implemented abstract members of AstNode
 
-        protected internal override bool DoMatch(AstNode other, ICSharpCode.NRefactory.PatternMatching.Match match)
+        protected internal override bool DoMatch(AstNode other, Match match)
         {
             var o = other as MatchStatement;
             return o != null && Target.DoMatch(o.Target, match) && Clauses.DoMatch(o.Clauses, match);
@@ -88,8 +89,8 @@ namespace Expresso.Ast
         /// so that the path will be taken.
         /// </summary>
         public Expression Guard{
-            get{return GetChildByRole(Roles.Expression);}
-            set{SetChildByRole(Roles.Expression, value);}
+            get => GetChildByRole(Roles.Expression);
+            set => SetChildByRole(Roles.Expression, value);
         }
 
         /// <summary>
@@ -97,8 +98,8 @@ namespace Expresso.Ast
 		/// The body statement or block.
         /// </summary>
         public Statement Body{
-            get{return GetChildByRole(Roles.EmbeddedStatement);}
-            set{SetChildByRole(Roles.EmbeddedStatement, value);}
+            get => GetChildByRole(Roles.EmbeddedStatement);
+            set => SetChildByRole(Roles.EmbeddedStatement, value);
 		}
 
         public MatchPatternClause(IEnumerable<PatternConstruct> patternExprs, Expression guard, Statement bodyStmt)
@@ -124,7 +125,7 @@ namespace Expresso.Ast
             return walker.VisitMatchClause(this, data);
         }
 
-        protected internal override bool DoMatch(AstNode other, ICSharpCode.NRefactory.PatternMatching.Match match)
+        protected internal override bool DoMatch(AstNode other, Match match)
         {
             var o = other as MatchPatternClause;
             return o != null && Patterns.DoMatch(o.Patterns, match) && Guard.DoMatch(o.Guard, match) && Body.DoMatch(o.Body, match);

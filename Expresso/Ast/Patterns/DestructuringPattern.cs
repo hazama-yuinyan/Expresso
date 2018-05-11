@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using ICSharpCode.NRefactory.PatternMatching;
 
 namespace Expresso.Ast
 {
@@ -18,8 +19,8 @@ namespace Expresso.Ast
         /// Represents the path referring to the type name.
         /// </summary>
         public AstType TypePath{
-            get{return GetChildByRole(Roles.Type);}
-            set{SetChildByRole(Roles.Type, value);}
+            get => GetChildByRole(Roles.Type);
+            set => SetChildByRole(Roles.Type, value);
         }
 
         /// <summary>
@@ -51,7 +52,7 @@ namespace Expresso.Ast
             return walker.VisitDestructuringPattern(this, data);
         }
 
-        protected internal override bool DoMatch(AstNode other, ICSharpCode.NRefactory.PatternMatching.Match match)
+        protected internal override bool DoMatch(AstNode other, Match match)
         {
             var o = other as DestructuringPattern;
             return o != null && TypePath.DoMatch(o.TypePath, match) && Items.DoMatch(o.Items, match);

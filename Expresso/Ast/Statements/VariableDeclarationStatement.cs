@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
-
 using System.Linq;
 using ICSharpCode.NRefactory;
+using ICSharpCode.NRefactory.PatternMatching;
 
 namespace Expresso.Ast
 {
@@ -25,8 +25,8 @@ namespace Expresso.Ast
         /// Gets or sets the modifiers.
         /// </summary>
         public Modifiers Modifiers{
-            get{return EntityDeclaration.GetModifiers(this);}
-            set{EntityDeclaration.SetModifiers(this, value);}
+            get => EntityDeclaration.GetModifiers(this);
+            set => EntityDeclaration.SetModifiers(this, value);
         }
 
         public ExpressoTokenNode SemicolonToken => GetChildByRole(Roles.SemicolonToken);
@@ -58,7 +58,7 @@ namespace Expresso.Ast
 
         #region implemented abstract members of AstNode
 
-        protected internal override bool DoMatch(AstNode other, ICSharpCode.NRefactory.PatternMatching.Match match)
+        protected internal override bool DoMatch(AstNode other, Match match)
         {
             var o = other as VariableDeclarationStatement;
             return o != null && Variables.DoMatch(o.Variables, match);

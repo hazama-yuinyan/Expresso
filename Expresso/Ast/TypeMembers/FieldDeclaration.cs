@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using ICSharpCode.NRefactory;
+using ICSharpCode.NRefactory.PatternMatching;
 using ICSharpCode.NRefactory.TypeSystem;
 
 
@@ -22,8 +23,8 @@ namespace Expresso.Ast
         /// </summary>
         /// <value>The attribute.</value>
         public AttributeSection Attribute{
-            get{return GetChildByRole(AttributeRole);}
-            set{SetChildByRole(AttributeRole, value);}
+            get => GetChildByRole(AttributeRole);
+            set => SetChildByRole(AttributeRole, value);
         }
 
         // Initializers shouldn't be renamed to Identifiers because of module fields.
@@ -68,7 +69,7 @@ namespace Expresso.Ast
             return walker.VisitFieldDeclaration(this, data);
         }
 
-        internal protected override bool DoMatch(AstNode other, ICSharpCode.NRefactory.PatternMatching.Match match)
+        internal protected override bool DoMatch(AstNode other, Match match)
         {
             var o = other as FieldDeclaration;
             return o != null && Initializers.DoMatch(o.Initializers, match) && Modifiers == o.Modifiers;

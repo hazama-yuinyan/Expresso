@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using ICSharpCode.NRefactory;
+using ICSharpCode.NRefactory.PatternMatching;
 
 
 namespace Expresso.Ast
@@ -20,8 +21,8 @@ namespace Expresso.Ast
 		/// The target function to be called.
         /// </summary>
         public Expression Target{
-            get{return GetChildByRole(Roles.TargetExpression);}
-            set{SetChildByRole(Roles.TargetExpression, value);}
+            get => GetChildByRole(Roles.TargetExpression);
+            set => SetChildByRole(Roles.TargetExpression, value);
 		}
 
         public ExpressoTokenNode LPar => GetChildByRole(Roles.LParenthesisToken);
@@ -38,8 +39,8 @@ namespace Expresso.Ast
         /// </summary>
         /// <value>The overload signature.</value>
         public FunctionType OverloadSignature{
-            get{return GetChildByRole(OverloadSignatureRole);}
-            set{SetChildByRole(OverloadSignatureRole, value);}
+            get => GetChildByRole(OverloadSignatureRole);
+            set => SetChildByRole(OverloadSignatureRole, value);
         }
 
         public ExpressoTokenNode RPar => GetChildByRole(Roles.RParenthesisToken);
@@ -68,7 +69,7 @@ namespace Expresso.Ast
 
         #region implemented abstract members of AstNode
 
-        protected internal override bool DoMatch(AstNode other, ICSharpCode.NRefactory.PatternMatching.Match match)
+        protected internal override bool DoMatch(AstNode other, Match match)
         {
             var o = other as CallExpression;
             return o != null && Target.DoMatch(o.Target, match) && Arguments.DoMatch(o.Arguments, match);

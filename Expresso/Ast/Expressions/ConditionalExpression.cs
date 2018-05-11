@@ -1,4 +1,5 @@
 ﻿using ICSharpCode.NRefactory;
+using ICSharpCode.NRefactory.PatternMatching;
 
 namespace Expresso.Ast
 {
@@ -19,8 +20,8 @@ namespace Expresso.Ast
 		/// The condition expression to be tested.
         /// </summary>
         public Expression Condition{
-            get{return GetChildByRole(Roles.TargetExpression);}
-            set{SetChildByRole(Roles.TargetExpression, value);}
+            get => GetChildByRole(Roles.TargetExpression);
+            set => SetChildByRole(Roles.TargetExpression, value);
 		}
 
         /// <summary>
@@ -28,8 +29,8 @@ namespace Expresso.Ast
 		/// The expression to be evaluated when the condition is true.
         /// </summary>
         public Expression TrueExpression{
-            get{return GetChildByRole(TrueExpressionRole);}
-            set{SetChildByRole(TrueExpressionRole, value);}
+            get => GetChildByRole(TrueExpressionRole);
+            set => SetChildByRole(TrueExpressionRole, value);
 		}
 
         /// <summary>
@@ -37,8 +38,8 @@ namespace Expresso.Ast
 		/// The expression to be evaluated when the condition is false.
         /// </summary>
         public Expression FalseExpression{
-            get{return GetChildByRole(FalseExpressionRole);}
-            set{SetChildByRole(FalseExpressionRole, value);}
+            get => GetChildByRole(FalseExpressionRole);
+            set => SetChildByRole(FalseExpressionRole, value);
 		}
 
 		public ConditionalExpression(Expression test, Expression trueExpr, Expression falseExpr)
@@ -66,7 +67,7 @@ namespace Expresso.Ast
 
         #region implemented abstract members of AstNode
 
-        protected internal override bool DoMatch(AstNode other, ICSharpCode.NRefactory.PatternMatching.Match match)
+        protected internal override bool DoMatch(AstNode other, Match match)
         {
             var o = other as ConditionalExpression;
             return o != null && Condition.DoMatch(o.Condition, match)

@@ -17,25 +17,13 @@ namespace Expresso.Ast
         {
             public override bool IsNull => true;
 
-            public override void AcceptWalker(IAstWalker walker)
-            {
-                walker.VisitNullNode(this);
-            }
+            public override void AcceptWalker(IAstWalker walker) => walker.VisitNullNode(this);
 
-            public override TResult AcceptWalker<TResult>(IAstWalker<TResult> walker)
-            {
-                return walker.VisitNullNode(this);
-            }
+            public override TResult AcceptWalker<TResult>(IAstWalker<TResult> walker) => walker.VisitNullNode(this);
 
-            public override TResult AcceptWalker<TResult, TData>(IAstWalker<TData, TResult> walker, TData data)
-            {
-                return walker.VisitNullNode(this, data);
-            }
+            public override TResult AcceptWalker<TResult, TData>(IAstWalker<TData, TResult> walker, TData data) => walker.VisitNullNode(this, data);
 
-            protected internal override bool DoMatch(AstNode other, Match match)
-            {
-                return other == null || other.IsNull;
-            }
+            protected internal override bool DoMatch(AstNode other, Match match) => other == null || other.IsNull;
         }
         #endregion
 
@@ -52,8 +40,8 @@ namespace Expresso.Ast
         /// </summary>
         /// <value>The attribute target token.</value>
         public Identifier AttributeTargetToken{
-            get{return GetChildByRole(Roles.Identifier);}
-            set{SetChildByRole(Roles.Identifier, value);}
+            get => GetChildByRole(Roles.Identifier);
+            set => SetChildByRole(Roles.Identifier, value);
         }
 
         /// <summary>

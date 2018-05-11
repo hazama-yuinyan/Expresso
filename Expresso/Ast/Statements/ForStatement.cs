@@ -30,8 +30,8 @@ namespace Expresso.Ast
         /// the third and forth the next time, and the fifth and sixth the last time.
         /// </summary>
         public PatternConstruct Left{
-            get{return GetChildByRole(Roles.Pattern);}
-            set{SetChildByRole(Roles.Pattern, value);}
+            get => GetChildByRole(Roles.Pattern);
+            set => SetChildByRole(Roles.Pattern, value);
         }
 
         /// <summary>
@@ -40,8 +40,8 @@ namespace Expresso.Ast
         /// (when compiling the code) or a runtime exception occurs(when in interpreter mode)
         /// </summary>
         public Expression Target{
-            get{return GetChildByRole(IterableRole);}
-            set{SetChildByRole(IterableRole, value);}
+            get => GetChildByRole(IterableRole);
+            set => SetChildByRole(IterableRole, value);
         }
 
         /// <summary>
@@ -49,8 +49,8 @@ namespace Expresso.Ast
         /// The block we'll continue to evaluate until the sequence is ate up.
         /// </summary>
         public BlockStatement Body{
-            get{return GetChildByRole(Roles.Body);}
-            set{SetChildByRole(Roles.Body, value);}
+            get => GetChildByRole(Roles.Body);
+            set => SetChildByRole(Roles.Body, value);
         }
 
         public ForStatement(PatternConstruct left, Expression iterable, BlockStatement body,

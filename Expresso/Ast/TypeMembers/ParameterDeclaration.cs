@@ -1,4 +1,5 @@
 using ICSharpCode.NRefactory;
+using ICSharpCode.NRefactory.PatternMatching;
 using ICSharpCode.NRefactory.TypeSystem;
 
 
@@ -18,8 +19,8 @@ namespace Expresso.Ast
         /// </summary>
         /// <value>The attribute.</value>
         public AttributeSection Attribute{
-            get{return GetChildByRole(AttributeRole);}
-            set{SetChildByRole(AttributeRole, value);}
+            get => GetChildByRole(AttributeRole);
+            set => SetChildByRole(AttributeRole, value);
         }
 
         public override AstType ReturnType => NameToken.Type;
@@ -31,8 +32,8 @@ namespace Expresso.Ast
         /// The optional value for this parameter. It would be a null node if none is specified.
         /// </summary>
         public Expression Option{
-            get{return GetChildByRole(Roles.Expression);}
-            set{SetChildByRole(Roles.Expression, value);}
+            get => GetChildByRole(Roles.Expression);
+            set => SetChildByRole(Roles.Expression, value);
         }
 
         /// <summary>
@@ -73,7 +74,7 @@ namespace Expresso.Ast
             return walker.VisitParameterDeclaration(this, data);
         }
 
-        internal protected override bool DoMatch(AstNode other, ICSharpCode.NRefactory.PatternMatching.Match match)
+        internal protected override bool DoMatch(AstNode other, Match match)
         {
             var o = other as ParameterDeclaration;
             return o != null && ReturnType.DoMatch(o.ReturnType, match) && MatchString(Name, o.Name)

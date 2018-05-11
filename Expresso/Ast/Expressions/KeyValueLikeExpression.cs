@@ -1,4 +1,5 @@
 ﻿using ICSharpCode.NRefactory;
+using ICSharpCode.NRefactory.PatternMatching;
 
 
 namespace Expresso.Ast
@@ -16,8 +17,8 @@ namespace Expresso.Ast
         /// Represents the key.
         /// </summary>
         public Expression KeyExpression{
-            get{return GetChildByRole(KeyRole);}
-            set{SetChildByRole(KeyRole, value);}
+            get => GetChildByRole(KeyRole);
+            set => SetChildByRole(KeyRole, value);
         }
 
         public AstNodeCollection<ExpressoTokenNode> ColonToken => GetChildrenByRole(Roles.ColonToken);
@@ -26,8 +27,8 @@ namespace Expresso.Ast
         /// Represents the value.
         /// </summary>
         public Expression ValueExpression{
-            get{return GetChildByRole(Roles.Expression);}
-            set{SetChildByRole(Roles.Expression, value);}
+            get => GetChildByRole(Roles.Expression);
+            set => SetChildByRole(Roles.Expression, value);
         }
 
         public KeyValueLikeExpression(Expression key, Expression value)
@@ -54,7 +55,7 @@ namespace Expresso.Ast
             return walker.VisitKeyValueLikeExpression(this, data);
         }
 
-        protected internal override bool DoMatch(AstNode other, ICSharpCode.NRefactory.PatternMatching.Match match)
+        protected internal override bool DoMatch(AstNode other, Match match)
         {
             var o = other as KeyValueLikeExpression;
             return o != null && KeyExpression.DoMatch(o.KeyExpression, match) && ValueExpression.DoMatch(o.ValueExpression, match);

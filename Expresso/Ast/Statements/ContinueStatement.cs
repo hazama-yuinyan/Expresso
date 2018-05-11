@@ -1,5 +1,6 @@
 using System;
 using ICSharpCode.NRefactory;
+using ICSharpCode.NRefactory.PatternMatching;
 
 
 namespace Expresso.Ast
@@ -20,8 +21,8 @@ namespace Expresso.Ast
         /// Indicates how many loops we will break out.
         /// </summary>
         public LiteralExpression CountExpression{
-            get{return GetChildByRole(BreakStatement.LiteralRole);}
-            set{SetChildByRole(BreakStatement.LiteralRole, value);}
+            get => GetChildByRole(BreakStatement.LiteralRole);
+            set => SetChildByRole(BreakStatement.LiteralRole, value);
         }
 
         public ContinueStatement(LiteralExpression countExpr, TextLocation start, TextLocation end)
@@ -45,7 +46,7 @@ namespace Expresso.Ast
             return walker.VisitContinueStatement(this, data);
         }
 
-        protected internal override bool DoMatch(AstNode other, ICSharpCode.NRefactory.PatternMatching.Match match)
+        protected internal override bool DoMatch(AstNode other, Match match)
         {
             var o = other as ContinueStatement;
             return o != null && CountExpression.DoMatch(o.CountExpression, match);

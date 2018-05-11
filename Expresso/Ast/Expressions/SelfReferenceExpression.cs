@@ -1,5 +1,5 @@
-﻿using System;
-using ICSharpCode.NRefactory;
+﻿using ICSharpCode.NRefactory;
+using ICSharpCode.NRefactory.PatternMatching;
 
 
 namespace Expresso.Ast
@@ -15,14 +15,14 @@ namespace Expresso.Ast
         /// Gets the identifier that represents the "self" keyword.
         /// </summary>
         public Identifier SelfIdentifier{
-            get{return GetChildByRole(Roles.Identifier);}
-            private set{SetChildByRole(Roles.Identifier, value);}
+            get => GetChildByRole(Roles.Identifier);
+            private set => SetChildByRole(Roles.Identifier, value);
         }
 
         public SelfReferenceExpression(TextLocation loc)
             : base(loc, new TextLocation(loc.Line, loc.Column + "self".Length))
         {
-            SelfIdentifier = AstNode.MakeIdentifier("self", new PlaceholderType(loc));
+            SelfIdentifier = MakeIdentifier("self", new PlaceholderType(loc));
         }
 
         #region implemented abstract members of AstNode
@@ -42,7 +42,7 @@ namespace Expresso.Ast
             return walker.VisitSelfReferenceExpression(this, data);
         }
 
-        protected internal override bool DoMatch(AstNode other, ICSharpCode.NRefactory.PatternMatching.Match match)
+        protected internal override bool DoMatch(AstNode other, Match match)
         {
             return other is SelfReferenceExpression;
         }

@@ -1,5 +1,5 @@
-﻿using System;
-using ICSharpCode.NRefactory;
+﻿using ICSharpCode.NRefactory;
+using ICSharpCode.NRefactory.PatternMatching;
 
 namespace Expresso.Ast
 {
@@ -24,8 +24,8 @@ namespace Expresso.Ast
         /// The inner expression.
         /// </summary>
         public Expression Expression{
-            get{return GetChildByRole(Roles.Expression);}
-            set{SetChildByRole(Roles.Expression, value);}
+            get => GetChildByRole(Roles.Expression);
+            set => SetChildByRole(Roles.Expression, value);
         }
 
         public ExpressoTokenNode RPar => GetChildByRole(Roles.RParenthesisToken);
@@ -53,7 +53,7 @@ namespace Expresso.Ast
             return walker.VisitParenthesizedExpression(this, data);
         }
 
-        protected internal override bool DoMatch(AstNode other, ICSharpCode.NRefactory.PatternMatching.Match match)
+        protected internal override bool DoMatch(AstNode other, Match match)
         {
             var o = other as ParenthesizedExpression;
             return o != null && o.Expression.DoMatch(o.Expression, match);

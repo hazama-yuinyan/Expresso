@@ -70,8 +70,8 @@ namespace Expresso.Ast
         /// </summary>
         /// <value>The name token.</value>
         public PatternWithType Pattern{
-            get{return GetChildByRole(Roles.TypedPattern);}
-            set{SetChildByRole(Roles.TypedPattern, value);}
+            get => GetChildByRole(Roles.TypedPattern);
+            set => SetChildByRole(Roles.TypedPattern, value);
         }
 
         public ExpressoTokenNode AssignToken => GetChildByRole(Roles.AssignToken);
@@ -81,8 +81,8 @@ namespace Expresso.Ast
         /// </summary>
         /// <value>The initializer.</value>
         public Expression Initializer{
-            get{return GetChildByRole(Roles.Expression);}
-            set{SetChildByRole(Roles.Expression, value);}
+            get => GetChildByRole(Roles.Expression);
+            set => SetChildByRole(Roles.Expression, value);
         }
 
         protected VariableInitializer()

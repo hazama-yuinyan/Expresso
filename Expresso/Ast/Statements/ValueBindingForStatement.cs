@@ -18,8 +18,8 @@ namespace Expresso.Ast
         /// </summary>
         /// <value>The modifiers.</value>
         public Modifiers Modifiers{
-            get{return EntityDeclaration.GetModifiers(this);}
-            set{EntityDeclaration.SetModifiers(this, value);}
+            get => EntityDeclaration.GetModifiers(this);
+            set => EntityDeclaration.SetModifiers(this, value);
         }
 
 		/// <summary>
@@ -33,8 +33,8 @@ namespace Expresso.Ast
         /// The iterator must return a single value or a tuple.
         /// </summary>
         public VariableInitializer Initializer{
-            get{return GetChildByRole(Roles.Variable);}
-            set{SetChildByRole(Roles.Variable, value);}
+            get => GetChildByRole(Roles.Variable);
+            set => SetChildByRole(Roles.Variable, value);
         }
 
         /// <summary>
@@ -42,8 +42,8 @@ namespace Expresso.Ast
         /// The block we'll continue to evaluate until the sequence is ate up.
         /// </summary>
         public BlockStatement Body{
-            get{return GetChildByRole(Roles.Body);}
-            set{SetChildByRole(Roles.Body, value);}
+            get => GetChildByRole(Roles.Body);
+            set => SetChildByRole(Roles.Body, value);
         }
 
         public ValueBindingForStatement(Modifiers modifiers, VariableInitializer init, BlockStatement body, TextLocation loc)

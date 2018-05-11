@@ -1,6 +1,7 @@
 ﻿using System;
 
 using ICSharpCode.NRefactory;
+using ICSharpCode.NRefactory.PatternMatching;
 
 namespace Expresso.Ast
 {
@@ -18,25 +19,13 @@ namespace Expresso.Ast
         {
             public override bool IsNull => true;
 
-            public override void AcceptWalker(IAstWalker walker)
-            {
-                walker.VisitNullNode(this);
-            }
+            public override void AcceptWalker(IAstWalker walker) => walker.VisitNullNode(this);
 
-            public override TResult AcceptWalker<TResult>(IAstWalker<TResult> walker)
-            {
-                return walker.VisitNullNode(this);
-            }
+            public override TResult AcceptWalker<TResult>(IAstWalker<TResult> walker) => walker.VisitNullNode(this);
 
-            public override TResult AcceptWalker<TResult, TData>(IAstWalker<TData, TResult> walker, TData data)
-            {
-                return walker.VisitNullNode(this, data);
-            }
+            public override TResult AcceptWalker<TResult, TData>(IAstWalker<TData, TResult> walker, TData data) => walker.VisitNullNode(this, data);
 
-            internal protected override bool DoMatch(AstNode other, ICSharpCode.NRefactory.PatternMatching.Match match)
-            {
-                return other == null || other.IsNull;
-            }
+            internal protected override bool DoMatch(AstNode other, Match match) => other == null || other.IsNull;
         }
         #endregion
 
@@ -50,8 +39,8 @@ namespace Expresso.Ast
 		/// The type of this constant.
 		/// </summary>
         public AstType Type{
-            get{return GetChildByRole(Roles.Type);}
-            set{SetChildByRole(Roles.Type, value);}
+            get => GetChildByRole(Roles.Type);
+            set => SetChildByRole(Roles.Type, value);
 		}
 		
         /// <summary>
@@ -140,7 +129,7 @@ namespace Expresso.Ast
 
         #region implemented abstract members of AstNode
 
-        protected internal override bool DoMatch(AstNode other, ICSharpCode.NRefactory.PatternMatching.Match match)
+        protected internal override bool DoMatch(AstNode other, Match match)
         {
             var o = other as LiteralExpression;
             return o != null && (this.value == AnyValue || object.Equals(this.value, o.value));

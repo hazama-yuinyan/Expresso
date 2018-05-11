@@ -1,5 +1,5 @@
-﻿using System;
-using ICSharpCode.NRefactory;
+﻿using ICSharpCode.NRefactory;
+using ICSharpCode.NRefactory.PatternMatching;
 
 
 namespace Expresso.Ast
@@ -15,8 +15,8 @@ namespace Expresso.Ast
         /// Gets the identifier that represents the "super" keyword.
         /// </summary>
         public Identifier SuperIdentifier{
-            get{return GetChildByRole(Roles.Identifier);}
-            private set{SetChildByRole(Roles.Identifier, value);}
+            get => GetChildByRole(Roles.Identifier);
+            private set => SetChildByRole(Roles.Identifier, value);
         }
 
         public SuperReferenceExpression(TextLocation loc)
@@ -42,7 +42,7 @@ namespace Expresso.Ast
             return walker.VisitSuperReferenceExpression(this, data);
         }
 
-        protected internal override bool DoMatch(AstNode other, ICSharpCode.NRefactory.PatternMatching.Match match)
+        protected internal override bool DoMatch(AstNode other, Match match)
         {
             return other is SuperReferenceExpression;
         }

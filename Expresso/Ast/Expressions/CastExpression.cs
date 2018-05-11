@@ -1,5 +1,6 @@
 ﻿using System;
 using ICSharpCode.NRefactory;
+using ICSharpCode.NRefactory.PatternMatching;
 
 namespace Expresso.Ast
 {
@@ -18,8 +19,8 @@ namespace Expresso.Ast
 		/// The target type to which the expression casts the object.
         /// </summary>
         public AstType ToExpression{
-            get{return GetChildByRole(Roles.Type);}
-            set{SetChildByRole(Roles.Type, value);}
+            get => GetChildByRole(Roles.Type);
+            set => SetChildByRole(Roles.Type, value);
 		}
 
         /// <summary>
@@ -27,8 +28,8 @@ namespace Expresso.Ast
 		/// The target object to be casted.
         /// </summary>
         public Expression Target{
-            get{return GetChildByRole(Roles.Expression);}
-            set{SetChildByRole(Roles.Expression, value);}
+            get => GetChildByRole(Roles.Expression);
+            set => SetChildByRole(Roles.Expression, value);
 		}
 
         public CastExpression(AstType toExpr, Expression targetExpr)
@@ -54,7 +55,7 @@ namespace Expresso.Ast
         }
 
         #region implemented abstract members of AstNode
-        protected internal override bool DoMatch(AstNode other, ICSharpCode.NRefactory.PatternMatching.Match match)
+        protected internal override bool DoMatch(AstNode other, Match match)
         {
             var o = other as CastExpression;
             return o != null && Target.DoMatch(o.Target, match) && ToExpression.DoMatch(o.ToExpression, match);

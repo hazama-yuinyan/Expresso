@@ -3,6 +3,7 @@ using System.IO;
 using System.Collections.Generic;
 using System.Linq;
 using Expresso.CodeGen;
+using ICSharpCode.NRefactory.PatternMatching;
 
 
 namespace Expresso.Ast
@@ -315,7 +316,7 @@ namespace Expresso.Ast
             writer.Write("<null>");
         }
 
-        public void VisitPatternPlaceholder(AstNode placeholder, ICSharpCode.NRefactory.PatternMatching.Pattern child)
+        public void VisitPatternPlaceholder(AstNode placeholder, Pattern child)
         {
             writer.Write("<placeholder for patterns>");
         }

@@ -19,8 +19,8 @@ namespace Expresso.Ast
         /// The target type is the parent type.
         /// </summary>
         public AstType Target{
-            get{return GetChildByRole(TargetRole);}
-            set{SetChildByRole(TargetRole, value);}
+            get => GetChildByRole(TargetRole);
+            set => SetChildByRole(TargetRole, value);
         }
 
         /// <summary>
@@ -36,8 +36,8 @@ namespace Expresso.Ast
         /// Gets or sets the child type.
         /// </summary>
         public SimpleType ChildType{
-            get{return GetChildByRole(ChildRole);}
-            set{SetChildByRole(ChildRole, value);}
+            get => GetChildByRole(ChildRole);
+            set => SetChildByRole(ChildRole, value);
         }
 
         public MemberType(AstType target, SimpleType childType, TextLocation loc)

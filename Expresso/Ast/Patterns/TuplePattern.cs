@@ -1,7 +1,8 @@
 ﻿using System;
-using ICSharpCode.NRefactory;
 using System.Collections.Generic;
 using System.Linq;
+using ICSharpCode.NRefactory;
+using ICSharpCode.NRefactory.PatternMatching;
 
 namespace Expresso.Ast
 {
@@ -40,7 +41,7 @@ namespace Expresso.Ast
             return walker.VisitTuplePattern(this, data);
         }
 
-        protected internal override bool DoMatch(AstNode other, ICSharpCode.NRefactory.PatternMatching.Match match)
+        protected internal override bool DoMatch(AstNode other, Match match)
         {
             var o = other as TuplePattern;
             return o != null && Patterns.DoMatch(o.Patterns, match);

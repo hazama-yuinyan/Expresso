@@ -1,4 +1,4 @@
-﻿using System;
+﻿using ICSharpCode.NRefactory.PatternMatching;
 
 
 namespace Expresso.Ast
@@ -18,8 +18,8 @@ namespace Expresso.Ast
         /// </summary>
         /// <value>The path.</value>
         public PathExpression Path{
-            get{return GetChildByRole(Roles.Path);}
-            set{SetChildByRole(Roles.Path, value);}
+            get => GetChildByRole(Roles.Path);
+            set => SetChildByRole(Roles.Path, value);
         }
 
         /// <summary>
@@ -32,8 +32,8 @@ namespace Expresso.Ast
         /// Gets or sets the new name as an identifier.
         /// </summary>
         public Identifier AliasToken{
-            get{return GetChildByRole(Roles.Identifier);}
-            set{SetChildByRole(Roles.Identifier, value);}
+            get => GetChildByRole(Roles.Identifier);
+            set => SetChildByRole(Roles.Identifier, value);
         }
 
         public AliasDeclaration(PathExpression path, string alias)
@@ -59,7 +59,7 @@ namespace Expresso.Ast
             return walker.VisitAliasDeclaration(this, data);
         }
 
-        protected internal override bool DoMatch(AstNode other, ICSharpCode.NRefactory.PatternMatching.Match match)
+        protected internal override bool DoMatch(AstNode other, Match match)
         {
             var o = other as AliasDeclaration;
             return o != null && Path.DoMatch(o.Path, match) && MatchString(AliasName, o.AliasName);

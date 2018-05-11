@@ -1,4 +1,5 @@
 ﻿using System;
+using ICSharpCode.NRefactory.PatternMatching;
 
 
 namespace Expresso.Ast
@@ -14,8 +15,8 @@ namespace Expresso.Ast
         /// Represents the inner expression.
         /// </summary>
         public Expression Expression{
-            get{return GetChildByRole(Roles.Expression);}
-            set{SetChildByRole(Roles.Expression, value);}
+            get => GetChildByRole(Roles.Expression);
+            set => SetChildByRole(Roles.Expression, value);
         }
 
         public ExpressionPattern(Expression expr)
@@ -41,7 +42,7 @@ namespace Expresso.Ast
             return walker.VisitExpressionPattern(this, data);
         }
 
-        protected internal override bool DoMatch(AstNode other, ICSharpCode.NRefactory.PatternMatching.Match match)
+        protected internal override bool DoMatch(AstNode other, Match match)
         {
             var o = other as ExpressionPattern;
             return o != null && Expression.DoMatch(o.Expression, match);

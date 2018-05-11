@@ -18,8 +18,8 @@ namespace Expresso.Ast
         /// </summary>
         /// <value>The body.</value>
         public WhileStatement Delegator{
-            get{return GetChildByRole(WhileStmtRole);}
-            set{SetChildByRole(WhileStmtRole, value);}
+            get => GetChildByRole(WhileStmtRole);
+            set => SetChildByRole(WhileStmtRole, value);
         }
 
         public DoWhileStatement(WhileStatement stmt, TextLocation start, TextLocation end)

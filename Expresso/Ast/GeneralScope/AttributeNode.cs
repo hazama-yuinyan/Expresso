@@ -17,8 +17,8 @@ namespace Expresso.Ast
         /// </summary>
         /// <value>The type.</value>
         public AstType Type{
-            get{return GetChildByRole(Roles.Type);}
-            set{SetChildByRole(Roles.Type, value);}
+            get => GetChildByRole(Roles.Type);
+            set => SetChildByRole(Roles.Type, value);
         }
 
         /// <summary>

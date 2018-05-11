@@ -20,8 +20,8 @@ namespace Expresso.Ast
         /// The target object to be thrown.
         /// </summary>
         public ObjectCreationExpression CreationExpression{
-            get{return GetChildByRole(ObjectCreationRole);}
-            set{SetChildByRole(ObjectCreationRole, value);}
+            get => GetChildByRole(ObjectCreationRole);
+            set => SetChildByRole(ObjectCreationRole, value);
         }
 
         public ThrowStatement(ObjectCreationExpression expr, TextLocation loc)

@@ -45,22 +45,6 @@ namespace Expresso.Test
             }
         }
 
-        public static void TestOnType(object instance, List<string> privateMembers, List<FunctionAnnotation> methodAnnots)
-        {
-            /*foreach(var private_name in privateMembers){
-                try{
-                    instance(private_name, false);
-                }
-            }
-
-            foreach(var method_annot in methodAnnots){
-                var method = instance.AccessMemberWithName(method_annot.Name, false) as FunctionDeclaration;
-                Assert.IsNotNull(method);
-                Assert.AreEqual(method_annot.Name, method.Name);
-                Assert.AreEqual(method_annot.ReturnType, method.ReturnType);
-            }*/
-        }
-
         /// <summary>
         /// Makes an array from some objects.
         /// </summary>
@@ -397,18 +381,6 @@ namespace Expresso.Test
         public static ReturnStatement MakeSingleItemReturnStatement(Expression expr)
         {
             return Statement.MakeReturnStmt(Expression.MakeSequenceExpression(expr));
-        }
-    }
-
-    internal class FunctionAnnotation
-    {
-        public string Name{get; set;}
-        public AstType ReturnType{get; set;}
-
-        public FunctionAnnotation(string name, AstType returnType)
-        {
-            Name = name;
-            ReturnType = returnType;
         }
     }
 }

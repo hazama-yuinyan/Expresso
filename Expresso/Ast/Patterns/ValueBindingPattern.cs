@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using ICSharpCode.NRefactory;
+using ICSharpCode.NRefactory.PatternMatching;
 
 namespace Expresso.Ast
 {
@@ -16,16 +17,16 @@ namespace Expresso.Ast
         /// Represents the inner pattern.
         /// </summary>
         public PatternConstruct Pattern{
-            get{return GetChildByRole(Roles.Pattern);}
-            set{SetChildByRole(Roles.Pattern, value);}
+            get => GetChildByRole(Roles.Pattern);
+            set => SetChildByRole(Roles.Pattern, value);
         }
 
         /// <summary>
         /// Represents the modifiers that describe the properties of inner patterns.
         /// </summary>
         public Modifiers Modifiers{
-            get{return EntityDeclaration.GetModifiers(this);}
-            set{EntityDeclaration.SetModifiers(this, value);}
+            get => EntityDeclaration.GetModifiers(this);
+            set => EntityDeclaration.SetModifiers(this, value);
         }
 
         public ValueBindingPattern(PatternConstruct pattern, Modifiers modifiers, TextLocation loc)
@@ -52,7 +53,7 @@ namespace Expresso.Ast
             return walker.VisitValueBindingPattern(this, data);
         }
 
-        protected internal override bool DoMatch(AstNode other, ICSharpCode.NRefactory.PatternMatching.Match match)
+        protected internal override bool DoMatch(AstNode other, Match match)
         {
             var o = other as ValueBindingPattern;
             return o != null && Pattern.DoMatch(o.Pattern, match)

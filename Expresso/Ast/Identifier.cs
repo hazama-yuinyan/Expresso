@@ -1,4 +1,5 @@
 ﻿using ICSharpCode.NRefactory;
+using ICSharpCode.NRefactory.PatternMatching;
 
 
 namespace Expresso.Ast
@@ -22,25 +23,13 @@ namespace Expresso.Ast
         {
             public override bool IsNull => true;
 
-            public override void AcceptWalker(IAstWalker walker)
-            {
-                walker.VisitNullNode(this);
-            }
+            public override void AcceptWalker(IAstWalker walker) => walker.VisitNullNode(this);
 
-            public override TResult AcceptWalker<TResult>(IAstWalker<TResult> walker)
-            {
-                return walker.VisitNullNode(this);
-            }
+            public override TResult AcceptWalker<TResult>(IAstWalker<TResult> walker) => walker.VisitNullNode(this);
 
-            public override TResult AcceptWalker<TResult, TData>(IAstWalker<TData, TResult> walker, TData data)
-            {
-                return walker.VisitNullNode(this, data);
-            }
+            public override TResult AcceptWalker<TResult, TData>(IAstWalker<TData, TResult> walker, TData data) => walker.VisitNullNode(this, data);
 
-            internal protected override bool DoMatch(AstNode other, ICSharpCode.NRefactory.PatternMatching.Match match)
-            {
-                return other == null || other.IsNull;
-            }
+            internal protected override bool DoMatch(AstNode other, Match match) => other == null || other.IsNull;
         }
         #endregion
 
@@ -68,8 +57,8 @@ namespace Expresso.Ast
 		/// The type of the variable.
 		/// </summary>
         public AstType Type{
-            get{return GetChildByRole(Roles.Type);}
-            set{SetChildByRole(Roles.Type, value);}
+            get => GetChildByRole(Roles.Type);
+            set => SetChildByRole(Roles.Type, value);
 		}
 
         /// <summary>
@@ -77,8 +66,8 @@ namespace Expresso.Ast
         /// </summary>
         /// <value>The modifiers.</value>
         public ExpressoModifiers Modifiers{
-            get{return EntityDeclaration.GetModifiers(this);}
-            set{EntityDeclaration.SetModifiers(this, value);}
+            get => EntityDeclaration.GetModifiers(this);
+            set => EntityDeclaration.SetModifiers(this, value);
         }
 
         public override NodeType NodeType => NodeType.Unknown;
@@ -122,7 +111,7 @@ namespace Expresso.Ast
 
         #region implemented abstract members of AstNode
 
-        protected internal override bool DoMatch(AstNode other, ICSharpCode.NRefactory.PatternMatching.Match match)
+        protected internal override bool DoMatch(AstNode other, Match match)
         {
             var o = other as Identifier;
             return o != null && MatchString(Name, o.Name) && Type.DoMatch(o.Type, match);

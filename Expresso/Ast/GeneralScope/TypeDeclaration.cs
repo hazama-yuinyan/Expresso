@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
-
 using ICSharpCode.NRefactory;
+using ICSharpCode.NRefactory.PatternMatching;
 using ICSharpCode.NRefactory.TypeSystem;
 
 
@@ -77,8 +77,8 @@ namespace Expresso.Ast
         /// </summary>
         /// <value>The attribute.</value>
         public AttributeSection Attribute{
-            get{return GetChildByRole(AttributeRole);}
-            set{SetChildByRole(AttributeRole, value);}
+            get => GetChildByRole(AttributeRole);
+            set => SetChildByRole(AttributeRole, value);
         }
 
         /// <summary>
@@ -126,7 +126,7 @@ namespace Expresso.Ast
             return walker.VisitTypeDeclaration(this, data);
         }
 
-        protected internal override bool DoMatch(AstNode other, ICSharpCode.NRefactory.PatternMatching.Match match)
+        protected internal override bool DoMatch(AstNode other, Match match)
         {
             var o = other as TypeDeclaration;
             return o != null && TypeKind == o.TypeKind && BaseTypes.DoMatch(o.BaseTypes, match)

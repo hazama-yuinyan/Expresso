@@ -1,4 +1,5 @@
 using ICSharpCode.NRefactory;
+using ICSharpCode.NRefactory.PatternMatching;
 
 namespace Expresso.Ast
 {
@@ -21,8 +22,8 @@ namespace Expresso.Ast
 		/// The expression has to yield an integer.
 		/// </summary>
 		public Expression Start{
-            get{return GetChildByRole(LowerRole);}
-            set{SetChildByRole(LowerRole, value);}
+            get => GetChildByRole(LowerRole);
+            set => SetChildByRole(LowerRole, value);
 		}
 
 		/// <summary>
@@ -31,8 +32,8 @@ namespace Expresso.Ast
 		/// The expression has to yield an integer.
 		/// </summary>
 		public Expression End{
-            get{return GetChildByRole(UpperRole);}
-            set{SetChildByRole(UpperRole, value);}
+            get => GetChildByRole(UpperRole);
+            set => SetChildByRole(UpperRole, value);
 		}
 		
 		/// <summary>
@@ -41,8 +42,8 @@ namespace Expresso.Ast
 		/// The expression has to yield an integer.
 		/// </summary>
 		public Expression Step{
-            get{return GetChildByRole(StepRole);}
-            set{SetChildByRole(StepRole, value);}
+            get => GetChildByRole(StepRole);
+            set => SetChildByRole(StepRole, value);
 		}
 
         public bool UpperInclusive{
@@ -75,7 +76,7 @@ namespace Expresso.Ast
 
         #region implemented abstract members of AstNode
 
-        protected internal override bool DoMatch(AstNode other, ICSharpCode.NRefactory.PatternMatching.Match match)
+        protected internal override bool DoMatch(AstNode other, Match match)
         {
             var o = other as IntegerSequenceExpression;
             return o != null && Start.DoMatch(o.Start, match)

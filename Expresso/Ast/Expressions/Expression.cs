@@ -20,25 +20,13 @@ namespace Expresso.Ast
         {
             public override bool IsNull => true;
 
-            public override void AcceptWalker(IAstWalker walker)
-            {
-                walker.VisitNullNode(this);
-            }
+            public override void AcceptWalker(IAstWalker walker) => walker.VisitNullNode(this);
 
-            public override TResult AcceptWalker<TResult>(IAstWalker<TResult> walker)
-            {
-                return walker.VisitNullNode(this);
-            }
+            public override TResult AcceptWalker<TResult>(IAstWalker<TResult> walker) => walker.VisitNullNode(this);
 
-            public override TResult AcceptWalker<TResult, TData>(IAstWalker<TData, TResult> walker, TData data)
-            {
-                return walker.VisitNullNode(this, data);
-            }
+            public override TResult AcceptWalker<TResult, TData>(IAstWalker<TData, TResult> walker, TData data) => walker.VisitNullNode(this, data);
 
-            internal protected override bool DoMatch(AstNode other, ICSharpCode.NRefactory.PatternMatching.Match match)
-            {
-                return other == null || other.IsNull;
-            }
+            internal protected override bool DoMatch(AstNode other, Match match) => other == null || other.IsNull;
         }
         #endregion
 
@@ -59,30 +47,15 @@ namespace Expresso.Ast
 
             public override NodeType NodeType => NodeType.Pattern;
 
-            public override void AcceptWalker(IAstWalker walker)
-            {
-                walker.VisitPatternPlaceholder(this, child);
-            }
+            public override void AcceptWalker(IAstWalker walker) => walker.VisitPatternPlaceholder(this, child);
 
-            public override TResult AcceptWalker<TResult>(IAstWalker<TResult> walker)
-            {
-                return walker.VisitPatternPlaceholder(this, child);
-            }
+            public override TResult AcceptWalker<TResult>(IAstWalker<TResult> walker) => walker.VisitPatternPlaceholder(this, child);
 
-            public override TResult AcceptWalker<TResult, TData>(IAstWalker<TData, TResult> walker, TData data)
-            {
-                return walker.VisitPatternPlaceholder(this, child, data);
-            }
+            public override TResult AcceptWalker<TResult, TData>(IAstWalker<TData, TResult> walker, TData data) => walker.VisitPatternPlaceholder(this, child, data);
 
-            internal protected override bool DoMatch(AstNode other, Match match)
-            {
-                return child.DoMatch(other, match);
-            }
+            internal protected override bool DoMatch(AstNode other, Match match) => child.DoMatch(other, match);
 
-            bool INode.DoMatchCollection(Role role, INode pos, Match match, BacktrackingInfo backtrackingInfo)
-            {
-                return child.DoMatchCollection(role, pos, match, backtrackingInfo);
-            }
+            bool INode.DoMatchCollection(Role role, INode pos, Match match, BacktrackingInfo backtrackingInfo) => child.DoMatchCollection(role, pos, match, backtrackingInfo);
         }
         #endregion
 

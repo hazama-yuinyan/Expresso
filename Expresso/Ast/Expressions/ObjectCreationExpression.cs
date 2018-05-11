@@ -1,8 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 
 using ICSharpCode.NRefactory;
+using ICSharpCode.NRefactory.PatternMatching;
 
 
 namespace Expresso.Ast
@@ -25,25 +25,13 @@ namespace Expresso.Ast
         {
             public override bool IsNull => true;
 
-            public override void AcceptWalker(IAstWalker walker)
-            {
-                walker.VisitNullNode(this);
-            }
+            public override void AcceptWalker(IAstWalker walker) => walker.VisitNullNode(this);
 
-            public override TResult AcceptWalker<TResult>(IAstWalker<TResult> walker)
-            {
-                return walker.VisitNullNode(this);
-            }
+            public override TResult AcceptWalker<TResult>(IAstWalker<TResult> walker) => walker.VisitNullNode(this);
 
-            public override TResult AcceptWalker<TResult, TData>(IAstWalker<TData, TResult> walker, TData data)
-            {
-                return walker.VisitNullNode(this, data);
-            }
+            public override TResult AcceptWalker<TResult, TData>(IAstWalker<TData, TResult> walker, TData data) => walker.VisitNullNode(this, data);
 
-            internal protected override bool DoMatch(AstNode other, ICSharpCode.NRefactory.PatternMatching.Match match)
-            {
-                return other == null || other.IsNull;
-            }
+            internal protected override bool DoMatch(AstNode other, Match match) => other == null || other.IsNull;
         }
         #endregion
 
@@ -51,8 +39,8 @@ namespace Expresso.Ast
         /// The type path to create an instance out of.
         /// </summary>
         public AstType TypePath{
-            get{return GetChildByRole(Roles.Type);}
-            set{SetChildByRole(Roles.Type, value);}
+            get => GetChildByRole(Roles.Type);
+            set => SetChildByRole(Roles.Type, value);
         }
 
         /// <summary>
@@ -67,8 +55,8 @@ namespace Expresso.Ast
         /// </summary>
         /// <value>The type of the ctor.</value>
         public FunctionType CtorType{
-            get{return GetChildByRole(CtorTypeRole);}
-            set{SetChildByRole(CtorTypeRole, value);}
+            get => GetChildByRole(CtorTypeRole);
+            set => SetChildByRole(CtorTypeRole, value);
         }
 
         protected ObjectCreationExpression()
@@ -100,7 +88,7 @@ namespace Expresso.Ast
             return walker.VisitObjectCreationExpression(this, data);
         }
 
-        protected internal override bool DoMatch(AstNode other, ICSharpCode.NRefactory.PatternMatching.Match match)
+        protected internal override bool DoMatch(AstNode other, Match match)
         {
             var o = other as ObjectCreationExpression;
             return o != null && TypePath.DoMatch(o.TypePath, match) && Items.DoMatch(o.Items, match);

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using ICSharpCode.NRefactory;
+using ICSharpCode.NRefactory.PatternMatching;
 
 
 namespace Expresso.Ast
@@ -19,8 +20,8 @@ namespace Expresso.Ast
         /// </summary>
         /// <value>The target.</value>
         public Expression Target{
-            get{return GetChildByRole(Roles.TargetExpression);}
-            set{SetChildByRole(Roles.TargetExpression, value);}
+            get => GetChildByRole(Roles.TargetExpression);
+            set => SetChildByRole(Roles.TargetExpression, value);
         }
 
         public ExpressoTokenNode LBracket => GetChildByRole(Roles.LBracketToken);
@@ -58,7 +59,7 @@ namespace Expresso.Ast
             return walker.VisitIndexerExpression(this, data);
         }
 
-        protected internal override bool DoMatch(AstNode other, ICSharpCode.NRefactory.PatternMatching.Match match)
+        protected internal override bool DoMatch(AstNode other, Match match)
         {
             var o = other as IndexerExpression;
             return o != null && Target.DoMatch(o.Target, match) && Arguments.DoMatch(o.Arguments, match);
