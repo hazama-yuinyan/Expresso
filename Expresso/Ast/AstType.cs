@@ -26,20 +26,11 @@ namespace Expresso.Ast
 
             public override Identifier IdentifierNode => Identifier.Null;
 
-            public override void AcceptWalker(IAstWalker walker)
-            {
-                walker.VisitNullNode(this);
-            }
+            public override void AcceptWalker(IAstWalker walker) => walker.VisitNullNode(this);
 
-            public override TResult AcceptWalker<TResult>(IAstWalker<TResult> walker)
-            {
-                return walker.VisitNullNode(this);
-            }
+            public override TResult AcceptWalker<TResult>(IAstWalker<TResult> walker) => walker.VisitNullNode(this);
 
-            public override TResult AcceptWalker<TResult, TData>(IAstWalker<TData, TResult> walker, TData data)
-            {
-                return walker.VisitNullNode(this, data);
-            }
+            public override TResult AcceptWalker<TResult, TData>(IAstWalker<TData, TResult> walker, TData data) => walker.VisitNullNode(this, data);
 
             internal protected override bool DoMatch(AstNode other, Match match)
             {
@@ -51,10 +42,7 @@ namespace Expresso.Ast
 
             #region implemented abstract members of AstType
 
-            public override ITypeReference ToTypeReference(NameLookupMode lookupMode, InterningProvider interningProvider = null)
-            {
-                return null;
-            }
+            public override ITypeReference ToTypeReference(NameLookupMode lookupMode, InterningProvider interningProvider = null) => null;
 
             #endregion
         }
@@ -83,15 +71,9 @@ namespace Expresso.Ast
 
             #region INode implementation
 
-            public bool DoMatch(INode other, Match match)
-            {
-                return child.DoMatch(other, match);
-            }
+            public bool DoMatch(INode other, Match match) => child.DoMatch(other, match);
 
-            public bool DoMatchCollection(ICSharpCode.NRefactory.Role role, INode pos, Match match, BacktrackingInfo backtrackingInfo)
-            {
-                return child.DoMatchCollection(role, pos, match, backtrackingInfo);
-            }
+            public bool DoMatchCollection(Role role, INode pos, Match match, BacktrackingInfo backtrackingInfo) => child.DoMatchCollection(role, pos, match, backtrackingInfo);
 
             public override bool IsNull => false;
 
@@ -99,34 +81,19 @@ namespace Expresso.Ast
 
             #region implemented abstract members of AstNode
 
-            public override void AcceptWalker(IAstWalker walker)
-            {
-                walker.VisitPatternPlaceholder(this, child);
-            }
+            public override void AcceptWalker(IAstWalker walker) => walker.VisitPatternPlaceholder(this, child);
 
-            public override TResult AcceptWalker<TResult>(IAstWalker<TResult> walker)
-            {
-                return walker.VisitPatternPlaceholder(this, child);
-            }
+            public override TResult AcceptWalker<TResult>(IAstWalker<TResult> walker) => walker.VisitPatternPlaceholder(this, child);
 
-            public override TResult AcceptWalker<TResult, TData>(IAstWalker<TData, TResult> walker, TData data)
-            {
-                return walker.VisitPatternPlaceholder(this, child, data);
-            }
+            public override TResult AcceptWalker<TResult, TData>(IAstWalker<TData, TResult> walker, TData data) => walker.VisitPatternPlaceholder(this, child, data);
 
-            protected internal override bool DoMatch(AstNode other, Match match)
-            {
-                return other is NullAstType;
-            }
+            protected internal override bool DoMatch(AstNode other, Match match) => other is NullAstType;
 
             #endregion
 
             #region implemented abstract members of AstType
 
-            public override ITypeReference ToTypeReference(NameLookupMode lookupMode, InterningProvider interningProvider = null)
-            {
-                return null;
-            }
+            public override ITypeReference ToTypeReference(NameLookupMode lookupMode, InterningProvider interningProvider = null) => null;
 
             #endregion
         }

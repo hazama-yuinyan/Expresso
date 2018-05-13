@@ -1281,20 +1281,15 @@ namespace Expresso.Ast
             return new VariableInitializer(typedPattern, expr);
         }
 
-        public static AttributeSection MakeAttributeSection(string identifier, AttributeNode attribute, TextLocation start = default, TextLocation end = default)
+        public static AttributeSection MakeAttributeSection(string identifier, ObjectCreationExpression attribute, TextLocation start = default, TextLocation end = default)
         {
-            return new AttributeSection(MakeIdentifier(identifier, AstType.Null), new []{attribute}, start, end);
+            return new AttributeSection((identifier == null) ? null : MakeIdentifier(identifier, AstType.Null), new []{attribute}, start, end);
         }
 
-        public static AttributeSection MakeAttributeSection(string identifier, IEnumerable<AttributeNode> attributes, TextLocation start = default,
+        public static AttributeSection MakeAttributeSection(string identifier, IEnumerable<ObjectCreationExpression> attributes, TextLocation start = default,
                                                             TextLocation end = default)
         {
-            return new AttributeSection(MakeIdentifier(identifier, AstType.Null), attributes, start, end);
-        }
-
-        public static AttributeNode MakeAttributeNode(string typeName, IEnumerable<Expression> arguments, TextLocation start = default, TextLocation end = default)
-        {
-            return new AttributeNode(AstType.MakeSimpleType(typeName), arguments, start, end);
+            return new AttributeSection((identifier == null) ? null : MakeIdentifier(identifier, AstType.Null), attributes, start, end);
         }
 		#endregion
     }

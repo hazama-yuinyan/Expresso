@@ -76,8 +76,7 @@ namespace Expresso.Ast
             return new WildcardPattern(loc);
         }
 
-        public static IdentifierPattern MakeIdentifierPattern(string name, AstType type,
-                                                              PatternConstruct inner = null, TextLocation loc = default)
+        public static IdentifierPattern MakeIdentifierPattern(string name, AstType type, PatternConstruct inner = null, TextLocation loc = default)
         {
             // type.Clone is needed because Enumerator closures will be executed over twice
             return new IdentifierPattern(MakeIdentifier(name, type.Clone(), Modifiers.None, loc), inner);

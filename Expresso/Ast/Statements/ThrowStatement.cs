@@ -12,16 +12,13 @@ namespace Expresso.Ast
     /// </summary>
     public class ThrowStatement : Statement
     {
-        public static readonly Role<ObjectCreationExpression> ObjectCreationRole =
-            new Role<ObjectCreationExpression>("ObjectCreation", ObjectCreationExpression.Null);
-
         /// <summary>
         /// オブジェクトを生成するクラスの定義を参照する式。
         /// The target object to be thrown.
         /// </summary>
         public ObjectCreationExpression CreationExpression{
-            get => GetChildByRole(ObjectCreationRole);
-            set => SetChildByRole(ObjectCreationRole, value);
+            get => GetChildByRole(Roles.ObjectCreation);
+            set => SetChildByRole(Roles.ObjectCreation, value);
         }
 
         public ThrowStatement(ObjectCreationExpression expr, TextLocation loc)

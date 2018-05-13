@@ -269,7 +269,7 @@ namespace Expresso.Resolver
             if(node.IsNull)
                 return;
             
-            Console.WriteLine("Resolved '{0}' to {1}", node, result);
+            //Console.WriteLine("Resolved '{0}' to {1}", node, result);
             Debug.Assert(!ExpressoAstResolver.IsUnresolvableNode(node));
             // The state should be stored before the result is.
             Debug.Assert(resolver_before_dict.ContainsKey(node));
@@ -790,6 +790,11 @@ namespace Expresso.Resolver
         }
 
         ResolveResult IAstWalker<ResolveResult>.VisitPlaceholderType(PlaceholderType placeholderType)
+        {
+            throw new NotImplementedException();
+        }
+
+        ResolveResult IAstWalker<ResolveResult>.VisitAttributeSection(AttributeSection section)
         {
             throw new NotImplementedException();
         }

@@ -711,6 +711,17 @@ namespace Expresso.Test
             Assert.That(() => parser.Parse(), Throws.TypeOf<ParserException>().With.Message.Contains("ES4020"));
             Assert.AreEqual(1, parser.errors.count);
         }
+
+        [Test]
+        public void UseBeforeDeclared()
+        {
+            var parser = new Parser(new Scanner("../../sources/for_unit_tests/erroneous/use_before_declared.exs")){
+                DoPostParseProcessing = true
+            };
+
+            Assert.That(() => parser.Parse(), Throws.TypeOf<ParserException>().With.Message.Contains("ES"));
+            Assert.AreEqual(1, parser.errors.count);
+        }
     }
 }
 

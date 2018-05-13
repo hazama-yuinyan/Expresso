@@ -297,11 +297,6 @@ namespace Expresso.CodeGen
                 throw new InvalidOperationException();
             }
 
-            public void VisitAttributeNode(AttributeNode attribute)
-            {
-                throw new InvalidOperationException();
-            }
-
             public void VisitImportDeclaration(ImportDeclaration importDecl)
             {
                 throw new InvalidOperationException();

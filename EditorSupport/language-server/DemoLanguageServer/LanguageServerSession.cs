@@ -84,6 +84,10 @@ namespace ExpressoLanguageServer
             get; set;
         }
 
+        public StringWriter ErrorWriter{
+            get; set;
+        }
+
         public void StopServer()
         {
             cts.Cancel();

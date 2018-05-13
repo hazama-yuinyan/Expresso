@@ -170,7 +170,7 @@ namespace Expresso.Utilities
             }
             catch(ReflectionTypeLoadException ex){
                 foreach(var e in ex.LoaderExceptions)
-                    Console.WriteLine(e.Message);
+                    Console.Error.WriteLine(e.Message);
 
                 return Enumerable.Empty<Type>();
             }

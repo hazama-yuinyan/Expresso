@@ -47,6 +47,9 @@ namespace Expresso.Ast
         void PrintList<T>(IEnumerable<T> list)
             where T : AstNode
         {
+            if(!list.Any())
+                return;
+            
             var first = list.First();
             first.AcceptWalker(this);
             foreach(var elem in list.Skip(1)){
@@ -553,16 +556,6 @@ namespace Expresso.Ast
             }
                 
             PrintList(section.Attributes);
-        }
-
-        public void VisitAttributeNode(AttributeNode attribute)
-        {
-            attribute.Type.AcceptWalker(this);
-            if(!attribute.Arguments.IsEmpty){
-                writer.Write("(");
-                PrintList(attribute.Arguments);
-                writer.Write(")");
-            }
         }
 
         public void VisitAliasDeclaration(AliasDeclaration aliasDecl)

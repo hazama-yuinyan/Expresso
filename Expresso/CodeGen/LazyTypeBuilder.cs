@@ -115,6 +115,7 @@ namespace Expresso.CodeGen
         public MethodBuilder DefineMethod(string name, MethodAttributes attr, Type returnType, Type[] parameterTypes, Expression body = null)
         {
             var method = interface_type.DefineMethod(name, attr, returnType, parameterTypes);
+            var param_builder = method.DefineParameter(0, ParameterAttributes.None, "a");
             var il = method.GetILGenerator();
             // Emit call to the implementation method no matter whether we actually need it.
             // TODO: Consider a better solution
@@ -260,7 +261,9 @@ namespace Expresso.CodeGen
                 lambda.CompileToMethod(implementer.Item2, debug_info_generator);
             }
 
+            #if !NETCOREAPP2_0
             Console.WriteLine("Emitting a PDB on type {0}...", interface_type.Name);
+            #endif
             debug_info_generator.WriteToFile(pdb_file_path);
             #endif
 

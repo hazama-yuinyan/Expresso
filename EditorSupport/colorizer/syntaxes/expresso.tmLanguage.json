@@ -32,13 +32,13 @@
             "begin": "^(import)\\s+([\\w0-9_]+)(?:::{?(?:,?([\\w0-9_]+))+}?)?",
             "beginCaptures": {
                 "1" : {
-                    "name" : "keyword.other.import.source.expresso"
+                    "name" : "keyword.other.import.expresso"
                 },
                 "2" : {
-                    "name" : "entity.name.type.source.expresso"
+                    "name" : "entity.name.type.expresso"
                 },
                 "3" : {
-                    "name" : "entity.name.type.source.expresso"
+                    "name" : "entity.name.type.expresso"
                 }
             },
             "end" : "}?;$",
@@ -46,17 +46,12 @@
                 {
                     "begin" : "\\.{?",
                     "end" : "}?\\s+(?=from|as)",
-                    "endCaptures": {
-                        "1" : {
-                            "name" : "keyword.other.source.expresso"
-                        }
-                    },
                     "patterns": [
                         {
                             "match": "([\\w0-9_]+),?",
                             "captures": {
                                 "1" : {
-                                    "name" : "entity.name.type.source.expresso"
+                                    "name" : "entity.name.type.expresso"
                                 }
                             }
                         }
@@ -66,10 +61,10 @@
                     "match": "(from) (\"[^\"]+\")\\s+(?=as)",
                     "captures": {
                         "1" : {
-                            "name" : "keyword.other.from.source.expresso"
+                            "name" : "keyword.other.from.expresso"
                         },
                         "2" : {
-                            "name" : "constant.character.source.expresso"
+                            "name" : "string.quoted.double.expresso"
                         }
                     }
                 },
@@ -77,7 +72,7 @@
                     "begin": "(as) {?",
                     "beginCaptures": {
                         "1" : {
-                            "name" : "keyword.other.as.source.expresso"
+                            "name" : "keyword.other.as.expresso"
                         }
                     },
                     "end": "(?=}?;$)",
@@ -86,17 +81,17 @@
                             "match": "([\\w0-9_]+),?",
                             "captures": {
                                 "1" : {
-                                    "name" : "entity.name.type.source.expresso"
+                                    "name" : "entity.name.type.expresso"
                                 }
                             }
                         }
                     ]
                 }
             ],
-            "name" : "meta.statement.import.source.expresso"
+            "name" : "meta.statement.import.expresso"
         },
         {
-            "match" : "^(module)\\s+(.*?);$",
+            "match" : "^(module)\\s+(.+?);$",
             "captures" : {
                 "1" : {
                     "name" : "keyword.other.module.expresso"
@@ -109,8 +104,8 @@
             "comment" : "Match on module definition statements"
         },
         {
-            "match": "^\\s*(throw)\\s+(.+?){(?:(.+?)\\s*:\\s*.+?)*};",
-            "captures": {
+            "begin": "^\\s*(throw)\\s+(.+?)({)",
+            "beginCaptures": {
                 "1" : {
                     "name" : "keyword.control.throw.expresso"
                 },
@@ -118,21 +113,48 @@
                     "name" : "entity.name.type.expresso"
                 },
                 "3" : {
-                    "name" : "entity.other.identifier.expresso"
+                    "name" : "punctuation.definition.lcurlybrace.expresso"
                 }
-            }
+            },
+            "end": "(});",
+            "endCaptures": {
+                "1" : {
+                    "name" : "punctuation.definition.rcurlybrace.expresso"
+                }
+            },
+            "patterns": [
+                {
+                    "match": "([\\w_0-9]+)",
+                    "captures": {
+                        "1" : {
+                            "name" : "variable.parameter.expresso"
+                        }
+                    }
+                },
+                {
+                    "include": "#stringLiterals"
+                },
+                {
+                    "include" : "#numberLiteral",
+                    "name" : "constant.numeric.expresso"
+                },
+                {
+                    "include" : "#simpleFunctionCall",
+                    "name" : "meta.function.call.expresso"
+                }
+            ]
         },
         {
             "begin": "(let|var)\\s+",
             "beginCaptures": {
                 "1" : {
-                    "name" : "keyword.other.source.expresso"
+                    "name" : "keyword.other.expresso"
                 }
             },
             "end": "(;)$",
             "endCaptures": {
                 "1" : {
-                    "name" : "punctuation.definition.semicolon.source.expresso"
+                    "name" : "punctuation.definition.semicolon.expresso"
                 }
             },
             "patterns": [
@@ -140,34 +162,33 @@
                     "match": "(,?)\\s*([\\w0-9_]+)\\s+(?:\\(-\\s+([\\w0-9_]+)\\s+)?(=)\\s+",
                     "captures": {
                         "1" : {
-                            "name" : "punctuation.defitnion.comma.source.expresso"
+                            "name" : "punctuation.defitnion.comma.expresso"
                         },
                         "2" : {
-                            "name" : "variable.name.source.expresso"
+                            "name" : "variable.name.expresso"
                         },
                         "3" : {
-                            "name" : "entity.name.class.source.expresso"
+                            "name" : "entity.name.class.expresso"
                         },
                         "4" : {
-                            "name" : "punctuation.defitnion.equal.source.expresso"
+                            "name" : "punctuation.defitnion.equal.expresso"
                         }
                     }
                 },
                 {
                     "include": "#numberLiteral",
-                    "name" : "constant.numeric.source.expresso"
+                    "name" : "constant.numeric.expresso"
                 },
                 {
-                    "include": "#stringLiterals",
-                    "name":  "constant.character.source.expresso"
+                    "include": "#stringLiterals"
                 },
                 {
                     "include": "#keywordVariables",
-                    "name" : "variable.language.source.expresso"
+                    "name" : "variable.language.expresso"
                 },
                 {
                     "include": "#simpleFunctionCall",
-                    "name" : "meta.function.call.source.expresso"
+                    "name" : "meta.function.call.expresso"
                 }
             ]
         },
@@ -175,22 +196,22 @@
             "begin": "^\\s*(export)?\\s*(class)\\s+([\\w0-9_]+)\\s*(?:(:)\\s+)?",
             "beginCaptures": {
                 "1" : {
-                    "name" : "keyword.other.export.source.expresso"
+                    "name" : "keyword.other.export.expresso"
                 },
                 "2" : {
-                    "name" : "keyword.other.class.source.expresso"
+                    "name" : "keyword.other.class.expresso"
                 },
                 "3" : {
-                    "name" : "entity.name.class.source.expresso"
+                    "name" : "entity.name.class.expresso"
                 },
                 "4" : {
-                    "name" : "punctuation.definition.colon.source.expresso"
+                    "name" : "punctuation.definition.colon.expresso"
                 }
             },
             "end": "\\n?\\s*({)",
             "endCaptures": {
                 "1" : {
-                    "name" : "punctuation.defitinion.curly-brackets.source.expresso"
+                    "name" : "punctuation.defitinion.curly-brackets.expresso"
                 }
             },
             "patterns": [
@@ -198,54 +219,102 @@
                     "match": "(,?)\\s*([\\w0-9_]+)",
                     "captures": {
                         "1" : {
-                            "name" : "punctuation.definition.comma.source.expresso"
+                            "name" : "punctuation.definition.comma.expresso"
                         },
                         "2" : {
-                            "name" : "entity.name.class.source.expresso"
+                            "name" : "entity.name.class.expresso"
                         }
                     }
                 }
             ]
         },
         {
-            "include": "#stringLiterals",
-            "name" : "constant.characte.source.expresso"
+            "begin": "(#\\[)",
+            "beginCaptures": {
+                "1": {
+                    "name" : "punctuation.definition.sharp-lbracket.expresso"
+                }
+            },
+            "end": "(])",
+            "endCaptures": {
+                "1": {
+                    "name" : "punctuation.definition.rbracket.expresso"
+                }
+            },
+            "patterns": [
+                {
+                    "begin": "([\\w_0-9]+)({)",
+                    "beginCaptures": {
+                        "1": {
+                            "name" : "entity.name.class.expresso"
+                        },
+                        "2" : {
+                            "name" : "punctuation.definition.lcurlybrace.expresso"
+                        }
+                    },
+                    "end": "(})",
+                    "endCaptures": {
+                        "1" : {
+                            "name" : "punctuation.definition.rcurlybrace.expresso"
+                        }
+                    },
+                    "patterns": [
+                        {
+                            "match": "([\\w_0-9]+)(:)",
+                            "captures": {
+                                "1" : {
+                                    "name" : "variable.other.expresso"
+                                },
+                                "2" : {
+                                    "name" : "punctuation.definition.colon.expresso"
+                                }
+                            }
+                        },
+                        {
+                            "include": "#stringLiterals"
+                        },
+                        {
+                            "include": "#numberLiteral",
+                            "name": "constant.numeric.expresso"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "include": "#stringLiterals"
         },
         {
             "include": "#numberLiteral",
-            "name": "constant.numeric.source.expresso"
+            "name": "constant.numeric.expresso"
         },
         {
             "include": "#simpleFunctionCall",
-            "name": "meta.function.call.source.expresso"
+            "name": "meta.function.call.expresso"
         },
         {
             "match" : "\\b(true|false|null)\\b",
-            "name" : "constant.language.source.expresso"
+            "name" : "constant.language.expresso"
         },
         {
             "match" : "\\b(if|else|for|while|return|continue|break|match|yield)\\b",
-            "name" : "keyword.control.source.expresso"
+            "name" : "keyword.control.expresso"
         },
         {
             "match" : "\\b(override|as)\\b",
-            "name" : "keyword.operator.source.expresso"
+            "name" : "keyword.operator.expresso"
         },
         {
             "include": "#keywordVariables",
-            "name" : "variable.language.source.expresso"
+            "name" : "variable.language.expresso"
         },
         {
             "match" : "\\b(import|module|def|in|from|let|var)\\b",
-            "name" : "keyword.other.source.expresso"
+            "name" : "keyword.other.expresso"
         },
         {
             "match" : "\\b(internal|public|protected|private|static|abstract|override|export|readonly)\\b",
-            "name" : "storage.modifier.source.expresso"
-        },
-        {
-            "match" : "\\b(bool|byte|float|double|int|uint|bigint|vector|dictionary|tuple|intseq|char|string|array|slice|function|void|class|interface)\\b",
-            "name" : "storage.type.expresso"
+            "name" : "storage.modifier.expresso"
         }
     ],
     "repository" : {
@@ -256,24 +325,28 @@
                     "end" : "(?={)",
                     "patterns" : [
                         {
+                            "match" : "\\s*,?([A-Za-z_]\\w*)\\b",
                             "captures" : {
                                 "1" : {
-                                    "name" : "storage.type.source.expresso"
+                                    "name" : "storage.type.expresso"
                                 }
-                            },
-                            "match" : "\\s*,?([A-Za-z_]\\w*)\\b"
+                            }
                         }
                     ]
                 }
             ]
         },
         "statementRemainder" : {
-            "begin" : "\\(",
-            "end" : "(?=\\))",
-            "name" : "meta.definition.param-list.source.expresso",
             "patterns" : [
                 {
-                    "include" : "#builtinTypes"
+                    "begin" : "\\(",
+                    "end" : "(?=\\))",
+                    "name" : "meta.definition.param-list.expresso",
+                    "patterns" : [
+                        {
+                            "include" : "#builtinTypes"
+                        }
+                    ]
                 }
             ]
         },
@@ -285,19 +358,42 @@
                     "patterns" : [
                         {
                             "match": "\\[artnv]",
-                            "name" : "constant.character.escape.source.expresso"
+                            "name" : "constant.character.escape.expresso"
                         },
                         {
-                            "begin": "\\$\\{",
-                            "end": "}",
-                            "name" : "meta.expression.source.expression"
+                            "begin": "(\\$\\{)",
+                            "beginCaptures": {
+                                "1" : {
+                                    "name" : "punctuation.definition.template-expression.begin.expresso"
+                                }
+                            },
+                            "end": "(})",
+                            "endCaptures": {
+                                "1" : {
+                                    "name" : "punctuation.definition.template-expression.end.expresso"
+                                }
+                            },
+                            "name" : "meta.expression.expresso",
+                            "patterns": [
+                                {
+                                    "include" : "#stringLiterals"
+                                },
+                                {
+                                    "include": "#numberLiteral",
+                                    "name" : "constant.numeric.expresso"
+                                },
+                                {
+                                    "include": "simpleFunctionCall",
+                                    "name" : "meta.function.call.expresso"
+                                }
+                            ]
                         },
                         {
-                            "match": "[^$]|\\$\\$",
-                            "name" : "constant.character.source.expresso"
+                            "match": "\\$\\$",
+                            "name" : "constant.character.expresso"
                         }
                     ],
-                    "name" : "string.quoted.double.source.expresso"
+                    "name" : "string.quoted.double.expresso"
                 },
                 {
                     "begin" : "(r[#]*)(\")",
@@ -321,30 +417,22 @@
                             "name" : "punctuation.definition.string.postfix.literal.expresso"
                         }
                     },
-                    "name" : "string.quoted.double.raw.source.expresso",
+                    "name" : "string.quoted.double.raw.expresso",
                     "patterns" : [
                         {
                             "match" : "\"",
                             "name" : "constant.character.double-quote.expresso"
-                        },
-                        {
-                            "match" : ".",
-                            "name" : "constant.character.expresso"
                         }
                     ]
                 },
                 {
                     "begin" : "'",
                     "end" : "'",
-                    "name" : "string.quoted.single.source.expresso",
+                    "name" : "string.quoted.single.expresso",
                     "patterns" : [
                         {
                             "match" : "\\[atrnv]",
                             "name" : "constant.character.escape.expresso"
-                        },
-                        {
-                            "match" : ".",
-                            "name" : "constant.character.expresso"
                         }
                     ]
                 }
@@ -353,13 +441,13 @@
         "numberLitral" : {
            "patterns" : [{
                 "match" : "\\b((0(x|X)[0-9a-fA-F]*)|(([0-9]+\\.?[0-9]*)|(\\.[0-9]+))((e|E)(\\+|-)?[0-9]+)?)(L|l)?\\b",
-                "name" : "constant.numeric.source.expresso"
+                "name" : "constant.numeric.expresso"
             }]
         },
         "keywordVariables" : {
             "patterns": [{
                 "match": "\\b(self|super)\\b",
-                "name" : "variable.language.source.expresso"
+                "name" : "variable.language.expresso"
             }]
         },
         "simpleFunctionCall" : {
@@ -368,36 +456,43 @@
                     "begin": "([\\w0-9_]+)(\\()\\s*",
                     "beginCaptures": {
                         "1" : {
-                            "name" : "entity.name.function.source.expresso"
+                            "name" : "entity.name.function.expresso"
                         },
                         "2" : {
-                            "name" : "punctuation.definition.open-parenthesis.source.expresso"
+                            "name" : "punctuation.definition.open-parenthesis.expresso"
                         }
                     },
                     "end": "\\s*(\\))",
                     "endCaptures": {
                         "1" : {
-                            "name" : "punctuation.definition.close-parenthesis.source.expresso"
+                            "name" : "punctuation.definition.close-parenthesis.expresso"
                         }
                     },
                     "patterns": [
                         {
-                            "include": "#stringLiterals",
-                            "name" : "constant.character.source.expresso"
+                            "include": "#stringLiterals"
                         },
                         {
                             "include": "#numberLiteral",
-                            "name" : "constant.numeric.source.expresso"
+                            "name" : "constant.numeric.expresso"
                         },
                         {
                             "include": "#keywordVariables",
-                            "name" : "variable.language.source.expresso"
+                            "name" : "variable.language.expresso"
                         },
                         {
                             "include": "#simpleFunctionCall",
-                            "name" : "meta.function.call.source.expresso"
+                            "name" : "meta.function.call.expresso"
                         }
                     ]
+                }
+            ]
+        },
+        "builtinTypes": {
+            "patterns": [
+                {
+                    "match" : "\\b(bool|byte|float|double|int|uint|bigint|vector|dictionary|tuple|intseq|char|string|array|slice|function|void|class|interface)\\b",
+                    "name" : "keyword.other.expresso"
                 }
             ]
         }

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using ICSharpCode.NRefactory;
 using ICSharpCode.NRefactory.PatternMatching;
 
@@ -48,13 +49,13 @@ namespace Expresso.Ast
         /// Represents the attributes.
         /// </summary>
         /// <value>The attributes.</value>
-        public AstNodeCollection<AttributeNode> Attributes => GetChildrenByRole(Roles.Attribute);
+        public AstNodeCollection<ObjectCreationExpression> Attributes => GetChildrenByRole(Roles.ObjectCreation);
 
         protected AttributeSection()
         {
         }
 
-        public AttributeSection(Identifier target, IEnumerable<AttributeNode> attributes, TextLocation start, TextLocation end)
+        public AttributeSection(Identifier target, IEnumerable<ObjectCreationExpression> attributes, TextLocation start, TextLocation end)
             : base(start, end)
         {
             AttributeTargetToken = target;
@@ -80,6 +81,36 @@ namespace Expresso.Ast
         {
             var o = other as AttributeSection;
             return o != null && AttributeTargetToken.DoMatch(o.AttributeTargetToken, match) && Attributes.DoMatch(o.Attributes, match);
+        }
+
+        public static AttributeTargets GetAttributeTargets(string identifier)
+        {
+            switch(identifier){
+            case "assembly":
+                return AttributeTargets.Assembly;
+
+            case "module":
+                return AttributeTargets.Module;
+
+            case "type":
+                return AttributeTargets.Class | AttributeTargets.Struct | AttributeTargets.Enum;
+
+            case "field":
+                return AttributeTargets.Field;
+
+            case "method":
+                return AttributeTargets.Method;
+
+            case "param":
+            case "parameter":
+                return AttributeTargets.Parameter;
+
+            case "return":
+                return AttributeTargets.ReturnValue;
+
+            default:
+                throw new InvalidOperationException("Invalid AttributeTargets identifier");
+            }
         }
     }
 }

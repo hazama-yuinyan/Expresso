@@ -63,8 +63,8 @@ namespace Expresso.Ast
         {
         }
 
-        public ObjectCreationExpression(AstType path, IEnumerable<PathExpression> fields, IEnumerable<Expression> values, TextLocation start, TextLocation end)
-            : base(start, end)
+        public ObjectCreationExpression(AstType path, IEnumerable<PathExpression> fields, IEnumerable<Expression> values, TextLocation end)
+            : base(path.StartLocation, end)
         {
             TypePath = path;
             foreach(var item in fields.Zip(values, (field, value) => new KeyValueLikeExpression(field, value)))

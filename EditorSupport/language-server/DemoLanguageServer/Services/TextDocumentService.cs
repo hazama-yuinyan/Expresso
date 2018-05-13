@@ -24,15 +24,13 @@ namespace ExpressoLanguageServer.Services
             // Note that Hover is cancellable.
             await Task.Delay(1000, ct);
 
-            var contents = string.Format("Sample text @ {0}", position);
-            return new Hover{Contents = contents};
-            /*var ast = Session.AstDictionary[textDocument.Uri];
+            var ast = Session.AstDictionary[textDocument.Uri];
             var file = Session.FileDictionary[textDocument.Uri];
 
             IProjectContent project_content = new ExpressoProjectContent();
             project_content = project_content.AddOrUpdateFiles(file);
             project_content = project_content.AddAssemblyReferences(LanguageServerSession.BuiltinLibs.Value);
-            return HoverGenerator.GenerateHover(Session.LogStream, ast, project_content, file, position);*/
+            return HoverGenerator.GenerateHover(Session.LogStream, ast, project_content, file, position) ?? new Hover{Contents = Session.ErrorWriter.ToString()};
         }
 
         [JsonRpcMethod]
@@ -51,7 +49,11 @@ namespace ExpressoLanguageServer.Services
             var parser = new Parser(new Scanner(new MemoryStream(Session.UTF8Encoding.GetBytes(textDocument.Text)))){
                 DoPostParseProcessing = true
             };
+            var string_writer = new StringWriter();
+            parser.errors.errorStream = string_writer;
+            Session.ErrorWriter = string_writer;
             parser.Parse();
+
             var ast = parser.TopmostAst;
             Session.AstDictionary.Add(textDocument.Uri, ast);
 
@@ -84,7 +86,11 @@ namespace ExpressoLanguageServer.Services
             var new_parser = new Parser(new Scanner(new MemoryStream(Session.UTF8Encoding.GetBytes(session_doc.Document.Content)))){
                 DoPostParseProcessing = true
             };
+            var string_writer = new StringWriter();
+            new_parser.errors.errorStream = string_writer;
+            Session.ErrorWriter = string_writer;
             new_parser.Parse();
+
             var ast = new_parser.TopmostAst;
             Session.AstDictionary[textDocument.Uri] = ast;
 

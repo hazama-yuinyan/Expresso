@@ -505,11 +505,6 @@ namespace Expresso.Ast.Analysis
             throw new InvalidOperationException();
         }
 
-        public void VisitAttributeNode(AttributeNode attribute)
-        {
-            throw new InvalidOperationException();
-        }
-
         public void VisitImportDeclaration(ImportDeclaration importDecl)
         {
             // An import declaration always introduces new variable(s) into the module scope.

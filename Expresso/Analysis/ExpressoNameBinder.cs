@@ -60,7 +60,7 @@ namespace Expresso.Ast.Analysis
 		{
 			ExpressoNameBinder binder = new ExpressoNameBinder(parser);
 			binder.Bind(ast);
-            #if DEBUG
+            #if !NETCOREAPP2_0 && DEBUG
             Console.WriteLine("We have given ids on total of {0} identifiers.", UniqueIdGenerator.CurrentId - 1);
             #endif
 		}
@@ -93,7 +93,9 @@ namespace Expresso.Ast.Analysis
             Debug.Assert(symbol_table.Name == "programRoot", "When entering VisitAst, symbol_table should be programRoot");
             scope_counter = 0;
 
+            #if !NETCOREAPP2_0
             Console.WriteLine("Resolving names in {0}...", ast.ModuleName);
+            #endif
 
             ast.Imports.AcceptWalker(this);
             ast.Declarations.AcceptWalker(this);
@@ -455,11 +457,6 @@ namespace Expresso.Ast.Analysis
             // no op
         }
 
-        public void VisitAttributeNode(AttributeNode attribute)
-        {
-            // no op
-        }
-
         public void VisitAliasDeclaration(AliasDeclaration aliasDecl)
         {
             // An alias name is another name for an item
@@ -599,6 +596,15 @@ namespace Expresso.Ast.Analysis
             symbol_table.AddSymbol("self", self_ident);
             UniqueIdGenerator.DefineNewId(self_ident);
             typeDecl.Members.AcceptWalker(this);
+
+            // Add the constructor here so that we can use it before the type is inspected in TypeChecker
+            var field_types = typeDecl.Members
+                                      .OfType<FieldDeclaration>()
+                                      .SelectMany(fd => fd.Initializers.Select(init => init.NameToken.Type.Clone()));
+            var name = "constructor";
+            var return_type = AstType.MakeSimpleType("tuple");
+            var ctor_type = AstType.MakeFunctionType(name, return_type, field_types);
+            symbol_table.AddSymbol(name, ctor_type);
 
             AscendScope();
             scope_counter = tmp_counter + 1;

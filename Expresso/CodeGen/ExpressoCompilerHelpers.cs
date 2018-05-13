@@ -104,9 +104,12 @@ namespace Expresso.CodeGen
         /// <typeparam name="T">The 1st type parameter.</typeparam>
         public static string StringifyList<T>(IEnumerable<T> enumerable)
         {
+            if(!enumerable.Any())
+                return string.Empty;
+            
             var first_item = enumerable.First();
             var builder = new StringBuilder(first_item.ToString());
-            foreach(var item in enumerable){
+            foreach(var item in enumerable.Skip(1)){
                 builder.Append(", ");
                 builder.Append(item.ToString());
             }
@@ -408,12 +411,12 @@ namespace Expresso.CodeGen
                 break;
 
             case "2003":
-                Console.WriteLine("It's most likely that you forget to cast the object to the field type.");
+                Console.WriteLine("It's most likely that you forgot to cast the object to the field type.");
                 Console.WriteLine("Consider adding one.");
                 break;
 
             case "2010":
-                Console.WriteLine("Types are mismatched. Do you forget to cast arguments?");
+                Console.WriteLine("Types are mismatched. Did you forget to cast arguments?");
                 break;
 
             case "2100":
@@ -511,6 +514,14 @@ namespace Expresso.CodeGen
 
             case "4020":
                 Console.WriteLine("The module that has the main function is usually called 'main' because it is the entry point to the program.");
+                break;
+
+            case "4021":
+                Console.WriteLine("In this context, the following targets are allowed: {0}.", e.HelpObject);
+                break;
+
+            case "4022":
+                Console.WriteLine("Arguments for attributes must be compile-time constants.");
                 break;
 
             case "5000":

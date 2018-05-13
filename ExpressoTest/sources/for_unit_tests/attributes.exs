@@ -1,31 +1,37 @@
 /**
  * Test program for attributes
  */
-[assembly: AssemblyDiscription("test assembly for attributes")]
+#[assembly: AssemblyDescription{description: "test assembly for attributes"}]
 
-[CLSCompliant]
+#[Author{name: "train12"}]
 module main;
 
-import System.{SerializableAttribute, ObsoleteAttribute, CLSCompliantAttribute} as {Serializable, Obsolete, CLSCompliant};
-import System.Diagnostics.ConditionalAttribute as Conditional;
-import System.Runtime.InteropServices.MarshalAsAttribute as MarshalAs;
-import System.Reflection.AssemblyDescriptionAttribute as AssemblyDescription;
+import System.{SerializableAttribute, ObsoleteAttribute, Attribute, AttributeUsageAttribute, AttributeTargets} as
+{SerializableAttribute, ObsoleteAttribute, Attribute, AttributeUsageAttribute, AttributeTargets};
+import System.Diagnostics.ConditionalAttribute as ConditionalAttribute;
+import System.Reflection.AssemblyDescriptionAttribute as AssemblyDescriptionAttribute;
 
 
 
-[Serializable]
+#[AttributeUsage{validOn: AttributeTargets.All}]
+class AuthorAttribute : Attribute
+{
+    let name (- string;
+}
+
+#[Serializable]
 class AttributeTest
 {
-	[Conditional("DEBUG")]
+	#[Conditional{conditionString: "DEBUG"}]
 	let x (- int;
 
-	[Obsolete]
-	public def doSomething([MarshalAs(UnmanagedType.LPStr)] dummy (- string)
+	#[Obsolete]
+	public def doSomething(#[Author{name: "train12"}] dummy (- string)
 	{
 		println("Do something");
 	}
 
-	[return: MarshalAs(UnmanagedType.I4)]
+	#[return: Author{name: "train12"}]
 	public def doSomething2() -> int
 	{
 		return 10;

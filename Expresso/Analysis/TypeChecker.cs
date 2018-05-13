@@ -56,9 +56,14 @@ namespace Expresso.Ast.Analysis
 
         public AstType VisitAst(ExpressoAst ast)
         {
+            #if !NETCOREAPP2_0
             Console.WriteLine("Checking types in {0}...", ast.ModuleName);
+            #endif
             if(ast.Name == "main")
                 is_main_function_defined = false;
+
+            foreach(var attribute in ast.Attributes)
+                VisitAttributeSection(attribute);
             
             foreach(var decl in ast.Declarations)
                 decl.AcceptWalker(this);
@@ -1023,7 +1028,7 @@ namespace Expresso.Ast.Analysis
             }
             catch(InvalidOperationException){
                 throw new ParserException(
-                    "In Expresso, null literals can only be used in contexts with .NET.",
+                    "In Expresso, null literals can only be used in contexts with external codes.",
                     "ES1022",
                     nullRef
                 );
@@ -1084,11 +1089,24 @@ namespace Expresso.Ast.Analysis
 
         public AstType VisitAttributeSection(AttributeSection section)
         {
-            return null;
-        }
+            foreach(var attribute in section.Attributes){
+                VisitObjectCreationExpression(attribute);
 
-        public AstType VisitAttributeNode(AttributeNode attribute)
-        {
+                foreach(var arg in attribute.Items){
+                    var value_expr = arg.ValueExpression;
+                    var value_type = value_expr.AcceptWalker(this);
+                    var value_type_table = symbols.GetTypeTable(!value_type.IdentifierNode.Type.IsNull ? value_type.IdentifierNode.Type.Name : value_type.Name);
+                    if(!(value_expr is LiteralExpression) && !(value_expr is MemberReferenceExpression) &&
+                       value_type_table != null && value_type_table.TypeKind != ClassType.Enum){
+                        throw new ParserException(
+                            "This argument isn't suitable for attributes.",
+                            "ES4022",
+                            arg
+                        );
+                    }
+                }
+            }
+
             return null;
         }
 
@@ -1128,6 +1146,9 @@ namespace Expresso.Ast.Analysis
                     }
                 }
             }
+
+            // We can't use VisitAttributeSection directly here because funcDecl.Attribute can be Null
+            funcDecl.Attribute.AcceptWalker(this);
 
             foreach(var param in funcDecl.Parameters){
                 var param_type = param.AcceptWalker(this);
@@ -1240,15 +1261,19 @@ namespace Expresso.Ast.Analysis
             DescendScope();
             scope_counter = 0;
 
+            // We can't use VisitAttributeSection directly here because typeDecl.Attribute can be Null
+            typeDecl.Attribute.AcceptWalker(this);
+
             var require_methods = new List<string>();
 
             foreach(var super_type in typeDecl.BaseTypes){
                 super_type.AcceptWalker(this);
                 if(super_type is SimpleType simple){
-                    var super_type_table = symbols.GetTypeTable(super_type.Name);
+                    var suprt_type_name = !super_type.IdentifierNode.Type.IsNull ? super_type.IdentifierNode.Type.Name : super_type.Name;
+                    var super_type_table = symbols.GetTypeTable(suprt_type_name);
                     if(super_type_table == null){
                         throw new ParserException(
-                            "`{0}` isn't derivable.",
+                            "`{0}` is missing.",
                             "ES1912",
                             super_type,
                             super_type.Name
@@ -1291,14 +1316,6 @@ namespace Expresso.Ast.Analysis
                 }
             }
 
-            var field_types = typeDecl.Members
-                                      .OfType<FieldDeclaration>()
-                                      .SelectMany(fd => fd.Initializers.Select(init => init.NameToken.Type.Clone()));
-            var name = "constructor";
-            var return_type = AstType.MakeSimpleType("tuple");
-            var ctor_type = AstType.MakeFunctionType(name, return_type, field_types);
-            symbols.AddSymbol(name, ctor_type);
-
             AscendScope();
             scope_counter = tmp_counter + 1;
             return null;
@@ -1306,6 +1323,9 @@ namespace Expresso.Ast.Analysis
 
         public AstType VisitFieldDeclaration(FieldDeclaration fieldDecl)
         {
+            // We can't use VisitAttributeSection directly here because fieldDecl.Attribute can be Null
+            fieldDecl.Attribute.AcceptWalker(this);
+
             foreach(var field in fieldDecl.Initializers){
                 var field_type = field.AcceptWalker(this);
                 if(IsPlaceholderType(field_type)){
@@ -1331,6 +1351,8 @@ namespace Expresso.Ast.Analysis
 
         public AstType VisitParameterDeclaration(ParameterDeclaration parameterDecl)
         {
+            // We can't use VisitAttributeSection directly here because parameterDecl.Attribute can be Null
+            parameterDecl.Attribute.AcceptWalker(this);
             // Don't check NameToken.Type is a placeholder type node.
             // It is the parent's job to resolve and replace this node with an actual type node.
             return parameterDecl.NameToken.Type;

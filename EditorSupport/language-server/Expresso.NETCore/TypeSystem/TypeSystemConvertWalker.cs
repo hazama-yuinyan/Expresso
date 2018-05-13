@@ -96,6 +96,11 @@ namespace Expresso.TypeSystem
             return null;
         }
 
+        public IUnresolvedEntity VisitAttributeSection(AttributeSection section)
+        {
+            throw new NotImplementedException();
+        }
+
         public IUnresolvedEntity VisitBinaryExpression(BinaryExpression binaryExpr)
         {
             binaryExpr.Left.AcceptWalker(this);

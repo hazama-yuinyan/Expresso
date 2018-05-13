@@ -92,7 +92,7 @@ namespace Expresso.Ast.Analysis
         public override string ToString()
         {
             if(node2 != null)
-                return string.Format("{0} ~ {1} -- {2}", node.StartLocation, node2.StartLocation, Message);
+                return string.Format("{0} ~ {1} -- {2}", node.StartLocation, node2.EndLocation, Message);
             else
                 return string.Format("{0} -- {1}", node.StartLocation, Message);
         }

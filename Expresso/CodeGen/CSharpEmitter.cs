@@ -257,7 +257,14 @@ namespace Expresso.CodeGen
                 ));
             }
 
+            context.CustomAttributeSetter = asm_builder.SetCustomAttribute;
+            foreach(var attribute in ast.Attributes)
+                VisitAttributeSection(attribute, context);
+
             var mod_builder = asm_builder.DefineDynamicModule(assembly_name, file_name, options.BuildType.HasFlag(BuildType.Debug));
+            context.CustomAttributeSetter = mod_builder.SetCustomAttribute;
+            foreach(var attribute in ast.Attributes)
+                VisitAttributeSection(attribute, context);
             //var doc = mod_builder.DefineDocument(Path.GetFileName(parser.scanner.FilePath), LanguageGuid, Guid.Empty, Guid.Empty);
 
             // Leave the ast.Name as is because otherwise we can't refer to it later when visiting ImportDeclarations
@@ -315,7 +322,9 @@ namespace Expresso.CodeGen
 
             document_info = CSharpExpr.SymbolDocument(parser.scanner.FilePath, ExpressoCompilerHelpers.LanguageGuid);
 
+            #if !NETCOREAPP2_0
             Console.WriteLine("Emitting code in {0}...", ast.ModuleName);
+            #endif
             foreach(var import in ast.Imports)
                 import.AcceptWalker(this, context);
 
@@ -1007,7 +1016,6 @@ namespace Expresso.CodeGen
                     if(context.RequestType)
                         context.TargetType = symbol.Parameter.Type;
 
-                    //CSharpExpr.DebugInfo(new ExprTree.SymbolDocumentInfo())
                     return symbol.Parameter;
                 }else if(context.RequestPropertyOrField && symbol.PropertyOrField != null){
                     context.PropertyOrField = symbol.PropertyOrField;
@@ -1030,12 +1038,9 @@ namespace Expresso.CodeGen
                     throw new EmitterException("I can't guess what you want.");
                 }
             }else{
-                if(context.TargetType.IsEnum){
+                if(context.TargetType != null && context.TargetType.IsEnum){
                     var enum_field = context.TargetType.GetField(ident.Name);
-                    if(enum_field == null)
-                        throw new EmitterException("It is found that the native symbol '{0}' doesn't represent an enum field.", ident.Name);
-
-                    context.PropertyOrField = enum_field;
+                    context.PropertyOrField = enum_field ?? throw new EmitterException ("It is found that the native symbol '{0}' doesn't represent an enum field.", ident.Name);
                     AddSymbol(ident, new ExpressoSymbol{PropertyOrField = enum_field});
                     return null;
                 }else if(context.TargetType != null && context.RequestMethod){
@@ -1206,8 +1211,7 @@ namespace Expresso.CodeGen
 
         public CSharpExpr VisitObjectCreationExpression(ObjectCreationExpression creation, CSharpEmitterContext context)
         {
-            var args = new CSharpExpr[creation.Items.Count];
-            context.Constructor = null;
+            context.TargetType = null;
             creation.TypePath.AcceptWalker(this, context);
             // Don't report TargetType missing error because it was already reported in TypeChecker
             //if(context.TargetType == null)
@@ -1220,6 +1224,7 @@ namespace Expresso.CodeGen
                 throw new EmitterException("No constructors found for the path `{0}` with arguments {1}", creation, creation.TypePath, CSharpCompilerHelpers.ExpandContainer(arg_types));
 
             var formal_params = context.Constructor.GetParameters();
+            var args = new CSharpExpr[creation.Items.Count];
             // TODO: make object creation arguments pair to constructor parameters
             foreach(var pair in Enumerable.Range(0, creation.Items.Count()).Zip(
                 creation.Items,
@@ -1474,12 +1479,15 @@ namespace Expresso.CodeGen
         // AstType nodes should be treated with special care
         public CSharpExpr VisitSimpleType(SimpleType simpleType, CSharpEmitterContext context)
         {
-            var symbol = GetRuntimeSymbol(simpleType.IdentifierNode);
-            if(symbol != null && symbol.Type != null){
+            // Usecase: Called from ObjectCreationExpression
+            var symbol = GetRuntimeSymbol(simpleType.IdentifierToken);
+            if(symbol != null){
                 context.TargetType = symbol.Type;
                 return symbol.Parameter;
             }else{
-                throw new EmitterException("It is found that Type '{0}' isn't defined.", simpleType.Identifier);
+                var type = CSharpCompilerHelpers.GetNativeType(simpleType);
+                context.TargetType = type;
+                return null;
             }
         }
 
@@ -1520,11 +1528,48 @@ namespace Expresso.CodeGen
 
         public CSharpExpr VisitAttributeSection(AttributeSection section, CSharpEmitterContext context)
         {
-            return null;
-        }
+            var declaring_type_name = context.CustomAttributeSetter.Method.DeclaringType.Name;
+            var target_context_name = declaring_type_name.Substring(0, declaring_type_name.IndexOf("Builder", StringComparison.CurrentCulture)).ToLower();
+            var target_context = AttributeSection.GetAttributeTargets(target_context_name);
 
-        public CSharpExpr VisitAttributeNode(AttributeNode attribute, CSharpEmitterContext context)
-        {
+            var attributes = section.Attributes.Select(attribute => {
+                var creation = (ExprTree.NewExpression)VisitObjectCreationExpression(attribute, context);
+                var args = creation.Arguments
+                                   .Select(attr => ((ExprTree.ConstantExpression)attr).Value)
+                                   .ToArray();
+                return new {Ctor = creation.Constructor, Arguments = args};
+            });
+                
+            switch(section.Parent){
+            case ExpressoAst ast:
+                {
+                    if(!section.AttributeTargetToken.IsNull){
+                        var specified_context = AttributeSection.GetAttributeTargets(section.AttributeTarget);
+                        if(specified_context != AttributeTargets.Assembly && specified_context != AttributeTargets.Module){
+                            throw new ParserException(
+                                "The attribute target '{0}' isn't expected in this context.",
+                                "ES4021",
+                                section
+                            ){
+                                HelpObject = "'assembly' or 'module'"
+                            };
+                        }
+
+                        if(target_context == specified_context){
+                            foreach(var attribute in attributes)
+                                context.CustomAttributeSetter(new CustomAttributeBuilder(attribute.Ctor, attribute.Arguments));
+                        }
+                    }else{
+                        if(target_context == AttributeTargets.Module){
+                            foreach(var attribute in attributes)
+                                context.CustomAttributeSetter(new CustomAttributeBuilder(attribute.Ctor, attribute.Arguments));
+                        }
+                    }
+                }
+                break;
+
+            }
+
             return null;
         }
 
@@ -2391,7 +2436,7 @@ namespace Expresso.CodeGen
             var param_types =
                 from param in parameters
                 select param.IsByRef ? param.Type.MakeByRefType() : param.Type;
-            context.LazyTypeBuilder.DefineMethod(funcDecl.Name, attrs, return_type, param_types.ToArray());
+            var method_builder = context.LazyTypeBuilder.DefineMethod(funcDecl.Name, attrs, return_type, param_types.ToArray());
             //context.LazyTypeBuilder.DefineMethod(CSharpCompilerHelper.ConvertToPascalCase(funcDecl.Name), attrs, return_type, param_types.ToArray());
 
             AscendScope();

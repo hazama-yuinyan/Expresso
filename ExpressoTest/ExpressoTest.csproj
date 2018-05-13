@@ -140,6 +140,7 @@
     <None Include="sources\for_unit_tests\variadic_parameters.exs" />
     <None Include="sources\for_unit_tests\attributes.exs" />
     <None Include="sources\for_unit_tests\erroneous\missing_main_function.exs" />
+    <None Include="sources\for_unit_tests\erroneous\use_before_declared.exs" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AnalyzerTests.cs" />

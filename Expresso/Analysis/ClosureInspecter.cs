@@ -44,11 +44,6 @@ namespace Expresso.Ast.Analysis
                 throw new InvalidOperationException("Can not work on that node");
             }
 
-            public void VisitAttributeNode(AttributeNode attribute)
-            {
-                throw new InvalidOperationException("Can not work on that node");
-            }
-
 	        public void VisitBinaryExpression(BinaryExpression binaryExpr)
 	        {
 	            binaryExpr.Left.AcceptWalker(this);

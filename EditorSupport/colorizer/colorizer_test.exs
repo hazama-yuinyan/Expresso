@@ -6,6 +6,7 @@ import System.Text.RegularExpressions.Regex as Regex;
 import test_module::TestClass from "./testmodule.exs" as TestClass;
 import OtherLanguageWorld.{StaticClass, TestEnum} from "./InteroperabilityTest.dll" as {StaticClass, TestEnum};
 
+#[Author{name: "train12"}]
 export class TestClass
 {
     let x (- int;
@@ -46,6 +47,7 @@ def main()
     blah blah
     */
     let sin = Math.Sin(0.0);
+    let sin2 (- double = Math.Sin(0.0);
     let str = "\\tsome stringあいうえお日本語";
     let chr = 'a';
     let raw_string = r"some raw stringあいうえお日本語

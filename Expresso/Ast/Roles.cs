@@ -7,8 +7,6 @@ namespace Expresso.Ast
     {
         public static readonly Role<AstNode> Root = AstNode.RootRole;
 
-        public static readonly Role<AttributeNode> Attribute =
-            new Role<AttributeNode>("Attribute");
         public static readonly Role<Identifier> Identifier =
             new Role<Identifier>("Identifier", Ast.Identifier.Null);
         public static readonly Role<PathExpression> Path =
@@ -41,6 +39,8 @@ namespace Expresso.Ast
             new Role<SimpleType>("GenericType", SimpleType.Null);
         public static readonly Role<PatternWithType> TypedPattern = 
             new Role<PatternWithType>("TypedPattern", PatternWithType.Null);
+        public static readonly Role<ObjectCreationExpression> ObjectCreation =
+            new Role<ObjectCreationExpression>("ObjectCreation", ObjectCreationExpression.Null);
 
         // some pre-defined roles for most used punctuations
         public static readonly TokenRole LParenthesisToken = new TokenRole("(", ExpressoTokenNode.Null);

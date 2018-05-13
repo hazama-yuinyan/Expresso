@@ -372,6 +372,9 @@
     <Compile Include="..\..\..\Expresso\CodeGen\ExpressoCompilerOptions.cs">
       <Link>CodeGen\ExpressoCompilerOptions.cs</Link>
     </Compile>
+    <Compile Include="..\..\..\Expresso\Ast\GeneralScope\AttributeSection.cs">
+      <Link>Ast\GeneralScope\AttributeSection.cs</Link>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <None Remove="Expresso.ATG" />

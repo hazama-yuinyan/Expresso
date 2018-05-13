@@ -68,7 +68,7 @@ namespace Expresso.Ast
         /// Gets the name of the module as pretty string.(especially for debugging)
         /// </summary>
         /// <value>The name of the module.</value>
-        public string ModuleName => $"<module {Name}";
+        public string ModuleName => $"<module {Name}>";
 
         public override NodeType NodeType => NodeType.TypeDeclaration;
 

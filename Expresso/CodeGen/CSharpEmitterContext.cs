@@ -221,6 +221,14 @@ namespace Expresso.CodeGen
         public Type[] ArgumentTypes{
             get; set;
         }
+
+        /// <summary>
+        /// Represents the currently focused custom attribute set method.
+        /// </summary>
+        /// <value>The custom attribute setter.</value>
+        public Action<CustomAttributeBuilder> CustomAttributeSetter{
+            get; set;
+        }
     }
 }
 
