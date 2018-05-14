@@ -21,8 +21,8 @@ namespace Expresso.CodeGen
         internal static uint StartOfIdentifierId = 1_000_000_002u;
         internal static Guid LanguageGuid = Guid.Parse("408e5e88-0566-4b8a-9c69-4d2f7c74baf9");
         static uint IdentifierId = StartOfIdentifierId + 16u;
-        static readonly string TypePrefix = "type_";
-        static readonly string[] IgnoreList = new []{"equals", "getHashCode"};
+        const string TypePrefix = "type_";
+        static readonly string[] IgnoreList = {"equals", "getHashCode"};
 
         static Dictionary<string, Tuple<string, uint>> SpecialNamesMapInverse = new Dictionary<string, Tuple<string, uint>>{
             {"Expresso.Runtime.Builtins.ExpressoIntegerSequence", Tuple.Create("intseq", StartOfIdentifierId + 0)},
@@ -598,7 +598,6 @@ namespace Expresso.CodeGen
                 // FIXME?: Think about changing the property methods' type
                 foreach(var public_method in type.GetMethods()){
                     var method_name = public_method.Name;
-                    //method_name = ConvertToExpressoFunctionName(method_name);
                     if(IgnoreList.Contains(method_name) || method_name.StartsWith("op_", StringComparison.CurrentCulture))
                         continue;
 

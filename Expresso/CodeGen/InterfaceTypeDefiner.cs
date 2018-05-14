@@ -328,17 +328,15 @@ namespace Expresso.CodeGen
                     foreach(var base_type in type_decl2.BaseTypes){
                         var native_type = Symbols[base_type.IdentifierNode.IdentifierId].Type;
                         // interfaces methods must be virtual
-                        if(native_type.GetMethod(funcDecl.Name) != null)//native_type.GetMethod(CSharpCompilerHelper.ConvertToPascalCase(funcDecl.Name)) != null)
+                        if(native_type.GetMethod(funcDecl.Name) != null)
                             attr |= MethodAttributes.Virtual;
                     }
                 }
 
                 if(funcDecl.Parent is TypeDeclaration type_decl3 && type_decl3.TypeKind == ClassType.Interface)
                     context.InterfaceTypeBuilder.DefineMethod(funcDecl.Name, attr, return_type, param_types.ToArray());
-                    //context.InterfaceTypeBuilder.DefineMethod(CSharpCompilerHelper.ConvertToPascalCase(funcDecl.Name), attr, return_type, param_types.ToArray());
                 else
                     context.LazyTypeBuilder.DefineMethod(funcDecl.Name, attr, return_type, param_types.ToArray());
-                    //context.LazyTypeBuilder.DefineMethod(CSharpCompilerHelper.ConvertToPascalCase(funcDecl.Name), attr, return_type, param_types.ToArray());
 
                 emitter.AscendScope();
                 emitter.scope_counter = tmp_counter + 1;

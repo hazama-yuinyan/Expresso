@@ -97,6 +97,7 @@ namespace Expresso.Ast.Analysis
             Console.WriteLine("Resolving names in {0}...", ast.ModuleName);
             #endif
 
+            ast.Attributes.AcceptWalker(this);
             ast.Imports.AcceptWalker(this);
             ast.Declarations.AcceptWalker(this);
             Debug.Assert(symbol_table.Name == "programRoot", "When exiting VisitAst, symbol_table should be programRoot");
@@ -454,7 +455,7 @@ namespace Expresso.Ast.Analysis
 
         public void VisitAttributeSection(AttributeSection section)
         {
-            // no op
+            section.Attributes.AcceptWalker(this);
         }
 
         public void VisitAliasDeclaration(AliasDeclaration aliasDecl)
@@ -472,6 +473,8 @@ namespace Expresso.Ast.Analysis
             DecendScope();
             scope_counter = 0;
 
+            VisitAttributeSection(funcDecl.Attribute);
+
             funcDecl.Parameters.AcceptWalker(this);
             VisitBlock(funcDecl.Body);
 
@@ -481,11 +484,13 @@ namespace Expresso.Ast.Analysis
 
         public void VisitFieldDeclaration(FieldDeclaration fieldDecl)
         {
+            VisitAttributeSection(fieldDecl.Attribute);
             fieldDecl.Initializers.AcceptWalker(this);
         }
 
         public void VisitParameterDeclaration(ParameterDeclaration parameterDecl)
         {
+            VisitAttributeSection(parameterDecl.Attribute);
             UniqueIdGenerator.DefineNewId(parameterDecl.NameToken);
         }
 
@@ -669,12 +674,21 @@ namespace Expresso.Ast.Analysis
             if(ident.IdentifierId == 0){
                 var native = SymbolTable.GetNativeSymbol(ident.Name);
                 if(native == null){
-                    parser.ReportSemanticError(
-                        "The name'{0}' turns out not to be declared or accessible in the current scope {1}!",
-                        "ES0100",
-                        ident,
-                        ident.Name, symbol_table.Name
-                    );
+                    if(referenced != null){
+                        parser.ReportSemanticError(
+                            "You can't use '{0}' before declared!",
+                            "ES0120",
+                            ident,
+                            ident.Name
+                        );
+                    }else{
+                        parser.ReportSemanticError(
+                            "The name '{0}' turns out not to be declared or accessible in the current scope {1}!",
+                            "ES0100",
+                            ident,
+                            ident.Name, symbol_table.Name
+                        );
+                    }
                 }else{
                     ident.IdentifierId = native.IdentifierId;
                 }
@@ -688,12 +702,21 @@ namespace Expresso.Ast.Analysis
                 ident.IdentifierId = symbol.IdentifierId;
 
             if(ident.IdentifierId == 0){
-                parser.ReportSemanticError(
-                    "The type symbol '{0}' turns out not to be declared or accessible in the current scope {1}!",
-                    "ES0101",
-                    ident,
-                    ident.Name, symbol_table.Name
-                );
+                if(symbol != null){
+                    parser.ReportSemanticError(
+                        "You can't use the type symbol '{0}' before defined!",
+                        "ES0121",
+                        ident,
+                        ident.Name
+                    );
+                }else{
+                    parser.ReportSemanticError(
+                        "The type symbol '{0}' turns out not to be declared or accessible in the current scope {1}!",
+                        "ES0101",
+                        ident,
+                        ident.Name, symbol_table.Name
+                    );
+                }
             }
         }
 
@@ -716,12 +739,21 @@ namespace Expresso.Ast.Analysis
                 ident.IdentifierId = symbol.IdentifierId;
 
             if(ident.IdentifierId == 0){
-                parser.ReportSemanticError(
-                    "The symbol '{0}' turns out not to be declared or accessible in the current scope {1}!",
-                    "ES0102",
-                    ident,
-                    ident.Name, symbol_table.Name
-                );
+                if(referenced != null || symbol != null){
+                    parser.ReportSemanticError(
+                        "You can't use '{0}' before defined or declared!",
+                        "ES0122",
+                        ident,
+                        ident.Name
+                    );
+                }else{
+                    parser.ReportSemanticError(
+                        "The symbol '{0}' turns out not to be declared or accessible in the current scope {1}!",
+                        "ES0102",
+                        ident,
+                        ident.Name, symbol_table.Name
+                    );
+                }
             }
         }
 	}

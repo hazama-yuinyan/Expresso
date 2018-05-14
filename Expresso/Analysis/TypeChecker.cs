@@ -1048,7 +1048,7 @@ namespace Expresso.Ast.Analysis
 
         public AstType VisitSimpleType(SimpleType simpleType)
         {
-            BindTypeName(simpleType.IdentifierToken);
+            BindFullyQualifiedTypeName(simpleType.IdentifierToken);
             // If the type arguments contain any unsubstituted ones(placeholder nodes)
             // return the statically defined placeholder type node to indicate that it needs to be inferred
             if(simpleType.TypeArguments.HasChildren && simpleType.TypeArguments.Any(ta => IsPlaceholderType(ta)))
@@ -1929,28 +1929,11 @@ namespace Expresso.Ast.Analysis
             return (int)((LiteralExpression)expr).Value;
         }
 
-        void BindTypeName(Identifier ident)
+        void BindFullyQualifiedTypeName(Identifier ident)
         {
-            var table = symbols;
-            while(table != null){
-                var referenced = table.GetTypeSymbol(ident.Name);
-                if(referenced != null){
-                    ident.IdentifierId = referenced.IdentifierId;
-                    ident.Type = referenced.Type.Clone();
-                    return;
-                }
-
-                table = table.Parent;
-            }
-
-            if(ident.IdentifierId == 0){
-                parser.ReportSemanticError(
-                    "The type name `{0}` turns out not to be declared in the current scope {1}!",
-                    "ES0101",
-                    ident,
-                    ident.Name, symbols.Name
-                );
-            }
+            var referenced = symbols.GetTypeSymbolInAnyScope(ident.Name);
+            if(referenced != null)
+                ident.Type = referenced.Type.Clone();
         }
     }
 }

@@ -1942,7 +1942,7 @@ Atom<out Expression expr>			(. var exprs = new List<Expression>(); expr = null; 
 =
   Literal<out expr>
   | '('
-    ( ')'                           (. expr = Expression.MakeParen(Expression.MakeSequenceExpression(null), start_loc, CurrentEndLocation); .)
+    ( ')'                           (. expr = Expression.MakeParen(null, start_loc, CurrentEndLocation); .)
     | CondExpr<out expr>            (. exprs.Add(expr); .)
       { IF(NotFinalComma()) WEAK ','
         CondExpr<out expr>          (. exprs.Add(expr); .)

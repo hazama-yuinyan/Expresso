@@ -168,6 +168,9 @@ namespace Expresso.Ast
         /// <returns>A sequence expression.</returns>
         public static SequenceExpression MakeSequenceExpression(IEnumerable<Expression> items)
         {
+            if(items == null)
+                throw new ArgumentNullException(nameof(items));
+            
             return new SequenceExpression(items);
         }
 

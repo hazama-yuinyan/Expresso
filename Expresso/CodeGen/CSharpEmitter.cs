@@ -1046,7 +1046,6 @@ namespace Expresso.CodeGen
                 }else if(context.TargetType != null && context.RequestMethod){
                     // For methods or functions in external modules
                     // We regard types containing namespaces as types from other assemblies
-                    //var method_name = context.TargetType.FullName.Contains(".") ? CSharpCompilerHelper.ConvertToPascalCase(ident.Name) : ident.Name;
                     var method = (context.ArgumentTypes != null) ? context.TargetType.GetMethod(ident.Name, context.ArgumentTypes) : context.TargetType.GetMethod(ident.Name);
                     if(method == null){
                         if(!context.RequestPropertyOrField)
@@ -1615,7 +1614,7 @@ namespace Expresso.CodeGen
                     }else{
                         var module_type_name = import_path.Name.Substring(0, last_index);
                         var module_type = CSharpCompilerHelpers.GetNativeType(AstType.MakeSimpleType(module_type_name));
-                        var member_name = type_name;//CSharpCompilerHelper.ConvertToPascalCase(type_name);
+                        var member_name = type_name;
 
                         if(module_type != null){
                             var flags = BindingFlags.Static | BindingFlags.NonPublic;
@@ -1672,7 +1671,7 @@ namespace Expresso.CodeGen
             else
                 attrs |= BindingFlags.NonPublic;
 
-            var interface_func = context.LazyTypeBuilder.GetInterfaceMethod(funcDecl.Name, attrs);//context.LazyTypeBuilder.GetInterfaceMethod(CSharpCompilerHelper.ConvertToPascalCase(funcDecl.Name), attrs);
+            var interface_func = context.LazyTypeBuilder.GetInterfaceMethod(funcDecl.Name, attrs);
             AddSymbol(funcDecl.NameToken, new ExpressoSymbol{Method = interface_func});
 
             var body = funcDecl.Body.AcceptWalker(this, context);
@@ -1685,15 +1684,6 @@ namespace Expresso.CodeGen
                 context.AssemblyBuilder.SetEntryPoint(interface_func, PEFileKinds.ConsoleApplication);
 
             context.LazyTypeBuilder.SetBody(interface_func, lambda);
-
-            /*if(funcDecl.Parent is TypeDeclaration type_decl){
-                foreach(var base_type in type_decl.BaseTypes){
-                    var interface_type = Symbols[base_type.IdentifierNode.IdentifierId].Type;
-                    var interface_method = interface_type.GetMethod(funcDecl.Name);
-                    if(interface_method != null)
-                        context.TypeBuilder.InterfaceTypeBuilder.DefineMethodOverride(interface_func, interface_method);
-                }
-            }*/
 
             AscendScope();
             scope_counter = tmp_counter + 1;
@@ -2397,7 +2387,7 @@ namespace Expresso.CodeGen
                 }
 
                 if(entity is FunctionDeclaration 
-                   && context.LazyTypeBuilder.GetMethod(entity.Name) == null)//context.LazyTypeBuilder.GetMethod(CSharpCompilerHelper.ConvertToPascalCase(entity.Name)) == null)
+                   && context.LazyTypeBuilder.GetMethod(entity.Name) == null)
                     DefineFunctionSignature((FunctionDeclaration)entity, context);
                 else if(entity is FieldDeclaration
                         && context.LazyTypeBuilder.GetField(entity.Name) == null)
@@ -2437,7 +2427,6 @@ namespace Expresso.CodeGen
                 from param in parameters
                 select param.IsByRef ? param.Type.MakeByRefType() : param.Type;
             var method_builder = context.LazyTypeBuilder.DefineMethod(funcDecl.Name, attrs, return_type, param_types.ToArray());
-            //context.LazyTypeBuilder.DefineMethod(CSharpCompilerHelper.ConvertToPascalCase(funcDecl.Name), attrs, return_type, param_types.ToArray());
 
             AscendScope();
             scope_counter = tmp_counter + 1;

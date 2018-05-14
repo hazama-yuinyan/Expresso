@@ -705,6 +705,13 @@ namespace Expresso.Test
             Assert.AreEqual(typeof(void), main_method.ReturnType);
             Assert.AreEqual(0, main_method.GetParameters().Length);
 
+            var attribute1 = asm.GetCustomAttribute<AssemblyDescriptionAttribute>();
+            Assert.IsNotNull(attribute1);
+
+            var module = asm.GetModule("main");
+            var attribute2 = module.GetCustomAttribute(typeof(CLSCompliantAttribute));
+            Assert.IsNotNull(attribute2);
+
             main_method.Invoke(null, new object[]{});
         }
     }
