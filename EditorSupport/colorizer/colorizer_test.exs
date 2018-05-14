@@ -39,6 +39,11 @@ def returnInt(n (- int, j (- int)
     return n;
 }
 
+def returnNull()
+{
+    return null;
+}
+
 def main()
 {
     let a = 100;
@@ -57,18 +62,20 @@ def main()
     let b = 10, c = 20, d = 30;
     let e = getInt();
     let f = returnInt(10, 20);
+    let g = e as double;
 
     var a2 = 100;
     var sin = Math.Sin(0.0);
     var str = "\\tsome stringあいうえお日本語";
     var chr = 'a';
-    var raw_string = r"some raw stringあいうえお日本語
+    var raw_string = r"some raw string${sin}あいうえお日本語
     blah blah";
-    var interpolation = "$$sin: ${sin}あいうえお日本語";
+    var interpolation = "$$sin: ${sin}${getInt()}あいうえお日本語";
     var something = self.x;
     var b2 = 10, c2 = 20, d2 = 30;
     var e = getInt();
     var f = returnInt(10, 20);
+    var g = e as double;
     
     println(a, sin);
 }

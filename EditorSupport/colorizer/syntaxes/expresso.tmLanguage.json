@@ -124,10 +124,13 @@
             },
             "patterns": [
                 {
-                    "match": "([\\w_0-9]+)",
+                    "match": "([\\w_0-9]+)(:)",
                     "captures": {
                         "1" : {
                             "name" : "variable.parameter.expresso"
+                        },
+                        "2" : {
+                            "name" : "punctuation.definition.colon.expresso"
                         }
                     }
                 },
@@ -135,7 +138,7 @@
                     "include": "#stringLiterals"
                 },
                 {
-                    "include" : "#numberLiteral",
+                    "include" : "#numberLiterals",
                     "name" : "constant.numeric.expresso"
                 },
                 {
@@ -148,7 +151,7 @@
             "begin": "(let|var)\\s+",
             "beginCaptures": {
                 "1" : {
-                    "name" : "keyword.other.expresso"
+                    "name" : "keyword.other.let-var.expresso"
                 }
             },
             "end": "(;)$",
@@ -176,7 +179,7 @@
                     }
                 },
                 {
-                    "include": "#numberLiteral",
+                    "include": "#numberLiterals",
                     "name" : "constant.numeric.expresso"
                 },
                 {
@@ -189,6 +192,10 @@
                 {
                     "include": "#simpleFunctionCall",
                     "name" : "meta.function.call.expresso"
+                },
+                {
+                    "include": "#castExpression",
+                    "name" : "meta.expression.cast.expresso"
                 }
             ]
         },
@@ -274,23 +281,28 @@
                             "include": "#stringLiterals"
                         },
                         {
-                            "include": "#numberLiteral",
+                            "include": "#numberLiterals",
                             "name": "constant.numeric.expresso"
                         }
                     ]
                 }
-            ]
+            ],
+            "comment": "Use of attributes"
         },
         {
             "include": "#stringLiterals"
         },
         {
-            "include": "#numberLiteral",
+            "include": "#numberLiterals",
             "name": "constant.numeric.expresso"
         },
         {
             "include": "#simpleFunctionCall",
             "name": "meta.function.call.expresso"
+        },
+        {
+            "include": "#castExpression",
+            "name" : "meta.expression.cast.expresso"
         },
         {
             "match" : "\\b(true|false|null)\\b",
@@ -373,20 +385,28 @@
                                     "name" : "punctuation.definition.template-expression.end.expresso"
                                 }
                             },
-                            "name" : "meta.expression.expresso",
                             "patterns": [
                                 {
                                     "include" : "#stringLiterals"
                                 },
                                 {
-                                    "include": "#numberLiteral",
+                                    "include": "#numberLiterals",
                                     "name" : "constant.numeric.expresso"
                                 },
                                 {
-                                    "include": "simpleFunctionCall",
+                                    "include": "#simpleFunctionCall",
                                     "name" : "meta.function.call.expresso"
+                                },
+                                {
+                                    "include" : "#simpleVariableName",
+                                    "name" : "variable.name.expresso"
+                                },
+                                {
+                                    "include": "#castExpression",
+                                    "name" : "meta.expression.cast.expresso"
                                 }
-                            ]
+                            ],
+                            "name" : "meta.template.expression.expresso"
                         },
                         {
                             "match": "\\$\\$",
@@ -422,6 +442,41 @@
                         {
                             "match" : "\"",
                             "name" : "constant.character.double-quote.expresso"
+                        },
+                        {
+                            "begin": "(\\${)",
+                            "beginCaptures": {
+                                "1" : {
+                                    "name" : "punctuation.definition.template-expression.begin.expresso"
+                                }
+                            },
+                            "end": "(})",
+                            "endCaptures": {
+                                "1" : {
+                                    "name" : "punctuation.definition.template-expression.end.expresso"
+                                }
+                            },
+                            "patterns": [
+                                {
+                                    "include": "#stringLiterals"
+                                },
+                                {
+                                    "include": "#numberLiterals",
+                                    "name" : "constant.numeric.expresso"
+                                },
+                                {
+                                    "include": "#simpleFunctionCall",
+                                    "name" : "meta.function.call.expresso"
+                                },
+                                {
+                                    "include": "#simpleVariableName",
+                                    "name" : "variable.name.expresso"
+                                },
+                                {
+                                    "include": "#castExpression",
+                                    "name" : "meta.expression.cast.expresso"
+                                }
+                            ]
                         }
                     ]
                 },
@@ -438,11 +493,17 @@
                 }
             ]
         },
-        "numberLitral" : {
-           "patterns" : [{
-                "match" : "\\b((0(x|X)[0-9a-fA-F]*)|(([0-9]+\\.?[0-9]*)|(\\.[0-9]+))((e|E)(\\+|-)?[0-9]+)?)(L|l)?\\b",
-                "name" : "constant.numeric.expresso"
-            }]
+        "numberLitrals" : {
+           "patterns" : [
+                {
+                    "match" : "\\b(?:(?:0(?:x|X)[0-9a-fA-F]+))|[0-9]+)(?:u|U|l|L)?\\b",
+                    "name" : "constant.numeric.expresso"
+                },
+                {
+                    "match": "\\b(?:(?:[0-9]+\\.[0-9]*)|(?:\\.[0-9]+))(?:(?:e|E)(?:\\+|-)?[0-9]+)?(?:f|F)?\\b",
+                    "name" : "constant.numeric.expresso"
+                }
+            ]
         },
         "keywordVariables" : {
             "patterns": [{
@@ -473,7 +534,7 @@
                             "include": "#stringLiterals"
                         },
                         {
-                            "include": "#numberLiteral",
+                            "include": "#numberLiterals",
                             "name" : "constant.numeric.expresso"
                         },
                         {
@@ -493,6 +554,82 @@
                 {
                     "match" : "\\b(bool|byte|float|double|int|uint|bigint|vector|dictionary|tuple|intseq|char|string|array|slice|function|void|class|interface)\\b",
                     "name" : "keyword.other.expresso"
+                }
+            ]
+        },
+        "simpleVariableName": {
+            "patterns": [
+                {
+                    "match": "[\\w_0-9]+(?!\\(\\))",
+                    "name" : "variable.name.expresso"
+                }
+            ]
+        },
+        "typesInModule": {
+            "patterns": [
+                {
+                    "match": "([\\w_0-9]+)(::)([\\w_0-9]+)(?:(.)([\\w_0-9]+))*",
+                    "captures": {
+                        "1" : {
+                            "name" : "entity.name.module.expresso"
+                        },
+                        "2" : {
+                            "name" : "punctuation.definition.double-colon.expresso"
+                        },
+                        "3" : {
+                            "name" : "entity.name.class.expresso"
+                        },
+                        "4" : {
+                            "name" : "punctuation.definition.dot.expresso"
+                        },
+                        "5" : {
+                            "name" : "entity.name.class.expresso"
+                        }
+                    }
+                }
+            ]
+        },
+        "typesInTypes": {
+            "patterns": [
+                {
+                    "match": "([\\w_0-9]+)(?:(.)([\\w_0-9]+))*",
+                    "captures": {
+                        "1" : {
+                            "name" : "entity.name.class.expresso"
+                        },
+                        "2" : {
+                            "name" : "punctuation.definition.dot.expresso"
+                        },
+                        "3" : {
+                            "name" : "entity.name.class.expresso"
+                        }
+                    }
+                }
+            ]
+        },
+        "castExpression": {
+            "patterns": [
+                {
+                    "begin": "\\s+(as)\\s+",
+                    "beginCaptures": {
+                        "1" : {
+                            "name" : "keyword.operator.as.expresso"
+                        }
+                    },
+                    "end": "",
+                    "patterns": [
+                        {
+                            "include": "#builtinTypes"
+                        },
+                        {
+                            "include": "#typesInModule",
+                            "name" : "meta.type.annotation.module.expresso"
+                        },
+                        {
+                            "include": "#typesInTypes",
+                            "name" : "meta.type.annotation.type.expresso"
+                        }
+                    ]
                 }
             ]
         }
