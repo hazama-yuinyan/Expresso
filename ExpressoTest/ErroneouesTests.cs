@@ -592,9 +592,9 @@ namespace Expresso.Test
         }
 
         [Test]
-        public void ImportUnknownFile()
+        public void ImportFromUnknownFile()
         {
-            var parser = new Parser(new Scanner("../../sources/for_unit_tests/erroneous/import_unknown_file.exs")){
+            var parser = new Parser(new Scanner("../../sources/for_unit_tests/erroneous/import_from_unknown_file.exs")){
                 DoPostParseProcessing = true
             };
 
@@ -719,7 +719,18 @@ namespace Expresso.Test
                 DoPostParseProcessing = true
             };
 
-            Assert.That(() => parser.Parse(), Throws.TypeOf<ParserException>().With.Message.Contains("ES"));
+            Assert.That(() => parser.Parse(), Throws.TypeOf<ParserException>().With.Message.Contains("ES0102"));
+            Assert.AreEqual(1, parser.errors.count);
+        }
+
+        [Test]
+        public void ImportUndefinedTypeFromSystem()
+        {
+            var parser = new Parser(new Scanner("../../sources/for_unit_tests/erroneous/import_undefined_type_from_system.exs")){
+                DoPostParseProcessing = true
+            };
+
+            Assert.That(() => parser.Parse(), Throws.TypeOf<ParserException>().With.Message.Contains("ES5000"));
             Assert.AreEqual(1, parser.errors.count);
         }
     }

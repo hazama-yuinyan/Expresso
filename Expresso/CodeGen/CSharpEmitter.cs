@@ -257,14 +257,7 @@ namespace Expresso.CodeGen
                 ));
             }
 
-            context.CustomAttributeSetter = asm_builder.SetCustomAttribute;
-            foreach(var attribute in ast.Attributes)
-                VisitAttributeSection(attribute, context);
-
             var mod_builder = asm_builder.DefineDynamicModule(assembly_name, file_name, options.BuildType.HasFlag(BuildType.Debug));
-            context.CustomAttributeSetter = mod_builder.SetCustomAttribute;
-            foreach(var attribute in ast.Attributes)
-                VisitAttributeSection(attribute, context);
             //var doc = mod_builder.DefineDocument(Path.GetFileName(parser.scanner.FilePath), LanguageGuid, Guid.Empty, Guid.Empty);
 
             // Leave the ast.Name as is because otherwise we can't refer to it later when visiting ImportDeclarations
@@ -321,6 +314,14 @@ namespace Expresso.CodeGen
             }
 
             document_info = CSharpExpr.SymbolDocument(parser.scanner.FilePath, ExpressoCompilerHelpers.LanguageGuid);
+
+            context.CustomAttributeSetter = asm_builder.SetCustomAttribute;
+            foreach(var attribute in ast.Attributes)
+                VisitAttributeSection(attribute, context);
+
+            context.CustomAttributeSetter = mod_builder.SetCustomAttribute;
+            foreach(var attribute in ast.Attributes)
+                VisitAttributeSection(attribute, context);
 
             #if !NETCOREAPP2_0
             Console.WriteLine("Emitting code in {0}...", ast.ModuleName);

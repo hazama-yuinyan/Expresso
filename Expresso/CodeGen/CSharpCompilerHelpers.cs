@@ -138,7 +138,7 @@ namespace Expresso.CodeGen
                 if(type == null && !astType.IdentifierNode.Type.IsNull)
                     return GetNativeType(astType.IdentifierNode.Type);
                 else if(type == null)
-                    throw new EmitterException("The simple type `{0}`(`{1}`) is not found!", simple, simple, name);
+                    throw new EmitterException("The type `{0}`(`{1}`) is not found!", simple, simple, name);
 
                 return type;
             }
@@ -154,7 +154,7 @@ namespace Expresso.CodeGen
                 }
 
                 if(type == null)
-                    throw new EmitterException("The member type `{0}` is not found!", member, member);
+                    throw new EmitterException("The type `{0}` is not found!", member, member);
 
                 return type;
             }

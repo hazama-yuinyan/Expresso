@@ -123,7 +123,7 @@
     <None Include="packages.config" />
     <None Include="sources\for_unit_tests\erroneous\keyword_identifier.exs" />
     <None Include="sources\for_unit_tests\erroneous\non_optional_parameter_after_optional_parameter.exs" />
-    <None Include="sources\for_unit_tests\erroneous\import_unknown_file.exs" />
+    <None Include="sources\for_unit_tests\erroneous\import_from_unknown_file.exs" />
     <None Include="sources\for_unit_tests\erroneous\invalid_variadic_parameter.exs" />
     <None Include="sources\for_unit_tests\erroneous\non_array_variadic_parameter.exs" />
     <None Include="sources\for_unit_tests\erroneous\type_annotation_and_optional_value_omitted.exs" />
@@ -141,6 +141,8 @@
     <None Include="sources\for_unit_tests\attributes.exs" />
     <None Include="sources\for_unit_tests\erroneous\missing_main_function.exs" />
     <None Include="sources\for_unit_tests\erroneous\use_before_declared.exs" />
+    <None Include="sources\for_unit_tests\test_attribute.exs" />
+    <None Include="sources\for_unit_tests\erroneous\import_undefined_type_from_system.exs" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AnalyzerTests.cs" />

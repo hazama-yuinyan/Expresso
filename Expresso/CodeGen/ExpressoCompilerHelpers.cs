@@ -90,7 +90,9 @@ namespace Expresso.CodeGen
                     "ES5000",
                     identifier,
                     identifier.Name
-                );
+                ){
+                    HelpObject = identifier.Name.StartsWith("System", StringComparison.Ordinal)
+                };
             }
                 
             PopulateSymbolTable(table, type);
@@ -219,8 +221,15 @@ namespace Expresso.CodeGen
                 break;
 
             case "0103":
-                Console.WriteLine("It's most likely that you misspelled the symbol name.");
-                Console.WriteLine("So check for spelling, taking casing into account.");
+                {
+                    var is_importing_system = (bool)e.HelpObject;
+                    if(is_importing_system){
+                        Console.WriteLine("To import names from the System namespace(that is, from .NET), you don't have to write the from clause.");
+                    }else{
+                        Console.WriteLine("It's most likely that you misspelled the symbol name.");
+                        Console.WriteLine("So check for spelling, taking casing into account.");
+                    }
+                }
                 break;
 
             case "0110":
@@ -522,11 +531,20 @@ namespace Expresso.CodeGen
 
             case "4022":
                 Console.WriteLine("Arguments for attributes must be compile-time constants.");
+                Console.WriteLine("Compile-time constants mean that there should be no object constructions nor function calls.");
                 break;
 
             case "5000":
-                Console.WriteLine("Did you misspelled the name? Check for spelling, taking casing into account.");
-                Console.WriteLine("We leave the external names as they are.");
+                {
+                    var is_importing_system = (bool)e.HelpObject;
+                    if(is_importing_system){
+                        Console.WriteLine("It seems that you are just misspelling it. Check spelling, taking casing into account.");
+                    }else{
+                        Console.WriteLine("Did you forget adding the from clause? To import names from external files, you must add the from clause after the import clause.");
+                        Console.WriteLine("The from clause tells the compiler about a file that it could find names.");
+                        Console.WriteLine("It should be a relative path to this source file.");
+                    }
+                }
                 break;
 
             default:

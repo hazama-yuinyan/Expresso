@@ -2,6 +2,7 @@
 using Expresso.CodeGen;
 using NUnit.Framework;
 using System.Reflection;
+using Expresso.Ast;
 
 namespace Expresso.Test
 {
@@ -709,7 +710,8 @@ namespace Expresso.Test
             Assert.IsNotNull(attribute1);
 
             var module = asm.GetModule("main");
-            var attribute2 = module.GetCustomAttribute(typeof(CLSCompliantAttribute));
+            var author_attribute_type = CSharpCompilerHelpers.GetNativeType(AstType.MakeSimpleType("AuthorAttribute"));
+            var attribute2 = module.GetCustomAttribute(author_attribute_type);
             Assert.IsNotNull(attribute2);
 
             main_method.Invoke(null, new object[]{});

@@ -3,21 +3,15 @@
  */
 #[assembly: AssemblyDescription{description: "test assembly for attributes"}]
 
-#[CLSCompliant{isCompliant: true}]
+#[Author{name: "train12"}]
 module main;
 
-import System.{SerializableAttribute, ObsoleteAttribute, CLSCompliantAttribute, Attribute, AttributeUsageAttribute, AttributeTargets} as
-{SerializableAttribute, ObsoleteAttribute, CLSCompliantAttribute, Attribute, AttributeUsageAttribute, AttributeTargets};
+import System.{SerializableAttribute, ObsoleteAttribute} as {SerializableAttribute, ObsoleteAttribute};
 import System.Diagnostics.ConditionalAttribute as ConditionalAttribute;
 import System.Reflection.AssemblyDescriptionAttribute as AssemblyDescriptionAttribute;
+import test_attribute::AuthorAttribute from "./test_attribute.exs" as AuthorAttribute;
 
 
-
-#[AttributeUsage{validOn: AttributeTargets.All}]
-class AuthorAttribute : Attribute
-{
-    let name (- string;
-}
 
 #[Serializable]
 class AttributeTest

@@ -571,12 +571,12 @@ namespace Expresso.Ast.Analysis
             var target_table = this;
 
             foreach(var pair in importPaths.Zip(aliasTokens, (l, r) => new Tuple<Identifier, Identifier>(l, r))){
-                var last_index = pair.Item1.Name.LastIndexOf("::", StringComparison.CurrentCulture);
+                var last_index = pair.Item1.Name.LastIndexOf("::", StringComparison.Ordinal);
                 var target_name = (last_index == -1) ? pair.Item1.Name : pair.Item1.Name.Substring(last_index + "::".Length);
                 var external_target_table = externalTable.GetTypeTable(target_name);
 
                 if(external_target_table == null){
-                    var target_name2 = target_name.Substring(target_name.LastIndexOf(".", StringComparison.CurrentCulture) + ".".Length);
+                    var target_name2 = target_name.Substring(target_name.LastIndexOf(".", StringComparison.Ordinal) + ".".Length);
                     var symbol = externalTable.GetSymbol(target_name2);
                     if(symbol == null){
                         throw new ParserException(
@@ -584,7 +584,9 @@ namespace Expresso.Ast.Analysis
                             "ES0103",
                             pair.Item1,
                             pair.Item1.ToString()
-                        );
+                        ){
+                            HelpObject = target_name.StartsWith("System", StringComparison.Ordinal)
+                        };
                     }else{
                         if(!symbol.Modifiers.HasFlag(Modifiers.Export))
                             ReportExportMissingError(pair.Item1);

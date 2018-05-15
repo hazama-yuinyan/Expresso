@@ -242,6 +242,9 @@ namespace Expresso.CodeGen
         {
             if(interface_type.Attributes.HasFlag(TypeAttributes.Interface))
                 return null;
+
+            if(type_cache == null)
+                throw new InvalidOperationException("Call CreateInterfaceType before completing the type.");
             
             if(is_created)
                 return type_cache;
