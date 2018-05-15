@@ -3,10 +3,10 @@
  */
 #[assembly: AssemblyDescription{description: "test assembly for attributes"}]
 
-#[Author{name: "train12"}]
+#[CLSCompliant{isCompliant: true}]
 module main;
 
-import System.{SerializableAttribute, ObsoleteAttribute} as {SerializableAttribute, ObsoleteAttribute};
+import System.{SerializableAttribute, CLSCompliantAttribute, ObsoleteAttribute} as {SerializableAttribute, CLSCompliantAttribute, ObsoleteAttribute};
 import System.Diagnostics.ConditionalAttribute as ConditionalAttribute;
 import System.Reflection.AssemblyDescriptionAttribute as AssemblyDescriptionAttribute;
 import test_attribute::AuthorAttribute from "./test_attribute.exs" as AuthorAttribute;
@@ -38,6 +38,7 @@ def main()
     x.doSomething("some string");
     x.doSomething2();
 
+    //let attribute = AuthorAttribute{name: "foo"};
     /*let type_info = x.GetType();
     let asm = type_info.Assembly;
     let attribute1 = asm.GetCustomAttribute<AssemblyDescriptionAttribute>();

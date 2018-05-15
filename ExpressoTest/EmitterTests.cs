@@ -3,6 +3,7 @@ using Expresso.CodeGen;
 using NUnit.Framework;
 using System.Reflection;
 using Expresso.Ast;
+using System.Linq;
 
 namespace Expresso.Test
 {
@@ -707,12 +708,15 @@ namespace Expresso.Test
             Assert.AreEqual(0, main_method.GetParameters().Length);
 
             var attribute1 = asm.GetCustomAttribute<AssemblyDescriptionAttribute>();
+            var type1 = attribute1.GetType();
             Assert.IsNotNull(attribute1);
+            Assert.AreEqual(type1.Name, "AssemblyDescriptionAttribute");
 
             var module = asm.GetModule("main");
-            var author_attribute_type = CSharpCompilerHelpers.GetNativeType(AstType.MakeSimpleType("AuthorAttribute"));
-            var attribute2 = module.GetCustomAttribute(author_attribute_type);
+            var attribute2 = module.GetCustomAttributes(true).First();
+            var type2 = attribute2.GetType();
             Assert.IsNotNull(attribute2);
+            Assert.AreEqual(type2.Name, "CLSCompliantAttribute");
 
             main_method.Invoke(null, new object[]{});
         }

@@ -194,6 +194,11 @@ namespace Expresso.CodeGen
             return new_build_config;
         }
 
+        static bool ContainsFunctionDefinitions(IEnumerable<EntityDeclaration> entities)
+        {
+            return entities.Any(e => e is FunctionDeclaration);
+        }
+
         ExpressoSymbol GetRuntimeSymbol(Identifier ident)
         {
             ExpressoSymbol symbol;
@@ -261,7 +266,9 @@ namespace Expresso.CodeGen
             //var doc = mod_builder.DefineDocument(Path.GetFileName(parser.scanner.FilePath), LanguageGuid, Guid.Empty, Guid.Empty);
 
             // Leave the ast.Name as is because otherwise we can't refer to it later when visiting ImportDeclarations
-            var type_builder = new LazyTypeBuilder(mod_builder, CSharpCompilerHelpers.ConvertToPascalCase(ast.Name), TypeAttributes.Class | TypeAttributes.Public, Enumerable.Empty<Type>(), true);
+            var type_builder = ContainsFunctionDefinitions(ast.Declarations) ? new LazyTypeBuilder(mod_builder, CSharpCompilerHelpers.ConvertToPascalCase(ast.Name),
+                                                                                                   TypeAttributes.Class | TypeAttributes.Public, Enumerable.Empty<Type>(),
+                                                                                                   true) : null;
             var local_parser = parser;
             if(ast.ExternalModules.Any()){
                 context.CurrentModuleCount = ast.ExternalModules.Count;
@@ -330,12 +337,17 @@ namespace Expresso.CodeGen
                 import.AcceptWalker(this, context);
 
             foreach(var decl in ast.Declarations){
-                // Define only the function signatures here so that these functions or methods can call themselves
+                // Define only the function signatures so that the functions can call themselves
+                // and the interface type is defined before we inspect the functions and fields
                 DefineFunctionSignaturesAndFields(ast.Declarations, decl, context);
                 decl.AcceptWalker(this, context);
             }
 
-            context.ExternalModuleType = type_builder.CreateType();
+            // If the module ends with a type we couldn't call CreateInterfaceType
+            if(type_builder != null && !type_builder.IsInterfaceDefined)
+                type_builder.CreateInterfaceType();
+
+            context.ExternalModuleType = (type_builder != null) ? type_builder.CreateType() : null;
             asm_builder.Save(file_name);
 
             //if(options.BuildType.HasFlag(BuildType.Debug))
@@ -1659,11 +1671,13 @@ namespace Expresso.CodeGen
             ReturnTarget = CSharpExpr.Label(return_type, "returnTarget");
             DefaultReturnValue = CSharpExpr.Default(return_type);
 
-            var prev_self = context.ParameterSelf;
-            var self_type = context.LazyTypeBuilder.InterfaceType;
-            context.ParameterSelf = CSharpExpr.Parameter(self_type, "self");
-
             var is_global_function = !funcDecl.Modifiers.HasFlag(Modifiers.Public) && !funcDecl.Modifiers.HasFlag(Modifiers.Protected) && !funcDecl.Modifiers.HasFlag(Modifiers.Private);
+            var prev_self = context.ParameterSelf;
+            if(!is_global_function){
+                var self_type = context.LazyTypeBuilder.InterfaceType;
+                context.ParameterSelf = CSharpExpr.Parameter(self_type, "self");
+            }
+
             var parameters = is_global_function ? formal_parameters : new []{context.ParameterSelf}.Concat(formal_parameters);
 
             var attrs = is_global_function ? BindingFlags.Static : BindingFlags.Instance;
@@ -2378,24 +2392,25 @@ namespace Expresso.CodeGen
 
         void DefineFunctionSignaturesAndFields(IEnumerable<EntityDeclaration> entities, EntityDeclaration startingPoint, CSharpEmitterContext context)
         {
+            // We can't make this method an iterator because then we can't look at all the entities
+            // We need to store scope_counter here because the DefineFunctionSignature method will make it 1 step forward every time it will be called
             var tmp_counter = scope_counter;
             bool is_broken_out = false;
-            var interface_definer = new InterfaceTypeDefiner(this, context);
             foreach(var entity in entities.SkipWhile(e => e != startingPoint)){
-                if(entity is TypeDeclaration){
+                if(entity is TypeDeclaration type_decl){
                     is_broken_out = true;
                     break;
                 }
-
-                if(entity is FunctionDeclaration 
+                
+                if(entity is FunctionDeclaration func_decl
                    && context.LazyTypeBuilder.GetMethod(entity.Name) == null)
-                    DefineFunctionSignature((FunctionDeclaration)entity, context);
-                else if(entity is FieldDeclaration
+                    DefineFunctionSignature(func_decl, context);
+                else if(entity is FieldDeclaration field_decl
                         && context.LazyTypeBuilder.GetField(entity.Name) == null)
-                    DefineField((FieldDeclaration)entity, context);
+                    DefineField(field_decl, context);
             }
 
-            if(!context.LazyTypeBuilder.IsInterfaceDefined && !is_broken_out)
+            if(context.LazyTypeBuilder != null && !context.LazyTypeBuilder.IsInterfaceDefined && !is_broken_out)
                 context.LazyTypeBuilder.CreateInterfaceType();
             
             scope_counter = tmp_counter;

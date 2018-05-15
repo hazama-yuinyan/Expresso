@@ -24,14 +24,22 @@ namespace Expresso.CodeGen
         Type type_cache;
         bool is_created;
 
-        public bool IsInterfaceDefined{
-            get{ return type_cache != null; }
-        }
+        /// <summary>
+        /// Represents whether the interface type is already created.
+        /// </summary>
+        /// <value><c>true</c> if the interface type is defined; otherwise, <c>false</c>.</value>
+        public bool IsInterfaceDefined => type_cache != null;
 
-        public Type BaseType{
-            get{ return interface_type.BaseType; }
-        }
+        /// <summary>
+        /// Gets the base type.
+        /// </summary>
+        /// <value>The base type.</value>
+        public Type BaseType => interface_type.BaseType;
 
+        /// <summary>
+        /// Gets the interface type as <see cref="Type"/>.
+        /// </summary>
+        /// <value>The interface type as <see cref="Type"/>.</value>
         public Type InterfaceType{
             get{
                 if(type_cache == null)
@@ -41,17 +49,17 @@ namespace Expresso.CodeGen
             }
         }
 
-        public TypeBuilder InterfaceTypeBuilder{
-            get{
-                return interface_type;
-            }
-        }
+        /// <summary>
+        /// Gets the <see cref="TypeBuilder"/> that represents the interface type.
+        /// </summary>
+        /// <value>The interface type builder.</value>
+        public TypeBuilder InterfaceTypeBuilder => interface_type;
 
-        public string Name{
-            get{
-                return interface_type.Name;
-            }
-        }
+        /// <summary>
+        /// Gets the name of this type.
+        /// </summary>
+        /// <value>The name.</value>
+        public string Name => interface_type.Name;
 
         public bool HasStaticFields{
             get{
