@@ -7504,6 +7504,29 @@ namespace Expresso.Test
                             ),
                             Modifiers.Immutable
                         ),
+                        Statement.MakeVarDecl(
+                            Helpers.MakeSeq(
+                                Helpers.MakePaticularPatternWithType(
+                                    "x",
+                                    Helpers.MakeGenericType(
+                                        "tuple",
+                                        Helpers.MakePrimitiveType("int"),
+                                        Helpers.MakePrimitiveType("int")
+                                    )
+                                )
+                            ),
+                            Helpers.MakeSeq(
+                                Helpers.MakeIdentifierPath(
+                                    "pair",
+                                    Helpers.MakeGenericType(
+                                        "tuple",
+                                        Helpers.MakePrimitiveType("int"),
+                                        Helpers.MakePrimitiveType("int")
+                                    )
+                                )
+                            ),
+                            Modifiers.Immutable
+                        ),
                         Statement.MakeExprStmt(
                             Helpers.MakeCallExpression(
                                 Helpers.MakeFunctionIdentifierPath(
@@ -7532,10 +7555,14 @@ namespace Expresso.Test
                                             Helpers.MakeGenericTypeWithRealName(
                                                 "Object",
                                                 "System.Object"
+                                            ),
+                                            Helpers.MakeGenericTypeWithRealName(
+                                                "Object",
+                                                "System.Object"
                                             )
                                         )
                                     ),
-                                    Expression.MakeConstant("string", "{0}, {1}"),
+                                    Expression.MakeConstant("string", "{0}, {1}, {2}"),
                                     Helpers.MakeIdentifierPath(
                                         "t",
                                         Helpers.MakeGenericType("TestClass4")
@@ -7543,6 +7570,14 @@ namespace Expresso.Test
                                     Helpers.MakeIdentifierPath(
                                         "t2",
                                         Helpers.MakeGenericType("TestClass4")
+                                    ),
+                                    Helpers.MakeIdentifierPath(
+                                        "x",
+                                        Helpers.MakeGenericType(
+                                            "tuple",
+                                            Helpers.MakePrimitiveType("int"),
+                                            Helpers.MakePrimitiveType("int")
+                                        )
                                     )
                                 )
                             )
@@ -7554,19 +7589,20 @@ namespace Expresso.Test
             }, Helpers.MakeSeq(
                 AstNode.MakeImportDecl(
                     Helpers.MakeSeq(
-                        AstNode.MakeIdentifier("test_module::TestClass4"),
-                        AstNode.MakeIdentifier("test_module::createTest")
+                        AstNode.MakeIdentifier("test_module2::TestClass4"),
+                        AstNode.MakeIdentifier("test_module2::createTest"),
+                        AstNode.MakeIdentifier("test_module2::pair")
                     ),
                     Helpers.MakeSeq(
                         "TestClass4",
-                        "createTest"
+                        "createTest",
+                        "pair"
                     ),
                     "./test_module2.exs"
                 )
             ));
 
             Assert.IsNotNull(ast);
-
             Helpers.AstStructuralEqual(ast, expected_ast);
         }
 

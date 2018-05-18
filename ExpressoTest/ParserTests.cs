@@ -4308,10 +4308,19 @@ namespace Expresso.Test
                             ),
                             Modifiers.Immutable
                         ),
+                        Statement.MakeVarDecl(
+                            Helpers.MakeSeq(
+                                Helpers.MakeSomePatternWithType("x")
+                            ),
+                            Helpers.MakeSeq(
+                                Helpers.MakeIdentifierPath("pair")
+                            ),
+                            Modifiers.Immutable
+                        ),
                         Statement.MakeExprStmt(
                             Helpers.MakeCallExpression(
                                 Helpers.MakeIdentifierPath("println"),
-                                Expression.MakeConstant("string", "${t}, ${t2}")
+                                Expression.MakeConstant("string", "${t}, ${t2}, ${x}")
                             )
                         )
                     ),
@@ -4322,11 +4331,13 @@ namespace Expresso.Test
                 AstNode.MakeImportDecl(
                     Helpers.MakeSeq(
                         AstNode.MakeIdentifier("test_module2::TestClass4"),
-                        AstNode.MakeIdentifier("test_module2::createTest")
+                        AstNode.MakeIdentifier("test_module2::createTest"),
+                        AstNode.MakeIdentifier("test_module2::pair")
                     ),
                     Helpers.MakeSeq(
                         "TestClass4",
-                        "createTest"
+                        "createTest",
+                        "pair"
                     ),
                     "./test_module2.exs"
                 )
