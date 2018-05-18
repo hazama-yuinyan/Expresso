@@ -1547,39 +1547,78 @@ namespace Expresso.CodeGen
             var attributes = section.Attributes.Select(attribute => {
                 var creation = (ExprTree.NewExpression)VisitObjectCreationExpression(attribute, context);
                 var args = creation.Arguments
-                                   .Select(attr => ((ExprTree.ConstantExpression)attr).Value)
+                                   .Select(attr => {
+                    if(attr is ExprTree.ConstantExpression constant)
+                        return constant.Value;
+                    else if(attr is ExprTree.MemberExpression member)
+                        return ((FieldInfo)member.Member).GetValue(null);
+                    else
+                        throw new InvalidOperationException("Unknown argument expression!");
+                })
                                    .ToArray();
                 return new {Ctor = creation.Constructor, Arguments = args};
             });
-                
+               
+            IEnumerable<AttributeTargets> allowed_targets;
+            AttributeTargets preferable_target;
+            string help_message;
             switch(section.Parent){
             case ExpressoAst ast:
-                {
-                    if(!section.AttributeTargetToken.IsNull){
-                        var specified_context = AttributeSection.GetAttributeTargets(section.AttributeTarget);
-                        if(specified_context != AttributeTargets.Assembly && specified_context != AttributeTargets.Module){
-                            throw new ParserException(
-                                "The attribute target '{0}' isn't expected in this context.",
-                                "ES4021",
-                                section
-                            ){
-                                HelpObject = "'assembly' or 'module'"
-                            };
-                        }
-
-                        if(target_context == specified_context){
-                            foreach(var attribute in attributes)
-                                context.CustomAttributeSetter(new CustomAttributeBuilder(attribute.Ctor, attribute.Arguments));
-                        }
-                    }else{
-                        if(target_context == AttributeTargets.Module){
-                            foreach(var attribute in attributes)
-                                context.CustomAttributeSetter(new CustomAttributeBuilder(attribute.Ctor, attribute.Arguments));
-                        }
-                    }
-                }
+                allowed_targets = new []{AttributeTargets.Assembly, AttributeTargets.Module};
+                preferable_target = AttributeTargets.Module;
+                help_message = "'assembly' or 'module'";
                 break;
 
+            case TypeDeclaration type_decl:
+                allowed_targets = new []{AttributeTargets.Class, AttributeTargets.Enum};
+                preferable_target = (type_decl.TypeKind == ClassType.Class) ? AttributeTargets.Class :
+                (type_decl.TypeKind == ClassType.Enum) ? AttributeTargets.Enum : AttributeTargets.Property;
+                help_message = "'type'";
+                break;
+
+            case FieldDeclaration field_decl:
+                allowed_targets = new []{AttributeTargets.Field};
+                preferable_target = AttributeTargets.Field;
+                help_message = "'field'";
+                break;
+
+            case FunctionDeclaration func_decl:
+                allowed_targets = new []{AttributeTargets.Method, AttributeTargets.ReturnValue};
+                preferable_target = AttributeTargets.Method;
+                help_message = "'method'";
+                break;
+
+            case ParameterDeclaration param_decl:
+                allowed_targets = new []{AttributeTargets.Parameter};
+                preferable_target = AttributeTargets.Parameter;
+                help_message = "'param'";
+                break;
+
+            default:
+                throw new InvalidOperationException("Unreachable");
+            }
+
+            if(!section.AttributeTargetToken.IsNull){
+                var specified_context = AttributeSection.GetAttributeTargets(section.AttributeTarget);
+                if(!allowed_targets.Any(t => t == specified_context)){
+                    throw new ParserException(
+                        "The attribute target '{0}' isn't expected in this context.",
+                        "ES4021",
+                        section
+                    ){
+                        HelpObject = help_message
+                    };
+                }
+
+                if(target_context.HasFlag(specified_context)){
+                    foreach(var attribute in attributes)
+                        context.CustomAttributeSetter(new CustomAttributeBuilder(attribute.Ctor, attribute.Arguments));
+                }
+            }else{
+                if(target_context.HasFlag(preferable_target)){
+                    foreach(var attribute in attributes)
+                        context.CustomAttributeSetter(new CustomAttributeBuilder(attribute.Ctor, attribute.Arguments));
+                }
             }
 
             return null;
@@ -2444,6 +2483,10 @@ namespace Expresso.CodeGen
                 select param.IsByRef ? param.Type.MakeByRefType() : param.Type;
             var method_builder = context.LazyTypeBuilder.DefineMethod(funcDecl.Name, attrs, return_type, param_types.ToArray());
 
+            context.CustomAttributeSetter = method_builder.SetCustomAttribute;
+            // We don't call VisitAttributeSection directly so that we can avoid unnecessary method calls
+            funcDecl.Attribute.AcceptWalker(this, context);
+
             AscendScope();
             scope_counter = tmp_counter + 1;
         }
@@ -2465,6 +2508,11 @@ namespace Expresso.CodeGen
                 if(init.Pattern is PatternWithType inner && inner.Pattern is IdentifierPattern ident_pat){
                     var type = CSharpCompilerHelpers.GetNativeType(ident_pat.Identifier.Type);
                     var field_builder = context.LazyTypeBuilder.DefineField(init.Name, type, !Expression.IsNullNode(init.Initializer), attr);
+
+                    context.CustomAttributeSetter = field_builder.SetCustomAttribute;
+                    // We don't call VisitAttributeSection directly so that we can avoid unnecessary method calls
+                    fieldDecl.Attribute.AcceptWalker(this, context);
+
                     AddSymbol(ident_pat.Identifier, new ExpressoSymbol{PropertyOrField = field_builder});
                 }else{
                     throw new EmitterException("Invalid module field!");

@@ -97,6 +97,7 @@ namespace Expresso.Ast.Analysis
             Console.WriteLine("Resolving names in {0}...", ast.ModuleName);
             #endif
 
+            // We don't call VisitAttributeSection directly so that we can avoid unnecessary method calls
             ast.Attributes.AcceptWalker(this);
             ast.Imports.AcceptWalker(this);
             ast.Declarations.AcceptWalker(this);
@@ -473,7 +474,8 @@ namespace Expresso.Ast.Analysis
             DecendScope();
             scope_counter = 0;
 
-            VisitAttributeSection(funcDecl.Attribute);
+            // We don't call VisitAttributeSection directly so that we can avoid unnecessary method calls
+            funcDecl.Attribute.AcceptWalker(this);
 
             funcDecl.Parameters.AcceptWalker(this);
             VisitBlock(funcDecl.Body);
@@ -484,13 +486,15 @@ namespace Expresso.Ast.Analysis
 
         public void VisitFieldDeclaration(FieldDeclaration fieldDecl)
         {
-            VisitAttributeSection(fieldDecl.Attribute);
+            // We don't call VisitAttributeSection directly so that we can avoid unnecessary method calls
+            fieldDecl.Attribute.AcceptWalker(this);
             fieldDecl.Initializers.AcceptWalker(this);
         }
 
         public void VisitParameterDeclaration(ParameterDeclaration parameterDecl)
         {
-            VisitAttributeSection(parameterDecl.Attribute);
+            // We don't call VisitAttributeSection directly so that we can avoid unnecessary method calls
+            parameterDecl.Attribute.AcceptWalker(this);
             UniqueIdGenerator.DefineNewId(parameterDecl.NameToken);
         }
 
@@ -584,6 +588,9 @@ namespace Expresso.Ast.Analysis
         public void VisitTypeDeclaration(TypeDeclaration typeDecl)
         {
             UniqueIdGenerator.DefineNewId(typeDecl.NameToken);
+
+            // We don't call VisitAttributeSection directly so that we can avoid unnecessary method calls
+            typeDecl.Attribute.AcceptWalker(this);
 
             // Add Return type node
             var type_node = AstType.MakeSimpleType(typeDecl.Name);

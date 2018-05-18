@@ -3,7 +3,7 @@ using Expresso.Ast;
 using System.Reflection;
 using System.Collections.Generic;
 using System.Linq;
-
+using System.Reflection.Emit;
 
 namespace Expresso.CodeGen
 {
@@ -333,10 +333,15 @@ namespace Expresso.CodeGen
                     }
                 }
 
+                MethodBuilder method_builder;
                 if(funcDecl.Parent is TypeDeclaration type_decl3 && type_decl3.TypeKind == ClassType.Interface)
-                    context.InterfaceTypeBuilder.DefineMethod(funcDecl.Name, attr, return_type, param_types.ToArray());
+                    method_builder = context.InterfaceTypeBuilder.DefineMethod(funcDecl.Name, attr, return_type, param_types.ToArray());
                 else
-                    context.LazyTypeBuilder.DefineMethod(funcDecl.Name, attr, return_type, param_types.ToArray());
+                    method_builder = context.LazyTypeBuilder.DefineMethod(funcDecl.Name, attr, return_type, param_types.ToArray());
+
+                context.CustomAttributeSetter = method_builder.SetCustomAttribute;
+                // We don't call VisitAttributeSection directly so that we can avoid unnecessary method calls
+                funcDecl.Attribute.AcceptWalker(emitter, context);
 
                 emitter.AscendScope();
                 emitter.scope_counter = tmp_counter + 1;
@@ -370,10 +375,17 @@ namespace Expresso.CodeGen
                 if(first_type != null && !first_type.IsClass)
                     base_types = new []{typeof(object)}.Concat(base_types);
                 
-                if(typeDecl.TypeKind == ClassType.Interface)
+                if(typeDecl.TypeKind == ClassType.Interface){
                     context.InterfaceTypeBuilder = context.ModuleBuilder.DefineType(name, TypeAttributes.Interface | TypeAttributes.Abstract);
-                else
+                    context.CustomAttributeSetter = context.InterfaceTypeBuilder.SetCustomAttribute;
+                    // We don't call VisitAttributeSection directly so that we can avoid unnecessary method calls
+                    typeDecl.Attribute.AcceptWalker(emitter, context);
+                }else{
                     context.LazyTypeBuilder = new LazyTypeBuilder(context.ModuleBuilder, name, attr, base_types, false);
+                    context.CustomAttributeSetter = context.LazyTypeBuilder.InterfaceTypeBuilder.SetCustomAttribute;
+                    // We don't call VisitAttributeSection directly so that we can avoid unnecessary method calls
+                    typeDecl.Attribute.AcceptWalker(emitter, context);
+                }
 
                 foreach(var base_type in base_types)
                     context.LazyTypeBuilder.InterfaceTypeBuilder.AddInterfaceImplementation(base_type);

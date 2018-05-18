@@ -718,6 +718,18 @@ namespace Expresso.Test
             Assert.IsNotNull(attribute2);
             Assert.AreEqual(type2.Name, "CLSCompliantAttribute");
 
+            var test_type = module.GetType("AttributeTest");
+            var attribute3 = test_type.GetCustomAttribute<SerializableAttribute>();
+            var type3 = attribute3.GetType();
+            Assert.IsNotNull(attribute3);
+            Assert.AreEqual(type3.Name, "SerializableAttribute");
+
+            var do_something_method = test_type.GetMethod("doSomething");
+            var attribute4 = do_something_method.GetCustomAttribute<ObsoleteAttribute>();
+            var type4 = attribute4.GetType();
+            Assert.IsNotNull(attribute4);
+            Assert.AreEqual(type4.Name, "ObsoleteAttribute");
+
             main_method.Invoke(null, new object[]{});
         }
     }
