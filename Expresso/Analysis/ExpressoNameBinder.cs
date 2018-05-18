@@ -642,11 +642,12 @@ namespace Expresso.Ast.Analysis
                 
                 var symbol = tmp_table.GetSymbol(identifierPattern.Identifier.Name);
                 if(symbol != null){
+                    var shadowed_info = (symbol.Type is PlaceholderType) ? string.Format("this_module.{0}", symbol) : symbol.ToString();
                     throw new ParserException(
                         "Local bindings cannot shadow module variables: '{0}' tries to shadow {1}.",
                         "ES3100",
                         identifierPattern,
-                        identifierPattern.Identifier.ToString(), symbol
+                        identifierPattern.Identifier.ToString(), shadowed_info
                     );
                 }
             }

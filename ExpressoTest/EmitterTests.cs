@@ -731,7 +731,7 @@ namespace Expresso.Test
             Assert.IsNotNull(attribute4);
             Assert.AreEqual(type4.Name, "ObsoleteAttribute");
 
-            var x_field = test_type.GetField("x", BindingFlags.NonPublic);
+            var x_field = test_type.GetField("x", BindingFlags.NonPublic | BindingFlags.Instance);
             var attribute5 = x_field.GetCustomAttribute<ConditionalAttribute>();
             var type5 = attribute5.GetType();
             Assert.IsNotNull(attribute5);
