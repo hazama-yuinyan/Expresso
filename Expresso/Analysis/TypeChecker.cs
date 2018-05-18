@@ -451,7 +451,7 @@ namespace Expresso.Ast.Analysis
             var func_type2 = callExpr.Target.AcceptWalker(this) as FunctionType;
             // Don't call inference_runner.VisitCallExpression here
             // because doing so causes VisitIdentifier to be invoked two times
-            // and show the same messages twice
+            // and show the same message twice
             /*if(IsPlaceholderType(func_type)){
                 var inferred = inference_runner.VisitCallExpression(callExpr);
                 // Don't replace nodes here because the above code does that

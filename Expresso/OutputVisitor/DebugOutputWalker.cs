@@ -556,6 +556,7 @@ namespace Expresso.Ast
             }
                 
             PrintList(section.Attributes);
+            writer.Write("]");
         }
 
         public void VisitAliasDeclaration(AliasDeclaration aliasDecl)

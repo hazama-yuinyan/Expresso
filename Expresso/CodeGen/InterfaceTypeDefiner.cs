@@ -437,6 +437,11 @@ namespace Expresso.CodeGen
                 foreach(var init in fieldDecl.Initializers){
                     var type = CSharpCompilerHelpers.GetNativeType(init.NameToken.Type);
                     var field_builder = context.LazyTypeBuilder.DefineField(init.Name, type, !Expression.IsNullNode(init.Initializer), attr);
+
+                    context.CustomAttributeSetter = field_builder.SetCustomAttribute;
+                    // We don't call VisitAttributeSection directly so that we can avoid unnecessary method calls
+                    fieldDecl.Attribute.AcceptWalker(emitter, context);
+
                     AddSymbol(init.NameToken, new ExpressoSymbol{PropertyOrField = field_builder});
                 }
             }

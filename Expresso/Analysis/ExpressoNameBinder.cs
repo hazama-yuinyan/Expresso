@@ -41,6 +41,7 @@ namespace Expresso.Ast.Analysis
     class ExpressoNameBinder : IAstWalker
 	{
         int scope_counter;
+        bool check_shadowing;
         SymbolTable symbol_table;
 		Parser parser;
 		
@@ -159,7 +160,9 @@ namespace Expresso.Ast.Analysis
             DecendScope();
             scope_counter = 0;
 
+            check_shadowing = true;
             valueBindingForStmt.Initializer.AcceptWalker(this);
+            check_shadowing = false;
             VisitBlock(valueBindingForStmt.Body);
 
             AscendScope();
@@ -233,7 +236,9 @@ namespace Expresso.Ast.Analysis
 
         public void VisitVariableDeclarationStatement(VariableDeclarationStatement varDecl)
         {
+            check_shadowing = true;
             varDecl.Variables.AcceptWalker(this);
+            check_shadowing = false;
         }
 
         public void VisitAssignment(AssignmentExpression assignment)
@@ -582,7 +587,8 @@ namespace Expresso.Ast.Analysis
 
         public void VisitImportDeclaration(ImportDeclaration importDecl)
         {
-            // no op
+            //foreach(var alias in importDecl.AliasTokens)
+            //    alias.
         }
 
         public void VisitTypeDeclaration(TypeDeclaration typeDecl)
@@ -629,6 +635,22 @@ namespace Expresso.Ast.Analysis
 
         public void VisitIdentifierPattern(IdentifierPattern identifierPattern)
         {
+            if(check_shadowing){
+                var tmp_table = symbol_table.Parent;
+                while(tmp_table.Name != "programRoot")
+                    tmp_table = tmp_table.Parent;
+                
+                var symbol = tmp_table.GetSymbol(identifierPattern.Identifier.Name);
+                if(symbol != null){
+                    throw new ParserException(
+                        "Local bindings cannot shadow module variables: '{0}' tries to shadow {1}.",
+                        "ES3100",
+                        identifierPattern,
+                        identifierPattern.Identifier.ToString(), symbol
+                    );
+                }
+            }
+
             UniqueIdGenerator.DefineNewId(identifierPattern.Identifier);
             identifierPattern.InnerPattern.AcceptWalker(this);
         }

@@ -1043,7 +1043,7 @@ namespace Expresso.CodeGen
                     return symbol.Parameter;
                 }else if(context.RequestMethod){
                     if(symbol.Method == null)
-                        throw new EmitterException("The native symbol '{0}' isn't defined", ident.Name);
+                        throw new EmitterException("The native symbol '{0}' isn't defined.", ident.Name);
 
                     context.Method = symbol.Method;
                     return null;
@@ -1153,13 +1153,17 @@ namespace Expresso.CodeGen
             if(pathExpr.Items.Count == 1){
                 context.RequestType = true;
                 context.RequestMethod = true;
+                context.RequestPropertyOrField = true;
                 context.TargetType = null;
                 context.Method = null;
+                context.PropertyOrField = null;
 
                 var item = VisitIdentifier(pathExpr.AsIdentifier, context);
                 context.RequestType = false;
                 context.RequestMethod = false;
-                return item;
+                context.RequestPropertyOrField = false;
+                // Assume a is a module variable it's for let b = a;
+                return (context.PropertyOrField != null) ? CSharpExpr.Field(null, (FieldInfo)context.PropertyOrField) : item;
             }
 
             context.TargetType = null;
@@ -2442,10 +2446,10 @@ namespace Expresso.CodeGen
                 }
                 
                 if(entity is FunctionDeclaration func_decl
-                   && context.LazyTypeBuilder.GetMethod(entity.Name) == null)
+                   && context.LazyTypeBuilder.GetMethod(func_decl.Name) == null)
                     DefineFunctionSignature(func_decl, context);
                 else if(entity is FieldDeclaration field_decl
-                        && context.LazyTypeBuilder.GetField(entity.Name) == null)
+                        && context.LazyTypeBuilder.GetField(field_decl.Initializers.First().Name) == null)
                     DefineField(field_decl, context);
             }
 

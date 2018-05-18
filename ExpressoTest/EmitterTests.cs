@@ -4,6 +4,7 @@ using NUnit.Framework;
 using System.Reflection;
 using Expresso.Ast;
 using System.Linq;
+using System.Diagnostics;
 
 namespace Expresso.Test
 {
@@ -729,6 +730,12 @@ namespace Expresso.Test
             var type4 = attribute4.GetType();
             Assert.IsNotNull(attribute4);
             Assert.AreEqual(type4.Name, "ObsoleteAttribute");
+
+            var x_field = test_type.GetField("x", BindingFlags.NonPublic);
+            var attribute5 = x_field.GetCustomAttribute<ConditionalAttribute>();
+            var type5 = attribute5.GetType();
+            Assert.IsNotNull(attribute5);
+            Assert.AreEqual(type5.Name, "ConditionalAttribute");
 
             main_method.Invoke(null, new object[]{});
         }

@@ -733,6 +733,28 @@ namespace Expresso.Test
             Assert.That(() => parser.Parse(), Throws.TypeOf<ParserException>().With.Message.Contains("ES5000"));
             Assert.AreEqual(1, parser.errors.count);
         }
+
+        [Test]
+        public void ShadowModuleVariableWithLocalBinding()
+        {
+            var parser = new Parser(new Scanner("../../sources/for_unit_tests/erroneous/shadow_module_variable_with_local_binding.exs")){
+                DoPostParseProcessing = true
+            };
+
+            Assert.That(() => parser.Parse(), Throws.TypeOf<ParserException>().With.Message.Contains("ES3100"));
+            Assert.AreEqual(1, parser.errors.count);
+        }
+
+        [Test]
+        public void ShadowModuleVariableWithForBinding()
+        {
+            var parser = new Parser(new Scanner("../../sources/for_unit_tests/erroneous/shadow_module_variable_with_for_binding.exs")){
+                DoPostParseProcessing = true
+            };
+
+            Assert.That(() => parser.Parse(), Throws.TypeOf<ParserException>().With.Message.Contains("ES3100"));
+            Assert.AreEqual(1, parser.errors.count);
+        }
     }
 }
 

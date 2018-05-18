@@ -460,6 +460,10 @@ namespace Expresso.CodeGen
                 Console.WriteLine("But in the future you would be able to use shadowing, though.");
                 break;
 
+            case "3100":
+                Console.WriteLine("You aren't allowed to shadow module variables. You can rename either the module variable or local variable.");
+                break;
+
             case "3200":
                 Console.WriteLine("For combinations of the unary operators and the types, see the online documentation.");
                 break;
@@ -538,7 +542,7 @@ namespace Expresso.CodeGen
                 {
                     var is_importing_system = (bool)e.HelpObject;
                     if(is_importing_system){
-                        Console.WriteLine("It seems that you are just misspelling it. Check spelling, taking casing into account.");
+                        Console.WriteLine("It seems that you are just misspelling it. Check for spelling, taking casing into account.");
                     }else{
                         Console.WriteLine("Did you forget adding the from clause? To import names from external files, you must add the from clause after the import clause.");
                         Console.WriteLine("The from clause tells the compiler about a file that it could find names.");

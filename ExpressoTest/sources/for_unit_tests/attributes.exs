@@ -9,7 +9,7 @@ module main;
 import System.{SerializableAttribute, CLSCompliantAttribute, ObsoleteAttribute} as {SerializableAttribute, CLSCompliantAttribute, ObsoleteAttribute};
 import System.Diagnostics.ConditionalAttribute as ConditionalAttribute;
 import System.Reflection.AssemblyDescriptionAttribute as AssemblyDescriptionAttribute;
-import test_attribute::AuthorAttribute from "./test_attribute.exs" as AuthorAttribute;
+import test_attribute::{AuthorAttribute, doSomethingInModule, y} from "./test_attribute.exs" as {AuthorAttribute, doSomethingInModule, y};
 
 
 
