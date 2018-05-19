@@ -387,8 +387,10 @@ namespace Expresso.CodeGen
                     typeDecl.Attribute.AcceptWalker(emitter, context);
                 }
 
-                foreach(var base_type in base_types)
-                    context.LazyTypeBuilder.InterfaceTypeBuilder.AddInterfaceImplementation(base_type);
+                foreach(var base_type in base_types){
+                    if(base_type.IsInterface)
+                        context.LazyTypeBuilder.InterfaceTypeBuilder.AddInterfaceImplementation(base_type);
+                }
 
                 try{
                     foreach(var member in typeDecl.Members)

@@ -6,12 +6,27 @@
 #[CLSCompliant{isCompliant: true}]
 module main;
 
-import System.{SerializableAttribute, CLSCompliantAttribute, ObsoleteAttribute} as {SerializableAttribute, CLSCompliantAttribute, ObsoleteAttribute};
+import System.{SerializableAttribute, CLSCompliantAttribute, ObsoleteAttribute, Attribute, AttributeUsageAttribute, AttributeTargets} as
+{SerializableAttribute, CLSCompliantAttribute, ObsoleteAttribute, Attribute, AttributeUsageAttribute, AttributeTargets};
 import System.Diagnostics.ConditionalAttribute as ConditionalAttribute;
 import System.Reflection.AssemblyDescriptionAttribute as AssemblyDescriptionAttribute;
-import test_attribute::{AuthorAttribute, doSomethingInModule, y} from "./test_attribute.exs" as {AuthorAttribute, doSomethingInModule, y};
 
 
+
+#[AttributeUsage{validOn: AttributeTargets.All}]
+class AuthorAttribute : Attribute
+{
+    let name (- string;
+}
+
+#[Author{name: "train12"}]
+let y = 100;
+
+#[Obsolete]
+def doSomethingInModule()
+{
+    ;
+}
 
 #[Serializable]
 class AttributeTest
@@ -37,14 +52,4 @@ def main()
     let x = AttributeTest{x: 10};
     x.doSomething("some string");
     x.doSomething2();
-
-    //let attribute = AuthorAttribute{name: "foo"};
-    /*let type_info = x.GetType();
-    let asm = type_info.Assembly;
-    let attribute1 = asm.GetCustomAttribute<AssemblyDescriptionAttribute>();
-    println("${attribute1 != null}");
-
-    let mod = type_info.Module;
-    let attribute2 = mod.GetCustomAttribute<CLSCompliantAttribute>();
-    println("${attribute2 != null}");*/
 }

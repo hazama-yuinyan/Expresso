@@ -295,7 +295,7 @@ namespace Expresso.CodeGen
         public MethodInfo GetInterfaceMethod(string name)
         {
             if(type_cache == null)
-                throw new InvalidOperationException("The interface type is yet to be defined");
+                throw new InvalidOperationException(string.Format("The interface type is yet to be defined: you are trying to get the interface method of '{0}'.", name));
 
             return type_cache.GetMethod(name);
         }
@@ -309,13 +309,14 @@ namespace Expresso.CodeGen
         public MethodInfo GetInterfaceMethod(string name, BindingFlags flags)
         {
             if(type_cache == null)
-                throw new InvalidOperationException("The interface type is yet to be defined");
+                throw new InvalidOperationException(string.Format("The interface type is yet to be defined: you are trying to get the interface method of '{0}'.", name));
 
             return type_cache.GetMethod(name, flags);
         }
 
         /// <summary>
-        /// Gets a method defined on this type. Note that it searches for non-public methods.
+        /// Gets a method defined on this type. Note that it searches for non-public methods,
+        /// depending on the flags specified.
         /// </summary>
         /// <returns>The method.</returns>
         /// <param name="name">Name.</param>

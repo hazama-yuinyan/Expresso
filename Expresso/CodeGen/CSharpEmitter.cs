@@ -336,10 +336,14 @@ namespace Expresso.CodeGen
             foreach(var import in ast.Imports)
                 import.AcceptWalker(this, context);
 
+            // Define only the function signatures so that the functions can call themselves
+            // and the interface type is defined before we inspect the functions and fields
+            DefineFunctionSignaturesAndFields(ast.Declarations, context);
             foreach(var decl in ast.Declarations){
-                // Define only the function signatures so that the functions can call themselves
-                // and the interface type is defined before we inspect the functions and fields
-                DefineFunctionSignaturesAndFields(ast.Declarations, decl, context);
+                if(decl is TypeDeclaration){
+                    ++scope_counter;
+                    continue;
+                }
                 decl.AcceptWalker(this, context);
             }
 
@@ -2433,16 +2437,15 @@ namespace Expresso.CodeGen
             }
         }
 
-        void DefineFunctionSignaturesAndFields(IEnumerable<EntityDeclaration> entities, EntityDeclaration startingPoint, CSharpEmitterContext context)
+        void DefineFunctionSignaturesAndFields(IEnumerable<EntityDeclaration> entities, CSharpEmitterContext context)
         {
             // We can't make this method an iterator because then we can't look at all the entities
             // We need to store scope_counter here because the DefineFunctionSignature method will make it 1 step forward every time it will be called
             var tmp_counter = scope_counter;
-            bool is_broken_out = false;
-            foreach(var entity in entities.SkipWhile(e => e != startingPoint)){
+            foreach(var entity in entities){
                 if(entity is TypeDeclaration type_decl){
-                    is_broken_out = true;
-                    break;
+                    type_decl.AcceptWalker(this, context);
+                    continue;
                 }
                 
                 if(entity is FunctionDeclaration func_decl
@@ -2453,7 +2456,7 @@ namespace Expresso.CodeGen
                     DefineField(field_decl, context);
             }
 
-            if(context.LazyTypeBuilder != null && !context.LazyTypeBuilder.IsInterfaceDefined && !is_broken_out)
+            if(context.LazyTypeBuilder != null)
                 context.LazyTypeBuilder.CreateInterfaceType();
             
             scope_counter = tmp_counter;

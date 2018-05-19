@@ -714,6 +714,7 @@ namespace Expresso.Test
             Assert.AreEqual(type1.Name, "AssemblyDescriptionAttribute");
 
             var module = asm.GetModule("main");
+            var author_attribute_type = module.GetType("AuthorAttribute");
             var attribute2 = module.GetCustomAttributes(true).First();
             var type2 = attribute2.GetType();
             Assert.IsNotNull(attribute2);
@@ -736,6 +737,19 @@ namespace Expresso.Test
             var type5 = attribute5.GetType();
             Assert.IsNotNull(attribute5);
             Assert.AreEqual(type5.Name, "ConditionalAttribute");
+
+            var module_type = module.GetType("Main");
+            var do_something_in_module_method = module_type.GetMethod("doSomethingInModule", BindingFlags.NonPublic | BindingFlags.Static);
+            var attribute6 = do_something_in_module_method.GetCustomAttribute<ObsoleteAttribute>();
+            var type6 = attribute6.GetType();
+            Assert.IsNotNull(attribute6);
+            Assert.AreEqual(type6.Name, "ObsoleteAttribute");
+
+            var y_field = module_type.GetField("y", BindingFlags.NonPublic | BindingFlags.Static);
+            var attribute7 = y_field.GetCustomAttribute(author_attribute_type);
+            var type7 = attribute7.GetType();
+            Assert.IsNotNull(attribute7);
+            Assert.AreEqual(type7.Name, "AuthorAttribute");
 
             main_method.Invoke(null, new object[]{});
         }
