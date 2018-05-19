@@ -1,19 +1,25 @@
 module main;
 
 
-import System.{Math, Exception} as {Math, Exception};
+import System.{Math, Exception, SerializableAttribute} as {Math, Exception, SerializableAttribute};
 import System.Text.RegularExpressions.Regex as Regex;
 import test_module::TestClass from "./testmodule.exs" as TestClass;
 import OtherLanguageWorld.{StaticClass, TestEnum} from "./InteroperabilityTest.dll" as {StaticClass, TestEnum};
 
-#[Author{name: "train12"}]
+#[Serializable]
 export class TestClass
 {
     let x (- int;
+    private let y (- SomeDerivedClass;
 
-    public def getX()
-    {
+    #[Author{name: "train12"}]
+    public def getX(){
         return self.x;
+    }
+
+    public def getY() -> SomeDerivedClass
+    {
+        return self.y;
     }
 }
 
@@ -29,19 +35,24 @@ def throwException()
     throw Exception{message: "Some error occurred"};
 }
 
-def getInt()
+def getInt() -> int
 {
     return 10;
 }
 
-def returnInt(n (- int, j (- int)
+def returnInt(n (- int, j (- int) -> int
 {
     return n;
 }
 
-def returnNull()
+def returnNull(str = "abc") -> SomeDerivedClass
 {
     return null;
+}
+
+def returnIntSeq()
+{
+    return 0..10;
 }
 
 def main()
@@ -76,6 +87,17 @@ def main()
     var e = getInt();
     var f = returnInt(10, 20);
     var g = e as double;
+
+    for let i in returnIntSeq() {
+        println(i);
+    }
+
+    let flag = true;
+    if flag {
+        println("true");
+    }else{
+        println("false");
+    }
     
     println(a, sin);
 }

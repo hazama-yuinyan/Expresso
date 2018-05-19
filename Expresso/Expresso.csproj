@@ -216,6 +216,7 @@
     <Compile Include="CodeGen\PortablePdbGenerator.cs" />
     <Compile Include="CodeGen\MatchClauseIdentifierDefiner.cs" />
     <Compile Include="Ast\GeneralScope\AttributeSection.cs" />
+    <Compile Include="CodeGen\AttributeDescriptor.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System" />

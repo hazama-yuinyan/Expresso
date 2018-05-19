@@ -751,6 +751,8 @@ namespace Expresso.Test
             Assert.IsNotNull(attribute7);
             Assert.AreEqual(type7.Name, "AuthorAttribute");
 
+            var do_something_
+
             main_method.Invoke(null, new object[]{});
         }
     }

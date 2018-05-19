@@ -120,10 +120,17 @@ namespace Expresso.CodeGen
         /// <param name="returnType">Return type.</param>
         /// <param name="parameterTypes">Parameter types.</param>
         /// <param name="body">Body.</param>
-        public MethodBuilder DefineMethod(string name, MethodAttributes attr, Type returnType, Type[] parameterTypes, Expression body = null)
+        public MethodBuilder DefineMethod(string name, MethodAttributes attr, Type returnType, Type[] parameterTypes, CSharpEmitter emitter, CSharpEmitterContext context,
+                                          Ast.FunctionDeclaration funcDecl, Expression body = null)
         {
             var method = interface_type.DefineMethod(name, attr, returnType, parameterTypes);
-            var param_builder = method.DefineParameter(0, ParameterAttributes.None, "a");
+            var return_value_builder = method.DefineParameter(0, ParameterAttributes.Retval, null);
+            context.CustomAttributeSetter = return_value_builder.SetCustomAttribute;
+            funcDecl.Attribute.AcceptWalker(emitter, context);
+
+            foreach(var i in Enumerable.Range(0, parameterTypes.Length)){
+                var param_builder = method.DefineParameter(i + 1, ParameterAttributes.None, "a");
+            }
             var il = method.GetILGenerator();
             // Emit call to the implementation method no matter whether we actually need it.
             // TODO: Consider a better solution
