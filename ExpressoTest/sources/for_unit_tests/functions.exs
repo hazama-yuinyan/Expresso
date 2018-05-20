@@ -29,12 +29,19 @@ def test4(n (- int) -> int
     }
 }
 
+def test5(n = 100) -> int
+{
+    return n;
+}
+
 def main()
 {
 	let a = test();
 	let b = test2(20);
 	let c = test3(20);
     let d = test4(80);
+    let e = test5();
+    let f = test5(90);
 
-	println("${a}, ${b}, ${c}, ${d}");
+	println("${a}, ${b}, ${c}, ${d}, ${e}, ${f}");
 }
