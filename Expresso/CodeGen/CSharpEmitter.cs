@@ -323,10 +323,12 @@ namespace Expresso.CodeGen
             document_info = CSharpExpr.SymbolDocument(parser.scanner.FilePath, ExpressoCompilerHelpers.LanguageGuid);
 
             context.CustomAttributeSetter = asm_builder.SetCustomAttribute;
+            context.AttributeTarget = AttributeTargets.Assembly;
             foreach(var attribute in ast.Attributes)
                 VisitAttributeSection(attribute, context);
 
             context.CustomAttributeSetter = mod_builder.SetCustomAttribute;
+            context.AttributeTarget = AttributeTargets.Module;
             foreach(var attribute in ast.Attributes)
                 VisitAttributeSection(attribute, context);
 
@@ -1548,9 +1550,7 @@ namespace Expresso.CodeGen
 
         public CSharpExpr VisitAttributeSection(AttributeSection section, CSharpEmitterContext context)
         {
-            var declaring_type_name = context.CustomAttributeSetter.Method.DeclaringType.Name;
-            var target_context_name = declaring_type_name.Substring(0, declaring_type_name.IndexOf("Builder", StringComparison.CurrentCulture)).ToLower();
-            var target_context = AttributeSection.GetAttributeTargets(target_context_name);
+            var target_context = context.AttributeTarget;
 
             var attributes = section.Attributes.Select(attribute => {
                 var creation = (ExprTree.NewExpression)VisitObjectCreationExpression(attribute, context);
@@ -1562,8 +1562,7 @@ namespace Expresso.CodeGen
                         return ((FieldInfo)member.Member).GetValue(null);
                     else
                         throw new InvalidOperationException("Unknown argument expression!");
-                })
-                                   .ToArray();
+                }).ToArray();
                 return new {Ctor = creation.Constructor, Arguments = args};
             });
                
@@ -2426,6 +2425,16 @@ namespace Expresso.CodeGen
                     );
                     var transformed_args = args.Take(base_index - 1).Concat(new []{array_creation});
                     args = transformed_args.ToArray();
+                }else if(method_params.Length > args.Length){
+                    // For optional parameters
+                    var new_args = new CSharpExpr[method_params.Length];
+                    foreach(var i in Enumerable.Range(args.Length, method_params.Length - args.Length)){
+                        if(!method_params[i].HasDefaultValue)
+                            throw new InvalidOperationException(string.Format("Expected #{0} of the parameters of {1} has default value.", i, method.Name));
+                        
+                        new_args[i] = CSharpExpr.Constant(method_params[i].RawDefaultValue);
+                    }
+                    args = new_args;
                 }else{
                     foreach(var pair in Enumerable.Range(0, args.Length).Zip(method.GetParameters(), (l, r) => new Tuple<int, ParameterInfo>(l, r))){
                         var arg = args[pair.Item1];
@@ -2433,6 +2442,7 @@ namespace Expresso.CodeGen
                             args[pair.Item1] = CSharpExpr.Convert(arg, pair.Item2.ParameterType);
                     }
                 }
+
                 return (inst != null) ? CSharpExpr.Call(inst, method, args) : CSharpExpr.Call(method, args);
             }
         }
@@ -2488,9 +2498,10 @@ namespace Expresso.CodeGen
             var param_types =
                 from param in parameters
                 select param.IsByRef ? param.Type.MakeByRefType() : param.Type;
-            var method_builder = context.LazyTypeBuilder.DefineMethod(funcDecl.Name, attrs, return_type, param_types.ToArray());
+            var method_builder = context.LazyTypeBuilder.DefineMethod(funcDecl.Name, attrs, return_type, param_types.ToArray(), this, context, funcDecl);
 
             context.CustomAttributeSetter = method_builder.SetCustomAttribute;
+            context.AttributeTarget = AttributeTargets.Method;
             // We don't call VisitAttributeSection directly so that we can avoid unnecessary method calls
             funcDecl.Attribute.AcceptWalker(this, context);
 
@@ -2517,6 +2528,7 @@ namespace Expresso.CodeGen
                     var field_builder = context.LazyTypeBuilder.DefineField(init.Name, type, !Expression.IsNullNode(init.Initializer), attr);
 
                     context.CustomAttributeSetter = field_builder.SetCustomAttribute;
+                    context.AttributeTarget = AttributeTargets.Field;
                     // We don't call VisitAttributeSection directly so that we can avoid unnecessary method calls
                     fieldDecl.Attribute.AcceptWalker(this, context);
 

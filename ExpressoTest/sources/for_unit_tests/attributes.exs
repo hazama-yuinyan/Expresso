@@ -1,7 +1,7 @@
 /**
  * Test program for attributes
  */
-#[assembly: AssemblyDescription{description: "test assembly for attributes"}]
+#[asm: AssemblyDescription{description: "test assembly for attributes"}]
 
 #[CLSCompliant{isCompliant: true}]
 module main;
@@ -41,8 +41,9 @@ class AttributeTest
 	}
 
 	#[return: Author{name: "train12"}]
-	public def doSomething2() -> int
+	public def doSomething2(n = 100) -> int
 	{
+        println("${n}");
 		return 10;
 	}
 }

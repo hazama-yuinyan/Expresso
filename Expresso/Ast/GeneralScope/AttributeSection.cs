@@ -86,23 +86,25 @@ namespace Expresso.Ast
         public static AttributeTargets GetAttributeTargets(string identifier)
         {
             switch(identifier){
-            case "assembly":
+            case "asm":
                 return AttributeTargets.Assembly;
 
-            case "module":
+            case "mod":
                 return AttributeTargets.Module;
 
-            case "type":
-                return AttributeTargets.Class | AttributeTargets.Struct | AttributeTargets.Enum;
+            case "class":
+                return AttributeTargets.Class;
 
-            case "field":
+            case "enum":
+                return AttributeTargets.Enum;
+
+            case "fld":
                 return AttributeTargets.Field;
 
-            case "method":
+            case "meth":
                 return AttributeTargets.Method;
 
             case "param":
-            case "parameter":
                 return AttributeTargets.Parameter;
 
             case "return":

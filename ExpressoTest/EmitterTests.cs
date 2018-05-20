@@ -751,7 +751,17 @@ namespace Expresso.Test
             Assert.IsNotNull(attribute7);
             Assert.AreEqual(type7.Name, "AuthorAttribute");
 
-            var do_something_
+            var params_of_do_something_method = do_something_method.GetParameters();
+            var attribute8 = params_of_do_something_method[0].GetCustomAttribute(author_attribute_type);
+            var type8 = attribute8.GetType();
+            Assert.IsNotNull(attribute8);
+            Assert.AreEqual(type8.Name, "AuthorAttribute");
+
+            var do_something2_method = test_type.GetMethod("doSomething2");
+            var attribute9 = do_something2_method.ReturnParameter.GetCustomAttribute(author_attribute_type);
+            var type9 = attribute9.GetType();
+            Assert.IsNotNull(attribute9);
+            Assert.AreEqual(type9.Name, "AuthorAttribute");
 
             main_method.Invoke(null, new object[]{});
         }

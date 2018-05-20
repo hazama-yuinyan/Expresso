@@ -602,11 +602,12 @@ ModuleBody<out ExpressoAst ast>	    (.  var decls = new List<EntityDeclaration>(
 /*------------------------------------------------------------------------*/
 AttributeTarget<out string target>
 =
-  ( "assembly"
-  | "module"
-  | "type"
-  | "field"
-  | "method"
+  ( "asm"
+  | "mod"
+  | "class"
+  | "enum"
+  | "fld"
+  | "meth"
   | "param"
   | "return"
   )                                     (. target = t.val; .).

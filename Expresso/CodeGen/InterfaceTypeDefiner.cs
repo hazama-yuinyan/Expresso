@@ -337,9 +337,10 @@ namespace Expresso.CodeGen
                 if(funcDecl.Parent is TypeDeclaration type_decl3 && type_decl3.TypeKind == ClassType.Interface)
                     method_builder = context.InterfaceTypeBuilder.DefineMethod(funcDecl.Name, attr, return_type, param_types.ToArray());
                 else
-                    method_builder = context.LazyTypeBuilder.DefineMethod(funcDecl.Name, attr, return_type, param_types.ToArray());
+                    method_builder = context.LazyTypeBuilder.DefineMethod(funcDecl.Name, attr, return_type, param_types.ToArray(), emitter, context, funcDecl);
 
                 context.CustomAttributeSetter = method_builder.SetCustomAttribute;
+                context.AttributeTarget = AttributeTargets.Method;
                 // We don't call VisitAttributeSection directly so that we can avoid unnecessary method calls
                 funcDecl.Attribute.AcceptWalker(emitter, context);
 
@@ -383,6 +384,7 @@ namespace Expresso.CodeGen
                 }else{
                     context.LazyTypeBuilder = new LazyTypeBuilder(context.ModuleBuilder, name, attr, base_types, false);
                     context.CustomAttributeSetter = context.LazyTypeBuilder.InterfaceTypeBuilder.SetCustomAttribute;
+                    context.AttributeTarget = AttributeTargets.Class | AttributeTargets.Struct | AttributeTargets.Enum;
                     // We don't call VisitAttributeSection directly so that we can avoid unnecessary method calls
                     typeDecl.Attribute.AcceptWalker(emitter, context);
                 }
@@ -441,6 +443,7 @@ namespace Expresso.CodeGen
                     var field_builder = context.LazyTypeBuilder.DefineField(init.Name, type, !Expression.IsNullNode(init.Initializer), attr);
 
                     context.CustomAttributeSetter = field_builder.SetCustomAttribute;
+                    context.AttributeTarget = AttributeTargets.Field;
                     // We don't call VisitAttributeSection directly so that we can avoid unnecessary method calls
                     fieldDecl.Attribute.AcceptWalker(emitter, context);
 

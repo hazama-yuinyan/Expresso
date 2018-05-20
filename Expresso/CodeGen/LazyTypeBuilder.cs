@@ -120,17 +120,33 @@ namespace Expresso.CodeGen
         /// <param name="returnType">Return type.</param>
         /// <param name="parameterTypes">Parameter types.</param>
         /// <param name="body">Body.</param>
-        public MethodBuilder DefineMethod(string name, MethodAttributes attr, Type returnType, Type[] parameterTypes, CSharpEmitter emitter, CSharpEmitterContext context,
-                                          Ast.FunctionDeclaration funcDecl, Expression body = null)
+        public MethodBuilder DefineMethod(string name, MethodAttributes attr, Type returnType, Type[] parameterTypes, CSharpEmitter emitter = null,
+                                          CSharpEmitterContext context = null, Ast.FunctionDeclaration funcDecl = null, Expression body = null)
         {
             var method = interface_type.DefineMethod(name, attr, returnType, parameterTypes);
-            var return_value_builder = method.DefineParameter(0, ParameterAttributes.Retval, null);
-            context.CustomAttributeSetter = return_value_builder.SetCustomAttribute;
-            funcDecl.Attribute.AcceptWalker(emitter, context);
+            if(funcDecl != null){
+                var return_value_builder = method.DefineParameter(0, ParameterAttributes.Retval, null);
+                context.CustomAttributeSetter = return_value_builder.SetCustomAttribute;
+                context.AttributeTarget = AttributeTargets.ReturnValue;
+                funcDecl.Attribute.AcceptWalker(emitter, context);
 
-            foreach(var i in Enumerable.Range(0, parameterTypes.Length)){
-                var param_builder = method.DefineParameter(i + 1, ParameterAttributes.None, "a");
+                foreach(var pair in Enumerable.Range(0, parameterTypes.Length).Zip(funcDecl.Parameters, (p, arg) => new Tuple<int, Ast.ParameterDeclaration>(p, arg))){
+                    var param_attr = pair.Item2.Option.IsNull ? ParameterAttributes.None : ParameterAttributes.HasDefault | ParameterAttributes.Optional;
+                    var param_builder = method.DefineParameter(pair.Item1 + 1, param_attr, pair.Item2.Name);
+                    if(!pair.Item2.Option.IsNull){
+                        var option = pair.Item2.Option.AcceptWalker(emitter, context);
+                        var default_value = (option is ConstantExpression constant) ? constant.Value :
+                                                                                              (option is MemberExpression member) ? ((FieldInfo)member.Member).GetValue(null)
+                                                                                              : throw new InvalidOperationException(string.Format("Invalid default value: {0}!", option));
+                        param_builder.SetConstant(default_value);
+                    }
+
+                    context.CustomAttributeSetter = param_builder.SetCustomAttribute;
+                    context.AttributeTarget = AttributeTargets.Parameter;
+                    pair.Item2.Attribute.AcceptWalker(emitter, context);
+                }
             }
+
             var il = method.GetILGenerator();
             // Emit call to the implementation method no matter whether we actually need it.
             // TODO: Consider a better solution

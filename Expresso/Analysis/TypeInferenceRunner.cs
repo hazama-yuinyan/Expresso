@@ -405,7 +405,7 @@ namespace Expresso.Ast.Analysis
                     var results = GetOverloadOfMethod(type_table, memRef.Member.Name, func_type);
                     if(results != null){
                         symbol = results.Item1;
-                        ((CallExpression)memRef.Parent).OverloadSignature = results.Item2;
+                        ((CallExpression)memRef.Parent).OverloadSignature = (FunctionType)results.Item2.Clone();
                     }
                 }else{
                     symbol = type_table.GetSymbol(memRef.Member.Name);
@@ -760,7 +760,7 @@ namespace Expresso.Ast.Analysis
                 }
 
                 var option_type = parameterDecl.Option.AcceptWalker(this);
-                parameterDecl.NameToken.Type.ReplaceWith(option_type);
+                parameterDecl.NameToken.Type.ReplaceWith(option_type.Clone());
                 return option_type;
             }
 
@@ -1017,6 +1017,12 @@ namespace Expresso.Ast.Analysis
 
             Tuple<Identifier, FunctionType> GetOverloadOfMethod(SymbolTable table, string methodName, FunctionType funcType)
             {
+                var symbols = table.GetSymbols(methodName);
+                if(symbols.Count() == 1){
+                    var symbol = symbols.First();
+                    return new Tuple<Identifier, FunctionType>(symbol, (FunctionType)symbol.Type);
+                }
+
                 if(funcType.Parameters.Count == 0){
                     var symbol = table.GetSymbol(methodName, funcType);
                     return new Tuple<Identifier, FunctionType>(symbol, funcType);

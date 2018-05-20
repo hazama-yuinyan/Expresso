@@ -229,6 +229,14 @@ namespace Expresso.CodeGen
         public Action<CustomAttributeBuilder> CustomAttributeSetter{
             get; set;
         }
+
+        /// <summary>
+        /// The target that we will apply the attribute.
+        /// </summary>
+        /// <value>The attribute target.</value>
+        public AttributeTargets AttributeTarget{
+            get; set;
+        }
     }
 }
 
