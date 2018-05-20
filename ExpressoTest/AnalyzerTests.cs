@@ -2920,6 +2920,26 @@ namespace Expresso.Test
                     Modifiers.None
                 ),
                 EntityDeclaration.MakeFunc(
+                    "test5",
+                    Helpers.MakeSeq(
+                        EntityDeclaration.MakeParameter(
+                            "n",
+                            Helpers.MakePrimitiveType("int"),
+                            Expression.MakeConstant("int", 100)
+                        )
+                    ),
+                    Statement.MakeBlock(
+                        Helpers.MakeSingleItemReturnStatement(
+                            Helpers.MakeIdentifierPath(
+                                "n",
+                                Helpers.MakePrimitiveType("int")
+                            )
+                        )
+                    ),
+                    Helpers.MakePrimitiveType("int"),
+                    Modifiers.None
+                ),
+                EntityDeclaration.MakeFunc(
                     "main",
                     Enumerable.Empty<ParameterDeclaration>(),
                     Statement.MakeBlock(
@@ -2997,6 +3017,43 @@ namespace Expresso.Test
                             ),
                             Modifiers.Immutable
                         ),
+                        Statement.MakeVarDecl(
+                            Helpers.MakeSeq(
+                                Helpers.MakePaticularPatternWithType(
+                                    "e",
+                                    Helpers.MakePrimitiveType("int")
+                                )
+                            ),
+                            Helpers.MakeSeq(
+                                Helpers.MakeCallExpression(
+                                    Helpers.MakeFunctionIdentifierPath(
+                                        "test5",
+                                        Helpers.MakePrimitiveType("int"),
+                                        Helpers.MakePrimitiveType("int")
+                                    )
+                                )
+                            ),
+                            Modifiers.Immutable
+                        ),
+                        Statement.MakeVarDecl(
+                            Helpers.MakeSeq(
+                                Helpers.MakePaticularPatternWithType(
+                                    "f",
+                                    Helpers.MakePrimitiveType("int")
+                                )
+                            ),
+                            Helpers.MakeSeq(
+                                Helpers.MakeCallExpression(
+                                    Helpers.MakeFunctionIdentifierPath(
+                                        "test5",
+                                        Helpers.MakePrimitiveType("int"),
+                                        Helpers.MakePrimitiveType("int")
+                                    ),
+                                    Expression.MakeConstant("int", 90)
+                                )
+                            ),
+                            Modifiers.Immutable
+                        ),
                         Statement.MakeExprStmt(
                             Helpers.MakeCallExpression(
                                 Helpers.MakeFunctionIdentifierPath(
@@ -3027,7 +3084,7 @@ namespace Expresso.Test
                                             )
                                         )
                                     ),
-                                    Expression.MakeConstant("string", "{0}, {1}, {2}, {3}"),
+                                    Expression.MakeConstant("string", "{0}, {1}, {2}, {3}, {4}, {5}"),
                                     Helpers.MakeIdentifierPath(
                                         "a",
                                         Helpers.MakePrimitiveType("int")
@@ -3042,6 +3099,14 @@ namespace Expresso.Test
                                     ),
                                     Helpers.MakeIdentifierPath(
                                         "d",
+                                        Helpers.MakePrimitiveType("int")
+                                    ),
+                                    Helpers.MakeIdentifierPath(
+                                        "e",
+                                        Helpers.MakePrimitiveType("int")
+                                    ),
+                                    Helpers.MakeIdentifierPath(
+                                        "f",
                                         Helpers.MakePrimitiveType("int")
                                     )
                                 )

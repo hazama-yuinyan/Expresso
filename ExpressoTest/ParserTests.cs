@@ -1654,6 +1654,22 @@ namespace Expresso.Test
                     Modifiers.None
                 ),
                 EntityDeclaration.MakeFunc(
+                    "test5",
+                    Helpers.MakeSeq(
+                        EntityDeclaration.MakeParameter(
+                            Helpers.MakeSomeIdent("n"),
+                            Expression.MakeConstant("int", 100)
+                        )
+                    ),
+                    Statement.MakeBlock(
+                        Helpers.MakeSingleItemReturnStatement(
+                            Helpers.MakeIdentifierPath("n")
+                        )
+                    ),
+                    Helpers.MakePrimitiveType("int"),
+                    Modifiers.None
+                ),
+                EntityDeclaration.MakeFunc(
                     "main",
                     Enumerable.Empty<ParameterDeclaration>(),
                     Statement.MakeBlock(
@@ -1697,10 +1713,29 @@ namespace Expresso.Test
                             ),
                             Modifiers.Immutable
                         ),
+                        Statement.MakeVarDecl(
+                            Helpers.MakeSeq(Helpers.MakeSomePatternWithType("e")),
+                            Helpers.MakeSeq(
+                                Helpers.MakeCallExpression(
+                                    Helpers.MakeIdentifierPath("test5")
+                                )
+                            ),
+                            Modifiers.Immutable
+                        ),
+                        Statement.MakeVarDecl(
+                            Helpers.MakeSeq(Helpers.MakeSomePatternWithType("f")),
+                            Helpers.MakeSeq(
+                                Helpers.MakeCallExpression(
+                                    Helpers.MakeIdentifierPath("test5"),
+                                    Expression.MakeConstant("int", 90)
+                                )
+                            ),
+                            Modifiers.Immutable
+                        ),
                         Statement.MakeExprStmt(
                             Helpers.MakeCallExpression(
                                 Helpers.MakeIdentifierPath("println"),
-                                Expression.MakeConstant("string", "${a}, ${b}, ${c}, ${d}")
+                                Expression.MakeConstant("string", "${a}, ${b}, ${c}, ${d}, ${e}, ${f}")
                             )
                         )
                     ),
