@@ -382,6 +382,12 @@ namespace Expresso.Test
         {
             return Statement.MakeReturnStmt(Expression.MakeSequenceExpression(expr));
         }
+
+        public static TypeDeclaration MakeClassDecl(string identifier, IEnumerable<AstType> baseTypes, Modifiers modifiers, AttributeSection attribute,
+                                                    params EntityDeclaration[] decls)
+        {
+            return EntityDeclaration.MakeClassDecl(identifier, baseTypes, decls, modifiers, attribute);
+        }
     }
 }
 

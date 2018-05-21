@@ -89,7 +89,7 @@ namespace Expresso.Ast
             case "asm":
                 return AttributeTargets.Assembly;
 
-            case "mod":
+            case "module":
                 return AttributeTargets.Module;
 
             case "class":

@@ -603,7 +603,7 @@ ModuleBody<out ExpressoAst ast>	    (.  var decls = new List<EntityDeclaration>(
 AttributeTarget<out string target>
 =
   ( "asm"
-  | "mod"
+  | "module"
   | "class"
   | "enum"
   | "fld"
@@ -990,7 +990,7 @@ Parameter<out ParameterDeclaration param>   (. string name; Identifier identifie
   													SemanticError("ES0004", "You can't omit both the type annotation and the optional value in a function parameter definition!; `{0}`", name);
 
   												Symbols.AddSymbol(name, identifier);
-  												param = EntityDeclaration.MakeParameter(identifier, option, is_variadic, attribute, start_loc);
+  												param = EntityDeclaration.MakeParameter(identifier, option, attribute, is_variadic, start_loc);
   											.).
 /*------------------------------------------------------------------------*/
 FieldDecl<out EntityDeclaration field, AttributeSection attribute>

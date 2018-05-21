@@ -14,7 +14,6 @@
 ・FlowCheckerを実行するように変更する
 ・string interpolationの式のTextLocationを修正する
 ・if letをなんとかする
-・アトリビュートの追加
 ・Helpersにヘルパーメソッドを追加してTextLocationを明示的にセットしなくてもいいように変更する
 ・helpメッセージの出力先を再考する(今のままではLSとして動かした時に邪魔になってしまう)
 ・ObjectCreationExpressionの引数名とフィールド名などが一致しているか調べる

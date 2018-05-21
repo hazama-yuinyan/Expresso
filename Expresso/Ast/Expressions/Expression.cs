@@ -222,6 +222,11 @@ namespace Expresso.Ast
             return new ObjectCreationExpression(typePath, Enumerable.Empty<PathExpression>(), Enumerable.Empty<Expression>(), end);
         }
 
+        public static ObjectCreationExpression MakeObjectCreation(AstType path, Identifier name, Expression value, TextLocation end = default)
+        {
+            return new ObjectCreationExpression(path, new []{MakePath(name)}, new []{value}, end);
+        }
+
         public static ObjectCreationExpression MakeObjectCreation(AstType path, IEnumerable<Identifier> names,
             IEnumerable<Expression> values, TextLocation end = default)
         {

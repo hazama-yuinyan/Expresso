@@ -93,19 +93,25 @@ namespace Expresso.Ast
         }
 
         #region Factory methods
+        public static FieldDeclaration MakeField(PatternWithType lhs, Expression rhs, Modifiers modifiers, AttributeSection attribute = null,
+                                                 TextLocation start = default, TextLocation end = default)
+        {
+            return new FieldDeclaration(new []{lhs}, new []{rhs}, attribute, modifiers, start, end);
+        }
+
         public static FieldDeclaration MakeField(IEnumerable<PatternWithType> lhs, IEnumerable<Expression> rhs,
                                                  Modifiers modifiers, AttributeSection attribute = null, TextLocation start = default, TextLocation end = default)
         {
             return new FieldDeclaration(lhs, rhs, attribute, modifiers, start, end);
         }
 
-        public static ParameterDeclaration MakeParameter(string name, AstType type, Expression option = null, bool isVariadic = false, AttributeSection attribute = null,
+        public static ParameterDeclaration MakeParameter(string name, AstType type, Expression option = null, AttributeSection attribute = null, bool isVariadic = false,
                                                          TextLocation loc = default)
         {
             return new ParameterDeclaration(MakeIdentifier(name, type), option ?? Expression.Null, isVariadic, attribute, loc);
         }
 
-        public static ParameterDeclaration MakeParameter(Identifier identifier, Expression option = null, bool isVariadic = false, AttributeSection attribute = null,
+        public static ParameterDeclaration MakeParameter(Identifier identifier, Expression option = null, AttributeSection attribute = null, bool isVariadic = false,
                                                          TextLocation loc = default)
         {
             return new ParameterDeclaration(identifier, option ?? Expression.Null, isVariadic, attribute, loc);

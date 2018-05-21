@@ -3699,6 +3699,7 @@ namespace Expresso.Test
                                 AstType.MakeParameterType("T")
                             ),
                             null,
+                            null,
                             true
                         )
                     ),
@@ -8744,6 +8745,330 @@ namespace Expresso.Test
 
             Assert.IsNotNull(ast);
             Helpers.AstStructuralEqual(ast, expected);
+        }
+
+        [Test]
+        public void Attributes()
+        {
+            var parser = new Parser(new Scanner("../../sources/for_unit_tests/attributes.exs")){
+                DoPostParseProcessing = true
+            };
+            parser.Parse();
+
+            var ast = parser.TopmostAst;
+
+            var expected = AstNode.MakeModuleDef("main", new List<EntityDeclaration>{
+                Helpers.MakeClassDecl(
+                    "AuthorAttribute",
+                    Helpers.MakeSeq(
+                        Helpers.MakeGenericTypeWithRealName(
+                            "Attribute",
+                            "System.Attribute"
+                        )
+                    ),
+                    Modifiers.None,
+                    AstNode.MakeAttributeSection(
+                        null,
+                        Expression.MakeObjectCreation(
+                            Helpers.MakeGenericTypeWithRealName(
+                                "AttributeUsageAttribute",
+                                "System.AttributeUsageAttribute"
+                            ),
+                            Helpers.MakeSeq(
+                                AstNode.MakeIdentifier("validOn")
+                            ),
+                            Helpers.MakeSeq(
+                                Expression.MakeMemRef(
+                                    Helpers.MakeIdentifierPath(
+                                        "AttributeTargets",
+                                        Helpers.MakeGenericType("System.AttributeTargets")
+                                    ),
+                                    AstNode.MakeIdentifier(
+                                        "All",
+                                        Helpers.MakeGenericTypeWithRealName(
+                                            "AttributeTargets",
+                                            "System.AttributeTargets"
+                                        )
+                                    )
+                                )
+                            )
+                        )
+                    ),
+                    EntityDeclaration.MakeField(
+                        Helpers.MakeExactPatternWithType("name", AstType.MakePrimitiveType("string")),
+                        Expression.Null,
+                        Modifiers.Immutable | Modifiers.Private
+                    )
+                ),
+                EntityDeclaration.MakeField(
+                    Helpers.MakePaticularPatternWithType(
+                        "y",
+                        Helpers.MakePrimitiveType("int")
+                    ),
+                    Expression.MakeConstant("int", 100),
+                    Modifiers.Immutable,
+                    AstNode.MakeAttributeSection(
+                        null,
+                        Expression.MakeObjectCreation(
+                            Helpers.MakeGenericType("AuthorAttribute"),
+                            AstNode.MakeIdentifier("name"),
+                            Expression.MakeConstant("string", "train12")
+                        )
+                    )
+                ),
+                EntityDeclaration.MakeFunc(
+                    "doSomethingInModule",
+                    Enumerable.Empty<ParameterDeclaration>(),
+                    Statement.MakeBlock(
+                        Statement.MakeEmptyStmt()
+                    ),
+                    Helpers.MakeVoidType(),
+                    Modifiers.None,
+                    AstNode.MakeAttributeSection(
+                        null,
+                        Expression.MakeObjectCreation(
+                            Helpers.MakeGenericTypeWithRealName(
+                                "ObsoleteAttribute",
+                                "System.ObsoleteAttribute"
+                            )
+                        )
+                    )
+                ),
+                Helpers.MakeClassDecl(
+                    "AttributeTest",
+                    Enumerable.Empty<AstType>(),
+                    Modifiers.None,
+                    AstNode.MakeAttributeSection(
+                        null,
+                        Expression.MakeObjectCreation(
+                            Helpers.MakeGenericTypeWithRealName(
+                                "SerializableAttribute",
+                                "System.SerializableAttribute"
+                            )
+                        )
+                    ),
+                    EntityDeclaration.MakeField(
+                        Helpers.MakeExactPatternWithType("x", AstType.MakePrimitiveType("int")),
+                        Expression.Null,
+                        Modifiers.Immutable | Modifiers.Private,
+                        AstNode.MakeAttributeSection(
+                            null,
+                            Expression.MakeObjectCreation(
+                                Helpers.MakeGenericTypeWithRealName(
+                                    "ConditionalAttribute",
+                                    "System.Diagnostics.ConditionalAttribute"
+                                ),
+                                AstNode.MakeIdentifier("conditionString"),
+                                Expression.MakeConstant("string", "DEBUG")
+                            )
+                        )
+                    ),
+                    EntityDeclaration.MakeFunc(
+                        "doSomething",
+                        Helpers.MakeSeq(
+                            EntityDeclaration.MakeParameter(
+                                "dummy",
+                                AstType.MakePrimitiveType("string"),
+                                Expression.Null,
+                                AstNode.MakeAttributeSection(
+                                    null,
+                                    Expression.MakeObjectCreation(
+                                        Helpers.MakeGenericType("AuthorAttribute"),
+                                        AstNode.MakeIdentifier("name"),
+                                        Expression.MakeConstant("string", "train12")
+                                    )
+                                )
+                            )
+                        ),
+                        Statement.MakeBlock(
+                            Statement.MakeExprStmt(
+                                Helpers.MakeCallExpression(
+                                    Helpers.MakeFunctionIdentifierPath(
+                                        "println",
+                                        Helpers.MakeVoidType(),
+                                        Helpers.MakePrimitiveType("string"),
+                                        Helpers.MakeGenericType(
+                                            "array",
+                                            Helpers.MakeGenericType("object")
+                                        )
+                                    ),
+                                    Expression.MakeConstant("string", "Do something")
+                                )
+                            )
+                        ),
+                        Helpers.MakeVoidType(),
+                        Modifiers.Public
+                    ),
+                    EntityDeclaration.MakeFunc(
+                        "doSomething2",
+                        Helpers.MakeSeq(
+                            EntityDeclaration.MakeParameter(
+                                "n",
+                                Helpers.MakePrimitiveType("int"),
+                                Expression.MakeConstant("int", 100)
+                            )
+                        ),
+                        Statement.MakeBlock(
+                            Statement.MakeExprStmt(
+                                Helpers.MakeCallExpression(
+                                    Helpers.MakeFunctionIdentifierPath(
+                                        "println",
+                                        Helpers.MakeVoidType(),
+                                        Helpers.MakePrimitiveType("string"),
+                                        Helpers.MakeGenericType(
+                                            "array",
+                                            Helpers.MakeGenericType("object")
+                                        )
+                                    ),
+                                    Helpers.MakeCallExpression(
+                                        Expression.MakeMemRef(
+                                            Helpers.MakeIdentifierPath(
+                                                "string",
+                                                Helpers.MakePrimitiveType("string")
+                                            ),
+                                            Helpers.MakeFunctionIdentifier(
+                                                "Format",
+                                                Helpers.MakePrimitiveType("string"),
+                                                Helpers.MakePrimitiveType("string"),
+                                                Helpers.MakeGenericTypeWithRealName(
+                                                    "Object",
+                                                    "System.Object"
+                                                )
+                                            )
+                                        ),
+                                        Expression.MakeConstant(
+                                            "string",
+                                            "{0}"
+                                        ),
+                                        Helpers.MakeIdentifierPath(
+                                            "n",
+                                            Helpers.MakePrimitiveType("int")
+                                        )
+                                    )
+                                )
+                            ),
+                            Helpers.MakeSingleItemReturnStatement(
+                                Expression.MakeConstant("int", 10)
+                            )
+                        ),
+                        AstType.MakePrimitiveType("int"),
+                        Modifiers.Public
+                    )
+                ),
+                EntityDeclaration.MakeFunc(
+                    "main",
+                    Enumerable.Empty<ParameterDeclaration>(),
+                    Statement.MakeBlock(
+                        Statement.MakeVarDecl(
+                            Helpers.MakeSeq(
+                                Helpers.MakePaticularPatternWithType(
+                                    "x",
+                                    Helpers.MakeGenericType("AttributeTest")
+                                )
+                            ),
+                            Helpers.MakeSeq(
+                                Expression.MakeObjectCreation(
+                                    Helpers.MakeGenericType("AttributeTest"),
+                                    AstNode.MakeIdentifier("x"),
+                                    Expression.MakeConstant("int", 10)
+                                )
+                            ),
+                            Modifiers.Immutable
+                        ),
+                        Statement.MakeExprStmt(
+                            Helpers.MakeCallExpression(
+                                Expression.MakeMemRef(
+                                    Helpers.MakeIdentifierPath(
+                                        "x",
+                                        Helpers.MakeGenericType("AttributeTest")
+                                    ),
+                                    Helpers.MakeFunctionIdentifier(
+                                        "doSomething",
+                                        Helpers.MakeVoidType(),
+                                        Helpers.MakePrimitiveType("string")
+                                    )
+                                ),
+                                Expression.MakeConstant("string", "some string")
+                            )
+                        ),
+                        Statement.MakeExprStmt(
+                            Helpers.MakeCallExpression(
+                                Expression.MakeMemRef(
+                                    Helpers.MakeIdentifierPath(
+                                        "x",
+                                        Helpers.MakeGenericType("AttributeTest")
+                                    ),
+                                    Helpers.MakeFunctionIdentifier(
+                                        "doSomething2",
+                                        Helpers.MakePrimitiveType("int"),
+                                        Helpers.MakePrimitiveType("int")
+                                    )
+                                )
+                            )
+                        )
+                    ),
+                    Helpers.MakePlaceholderType(),
+                    Modifiers.None
+                )
+            }, Helpers.MakeSeq(
+                AstNode.MakeImportDecl(
+                    Helpers.MakeSeq(
+                        AstNode.MakeIdentifier("System.SerializeAttribute"),
+                        AstNode.MakeIdentifier("System.CLSCompliantAttribute"),
+                        AstNode.MakeIdentifier("System.ObsoleteAttribute"),
+                        AstNode.MakeIdentifier("System.Attribute"),
+                        AstNode.MakeIdentifier("System.AttributeUsageAttribute"),
+                        AstNode.MakeIdentifier("System.AttributeTargets")
+                    ),
+                    Helpers.MakeSeq(
+                        AstNode.MakeIdentifier("SearializeAttribute"),
+                        AstNode.MakeIdentifier("CLSCompiantAttribute"),
+                        AstNode.MakeIdentifier("ObsoleteAttribute"),
+                        AstNode.MakeIdentifier("Attribute"),
+                        AstNode.MakeIdentifier("AttributeUsageAttribute"),
+                        AstNode.MakeIdentifier("AttributeTargets")
+                    )
+                ),
+                AstNode.MakeImportDecl(
+                    Helpers.MakeSeq(
+                        AstNode.MakeIdentifier("System.Diagnostics.ConditionalAttribute")
+                    ),
+                    Helpers.MakeSeq(
+                        AstNode.MakeIdentifier("ConditionalAttribute")
+                    )
+                ),
+                AstNode.MakeImportDecl(
+                    Helpers.MakeSeq(
+                        AstNode.MakeIdentifier("System.Reflection.AssemblyDescriptionAttribute")
+                    ),
+                    Helpers.MakeSeq(
+                        AstNode.MakeIdentifier("AssemblyDescriptionAttribute")
+                    )
+                )
+            ), Helpers.MakeSeq(
+                AstNode.MakeAttributeSection(
+                    "asm",
+                    Expression.MakeObjectCreation(
+                        Helpers.MakeGenericTypeWithRealName(
+                            "AssemblyDescriptionAttribute",
+                            "System.Reflection.AssemblyDescriptionAttribute"
+                        ),
+                        AstNode.MakeIdentifier("description"),
+                        Expression.MakeConstant("string", "test assembly for attributes")
+                    )
+                ),
+                AstNode.MakeAttributeSection(
+                    null,
+                    Expression.MakeObjectCreation(
+                        Helpers.MakeGenericTypeWithRealName(
+                            "CLSCompliantAttribute",
+                            "System.CLSCompliantAttribute"
+                        ),
+                        AstNode.MakeIdentifier("isCompliant"),
+                        Expression.MakeConstant("bool", true)
+                    )
+                )
+            ));
         }
     }
 }
