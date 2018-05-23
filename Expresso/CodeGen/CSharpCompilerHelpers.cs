@@ -179,6 +179,12 @@ namespace Expresso.CodeGen
                 return native_type.MakeByRefType();
             }
 
+            if(astType is ParameterType param_type){
+                // We can't create a type parameter on its own
+                // so return a null to indicate that
+                return null;
+            }
+
             if(astType is PlaceholderType placeholder)
                 throw new EmitterException("Unresolved type found!");
 

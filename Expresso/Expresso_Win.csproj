@@ -17,7 +17,6 @@
     <TreatWarningsAsErrors>False</TreatWarningsAsErrors>
     <IntermediateOutputPath>obj\$(Configuration)\</IntermediateOutputPath>
     <RunCodeAnalysis>False</RunCodeAnalysis>
-    <SourceAnalysisOverrideSettingsFile>C:\Users\Ryouta\AppData\Roaming\ICSharpCode/SharpDevelop4\Settings.SourceAnalysis</SourceAnalysisOverrideSettingsFile>
     <TargetFrameworkProfile />
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
   </PropertyGroup>
@@ -36,7 +35,7 @@
     <RegisterForComInterop>False</RegisterForComInterop>
     <GenerateSerializationAssemblies>Auto</GenerateSerializationAssemblies>
     <FileAlignment>4096</FileAlignment>
-    <DefineConstants>DEBUG;WINDOWS;</DefineConstants>
+    <DefineConstants>WINDOWS;</DefineConstants>
     <CustomCommands>
       <CustomCommands>
         <Command>
@@ -83,12 +82,6 @@
       </CustomCommands>
     </CustomCommands>
     <LangVersion>Latest</LangVersion>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
-    <CheckForOverflowUnderflow>False</CheckForOverflowUnderflow>
-    <BaseIntermediateOutputPath>obj\</BaseIntermediateOutputPath>
-    <StartAction>Project</StartAction>
-    <DefineConstants>DEBUG;</DefineConstants>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Platform)' == 'x86' ">
     <BaseAddress>4194304</BaseAddress>
@@ -147,10 +140,6 @@
     <Compile Include="Ast\PrimitiveType.cs" />
     <Compile Include="TypeSystem\KnownTypeReference.cs" />
     <Compile Include="Ast\SimpleType.cs" />
-    <Compile Include="TypeSystem\SimpleTypeOrModule.cs" />
-    <Compile Include="TypeSystem\TypeOrModuleReference.cs" />
-    <Compile Include="TypeSystem\ExpressoTypeResolveContext.cs" />
-    <Compile Include="TypeSystem\ExpressoUnresolvedFile.cs" />
     <Compile Include="Ast\Expressions\IndexerExpression.cs" />
     <Compile Include="Ast\Expressions\AssignmentExpression.cs" />
     <Compile Include="Ast\Statements\Statement.cs" />
@@ -231,7 +220,6 @@
     <Reference Include="Microsoft.Experimental.Collections">
       <HintPath>..\packages\Microsoft.Experimental.Collections.1.0.3-alpha\lib\portable-net45+win8+wp8\Microsoft.Experimental.Collections.dll</HintPath>
     </Reference>
-    <Reference Include="Mono.CompilerServices.SymbolWriter" />
     <Reference Include="System.Collections.Immutable">
       <HintPath>..\packages\System.Collections.Immutable.1.5.0-preview2-26406-04\lib\portable-net45+win8+wp8+wpa81\System.Collections.Immutable.dll</HintPath>
     </Reference>
@@ -286,10 +274,6 @@
     <ProjectReference Include="ExpressoRuntime\ExpressoRuntime.csproj">
       <Project>{D60E49D6-6CBA-4D54-A009-6A0528181C88}</Project>
       <Name>ExpressoRuntime</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Libraries\Mono.Cecil\Mono.Cecil.csproj">
-      <Project>{D68133BD-1E63-496E-9EDE-4FBDBF77B486}</Project>
-      <Name>Mono.Cecil</Name>
     </ProjectReference>
   </ItemGroup>
 </Project>

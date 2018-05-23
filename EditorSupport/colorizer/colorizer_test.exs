@@ -40,7 +40,7 @@ def getInt() -> int
     return 10;
 }
 
-def returnInt(n (- int, j (- int) -> int
+def returnInt(n (- int, j (- SomeDerivedClass) -> int
 {
     return n;
 }

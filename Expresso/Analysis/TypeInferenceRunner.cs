@@ -1020,6 +1020,12 @@ namespace Expresso.Ast.Analysis
                 var symbols = table.GetSymbols(methodName);
                 if(symbols.Count() == 1){
                     var symbol = symbols.First();
+                    var symbol_func_type = (FunctionType)symbol.Type;
+                    foreach(var pair in symbol_func_type.Parameters.Zip(funcType.Parameters, (param, arg) => new {Parameter = param, Argument = arg})){
+                        if(pair.Parameter is ParameterType)
+                            pair.Parameter.ReplaceWith(pair.Argument.Clone());
+                    }
+                                    
                     return new Tuple<Identifier, FunctionType>(symbol, (FunctionType)symbol.Type);
                 }
 

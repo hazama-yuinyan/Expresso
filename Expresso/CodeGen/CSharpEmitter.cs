@@ -199,6 +199,15 @@ namespace Expresso.CodeGen
             return entities.Any(e => e is FunctionDeclaration);
         }
 
+        static Type[] ConvertToNativeTypes(AstNodeCollection<AstType> types)
+        {
+            var native_types = types.Select(t => CSharpCompilerHelpers.GetNativeType(t)).ToArray();
+            if(native_types.Any(t => t == null))
+                return Type.EmptyTypes;
+            else
+                return native_types;
+        }
+
         ExpressoSymbol GetRuntimeSymbol(Identifier ident)
         {
             ExpressoSymbol symbol;
@@ -827,7 +836,7 @@ namespace Expresso.CodeGen
                                     .Select(arg => arg.AcceptWalker(this, context))
                                     .ToArray();
             var parent_args = context.ArgumentTypes;
-            context.ArgumentTypes = call.OverloadSignature.Parameters.Select(p => CSharpCompilerHelpers.GetNativeType(p)).ToArray();// compiled_args.Select(arg => arg.Type).ToArray();
+            context.ArgumentTypes = ConvertToNativeTypes(call.OverloadSignature.Parameters);
 
             context.RequestMethod = true;
             context.Method = null;
