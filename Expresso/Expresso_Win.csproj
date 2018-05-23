@@ -211,6 +211,7 @@
     <Compile Include="CodeGen\PortablePdbGenerator.cs" />
     <Compile Include="CodeGen\MatchClauseIdentifierDefiner.cs" />
     <Compile Include="CodeGen\CSharpCompilerHelpers.cs" />
+    <Compile Include="Ast\GeneralScope\AttributeSection.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System" />
