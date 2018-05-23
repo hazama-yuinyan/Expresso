@@ -434,8 +434,7 @@ namespace Expresso.CodeGen
                 break;
 
             case "3000":
-                Console.WriteLine("Currently you may not understand the cause of the problem. It's due to the weakness in reporting a string interpolation error.");
-                Console.WriteLine("In future versions, it would be more clear what is problems in string interpolations.");
+                Console.WriteLine("For more info, see the previous error.");
                 break;
 
             case "3010":

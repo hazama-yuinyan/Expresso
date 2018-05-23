@@ -44,7 +44,7 @@ public class Parser {
 
 -->declarations
 
-	public Parser(Scanner scanner) : this() {
+	public Parser(Scanner scanner, TextLocation parentLocation = default) : this(parentLocation) {
 		this.scanner = scanner;
 		errors = new Errors();
 	}

@@ -755,6 +755,17 @@ namespace Expresso.Test
             Assert.That(() => parser.Parse(), Throws.TypeOf<ParserException>().With.Message.Contains("ES3100"));
             Assert.AreEqual(1, parser.errors.count);
         }
+
+        [Test]
+        public void StringInterpolationError()
+        {
+            var parser = new Parser(new Scanner("../../sources/for_unit_tests/erroneous/string_interpolation_error.exs")){
+                DoPostParseProcessing = true
+            };
+
+            Assert.That(() => parser.Parse(), Throws.TypeOf<ParserException>().With.Message.Contains("ES0102"));
+            Assert.AreEqual(1, parser.errors.count);
+        }
     }
 }
 

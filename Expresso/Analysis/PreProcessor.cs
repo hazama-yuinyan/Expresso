@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using Expresso.CodeGen;
+using ICSharpCode.NRefactory;
 using ICSharpCode.NRefactory.PatternMatching;
 
 namespace Expresso.Ast.Analysis
@@ -302,16 +303,19 @@ namespace Expresso.Ast.Analysis
                 var exprs = new List<Expression>();
                 foreach(RegexMatch match in matches){
                     var groups = match.Groups;
-                    var inner_parser = new Parser(new Scanner(new MemoryStream(Encoding.UTF8.GetBytes(groups[1].Value))));
+                    // FIXME?: create a parser for a string
+                    var inner_parser = new Parser(
+                        new Scanner(new MemoryStream(Encoding.UTF8.GetBytes(groups[1].Value))),
+                        new TextLocation(literal.StartLocation.Line, literal.StartLocation.Column + groups[1].Index)
+                    );
                     try{
                         exprs.Add(inner_parser.ParseExpression());
                     }
-                    catch(ParserException e){
+                    catch(FatalError){
                         parser.ReportSemanticError(
-                            "A string interpolation error: {0}",
+                            "An error occurred in a string interpolation.",
                             "ES3000",
-                            literal,
-                            e.Message
+                            literal
                         );
                     }
                 }

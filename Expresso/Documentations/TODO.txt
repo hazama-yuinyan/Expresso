@@ -12,7 +12,6 @@
 ・comprehensionの実装
 ・matchの挙動が一部Rustと違うのを修正する
 ・FlowCheckerを実行するように変更する
-・string interpolationの式のTextLocationを修正する
 ・if letをなんとかする
 ・Helpersにヘルパーメソッドを追加してTextLocationを明示的にセットしなくてもいいように変更する
 ・helpメッセージの出力先を再考する(今のままではLSとして動かした時に邪魔になってしまう)

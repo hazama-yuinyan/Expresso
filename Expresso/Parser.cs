@@ -3,15 +3,12 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Numerics;
-using System.IO;
 using System.Text;
 using System.Text.RegularExpressions;
-
 using Expresso.Ast;
 using Expresso.Ast.Analysis;
 using Expresso.CodeGen;
 using Expresso.TypeSystem;
-
 using ICSharpCode.NRefactory;
 
 
@@ -65,11 +62,12 @@ public class Parser {
 	public Token la;   // lookahead token
 	int errDist = minErrDist;
 
-string cur_class_name;
-    ExpressoModifiers cur_modifiers;
-	bool is_first_comprehension_for_clause = true, defining_closure_parameters = false;
-    static uint ScopeId = 1;
+static uint ScopeId = 1;
+    string cur_class_name;
     static Regex UnicodeEscapeFinder = new Regex(@"\\[uU]([\dA-Fa-f]{4}|[\dA-Fa-f]{6})", RegexOptions.Compiled);
+    ExpressoModifiers cur_modifiers;
+    bool is_first_comprehension_for_clause = true, defining_closure_parameters = false;
+    TextLocation parent_location;
     internal SymbolTable Symbols{get; set;}
     /// <summary>
     /// This flag determines whether we are doing post-parse processing including name binding,
@@ -77,9 +75,30 @@ string cur_class_name;
     /// </summary>
     public bool DoPostParseProcessing{get; set;}
 	public ExpressoAst TopmostAst{get; private set;}	//the top-level AST the parser is parsing
-    public TextLocation CurrentLocation => new TextLocation(t.line, t.col);
-    public TextLocation CurrentEndLocation => new TextLocation(t.line, t.col + t.val.Length);
-    public TextLocation NextLocation => new TextLocation(la.line, la.col);
+    public TextLocation CurrentLocation{
+        get{
+            if(parent_location == default)
+                return new TextLocation(parent_location.Line + t.line, parent_location.Column + t.col);
+            else
+                return new TextLocation(parent_location.Line + t.line - 1, parent_location.Column + t.col - 1);
+        }
+    }
+    public TextLocation CurrentEndLocation{
+        get{
+            if(parent_location == default)
+                return new TextLocation(parent_location.Line + t.line, parent_location.Column + t.col + t.val.Length);
+            else
+                return new TextLocation(parent_location.Line + t.line - 1, parent_location.Column + t.col + t.val.Length - 1);
+        }
+    }
+    public TextLocation NextLocation{
+        get{
+            if(parent_location == default)
+                return new TextLocation(parent_location.Line + la.line, parent_location.Column + la.col);
+            else
+                return new TextLocation(parent_location.Line + la.line - 1, parent_location.Column + la.col - 1);
+        }
+    }
     internal List<Parser> InnerParsers{get;} = new List<Parser>();
 
 	///<summary>
@@ -93,11 +112,12 @@ string cur_class_name;
     ///<remarks>
     /// The Parser class itself is responsible for constructing the AST AND the symbol table.
     ///</remarks>
-	Parser()
+	Parser(TextLocation parentLocation)
 	{
         DoPostParseProcessing = false;
         ExpressoCompilerHelpers.Prepare();
         Symbols = SymbolTable.Create();
+        parent_location = parentLocation;
 	}
 	
 	LiteralExpression CreateDefaultValue(KnownTypeCode type)
@@ -505,7 +525,7 @@ string cur_class_name;
 /*--------------------------------------------------------------------------*/
 
 
-	public Parser(Scanner scanner) : this() {
+	public Parser(Scanner scanner, TextLocation parentLocation = default) : this(parentLocation) {
 		this.scanner = scanner;
 		errors = new Errors();
 	}
