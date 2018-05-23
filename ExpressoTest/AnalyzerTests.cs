@@ -1583,7 +1583,7 @@ namespace Expresso.Test
                                             Helpers.MakeFunctionIdentifier(
                                                 "Add",
                                                 Helpers.MakeVoidType(),
-                                                AstType.MakeParameterType("T")
+                                                AstType.MakePrimitiveType("int")
                                             )
                                         ),
                                         Helpers.MakeIdentifierPath(
@@ -1826,7 +1826,7 @@ namespace Expresso.Test
                                                     Helpers.MakeFunctionIdentifier(
                                                         "Add",
                                                         Helpers.MakeVoidType(),
-                                                        AstType.MakeParameterType("T")
+                                                        AstType.MakePrimitiveType("int")
                                                     )
                                                 ),
                                                 Helpers.MakeIdentifierPath(
@@ -1848,7 +1848,7 @@ namespace Expresso.Test
                                                     Helpers.MakeFunctionIdentifier(
                                                         "Add",
                                                         Helpers.MakeVoidType(),
-                                                        AstType.MakeParameterType("T")
+                                                        AstType.MakePrimitiveType("int")
                                                     )
                                                 ),
                                                 Helpers.MakeIdentifierPath(
@@ -3579,7 +3579,11 @@ namespace Expresso.Test
                                     Helpers.MakeFunctionIdentifier(
                                         "Add",
                                         Helpers.MakeVoidType(),
-                                        AstType.MakeParameterType("T")
+                                        Helpers.MakeGenericType(
+                                            "tuple",
+                                            AstType.MakePrimitiveType("int"),
+                                            AstType.MakePrimitiveType("int")
+                                        )
                                     )
                                 ),
                                 Expression.MakeParen(
@@ -6176,7 +6180,7 @@ namespace Expresso.Test
                                             Helpers.MakeFunctionIdentifier(
                                                 "Add",
                                                 Helpers.MakeVoidType(),
-                                                AstType.MakeParameterType("T")
+                                                AstType.MakePrimitiveType("int")
                                             )
                                         ),
                                         Helpers.MakeIdentifierPath(
