@@ -1721,13 +1721,11 @@ namespace Expresso.Test
                                 "i",
                                 Helpers.MakePrimitiveType("int")
                             ),
-                            Expression.MakeSequenceInitializer(
+                            Helpers.MakeSequenceInitializer(
                                 Helpers.MakeGenericType(
                                     "vector",
                                     Helpers.MakePrimitiveType("int")
                                 ),
-                                TextLocation.Empty,
-                                TextLocation.Empty,
                                 Expression.MakeConstant("int", 0),
                                 Expression.MakeConstant("int", 1),
                                 Expression.MakeConstant("int", 2),
@@ -2896,13 +2894,12 @@ namespace Expresso.Test
                             ),
                             Statement.MakeBlock(
                                 Helpers.MakeSingleItemReturnStatement(
-                                    Expression.MakeCallExpr(
+                                    Helpers.MakeCallExpression(
                                         Helpers.MakeFunctionIdentifierPath(
                                             "test4",
                                             Helpers.MakePrimitiveType("int"),
                                             Helpers.MakePrimitiveType("int")
                                         ),
-                                        TextLocation.Empty,
                                         Expression.MakeBinaryExpr(
                                             OperatorType.Plus,
                                             Helpers.MakeIdentifierPath(
@@ -3715,13 +3712,11 @@ namespace Expresso.Test
                                 )
                             ),
                             Helpers.MakeSeq(
-                                Expression.MakeSequenceInitializer(
+                                Helpers.MakeSequenceInitializer(
                                     Helpers.MakeGenericType(
                                         "vector",
                                         AstType.MakeParameterType("T")
                                     ),
-                                    TextLocation.Empty,
-                                    TextLocation.Empty,
                                     Helpers.MakeIdentifierPath(
                                         "a",
                                         AstType.MakeParameterType("T")
@@ -4615,11 +4610,9 @@ namespace Expresso.Test
                     Helpers.MakeSeq(
                         EntityDeclaration.MakeParameter(
                             "addOne",
-                            AstType.MakeFunctionType(
+                            Helpers.MakeFunctionType(
                                 "closure",
                                 Helpers.MakePrimitiveType("int"),
-                                TextLocation.Empty,
-                                TextLocation.Empty,
                                 Helpers.MakePrimitiveType("int")
                             )
                         )
@@ -4629,11 +4622,9 @@ namespace Expresso.Test
                             Helpers.MakeCallExpression(
                                 Helpers.MakeIdentifierPath(
                                     "addOne",
-                                    AstType.MakeFunctionType(
+                                    Helpers.MakeFunctionType(
                                         "closure",
                                         Helpers.MakePrimitiveType("int"),
-                                        TextLocation.Empty,
-                                        TextLocation.Empty,
                                         Helpers.MakePrimitiveType("int")
                                     )
                                 ),
@@ -4652,11 +4643,9 @@ namespace Expresso.Test
                             Helpers.MakeSeq(
                                 Helpers.MakePaticularPatternWithType(
                                     "c",
-                                    AstType.MakeFunctionType(
+                                    Helpers.MakeFunctionType(
                                         "closure",
                                         Helpers.MakePrimitiveType("int"),
-                                        TextLocation.Empty,
-                                        TextLocation.Empty,
                                         Helpers.MakePrimitiveType("int")
                                     )
                                 )
@@ -4676,9 +4665,8 @@ namespace Expresso.Test
                                             )
                                         )
                                     ),
-                                    TextLocation.Empty,
-                                    new List<Identifier>{},
-                                    EntityDeclaration.MakeParameter(
+                                    liftedIdentifiers: new List<Identifier>(),
+                                    parameters: EntityDeclaration.MakeParameter(
                                         "x",
                                         Helpers.MakePrimitiveType("int")
                                     )
@@ -4690,11 +4678,9 @@ namespace Expresso.Test
                             Helpers.MakeSeq(
                                 Helpers.MakePaticularPatternWithType(
                                     "c2",
-                                    AstType.MakeFunctionType(
+                                    Helpers.MakeFunctionType(
                                         "closure",
                                         Helpers.MakePrimitiveType("int"),
-                                        TextLocation.Empty,
-                                        TextLocation.Empty,
                                         Helpers.MakePrimitiveType("int")
                                     )
                                 )
@@ -4729,9 +4715,8 @@ namespace Expresso.Test
                                             )
                                         )
                                     ),
-                                    TextLocation.Empty,
-                                    new List<Identifier>{},
-                                    EntityDeclaration.MakeParameter(
+                                    liftedIdentifiers: new List<Identifier>{},
+                                    parameters: EntityDeclaration.MakeParameter(
                                         "x",
                                         Helpers.MakePrimitiveType("int")
                                     )
@@ -4750,11 +4735,9 @@ namespace Expresso.Test
                                 Helpers.MakeCallExpression(
                                     Helpers.MakeIdentifierPath(
                                         "c",
-                                        AstType.MakeFunctionType(
+                                        Helpers.MakeFunctionType(
                                             "closure",
                                             Helpers.MakePrimitiveType("int"),
-                                            TextLocation.Empty,
-                                            TextLocation.Empty,
                                             Helpers.MakePrimitiveType("int")
                                         )
                                     ),
@@ -4774,11 +4757,9 @@ namespace Expresso.Test
                                 Helpers.MakeCallExpression(
                                     Helpers.MakeIdentifierPath(
                                         "c2",
-                                        AstType.MakeFunctionType(
+                                        Helpers.MakeFunctionType(
                                             "closure",
                                             Helpers.MakePrimitiveType("int"),
-                                            TextLocation.Empty,
-                                            TextLocation.Empty,
                                             Helpers.MakePrimitiveType("int")
                                         )
                                     ),
@@ -4799,11 +4780,9 @@ namespace Expresso.Test
                                     Helpers.MakeFunctionIdentifierPath(
                                         "addOneToOne",
                                         Helpers.MakePrimitiveType("int"),
-                                        AstType.MakeFunctionType(
+                                        Helpers.MakeFunctionType(
                                             "closure",
                                             Helpers.MakePrimitiveType("int"),
-                                            TextLocation.Empty,
-                                            TextLocation.Empty,
                                             Helpers.MakePrimitiveType("int")
                                         )
                                     ),
@@ -4821,9 +4800,8 @@ namespace Expresso.Test
                                                 )
                                             )
                                         ),
-                                        TextLocation.Empty,
-                                        new List<Identifier>{},
-                                        EntityDeclaration.MakeParameter(
+                                        liftedIdentifiers: new List<Identifier>{},
+                                        parameters: EntityDeclaration.MakeParameter(
                                             "x",
                                             Helpers.MakePrimitiveType("int")
                                         )
@@ -4848,11 +4826,9 @@ namespace Expresso.Test
                             Helpers.MakeSeq(
                                 Helpers.MakePaticularPatternWithType(
                                     "c3",
-                                    AstType.MakeFunctionType(
+                                    Helpers.MakeFunctionType(
                                         "closure",
                                         Helpers.MakePrimitiveType("int"),
-                                        TextLocation.Empty,
-                                        TextLocation.Empty,
                                         Helpers.MakePrimitiveType("int")
                                     )
                                 )
@@ -4875,14 +4851,13 @@ namespace Expresso.Test
                                             )
                                         )
                                     ),
-                                    TextLocation.Empty,
-                                    new List<Identifier>{
+                                    liftedIdentifiers: new List<Identifier>{
                                         AstNode.MakeIdentifier(
                                             "e",
                                             Helpers.MakePrimitiveType("int")
                                         )
                                     },
-                                    EntityDeclaration.MakeParameter(
+                                    parameters: EntityDeclaration.MakeParameter(
                                         "x",
                                         Helpers.MakePrimitiveType("int")
                                     )
@@ -4901,11 +4876,9 @@ namespace Expresso.Test
                                 Helpers.MakeCallExpression(
                                     Helpers.MakeIdentifierPath(
                                         "c3",
-                                        AstType.MakeFunctionType(
+                                        Helpers.MakeFunctionType(
                                             "closure",
                                             Helpers.MakePrimitiveType("int"),
-                                            TextLocation.Empty,
-                                            TextLocation.Empty,
                                             Helpers.MakePrimitiveType("int")
                                         )
                                     ),
@@ -4992,11 +4965,9 @@ namespace Expresso.Test
                             Helpers.MakeSeq(
 	                            Helpers.MakePaticularPatternWithType(
 	                                "c",
-	                                AstType.MakeFunctionType(
+                                    Helpers.MakeFunctionType(
 	                                    "closure",
 	                                    Helpers.MakePrimitiveType("int"),
-	                                    TextLocation.Empty,
-	                                    TextLocation.Empty,
 	                                    Helpers.MakePrimitiveType("bool")
 	                                )
 	                            )
@@ -5024,9 +4995,8 @@ namespace Expresso.Test
 	                                        )
 	                                    )
 	                                ),
-	                                TextLocation.Empty,
-                                    new List<Identifier>(),
-	                                EntityDeclaration.MakeParameter(
+                                    liftedIdentifiers: new List<Identifier>(),
+                                    parameters: EntityDeclaration.MakeParameter(
 	                                    "f",
 	                                    Helpers.MakePrimitiveType("bool")
 	                                )
@@ -5045,11 +5015,9 @@ namespace Expresso.Test
                                 Helpers.MakeCallExpression(
                                     Helpers.MakeIdentifierPath(
                                         "c",
-                                        AstType.MakeFunctionType(
+                                        Helpers.MakeFunctionType(
                                             "closure",
                                             Helpers.MakePrimitiveType("int"),
-                                            TextLocation.Empty,
-                                            TextLocation.Empty,
                                             Helpers.MakePrimitiveType("bool")
                                         )
                                     ),
@@ -5062,11 +5030,9 @@ namespace Expresso.Test
                             Helpers.MakeSeq(
                                 Helpers.MakePaticularPatternWithType(
                                     "c2",
-                                    AstType.MakeFunctionType(
+                                    Helpers.MakeFunctionType(
                                         "closure",
                                         Helpers.MakePrimitiveType("int"),
-                                        TextLocation.Empty,
-                                        TextLocation.Empty,
                                         Helpers.MakePrimitiveType("int")
                                     )
                                 )
@@ -5125,9 +5091,8 @@ namespace Expresso.Test
                                             )
                                         )
                                     ),
-                                    TextLocation.Empty,
-                                    new List<Identifier>(),
-                                    EntityDeclaration.MakeParameter(
+                                    liftedIdentifiers: new List<Identifier>(),
+                                    parameters: EntityDeclaration.MakeParameter(
                                         "i",
                                         Helpers.MakePrimitiveType("int")
                                     )
@@ -5146,11 +5111,9 @@ namespace Expresso.Test
                                 Helpers.MakeCallExpression(
                                     Helpers.MakeIdentifierPath(
                                         "c2",
-                                        AstType.MakeFunctionType(
+                                        Helpers.MakeFunctionType(
                                             "closure",
                                             Helpers.MakePrimitiveType("int"),
-                                            TextLocation.Empty,
-                                            TextLocation.Empty,
                                             Helpers.MakePrimitiveType("int")
                                         )
                                     ),
@@ -5163,11 +5126,9 @@ namespace Expresso.Test
                             Helpers.MakeSeq(
                                 Helpers.MakePaticularPatternWithType(
                                     "c3",
-                                    AstType.MakeFunctionType(
+                                    Helpers.MakeFunctionType(
                                         "closure",
                                         Helpers.MakeVoidType(),
-                                        TextLocation.Empty,
-                                        TextLocation.Empty,
                                         Helpers.MakePrimitiveType("int")
                                     )
                                 )
@@ -5263,9 +5224,8 @@ namespace Expresso.Test
                                             )
                                         )
                                     ),
-                                    TextLocation.Empty,
-                                    new List<Identifier>(),
-                                    EntityDeclaration.MakeParameter(
+                                    liftedIdentifiers: new List<Identifier>(),
+                                    parameters: EntityDeclaration.MakeParameter(
                                         "i",
                                         Helpers.MakePrimitiveType("int")
                                     )
@@ -5277,11 +5237,9 @@ namespace Expresso.Test
                             Helpers.MakeCallExpression(
                                 Helpers.MakeIdentifierPath(
                                     "c3",
-                                    AstType.MakeFunctionType(
+                                    Helpers.MakeFunctionType(
                                         "closure",
                                         Helpers.MakeVoidType(),
-                                        TextLocation.Empty,
-                                        TextLocation.Empty,
                                         Helpers.MakePrimitiveType("int")
                                     )
                                 ),
@@ -5377,7 +5335,7 @@ namespace Expresso.Test
                     "main",
                     Enumerable.Empty<ParameterDeclaration>(),
                     Statement.MakeBlock(
-                        Statement.MakeTryStmt(
+                        Helpers.MakeTryStmt(
                             Statement.MakeBlock(
                                 Statement.MakeExprStmt(
                                     Helpers.MakeCallExpression(
@@ -5403,7 +5361,6 @@ namespace Expresso.Test
                                 )
                             ),
                             null,
-                            TextLocation.Empty,
                             Statement.MakeCatchClause(
                                 AstNode.MakeIdentifier(
                                     "e",
@@ -5607,7 +5564,7 @@ namespace Expresso.Test
                             ),
                             Modifiers.None
                         ),
-                        Statement.MakeTryStmt(
+                        Helpers.MakeTryStmt(
                             Statement.MakeBlock(
                                 Statement.MakeExprStmt(
                                     Helpers.MakeCallExpression(
@@ -5680,7 +5637,6 @@ namespace Expresso.Test
                                     )
                                 )
                             ),
-                            TextLocation.Empty,
                             Statement.MakeCatchClause(
                                 AstNode.MakeIdentifier(
                                     "e",
@@ -5815,13 +5771,11 @@ namespace Expresso.Test
                                 )
                             ),
                             Helpers.MakeSeq(
-                                Expression.MakeSequenceInitializer(
+                                Helpers.MakeSequenceInitializer(
                                     Helpers.MakeGenericType(
                                         "array",
                                         Helpers.MakePrimitiveType("int")
                                     ),
-                                    TextLocation.Empty,
-                                    TextLocation.Empty,
                                     Expression.MakeConstant(
                                         "int",
                                         1
@@ -5870,14 +5824,12 @@ namespace Expresso.Test
                                 )
                             ),
                             Helpers.MakeSeq(
-                                Expression.MakeSequenceInitializer(
+                                Helpers.MakeSequenceInitializer(
                                     Helpers.MakeGenericType(
                                         "dictionary",
                                         Helpers.MakePrimitiveType("string"),
                                         Helpers.MakePrimitiveType("int")
                                     ),
-                                    TextLocation.Empty,
-                                    TextLocation.Empty,
                                     Expression.MakeKeyValuePair(
                                         Expression.MakeConstant(
                                             "string",
@@ -5974,7 +5926,7 @@ namespace Expresso.Test
                                 )
                             ),
                             Helpers.MakeSeq(
-                                Expression.MakeIndexer(
+                                Helpers.MakeIndexer(
                                     Helpers.MakeIdentifierPath(
                                         "a",
                                         Helpers.MakeGenericType(
@@ -5982,7 +5934,6 @@ namespace Expresso.Test
                                             Helpers.MakePrimitiveType("int")
                                         )
                                     ),
-                                    TextLocation.Empty,
                                     Expression.MakeIntSeq(
                                         Expression.MakeConstant(
                                             "int",
@@ -6013,13 +5964,11 @@ namespace Expresso.Test
                                 )
                             ),
                             Helpers.MakeSeq(
-                                Expression.MakeSequenceInitializer(
+                                Helpers.MakeSequenceInitializer(
                                     Helpers.MakeGenericType(
                                         "array",
                                         Helpers.MakePrimitiveType("int")
                                     ),
-                                    TextLocation.Empty,
-                                    TextLocation.Empty,
                                     Expression.MakeIntSeq(
                                         Expression.MakeConstant("int", 0),
                                         Expression.MakeConstant("int", 10),
@@ -6041,13 +5990,11 @@ namespace Expresso.Test
                                 )
                             ),
                             Helpers.MakeSeq(
-                                Expression.MakeSequenceInitializer(
+                                Helpers.MakeSequenceInitializer(
                                     Helpers.MakeGenericType(
                                         "vector",
                                         Helpers.MakePrimitiveType("int")
                                     ),
-                                    TextLocation.Empty,
-                                    TextLocation.Empty,
                                     Expression.MakeIntSeq(
                                         Expression.MakeConstant("int", 0),
                                         Expression.MakeConstant("int", 10),
@@ -6069,13 +6016,11 @@ namespace Expresso.Test
                                 )
                             ),
                             Helpers.MakeSeq(
-                                Expression.MakeSequenceInitializer(
+                                Helpers.MakeSequenceInitializer(
                                     Helpers.MakeGenericType(
                                         "array",
                                         Helpers.MakePrimitiveType("int")
                                     ),
-                                    TextLocation.Empty,
-                                    TextLocation.Empty,
                                     Expression.MakeIntSeq(
                                         Expression.MakeConstant("int", 0),
                                         Expression.MakeUnaryExpr(
@@ -6103,13 +6048,11 @@ namespace Expresso.Test
                                 )
                             ),
                             Helpers.MakeSeq(
-                                Expression.MakeSequenceInitializer(
+                                Helpers.MakeSequenceInitializer(
                                     Helpers.MakeGenericType(
                                         "array",
                                         Helpers.MakePrimitiveType("int")
                                     ),
-                                    TextLocation.Empty,
-                                    TextLocation.Empty,
                                     Expression.MakeIntSeq(
                                         Expression.MakeConstant("int", 0),
                                         Expression.MakeConstant("int", 100),
@@ -6131,13 +6074,11 @@ namespace Expresso.Test
                                 )
                             ),
                             Helpers.MakeSeq(
-                                Expression.MakeSequenceInitializer(
+                                Helpers.MakeSequenceInitializer(
                                     Helpers.MakeGenericType(
                                         "array",
                                         Helpers.MakePrimitiveType("int")
                                     ),
-                                    TextLocation.Empty,
-                                    TextLocation.Empty,
                                     Expression.MakeIntSeq(
                                         Expression.MakeConstant("int", 5),
                                         Expression.MakeConstant("int", 15),
@@ -6417,12 +6358,10 @@ namespace Expresso.Test
             var ast = parser.TopmostAst;
 
             var expected_ast = AstNode.MakeModuleDef("main", new List<EntityDeclaration>{
-                EntityDeclaration.MakeInterfaceDecl(
+                Helpers.MakeInterfaceDecl(
                     "IInterface",
                     Enumerable.Empty<AstType>(),
                     Modifiers.None,
-                    TextLocation.Empty,
-                    TextLocation.Empty,
                     EntityDeclaration.MakeFunc(
                         "doSomeBehavior",
                         Enumerable.Empty<ParameterDeclaration>(),
@@ -6431,14 +6370,12 @@ namespace Expresso.Test
                         Modifiers.Public
                     )
                 ),
-                EntityDeclaration.MakeClassDecl(
+                Helpers.MakeClassDecl(
                     "TestClass2",
                     Helpers.MakeSeq<AstType>(
                         Helpers.MakeGenericType("IInterface")
                     ),
                     Modifiers.None,
-                    TextLocation.Empty,
-                    TextLocation.Empty,
                     EntityDeclaration.MakeField(
                         Helpers.MakeSeq(
                             Helpers.MakeExactPatternWithType(
@@ -6652,7 +6589,7 @@ namespace Expresso.Test
                                 )
                             ),
                             Helpers.MakeSeq(
-                                Expression.MakeIndexer(
+                                Helpers.MakeIndexer(
                                     Helpers.MakeIdentifierPath(
                                         "a",
                                         Helpers.MakeGenericType(
@@ -6660,7 +6597,6 @@ namespace Expresso.Test
                                             Helpers.MakePrimitiveType("int")
                                         )
                                     ),
-                                    TextLocation.Empty,
                                     Expression.MakeIntSeq(
                                         Expression.MakeConstant("int", 2),
                                         Expression.MakeConstant("int", 4),
@@ -6748,7 +6684,7 @@ namespace Expresso.Test
                                 )
                             ),
                             Helpers.MakeSeq(
-                                Expression.MakeIndexer(
+                                Helpers.MakeIndexer(
                                     Helpers.MakeIdentifierPath(
                                         "c",
                                         Helpers.MakeGenericType(
@@ -6756,7 +6692,6 @@ namespace Expresso.Test
                                             Helpers.MakePrimitiveType("int")
                                         )
                                     ),
-                                    TextLocation.Empty,
                                     Expression.MakeIntSeq(
                                         Expression.MakeConstant("int", 2),
                                         Expression.MakeConstant("int", 4),
@@ -6961,7 +6896,7 @@ namespace Expresso.Test
                             ),
                             Modifiers.None
                         ),
-                        Statement.MakeTryStmt(
+                        Helpers.MakeTryStmt(
                             Statement.MakeBlock(
                                 Statement.MakeExprStmt(
                                     Expression.MakeSingleAssignment(
@@ -7119,8 +7054,7 @@ namespace Expresso.Test
                                         BlockStatement.Null
                                     )
                                 )
-                            ),
-                            TextLocation.Empty
+                            )
                         )
                     ),
                     Helpers.MakeVoidType(),
@@ -7155,12 +7089,10 @@ namespace Expresso.Test
             var ast = parser.TopmostAst;
 
             var expected = AstNode.MakeModuleDef("main", new List<EntityDeclaration>{
-                EntityDeclaration.MakeClassDecl(
+                Helpers.MakeClassDecl(
                     "TestClass5",
                     Enumerable.Empty<AstType>(),
                     Modifiers.None,
-                    TextLocation.Empty,
-                    TextLocation.Empty,
                     EntityDeclaration.MakeField(
                         Helpers.MakeSeq(
                             Helpers.MakeExactPatternWithType(
@@ -7255,13 +7187,11 @@ namespace Expresso.Test
                                 )
                             ),
                             Helpers.MakeSeq(
-                                Expression.MakeSequenceInitializer(
+                                Helpers.MakeSequenceInitializer(
                                     Helpers.MakeGenericType(
                                         "array",
                                         Helpers.MakePrimitiveType("int")
                                     ),
-                                    TextLocation.Empty,
-                                    TextLocation.Empty,
                                     Expression.MakeConstant("int", 1),
                                     Expression.MakeConstant("int", 1),
                                     Expression.MakeConstant("int", 2),
@@ -7416,7 +7346,7 @@ namespace Expresso.Test
                                         "string",
                                         "the 6th fibonacci number is {0}"
                                     ),
-                                    Expression.MakeIndexer(
+                                    Helpers.MakeIndexer(
                                         Helpers.MakeIdentifierPath(
                                             "ary",
                                             Helpers.MakeGenericType(
@@ -7424,7 +7354,6 @@ namespace Expresso.Test
                                                 Helpers.MakePrimitiveType("int")
                                             )
                                         ),
-                                        TextLocation.Empty,
                                         Expression.MakeConstant(
                                             "int",
                                             5
@@ -7953,14 +7882,12 @@ namespace Expresso.Test
                                 )
                             ),
                             Helpers.MakeSeq(
-                                Expression.MakeSequenceInitializer(
+                                Helpers.MakeSequenceInitializer(
                                     Helpers.MakeGenericType(
                                         "dictionary",
                                         Helpers.MakePrimitiveType("string"),
                                         Helpers.MakePrimitiveType("int")
                                     ),
-                                    TextLocation.Empty,
-                                    TextLocation.Empty,
                                     Expression.MakeKeyValuePair(
                                         Expression.MakeConstant("string", "akari"),
                                         Expression.MakeConstant("int", 13)
@@ -7996,7 +7923,7 @@ namespace Expresso.Test
                                 )
                             ),
                             Helpers.MakeSeq(
-                                Expression.MakeSequenceInitializer(
+                                Helpers.MakeSequenceInitializer(
                                     Helpers.MakeGenericType(
                                         "array",
                                         Helpers.MakeGenericType(
@@ -8005,8 +7932,6 @@ namespace Expresso.Test
                                             Helpers.MakePrimitiveType("int")
                                         )
                                     ),
-                                    TextLocation.Empty,
-                                    TextLocation.Empty,
                                     Expression.MakeParen(
                                         Expression.MakeSequenceExpression(
                                             Expression.MakeConstant("int", 1),
@@ -8044,7 +7969,7 @@ namespace Expresso.Test
                                 )
                             ),
                             Helpers.MakeSeq(
-                                Expression.MakeSequenceInitializer(
+                                Helpers.MakeSequenceInitializer(
                                     Helpers.MakeGenericType(
                                         "vector",
                                         Helpers.MakeGenericType(
@@ -8053,8 +7978,6 @@ namespace Expresso.Test
                                             Helpers.MakePrimitiveType("int")
                                         )
                                     ),
-                                    TextLocation.Empty,
-                                    TextLocation.Empty,
                                     Expression.MakeParen(
                                         Expression.MakeSequenceExpression(
                                             Expression.MakeConstant("int", 7),

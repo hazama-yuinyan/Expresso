@@ -388,6 +388,36 @@ namespace Expresso.Test
         {
             return EntityDeclaration.MakeClassDecl(identifier, baseTypes, decls, modifiers, attribute);
         }
+
+        public static SequenceInitializer MakeSequenceInitializer(SimpleType type, params Expression[] initializers)
+        {
+            return Expression.MakeSequenceInitializer(type, default, default, initializers);
+        }
+
+        public static FunctionType MakeFunctionType(string name, AstType returnType, params AstType[] parameterTypes)
+        {
+            return AstType.MakeFunctionType(name, returnType, default, default, parameterTypes);
+        }
+
+        public static IndexerExpression MakeIndexer(Expression target, params Expression[] arguments)
+        {
+            return Expression.MakeIndexer(target, default, arguments);
+        }
+
+        public static TypeDeclaration MakeInterfaceDecl(string name, IEnumerable<AstType> baseTypes, Modifiers modifiers, params EntityDeclaration[] decls)
+        {
+            return EntityDeclaration.MakeInterfaceDecl(name, baseTypes, modifiers, default, default, decls);
+        }
+
+        public static TypeDeclaration MakeClassDecl(string name, IEnumerable<AstType> baseTypes, Modifiers modifiers, params EntityDeclaration[] decls)
+        {
+            return EntityDeclaration.MakeClassDecl(name, baseTypes, modifiers, default, default, decls);
+        }
+
+        public static TryStatement MakeTryStmt(BlockStatement block, FinallyClause @finally, params CatchClause[] catches)
+        {
+            return Statement.MakeTryStmt(block, @finally, default, catches);
+        }
     }
 }
 
