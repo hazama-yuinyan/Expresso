@@ -377,13 +377,13 @@ namespace Expresso.CodeGen
                 break;
 
             case "1805":
-                Console.WriteLine("In Expresso callables include functions and closures.");
+                Console.WriteLine("In Expresso, callables include functions and closures.");
                 break;
 
             case "1900":
                 Console.WriteLine("Immutable variables are immutable becuase it's how it is.");
                 Console.WriteLine("If you absolutely need to change the value, then consider changing the `let` keyword to `var` in the variable declaration.");
-                Console.WriteLine("But think twice before doing so because mutability can cause evil things.");
+                Console.WriteLine("But think twice before doing so because mutability could cause evil things.");
                 break;
 
             case "1901":
@@ -460,7 +460,7 @@ namespace Expresso.CodeGen
                 break;
 
             case "3100":
-                Console.WriteLine("You aren't allowed to shadow module variables. You can rename either the module variable or local variable.");
+                Console.WriteLine("You aren't allowed to shadow module variables. You have to rename either the module variable or the local variable.");
                 break;
 
             case "3200":

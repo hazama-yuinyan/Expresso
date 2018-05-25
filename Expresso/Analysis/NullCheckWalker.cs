@@ -358,12 +358,22 @@ namespace Expresso.Ast.Analysis
                 throw new InvalidOperationException("Can not work on that node");
             }
 
+            public void VisitTupleLikeDeclaration(TupleLikeDeclaration tupleLike)
+            {
+                throw new InvalidOperationException("Can not work on that node");
+            }
+
             public void VisitTuplePattern(TuplePattern tuplePattern)
             {
                 throw new InvalidOperationException("Can not work on that node");
             }
 
             public void VisitTypeDeclaration(TypeDeclaration typeDecl)
+            {
+                throw new InvalidOperationException("Can not work on that node");
+            }
+
+            public void VisitTypePathPattern(TypePathPattern pathPattern)
             {
                 throw new InvalidOperationException("Can not work on that node");
             }

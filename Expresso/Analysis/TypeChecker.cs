@@ -1321,6 +1321,11 @@ namespace Expresso.Ast.Analysis
             return null;
         }
 
+        public AstType VisitTupleLikeDeclaration(TupleLikeDeclaration tupleLike)
+        {
+            return null;
+        }
+
         public AstType VisitFieldDeclaration(FieldDeclaration fieldDecl)
         {
             // We can't use VisitAttributeSection directly here because fieldDecl.Attribute can be Null
@@ -1522,6 +1527,14 @@ namespace Expresso.Ast.Analysis
             }else{
                 return type;
             }
+        }
+
+        public AstType VisitTypePathPattern(TypePathPattern pathPattern)
+        {
+            if(pathPattern.TypePath is MemberType member_type)
+                return member_type.Target;
+            else
+                throw new InvalidOperationException("A TypePathPattern expectes its type path to be a MemberType. Something wrong has occurred.");
         }
 
         public AstType VisitNullNode(AstNode nullNode)

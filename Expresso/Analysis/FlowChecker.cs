@@ -548,6 +548,11 @@ namespace Expresso.Ast.Analysis
             throw new NotImplementedException();
         }
 
+        public void VisitTupleLikeDeclaration(TupleLikeDeclaration tupleLike)
+        {
+            throw new NotImplementedException();
+        }
+
         public void VisitFieldDeclaration(FieldDeclaration fieldDecl)
         {
             throw new NotImplementedException();
@@ -613,6 +618,11 @@ namespace Expresso.Ast.Analysis
             throw new NotImplementedException();
         }
 
+        public void VisitTypePathPattern(TypePathPattern pathPattern)
+        {
+            throw new NotImplementedException();
+        }
+
         public void VisitNullNode(AstNode nullNode)
         {
             throw new NotImplementedException();
@@ -637,7 +647,6 @@ namespace Expresso.Ast.Analysis
         {
             throw new NotImplementedException();
         }
-
         #endregion
 
         void MakePatternSet(PatternConstruct pattern)

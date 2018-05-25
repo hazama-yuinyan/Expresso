@@ -145,6 +145,8 @@
     <None Include="sources\for_unit_tests\erroneous\shadow_module_variable_with_local_binding.exs" />
     <None Include="sources\for_unit_tests\erroneous\shadow_module_variable_with_for_binding.exs" />
     <None Include="sources\for_unit_tests\erroneous\string_interpolation_error.exs" />
+    <None Include="sources\for_unit_tests\enum2.exs" />
+    <None Include="sources\for_unit_tests\enum1.exs" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AnalyzerTests.cs" />

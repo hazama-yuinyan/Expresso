@@ -75,6 +75,7 @@ namespace Expresso.Ast
         void VisitTypeDeclaration(TypeDeclaration typeDecl);
         void VisitAliasDeclaration(AliasDeclaration aliasDecl);
 
+        void VisitTupleLikeDeclaration(TupleLikeDeclaration tupleLike);
         void VisitFieldDeclaration(FieldDeclaration fieldDecl);
         void VisitParameterDeclaration(ParameterDeclaration parameterDecl);
         void VisitVariableInitializer(VariableInitializer initializer);
@@ -88,6 +89,7 @@ namespace Expresso.Ast
         void VisitIgnoringRestPattern(IgnoringRestPattern restPattern);
         void VisitKeyValuePattern(KeyValuePattern keyValuePattern);
         void VisitPatternWithType(PatternWithType pattern);
+        void VisitTypePathPattern(TypePathPattern pathPattern);
 
         void VisitNullNode(AstNode nullNode);
         void VisitNewLine(NewLineNode newlineNode);
@@ -163,6 +165,7 @@ namespace Expresso.Ast
         TResult VisitTypeDeclaration(TypeDeclaration typeDecl);
         TResult VisitAliasDeclaration(AliasDeclaration aliasDecl);
 
+        TResult VisitTupleLikeDeclaration(TupleLikeDeclaration tupleLike);
         TResult VisitFieldDeclaration(FieldDeclaration fieldDecl);
         TResult VisitParameterDeclaration(ParameterDeclaration parameterDecl);
         TResult VisitVariableInitializer(VariableInitializer initializer);
@@ -176,6 +179,7 @@ namespace Expresso.Ast
         TResult VisitIgnoringRestPattern(IgnoringRestPattern restPattern);
         TResult VisitKeyValuePattern(KeyValuePattern keyValuePattern);
         TResult VisitPatternWithType(PatternWithType pattern);
+        TResult VisitTypePathPattern(TypePathPattern pathPattern);
 
         TResult VisitNullNode(AstNode nullNode);
         TResult VisitNewLine(NewLineNode newlineNode);
@@ -261,6 +265,7 @@ namespace Expresso.Ast
         TResult VisitTypeDeclaration(TypeDeclaration typeDecl, TData data);
         TResult VisitAliasDeclaration(AliasDeclaration aliasDecl, TData data);
 
+        TResult VisitTupleLikeDeclaration(TupleLikeDeclaration tupleLike, TData data);
         TResult VisitFieldDeclaration(FieldDeclaration fieldDecl, TData data);
         TResult VisitParameterDeclaration(ParameterDeclaration parameterDecl, TData data);
         TResult VisitVariableInitializer(VariableInitializer initializer, TData data);
@@ -274,6 +279,7 @@ namespace Expresso.Ast
         TResult VisitIgnoringRestPattern(IgnoringRestPattern restPattern, TData data);
         TResult VisitKeyValuePattern(KeyValuePattern keyValuePattern, TData data);
         TResult VisitPatternWithType(PatternWithType pattern, TData data);
+        TResult VisitTypePathPattern(TypePathPattern pathPattern, TData data);
 
         TResult VisitNullNode(AstNode nullNode, TData data);
         TResult VisitNewLine(NewLineNode newlineNode, TData data);

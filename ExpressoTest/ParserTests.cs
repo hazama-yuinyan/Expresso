@@ -4995,5 +4995,334 @@ namespace Expresso.Test
             Assert.IsNotNull(ast);
             Helpers.AstStructuralEqual(ast, expected);
         }
+
+        [Test]
+        public void Enum1()
+        {
+            var parser = new Parser(new Scanner("../../sources/for_unit_tests/enum1.exs"));
+            parser.Parse();
+
+            var ast = parser.TopmostAst;
+
+            var expected = AstNode.MakeModuleDef("main", Helpers.MakeSeq<EntityDeclaration>(
+                Helpers.MakeEnumDecl(
+                    "SomeEnum",
+                    Modifiers.None,
+                    null,
+                    Helpers.MakeTupleLikeDecl("A"),
+                    Helpers.MakeTupleLikeDecl(
+                        "B",
+                        Helpers.MakePrimitiveType("int"),
+                        Helpers.MakePrimitiveType("uint")
+                    ),
+                    Helpers.MakeTupleLikeDecl(
+                        "C",
+                        Helpers.MakePrimitiveType("string"),
+                        Helpers.MakePrimitiveType("char")
+                    ),
+                    Helpers.MakeTupleLikeDecl(
+                        "D",
+                        Helpers.MakePrimitiveType("intseq")
+                    )
+                ),
+                EntityDeclaration.MakeFunc(
+                    "main",
+                    Enumerable.Empty<ParameterDeclaration>(),
+                    Statement.MakeBlock(
+                        Statement.MakeVarDecl(
+                            Helpers.MakeSeq(
+                                Helpers.MakeSomePatternWithType("some_enum")
+                            ),
+                            Helpers.MakeSeq(
+                                Expression.MakeObjectCreation(
+                                    AstType.MakeMemberType(
+                                        Helpers.MakeGenericType("SomeEnum"),
+                                        Helpers.MakeGenericType("A")
+                                    )
+                                )
+                            ),
+                            Modifiers.Immutable
+                        ),
+                        Statement.MakeVarDecl(
+                            Helpers.MakeSeq(
+                                Helpers.MakeSomePatternWithType("some_enum2")
+                            ),
+                            Helpers.MakeSeq(
+                                Helpers.MakeObjectCreation(
+                                    AstType.MakeMemberType(
+                                        Helpers.MakeGenericType("SomeEnum"),
+                                        Helpers.MakeGenericType("B")
+                                    ),
+                                    Expression.MakeConstant("int", 1),
+                                    Expression.MakeConstant("uint", 2u)
+                                )
+                            ),
+                            Modifiers.Immutable
+                        ),
+                        Statement.MakeMatchStmt(
+                            Helpers.MakeIdentifierPath("some_enum"),
+                            Statement.MakeMatchClause(
+                                null,
+                                Statement.MakeExprStmt(
+                                    Helpers.MakeCallExpression(
+                                        Helpers.MakeIdentifierPath("println"),
+                                        Expression.MakeConstant("string", "A")
+                                    )
+                                ),
+                                PatternConstruct.MakeDestructuringPattern(
+                                    AstType.MakeMemberType(
+                                        Helpers.MakeGenericType("Union"),
+                                        Helpers.MakeGenericType("A")
+                                    )
+                                )
+                            ),
+                            Statement.MakeMatchClause(
+                                null,
+                                Statement.MakeExprStmt(
+                                    Helpers.MakeCallExpression(
+                                        Helpers.MakeIdentifierPath("println"),
+                                        Expression.MakeConstant("string", "${some_int}, ${some_uint}")
+                                    )
+                                ),
+                                PatternConstruct.MakeDestructuringPattern(
+                                    AstType.MakeMemberType(
+                                        Helpers.MakeGenericType("Union"),
+                                        Helpers.MakeGenericType("B")
+                                    ),
+                                    PatternConstruct.MakeIdentifierPattern(
+                                        Helpers.MakeSomeIdent("some_int")
+                                    ),
+                                    PatternConstruct.MakeIdentifierPattern(
+                                        Helpers.MakeSomeIdent("some_uint")
+                                    )
+                                )
+                            ),
+                            Statement.MakeMatchClause(
+                                null,
+                                Statement.MakeExprStmt(
+                                    Helpers.MakeCallExpression(
+                                        Helpers.MakeIdentifierPath("println"),
+                                        Expression.MakeConstant("string", "${some_str}, ${some_char}")
+                                    )
+                                ),
+                                PatternConstruct.MakeDestructuringPattern(
+                                    AstType.MakeMemberType(
+                                        Helpers.MakeGenericType("Union"),
+                                        Helpers.MakeGenericType("C")
+                                    ),
+                                    PatternConstruct.MakeIdentifierPattern(
+                                        Helpers.MakeSomeIdent("some_str")
+                                    ),
+                                    PatternConstruct.MakeIdentifierPattern(
+                                        Helpers.MakeSomeIdent("some_char")
+                                    )
+                                )
+                            ),
+                            Statement.MakeMatchClause(
+                                null,
+                                Statement.MakeExprStmt(
+                                    Helpers.MakeCallExpression(
+                                        Helpers.MakeIdentifierPath("println"),
+                                        Expression.MakeConstant("string", "${some_intseq}")
+                                    )
+                                ),
+                                PatternConstruct.MakeDestructuringPattern(
+                                    AstType.MakeMemberType(
+                                        Helpers.MakeGenericType("Union"),
+                                        Helpers.MakeGenericType("D")
+                                    ),
+                                    PatternConstruct.MakeIdentifierPattern(
+                                        Helpers.MakeSomeIdent("some_intseq")
+                                    )
+                                )
+                            )
+                        ),
+                        Statement.MakeMatchStmt(
+                            Helpers.MakeIdentifierPath("some_enum2"),
+                            Statement.MakeMatchClause(
+                                null,
+                                Statement.MakeExprStmt(
+                                    Helpers.MakeCallExpression(
+                                        Helpers.MakeIdentifierPath("println"),
+                                        Expression.MakeConstant("string", "A")
+                                    )
+                                ),
+                                PatternConstruct.MakeDestructuringPattern(
+                                    AstType.MakeMemberType(
+                                        Helpers.MakeGenericType("Union"),
+                                        Helpers.MakeGenericType("A")
+                                    )
+                                )
+                            ),
+                            Statement.MakeMatchClause(
+                                null,
+                                Statement.MakeExprStmt(
+                                    Helpers.MakeCallExpression(
+                                        Helpers.MakeIdentifierPath("println"),
+                                        Expression.MakeConstant("string", "${some_int}, ${some_uint}")
+                                    )
+                                ),
+                                PatternConstruct.MakeDestructuringPattern(
+                                    AstType.MakeMemberType(
+                                        Helpers.MakeGenericType("Union"),
+                                        Helpers.MakeGenericType("B")
+                                    ),
+                                    PatternConstruct.MakeIdentifierPattern(
+                                        Helpers.MakeSomeIdent("some_int")
+                                    ),
+                                    PatternConstruct.MakeIdentifierPattern(
+                                        Helpers.MakeSomeIdent("some_uint")
+                                    )
+                                )
+                            ),
+                            Statement.MakeMatchClause(
+                                null,
+                                Statement.MakeExprStmt(
+                                    Helpers.MakeCallExpression(
+                                        Helpers.MakeIdentifierPath("println"),
+                                        Expression.MakeConstant("string", "${some_str}, ${some_char}")
+                                    )
+                                ),
+                                PatternConstruct.MakeDestructuringPattern(
+                                    AstType.MakeMemberType(
+                                        Helpers.MakeGenericType("Union"),
+                                        Helpers.MakeGenericType("C")
+                                    ),
+                                    PatternConstruct.MakeIdentifierPattern(
+                                        Helpers.MakeSomeIdent("some_str")
+                                    ),
+                                    PatternConstruct.MakeIdentifierPattern(
+                                        Helpers.MakeSomeIdent("some_char")
+                                    )
+                                )
+                            ),
+                            Statement.MakeMatchClause(
+                                null,
+                                Statement.MakeExprStmt(
+                                    Helpers.MakeCallExpression(
+                                        Helpers.MakeIdentifierPath("println"),
+                                        Expression.MakeConstant("string", "${some_intseq}")
+                                    )
+                                ),
+                                PatternConstruct.MakeDestructuringPattern(
+                                    AstType.MakeMemberType(
+                                        Helpers.MakeGenericType("Union"),
+                                        Helpers.MakeGenericType("D")
+                                    ),
+                                    PatternConstruct.MakeIdentifierPattern(
+                                        Helpers.MakeSomeIdent("some_intseq")
+                                    )
+                                )
+                            )
+                        )
+                    ),
+                    Helpers.MakePlaceholderType(),
+                    Modifiers.None
+                )
+            ));
+        }
+
+        [Test]
+        public void Enum2()
+        {
+            var parser = new Parser(new Scanner("../../sources/for_unit_tests/enum2.exs"));
+            parser.Parse();
+
+            var ast = parser.TopmostAst;
+
+            var expected = AstNode.MakeModuleDef("main", Helpers.MakeSeq<EntityDeclaration>(
+                Helpers.MakeEnumDecl(
+                    "SomeEnum",
+                    Modifiers.None,
+                    null,
+                    EntityDeclaration.MakeField(
+                        Helpers.MakeExactPatternWithType("A", Helpers.MakePrimitiveType("int")),
+                        Expression.MakeConstant("int", 1),
+                        Modifiers.Public
+                    ),
+                    EntityDeclaration.MakeField(
+                        Helpers.MakeExactPatternWithType("B", Helpers.MakePrimitiveType("int")),
+                        Expression.MakeConstant("int", 2),
+                        Modifiers.Public
+                    ),
+                    EntityDeclaration.MakeField(
+                        Helpers.MakeExactPatternWithType("C", Helpers.MakePrimitiveType("int")),
+                        Expression.MakeConstant("int", 3),
+                        Modifiers.Public
+                    )
+                ),
+                EntityDeclaration.MakeFunc(
+                    "main",
+                    Enumerable.Empty<ParameterDeclaration>(),
+                    Statement.MakeBlock(
+                        Statement.MakeVarDecl(
+                            Helpers.MakeSeq(
+                                Helpers.MakeSomePatternWithType("enum_a")
+                            ),
+                            Helpers.MakeSeq(
+                                Expression.MakePath(
+                                    Helpers.MakeSomeIdent("SomeEnum"),
+                                    Helpers.MakeSomeIdent("A")
+                                )
+                            ),
+                            Modifiers.Immutable
+                        ),
+                        Statement.MakeMatchStmt(
+                            Helpers.MakeIdentifierPath("enum_a"),
+                            Statement.MakeMatchClause(
+                                null,
+                                Statement.MakeExprStmt(
+                                    Helpers.MakeCallExpression(
+                                        Helpers.MakeIdentifierPath("println"),
+                                        Expression.MakeConstant("string", "A")
+                                    )
+                                ),
+                                PatternConstruct.MakeTypePathPattern(
+                                    AstType.MakeMemberType(
+                                        Helpers.MakeGenericType("SomeEnum"),
+                                        Helpers.MakeGenericType("A")
+                                    )
+                                )
+                            ),
+                            Statement.MakeMatchClause(
+                                null,
+                                Statement.MakeExprStmt(
+                                    Helpers.MakeCallExpression(
+                                        Helpers.MakeIdentifierPath("println"),
+                                        Expression.MakeConstant("string", "B")
+                                    )
+                                ),
+                                PatternConstruct.MakeTypePathPattern(
+                                    AstType.MakeMemberType(
+                                        Helpers.MakeGenericType("SomeEnum"),
+                                        Helpers.MakeGenericType("B")
+                                    )
+                                )
+                            ),
+                            Statement.MakeMatchClause(
+                                null,
+                                Statement.MakeExprStmt(
+                                    Helpers.MakeCallExpression(
+                                        Helpers.MakeIdentifierPath("println"),
+                                        Expression.MakeConstant("string", "C")
+                                    )
+                                ),
+                                PatternConstruct.MakeTypePathPattern(
+                                    AstType.MakeMemberType(
+                                        Helpers.MakeGenericType("SomeEnum"),
+                                        Helpers.MakeGenericType("C")
+                                    )
+                                )
+                            )
+                        )
+                    ),
+                    Helpers.MakePlaceholderType(),
+                    Modifiers.None
+                )
+            ));
+
+            Assert.IsNotNull(ast);
+            Helpers.AstStructuralEqual(ast, expected);
+        }
     }
 }

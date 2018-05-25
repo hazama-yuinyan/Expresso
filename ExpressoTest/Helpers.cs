@@ -9,7 +9,7 @@ using NUnit.Framework;
 
 namespace Expresso.Test
 {
-    internal class Helpers
+    class Helpers
     {
         public static int CalcSum(int start, int max)
         {
@@ -414,9 +414,29 @@ namespace Expresso.Test
             return EntityDeclaration.MakeClassDecl(name, baseTypes, modifiers, default, default, decls);
         }
 
+        public static TypeDeclaration MakeEnumDecl(string name, Modifiers modifiers, AttributeSection attribute = null, params EntityDeclaration[] decls)
+        {
+            return EntityDeclaration.MakeEnumDecl(AstNode.MakeIdentifier(name), decls, modifiers, attribute);
+        }
+
         public static TryStatement MakeTryStmt(BlockStatement block, FinallyClause @finally, params CatchClause[] catches)
         {
             return Statement.MakeTryStmt(block, @finally, default, catches);
+        }
+
+        public static TupleLikeDeclaration MakeTupleLikeDecl(string name, params AstType[] types)
+        {
+            return EntityDeclaration.MakeTupleLikeDecl(AstNode.MakeIdentifier(name), types);
+        }
+
+        public static ObjectCreationExpression MakeObjectCreation(AstType typePath, Expression expression)
+        {
+            return Expression.MakeObjectCreation(typePath, Identifier.Null, expression);
+        }
+
+        public static ObjectCreationExpression MakeObjectCreation(AstType typePath, params Expression[] values)
+        {
+            return Expression.MakeObjectCreation(typePath, values.Select<Expression, Identifier>(v => Identifier.Null), values);
         }
     }
 }

@@ -216,6 +216,8 @@
     <Compile Include="CodeGen\PortablePdbGenerator.cs" />
     <Compile Include="CodeGen\MatchClauseIdentifierDefiner.cs" />
     <Compile Include="Ast\GeneralScope\AttributeSection.cs" />
+    <Compile Include="Ast\TypeMembers\TupleLikeDeclaration.cs" />
+    <Compile Include="Ast\Patterns\TypePathPattern.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System" />

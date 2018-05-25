@@ -743,6 +743,11 @@ namespace Expresso.Ast.Analysis
                 throw new InvalidOperationException("Can not work on that node!");
             }
 
+            public AstType VisitTupleLikeDeclaration(TupleLikeDeclaration tupleLike)
+            {
+                throw new InvalidOperationException("Can not work on that node!");
+            }
+
             public AstType VisitFieldDeclaration(FieldDeclaration fieldDecl)
             {
                 throw new InvalidOperationException("Can not work on that node!");
@@ -902,6 +907,14 @@ namespace Expresso.Ast.Analysis
                     
                     return pattern.Type;
                 }
+            }
+
+            public AstType VisitTypePathPattern(TypePathPattern pathPattern)
+            {
+                if(pathPattern.TypePath is MemberType member_type)
+                    return member_type.Target;
+                else
+                    throw new InvalidOperationException("A TypePathPattern expects its type path to be a MemberType. Something wrong has occurred.");
             }
 
             public AstType VisitNullNode(AstNode nullNode)

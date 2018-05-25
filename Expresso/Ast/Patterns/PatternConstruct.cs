@@ -143,6 +143,11 @@ namespace Expresso.Ast
         {
             return new PatternWithType(pattern, type);
         }
+
+        public static TypePathPattern MakeTypePathPattern(AstType typePath)
+        {
+            return new TypePathPattern(typePath);
+        }
         #endregion
     }
 }

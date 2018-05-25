@@ -378,12 +378,22 @@ namespace Expresso.CodeGen
                 throw new InvalidOperationException("Can not work on that node");
             }
 
+            public AstType VisitTupleLikeDeclaration(TupleLikeDeclaration tupleLike)
+            {
+                throw new InvalidOperationException("Can not work on that node");
+            }
+
             public AstType VisitTuplePattern(TuplePattern tuplePattern)
             {
                 return tuplePattern.Parent.AcceptWalker(this);
             }
 
             public AstType VisitTypeDeclaration(TypeDeclaration typeDecl)
+            {
+                throw new InvalidOperationException("Can not work on that node");
+            }
+
+            public AstType VisitTypePathPattern(TypePathPattern pathPattern)
             {
                 throw new InvalidOperationException("Can not work on that node");
             }

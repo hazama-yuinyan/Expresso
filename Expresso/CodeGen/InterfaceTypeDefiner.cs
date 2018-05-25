@@ -416,6 +416,11 @@ namespace Expresso.CodeGen
                 throw new InvalidOperationException();
             }
 
+            public void VisitTupleLikeDeclaration(TupleLikeDeclaration tupleLike)
+            {
+                throw new NotImplementedException();
+            }
+
             public void VisitFieldDeclaration(FieldDeclaration fieldDecl)
             {
                 FieldAttributes attr = FieldAttributes.Private;
@@ -502,6 +507,11 @@ namespace Expresso.CodeGen
             }
 
             public void VisitPatternWithType(PatternWithType pattern)
+            {
+                throw new InvalidOperationException();
+            }
+
+            public void VisitTypePathPattern(TypePathPattern pathPattern)
             {
                 throw new InvalidOperationException();
             }

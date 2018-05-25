@@ -477,6 +477,12 @@ namespace Expresso.Ast.Analysis
             tryStmt.CatchClauses.AcceptWalker(this);
         }
 
+        public void VisitTupleLikeDeclaration(TupleLikeDeclaration tupleLike)
+        {
+            VisitIdentifier(tupleLike.NameToken);
+            tupleLike.Types.AcceptWalker(this);
+        }
+
         public void VisitTuplePattern(TuplePattern tuplePattern)
         {
             tuplePattern.Patterns.AcceptWalker(this);
@@ -486,6 +492,11 @@ namespace Expresso.Ast.Analysis
         {
             typeDecl.BaseTypes.AcceptWalker(this);
             typeDecl.Members.AcceptWalker(this);
+        }
+
+        public void VisitTypePathPattern(TypePathPattern pathPattern)
+        {
+            pathPattern.TypePath.AcceptWalker(this);
         }
 
         public void VisitUnaryExpression(UnaryExpression unaryExpr)

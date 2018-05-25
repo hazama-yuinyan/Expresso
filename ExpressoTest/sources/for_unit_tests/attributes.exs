@@ -6,7 +6,7 @@
 #[CLSCompliant{isCompliant: true}]
 module main;
 
-import System.{SerializableAttribute, CLSCompliantAttribute, ObsoleteAttribute, Attribute, AttributeUsageAttribute, AttributeTargets} as
+import System.{SerializableAttribute, CLSCompliantAttribute, ObsoleteAttribute, Attribute, AttributeUsageAttribute, AttributeTargets} as 
 {SerializableAttribute, CLSCompliantAttribute, ObsoleteAttribute, Attribute, AttributeUsageAttribute, AttributeTargets};
 import System.Diagnostics.ConditionalAttribute as ConditionalAttribute;
 import System.Reflection.AssemblyDescriptionAttribute as AssemblyDescriptionAttribute;

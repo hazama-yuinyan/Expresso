@@ -489,6 +489,11 @@ namespace Expresso.Ast.Analysis
             scope_counter = tmp_counter + 1;
         }
 
+        public void VisitTupleLikeDeclaration(TupleLikeDeclaration tupleLike)
+        {
+            
+        }
+
         public void VisitFieldDeclaration(FieldDeclaration fieldDecl)
         {
             // We don't call VisitAttributeSection directly so that we can avoid unnecessary method calls
@@ -690,6 +695,11 @@ namespace Expresso.Ast.Analysis
         public void VisitPatternWithType(PatternWithType pattern)
         {
             pattern.Pattern.AcceptWalker(this);
+        }
+
+        public void VisitTypePathPattern(TypePathPattern pathPattern)
+        {
+            pathPattern.TypePath.AcceptWalker(this);
         }
 		#endregion
 

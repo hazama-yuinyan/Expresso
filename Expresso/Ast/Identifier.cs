@@ -4,7 +4,7 @@ using ICSharpCode.NRefactory.PatternMatching;
 
 namespace Expresso.Ast
 {
-    using ExpressoModifiers = Expresso.Ast.Modifiers;
+    using ExpressoModifiers = Modifiers;
 
     /// <summary>
     /// 識別子。

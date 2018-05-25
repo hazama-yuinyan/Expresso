@@ -29,7 +29,7 @@ namespace Expresso.Ast
         public AstNodeCollection<PatternConstruct> Items => GetChildrenByRole(Roles.Pattern);
 
         public DestructuringPattern(AstType typePath, IEnumerable<PatternConstruct> patterns)
-            : base(typePath.StartLocation, patterns.Last().EndLocation)
+            : base(typePath.StartLocation, patterns.Any() ? patterns.Last().EndLocation : typePath.EndLocation)
         {
             TypePath = typePath;
             Items.AddRange(patterns);

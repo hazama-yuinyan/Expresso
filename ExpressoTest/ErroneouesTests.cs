@@ -766,6 +766,17 @@ namespace Expresso.Test
             Assert.That(() => parser.Parse(), Throws.TypeOf<ParserException>().With.Message.Contains("ES0102"));
             Assert.AreEqual(1, parser.errors.count);
         }
+
+        [Test]
+        public void MissingClosureParameterTypes()
+        {
+            var parser = new Parser(new Scanner("../../sources/for_unit_tests/erroneous/missing_closure_parameter_types.exs")){
+                DoPostParseProcessing = true
+            };
+
+            Assert.That(() => parser.Parse(), Throws.TypeOf<ParserException>().With.Message.Contains("ES3010"));
+            Assert.AreEqual(1, parser.errors.count);
+        }
     }
 }
 

@@ -1791,6 +1791,11 @@ namespace Expresso.CodeGen
             return null;
         }
 
+        public CSharpExpr VisitTupleLikeDeclaration(TupleLikeDeclaration tupleLike, CSharpEmitterContext context)
+        {
+            return null;
+        }
+
         public CSharpExpr VisitFieldDeclaration(FieldDeclaration fieldDecl, CSharpEmitterContext context)
         {
             foreach(var init in fieldDecl.Initializers){
@@ -2205,6 +2210,11 @@ namespace Expresso.CodeGen
         public CSharpExpr VisitPatternWithType(PatternWithType pattern, CSharpEmitterContext context)
         {
             return pattern.Pattern.AcceptWalker(this, context);
+        }
+
+        public CSharpExpr VisitTypePathPattern(TypePathPattern pathPattern, CSharpEmitterContext context)
+        {
+            return null;
         }
 
         public CSharpExpr VisitNullNode(AstNode nullNode, CSharpEmitterContext context)

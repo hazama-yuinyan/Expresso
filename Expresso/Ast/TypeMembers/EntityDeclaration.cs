@@ -144,15 +144,14 @@ namespace Expresso.Ast
             return new TypeDeclaration(ClassType.Interface, MakeIdentifier(interfaceName), bases, decls, attribute, modifiers, start, end);
         }
 
-        public static TypeDeclaration MakeInterfaceDecl(Identifier ident, IEnumerable<AstType> bases,
-                                                        IEnumerable<EntityDeclaration> decls, Modifiers modifiers, AttributeSection attribute = null,
-                                                        TextLocation start = default, TextLocation end = default)
+        public static TypeDeclaration MakeInterfaceDecl(Identifier ident, IEnumerable<AstType> bases, IEnumerable<EntityDeclaration> decls, Modifiers modifiers,
+                                                        AttributeSection attribute = null, TextLocation start = default, TextLocation end = default)
         {
             return new TypeDeclaration(ClassType.Interface, ident, bases, decls, attribute, modifiers, start, end);
         }
 
-        public static TypeDeclaration MakeInterfaceDecl(string name, IEnumerable<AstType> bases,
-                                                        Modifiers modifiers, TextLocation start, TextLocation end, params EntityDeclaration[] decls)
+        public static TypeDeclaration MakeInterfaceDecl(string name, IEnumerable<AstType> bases, Modifiers modifiers, TextLocation start, TextLocation end,
+                                                        params EntityDeclaration[] decls)
         {
             return new TypeDeclaration(ClassType.Interface, MakeIdentifier(name), bases, decls, null, modifiers, start, end);
         }
@@ -167,6 +166,17 @@ namespace Expresso.Ast
                                                    Modifiers modifiers, AttributeSection attribute = null, TextLocation loc = default)
         {
             return new FunctionDeclaration(ident, parameters, body, returnType, attribute, modifiers, loc);
+        }
+
+        public static TypeDeclaration MakeEnumDecl(Identifier ident, IEnumerable<EntityDeclaration> decls, Modifiers modifiers, AttributeSection attribute = null,
+                                                   TextLocation start = default, TextLocation end = default)
+        {
+            return new TypeDeclaration(ClassType.Enum, ident, Enumerable.Empty<AstType>(), decls, attribute, modifiers, start, end);
+        }
+
+        public static TupleLikeDeclaration MakeTupleLikeDecl(Identifier ident, IEnumerable<AstType> types, TextLocation start = default, TextLocation end = default)
+        {
+            return new TupleLikeDeclaration(ident, types, start, end);
         }
         #endregion
     }

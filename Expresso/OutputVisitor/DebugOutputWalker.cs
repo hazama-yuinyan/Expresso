@@ -624,6 +624,14 @@ namespace Expresso.Ast
             writer.Write("{...}");
         }
 
+        public void VisitTupleLikeDeclaration(TupleLikeDeclaration tupleLike)
+        {
+            writer.Write(tupleLike.Name);
+            writer.Write("(");
+            PrintList(tupleLike.Types);
+            writer.Write(")");
+        }
+
         public void VisitFieldDeclaration(FieldDeclaration fieldDecl)
         {
             if(!fieldDecl.Attribute.IsNull)
@@ -731,6 +739,11 @@ namespace Expresso.Ast
             pattern.Pattern.AcceptWalker(this);
             writer.Write(" (- ");
             pattern.Type.AcceptWalker(this);
+        }
+
+        public void VisitTypePathPattern(TypePathPattern pathPattern)
+        {
+            pathPattern.TypePath.AcceptWalker(this);
         }
 
         public void VisitNewLine(NewLineNode newlineNode)
