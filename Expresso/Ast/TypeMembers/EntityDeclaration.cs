@@ -173,11 +173,6 @@ namespace Expresso.Ast
         {
             return new TypeDeclaration(ClassType.Enum, ident, Enumerable.Empty<AstType>(), decls, attribute, modifiers, start, end);
         }
-
-        public static TupleLikeDeclaration MakeTupleLikeDecl(Identifier ident, IEnumerable<AstType> types, TextLocation start = default, TextLocation end = default)
-        {
-            return new TupleLikeDeclaration(ident, types, start, end);
-        }
         #endregion
     }
 }

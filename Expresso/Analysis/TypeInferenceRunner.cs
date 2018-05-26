@@ -743,11 +743,6 @@ namespace Expresso.Ast.Analysis
                 throw new InvalidOperationException("Can not work on that node!");
             }
 
-            public AstType VisitTupleLikeDeclaration(TupleLikeDeclaration tupleLike)
-            {
-                throw new InvalidOperationException("Can not work on that node!");
-            }
-
             public AstType VisitFieldDeclaration(FieldDeclaration fieldDecl)
             {
                 throw new InvalidOperationException("Can not work on that node!");

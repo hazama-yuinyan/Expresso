@@ -362,6 +362,10 @@ namespace Expresso.CodeGen
                 Console.WriteLine("It's most likely that you misspelled the field name. So check for spelling, taking casing into account.");
                 break;
 
+            case "1503":
+                Console.WriteLine("It's most likely that you misspelled the name. Check for spelling, taking casing into account.");
+                break;
+
             case "1602":
                 Console.WriteLine("Unlike methods and functions, you may not omit the return types of method signatures in interfaces.");
                 Console.WriteLine("This is due to the trouble implementing it and because interfaces should be explicit.");
@@ -422,6 +426,10 @@ namespace Expresso.CodeGen
             case "2003":
                 Console.WriteLine("It's most likely that you forgot to cast the object to the field type.");
                 Console.WriteLine("Consider adding one.");
+                break;
+
+            case "2004":
+                Console.WriteLine("Did you forget casting the object to the item type?");
                 break;
 
             case "2010":

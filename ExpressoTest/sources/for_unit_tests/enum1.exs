@@ -12,7 +12,10 @@ enum Union
 def main()
 {
     let some_enum = Union::A{};
-    let some_enum2 = Union::B{1, 2u};
+    let some_enum2 = Union::B{0: 1, 1: 2u};
+
+    println("${some_enum}");
+    println("${some_enum2}");
 
     match some_enum {
         Union::A{} => println("A");,

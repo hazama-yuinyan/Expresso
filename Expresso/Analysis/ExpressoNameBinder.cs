@@ -489,11 +489,6 @@ namespace Expresso.Ast.Analysis
             scope_counter = tmp_counter + 1;
         }
 
-        public void VisitTupleLikeDeclaration(TupleLikeDeclaration tupleLike)
-        {
-            
-        }
-
         public void VisitFieldDeclaration(FieldDeclaration fieldDecl)
         {
             // We don't call VisitAttributeSection directly so that we can avoid unnecessary method calls
@@ -620,14 +615,16 @@ namespace Expresso.Ast.Analysis
             UniqueIdGenerator.DefineNewId(self_ident);
             typeDecl.Members.AcceptWalker(this);
 
-            // Add the constructor here so that we can use it before the type is inspected in TypeChecker
-            var field_types = typeDecl.Members
-                                      .OfType<FieldDeclaration>()
-                                      .SelectMany(fd => fd.Initializers.Select(init => init.NameToken.Type.Clone()));
-            var name = "constructor";
-            var return_type = AstType.MakeSimpleType("tuple");
-            var ctor_type = AstType.MakeFunctionType(name, return_type, field_types);
-            symbol_table.AddSymbol(name, ctor_type);
+            if(typeDecl.TypeKind == ClassType.Class){
+                // Add the constructor here so that we can use it before the type is inspected in TypeChecker
+                var field_types = typeDecl.Members
+                                          .OfType<FieldDeclaration>()
+                                          .SelectMany(fd => fd.Initializers.Select(init => init.NameToken.Type.Clone()));
+                var name = "constructor";
+                var return_type = AstType.MakeSimpleType("tuple");
+                var ctor_type = AstType.MakeFunctionType(name, return_type, field_types);
+                symbol_table.AddSymbol(name, ctor_type);
+            }
 
             AscendScope();
             scope_counter = tmp_counter + 1;

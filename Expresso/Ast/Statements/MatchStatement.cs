@@ -102,10 +102,10 @@ namespace Expresso.Ast
             set => SetChildByRole(Roles.EmbeddedStatement, value);
 		}
 
-        public MatchPatternClause(IEnumerable<PatternConstruct> patternExprs, Expression guard, Statement bodyStmt)
-            : base(patternExprs.First().StartLocation, bodyStmt.EndLocation)
+        public MatchPatternClause(IEnumerable<PatternConstruct> patterns, Expression guard, Statement bodyStmt)
+            : base(patterns.First().StartLocation, bodyStmt.EndLocation)
 		{
-            Patterns.AddRange(patternExprs);
+            Patterns.AddRange(patterns);
             Guard = guard;
             Body = bodyStmt;
 		}

@@ -11,6 +11,115 @@ namespace Expresso.Test
 {
     class Helpers
     {
+        /// <summary>
+        /// Contains some well known <see cref="PathExpression"/>.
+        /// </summary>
+        internal class SomeWellKnownExpressions
+        {
+            internal static readonly PathExpression Println =
+                MakeFunctionIdentifierPath(
+                    "println",
+                    MakeVoidType(),
+                    MakeGenericType(
+                        "array",
+                        MakeGenericType("object")
+                    )
+                );
+
+            internal static readonly PathExpression Print =
+                MakeFunctionIdentifierPath(
+                    "print",
+                    MakeVoidType(),
+                    MakeGenericType(
+                        "array",
+                        MakeGenericType("object")
+                    )
+                );
+
+            internal static readonly Expression StringFormat1 = 
+                Expression.MakeMemRef(
+                    MakeIdentifierPath(
+                        "string",
+                        MakePrimitiveType("string")
+                    ),
+                    MakeFunctionIdentifier(
+                        "Format",
+                        MakePrimitiveType("string"),
+                        MakePrimitiveType("string"),
+                        MakeGenericTypeWithRealName(
+                            "Object",
+                            "System.Object"
+                        )
+                    )
+                );
+            
+            internal static readonly Expression StringFormat2 =
+                Expression.MakeMemRef(
+                    MakeIdentifierPath(
+                        "string",
+                        MakePrimitiveType("string")
+                    ),
+                    MakeFunctionIdentifier(
+                        "Format",
+                        MakePrimitiveType("string"),
+                        MakePrimitiveType("string"),
+                        MakeGenericTypeWithRealName(
+                            "Object",
+                            "System.Object"
+                        ),
+                        MakeGenericTypeWithRealName(
+                            "Object",
+                            "System.Object"
+                        )
+                    )
+                );
+
+            internal static readonly Expression StringFormat3 =
+                Expression.MakeMemRef(
+                    MakeIdentifierPath(
+                        "string",
+                        MakePrimitiveType("string")
+                    ),
+                    MakeFunctionIdentifier(
+                        "Format",
+                        MakePrimitiveType("string"),
+                        MakePrimitiveType("string"),
+                        MakeGenericTypeWithRealName(
+                            "Object",
+                            "System.Object"
+                        ),
+                        MakeGenericTypeWithRealName(
+                            "Object",
+                            "System.Object"
+                        ),
+                        MakeGenericTypeWithRealName(
+                            "Object",
+                            "System.Object"
+                        )
+                    )
+                );
+
+            internal static readonly Expression StringFormatN =
+                Expression.MakeMemRef(
+                    MakeIdentifierPath(
+                        "string",
+                        MakePrimitiveType("string")
+                    ),
+                    MakeFunctionIdentifier(
+                        "Format",
+                        MakePrimitiveType("string"),
+                        MakePrimitiveType("string"),
+                        MakeGenericType(
+                            "array",
+                            MakeGenericTypeWithRealName(
+                                "Object",
+                                "System.Object"
+                            )
+                        )
+                    )
+                );
+        }
+
         public static int CalcSum(int start, int max)
         {
             var result = 0;
@@ -424,19 +533,14 @@ namespace Expresso.Test
             return Statement.MakeTryStmt(block, @finally, default, catches);
         }
 
-        public static TupleLikeDeclaration MakeTupleLikeDecl(string name, params AstType[] types)
+        public static FieldDeclaration MakeTupleStyleMember(string identifier, AttributeSection attribute = null, params AstType[] types)
         {
-            return EntityDeclaration.MakeTupleLikeDecl(AstNode.MakeIdentifier(name), types);
-        }
-
-        public static ObjectCreationExpression MakeObjectCreation(AstType typePath, Expression expression)
-        {
-            return Expression.MakeObjectCreation(typePath, Identifier.Null, expression);
-        }
-
-        public static ObjectCreationExpression MakeObjectCreation(AstType typePath, params Expression[] values)
-        {
-            return Expression.MakeObjectCreation(typePath, values.Select(v => Identifier.Null), values);
+            return EntityDeclaration.MakeField(
+                MakeExactPatternWithType(identifier, MakeGenericType("tuple", types)),
+                null,
+                Modifiers.Public,
+                attribute
+            );
         }
     }
 }

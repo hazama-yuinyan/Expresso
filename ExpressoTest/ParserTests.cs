@@ -5006,22 +5006,27 @@ namespace Expresso.Test
 
             var expected = AstNode.MakeModuleDef("main", Helpers.MakeSeq<EntityDeclaration>(
                 Helpers.MakeEnumDecl(
-                    "SomeEnum",
+                    "Union",
                     Modifiers.None,
                     null,
-                    Helpers.MakeTupleLikeDecl("A"),
-                    Helpers.MakeTupleLikeDecl(
+                    Helpers.MakeTupleStyleMember(
+                        "A"
+                    ),
+                    Helpers.MakeTupleStyleMember(
                         "B",
+                        null,
                         Helpers.MakePrimitiveType("int"),
                         Helpers.MakePrimitiveType("uint")
                     ),
-                    Helpers.MakeTupleLikeDecl(
+                    Helpers.MakeTupleStyleMember(
                         "C",
+                        null,
                         Helpers.MakePrimitiveType("string"),
                         Helpers.MakePrimitiveType("char")
                     ),
-                    Helpers.MakeTupleLikeDecl(
+                    Helpers.MakeTupleStyleMember(
                         "D",
+                        null,
                         Helpers.MakePrimitiveType("intseq")
                     )
                 ),
@@ -5036,7 +5041,7 @@ namespace Expresso.Test
                             Helpers.MakeSeq(
                                 Expression.MakeObjectCreation(
                                     AstType.MakeMemberType(
-                                        Helpers.MakeGenericType("SomeEnum"),
+                                        Helpers.MakeGenericType("Union"),
                                         Helpers.MakeGenericType("A")
                                     )
                                 )
@@ -5048,16 +5053,34 @@ namespace Expresso.Test
                                 Helpers.MakeSomePatternWithType("some_enum2")
                             ),
                             Helpers.MakeSeq(
-                                Helpers.MakeObjectCreation(
+                                Expression.MakeObjectCreation(
                                     AstType.MakeMemberType(
-                                        Helpers.MakeGenericType("SomeEnum"),
+                                        Helpers.MakeGenericType("Union"),
                                         Helpers.MakeGenericType("B")
                                     ),
-                                    Expression.MakeConstant("int", 1),
-                                    Expression.MakeConstant("uint", 2u)
+                                    Helpers.MakeSeq(
+                                        AstNode.MakeIdentifier("0"),
+                                        AstNode.MakeIdentifier("1")
+                                    ),
+                                    Helpers.MakeSeq(
+                                        Expression.MakeConstant("int", 1),
+                                        Expression.MakeConstant("uint", 2u)
+                                    )
                                 )
                             ),
                             Modifiers.Immutable
+                        ),
+                        Statement.MakeExprStmt(
+                            Helpers.MakeCallExpression(
+                                Helpers.MakeIdentifierPath("println"),
+                                Expression.MakeConstant("string", "${some_enum}")
+                            )
+                        ),
+                        Statement.MakeExprStmt(
+                            Helpers.MakeCallExpression(
+                                Helpers.MakeIdentifierPath("println"),
+                                Expression.MakeConstant("string", "${some_enum2}")
+                            )
                         ),
                         Statement.MakeMatchStmt(
                             Helpers.MakeIdentifierPath("some_enum"),
@@ -5220,6 +5243,9 @@ namespace Expresso.Test
                     Modifiers.None
                 )
             ));
+
+            Assert.IsNotNull(ast);
+            Helpers.AstStructuralEqual(ast, expected);
         }
 
         [Test]

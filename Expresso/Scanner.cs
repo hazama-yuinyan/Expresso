@@ -265,8 +265,8 @@ public class Scanner {
 		start[42] = 95; 
 		start[47] = 96; 
 		start[37] = 97; 
-		start[64] = 78; 
-		start[63] = 79; 
+		start[63] = 78; 
+		start[64] = 79; 
 		start[33] = 98; 
 		start[94] = 86; 
 		start[Buffer.EOF] = -1;
@@ -434,7 +434,7 @@ public class Scanner {
 			case "try": t.kind = 89; break;
 			case "catch": t.kind = 90; break;
 			case "finally": t.kind = 91; break;
-			case "_": t.kind = 92; break;
+			case "_": t.kind = 93; break;
 			case "true": t.kind = 111; break;
 			case "false": t.kind = 112; break;
 			case "null": t.kind = 113; break;
@@ -723,7 +723,7 @@ public class Scanner {
 			case 77:
 				{t.kind = 82; break;}
 			case 78:
-				{t.kind = 93; break;}
+				{t.kind = 92; break;}
 			case 79:
 				{t.kind = 94; break;}
 			case 80:

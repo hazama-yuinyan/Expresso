@@ -129,7 +129,7 @@ namespace Expresso.Ast
         protected internal override bool DoMatch(AstNode other, Match match)
         {
             var o = other as TypeDeclaration;
-            return o != null && TypeKind == o.TypeKind && BaseTypes.DoMatch(o.BaseTypes, match)
+            return o != null && TypeKind == o.TypeKind && MatchString(Name, o.Name) && BaseTypes.DoMatch(o.BaseTypes, match)
                 && Members.DoMatch(o.Members, match);
         }
 

@@ -548,11 +548,6 @@ namespace Expresso.Ast.Analysis
             throw new NotImplementedException();
         }
 
-        public void VisitTupleLikeDeclaration(TupleLikeDeclaration tupleLike)
-        {
-            throw new NotImplementedException();
-        }
-
         public void VisitFieldDeclaration(FieldDeclaration fieldDecl)
         {
             throw new NotImplementedException();

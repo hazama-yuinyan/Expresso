@@ -852,6 +852,34 @@ namespace Expresso.Ast.Analysis
             inference_runner.VisitObjectCreationExpression(creation);
             var type_path = creation.TypePath;
             var table = (type_path is MemberType member) ? symbols.GetTypeTable(member.Target.Name) : symbols;
+            // It is guaranteed that if the type table is for an enum, member2 is valid
+            if(table.TypeKind == ClassType.Enum && type_path is MemberType member2){
+                var enum_member = table.GetSymbol(member2.MemberName);
+                if(enum_member == null){
+                    throw new ParserException(
+                        "The enum `{0}` doesn't have a variant named {1}.",
+                        "ES1503",
+                        creation,
+                        table.Name, member2.MemberName
+                    );
+                }
+
+                var member_type = (SimpleType)enum_member.Type;
+                foreach(var pair in creation.Items.Zip(member_type.TypeArguments, (item, ta) => new {KeyValue = item, Argument = ta})){
+                    var item_value_type = pair.KeyValue.ValueExpression.AcceptWalker(this);
+                    if(IsCompatibleWith(item_value_type, pair.Argument) == TriBool.False){
+                        throw new ParserException(
+                            "Type mismatch in enum construction; Expected: {0}, Actual: {1}",
+                            "ES2004",
+                            creation,
+                            item_value_type, pair.Argument
+                        );
+                    }
+                }
+
+                return enum_member.Type;
+            }
+
             var type_table = table.GetTypeTable(!type_path.IdentifierNode.Type.IsNull ? type_path.IdentifierNode.Type.Name : type_path.Name);
             if(type_table == null){
                 // Report type table missing error because InferenceRunner doesn't always do that
@@ -1328,11 +1356,6 @@ namespace Expresso.Ast.Analysis
 
             AscendScope();
             scope_counter = tmp_counter + 1;
-            return null;
-        }
-
-        public AstType VisitTupleLikeDeclaration(TupleLikeDeclaration tupleLike)
-        {
             return null;
         }
 

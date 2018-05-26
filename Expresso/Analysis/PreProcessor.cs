@@ -477,12 +477,6 @@ namespace Expresso.Ast.Analysis
             tryStmt.CatchClauses.AcceptWalker(this);
         }
 
-        public void VisitTupleLikeDeclaration(TupleLikeDeclaration tupleLike)
-        {
-            VisitIdentifier(tupleLike.NameToken);
-            tupleLike.Types.AcceptWalker(this);
-        }
-
         public void VisitTuplePattern(TuplePattern tuplePattern)
         {
             tuplePattern.Patterns.AcceptWalker(this);

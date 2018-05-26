@@ -338,11 +338,6 @@ namespace Expresso.CodeGen
                 throw new InvalidOperationException("Can not work on that node");
             }
 
-            public void VisitTupleLikeDeclaration(TupleLikeDeclaration tupleLike)
-            {
-                throw new InvalidOperationException("Can not work on that node");
-            }
-
             public void VisitTuplePattern(TuplePattern tuplePattern)
             {
                 tuplePattern.Patterns.AcceptWalker(this);

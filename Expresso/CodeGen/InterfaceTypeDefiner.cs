@@ -416,11 +416,6 @@ namespace Expresso.CodeGen
                 throw new InvalidOperationException();
             }
 
-            public void VisitTupleLikeDeclaration(TupleLikeDeclaration tupleLike)
-            {
-                throw new NotImplementedException();
-            }
-
             public void VisitFieldDeclaration(FieldDeclaration fieldDecl)
             {
                 FieldAttributes attr = FieldAttributes.Private;

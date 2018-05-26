@@ -240,7 +240,7 @@ $namespace=Expresso
 	
 	bool IsSequenceInitializer()
 	{
-		Token x = la;
+		var x = la;
 		if(x.kind != _comma)
             return true;
 		
@@ -253,10 +253,10 @@ $namespace=Expresso
 
     bool IsIdentifierPattern()
     {
-        var la = this.la;
+        var t = la;
         var x = scanner.Peek();
         scanner.ResetPeek();
-        return la.kind == _ident && x.kind != _double_colon && x.kind != _lcurly;
+        return t.kind == _ident && x.kind != _double_colon && x.kind != _lcurly;
     }
 
     bool IsDestructuringPattern()
@@ -284,7 +284,7 @@ $namespace=Expresso
         var key = scanner.Peek();
         var tt = scanner.Peek();
         scanner.ResetPeek();
-        return key.kind == _rcurly || key.kind == _ident && tt.kind == _colon;
+        return key.kind == _rcurly || (key.kind == _integer || key.kind == _ident) && tt.kind == _colon;
     }
 
     bool IsStartOfAnotherType()
@@ -367,12 +367,13 @@ $namespace=Expresso
 
     bool DistinguishBetweenDestructuringPatternAndEnumMember()
     {
+        var tt = la;
         var x = scanner.Peek();
         while(x.kind == _ident || x.kind == _double_colon)
             x = scanner.Peek();
 
         scanner.ResetPeek();
-        return x.kind == _lcurly;
+        return tt.kind == _ident && x.kind == _lcurly;
     }
 
     /*bool IsLValueList()
@@ -1125,22 +1126,23 @@ FieldDecl<out EntityDeclaration field, AttributeSection attribute>
                                           .).
 /*------------------------------------------------------------------------*/
 TupleStyleEnumMember<out EntityDeclaration entity, AttributeSection attribute>
-        (. var start_loc = NextLocation; Identifier ident = null; AstType type = null; var types = new List<AstType>();
-           string name;
-        .)
+        (. var start_loc = NextLocation; Identifier ident = null; AstType type = null; var types = new List<AstType>(); .)
 =
-  ident                                   (.
-                                             name = t.val;
-                                             ident = AstNode.MakeIdentifier(name, ExpressoModifiers.Public, start_loc);
-                                             Symbols.AddSymbol(name, ident);
-                                          .)
+  ident                                   (. var name = t.val; .)
   '('
   [ Type<out type>                        (. types.Add(type); .)
   ]
   { ','
     Type<out type>                        (. types.Add(type); .)
   }
-  ')'                                     (. entity = EntityDeclaration.MakeTupleLikeDecl(ident, types, start_loc, CurrentEndLocation); .).
+  ')'                                     (.
+                                             var ident_type = AstType.MakeSimpleType("tuple", types);
+                                             ident = AstNode.MakeIdentifier(name, ident_type, ExpressoModifiers.Public, start_loc);
+                                             Symbols.AddSymbol(name, ident);
+                                             var ident_pat = PatternConstruct.MakeIdentifierPattern(ident);
+                                             var pattern = PatternConstruct.MakePatternWithType(ident_pat, ident_type.Clone());
+                                             entity = EntityDeclaration.MakeField(pattern, null, ExpressoModifiers.Public, attribute, start_loc, CurrentEndLocation);
+                                          .).
 /*------------------------------------------------------------------------*/
 RawValueStyleEnumMember<out EntityDeclaration entity, AttributeSection attribute, ref int rawValue>
         (. var start_loc = NextLocation; string name; Identifier ident = null; Expression expr = null; .)
@@ -1462,18 +1464,18 @@ ForStmt<out Statement stmt>			 (. PatternWithType left = null; Expression rvalue
                                         cur_modifiers = ExpressoModifiers.None;
                                      .).
 /*------------------------------------------------------------------------*/
-MatchStmt<out Statement stmt>		(. Expression target; List<MatchPatternClause> matches;
-                                       var start_loc = NextLocation;
-                                    .)
+MatchStmt<out Statement stmt>		(. List<MatchPatternClause> matches; var start_loc = NextLocation; Expression expr; .)
 =
   "match"
-  CondExpr<out target>
-  lcurly                            (. Symbols.AddScope();
+  CondExpr<out expr>
+  lcurly                            (.
+                                       Symbols.AddScope();
                                        GoDownScope();
                                        Symbols.Name = "match`" + ScopeId++;
                                     .)
   MatchPatternList<out matches>
-  rcurly							(. stmt = Statement.MakeMatchStmt(target, matches, start_loc, CurrentEndLocation);
+  rcurly							(.
+                                       stmt = Statement.MakeMatchStmt(expr, matches, start_loc, CurrentEndLocation);
                                        GoUpScope();
                                     .).
 /*------------------------------------------------------------------------*/
@@ -1489,7 +1491,7 @@ MatchPatternList<. out List<MatchPatternClause> clauses .>
   MatchArmStmt<out inner>		             (. clauses.Add(Statement.MakeMatchClause(pattern_list, guard, inner));
                                                 GoUpScope();
                                              .)
-  { WEAK ','                                 (. Symbols.AddScope();
+  { SYNC ','                                 (. Symbols.AddScope();
                                                 GoDownScope();
                                                 Symbols.Name = "arm`" + ScopeId++;
                                              .)
@@ -1612,9 +1614,17 @@ Pattern<out PatternConstruct pattern>       (. pattern = null; .)
   | RValuePattern<out pattern>
   | EnumMemberPattern<out pattern>.
 /*------------------------------------------------------------------------*/
-ExpressionPattern<out PatternConstruct pattern> (. Expression expr; .)
+ExpressionPattern<out PatternConstruct pattern> (. Expression expr, true_expr; PatternConstruct false_pattern; pattern = null; .)
 =
-  PatternOrTest<out expr>                       (. pattern = PatternConstruct.MakeExpressionPattern(expr); .).
+  PatternOrTest<out expr>
+  [ '?'
+    PatternOrTest<out true_expr>
+    ':'
+    ExpressionPattern<out false_pattern>        (. pattern = PatternConstruct.MakeExpressionPattern(Expression.MakeCondExpr(expr, true_expr, ((ExpressionPattern)false_pattern).Expression)); .)
+  ]                                             (.
+                                                   if(pattern == null)
+                                                       pattern = PatternConstruct.MakeExpressionPattern(expr);
+                                                .).
 /*------------------------------------------------------------------------*/
 RValuePattern<out PatternConstruct pattern>     (. Expression expr; .)
 =
@@ -1927,7 +1937,7 @@ UnaryOperator<out OperatorType opType>  (. opType = OperatorType.None; .)
 Primary<out Expression expr>		    (. expr = null; PathExpression path; AstType type_path = null; .)
 =
   ( PathExpression<out path>            (. expr = path; .) /* It's possible that a PathExpression turns out to be just an identifier */
-    [ IF(IsObjectCreation())            (. type_path = ConvertPathToType(path); .)  /* The possible successor is in MatchStmt */
+    [ IF(IsObjectCreation())            (. type_path = ConvertPathToType(path); .) /* Ambiguous between this and MatchStmt */
       ObjectCreation<type_path, out expr>
     ]
   | Atom<out expr>
@@ -2064,23 +2074,19 @@ ObjectCreation<AstType typePath, out Expression expr>
                                         (. var fields = new List<Identifier>(); var values = new List<Expression>(); Identifier field = null; .)
 =
   lcurly
-  [ [ IF(IsKeyIdentifier())
-      ident                             (. field = AstNode.MakeIdentifier(t.val, ExpressoModifiers.None, CurrentLocation); .)
-      ':'
-    ]                                   (. 
-                                           fields.Add(field ?? Ast.Identifier.Null);
-                                           field = null;
-                                        .)
+  [ 
+    ( integer
+    | ident
+    )                                   (. fields.Add(AstNode.MakeIdentifier(t.val, ExpressoModifiers.None, CurrentLocation)); .)
+    ':'
     CondExpr<out expr>                  (. values.Add(expr); .)
   ]
   { ','
-    [ IF(IsKeyIdentifier())
-      ident                             (. field = AstNode.MakeIdentifier(t.val, ExpressoModifiers.None, CurrentLocation); .)
-      ':'
-    ]                                   (.
-                                           fields.Add(field ?? Ast.Identifier.Null);
-                                           field = null;
-                                        .)
+    ( integer
+    | ident 
+    )                                   (. fields.Add(AstNode.MakeIdentifier(t.val, ExpressoModifiers.None, CurrentLocation)); .)
+    ':'
+    
     CondExpr<out expr>                  (. values.Add(expr); .)
   }
   SYNC rcurly                           (. expr = Expression.MakeObjectCreation(typePath, fields, values, CurrentEndLocation); .).

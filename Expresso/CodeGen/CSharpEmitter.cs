@@ -1791,11 +1791,6 @@ namespace Expresso.CodeGen
             return null;
         }
 
-        public CSharpExpr VisitTupleLikeDeclaration(TupleLikeDeclaration tupleLike, CSharpEmitterContext context)
-        {
-            return null;
-        }
-
         public CSharpExpr VisitFieldDeclaration(FieldDeclaration fieldDecl, CSharpEmitterContext context)
         {
             foreach(var init in fieldDecl.Initializers){

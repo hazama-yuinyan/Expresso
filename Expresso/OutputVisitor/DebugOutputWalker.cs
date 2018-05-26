@@ -624,14 +624,6 @@ namespace Expresso.Ast
             writer.Write("{...}");
         }
 
-        public void VisitTupleLikeDeclaration(TupleLikeDeclaration tupleLike)
-        {
-            writer.Write(tupleLike.Name);
-            writer.Write("(");
-            PrintList(tupleLike.Types);
-            writer.Write(")");
-        }
-
         public void VisitFieldDeclaration(FieldDeclaration fieldDecl)
         {
             if(!fieldDecl.Attribute.IsNull)
