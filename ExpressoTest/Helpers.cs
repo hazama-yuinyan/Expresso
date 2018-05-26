@@ -182,7 +182,7 @@ namespace Expresso.Test
             return PatternConstruct.MakePatternWithType(
                 PatternConstruct.MakeTuplePattern(names.Zip(types, (l, r) => new Tuple<string, AstType>(l, r))
                                                   .Select(pair => PatternConstruct.MakeIdentifierPattern(pair.Item1, pair.Item2))),
-                MakeGenericType(
+                AstType.MakeSimpleType(
                     "tuple",
                     types.Select(t => t.Clone())
                 )
@@ -221,11 +221,6 @@ namespace Expresso.Test
             return AstType.MakeSimpleType(name, typeArgs);
         }
 
-        public static SimpleType MakeGenericType(string name, IEnumerable<AstType> typeArgs)
-        {
-            return AstType.MakeSimpleType(name, typeArgs);
-        }
-
         /// <summary>
         /// Makes a SimpleType with a fully qualified name and optional type arguments.
         /// </summary>
@@ -251,7 +246,7 @@ namespace Expresso.Test
         /// <param name="typeName">Type name.</param>
         public static PrimitiveType MakePrimitiveType(string typeName)
         {
-            return new PrimitiveType(typeName, TextLocation.Empty);
+            return AstType.MakePrimitiveType(typeName);
         }
 
         /// <summary>
@@ -260,12 +255,17 @@ namespace Expresso.Test
         /// <returns>The placeholder type.</returns>
         public static PlaceholderType MakePlaceholderType()
         {
-            return new PlaceholderType(TextLocation.Empty);
+            return AstType.MakePlaceholderType();
         }
 
+        /// <summary>
+        /// Makes a return statement that contains multiple expressions.
+        /// </summary>
+        /// <returns>The return statement.</returns>
+        /// <param name="expressions">Expressions.</param>
         public static ReturnStatement MakeReturnStatement(params Expression[] expressions)
         {
-            return new ReturnStatement(Expression.MakeSequenceExpression(expressions), expressions.First().StartLocation);
+            return Statement.MakeReturnStmt(Expression.MakeSequenceExpression(expressions));
         }
 
         /// <summary>
@@ -335,7 +335,7 @@ namespace Expresso.Test
         /// <param name="propertyType">Property type.</param>
         public static FunctionType MakePropertySetterType(string propertyName, AstType propertyType)
         {
-            return AstType.MakeFunctionType("set_" + propertyName, MakeVoidType(), TextLocation.Empty, TextLocation.Empty, propertyType);
+            return MakeFunctionType("set_" + propertyName, MakeVoidType(), propertyType);
         }
 
         /// <summary>
@@ -358,7 +358,7 @@ namespace Expresso.Test
         /// <param name="parameters">Parameters.</param>
         public static Identifier MakeFunctionIdentifier(string functionName, AstType returnType, params AstType[] parameters)
         {
-            return AstNode.MakeIdentifier(functionName, AstType.MakeFunctionType(functionName, returnType, TextLocation.Empty, TextLocation.Empty, parameters));
+            return AstNode.MakeIdentifier(functionName, MakeFunctionType(functionName, returnType, parameters));
         }
 
         /// <summary>
@@ -370,11 +370,11 @@ namespace Expresso.Test
         /// <param name="parameters">Parameters.</param>
         public static PathExpression MakeFunctionIdentifierPath(string functionName, AstType returnType, params AstType[] parameters)
         {
-            return MakeIdentifierPath(functionName, AstType.MakeFunctionType(functionName, returnType, TextLocation.Empty, TextLocation.Empty, parameters));
+            return MakeIdentifierPath(functionName, MakeFunctionType(functionName, returnType, parameters));
         }
 
         /// <summary>
-        /// Makes a single-item return statement
+        /// Makes a single-item return statement.
         /// </summary>
         /// <returns>The single item return statement.</returns>
         /// <param name="expr">Expr.</param>
@@ -436,7 +436,7 @@ namespace Expresso.Test
 
         public static ObjectCreationExpression MakeObjectCreation(AstType typePath, params Expression[] values)
         {
-            return Expression.MakeObjectCreation(typePath, values.Select<Expression, Identifier>(v => Identifier.Null), values);
+            return Expression.MakeObjectCreation(typePath, values.Select(v => Identifier.Null), values);
         }
     }
 }

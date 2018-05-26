@@ -216,13 +216,6 @@ namespace Expresso.CodeGen
         /// <returns>The interface type.</returns>
         public Type CreateInterfaceType()
         {
-            /*if(interface_type.Attributes.HasFlag(TypeAttributes.Interface)){
-                if(type_cache == null)
-                    type_cache = interface_type.CreateType();
-
-                return type_cache;
-            }*/
-            
             ConstructorBuilder ctor = null;
             if(!members.OfType<ConstructorBuilder>().Any() && types.Any()){
                 var param_types = members.OfType<FieldBuilder>()

@@ -1,8 +1,8 @@
-﻿# The Expresso tutorial
+﻿# The Expresso Tutorial
 
 ## Preface
 
-Expresso primarily aims to be a programming language for education, or in other words another Pascal. And therefore Expresso
+Expresso primarily aims to be a programming language for education, or in other words, another Pascal. And therefore Expresso
 has two concepts. Expresso aims to be an "easy-to-write" and "expressive" programming language.
 The language name __Expresso__ is coined by combining __Espresso__ with __expressive__, which means that it's easy for programmers to write codes in it
 as you can say "I can write a code while I'm having a cup of Espresso" and that it's highly expressive.
@@ -10,7 +10,7 @@ Even though we heavily put focus on syntax and the grammar, its policy reads "Ea
 meaning that it's easy for beginners to read and write, and still it has lots of rich features that advanced programmers can take advantage of.
 Even though it's a type-strict language, it looks rather in type-free way thanks to the very powerful type inference system.
 
-## Hello, Expresso world!
+## Hello, Expresso World!
 
 OK, enough with pre-words. By far, we are all armed enough with concepts, goals and something like that so let's get started.
 First of all, we starts from the traditional *hello world* program.
@@ -36,13 +36,13 @@ In Expresso the naming convention for modules is the snake case. In other words,
 "testModule" or "TestModule". This is not a strict rule that the compiler enforces but it's considered a good style to keep that rule.
 In `main` function, which is the entry point for the program, we `println'ed` a string. `println` is a function that outputs
 some string to the console. There is also the single line version, `print`, that doesn't output a line break at the end.
-In addition, even though we'll come back later to this topic, Expresso has string interpolation as well.
+In addition, although we'll come back later to this topic, Expresso has string interpolation as well.
 
-## Getting into the Expresso world
+## Getting into the Expresso World
 
 Let's dive into the Expresso world. Because I mentioned at the beginning of this guide that Expresso looks a type-free language rather than a type-strict one,
 we'll use Expresso as a simple calculator first. 
-Note that from now on we'll not be including the `module main; def main(){` part as long as we don't need to show the complete source code because with it
+Note that from now on, we'll not be including the `module main; def main(){` part as long as we don't need to show the complete source code because with it
 the examples will be too complex. Since it's boring to repeat writing the same thing over and over and it's considered hard to see if we include
 the magic header every time, we won't do that.
 So if you follow this tutorial, don't forget to include the magic header at the beginning of source files.
@@ -84,7 +84,7 @@ println(a + 1);
 
 <span class="caption">Listing 3: Expressing Listing 2 in another way</span>
 
-### Let bindings and variable declarations
+### Let Bindings and Variable Declarations
 
 In Expresso, there are 2 forms of variable bindings. 
 Variables are useful considering the ability to keep track of values they hold. But sometimes we just want to give values descriptive names
@@ -95,7 +95,7 @@ Let bindings introduce tags, and tags are names which you use in order to refer 
 By contrast, variable declarations introduce boxes that have certain shapes, and those boxes can be filled in with anything at any time as long as
 the shapes match.
 
-In Listing 3, we introduced a new let binding stating `let n (- int = 4 * 5;`. This reads: We'll introduce a new let binding named 'n' whose type is `int` and
+In Listing 3, we introduced a new let binding stating `let n (- int = 4 * 5;`. This reads: We'll introduce a new let binding named `n` whose type is `int` and
 the value of it will be `4 * 5`. Note that we explicitly annotate the type here. Because Expresso has a strong type inference system, you woudln't usually need
 to do so. But we'll generally do that here in the tutorial for clarity.
 
@@ -112,9 +112,9 @@ Like other programming languages, Expresso has some types built into it. Namely 
 the booleans, the `float` and `double` types for single floating-point numbers and double floating-point numbers and the `char` for characters, etc.
 Let's explore each type to see what it does.
 
-## Data types
+## Data Types
 
-### The `int`, `uint` and `byte` types
+### The `int`, `uint` and `byte` Types
 
 The first types that we'll look at is the `int`, `uint` and `byte` types. Expresso provides just these three types for integers because it's considered to be used as
 a scripting language rather than a type-strict language where would need more control over the size of integers.
@@ -122,12 +122,12 @@ a scripting language rather than a type-strict language where would need more co
 As internal representations, `int`, `uint` and `byte` use `int`, `uint` and `byte` types on C#, respectively, so see API documentations for more informations on those
 types.
 
-### The `float` and `double` types
+### The `float` and `double` Types
 
 Next up is the `float` and `double` types. Like the above types, they are defined on C# as well.
 That's all for floating-point numbers.
 
-### The `bool` type
+### The `bool` Type
 
 Next, let's look at a simple type: the `bool` type. The `bool` represents the boolean and has two possible values: `true` and `false`.
 In Expresso, the `if` statement doesn't allow the conditional to have any types other than `bool`. If you are trying to do that,
@@ -139,31 +139,31 @@ Error ES4000: The conditional expression has to be of type `bool`.
 
 The error message should tell the story.
 
-### The `char` type
+### The `char` Type
 
 The `char` type represents a character. As usual, it is the same as the C#'s char type, so see the API documentation for more informations on the type.
 But it is worth noting that the C#'s char type (and thus the `char` type) is encoded in UTF-16. To put it simply, a `char` can represent any character in UTF-16.
 It's wonderful considering the fact that in the traditional C most of the characters aren't represented in one char.
 
-### The `bigint` type
+### The `bigint` Type
 
 In the computer world, numbers are approximated using two's complement representation or are limited in size. For example, the `int` type can only represent integers
 from -(2<sup>31</sup>) to 2<sup>31</sup> - 1 inclusive.
 But in some fields, you'll need to represent numbers more properly, for example, when dealing with money. For those situations Expresso provides the `bigint` type.
 A `bigint` can store any arbitrary integer. This makes the `bigint` type suitable for dealing with money.
 
-### The `string` type
+### The `string` Type
 
 I realize that `char` and `string` types are the fundamental types because sometimes you would even need more string manipulations than you would on integers.
 As with the `char` type, the `string` type also is in UTF-16. See the C#'s documentation for other details on the `string` type.
 
-### The `tuple` type
+### The `tuple` Type
 
 Sometimes, you may want to return more than 1 variable from functions. In other times, you may want to combine two values into some grouped construct.
 For those situations, we have the `tuple` type as a builtin type. The `tuple` type conceptually groups more than 1 value into one construct and allows you to
 move it around and pass it around.
 
-### The `vector` type
+### The `vector` Type
 
 In programs, you would often want to store multiple values of one type in one place. That's the time when the `vector` type comes into play. The `vector` type 
 allows you to put multiple values of one type in an object like the following.
@@ -187,12 +187,12 @@ println(natural_numbers);
 
 <span class="caption">Listing 8: Several uses of the vector's methods</span>
 
-For other methods available, see the API documentation for the .NET's List<T> class. Note that we still can't call extension methods.
+For other methods available, see the API documentation for the .NET's `List<T>` class. Note that we still can't call extension methods.
 
-### The `array` type
+### The `array` Type
 
-The `array` type is another sequence type, which doesn't allow you to grow or shrink its size. Thus the compiler already knows the size of an array object
-when compiling. However, it currently doesn't take advantage of it.
+The `array` type is another sequence type, which, as I mentioned above, doesn't allow you to grow or shrink its size. Thus the compiler already knows the size of
+an array object when compiling. However, it currently doesn't take advantage of it.
 
 ```expresso
 let some_array = [0..5];
@@ -204,7 +204,7 @@ Note that we write it this time without trailing periods. As mentioned above, it
 Note also that it uses an expression that is much like a range in other programming languages. We call it an intseq expression, but the functionality is
 almost the same as that of ranges. We'll come back later to this topic again.
 
-### The `dictionary` type
+### The `dictionary` Type
 
 The dictionary type, which is sometimes called a HashMap or simply an object, is a collection of several keys and values.
 
@@ -216,7 +216,7 @@ let dict = {"a": 10, "b": 20};
 
 Like Python, you can create a dictionary in literal form in Expresso.
 
-### The `intseq` type
+### The `intseq` Type
 
 One unique characteristic for Expresso is the built-in `intseq` type. As the name suggests, it produces a series of integers.
 The `intseq` type has 3 fields, `start`, `end` and `step`. `start` represents the start value of the sequence,
@@ -264,7 +264,7 @@ You may notice that the integer sequence expression looks like something, say, t
 In Expresso, we have 2 types of ternary operators. One is the conditional operator(often called "the ternary operator"
 because most programming languages does have only one ternary operator) and the other is the integer sequence operator we have just introduced.
 
-### The `slice` type
+### The `slice` Type
 
 So far you may be sick of the tiring and boring explanations. But when combined with sequence types such as arrays or vectors,
 the `intseq` type reveals its funny yet powerful potential out to the public.
@@ -297,8 +297,92 @@ Note that the `slice` is just an iterator of the sequence. Thus the `slice` obje
 If you are familliar with C#, you might notice that `slice` is the same as the `Span<T>` class. And that's right. The job that the `slice` type is intended to do is the
 same as that of the `Span<T>` class. The differences are that the `slice` type is a class and the `slice` type might be slower than the `Span<T>` class.
 
-OK, so far so good. We've explained the very basics of builtin types. next up is exponentiation. But we'll be doing it in a slightly different way.
+OK, so far so good. We've explained the very basics of builtin types. Next up is exponentiation. But we'll be doing it in a slightly different way.
 Even though Expresso has the operator for it, here we'll be doing it on our own, using while loop.
+
+## Basic Constructs
+
+### The `while` Loop
+
+```expresso
+var result = 1;
+var i = 0;
+while i < 10 {
+    result *= 2;
+    i += 1;
+}
+println("${result}");
+```
+
+<span class="caption">Listing 14: A use of the `while` loop</span>
+
+Look at the above code. You may be familliar with it. This is the `while` loop in Expresso and it is the same as that of other programming languages.
+What the above code does is first declare two variables and use one of them as a counter and the other for calculating the result. Then it prints the result
+to the console. We use the string interpolation where we print it, but for now, don't worry about it. Just assume that it's a handy way to print some variables.
+When you run this code, it should print 1024.
+Let's look at another example.
+```expresso
+let ary = [1, 2, 3, 4, 5];
+var i = 0;
+while i < ary.Length {
+    println("${ary[i]}");
+    i += 1;
+}
+```
+
+<span class="caption">Listing 15: Another use of the `while` loop</span>
+
+This time, we index into an array. In Listing 15, we have an array to print and then actually print the elements of it.
+Although `ary.Length` returns the length of the array and it will work if the length of it changes, the intent isn't clear, isn't it?
+For Listing 14 also, it would be enough for the purpose, but the `i += 1;` part is slightly annoying. Would it be more clean if Expresso counts up for us?
+
+### The `for` Loop
+
+```expresso
+var result = 1;
+for let i in 0..10 {
+    result *= 2;
+}
+println("${result}");
+```
+
+<span class="caption">Listing 16: A use of the `for` loop</span>
+
+So we'll introduce the `for` loop. The `for` loop, in contrast to the `while` loop, is a consturct that is used to loop over some sequence or count up or down 
+with `intseq`s. Here, we count up from 0 to 10 while calculating the power raised to 10.
+
+```expresso
+let ary = [1, 2, 3, 4, 5];
+for let elem in ary {
+    println("${elem}");
+}
+```
+
+<span class="caption">Listing 17: Another use of the `for` loop</span>
+
+Look at this variation of the previous example. Now the intent is more clear and the code is more concise. Therefore it's the most commonly used loop construct
+in Expresso.
+
+### The `if` Statement
+
+Imagine that we want to do different things depending on the value of some variable. That's the time we'll look at the `if` statement.
+
+```expresso
+let flag = true;
+if flag {
+    println("The condition is true");
+}else{
+    println("The condition is false");
+}
+```
+
+<span class="caption">Listing 18: A use of the `if` statement</span>
+
+The above code prints `The condition is true`. The `if` statement is also common in programming languages, so you may be familliar with it. But note that
+we mentioned in the "The `bool` Type" section that the condition of an `if` statement must be the `bool` type unlike C. Otherwise, the compiler will issue an error.
+
+There are also the `do while` statement and the `match` statement that uses patterns for branching. The functionality of the `do while` statement is almost the same as
+that of the `while` statement so we'll ignore it and we'll dig into the `match` later on.
 
 The main policy for Expresso is that "Programming languages must allow programmers to write what it does, not how it does something".
 In traditional C, we often end up writing something like the following:
@@ -343,10 +427,10 @@ Expresso supports three basic data structures as builtin types. The biggest adva
 is the ability to support literal forms that help programmers make those objects easily and thoroughly.
 And also, it is worth noting that the compiler can tell more specific and understandable error messages if vectors and dictionaries are builtin types.
 Of course, it can even suggest the propper usages when it encounters some errors.
-In contrast, it can be considered as a disadvantage that supporting those types as builtin makes it hard to maintain the source code and
+In contrast, it can be considered as a disadvantage that supporting those types as builtin types makes it hard to maintain the source code and
 it can lead to compiler size inflation.
 
-## Using .NET as the standard library
+## Using .NET as the Standard Library
 
 Expresso runs on the CLR. That means that you can import .NET types and use them as if they were defined in Expresso. As an example, let's create a program that
 writes some text into a file.
@@ -405,7 +489,7 @@ In any other contexts, you can't use `null`.
 Returning to Listing 12, it is intended to initialize an instance variable, but it won't compile because `SomeExpressoType` is a type defiend in Expresso and
 therefore the use of `null` is prohibited in that context. In such a case, use the `Option<T>` type defined in Expresso standard library, which isn't currently provided.
 
-## Interoperability with other .NET languages
+## Interoperability with Other .NET Languages
 
 Let's imagine a world without any borders. You could go anywhere, you could do anything and you could live anywhere. Such a world would be woderful, don't you think?
 In a sense, we can view Expresso as such. Because it runs on the CLR(Common Language Runtime), you can not only call functions or methods that come from other lanauages,
@@ -512,6 +596,6 @@ namespace OtherLanguageWorld
 
 <span class="caption">Listing : C# code to import</span>
 
-When we run the code in Listing (placeholder for the number), we'll see outputs from Console.WriteLine statements, `100`, `[0..1000:1]`, `true` and `[1, 2, 3, 4, 5, ...]` on the console.
-Note that because we're currently defining the `ExpressoIntegerSequence` type in C#, we also can return it from C#. As you can see from this fact, you can interoperate
-with Expresso in C# as well.
+When we run the code in Listing (placeholder for the number), we'll see outputs from Console.WriteLine statements, `100`, `[0..1000:1]`, `true` and a list of 
+`[1, 2, 3, 4, 5, ...]` on the console. Note that because we're currently defining the `ExpressoIntegerSequence` type in C#, we also can return it from C#.
+As you can see from this fact, you can interoperate with Expresso in C# as well.

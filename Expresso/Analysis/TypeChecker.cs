@@ -366,6 +366,12 @@ namespace Expresso.Ast.Analysis
                 //rhs_type = inferred_type2;
             }
 
+            if(lhs_type is FunctionType property1 && property1.Name.StartsWith("get_", StringComparison.Ordinal))
+                lhs_type = property1.ReturnType;
+
+            if(rhs_type is FunctionType property2 && property2.Name.StartsWith("get_", StringComparison.Ordinal))
+                rhs_type = property2.ReturnType;
+            
             if(IsCompatibleWith(lhs_type, rhs_type) == TriBool.False){
                 // Invalid operators must lead to this code path
                 parser.ReportSemanticErrorRegional(
@@ -953,52 +959,56 @@ namespace Expresso.Ast.Analysis
 
         public AstType VisitUnaryExpression(UnaryExpression unaryExpr)
         {
+            var type = unaryExpr.Operand.AcceptWalker(this);
+            if(type is FunctionType property && property.Name.StartsWith("get_", StringComparison.Ordinal))
+                type = property.ReturnType;
+
             switch(unaryExpr.Operator){
             case OperatorType.Reference:
-                var type = unaryExpr.Operand.AcceptWalker(this);
                 return AstType.MakeReferenceType(type.Clone());
 
             case OperatorType.Plus:
             case OperatorType.Minus:
                 {
-                    var tmp = unaryExpr.Operand.AcceptWalker(this);
-                    if(IsPlaceholderType(tmp)){
+                    if(IsPlaceholderType(type)){
                         var inferred_type = inference_runner.VisitUnaryExpression(unaryExpr);
                         if(inferred_type.IsNull)
                             return inferred_type;
 
-                        tmp.ReplaceWith(inferred_type);
-                        tmp = inferred_type;
+                        type.ReplaceWith(inferred_type);
+                        type = inferred_type;
+
+                        if(type is FunctionType property2 && property2.Name.StartsWith("get_", StringComparison.Ordinal))
+                            type = property2.ReturnType;
                     }
 
-                    var primitive_type = tmp as PrimitiveType;
-                    if(primitive_type == null || tmp.IsNull || primitive_type.KnownTypeCode == KnownTypeCode.Char || primitive_type.KnownTypeCode == KnownTypeCode.Bool
+                    var primitive_type = type as PrimitiveType;
+                    if(primitive_type == null || type.IsNull || primitive_type.KnownTypeCode == KnownTypeCode.Char || primitive_type.KnownTypeCode == KnownTypeCode.Bool
                        || primitive_type.KnownTypeCode == KnownTypeCode.IntSeq){
                         parser.ReportSemanticError(
                             "Can not apply the operator '{0}' on the type `{1}`.",
                             "ES1201",
                             unaryExpr,
-                            unaryExpr.OperatorToken, tmp.Name
+                            unaryExpr.OperatorToken, type.Name
                         );
 
                         return null;
                     }
-                    return tmp;
+                    return type;
                 }
 
             case OperatorType.Not:
-                var operand_type = unaryExpr.Operand.AcceptWalker(this);
-                if(!(operand_type is PrimitiveType) || ((PrimitiveType)operand_type).KnownTypeCode != Expresso.TypeSystem.KnownTypeCode.Bool){
+                if(!(type is PrimitiveType) || ((PrimitiveType)type).KnownTypeCode != KnownTypeCode.Bool){
                     parser.ReportSemanticError(
                         "Can not apply the '!' operator on the type `{0}`!",
                         "ES1200",
                         unaryExpr,
-                        operand_type
+                        type
                     );
 
                     return null;
                 }
-                return operand_type;
+                return type;
 
             default:
                 throw new FatalError("Unknown unary operator!");
