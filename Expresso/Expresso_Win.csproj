@@ -41,7 +41,8 @@
         <Command>
           <type>BeforeBuild</type>
           <command>./parserCompile.sh</command>
-          <workingdir></workingdir>
+          <workingdir>
+          </workingdir>
         </Command>
         <Command>
           <type>BeforeExecute</type>
@@ -72,7 +73,8 @@
         <Command>
           <type>BeforeBuild</type>
           <command>./parserCompile.sh</command>
-          <workingdir></workingdir>
+          <workingdir>
+          </workingdir>
         </Command>
         <Command>
           <type>BeforeExecute</type>
@@ -215,17 +217,18 @@
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System" />
+    <Reference Include="System.Collections.Immutable, Version=1.1.37.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\System.Collections.Immutable.1.5.0-rc1\lib\portable-net45+win8+wp8+wpa81\System.Collections.Immutable.dll</HintPath>
+    </Reference>
     <Reference Include="System.Core" />
     <Reference Include="System.Dynamic" />
     <Reference Include="System.Numerics" />
     <Reference Include="Microsoft.Experimental.Collections">
       <HintPath>..\packages\Microsoft.Experimental.Collections.1.0.3-alpha\lib\portable-net45+win8+wp8\Microsoft.Experimental.Collections.dll</HintPath>
     </Reference>
-    <Reference Include="System.Collections.Immutable">
-      <HintPath>..\packages\System.Collections.Immutable.1.5.0-preview2-26406-04\lib\portable-net45+win8+wp8+wpa81\System.Collections.Immutable.dll</HintPath>
-    </Reference>
     <Reference Include="System.Reflection.Metadata">
-      <HintPath>..\packages\System.Reflection.Metadata.1.6.0-preview2-26406-04\lib\portable-net45+win8\System.Reflection.Metadata.dll</HintPath>
+      <HintPath>..\packages\System.Reflection.Metadata.1.6.0-rc1\lib\portable-net45+win8\System.Reflection.Metadata.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -242,20 +245,7 @@
     <None Include="Documentation\TODO.txt" />
     <None Include="Ast\Patterns\ValueBindingPattern.cs" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Formatting\" />
-    <Folder Include="OutputVisitor\" />
-    <Folder Include="Ast\Statements\" />
-    <Folder Include="Ast\Expressions\" />
-    <Folder Include="Ast\TypeMembers\" />
-    <Folder Include="Ast\GeneralScope\" />
-    <Folder Include="TypeSystem\" />
-    <Folder Include="Ast\Patterns\" />
-    <Folder Include="Documentation\" />
-    <Folder Include="Analysis\" />
-    <Folder Include="CodeGen\" />
-    <Folder Include="Utilities\" />
-  </ItemGroup>
+  <ItemGroup />
   <ProjectExtensions>
     <MonoDevelop>
       <Properties>
