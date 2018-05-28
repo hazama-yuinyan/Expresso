@@ -952,11 +952,12 @@ EnumDecl<out EntityDeclaration decl, ExpressoModifiers modifiers, AttributeSecti
                                                    if(!CheckKeyword(name)){
                                                        ident = AstNode.MakeIdentifier(name, modifiers, ident_start_loc);
                                                        Symbols.AddTypeSymbol(name, ident);
+                                                       cur_class_name = name;
                                                    }
                                                 .)
   lcurly                                        (.
                                                    GoDownScope();
-                                                   Symbols.Name = "enum_" + name + "`" + ScopeId++;
+                                                   Symbols.Name = "type_" + name + "`" + ScopeId++;
                                                 .)
   {                                             (.
                                                    cur_modifiers = ExpressoModifiers.Private;
@@ -1136,11 +1137,14 @@ TupleStyleEnumMember<out EntityDeclaration entity, AttributeSection attribute>
     Type<out type>                        (. types.Add(type); .)
   }
   ')'                                     (.
-                                             var ident_type = AstType.MakeSimpleType("tuple", types);
+                                             var ident_type = AstType.MakeSimpleType(cur_class_name);
+                                             var pattern_type = AstType.MakeSimpleType("tuple", types);
+                                             ident_type.IdentifierNode.Type = pattern_type;
                                              ident = AstNode.MakeIdentifier(name, ident_type, ExpressoModifiers.Public, start_loc);
                                              Symbols.AddSymbol(name, ident);
+
                                              var ident_pat = PatternConstruct.MakeIdentifierPattern(ident);
-                                             var pattern = PatternConstruct.MakePatternWithType(ident_pat, ident_type.Clone());
+                                             var pattern = PatternConstruct.MakePatternWithType(ident_pat, pattern_type.Clone());
                                              entity = EntityDeclaration.MakeField(pattern, null, ExpressoModifiers.Public, attribute, start_loc, CurrentEndLocation);
                                           .).
 /*------------------------------------------------------------------------*/
@@ -1149,9 +1153,12 @@ RawValueStyleEnumMember<out EntityDeclaration entity, AttributeSection attribute
 =
   ident                                   (. 
                                              name = t.val;
+                                             var ident_type = AstType.MakeSimpleType(cur_class_name);
                                              var type = AstType.MakePrimitiveType("int", NextLocation);
-                                             ident = AstNode.MakeIdentifier(name, type, ExpressoModifiers.Public, start_loc);
+                                             ident_type.IdentifierNode.Type = type;
+                                             ident = AstNode.MakeIdentifier(name, ident_type, ExpressoModifiers.Public, start_loc);
                                              Symbols.AddSymbol(name, ident);
+
                                              var ident_pat = PatternConstruct.MakeIdentifierPattern(ident);
                                              var pattern = PatternConstruct.MakePatternWithType(ident_pat, type.Clone());
                                           .)
@@ -2071,7 +2078,7 @@ LiteralIntSeqExpr<out Expression expr>  (. Expression start = null, end = null, 
   ].
 /*------------------------------------------------------------------------*/
 ObjectCreation<AstType typePath, out Expression expr>
-                                        (. var fields = new List<Identifier>(); var values = new List<Expression>(); Identifier field = null; .)
+                                        (. var fields = new List<Identifier>(); var values = new List<Expression>(); .)
 =
   lcurly
   [ 

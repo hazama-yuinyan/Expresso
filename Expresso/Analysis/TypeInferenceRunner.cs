@@ -527,6 +527,20 @@ namespace Expresso.Ast.Analysis
             public AstType VisitObjectCreationExpression(ObjectCreationExpression creation)
             {
                 var table = creation.TypePath is MemberType member ? checker.symbols.GetTypeTable(member.Target.Name) : checker.symbols;
+                if(table.TypeKind == ClassType.Enum && creation.TypePath is MemberType member2){
+                    var enum_member = table.GetSymbol(creation.TypePath.Name);
+                    if(enum_member == null){
+                        throw new ParserException(
+                            "The enum `{0}` doesn't have a variant named {1}.",
+                            "ES1503",
+                            creation,
+                            table.Name, member2.MemberName
+                        );
+                    }
+
+                    return enum_member.Type;
+                }
+
                 var referenced = table.GetTypeSymbolInAnyScope(creation.TypePath.Name);
                 if(referenced == null){
                     throw new ParserException(
@@ -793,17 +807,7 @@ namespace Expresso.Ast.Analysis
                 }else if(identifierPattern.InnerPattern.IsNull){
                     var type = identifierPattern.Parent.AcceptWalker(this);
                     if(IsTupleType(type)){
-                        var parent = identifierPattern.Parent;
-                        int i = 0;
-                        parent.Children.Any(node => {
-                            if(node.IsMatch(identifierPattern)){
-                                return true;
-                            }else{
-                                ++i;
-                                return false;
-                            }
-                        });
-                        type = ((SimpleType)type).TypeArguments.ElementAt(i);
+                        type = MakeOutTupleElementType(identifierPattern, (SimpleType)type);
                     }else if(IsContainerType(type)){
                         type = MakeOutElementType(type);
                     }else if(IsIntSeqType(type)){
@@ -813,7 +817,20 @@ namespace Expresso.Ast.Analysis
                     }else{
                         // type is a user defined type
                         var table = checker.symbols.GetTypeTable(type.Name);
-                        if(table == null){
+                        if(table == null && type is MemberType member){
+                            table = checker.symbols.GetTypeTable(member.Target.Name);
+                            if(table == null){
+                                parser.ReportSemanticError(
+                                    "The type symbol '{0}' turns out not to be declared or accessible in the current scope {1}!",
+                                    "ES0101",
+                                    identifierPattern,
+                                    type.ToString(), checker.symbols.Name
+                                );
+                            }else{
+                                var symbol = table.GetSymbol(type.Name);
+                                type = MakeOutTupleElementType(identifierPattern, (SimpleType)((SimpleType)symbol.Type).IdentifierNode.Type);
+                            }
+                        }else if(table == null){
                             parser.ReportSemanticError(
                                 "The type symbol '{0}' turns out not to be declared or accessible in the current scope {1}!",
                                 "ES0101",
@@ -880,15 +897,20 @@ namespace Expresso.Ast.Analysis
                 if(pattern.Type is PlaceholderType)
                     return type;
 
-                if(type is SimpleType val_tuple && pattern.Type is SimpleType tuple){
+                if(type is SimpleType simple && pattern.Type is SimpleType tuple){
+                    if(simple.Name != "tuple")
+                        return pattern.Type;
+                    
                     // TODO: take resolving type name into account
-                    foreach(var pair in tuple.TypeArguments.Zip(val_tuple.TypeArguments, (l, r) => new Tuple<AstType, AstType>(l, r)))
+                    foreach(var pair in tuple.TypeArguments.Zip(simple.TypeArguments, (l, r) => new Tuple<AstType, AstType>(l, r)))
                         pair.Item2.ReplaceWith(pair.Item1.Clone());
 
                     return pattern.Type;
+                }else if(type is SimpleType && pattern.Type is PrimitiveType primitive && primitive.Name == "int"){
+                    return pattern.Type;
                 }else if(type is SimpleType val_tuple2 && !(pattern.Type is PlaceholderType) || pattern.Type is SimpleType tuple2 && !(type is PlaceholderType)){
                     throw new ParserException(
-                        "The type in the type annotation `{0}` conflicts with the expression type `{1}`",
+                        "The type in the type annotation `{0}` conflicts with the expression type `{1}`.",
                         "ES1306",
                         pattern,
                         pattern.Type.ToString(), type
@@ -1086,6 +1108,33 @@ namespace Expresso.Ast.Analysis
                 }
 
                 return null;
+            }
+
+            static AstType MakeOutTupleElementType(AstNode node, SimpleType type)
+            {
+                var parent = node.Parent;
+                var i = 0;
+                if(parent is DestructuringPattern destructuring){
+                    destructuring.Items.Any(item => {
+                        if(item.IsMatch(node)){
+                            return true;
+                        }else{
+                            ++i;
+                            return false;
+                        }
+                    });
+                }else if(parent is TuplePattern tuple){
+                    tuple.Patterns.Any(p => {
+                        if(p.IsMatch(node)){
+                            return true;
+                        }else{
+                            ++i;
+                            return false;
+                        }
+                    });
+                }
+
+                return type.TypeArguments.ElementAt(i);
             }
         }
     }

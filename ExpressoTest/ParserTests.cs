@@ -5010,22 +5010,26 @@ namespace Expresso.Test
                     Modifiers.None,
                     null,
                     Helpers.MakeTupleStyleMember(
-                        "A"
+                        "A",
+                        "Union"
                     ),
                     Helpers.MakeTupleStyleMember(
                         "B",
+                        "Union",
                         null,
                         Helpers.MakePrimitiveType("int"),
                         Helpers.MakePrimitiveType("uint")
                     ),
                     Helpers.MakeTupleStyleMember(
                         "C",
+                        "Union",
                         null,
                         Helpers.MakePrimitiveType("string"),
                         Helpers.MakePrimitiveType("char")
                     ),
                     Helpers.MakeTupleStyleMember(
                         "D",
+                        "Union",
                         null,
                         Helpers.MakePrimitiveType("intseq")
                     )
@@ -5262,17 +5266,35 @@ namespace Expresso.Test
                     Modifiers.None,
                     null,
                     EntityDeclaration.MakeField(
-                        Helpers.MakeExactPatternWithType("A", Helpers.MakePrimitiveType("int")),
+                        PatternConstruct.MakePatternWithType(
+                            PatternConstruct.MakeIdentifierPattern(
+                                "A",
+                                Helpers.MakeGenericType("SomeEnum")
+                            ),
+                            Helpers.MakePrimitiveType("int")
+                        ),
                         Expression.MakeConstant("int", 1),
                         Modifiers.Public
                     ),
                     EntityDeclaration.MakeField(
-                        Helpers.MakeExactPatternWithType("B", Helpers.MakePrimitiveType("int")),
+                        PatternConstruct.MakePatternWithType(
+                            PatternConstruct.MakeIdentifierPattern(
+                                "B",
+                                Helpers.MakeGenericType("SomeEnum")
+                            ),
+                            Helpers.MakePrimitiveType("int")
+                        ),
                         Expression.MakeConstant("int", 2),
                         Modifiers.Public
                     ),
                     EntityDeclaration.MakeField(
-                        Helpers.MakeExactPatternWithType("C", Helpers.MakePrimitiveType("int")),
+                        PatternConstruct.MakePatternWithType(
+                            PatternConstruct.MakeIdentifierPattern(
+                                "C",
+                                Helpers.MakeGenericType("SomeEnum")
+                            ),
+                            Helpers.MakePrimitiveType("int")
+                        ),
                         Expression.MakeConstant("int", 3),
                         Modifiers.Public
                     )

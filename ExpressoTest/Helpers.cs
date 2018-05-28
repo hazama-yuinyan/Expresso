@@ -16,108 +16,128 @@ namespace Expresso.Test
         /// </summary>
         internal class SomeWellKnownExpressions
         {
-            internal static readonly PathExpression Println =
-                MakeFunctionIdentifierPath(
-                    "println",
-                    MakeVoidType(),
-                    MakeGenericType(
-                        "array",
-                        MakeGenericType("object")
-                    )
-                );
-
-            internal static readonly PathExpression Print =
-                MakeFunctionIdentifierPath(
-                    "print",
-                    MakeVoidType(),
-                    MakeGenericType(
-                        "array",
-                        MakeGenericType("object")
-                    )
-                );
-
-            internal static readonly Expression StringFormat1 = 
-                Expression.MakeMemRef(
-                    MakeIdentifierPath(
-                        "string",
-                        MakePrimitiveType("string")
-                    ),
-                    MakeFunctionIdentifier(
-                        "Format",
-                        MakePrimitiveType("string"),
-                        MakePrimitiveType("string"),
-                        MakeGenericTypeWithRealName(
-                            "Object",
-                            "System.Object"
-                        )
-                    )
-                );
-            
-            internal static readonly Expression StringFormat2 =
-                Expression.MakeMemRef(
-                    MakeIdentifierPath(
-                        "string",
-                        MakePrimitiveType("string")
-                    ),
-                    MakeFunctionIdentifier(
-                        "Format",
-                        MakePrimitiveType("string"),
-                        MakePrimitiveType("string"),
-                        MakeGenericTypeWithRealName(
-                            "Object",
-                            "System.Object"
-                        ),
-                        MakeGenericTypeWithRealName(
-                            "Object",
-                            "System.Object"
-                        )
-                    )
-                );
-
-            internal static readonly Expression StringFormat3 =
-                Expression.MakeMemRef(
-                    MakeIdentifierPath(
-                        "string",
-                        MakePrimitiveType("string")
-                    ),
-                    MakeFunctionIdentifier(
-                        "Format",
-                        MakePrimitiveType("string"),
-                        MakePrimitiveType("string"),
-                        MakeGenericTypeWithRealName(
-                            "Object",
-                            "System.Object"
-                        ),
-                        MakeGenericTypeWithRealName(
-                            "Object",
-                            "System.Object"
-                        ),
-                        MakeGenericTypeWithRealName(
-                            "Object",
-                            "System.Object"
-                        )
-                    )
-                );
-
-            internal static readonly Expression StringFormatN =
-                Expression.MakeMemRef(
-                    MakeIdentifierPath(
-                        "string",
-                        MakePrimitiveType("string")
-                    ),
-                    MakeFunctionIdentifier(
-                        "Format",
-                        MakePrimitiveType("string"),
+            internal static PathExpression Println{
+                get{
+                    return MakeFunctionIdentifierPath(
+                        "println",
+                        MakeVoidType(),
                         MakePrimitiveType("string"),
                         MakeGenericType(
                             "array",
+                            MakeGenericType("object")
+                        )
+                    );
+                }
+            }
+
+            internal static PathExpression Print{
+                get{
+                    return MakeFunctionIdentifierPath(
+                        "print",
+                        MakeVoidType(),
+                        MakePrimitiveType("string"),
+                        MakeGenericType(
+                            "array",
+                            MakeGenericType("object")
+                        )
+                    );
+                }
+            }
+
+            internal static Expression StringFormat1{
+                get{
+                    return Expression.MakeMemRef(
+                        MakeIdentifierPath(
+                            "string",
+                            MakePrimitiveType("string")
+                        ),
+                        MakeFunctionIdentifier(
+                            "Format",
+                            MakePrimitiveType("string"),
+                            MakePrimitiveType("string"),
                             MakeGenericTypeWithRealName(
                                 "Object",
                                 "System.Object"
                             )
                         )
-                    )
-                );
+                    );
+                }
+            }
+            
+            internal static Expression StringFormat2{
+                get{
+                    return Expression.MakeMemRef(
+                        MakeIdentifierPath(
+                            "string",
+                            MakePrimitiveType("string")
+                        ),
+                        MakeFunctionIdentifier(
+                            "Format",
+                            MakePrimitiveType("string"),
+                            MakePrimitiveType("string"),
+                            MakeGenericTypeWithRealName(
+                                "Object",
+                                "System.Object"
+                            ),
+                            MakeGenericTypeWithRealName(
+                                "Object",
+                                "System.Object"
+                            )
+                        )
+                    );
+                }
+            }
+
+            internal static Expression StringFormat3{
+                get{
+                    return Expression.MakeMemRef(
+                        MakeIdentifierPath(
+                            "string",
+                            MakePrimitiveType("string")
+                        ),
+                        MakeFunctionIdentifier(
+                            "Format",
+                            MakePrimitiveType("string"),
+                            MakePrimitiveType("string"),
+                            MakeGenericTypeWithRealName(
+                                "Object",
+                                "System.Object"
+                            ),
+                            MakeGenericTypeWithRealName(
+                                "Object",
+                                "System.Object"
+                            ),
+                            MakeGenericTypeWithRealName(
+                                "Object",
+                                "System.Object"
+                            )
+                        )
+                    );
+                }
+            }
+
+            internal static Expression StringFormatN{
+                get{
+                    return Expression.MakeMemRef(
+                        MakeIdentifierPath(
+                            "string",
+                            MakePrimitiveType("string")
+                        ),
+                        MakeFunctionIdentifier(
+                            "Format",
+                            MakePrimitiveType("string"),
+                            MakePrimitiveType("string"),
+                            MakeGenericType(
+                                "array",
+                                MakeGenericTypeWithRealName(
+                                    "Object",
+                                    "System.Object"
+                                )
+                            )
+                        )
+                    );
+                }
+            }
         }
 
         public static int CalcSum(int start, int max)
@@ -331,7 +351,7 @@ namespace Expresso.Test
         }
 
         /// <summary>
-        /// Makes a SimpleType with a fully qualified name and optional type arguments.
+        /// Makes a <see cref="SimpleType"/> with a fully qualified name and optional type arguments.
         /// </summary>
         /// <returns>A generic type with real name.</returns>
         /// <param name="identifier">Identifier.</param>
@@ -343,6 +363,24 @@ namespace Expresso.Test
                 AstNode.MakeIdentifier(
                     identifier,
                     AstType.MakeSimpleType(realName)
+                ),
+                typeArgs
+            );
+        }
+
+        /// <summary>
+        /// Makes a <see cref="SimpleType"/> with another <see cref="AstType"/> and optional type arguments.
+        /// </summary>
+        /// <returns>The generic type with another type.</returns>
+        /// <param name="identifier">Identifier.</param>
+        /// <param name="anotherType">Another type.</param>
+        /// <param name="typeArgs">Type arguments.</param>
+        public static SimpleType MakeGenericTypeWithAnotherType(string identifier, AstType anotherType, params AstType[] typeArgs)
+        {
+            return AstType.MakeSimpleType(
+                AstNode.MakeIdentifier(
+                    identifier,
+                    anotherType
                 ),
                 typeArgs
             );
@@ -533,10 +571,19 @@ namespace Expresso.Test
             return Statement.MakeTryStmt(block, @finally, default, catches);
         }
 
-        public static FieldDeclaration MakeTupleStyleMember(string identifier, AttributeSection attribute = null, params AstType[] types)
+        public static FieldDeclaration MakeTupleStyleMember(string identifier, string typeName, AttributeSection attribute = null, params AstType[] types)
         {
             return EntityDeclaration.MakeField(
-                MakeExactPatternWithType(identifier, MakeGenericType("tuple", types)),
+                PatternConstruct.MakePatternWithType(
+                    PatternConstruct.MakeIdentifierPattern(
+                        identifier,
+                        MakeGenericTypeWithAnotherType(
+                            typeName,
+                            MakeGenericType("tuple", types)
+                        )
+                    ),
+                    MakeGenericType("tuple", types.Select(t => t.Clone()).ToArray())
+                ),
                 null,
                 Modifiers.Public,
                 attribute

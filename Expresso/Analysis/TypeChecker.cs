@@ -817,7 +817,13 @@ namespace Expresso.Ast.Analysis
         public AstType VisitPathExpression(PathExpression pathExpr)
         {
             if(pathExpr.Items.Count == 1){
-                return VisitIdentifier(pathExpr.AsIdentifier);
+                var type = VisitIdentifier(pathExpr.AsIdentifier);
+                if(type is SimpleType simple){
+                    var table = symbols.GetTypeTable(simple.Name);
+                    if(table.TypeKind == ClassType.Enum)
+                        return AstType.MakeSimpleType(simple.Name);
+                }
+                return type;
             }else{
                 var old_table = symbols;
                 AstType result = null;
@@ -855,14 +861,8 @@ namespace Expresso.Ast.Analysis
             // It is guaranteed that if the type table is for an enum, member2 is valid
             if(table.TypeKind == ClassType.Enum && type_path is MemberType member2){
                 var enum_member = table.GetSymbol(member2.MemberName);
-                if(enum_member == null){
-                    throw new ParserException(
-                        "The enum `{0}` doesn't have a variant named {1}.",
-                        "ES1503",
-                        creation,
-                        table.Name, member2.MemberName
-                    );
-                }
+                // Don't report member missing error because InferenceRunner has already done that
+                //if(enum_member == null){
 
                 var member_type = (SimpleType)enum_member.Type;
                 foreach(var pair in creation.Items.Zip(member_type.TypeArguments, (item, ta) => new {KeyValue = item, Argument = ta})){
@@ -881,15 +881,16 @@ namespace Expresso.Ast.Analysis
             }
 
             var type_table = table.GetTypeTable(!type_path.IdentifierNode.Type.IsNull ? type_path.IdentifierNode.Type.Name : type_path.Name);
-            if(type_table == null){
+            // Don't report type table missing error because InferenceRunner has already done that
+            //if(type_table == null){
                 // Report type table missing error because InferenceRunner doesn't always do that
-                throw new ParserException(
+                /*throw new ParserException(
                     "The type `{0}` isn't found or accessible from the scope {1}.",
                     "ES1501",
                     creation,
                     creation.TypePath.ToString(), symbols.Name
                 );
-            }
+            }*/
 
             var arg_types = new AstType[creation.Items.Count];
             foreach(var pair in Enumerable.Range(0, creation.Items.Count).Zip(creation.Items, (l, r) => new Tuple<int, KeyValueLikeExpression>(l, r))){
@@ -1520,7 +1521,13 @@ namespace Expresso.Ast.Analysis
         {
             foreach(var item in destructuringPattern.Items)
                 item.AcceptWalker(this);
-            
+
+            if(destructuringPattern.TypePath is MemberType member){
+                var type_table = symbols.GetTypeTable(member.Target.Name);
+                if(type_table != null && type_table.TypeKind == ClassType.Enum)
+                    return member.Target;
+            }
+
             return destructuringPattern.TypePath;
         }
 

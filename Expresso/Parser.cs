@@ -977,11 +977,12 @@ static uint ScopeId = 1;
 		if(!CheckKeyword(name)){
 		   ident = AstNode.MakeIdentifier(name, modifiers, ident_start_loc);
 		   Symbols.AddTypeSymbol(name, ident);
+		   cur_class_name = name;
 		}
 		
 		Expect(6);
 		GoDownScope();
-		Symbols.Name = "enum_" + name + "`" + ScopeId++;
+		Symbols.Name = "type_" + name + "`" + ScopeId++;
 		
 		while (StartOf(5)) {
 			cur_modifiers = ExpressoModifiers.Private;
@@ -1070,7 +1071,7 @@ static uint ScopeId = 1;
 	}
 
 	void ObjectCreation(AstType typePath, out Expression expr) {
-		var fields = new List<Identifier>(); var values = new List<Expression>(); Identifier field = null; 
+		var fields = new List<Identifier>(); var values = new List<Expression>(); 
 		Expect(6);
 		if (la.kind == 18 || la.kind == 19) {
 			if (la.kind == 19) {
@@ -1479,11 +1480,14 @@ static uint ScopeId = 1;
 			types.Add(type); 
 		}
 		Expect(10);
-		var ident_type = AstType.MakeSimpleType("tuple", types);
+		var ident_type = AstType.MakeSimpleType(cur_class_name);
+		var pattern_type = AstType.MakeSimpleType("tuple", types);
+		ident_type.IdentifierNode.Type = pattern_type;
 		ident = AstNode.MakeIdentifier(name, ident_type, ExpressoModifiers.Public, start_loc);
 		Symbols.AddSymbol(name, ident);
+		
 		var ident_pat = PatternConstruct.MakeIdentifierPattern(ident);
-		var pattern = PatternConstruct.MakePatternWithType(ident_pat, ident_type.Clone());
+		var pattern = PatternConstruct.MakePatternWithType(ident_pat, pattern_type.Clone());
 		entity = EntityDeclaration.MakeField(pattern, null, ExpressoModifiers.Public, attribute, start_loc, CurrentEndLocation);
 		
 	}
@@ -1492,9 +1496,12 @@ static uint ScopeId = 1;
 		var start_loc = NextLocation; string name; Identifier ident = null; Expression expr = null; 
 		Expect(18);
 		name = t.val;
+		var ident_type = AstType.MakeSimpleType(cur_class_name);
 		var type = AstType.MakePrimitiveType("int", NextLocation);
-		ident = AstNode.MakeIdentifier(name, type, ExpressoModifiers.Public, start_loc);
+		ident_type.IdentifierNode.Type = type;
+		ident = AstNode.MakeIdentifier(name, ident_type, ExpressoModifiers.Public, start_loc);
 		Symbols.AddSymbol(name, ident);
+		
 		var ident_pat = PatternConstruct.MakeIdentifierPattern(ident);
 		var pattern = PatternConstruct.MakePatternWithType(ident_pat, type.Clone());
 		

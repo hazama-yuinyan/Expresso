@@ -9001,7 +9001,9 @@ namespace Expresso.Test
         [Test]
         public void Enum1()
         {
-            var parser = new Parser(new Scanner("../../sources/for_unit_tests/enum1.exs"));
+            var parser = new Parser(new Scanner("../../sources/for_unit_tests/enum1.exs")){
+                DoPostParseProcessing = true
+            };
             parser.Parse();
 
             var ast = parser.TopmostAst;
@@ -9012,22 +9014,26 @@ namespace Expresso.Test
                     Modifiers.None,
                     null,
                     Helpers.MakeTupleStyleMember(
-                        "A"
+                        "A",
+                        "Union"
                     ),
                     Helpers.MakeTupleStyleMember(
                         "B",
+                        "Union",
                         null,
                         Helpers.MakePrimitiveType("int"),
                         Helpers.MakePrimitiveType("uint")
                     ),
                     Helpers.MakeTupleStyleMember(
                         "C",
+                        "Union",
                         null,
                         Helpers.MakePrimitiveType("string"),
                         Helpers.MakePrimitiveType("char")
                     ),
                     Helpers.MakeTupleStyleMember(
                         "D",
+                        "Union",
                         null,
                         Helpers.MakePrimitiveType("intseq")
                     )
@@ -9040,7 +9046,10 @@ namespace Expresso.Test
                             Helpers.MakeSeq(
                                 Helpers.MakePaticularPatternWithType(
                                     "some_enum",
-                                    Helpers.MakeGenericType("Union")
+                                    Helpers.MakeGenericTypeWithAnotherType(
+                                        "Union",
+                                        Helpers.MakeGenericType("tuple")
+                                    )
                                 )
                             ),
                             Helpers.MakeSeq(
@@ -9057,7 +9066,14 @@ namespace Expresso.Test
                             Helpers.MakeSeq(
                                 Helpers.MakePaticularPatternWithType(
                                     "some_enum2",
-                                    Helpers.MakeGenericType("Union")
+                                    Helpers.MakeGenericTypeWithAnotherType(
+                                        "Union",
+                                        Helpers.MakeGenericType(
+                                            "tuple",
+                                            Helpers.MakePrimitiveType("int"),
+                                            Helpers.MakePrimitiveType("uint")
+                                        )
+                                    )
                                 )
                             ),
                             Helpers.MakeSeq(
@@ -9078,10 +9094,49 @@ namespace Expresso.Test
                             ),
                             Modifiers.Immutable
                         ),
+                        Statement.MakeExprStmt(
+                            Helpers.MakeCallExpression(
+                                Helpers.SomeWellKnownExpressions.Println,
+                                Helpers.MakeCallExpression(
+                                    Helpers.SomeWellKnownExpressions.StringFormat1,
+                                    Expression.MakeConstant("string", "{0}"),
+                                    Helpers.MakeIdentifierPath(
+                                        "some_enum",
+                                        Helpers.MakeGenericTypeWithAnotherType(
+                                            "Union",
+                                            Helpers.MakeGenericType("tuple")
+                                        )
+                                    )
+                                )
+                            )
+                        ),
+                        Statement.MakeExprStmt(
+                            Helpers.MakeCallExpression(
+                                Helpers.SomeWellKnownExpressions.Println,
+                                Helpers.MakeCallExpression(
+                                    Helpers.SomeWellKnownExpressions.StringFormat1,
+                                    Expression.MakeConstant("string", "{0}"),
+                                    Helpers.MakeIdentifierPath(
+                                        "some_enum2",
+                                        Helpers.MakeGenericTypeWithAnotherType(
+                                            "Union",
+                                            Helpers.MakeGenericType(
+                                                "tuple",
+                                                Helpers.MakePrimitiveType("int"),
+                                                Helpers.MakePrimitiveType("uint")
+                                            )
+                                        )
+                                    )
+                                )
+                            )
+                        ),
                         Statement.MakeMatchStmt(
                             Helpers.MakeIdentifierPath(
                                 "some_enum",
-                                Helpers.MakeGenericType("Union")
+                                Helpers.MakeGenericTypeWithAnotherType(
+                                    "Union",
+                                    Helpers.MakeGenericType("tuple")
+                                )
                             ),
                             Statement.MakeMatchClause(
                                 null,
@@ -9206,7 +9261,14 @@ namespace Expresso.Test
                         Statement.MakeMatchStmt(
                             Helpers.MakeIdentifierPath(
                                 "some_enum2",
-                                Helpers.MakeGenericType("Union")
+                                Helpers.MakeGenericTypeWithAnotherType(
+                                    "Union",
+                                    Helpers.MakeGenericType(
+                                        "tuple",
+                                        Helpers.MakePrimitiveType("int"),
+                                        Helpers.MakePrimitiveType("uint")
+                                    )
+                                )
                             ),
                             Statement.MakeMatchClause(
                                 null,
@@ -9341,7 +9403,9 @@ namespace Expresso.Test
         [Test]
         public void Enum2()
         {
-            var parser = new Parser(new Scanner("../../sources/for_unit_tests/enum2.exs"));
+            var parser = new Parser(new Scanner("../../sources/for_unit_tests/enum2.exs")){
+                DoPostParseProcessing = true
+            };
             parser.Parse();
 
             var ast = parser.TopmostAst;
@@ -9352,17 +9416,44 @@ namespace Expresso.Test
                     Modifiers.None,
                     null,
                     EntityDeclaration.MakeField(
-                        Helpers.MakeExactPatternWithType("A", Helpers.MakePrimitiveType("int")),
+                        PatternConstruct.MakePatternWithType(
+                            PatternConstruct.MakeIdentifierPattern(
+                                "A",
+                                Helpers.MakeGenericTypeWithAnotherType(
+                                    "SomeEnum",
+                                    Helpers.MakePrimitiveType("int")
+                                )
+                            ),
+                            Helpers.MakePrimitiveType("int")
+                        ),
                         Expression.MakeConstant("int", 1),
                         Modifiers.Public
                     ),
                     EntityDeclaration.MakeField(
-                        Helpers.MakeExactPatternWithType("B", Helpers.MakePrimitiveType("int")),
+                        PatternConstruct.MakePatternWithType(
+                            PatternConstruct.MakeIdentifierPattern(
+                                "B",
+                                Helpers.MakeGenericTypeWithAnotherType(
+                                    "SomeEnum",
+                                    Helpers.MakePrimitiveType("int")
+                                )
+                            ),
+                            Helpers.MakePrimitiveType("int")
+                        ),
                         Expression.MakeConstant("int", 2),
                         Modifiers.Public
                     ),
                     EntityDeclaration.MakeField(
-                        Helpers.MakeExactPatternWithType("C", Helpers.MakePrimitiveType("int")),
+                        PatternConstruct.MakePatternWithType(
+                            PatternConstruct.MakeIdentifierPattern(
+                                "C",
+                                Helpers.MakeGenericTypeWithAnotherType(
+                                    "SomeEnum",
+                                    Helpers.MakePrimitiveType("int")
+                                )
+                            ),
+                            Helpers.MakePrimitiveType("int")
+                        ),
                         Expression.MakeConstant("int", 3),
                         Modifiers.Public
                     )
@@ -9373,23 +9464,41 @@ namespace Expresso.Test
                     Statement.MakeBlock(
                         Statement.MakeVarDecl(
                             Helpers.MakeSeq(
-                                Helpers.MakeSomePatternWithType("enum_a")
+                                Helpers.MakePaticularPatternWithType(
+                                    "enum_a",
+                                    Helpers.MakeGenericTypeWithAnotherType(
+                                        "SomeEnum",
+                                        Helpers.MakePrimitiveType("int")
+                                    )
+                                )
                             ),
                             Helpers.MakeSeq(
                                 Expression.MakePath(
-                                    Helpers.MakeSomeIdent("SomeEnum"),
-                                    Helpers.MakeSomeIdent("A")
+                                    AstNode.MakeIdentifier("SomeEnum"),
+                                    AstNode.MakeIdentifier(
+                                        "A",
+                                        Helpers.MakeGenericTypeWithAnotherType(
+                                            "SomeEnum",
+                                            Helpers.MakePrimitiveType("int")
+                                        )
+                                    )
                                 )
                             ),
                             Modifiers.Immutable
                         ),
                         Statement.MakeMatchStmt(
-                            Helpers.MakeIdentifierPath("enum_a"),
+                            Helpers.MakeIdentifierPath(
+                                "enum_a",
+                                Helpers.MakeGenericTypeWithAnotherType(
+                                    "SomeEnum",
+                                    Helpers.MakePrimitiveType("int")
+                                )
+                            ),
                             Statement.MakeMatchClause(
                                 null,
                                 Statement.MakeExprStmt(
                                     Helpers.MakeCallExpression(
-                                        Helpers.MakeIdentifierPath("println"),
+                                        Helpers.SomeWellKnownExpressions.Println,
                                         Expression.MakeConstant("string", "A")
                                     )
                                 ),
@@ -9404,7 +9513,7 @@ namespace Expresso.Test
                                 null,
                                 Statement.MakeExprStmt(
                                     Helpers.MakeCallExpression(
-                                        Helpers.MakeIdentifierPath("println"),
+                                        Helpers.SomeWellKnownExpressions.Println,
                                         Expression.MakeConstant("string", "B")
                                     )
                                 ),
@@ -9419,7 +9528,7 @@ namespace Expresso.Test
                                 null,
                                 Statement.MakeExprStmt(
                                     Helpers.MakeCallExpression(
-                                        Helpers.MakeIdentifierPath("println"),
+                                        Helpers.SomeWellKnownExpressions.Println,
                                         Expression.MakeConstant("string", "C")
                                     )
                                 ),
