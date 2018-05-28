@@ -5269,7 +5269,10 @@ namespace Expresso.Test
                         PatternConstruct.MakePatternWithType(
                             PatternConstruct.MakeIdentifierPattern(
                                 "A",
-                                Helpers.MakeGenericType("SomeEnum")
+                                Helpers.MakeGenericTypeWithAnotherType(
+                                    "SomeEnum",
+                                    Helpers.MakePrimitiveType("int")
+                                )
                             ),
                             Helpers.MakePrimitiveType("int")
                         ),
@@ -5280,7 +5283,10 @@ namespace Expresso.Test
                         PatternConstruct.MakePatternWithType(
                             PatternConstruct.MakeIdentifierPattern(
                                 "B",
-                                Helpers.MakeGenericType("SomeEnum")
+                                Helpers.MakeGenericTypeWithAnotherType(
+                                    "SomeEnum",
+                                    Helpers.MakePrimitiveType("int")
+                                )
                             ),
                             Helpers.MakePrimitiveType("int")
                         ),
@@ -5291,7 +5297,10 @@ namespace Expresso.Test
                         PatternConstruct.MakePatternWithType(
                             PatternConstruct.MakeIdentifierPattern(
                                 "C",
-                                Helpers.MakeGenericType("SomeEnum")
+                                Helpers.MakeGenericTypeWithAnotherType(
+                                    "SomeEnum",
+                                    Helpers.MakePrimitiveType("int")
+                                )
                             ),
                             Helpers.MakePrimitiveType("int")
                         ),
