@@ -18,6 +18,7 @@ namespace Expresso.CodeGen
         {
             CSharpEmitter emitter;
             CSharpEmitterContext context;
+            string field_prefix;
 
             public InterfaceTypeDefiner(CSharpEmitter emitter, CSharpEmitterContext context)
             {
@@ -382,11 +383,16 @@ namespace Expresso.CodeGen
                     // We don't call VisitAttributeSection directly so that we can avoid unnecessary method calls
                     typeDecl.Attribute.AcceptWalker(emitter, context);
                 }else{
-                    context.LazyTypeBuilder = new LazyTypeBuilder(context.ModuleBuilder, name, attr, base_types, false);
+                    context.LazyTypeBuilder = new LazyTypeBuilder(context.ModuleBuilder, name, attr, base_types, false, typeDecl.TypeKind == ClassType.Enum);
                     context.CustomAttributeSetter = context.LazyTypeBuilder.InterfaceTypeBuilder.SetCustomAttribute;
                     context.AttributeTarget = AttributeTargets.Class | AttributeTargets.Struct | AttributeTargets.Enum;
                     // We don't call VisitAttributeSection directly so that we can avoid unnecessary method calls
                     typeDecl.Attribute.AcceptWalker(emitter, context);
+
+                    if(typeDecl.TypeKind == ClassType.Enum)
+                        field_prefix = "<>__";
+                    else
+                        field_prefix = "";
                 }
 
                 foreach(var base_type in base_types){
@@ -440,7 +446,7 @@ namespace Expresso.CodeGen
 
                 foreach(var init in fieldDecl.Initializers){
                     var type = CSharpCompilerHelpers.GetNativeType(init.NameToken.Type);
-                    var field_builder = context.LazyTypeBuilder.DefineField(init.Name, type, !Expression.IsNullNode(init.Initializer), attr);
+                    var field_builder = context.LazyTypeBuilder.DefineField(field_prefix + init.Name, type, !Expression.IsNullNode(init.Initializer), attr);
 
                     context.CustomAttributeSetter = field_builder.SetCustomAttribute;
                     context.AttributeTarget = AttributeTargets.Field;

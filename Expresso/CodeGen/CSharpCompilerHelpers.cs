@@ -101,9 +101,12 @@ namespace Expresso.CodeGen
 
             if(astType is SimpleType simple){
                 var name = ConvertToDotNetTypeName(simple.Identifier);
-                Type type = null;
-                if(simple.Identifier == "tuple" && !simple.TypeArguments.Any())
-                    return typeof(void);
+                if(simple.Identifier == "tuple" && !simple.TypeArguments.Any()){
+                    if(!(simple.Parent is Identifier))
+                        return typeof(void);
+                    else
+                        return typeof(Unit);
+                }
 
                 if(simple.Identifier == "array"){
                     var type_arg = simple.TypeArguments
@@ -113,26 +116,19 @@ namespace Expresso.CodeGen
                     var array = Array.CreateInstance(type_arg, 1);
                     return array.GetType();
                 }
-                
-                if(simple.TypeArguments.Any()){
-                    name += "`" + simple.TypeArguments.Count + "[";
-                    bool first = true;
-                    foreach(var type_arg in simple.TypeArguments){
-                        if(first)
-                            first = false;
-                        else
-                            name += ",";
 
-                        name += GetNativeType(type_arg).FullName;
-                    }
-                    name += "]";
-                }
-
+                name += simple.TypeArguments.Any() ? "`" + simple.TypeArguments.Count : "";
+                Type type = null;
                 var asms = AppDomain.CurrentDomain.GetAssemblies();
                 foreach(var asm in asms){
                     type = asm.GetType(name);
                     if(type != null)
                         break;
+                }
+
+                if(simple.TypeArguments.Any()){
+                    var element_types = simple.TypeArguments.Select(ta => GetNativeType(ta));
+                    type = type.MakeGenericType(element_types.ToArray());
                 }
 
                 if(type == null && !astType.IdentifierNode.Type.IsNull)

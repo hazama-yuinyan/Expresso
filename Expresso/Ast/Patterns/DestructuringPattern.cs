@@ -28,6 +28,14 @@ namespace Expresso.Ast
         /// </summary>
         public AstNodeCollection<PatternConstruct> Items => GetChildrenByRole(Roles.Pattern);
 
+        /// <summary>
+        /// Indicates whether the pattern represents an enum variant.
+        /// </summary>
+        /// <value><c>true</c> if is enum; otherwise, <c>false</c>.</value>
+        public bool IsEnum{
+            get; set;
+        }
+
         public DestructuringPattern(AstType typePath, IEnumerable<PatternConstruct> patterns)
             : base(typePath.StartLocation, patterns.Any() ? patterns.Last().EndLocation : typePath.EndLocation)
         {

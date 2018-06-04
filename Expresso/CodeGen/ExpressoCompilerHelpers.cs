@@ -24,23 +24,23 @@ namespace Expresso.CodeGen
         const string TypePrefix = "type_";
         static readonly string[] IgnoreList = {"equals", "getHashCode"};
 
-        static Dictionary<string, Tuple<string, uint>> SpecialNamesMapInverse = new Dictionary<string, Tuple<string, uint>>{
-            {"Expresso.Runtime.Builtins.ExpressoIntegerSequence", Tuple.Create("intseq", StartOfIdentifierId + 0)},
-            {"Expresso.Runtime.Builtins.Slice", Tuple.Create("slice", StartOfIdentifierId + 1u)},
-            {"System.Func", Tuple.Create("function", StartOfIdentifierId + 2u)},
-            {"System.Boolean", Tuple.Create("bool", StartOfIdentifierId + 3u)},
-            {"System.Int32", Tuple.Create("int", StartOfIdentifierId + 4u)},
-            {"System.UInt32", Tuple.Create("uint", StartOfIdentifierId + 5u)},
-            {"System.Single", Tuple.Create("float", StartOfIdentifierId + 6u)},
-            {"System.Double", Tuple.Create("double", StartOfIdentifierId + 7u)},
-            {"System.Char", Tuple.Create("char", StartOfIdentifierId + 8u)},
-            {"System.Byte", Tuple.Create("byte", StartOfIdentifierId + 9u)},
-            {"System.String", Tuple.Create("string", StartOfIdentifierId + 10u)},
-            {"System.Array", Tuple.Create("array", StartOfIdentifierId + 11u)},
-            {"System.Collections.Generic.List", Tuple.Create("vector", StartOfIdentifierId + 12u)},
-            {"System.Tuple", Tuple.Create("tuple", StartOfIdentifierId + 13u)},
-            {"System.Collections.Generic.Dictionary", Tuple.Create("dictionary", StartOfIdentifierId + 14u)},
-            {"System.Numerics.BigInteger", Tuple.Create("bigint", StartOfIdentifierId + 15u)}
+        static Dictionary<string, (string, uint)> SpecialNamesMapInverse = new Dictionary<string, (string, uint)>{
+            {"Expresso.Runtime.Builtins.ExpressoIntegerSequence", ("intseq", StartOfIdentifierId + 0)},
+            {"Expresso.Runtime.Builtins.Slice", ("slice", StartOfIdentifierId + 1u)},
+            {"System.Func", ("function", StartOfIdentifierId + 2u)},
+            {"System.Boolean", ("bool", StartOfIdentifierId + 3u)},
+            {"System.Int32", ("int", StartOfIdentifierId + 4u)},
+            {"System.UInt32", ("uint", StartOfIdentifierId + 5u)},
+            {"System.Single", ("float", StartOfIdentifierId + 6u)},
+            {"System.Double", ("double", StartOfIdentifierId + 7u)},
+            {"System.Char", ("char", StartOfIdentifierId + 8u)},
+            {"System.Byte", ("byte", StartOfIdentifierId + 9u)},
+            {"System.String", ("string", StartOfIdentifierId + 10u)},
+            {"System.Array", ("array", StartOfIdentifierId + 11u)},
+            {"System.Collections.Generic.List", ("vector", StartOfIdentifierId + 12u)},
+            {"System.Tuple", ("tuple", StartOfIdentifierId + 13u)},
+            {"System.Collections.Generic.Dictionary", ("dictionary", StartOfIdentifierId + 14u)},
+            {"System.Numerics.BigInteger", ("bigint", StartOfIdentifierId + 15u)}
         };
 
         public static string GetExpressoTypeName(string csharpFullName)

@@ -1524,8 +1524,10 @@ namespace Expresso.Ast.Analysis
 
             if(destructuringPattern.TypePath is MemberType member){
                 var type_table = symbols.GetTypeTable(member.Target.Name);
-                if(type_table != null && type_table.TypeKind == ClassType.Enum)
+                if(type_table != null && type_table.TypeKind == ClassType.Enum){
+                    destructuringPattern.IsEnum = true;
                     return member.Target;
+                }
             }
 
             return destructuringPattern.TypePath;

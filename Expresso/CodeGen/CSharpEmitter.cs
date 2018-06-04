@@ -11,6 +11,7 @@ using System.Threading;
 using Expresso.Ast;
 using Expresso.Ast.Analysis;
 using Expresso.Runtime.Builtins;
+using ICSharpCode.NRefactory.PatternMatching;
 
 namespace Expresso.CodeGen
 {
@@ -64,6 +65,7 @@ namespace Expresso.CodeGen
 		
         const string ClosureMethodName = "__Apply";
         const string ClosureDelegateName = "__ApplyMethod";
+        const string HiddenMemberPrefix = "<>__";
         bool has_continue;
 
         Parser parser;
@@ -277,7 +279,7 @@ namespace Expresso.CodeGen
             // Leave the ast.Name as is because otherwise we can't refer to it later when visiting ImportDeclarations
             var type_builder = ContainsFunctionDefinitions(ast.Declarations) ? new LazyTypeBuilder(mod_builder, CSharpCompilerHelpers.ConvertToPascalCase(ast.Name),
                                                                                                    TypeAttributes.Class | TypeAttributes.Public, Enumerable.Empty<Type>(),
-                                                                                                   true) : null;
+                                                                                                   true, false) : null;
             var local_parser = parser;
             if(ast.ExternalModules.Any()){
                 context.CurrentModuleCount = ast.ExternalModules.Count;
@@ -874,7 +876,7 @@ namespace Expresso.CodeGen
             DescendScope();
             scope_counter = 0;
 
-            var closure_type_builder = new LazyTypeBuilder(context.ModuleBuilder, "__Closure`" + ClosureId++, TypeAttributes.Class, Enumerable.Empty<Type>(), false);
+            var closure_type_builder = new LazyTypeBuilder(context.ModuleBuilder, "__Closure`" + ClosureId++, TypeAttributes.Class, Enumerable.Empty<Type>(), false, false);
 
             var formal_parameters = closure.Parameters.Select(p => p.AcceptWalker(this, context))
                                            .OfType<ExprTree.ParameterExpression>();
@@ -1244,6 +1246,27 @@ namespace Expresso.CodeGen
         {
             context.TargetType = null;
             creation.TypePath.AcceptWalker(this, context);
+            if(creation.CtorType.IsNull){
+                // Construct an enum variant
+                var ctor = context.TargetType.GetConstructors().First();
+                var ctor_args = ctor.GetParameters().Select(p => CSharpExpr.Convert(CSharpExpr.Constant(null), p.ParameterType));
+                var new_expr = CSharpExpr.New(ctor, ctor_args);
+                var variant_name = ((MemberType)creation.TypePath).ChildType.Name;
+                var field_info = context.TargetType.GetField(HiddenMemberPrefix + variant_name);
+
+                var field_type = field_info.FieldType;
+                var type = field_type.GenericTypeArguments.Any() ? typeof(Tuple) : typeof(Unit);
+                var create_method = type.GetMethods()
+                                        .Where(m => m.Name == "Create" && m.GetParameters().Length == field_type.GenericTypeArguments.Length)
+                                        .First();
+                create_method = create_method.IsGenericMethod ? create_method.MakeGenericMethod(field_type.GenericTypeArguments) : create_method;
+                var variant_args = creation.Items
+                                           .Select(item => item.AcceptWalker(this, context));
+                var variant_new_call = CSharpExpr.Call(create_method, variant_args);
+                var member_init = CSharpExpr.MemberInit(new_expr, CSharpExpr.Bind(field_info, variant_new_call));
+                return member_init;
+            }
+
             // Don't report TargetType missing error because it was already reported in TypeChecker
             //if(context.TargetType == null)
             //    throw new EmitterException("")
@@ -1251,8 +1274,13 @@ namespace Expresso.CodeGen
                 from p in creation.CtorType.Parameters
                                   select CSharpCompilerHelpers.GetNativeType(p);
             context.Constructor = context.TargetType.GetConstructor(arg_types.ToArray());
-            if(context.Constructor == null)
-                throw new EmitterException("No constructors found for the path `{0}` with arguments {1}", creation, creation.TypePath, CSharpCompilerHelpers.ExpandContainer(arg_types));
+            if(context.Constructor == null){
+                throw new EmitterException(
+                    "No constructors found for the path `{0}` with arguments {1}",
+                    creation,
+                    creation.TypePath, CSharpCompilerHelpers.ExpandContainer(arg_types.ToArray())
+                );
+            }
 
             var formal_params = context.Constructor.GetParameters();
             var args = new CSharpExpr[creation.Items.Count];
@@ -1510,7 +1538,7 @@ namespace Expresso.CodeGen
         // AstType nodes should be treated with special care
         public CSharpExpr VisitSimpleType(SimpleType simpleType, CSharpEmitterContext context)
         {
-            // Usecase: Called from ObjectCreationExpression
+            // Use case: Called from ObjectCreationExpression
             var symbol = GetRuntimeSymbol(simpleType.IdentifierToken);
             if(symbol != null){
                 context.TargetType = symbol.Type;
@@ -1534,9 +1562,14 @@ namespace Expresso.CodeGen
 
         public CSharpExpr VisitMemberType(MemberType memberType, CSharpEmitterContext context)
         {
-            // We don't need to inspect memberType.Target because memberType.IdentifierNode is already binded
-            //memberType.Target.AcceptWalker(this, context);
             context.RequestType = true;
+            // When this MemerType refers to an enum variant we should only look into Target
+            memberType.Target.AcceptWalker(this, context);
+            if(context.TargetType != null){
+                context.RequestType = false;
+                return null;
+            }
+
             VisitSimpleType(memberType.ChildType, context);
             context.RequestType = false;
             return null;
@@ -1779,7 +1812,7 @@ namespace Expresso.CodeGen
                 foreach(var member in typeDecl.Members)
                     member.AcceptWalker(this, context);
 
-                if(typeDecl.TypeKind == ClassType.Class)
+                if(typeDecl.TypeKind != ClassType.Interface)
                     context.LazyTypeBuilder.CreateType();
             }
             finally{
@@ -1911,7 +1944,7 @@ namespace Expresso.CodeGen
                 if(context.Additionals != null)
                     context.Additionals.Add(debug_info);
             }else{
-                param = (ExprTree.ParameterExpression)identifierPattern.Identifier.AcceptWalker(this, context);
+                param = (ExprTree.ParameterExpression)VisitIdentifier(identifierPattern.Identifier, context);
             }
 
             if(identifierPattern.Parent is MatchPatternClause){
@@ -1923,12 +1956,12 @@ namespace Expresso.CodeGen
             }
 
             if(context.PropertyOrField == null && context.TargetType != null && context.ContextAst is MatchStatement 
-               && (identifierPattern.Parent is DestructuringPattern || identifierPattern.Parent is TuplePattern)){
+               && identifierPattern.Parent is DestructuringPattern destructuring && !destructuring.IsEnum){
                 // context.TargetType is supposed to be set in CSharpEmitter.VisitIdentifier
                 var field = context.TargetType.GetField(identifierPattern.Identifier.Name, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static);
                 if(field == null){
                     throw new EmitterException(
-                        "The type `{0}` doesn't have the field `{1}`",
+                        "The type `{0}` doesn't have the field `{1}`.",
                         context.TargetType, identifierPattern.Identifier.Name
                     );
                 }
@@ -1977,7 +2010,7 @@ namespace Expresso.CodeGen
                     block_params.Add(param);
                 }else{
                     if(context.Additionals.Any()){
-                        var block_contents = context.Additionals.OfType<ExprTree.Expression>().ToList();
+                        var block_contents = context.Additionals.OfType<CSharpExpr>().ToList();
                         if(expr != null){
                             var if_content = CSharpExpr.IfThen(expr, context.ContextExpression);
                             block_contents.Add(if_content);
@@ -2016,6 +2049,11 @@ namespace Expresso.CodeGen
             destructuringPattern.TypePath.AcceptWalker(this, context);
 
             var type = context.TargetType;
+            if(destructuringPattern.IsEnum){
+                var variant_name = ((MemberType)destructuringPattern.TypePath).ChildType.Name;
+                context.TemporaryExpression = CSharpExpr.Field(context.TemporaryVariable, HiddenMemberPrefix + variant_name);
+            }
+
             context.RequestPropertyOrField = true;
             var prev_additionals = context.Additionals;
             context.Additionals = new List<object>();
@@ -2025,6 +2063,7 @@ namespace Expresso.CodeGen
             CSharpExpr res = null;
             var block = new List<CSharpExpr>();
             var block_params = new List<ExprTree.ParameterExpression>();
+            var i = 1;
             foreach(var pattern in destructuringPattern.Items){
                 var item_ast_type = pattern.AcceptWalker(item_type_inferencer);
                 if(item_ast_type == null)
@@ -2035,41 +2074,63 @@ namespace Expresso.CodeGen
 
                 //var prev_tmp_variable = context.TemporaryVariable;
                 //context.TemporaryVariable = tmp_param;
+                CSharpExpr prev_tmp_expr = null;
+                if(destructuringPattern.IsEnum){
+                    var field_name = "Item" + i++;
+                    var field_access = CSharpExpr.PropertyOrField(context.TemporaryExpression, field_name);
+                    prev_tmp_expr = context.TemporaryExpression;
+                    context.TemporaryExpression = field_access;
+                }
                 context.PropertyOrField = null;
                 var expr = pattern.AcceptWalker(this, context);
                 //context.TemporaryVariable = prev_tmp_variable;
 
-                var field_access = CSharpExpr.Field(context.TemporaryExpression, (FieldInfo)context.PropertyOrField);
-                //var assignment = CSharpExpr.Assign(tmp_param, field_access);
-                //context.Additionals.Add(assignment);
-                //context.AdditionalParameters.Add(tmp_param);
-                //block.Add(assignment);
-                //block_params.Add(tmp_param);
-
-                var param = expr as ExprTree.ParameterExpression;
-                if(param != null){
-                    var assignemnt2 = CSharpExpr.Assign(param, field_access);
+                if(destructuringPattern.IsEnum){
+                    var param = (ExprTree.ParameterExpression)expr;
+                    var assignment2 = CSharpExpr.Assign(param, context.TemporaryExpression);
                     block_params.Add(param);
-                    block.Add(assignemnt2);
+                    block.Add(assignment2);
+
+                    context.TemporaryExpression = prev_tmp_expr;
                 }else{
-                    if(context.Additionals.Any()){
-                        var block_contents = context.Additionals.OfType<ExprTree.Expression>().ToList();
-                        if(expr != null){
-                            var if_content = CSharpExpr.IfThen(expr, context.ContextExpression);
-                            block_contents.Add(if_content);
-                        }
-                        context.ContextExpression = CSharpExpr.Block(context.AdditionalParameters, block_contents);
-                    }else if(res == null){
-                        res = expr;
+                    var field_access = CSharpExpr.Field(context.TemporaryExpression, (FieldInfo)context.PropertyOrField);
+                    //var assignment = CSharpExpr.Assign(tmp_param, field_access);
+                    //context.Additionals.Add(assignment);
+                    //context.AdditionalParameters.Add(tmp_param);
+                    //block.Add(assignment);
+                    //block_params.Add(tmp_param);
+
+                    var param = expr as ExprTree.ParameterExpression;
+                    if(param != null){
+                        var assignment2 = CSharpExpr.Assign(param, field_access);
+                        block_params.Add(param);
+                        block.Add(assignment2);
                     }else{
-                        res = CSharpExpr.AndAlso(res, expr);
+                        if(context.Additionals.Any()){
+                            var block_contents = context.Additionals.OfType<CSharpExpr>().ToList();
+                            if(expr != null){
+                                var if_content = CSharpExpr.IfThen(expr, context.ContextExpression);
+                                block_contents.Add(if_content);
+                            }
+                            context.ContextExpression = CSharpExpr.Block(context.AdditionalParameters, block_contents);
+                        }else if(res == null){
+                            res = expr;
+                        }else{
+                            res = CSharpExpr.AndAlso(res, expr);
+                        }
                     }
                 }
             }
 
             if(res == null){
-                var native_type = CSharpCompilerHelpers.GetNativeType(destructuringPattern.TypePath);
-                res = CSharpExpr.TypeIs(context.TemporaryVariable, native_type);
+                if(destructuringPattern.IsEnum){
+                    var variant_name = ((MemberType)destructuringPattern.TypePath).ChildType.Name;
+                    var field_access = CSharpExpr.Field(context.TemporaryVariable, HiddenMemberPrefix + variant_name);
+                    res = CSharpExpr.NotEqual(field_access, CSharpExpr.Constant(null));
+                }else{
+                    var native_type = CSharpCompilerHelpers.GetNativeType(destructuringPattern.TypePath);
+                    res = CSharpExpr.TypeIs(context.TemporaryVariable, native_type);
+                }
             }
 
             if(res != null)
@@ -2079,7 +2140,7 @@ namespace Expresso.CodeGen
 
             context.Additionals = prev_additionals;
             context.AdditionalParameters = prev_additional_params;
-            
+
             context.RequestPropertyOrField = false;
             if(block.Any())
                 context.ContextExpression = CSharpExpr.Block(block_params, block);
@@ -2129,7 +2190,7 @@ namespace Expresso.CodeGen
                         block_params.Add(param);
                     }else{
                         if(context.Additionals.Any()){
-                            var block_contents = context.Additionals.OfType<ExprTree.Expression>().ToList();
+                            var block_contents = context.Additionals.OfType<CSharpExpr>().ToList();
                             if(expr != null){
                                 var if_content = CSharpExpr.IfThen(expr, context.ContextExpression);
                                 block_contents.Add(if_content);
@@ -2581,6 +2642,33 @@ namespace Expresso.CodeGen
                 return exprs[index];
             else
                 return CSharpExpr.IfThenElse(exprs[index].Test, exprs[index].IfTrue, inner);
+        }
+
+        PropertyInfo GetTupleProperty(IdentifierPattern identifierPattern, Type tupleType)
+        {
+            var parent = identifierPattern.Parent;
+            int i = 0;
+            if(parent is DestructuringPattern destructuring){
+                destructuring.Items.Any(item => {
+                    if(item.IsMatch(identifierPattern)){
+                        return true;
+                    }else{
+                        ++i;
+                        return false;
+                    }
+                });
+            }else if(parent is TuplePattern tuple){
+                tuple.Patterns.Any(p => {
+                    if(p.IsMatch(identifierPattern)){
+                        return true;
+                    }else{
+                        ++i;
+                        return false;
+                    }
+                });
+            }
+
+            return tupleType.GetProperty("Item" + i);
         }
 		#endregion
 	}

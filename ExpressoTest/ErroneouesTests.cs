@@ -777,6 +777,17 @@ namespace Expresso.Test
             Assert.That(() => parser.Parse(), Throws.TypeOf<ParserException>().With.Message.Contains("ES3010"));
             Assert.AreEqual(1, parser.errors.count);
         }
+
+        [Test]
+        public void ObjectCreationOnAttribute()
+        {
+            var parser = new Parser(new Scanner("../../sources/for_unit_tests/erroneous/object_creation_on_attribute.exs")){
+                DoPostParseProcessing = true
+            };
+
+            Assert.That(() => parser.Parse(), Throws.TypeOf<ParserException>().With.Message.Contains("ES4022"));
+            Assert.AreEqual(1, parser.errors.count);
+        }
     }
 }
 

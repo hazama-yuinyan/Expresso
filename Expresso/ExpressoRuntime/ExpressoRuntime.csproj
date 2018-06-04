@@ -8,7 +8,7 @@
     <OutputType>Library</OutputType>
     <RootNamespace>ExpressoRuntime</RootNamespace>
     <AssemblyName>ExpressoRuntime</AssemblyName>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7</TargetFrameworkVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -19,6 +19,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <ConsolePause>false</ConsolePause>
+    <Commandlineparameters></Commandlineparameters>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <Optimize>true</Optimize>
@@ -50,6 +51,7 @@
     <Compile Include="BuiltIns\Slice.cs" />
     <Compile Include="BuiltIns\DictionaryEnumerator.cs" />
     <Compile Include="Utilities.cs" />
+    <Compile Include="BuiltIns\Unit.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>

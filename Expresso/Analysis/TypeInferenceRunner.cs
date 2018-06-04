@@ -388,7 +388,8 @@ namespace Expresso.Ast.Analysis
             {
                 var target_type = memRef.Target.AcceptWalker(this);
                 var name = (target_type is MemberType member) ? member.Target.Name + "::" + member.MemberName :
-                                                                      !target_type.IdentifierNode.Type.IsNull ? target_type.IdentifierNode.Type.Name : target_type.Name;
+                                                                      (!target_type.IdentifierNode.Type.IsNull && target_type.IdentifierNode.Type.Name != "tuple") ?
+                                                                      target_type.IdentifierNode.Type.Name : target_type.Name;
                 var type_table = checker.symbols.GetTypeTable(name);
                 if(type_table == null){
                     throw new ParserException(

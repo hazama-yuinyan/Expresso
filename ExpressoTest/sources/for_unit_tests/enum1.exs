@@ -7,6 +7,16 @@ enum Union
     B(int, uint),
     C(string, char),
     D(intseq)
+
+    public def print()
+    {
+        match self {
+            Union::A{} => println("A");,
+            Union::B{some_int, some_uint} => println("${some_int}, ${some_uint}");,
+            Union::C{some_str, some_char} => println("${some_str}, ${some_char}");,
+            Union::D{some_intseq} => println("${some_intseq}");
+        }
+    }
 }
 
 def main()
@@ -24,10 +34,5 @@ def main()
         Union::D{some_intseq} => println("${some_intseq}");
     }
 
-    match some_enum2 {
-        Union::A{} => println("A");,
-        Union::B{some_int, some_uint} => println("${some_int}, ${some_uint}");,
-        Union::C{some_str, some_char} => println("${some_str}, ${some_char}");,
-        Union::D{some_intseq} => println("${some_intseq}");
-    }
+    some_enum2.print();
 }

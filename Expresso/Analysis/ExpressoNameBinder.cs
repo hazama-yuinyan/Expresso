@@ -437,6 +437,8 @@ namespace Expresso.Ast.Analysis
 
         public void VisitMemberType(MemberType memberType)
         {
+            memberType.Target.AcceptWalker(this);
+
             var original_type_table = symbol_table;
             var type_table = symbol_table.GetTypeTable(memberType.Target.Name);
             symbol_table = type_table;
