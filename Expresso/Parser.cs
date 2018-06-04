@@ -1499,7 +1499,7 @@ static uint ScopeId = 1;
 		var ident_type = AstType.MakeSimpleType(cur_class_name);
 		var type = AstType.MakePrimitiveType("int", NextLocation);
 		ident_type.IdentifierNode.Type = type;
-		ident = AstNode.MakeIdentifier(name, ident_type, ExpressoModifiers.Public, start_loc);
+		ident = AstNode.MakeIdentifier(name, ident_type, ExpressoModifiers.Public | ExpressoModifiers.Static, start_loc);
 		Symbols.AddSymbol(name, ident);
 		
 		var ident_pat = PatternConstruct.MakeIdentifierPattern(ident);
@@ -1514,7 +1514,7 @@ static uint ScopeId = 1;
 		   expr = Expression.MakeConstant("int", rawValue);
 		
 		++rawValue;
-		entity = EntityDeclaration.MakeField(pattern, expr, ExpressoModifiers.Public, attribute, start_loc, CurrentEndLocation);
+		entity = EntityDeclaration.MakeField(pattern, expr, ExpressoModifiers.Public | ExpressoModifiers.Static, attribute, start_loc, CurrentEndLocation);
 		
 	}
 

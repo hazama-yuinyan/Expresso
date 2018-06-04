@@ -26,6 +26,8 @@ namespace Expresso.Ast.Analysis
         ClosureParameterInferencer closure_parameter_inferencer;
         NullCheckWalker null_checker;
         AstType[] argument_types;
+        List<int> seen_enum_members;
+        FieldDeclaration first_raw_value_enum_member;
 
         public TypeChecker(Parser parser)
         {
@@ -1337,12 +1339,18 @@ namespace Expresso.Ast.Analysis
             while(require_methods.Contains("constructor"))
                 require_methods.Remove("constructor");
 
+            if(typeDecl.TypeKind == ClassType.Enum)
+                seen_enum_members = new List<int>();
+            
             foreach(var member in typeDecl.Members){
                 if(member is FunctionDeclaration method)
                     require_methods.Remove(method.Name);
                 
                 member.AcceptWalker(this);
             }
+
+            if(typeDecl.TypeKind == ClassType.Enum)
+                seen_enum_members = null;
 
             if(require_methods.Any()){
                 foreach(var require_method_name in require_methods){
@@ -1372,15 +1380,37 @@ namespace Expresso.Ast.Analysis
                     field_type.ReplaceWith(inferred_type);
                 }else{
                     if(!field.Initializer.IsNull){
-                        var init_type = field.Initializer.AcceptWalker(this);
-                        if(IsCastable(init_type, field_type) == TriBool.False){
-                            parser.ReportSemanticErrorRegional(
-                                "Can not initialize the field '{0}' with a value that's of type `{1}`.",
-                                "ES0110",
-                                field.Pattern, field.Initializer,
-                                field.Pattern, field_type
-                            );
+                        if(seen_enum_members != null && field.Initializer is LiteralExpression literal){
+                            var value = (int)literal.Value;
+                            if(seen_enum_members.Any(seen => seen == value)){
+                                throw new ParserException(
+                                    "A descriminant value `{0}` already exists.",
+                                    "ES4030",
+                                    fieldDecl,
+                                    value
+                                );
+                            }
+                            seen_enum_members.Add(value);
+
+                            if(first_raw_value_enum_member == null)
+                                first_raw_value_enum_member = fieldDecl;
+                        }else{
+                            var init_type = field.Initializer.AcceptWalker(this);
+                            if(IsCastable(init_type, field_type) == TriBool.False){
+                                parser.ReportSemanticErrorRegional(
+                                    "Can not initialize the field '{0}' with a value that's of type `{1}`.",
+                                    "ES0110",
+                                    field.Pattern, field.Initializer,
+                                    field.Pattern, field_type
+                                );
+                            }
                         }
+                    }else if(seen_enum_members.Any()){
+                        throw new ParserException(
+                            "Descriminator values can only be used with a field-less enum.",
+                            "ES4031",
+                            first_raw_value_enum_member
+                        );
                     }
                 }
             }

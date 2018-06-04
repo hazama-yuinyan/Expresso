@@ -1184,8 +1184,9 @@ namespace Expresso.CodeGen
             }
 
             context.TargetType = null;
-            // We do this because the items in a path would already be resolved
+            // We do this because the items in a path should already be resolved
             // and a path with more than 1 item can only refer to an external module's method
+            // or an enum member
             var last_item = pathExpr.Items.Last();
             var native_symbol = GetRuntimeSymbol(last_item);
             if(native_symbol != null){
@@ -1193,7 +1194,7 @@ namespace Expresso.CodeGen
                 context.Method = native_symbol.Method;
                 context.PropertyOrField = native_symbol.PropertyOrField;
             }else{
-                throw new EmitterException("It is found that the runtime symbol '{0}' doesn't represents anything", last_item.Name);
+                throw new EmitterException("It is found that the runtime symbol '{0}' doesn't represent anything.", last_item.Name);
             }
 
             if(native_symbol.PropertyOrField != null)
@@ -1827,7 +1828,7 @@ namespace Expresso.CodeGen
         public CSharpExpr VisitFieldDeclaration(FieldDeclaration fieldDecl, CSharpEmitterContext context)
         {
             foreach(var init in fieldDecl.Initializers){
-                var field_builder = init.NameToken != null ? Symbols[init.NameToken.IdentifierId].PropertyOrField as FieldBuilder : throw new EmitterException("Invalid field: {0}", init.Pattern);
+                var field_builder = (init.NameToken != null) ? Symbols[init.NameToken.IdentifierId].PropertyOrField as FieldBuilder : throw new EmitterException("Invalid field: {0}", init.Pattern);
                 var initializer = init.Initializer.AcceptWalker(this, context);
                 if(initializer != null)
                     context.LazyTypeBuilder.SetBody(field_builder, initializer);

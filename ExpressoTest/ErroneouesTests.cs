@@ -788,6 +788,28 @@ namespace Expresso.Test
             Assert.That(() => parser.Parse(), Throws.TypeOf<ParserException>().With.Message.Contains("ES4022"));
             Assert.AreEqual(1, parser.errors.count);
         }
+
+        [Test]
+        public void DuplicateRawValueEnumMember()
+        {
+            var parser = new Parser(new Scanner("../../sources/for_unit_tests/erroneous/duplicate_raw_value_enum_member.exs")){
+                DoPostParseProcessing = true
+            };
+
+            Assert.That(() => parser.Parse(), Throws.TypeOf<ParserException>().With.Message.Contains("ES4030"));
+            Assert.AreEqual(1, parser.errors.count);
+        }
+
+        [Test]
+        public void MultipleStyleEnum()
+        {
+            var parser = new Parser(new Scanner("../../sources/for_unit_tests/erroneous/multiple_style_enum.exs")){
+                DoPostParseProcessing = true
+            };
+
+            Assert.That(() => parser.Parse(), Throws.TypeOf<ParserException>().With.Message.Contains("ES4031"));
+            Assert.AreEqual(1, parser.errors.count);
+        }
     }
 }
 

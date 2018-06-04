@@ -545,6 +545,14 @@ namespace Expresso.CodeGen
                 Console.WriteLine("Compile-time constants mean that there should be no object constructions nor function calls.");
                 break;
 
+            case "4030":
+                Console.WriteLine("You can't define particular values more than one time.");
+                break;
+
+            case "4031":
+                Console.WriteLine("You have to only use either tuple-like members or raw value members in an enum.");
+                break;
+
             case "5000":
                 {
                     var is_importing_system = (bool)e.HelpObject;
