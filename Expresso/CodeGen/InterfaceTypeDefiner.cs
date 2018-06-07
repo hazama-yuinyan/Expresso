@@ -378,14 +378,14 @@ namespace Expresso.CodeGen
                 if(first_type != null && !first_type.IsClass)
                     base_types = new []{typeof(object)}.Concat(base_types);
 
-                var not_have_implicit_value = emitter.symbol_table.GetSymbol("<>__value") == null;
+                var have_implicit_value = emitter.symbol_table.GetSymbol("<>__value") != null;
                 if(typeDecl.TypeKind == ClassType.Interface){
                     context.InterfaceTypeBuilder = context.ModuleBuilder.DefineType(name, TypeAttributes.Interface | TypeAttributes.Abstract);
                     context.CustomAttributeSetter = context.InterfaceTypeBuilder.SetCustomAttribute;
                     // We don't call VisitAttributeSection directly so that we can avoid unnecessary method calls
                     typeDecl.Attribute.AcceptWalker(emitter, context);
                 }else{
-                    context.LazyTypeBuilder = new LazyTypeBuilder(context.ModuleBuilder, name, attr, base_types, false, not_have_implicit_value);
+                    context.LazyTypeBuilder = new LazyTypeBuilder(context.ModuleBuilder, name, attr, base_types, false, have_implicit_value);
                     context.CustomAttributeSetter = context.LazyTypeBuilder.InterfaceTypeBuilder.SetCustomAttribute;
                     context.AttributeTarget = AttributeTargets.Class | AttributeTargets.Struct | AttributeTargets.Enum;
                     // We don't call VisitAttributeSection directly so that we can avoid unnecessary method calls
@@ -402,7 +402,7 @@ namespace Expresso.CodeGen
                         context.LazyTypeBuilder.InterfaceTypeBuilder.AddInterfaceImplementation(base_type);
                 }
 
-                if(typeDecl.TypeKind != ClassType.Enum || not_have_implicit_value){
+                if(typeDecl.TypeKind != ClassType.Enum || !have_implicit_value){
                     try{
                         foreach(var member in typeDecl.Members)
                             member.AcceptWalker(this);

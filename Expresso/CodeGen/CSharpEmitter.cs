@@ -334,7 +334,8 @@ namespace Expresso.CodeGen
 
                 var first_import = pair.Item2.ImportPaths.First();
                 if(!first_import.Name.Contains("::") && !first_import.Name.Contains(".")){
-                    Symbols.Add(pair.Item2.ImportPaths.First().IdentifierId, new ExpressoSymbol{
+                    var first_alias = pair.Item2.AliasTokens.First();
+                    Symbols.Add(first_alias.IdentifierId, new ExpressoSymbol{
                         Type = context.ExternalModuleType
                     });
                     context.ExternalModuleType = null;
@@ -377,6 +378,7 @@ namespace Expresso.CodeGen
                     ++scope_counter;
                     continue;
                 }
+
                 decl.AcceptWalker(this, context);
             }
 
@@ -1218,7 +1220,10 @@ namespace Expresso.CodeGen
             }
 
             if(native_symbol.PropertyOrField != null && native_symbol.PropertyOrField is FieldInfo field){
-                if(pathExpr.Ancestors.Any(a => a is VariableInitializer)){
+                var first_item = pathExpr.Items.First();
+                var type_table = symbol_table.GetTypeTable(first_item.Name);
+                if(type_table != null && type_table.TypeKind == ClassType.Enum && pathExpr.Ancestors.Any(a => a is VariableInitializer)){
+                    // This code is needed for assgining raw value enums
                     var field_type = field.FieldType;
                     var wrapper_type = field_type.DeclaringType;
                     var ctor = wrapper_type.GetConstructors().First();
@@ -1596,8 +1601,9 @@ namespace Expresso.CodeGen
         {
             context.RequestType = true;
             // When this MemerType refers to an enum variant we should only look into Target
+            var type_table = symbol_table.GetTypeTable(memberType.Target.Name);
             memberType.Target.AcceptWalker(this, context);
-            if(context.TargetType != null){
+            if(type_table != null && type_table.TypeKind == ClassType.Enum && context.TargetType != null){
                 context.RequestType = false;
                 return null;
             }
@@ -1860,7 +1866,6 @@ namespace Expresso.CodeGen
         {
             foreach(var init in fieldDecl.Initializers){
                 var field_builder = (init.NameToken != null) ? Symbols[init.NameToken.IdentifierId].FieldBuilder : throw new EmitterException("Invalid field: {0}", init.Pattern);
-
                 var initializer = init.Initializer.AcceptWalker(this, context);
                 if(initializer != null)
                     context.LazyTypeBuilder.SetBody(field_builder, initializer);
@@ -2521,9 +2526,9 @@ namespace Expresso.CodeGen
                 if(method.ContainsGenericParameters){
                     var parameters = method.GetParameters();
                     var generic_param_indices = parameters.Where(p => p.ParameterType.IsGenericParameter)
-                        .Select((p, index) => index);
+                                                          .Select((p, index) => index);
                     var generic_types = args.Where((a, index) => generic_param_indices.Contains(index))
-                        .Select(e => e.Type);
+                                            .Select(e => e.Type);
                     if(method.IsGenericMethod){
                         method = method.MakeGenericMethod(generic_types.ToArray());
                     }else{
@@ -2655,7 +2660,9 @@ namespace Expresso.CodeGen
                     // We don't call VisitAttributeSection directly so that we can avoid unnecessary method calls
                     fieldDecl.Attribute.AcceptWalker(this, context);
 
-                    AddSymbol(ident_pat.Identifier, new ExpressoSymbol{FieldBuilder = field_builder});
+                    // PropertyOrField is needed so that we can refer to it easily later on
+                    // We can do this because we wouldn't need to be able to return module classes
+                    AddSymbol(ident_pat.Identifier, new ExpressoSymbol{FieldBuilder = field_builder, PropertyOrField = field_builder});
                 }else{
                     throw new EmitterException("Invalid module field!");
                 }

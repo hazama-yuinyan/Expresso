@@ -26,7 +26,7 @@ namespace Expresso.CodeGen
         readonly string pdb_file_path = "./main.pdb";
         readonly Dictionary<string, LazyTypeBuilder> nested_types = new Dictionary<string, LazyTypeBuilder>();
         Type type_cache;
-        bool is_created, is_tuple_style_enum;
+        bool is_created, is_raw_value_enum;
 
         /// <summary>
         /// Represents whether the interface type is already created.
@@ -79,12 +79,12 @@ namespace Expresso.CodeGen
             }
         }
 
-        public LazyTypeBuilder(ModuleBuilder module, string name, TypeAttributes attr, IEnumerable<Type> baseTypes, bool isGlobalFunctions, bool isEnum)
-            : this(module.DefineType(name, attr, baseTypes.Any() ? baseTypes.First() : typeof(object), baseTypes.Skip(1).ToArray()), isGlobalFunctions, isEnum)
+        public LazyTypeBuilder(ModuleBuilder module, string name, TypeAttributes attr, IEnumerable<Type> baseTypes, bool isGlobalFunctions, bool isTupleStyleEnum)
+            : this(module.DefineType(name, attr, baseTypes.Any() ? baseTypes.First() : typeof(object), baseTypes.Skip(1).ToArray()), isGlobalFunctions, isTupleStyleEnum)
         {
         }
 
-        LazyTypeBuilder(TypeBuilder builder, bool isGlobalFunctions, bool isEnum)
+        LazyTypeBuilder(TypeBuilder builder, bool isGlobalFunctions, bool isTupleStyleEnum)
         {
             interface_type = builder;
             types = isGlobalFunctions ? new Type[]{} : new []{ builder };
@@ -98,7 +98,7 @@ namespace Expresso.CodeGen
             members = new List<MemberInfo>().Concat(builder.GetMethods().OfType<MethodBuilder>()).ToList();
 #endif
             is_created = false;
-            is_tuple_style_enum = isEnum;
+            is_raw_value_enum = isTupleStyleEnum;
         }
 
         /// <summary>
@@ -218,7 +218,7 @@ namespace Expresso.CodeGen
         public LazyTypeBuilder DefineNestedType(string name, TypeAttributes attr, IEnumerable<Type> baseTypes)
         {
             var real_attr = attr.HasFlag(TypeAttributes.Public) ? TypeAttributes.NestedPublic : TypeAttributes.NestedPrivate;
-            var tmp = new LazyTypeBuilder(interface_type.DefineNestedType(name, real_attr, baseTypes.Any() ? baseTypes.First() : typeof(object), baseTypes.Skip(1).ToArray()), false, is_tuple_style_enum);
+            var tmp = new LazyTypeBuilder(interface_type.DefineNestedType(name, real_attr, baseTypes.Any() ? baseTypes.First() : typeof(object), baseTypes.Skip(1).ToArray()), false, is_raw_value_enum);
             nested_types.Add(name, tmp);
             return tmp;
         }
@@ -230,7 +230,7 @@ namespace Expresso.CodeGen
         public Type CreateInterfaceType()
         {
             ConstructorBuilder ctor = null;
-            if(!is_tuple_style_enum && !members.OfType<ConstructorBuilder>().Any() && types.Any()){
+            if(is_raw_value_enum || !members.OfType<ConstructorBuilder>().Any() && types.Any()){
                 var param_types = members.OfType<FieldBuilder>()
                                          .Where(t => !has_initializer_list.Any(name => t.Name == name))
                                          .Select(t => t.FieldType)

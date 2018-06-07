@@ -844,7 +844,7 @@ namespace Expresso.Ast.Analysis
                 var type = VisitIdentifier(pathExpr.AsIdentifier);
                 if(type is SimpleType simple){
                     var table = symbols.GetTypeTable(simple.Name);
-                    if(table.TypeKind == ClassType.Enum)
+                    if(table != null && table.TypeKind == ClassType.Enum)
                         return AstType.MakeSimpleType(simple.Name);
                 }
                 return type;
@@ -1075,8 +1075,9 @@ namespace Expresso.Ast.Analysis
 
             var type_table = symbols.GetTypeTable(selfRef.SelfIdentifier.Type.Name);
             var next_sibling = selfRef.NextSibling;
-            if(type_table != null && type_table.TypeKind == ClassType.Enum && (next_sibling == null || next_sibling.NodeType == NodeType.Expression
-                                                                               || next_sibling.NodeType == NodeType.Statement)){
+            var value_symbol = type_table.GetSymbol(RawValueEnumValueFieldName);
+            if(type_table != null && type_table.TypeKind == ClassType.Enum && value_symbol != null && (next_sibling == null || next_sibling.NodeType == NodeType.Expression
+                                                                                                       || next_sibling.NodeType == NodeType.Statement)){
                 // We recognize a self identifier whose type is an enum and which is the last child
                 // as referencing the enum value
                 var mem_ref = Expression.MakeMemRef(selfRef.Clone(), AstNode.MakeIdentifier(RawValueEnumValueFieldName, AstType.MakePlaceholderType()));
