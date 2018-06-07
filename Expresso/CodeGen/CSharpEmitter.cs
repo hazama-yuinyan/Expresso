@@ -160,14 +160,34 @@ namespace Expresso.CodeGen
         internal static void AddSymbol(Identifier ident, ExpressoSymbol symbol)
         {
             if(ident.IdentifierId == 0)
-                throw new InvalidOperationException("An invalid identifier is invalid because it can't be used for any purpose");
+                throw new InvalidOperationException("An invalid identifier is invalid because it can't be used for any purpose.");
             
             try{
                 Symbols.Add(ident.IdentifierId, symbol);
             }
             catch(ArgumentException){
-                throw new InvalidOperationException(string.Format("The native symbol for '{0}' @ <id: {1}> is already added", ident.Name, ident.IdentifierId));
+                throw new InvalidOperationException(string.Format("The native symbol for '{0}' @ <id: {1}> is already added.", ident.Name, ident.IdentifierId));
             }
+        }
+
+        internal static void UpdateSymbol(Identifier ident, ExpressoSymbol symbol)
+        {
+            if(ident.IdentifierId == 0)
+                throw new InvalidOperationException("An invalid identifier is invalid because it can't be used for any purpose.");
+
+            if(!Symbols.TryGetValue(ident.IdentifierId, out var target_symbol))
+                throw new InvalidOperationException(string.Format("The native symbol for '{0}' @ <id: {1}> isn't found.", ident.Name, ident.IdentifierId));
+
+            // We don't need to update other fields
+            //target_symbol.FieldBuilder = symbol.FieldBuilder;
+            //target_symbol.Lambda = symbol.Lambda;
+            //target_symbol.Member = symbol.Member;
+            //target_symbol.Method = symbol.Method;
+            //target_symbol.Parameter = symbol.Parameter;
+            //target_symbol.Parameters = symbol.Parameters;
+            target_symbol.PropertyOrField = symbol.PropertyOrField;
+            //target_symbol.Type = symbol.Type;
+            //target_symbol.TypeBuilder = symbol.TypeBuilder;
         }
 
         void DescendScope()
@@ -1070,7 +1090,7 @@ namespace Expresso.CodeGen
             }else{
                 if(context.TargetType != null && context.TargetType.IsEnum){
                     var enum_field = context.TargetType.GetField(ident.Name);
-                    context.PropertyOrField = enum_field ?? throw new EmitterException ("It is found that the native symbol '{0}' doesn't represent an enum field.", ident.Name);
+                    context.PropertyOrField = enum_field ?? throw new EmitterException("It is found that the native symbol '{0}' doesn't represent an enum field.", ident.Name);
                     AddSymbol(ident, new ExpressoSymbol{PropertyOrField = enum_field});
                     return null;
                 }else if(context.TargetType != null && context.RequestMethod){
@@ -1197,8 +1217,17 @@ namespace Expresso.CodeGen
                 throw new EmitterException("It is found that the runtime symbol '{0}' doesn't represent anything.", last_item.Name);
             }
 
-            if(native_symbol.PropertyOrField != null)
-                return CSharpExpr.Field(null, (FieldInfo)context.PropertyOrField);
+            if(native_symbol.PropertyOrField != null && native_symbol.PropertyOrField is FieldInfo field){
+                if(pathExpr.Ancestors.Any(a => a is VariableInitializer)){
+                    var field_type = field.FieldType;
+                    var wrapper_type = field_type.DeclaringType;
+                    var ctor = wrapper_type.GetConstructors().First();
+                    var new_expr = CSharpExpr.New(ctor, CSharpExpr.Field(null, field));
+                    return new_expr;
+                }else{
+                    return CSharpExpr.Field(null, field);
+                }
+            }
             // On .NET environment, a path item is mapped to
             // Assembly::[Module]::{Class}
             // In reverse, an Expresso item can be mapped to the .NET type system as
@@ -1543,6 +1572,8 @@ namespace Expresso.CodeGen
             var symbol = GetRuntimeSymbol(simpleType.IdentifierToken);
             if(symbol != null){
                 context.TargetType = symbol.Type;
+                // For enum member
+                context.PropertyOrField = symbol.PropertyOrField;
                 return symbol.Parameter;
             }else{
                 var type = CSharpCompilerHelpers.GetNativeType(simpleType);
@@ -1828,7 +1859,8 @@ namespace Expresso.CodeGen
         public CSharpExpr VisitFieldDeclaration(FieldDeclaration fieldDecl, CSharpEmitterContext context)
         {
             foreach(var init in fieldDecl.Initializers){
-                var field_builder = (init.NameToken != null) ? Symbols[init.NameToken.IdentifierId].PropertyOrField as FieldBuilder : throw new EmitterException("Invalid field: {0}", init.Pattern);
+                var field_builder = (init.NameToken != null) ? Symbols[init.NameToken.IdentifierId].FieldBuilder : throw new EmitterException("Invalid field: {0}", init.Pattern);
+
                 var initializer = init.Initializer.AcceptWalker(this, context);
                 if(initializer != null)
                     context.LazyTypeBuilder.SetBody(field_builder, initializer);
@@ -1933,7 +1965,8 @@ namespace Expresso.CodeGen
             // An identifier pattern can arise by itself or as a child
             ExprTree.ParameterExpression param = null;
             if(!(context.ContextAst is MatchStatement)){
-                param = CSharpExpr.Parameter(CSharpCompilerHelpers.GetNativeType(identifierPattern.Identifier.Type), identifierPattern.Identifier.Name);
+                var type = identifierPattern.Identifier.Type;
+                param = CSharpExpr.Parameter(CSharpCompilerHelpers.GetNativeType(type), identifierPattern.Identifier.Name);
                 AddSymbol(identifierPattern.Identifier, new ExpressoSymbol{Parameter = param});
 
                 var start_loc = identifierPattern.Identifier.StartLocation;
@@ -2271,7 +2304,21 @@ namespace Expresso.CodeGen
 
         public CSharpExpr VisitTypePathPattern(TypePathPattern pathPattern, CSharpEmitterContext context)
         {
-            return null;
+            // We can't just delegate it to VisitMemberType because we can't distinguish between tuple style enums and raw value style enums
+            var member = (MemberType)pathPattern.TypePath;
+            context.RequestType = true;
+            member.Target.AcceptWalker(this, context);
+            context.RequestType = false;
+
+            // We can't just delegate to VisitSimpleType because it doesn't take properties or fields into account
+            context.RequestMethod = true;
+            context.RequestPropertyOrField = true;
+            VisitIdentifier(member.ChildType.IdentifierNode, context);
+            context.RequestMethod = false;
+            context.RequestPropertyOrField = false;
+
+            var field_access = CSharpExpr.Field(null, (FieldInfo)context.PropertyOrField);
+            return CSharpExpr.Equal(context.TemporaryVariable, field_access);
         }
 
         public CSharpExpr VisitNullNode(AstNode nullNode, CSharpEmitterContext context)
@@ -2608,7 +2655,7 @@ namespace Expresso.CodeGen
                     // We don't call VisitAttributeSection directly so that we can avoid unnecessary method calls
                     fieldDecl.Attribute.AcceptWalker(this, context);
 
-                    AddSymbol(ident_pat.Identifier, new ExpressoSymbol{PropertyOrField = field_builder});
+                    AddSymbol(ident_pat.Identifier, new ExpressoSymbol{FieldBuilder = field_builder});
                 }else{
                     throw new EmitterException("Invalid module field!");
                 }

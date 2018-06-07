@@ -350,7 +350,6 @@ namespace Expresso.CodeGen
 
             public void VisitTypePathPattern(TypePathPattern pathPattern)
             {
-                throw new InvalidOperationException("Can not work on that node");
             }
 
             public void VisitUnaryExpression(UnaryExpression unaryExpr)

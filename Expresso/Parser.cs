@@ -965,7 +965,7 @@ static uint ScopeId = 1;
 	void EnumDecl(out EntityDeclaration decl, ExpressoModifiers modifiers, AttributeSection attribute) {
 		EntityDeclaration entity = null; var decls = new List<EntityDeclaration>(); string name;
 		var start_loc = NextLocation; Identifier ident = null; AttributeSection item_attribute = null;
-		int raw_value = 0;
+		int raw_value = 0; bool has_value_identifier_added = false;
 		
 		while (!(la.kind == 0 || la.kind == 31)) {SynErr(128); Get();}
 		Expect(31);
@@ -1002,7 +1002,13 @@ static uint ScopeId = 1;
 				decls.Add(entity); 
 			} else if (la.kind == 18) {
 				RawValueStyleEnumMember(out entity, item_attribute, ref raw_value);
-				decls.Add(entity); 
+				decls.Add(entity);
+				if(!has_value_identifier_added){
+				   var ident2 = AstNode.MakeIdentifier("<>__value", ExpressoModifiers.Public);
+				   Symbols.AddSymbol("<>__value", ident2);
+				   has_value_identifier_added = true;
+				}
+				
 			} else SynErr(129);
 			if (la.kind == 14) {
 				Get();

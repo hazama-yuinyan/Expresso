@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using ICSharpCode.NRefactory.PatternMatching;
@@ -49,7 +50,7 @@ namespace Expresso.Ast.Analysis
 		{
 			parser = parentParser;
             symbol_table = parentParser.Symbols;
-		}
+        }
 		
 		#region Public surface
         /// <summary>
@@ -616,6 +617,10 @@ namespace Expresso.Ast.Analysis
             symbol_table.AddSymbol("self", self_ident);
             UniqueIdGenerator.DefineNewId(self_ident);
             typeDecl.Members.AcceptWalker(this);
+
+            var value_symbol = symbol_table.GetSymbol("<>__value");
+            if(typeDecl.TypeKind == ClassType.Enum && value_symbol != null)
+                UniqueIdGenerator.DefineNewId(value_symbol);
 
             if(typeDecl.TypeKind == ClassType.Class){
                 // Add the constructor here so that we can use it before the type is inspected in TypeChecker

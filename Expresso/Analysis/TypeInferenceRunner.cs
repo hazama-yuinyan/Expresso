@@ -13,7 +13,7 @@ namespace Expresso.Ast.Analysis
         /// The type inference runner is responsible for inferring types when asked.
         /// It does the job by inferring and replacing old nodes with the calculated type nodes
         /// in the symbol table. 
-        /// Note that the AstType nodes returned won't be cloned. So be careful when using it.
+        /// Note that the <see cref="AstType"/> nodes returned won't be cloned. So be careful when using it.
         /// </summary>
         /// <remarks>
         /// Currently, I must say it's just a temporal implementation since it messes around the AST itself
@@ -387,9 +387,12 @@ namespace Expresso.Ast.Analysis
             public AstType VisitMemberReference(MemberReferenceExpression memRef)
             {
                 var target_type = memRef.Target.AcceptWalker(this);
+                var another_type = target_type.IdentifierNode.Type;
+                // exclude cases where another type is the tuple or int
+                // because they are enums
                 var name = (target_type is MemberType member) ? member.Target.Name + "::" + member.MemberName :
-                                                                      (!target_type.IdentifierNode.Type.IsNull && target_type.IdentifierNode.Type.Name != "tuple") ?
-                                                                      target_type.IdentifierNode.Type.Name : target_type.Name;
+                                                                      (!another_type.IsNull && another_type.Name != "tuple" && another_type.Name != "int") ?
+                                                                      another_type.Name : target_type.Name;
                 var type_table = checker.symbols.GetTypeTable(name);
                 if(type_table == null){
                     throw new ParserException(
@@ -661,13 +664,15 @@ namespace Expresso.Ast.Analysis
 
             public AstType VisitSelfReferenceExpression(SelfReferenceExpression selfRef)
             {
-                var decls =
+                var decl_types =
                     from a in selfRef.Ancestors
                         where a.NodeType == NodeType.TypeDeclaration
                     let entity = a as EntityDeclaration
-                    select entity;
+                                     select entity.ReturnType;
 
-                return decls.First().ReturnType;
+                var self_type = decl_types.First();
+                selfRef.SelfIdentifier.Type.ReplaceWith(self_type.Clone());
+                return self_type;
             }
 
             public AstType VisitSuperReferenceExpression(SuperReferenceExpression superRef)
@@ -680,7 +685,9 @@ namespace Expresso.Ast.Analysis
                     from pt in type.BaseTypes
                     select pt as AstType;
 
-                return decls.First();
+                var super_type = decls.First();
+                superRef.SuperIdentifier.Type.ReplaceWith(super_type.Clone());
+                return super_type;
             }
 
             public AstType VisitNullReferenceExpression(NullReferenceExpression nullRef)

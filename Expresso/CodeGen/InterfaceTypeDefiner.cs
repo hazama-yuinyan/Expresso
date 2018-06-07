@@ -19,6 +19,7 @@ namespace Expresso.CodeGen
             CSharpEmitter emitter;
             CSharpEmitterContext context;
             string field_prefix;
+            Type self_type;
 
             public InterfaceTypeDefiner(CSharpEmitter emitter, CSharpEmitterContext context)
             {
@@ -376,14 +377,15 @@ namespace Expresso.CodeGen
                 var first_type = base_types.FirstOrDefault();
                 if(first_type != null && !first_type.IsClass)
                     base_types = new []{typeof(object)}.Concat(base_types);
-                
+
+                var not_have_implicit_value = emitter.symbol_table.GetSymbol("<>__value") == null;
                 if(typeDecl.TypeKind == ClassType.Interface){
                     context.InterfaceTypeBuilder = context.ModuleBuilder.DefineType(name, TypeAttributes.Interface | TypeAttributes.Abstract);
                     context.CustomAttributeSetter = context.InterfaceTypeBuilder.SetCustomAttribute;
                     // We don't call VisitAttributeSection directly so that we can avoid unnecessary method calls
                     typeDecl.Attribute.AcceptWalker(emitter, context);
                 }else{
-                    context.LazyTypeBuilder = new LazyTypeBuilder(context.ModuleBuilder, name, attr, base_types, false, typeDecl.TypeKind == ClassType.Enum);
+                    context.LazyTypeBuilder = new LazyTypeBuilder(context.ModuleBuilder, name, attr, base_types, false, not_have_implicit_value);
                     context.CustomAttributeSetter = context.LazyTypeBuilder.InterfaceTypeBuilder.SetCustomAttribute;
                     context.AttributeTarget = AttributeTargets.Class | AttributeTargets.Struct | AttributeTargets.Enum;
                     // We don't call VisitAttributeSection directly so that we can avoid unnecessary method calls
@@ -400,17 +402,61 @@ namespace Expresso.CodeGen
                         context.LazyTypeBuilder.InterfaceTypeBuilder.AddInterfaceImplementation(base_type);
                 }
 
-                try{
-                    foreach(var member in typeDecl.Members)
-                        member.AcceptWalker(this);
+                if(typeDecl.TypeKind != ClassType.Enum || not_have_implicit_value){
+                    try{
+                        foreach(var member in typeDecl.Members)
+                            member.AcceptWalker(this);
 
-                    var type = (typeDecl.TypeKind == ClassType.Interface) ? context.InterfaceTypeBuilder.CreateType() : context.LazyTypeBuilder.CreateInterfaceType();
-                    var expresso_symbol = (typeDecl.TypeKind == ClassType.Interface) ? new ExpressoSymbol{Type = type} : new ExpressoSymbol{Type = type, TypeBuilder = context.LazyTypeBuilder};
-                    AddSymbol(typeDecl.NameToken, expresso_symbol);
-                }
-                finally{
-                    context.LazyTypeBuilder = parent_type;
-                    context.InterfaceTypeBuilder = null;
+                        var type = (typeDecl.TypeKind == ClassType.Interface) ? context.InterfaceTypeBuilder.CreateType() : context.LazyTypeBuilder.CreateInterfaceType();
+                        var expresso_symbol = (typeDecl.TypeKind == ClassType.Interface) ? new ExpressoSymbol{Type = type} : new ExpressoSymbol{Type = type, TypeBuilder = context.LazyTypeBuilder};
+                        AddSymbol(typeDecl.NameToken, expresso_symbol);
+
+                        if(typeDecl.TypeKind != ClassType.Interface){
+                            // Add fields as ExpressoSymbols so that we can refer to fields easily
+                            RegisterFields(typeDecl, type);
+                        }
+                    }
+                    finally{
+                        context.LazyTypeBuilder = parent_type;
+                        context.InterfaceTypeBuilder = null;
+                    }
+                }else{
+                    try{
+                        var interface_type_builder = context.LazyTypeBuilder;
+                        var type_builder = interface_type_builder.DefineNestedType("<RealEnum>", TypeAttributes.NotPublic | TypeAttributes.Class, new []{typeof(Enum)});
+                        self_type = type_builder.InterfaceTypeAsType;
+
+                        context.LazyTypeBuilder = type_builder;
+                        foreach(var member in typeDecl.Members.OfType<FieldDeclaration>())
+                            member.AcceptWalker(this);
+
+                        context.LazyTypeBuilder = interface_type_builder;
+                        foreach(var method in typeDecl.Members.OfType<FunctionDeclaration>())
+                            method.AcceptWalker(this);
+
+                        // Define value__ field on the real enum type
+                        // It seems to be needed so that it will be recognized as an enum
+                        type_builder.DefineField("value__", typeof(int), false, FieldAttributes.Public | FieldAttributes.SpecialName | FieldAttributes.RTSpecialName);
+
+                        var enum_interface_type = type_builder.CreateInterfaceType();
+                        type_builder.CreateType();
+
+                        var field_builder = interface_type_builder.DefineField("<>__value", enum_interface_type, false);
+                        var value_symbol = emitter.symbol_table.GetSymbol("<>__value");
+                        AddSymbol(value_symbol, new ExpressoSymbol{PropertyOrField = field_builder});
+
+                        var interface_interface_type = interface_type_builder.CreateInterfaceType();
+                        var expresso_symbol = new ExpressoSymbol{Type = interface_interface_type, TypeBuilder = interface_type_builder};
+                        AddSymbol(typeDecl.NameToken, expresso_symbol);
+
+                        // Add fields as ExpressoSymbols so that we can refer to raw value style enum members
+                        // This operation can't be moved to CSharpEmitter because we have no reference to the enum interface type there
+                        RegisterFields(typeDecl, enum_interface_type);
+                    }
+                    finally{
+                        context.LazyTypeBuilder = parent_type;
+                        self_type = null;
+                    }
                 }
 
                 emitter.AscendScope();
@@ -429,6 +475,8 @@ namespace Expresso.CodeGen
                     attr |= FieldAttributes.Static;
 
                 // Don't set InitOnly flag or we'll fail to initialize the fields
+                // because fields are initialized via impl methods.
+                // Therefore they won't be closed in the consturctor.
                 //if(fieldDecl.Modifiers.HasFlag(Modifiers.Immutable))
                 //    attr |= FieldAttributes.InitOnly;
 
@@ -445,7 +493,7 @@ namespace Expresso.CodeGen
                     attr ^= FieldAttributes.Private;
 
                 foreach(var init in fieldDecl.Initializers){
-                    var type = CSharpCompilerHelpers.GetNativeType(init.NameToken.Type);
+                    var type = (self_type != null) ? self_type : CSharpCompilerHelpers.GetNativeType(init.NameToken.Type);
                     var field_builder = context.LazyTypeBuilder.DefineField(field_prefix + init.Name, type, !Expression.IsNullNode(init.Initializer), attr);
 
                     context.CustomAttributeSetter = field_builder.SetCustomAttribute;
@@ -453,7 +501,7 @@ namespace Expresso.CodeGen
                     // We don't call VisitAttributeSection directly so that we can avoid unnecessary method calls
                     fieldDecl.Attribute.AcceptWalker(emitter, context);
 
-                    AddSymbol(init.NameToken, new ExpressoSymbol{PropertyOrField = field_builder});
+                    AddSymbol(init.NameToken, new ExpressoSymbol{FieldBuilder = field_builder});
                 }
             }
 
@@ -543,6 +591,20 @@ namespace Expresso.CodeGen
             }
 
             #endregion
+
+            void RegisterFields(TypeDeclaration typeDecl, Type type)
+            {
+                // Add fields as ExpressoSymbols so that we can reference raw value style enum members
+                foreach(var field_decl in typeDecl.Members.OfType<FieldDeclaration>()){
+                    foreach(var initializer in field_decl.Initializers){
+                        var field = type.GetField(field_prefix + initializer.Name, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static);
+                        if(field == null)
+                            throw new InvalidOperationException(string.Format("{0} is null! Something wrong has occurred!", initializer.Name));
+
+                        UpdateSymbol(initializer.NameToken, new ExpressoSymbol{PropertyOrField = field});
+                    }
+                }
+            }
         }
     }
 }

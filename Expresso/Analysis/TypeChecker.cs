@@ -15,8 +15,9 @@ namespace Expresso.Ast.Analysis
     /// </summary>
     partial class TypeChecker : IAstWalker<AstType>
     {
-        static PlaceholderType PlaceholderTypeNode = new PlaceholderType(TextLocation.Empty);
+        const string RawValueEnumValueFieldName = "<>__value";
         static List<AstType> TemporaryTypes = new List<AstType>();
+        readonly IEnumerable<(string, Identifier)> raw_value_enum_identifiers;
         bool inspecting_immutability = false;
         bool? is_main_function_defined;
         int scope_counter;
@@ -36,6 +37,9 @@ namespace Expresso.Ast.Analysis
             inference_runner = new TypeInferenceRunner(parser, this);
             closure_parameter_inferencer = new ClosureParameterInferencer(parser, this);
             null_checker = new NullCheckWalker(this);
+
+            raw_value_enum_identifiers = symbols.Children
+                                                .Select(child => (child.Name, child.GetSymbol(RawValueEnumValueFieldName)));
         }
 
         public static void Check(ExpressoAst ast, Parser parser)
@@ -651,6 +655,24 @@ namespace Expresso.Ast.Analysis
         {
             // Infer and spread the type of the identifier to this node
             inference_runner.VisitIdentifier(ident);
+            var type_table = ident.Type.IdentifierNode.Type.IsNull ? symbols.GetTypeTable(ident.Type.Name) : null;
+            var value_symbol = (type_table != null) ? type_table.GetSymbol(RawValueEnumValueFieldName) : null;
+            var mem_ref = (value_symbol != null) ? ident.Ancestors.OfType<MemberReferenceExpression>().FirstOrDefault() : null;
+            if(type_table != null && type_table.TypeKind == ClassType.Enum && value_symbol != null && (mem_ref == null || mem_ref.Member.IsMatch(ident))){
+                // We recognize an identifier whose type is an enum and which is the last child
+                // as specifying the enum value
+                // We know that an identifier that represents an enum object will never show up on its own as an identifier
+                var parent = (Expression)ident.Parent;
+                var new_mem_ref = Expression.MakeMemRef(parent.Clone(), AstNode.MakeIdentifier(RawValueEnumValueFieldName, AstType.MakePlaceholderType()));
+                ident.Parent.ReplaceWith(new_mem_ref);
+
+                // We leave the Type property of symbol as is because we don't use it
+                var symbol = type_table.GetSymbol(RawValueEnumValueFieldName);
+                new_mem_ref.Member.IdentifierId = symbol.IdentifierId;
+                //
+                //mem_ref.Member.Type = ident.Type.Clone();
+            }
+
             if(inspecting_immutability && ident.Modifiers.HasFlag(Modifiers.Immutable)){
                 throw new ParserException(
                     "Re-assignment on an immutable variable '{0}'.",
@@ -1049,9 +1071,25 @@ namespace Expresso.Ast.Analysis
         public AstType VisitSelfReferenceExpression(SelfReferenceExpression selfRef)
         {
             if(selfRef.SelfIdentifier.Type is PlaceholderType)
-                return inference_runner.VisitSelfReferenceExpression(selfRef);
-            else
-                return selfRef.SelfIdentifier.Type;
+                inference_runner.VisitSelfReferenceExpression(selfRef);
+
+            var type_table = symbols.GetTypeTable(selfRef.SelfIdentifier.Type.Name);
+            var next_sibling = selfRef.NextSibling;
+            if(type_table != null && type_table.TypeKind == ClassType.Enum && (next_sibling == null || next_sibling.NodeType == NodeType.Expression
+                                                                               || next_sibling.NodeType == NodeType.Statement)){
+                // We recognize a self identifier whose type is an enum and which is the last child
+                // as referencing the enum value
+                var mem_ref = Expression.MakeMemRef(selfRef.Clone(), AstNode.MakeIdentifier(RawValueEnumValueFieldName, AstType.MakePlaceholderType()));
+                // We leave the Type property of symbol as is because we don't use it
+                var symbol = type_table.GetSymbol(RawValueEnumValueFieldName);
+                mem_ref.Member.IdentifierId = symbol.IdentifierId;
+                //
+                //mem_ref.Member.Type = selfRef.SelfIdentifier.Type.Clone();
+
+                selfRef.ReplaceWith(mem_ref);
+            }
+
+            return selfRef.SelfIdentifier.Type;
         }
 
         public AstType VisitSuperReferenceExpression(SuperReferenceExpression superRef)
@@ -1093,7 +1131,7 @@ namespace Expresso.Ast.Analysis
             // If the type arguments contain any unsubstituted ones(placeholder nodes)
             // return the statically defined placeholder type node to indicate that it needs to be inferred
             if(simpleType.TypeArguments.HasChildren && simpleType.TypeArguments.Any(ta => IsPlaceholderType(ta)))
-                return PlaceholderTypeNode.Clone();
+                return AstType.MakePlaceholderType();
             else
                 return simpleType;
         }
@@ -1405,7 +1443,7 @@ namespace Expresso.Ast.Analysis
                                 );
                             }
                         }
-                    }else if(seen_enum_members.Any()){
+                    }else if(seen_enum_members != null && seen_enum_members.Any()){
                         throw new ParserException(
                             "Descriminator values can only be used with a field-less enum.",
                             "ES4031",
@@ -1477,6 +1515,13 @@ namespace Expresso.Ast.Analysis
                     left_type.ReplaceWith(elem_type);
                     left_type = elem_type;
                 }else{
+                    var type_table = symbols.GetTypeTable(inferred_type.Name);
+                    if(type_table != null && type_table.TypeKind == ClassType.Enum && inferred_type.IdentifierNode.Type.Name == "int"){
+                        var new_type = AstType.MakeSimpleType(inferred_type.Name, inferred_type.StartLocation);
+                        new_type.IdentifierNode.IdentifierId = inferred_type.IdentifierNode.IdentifierId;
+                        inferred_type = new_type;
+                    }
+
                     left_type.ReplaceWith(inferred_type.Clone());
                     left_type = inferred_type;
                 }
@@ -1710,6 +1755,9 @@ namespace Expresso.Ast.Analysis
                 //TODO: implement it
                 if(simple1.IsMatch(simple2)){
                     return TriBool.True;
+                }else if(simple1.Name == simple2.Name){
+                    // When they have other types
+                    return TriBool.Intermmediate;
                 }
             }
 

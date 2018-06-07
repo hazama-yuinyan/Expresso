@@ -2,6 +2,7 @@
 using System.Reflection;
 using System.Linq.Expressions;
 using System.Collections.Generic;
+using System.Reflection.Emit;
 
 namespace Expresso.CodeGen
 {
@@ -29,6 +30,17 @@ namespace Expresso.CodeGen
         /// Represents a property or a field.
         /// </summary>
         public MemberInfo PropertyOrField{
+            get; set;
+        }
+
+        /// <summary>
+        /// Represents a field builder.
+        /// It's for referencing fields in the CSharpEmitter class.
+        /// Don't use it for actually referencing the fields because otherwise we can't reference fields that
+        /// have the belonging class as its type.
+        /// </summary>
+        /// <value>The field builder.</value>
+        public FieldBuilder FieldBuilder{
             get; set;
         }
 
@@ -73,7 +85,7 @@ namespace Expresso.CodeGen
 
         public override string ToString()
         {
-            return string.Format("[ExpressoSymbol: Parameter={0}, Method={1}, Field={2}, Lambda={3}, Member={4}, Type={5}, Length of Parameters={6}]", Parameter, Method, PropertyOrField, Lambda, Member, Type, Parameters.Count);
+            return string.Format("[ExpressoSymbol: Parameter={0}, Method={1}, PropertyOrField={2}, FieldBuilder={3}, Lambda={4}, Member={5}, Type={6}, Length of Parameters={7}]", Parameter, Method, PropertyOrField, FieldBuilder, Lambda, Member, Type, Parameters.Count);
         }
     }
 }

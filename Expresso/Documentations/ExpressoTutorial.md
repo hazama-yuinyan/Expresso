@@ -298,7 +298,7 @@ If you are familliar with C#, you might notice that `slice` is the same as the `
 same as that of the `Span<T>` class. The differences are that the `slice` type is a class and the `slice` type might be slower than the `Span<T>` class.
 
 OK, so far so good. We've explained the very basics of builtin types. Next up is exponentiation. But we'll be doing it in a slightly different way.
-Even though Expresso has the operator for it, here we'll be doing it on our own, using while loop.
+Even though Expresso has the operator for it, here we'll be doing it on our own, using `while` loop.
 
 ## Basic Constructs
 
@@ -321,6 +321,7 @@ What the above code does is first declare two variables and use one of them as a
 to the console. We use the string interpolation where we print it, but for now, don't worry about it. Just assume that it's a handy way to print some variables.
 When you run this code, it should print 1024.
 Let's look at another example.
+
 ```expresso
 let ary = [1, 2, 3, 4, 5];
 var i = 0;
@@ -333,8 +334,8 @@ while i < ary.Length {
 <span class="caption">Listing 15: Another use of the `while` loop</span>
 
 This time, we index into an array. In Listing 15, we have an array to print and then actually print the elements of it.
-Although `ary.Length` returns the length of the array and it will work if the length of it changes, the intent isn't clear, isn't it?
-For Listing 14 also, it would be enough for the purpose, but the `i += 1;` part is slightly annoying. Would it be more clean if Expresso counts up for us?
+Although `ary.Length` returns the length of the array and it will work even if the length of it changes, the intent isn't clear, isn't it?
+For Listing 15 also, it would be enough for the purpose, but the `i += 1;` part is slightly annoying. Would it be more clean if Expresso counts up for us?
 
 ### The `for` Loop
 
@@ -383,6 +384,26 @@ we mentioned in the "The `bool` Type" section that the condition of an `if` stat
 
 There are also the `do while` statement and the `match` statement that uses patterns for branching. The functionality of the `do while` statement is almost the same as
 that of the `while` statement so we'll ignore it and we'll dig into the `match` later on.
+
+We've seen the data types and the basic constructs so far, now it's good time to talk about the `//` syntax.
+
+### Comments
+
+In Listing 11 to 13, we've written the comments as side notes. The sections after `//` and inside `/*` and `*/` are called comments and they will be ignored
+by the compiler. They are purely for us. Although they are completely meaningless to the compiler, it will take them into account when calculating token offsets.
+Thank goodness.
+
+You can write anything inside comments. People say that you will become someone else if two weeks passed since you have written some code. So it's good to leave notes
+about what you've done especially when you chose the implementation due to some technical difficultiles or for other reasons.
+
+```expresso
+// Are you fu*king idiot? What the heck is this code?!
+let two = 1 + 1;
+```
+
+<span class="caption">Listing 19: An offensive comment</span>
+
+But don't try to write comments like above. Be kind to others, and of course, to yourself ;)
 
 The main policy for Expresso is that "Programming languages must allow programmers to write what it does, not how it does something".
 In traditional C, we often end up writing something like the following:
