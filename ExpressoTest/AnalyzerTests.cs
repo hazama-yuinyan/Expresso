@@ -2642,10 +2642,9 @@ namespace Expresso.Test
                                 Expression.MakeComp(
                                     Helpers.MakeIdentifierPath("x", Helpers.MakePrimitiveType("int")),
                                     Expression.MakeCompFor(
-                                        PatternConstruct.MakeIdentifierPattern(
+                                        Helpers.MakePaticularPatternWithType(
                                             "x",
-                                            Helpers.MakePrimitiveType("int"),
-                                            null
+                                            Helpers.MakePrimitiveType("int")
                                         ),
                                         Expression.MakeIntSeq(
                                             Expression.MakeConstant("int", 0),
@@ -2671,10 +2670,9 @@ namespace Expresso.Test
                                 Expression.MakeComp(
                                     Helpers.MakeIdentifierPath("x", Helpers.MakePrimitiveType("int")),
                                     Expression.MakeCompFor(
-                                        PatternConstruct.MakeIdentifierPattern(
+                                        Helpers.MakePaticularPatternWithType(
                                             "x",
-                                            Helpers.MakePrimitiveType("int"),
-                                            null
+                                            Helpers.MakePrimitiveType("int")
                                         ),
                                         Expression.MakeIntSeq(
                                             Expression.MakeConstant("int", 0),
@@ -2723,10 +2721,9 @@ namespace Expresso.Test
                                         )
                                     ),
                                     Expression.MakeCompFor(
-                                        PatternConstruct.MakeIdentifierPattern(
+                                        Helpers.MakePaticularPatternWithType(
                                             "x",
-                                            Helpers.MakePrimitiveType("int"),
-                                            null
+                                            Helpers.MakePrimitiveType("int")
                                         ),
                                         Expression.MakeIntSeq(
                                             Expression.MakeConstant("int", 0),
@@ -2745,10 +2742,9 @@ namespace Expresso.Test
                                                 Expression.MakeConstant("int", 0)
                                             ),
                                             Expression.MakeCompFor(
-                                                PatternConstruct.MakeIdentifierPattern(
+                                                Helpers.MakePaticularPatternWithType(
                                                     "y",
-                                                    Helpers.MakePrimitiveType("int"),
-                                                    null
+                                                    Helpers.MakePrimitiveType("int")
                                                 ),
                                                 Expression.MakeIntSeq(
                                                     Expression.MakeConstant("int", 0),
@@ -2790,10 +2786,9 @@ namespace Expresso.Test
                                         )
                                     ),
                                     Expression.MakeCompFor(
-                                        PatternConstruct.MakeIdentifierPattern(
+                                        Helpers.MakePaticularPatternWithType(
                                             "c",
-                                            Helpers.MakePrimitiveType("int"),
-                                            null
+                                            Helpers.MakePrimitiveType("int")
                                         ),
                                         Expression.MakeIntSeq(
                                             Expression.MakeConstant("int", 1),
@@ -2802,10 +2797,9 @@ namespace Expresso.Test
                                             true
                                         ),
                                         Expression.MakeCompFor(
-                                            PatternConstruct.MakeIdentifierPattern(
+                                            Helpers.MakePaticularPatternWithType(
                                                 "b",
-                                                Helpers.MakePrimitiveType("int"),
-                                                null
+                                                Helpers.MakePrimitiveType("int")
                                             ),
                                             Expression.MakeIntSeq(
                                                 Expression.MakeConstant("int", 1),
@@ -2814,10 +2808,9 @@ namespace Expresso.Test
                                                 true
                                             ),
                                             Expression.MakeCompFor(
-                                                PatternConstruct.MakeIdentifierPattern(
+                                                Helpers.MakePaticularPatternWithType(
                                                     "a",
-                                                    Helpers.MakePrimitiveType("int"),
-                                                    null
+                                                    Helpers.MakePrimitiveType("int")
                                                 ),
                                                 Expression.MakeIntSeq(
                                                     Expression.MakeConstant("int", 1),
@@ -2882,10 +2875,9 @@ namespace Expresso.Test
                                         )
                                     ),
                                     Expression.MakeCompFor(
-                                        PatternConstruct.MakeIdentifierPattern(
+                                        Helpers.MakePaticularPatternWithType(
                                             "c",
-                                            Helpers.MakePrimitiveType("int"),
-                                            null
+                                            Helpers.MakePrimitiveType("int")
                                         ),
                                         Expression.MakeIntSeq(
                                             Expression.MakeConstant("int", 1),
@@ -2894,10 +2886,9 @@ namespace Expresso.Test
                                             true
                                         ),
                                         Expression.MakeCompFor(
-                                            PatternConstruct.MakeIdentifierPattern(
+                                            Helpers.MakePaticularPatternWithType(
                                                 "b",
-                                                Helpers.MakePrimitiveType("int"),
-                                                null
+                                                Helpers.MakePrimitiveType("int")
                                             ),
                                             Expression.MakeIntSeq(
                                                 Expression.MakeConstant("int", 1),
@@ -2906,10 +2897,9 @@ namespace Expresso.Test
                                                 true
                                             ),
                                             Expression.MakeCompFor(
-                                                PatternConstruct.MakeIdentifierPattern(
+                                                Helpers.MakePaticularPatternWithType(
                                                     "a",
-                                                    Helpers.MakePrimitiveType("int"),
-                                                    null
+                                                    Helpers.MakePrimitiveType("int")
                                                 ),
                                                 Expression.MakeIntSeq(
                                                     Expression.MakeConstant("int", 1),
@@ -6335,7 +6325,7 @@ namespace Expresso.Test
                                 Helpers.SomeWellKnownExpressions.Println,
                                 Helpers.MakeCallExpression(
                                     Helpers.SomeWellKnownExpressions.StringFormatN,
-                                    Expression.MakeConstant("string", "{0} {1} {2} {3} {4}"),
+                                    Expression.MakeConstant("string", "{0}, {1}, {2}, {3}, {4}"),
                                     Helpers.MakeIdentifierPath(
                                         "a",
                                         Helpers.MakePrimitiveType("string")

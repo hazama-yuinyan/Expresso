@@ -19,5 +19,5 @@ def main()
     let t = (a, b, c);
     vec.add((a, b));
 
-	println(x, y, z, triangles, specific_triangles, a, b, c);
+	println("${x}, ${y}, ${z}, ${triangles}, ${specific_triangles}, ${a}, ${b}, ${c}");
 }

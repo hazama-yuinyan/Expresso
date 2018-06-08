@@ -225,11 +225,11 @@ namespace Expresso.Ast
             set => SetChildByRole(ComprehensionIter.CompBody, value);
 		}
 
-		public ComprehensionIfClause(Expression test, ComprehensionIter bodyExpr)
-            : base(test.StartLocation, bodyExpr.EndLocation)
+        public ComprehensionIfClause(Expression test, ComprehensionIter bodyIter)
+            : base(test.StartLocation, (bodyIter != null) ? bodyIter.EndLocation : test.EndLocation)
 		{
             Condition = test;
-            Body = bodyExpr;
+            Body = bodyIter;
 		}
 
         public override void AcceptWalker(IAstWalker walker)

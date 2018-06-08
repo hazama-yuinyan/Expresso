@@ -1765,7 +1765,7 @@ namespace Expresso.Test
                                 Expression.MakeComp(
                                     Helpers.MakeIdentifierPath("x"),
                                     Expression.MakeCompFor(
-                                        PatternConstruct.MakeIdentifierPattern("x", Helpers.MakePlaceholderType(), null),
+                                        Helpers.MakeSomePatternWithType("x"),
                                         Expression.MakeIntSeq(
                                             Expression.MakeConstant("int", 0),
                                             Expression.MakeConstant("int", 100),
@@ -1785,7 +1785,7 @@ namespace Expresso.Test
                                 Expression.MakeComp(
                                     Helpers.MakeIdentifierPath("x"),
                                     Expression.MakeCompFor(
-                                        PatternConstruct.MakeIdentifierPattern("x", Helpers.MakePlaceholderType(), null),
+                                        Helpers.MakeSomePatternWithType("x"),
                                         Expression.MakeIntSeq(
                                             Expression.MakeConstant("int", 0),
                                             Expression.MakeConstant("int", 100),
@@ -1821,7 +1821,7 @@ namespace Expresso.Test
                                         )
                                     ),
                                     Expression.MakeCompFor(
-                                        PatternConstruct.MakeIdentifierPattern("x", Helpers.MakePlaceholderType(), null),
+                                        Helpers.MakeSomePatternWithType("x"),
                                         Expression.MakeIntSeq(
                                             Expression.MakeConstant("int", 0),
                                             Expression.MakeConstant("int", 100),
@@ -1839,7 +1839,7 @@ namespace Expresso.Test
                                                 Expression.MakeConstant("int", 0)
                                             ),
                                             Expression.MakeCompFor(
-                                                PatternConstruct.MakeIdentifierPattern("y", Helpers.MakePlaceholderType(), null),
+                                                Helpers.MakeSomePatternWithType("y"),
                                                 Expression.MakeIntSeq(
                                                     Expression.MakeConstant("int", 0),
                                                     Expression.MakeConstant("int", 100),
@@ -1867,7 +1867,7 @@ namespace Expresso.Test
                                         )
                                     ),
                                     Expression.MakeCompFor(
-                                        PatternConstruct.MakeIdentifierPattern("c", Helpers.MakePlaceholderType(), null),
+                                        Helpers.MakeSomePatternWithType("c"),
                                         Expression.MakeIntSeq(
                                             Expression.MakeConstant("int", 1),
                                             Expression.MakeConstant("int", 10),
@@ -1875,7 +1875,7 @@ namespace Expresso.Test
                                             true
                                         ),
                                         Expression.MakeCompFor(
-                                            PatternConstruct.MakeIdentifierPattern("b", Helpers.MakePlaceholderType(), null),
+                                            Helpers.MakeSomePatternWithType("b"),
                                             Expression.MakeIntSeq(
                                                 Expression.MakeConstant("int", 1),
                                                 Helpers.MakeIdentifierPath("c"),
@@ -1883,7 +1883,7 @@ namespace Expresso.Test
                                                 true
                                             ),
                                             Expression.MakeCompFor(
-                                                PatternConstruct.MakeIdentifierPattern("a", Helpers.MakePlaceholderType(), null),
+                                                Helpers.MakeSomePatternWithType("a"),
                                                 Expression.MakeIntSeq(
                                                     Expression.MakeConstant("int", 1),
                                                     Helpers.MakeIdentifierPath("b"),
@@ -1934,7 +1934,7 @@ namespace Expresso.Test
                                         )
                                     ),
                                     Expression.MakeCompFor(
-                                        PatternConstruct.MakeIdentifierPattern("c", Helpers.MakePlaceholderType(), null),
+                                        Helpers.MakeSomePatternWithType("c"),
                                         Expression.MakeIntSeq(
                                             Expression.MakeConstant("int", 1),
                                             Expression.MakeConstant("int", 10),
@@ -1942,7 +1942,7 @@ namespace Expresso.Test
                                             true
                                         ),
                                         Expression.MakeCompFor(
-                                            PatternConstruct.MakeIdentifierPattern("b", Helpers.MakePlaceholderType(), null),
+                                            Helpers.MakeSomePatternWithType("b"),
                                             Expression.MakeIntSeq(
                                                 Expression.MakeConstant("int", 1),
                                                 Helpers.MakeIdentifierPath("c"),
@@ -1950,7 +1950,7 @@ namespace Expresso.Test
                                                 true
                                             ),
                                             Expression.MakeCompFor(
-                                                PatternConstruct.MakeIdentifierPattern("a", Helpers.MakePlaceholderType(), null),
+                                                Helpers.MakeSomePatternWithType("a"),
                                                 Expression.MakeIntSeq(
                                                     Expression.MakeConstant("int", 1),
                                                     Helpers.MakeIdentifierPath("b"),
@@ -2091,14 +2091,7 @@ namespace Expresso.Test
                         Statement.MakeExprStmt(
                             Helpers.MakeCallExpression(
                                 Helpers.MakeIdentifierPath("println"),
-                                Helpers.MakeIdentifierPath("x"),
-                                Helpers.MakeIdentifierPath("y"),
-                                Helpers.MakeIdentifierPath("z"),
-                                Helpers.MakeIdentifierPath("triangles"),
-                                Helpers.MakeIdentifierPath("specific_triangles"),
-                                Helpers.MakeIdentifierPath("a"),
-                                Helpers.MakeIdentifierPath("b"),
-                                Helpers.MakeIdentifierPath("c")
+                                Expression.MakeConstant("string", "${x}, ${y}, ${z}, ${triangles}, ${specific_triangles}, ${a}, ${b}, ${c}")
                             )
                         )
                     ),
@@ -2108,7 +2101,6 @@ namespace Expresso.Test
             });
 
             Assert.IsNotNull(ast);
-
             Helpers.AstStructuralEqual(ast, expected);
         }
 
@@ -4208,7 +4200,7 @@ namespace Expresso.Test
                         Statement.MakeExprStmt(
                             Helpers.MakeCallExpression(
                                 Helpers.MakeIdentifierPath("println"),
-                                Expression.MakeConstant("string", "${a} ${b} ${c} ${d} ${e}")
+                                Expression.MakeConstant("string", "${a}, ${b}, ${c}, ${d}, ${e}")
                             )
                         )
                     ),
