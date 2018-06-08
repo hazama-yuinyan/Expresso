@@ -3187,89 +3187,25 @@ namespace Expresso.Test
                     Helpers.MakeSeq(
                         EntityDeclaration.MakeParameter("a", AstType.MakeParameterType("T")),
                         EntityDeclaration.MakeParameter("b", AstType.MakeParameterType("T")),
-                        EntityDeclaration.MakeParameter(
-                            "rest",
-                            Helpers.MakeGenericType(
-                                "array",
-                                AstType.MakeParameterType("T")
-                            ),
-                            null,
-                            null,
-                            true
-                        )
+                        EntityDeclaration.MakeParameter("c", AstType.MakeParameterType("T"))
                     ),
                     Statement.MakeBlock(
-                        Statement.MakeVarDecl(
-                            Helpers.MakeSeq(
-                                Helpers.MakePaticularPatternWithType(
-                                    "tmp_vec",
-                                    Helpers.MakeGenericType(
-                                        "vector",
-                                        AstType.MakeParameterType("T")
-                                    )
-                                )
-                            ),
-                            Helpers.MakeSeq(
-                                Helpers.MakeSequenceInitializer(
-                                    Helpers.MakeGenericType(
-                                        "vector",
-                                        AstType.MakeParameterType("T")
-                                    ),
-                                    Helpers.MakeIdentifierPath(
-                                        "a",
-                                        AstType.MakeParameterType("T")
-                                    ),
-                                    Helpers.MakeIdentifierPath(
-                                        "b",
-                                        AstType.MakeParameterType("T")
-                                    )
-                                )
-                            ),
-                            Modifiers.None
-                        ),
-                        Statement.MakeValueBindingForStmt(
-                            Modifiers.Immutable,
-                            Helpers.MakePaticularPatternWithType(
-                                "tmp",
-                                AstType.MakeParameterType("T")
-                            ),
-                            Helpers.MakeIdentifierPath(
-                                "rest",
-                                Helpers.MakeGenericType(
-                                    "array",
-                                    AstType.MakeParameterType("T")
-                                )
-                            ),
-                            Statement.MakeBlock(
-                                Statement.MakeExprStmt(
-                                    Helpers.MakeCallExpression(
-                                        Expression.MakeMemRef(
-                                            Helpers.MakeIdentifierPath(
-                                                "tmp_vec",
-                                                Helpers.MakeGenericType(
-                                                    "vector",
-                                                    AstType.MakeParameterType("T")
-                                                )
-                                            ),
-                                            Helpers.MakeFunctionIdentifier(
-                                                "Add",
-                                                Helpers.MakeVoidType(),
-                                                AstType.MakeParameterType("T")
-                                            )
-                                        ),
-                                        Helpers.MakeIdentifierPath(
-                                            "tmp",
-                                            AstType.MakeParameterType("T")
-                                        )
-                                    )
-                                )
-                            )
-                        ),
                         Helpers.MakeSingleItemReturnStatement(
-                            Helpers.MakeIdentifierPath(
-                                "tmp_vec",
+                            Helpers.MakeSequenceInitializer(
                                 Helpers.MakeGenericType(
                                     "vector",
+                                    AstType.MakeParameterType("T")
+                                ),
+                                Helpers.MakeIdentifierPath(
+                                    "a",
+                                    AstType.MakeParameterType("T")
+                                ),
+                                Helpers.MakeIdentifierPath(
+                                    "b",
+                                    AstType.MakeParameterType("T")
+                                ),
+                                Helpers.MakeIdentifierPath(
+                                    "c",
                                     AstType.MakeParameterType("T")
                                 )
                             )
@@ -3324,10 +3260,7 @@ namespace Expresso.Test
                                         ),
                                         AstType.MakeParameterType("T"),
                                         AstType.MakeParameterType("T"),
-                                        Helpers.MakeGenericType(
-                                            "array",
-                                            AstType.MakeParameterType("T")
-                                        )
+                                        AstType.MakeParameterType("T")
                                     ),
                                     Helpers.MakeIdentifierPath(
                                         "a",

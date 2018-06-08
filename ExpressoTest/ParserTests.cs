@@ -2126,51 +2126,20 @@ namespace Expresso.Test
                     Helpers.MakeSeq(
                         EntityDeclaration.MakeParameter("a", AstType.MakeParameterType("T")),
                         EntityDeclaration.MakeParameter("b", AstType.MakeParameterType("T")),
-                        EntityDeclaration.MakeParameter(
-                            "rest",
-                            Helpers.MakeGenericType(
-                                "array",
-                                AstType.MakeParameterType("T")
-                            ),
-                            null,
-                            null,
-                            true
-                        )
+                        EntityDeclaration.MakeParameter("c", AstType.MakeParameterType("T"))
                     ),
                     Statement.MakeBlock(
-                        Statement.MakeVarDecl(
-                            Helpers.MakeSeq(
-                                Helpers.MakeSomePatternWithType("tmp_vec")
-                            ),
-                            Helpers.MakeSeq(
-                                Helpers.MakeSequenceInitializer(
-                                    Helpers.MakeGenericType(
-                                        "vector",
-                                        AstType.MakePlaceholderType()
-                                    ),
-                                    Helpers.MakeIdentifierPath("a"),
-                                    Helpers.MakeIdentifierPath("b")
-                                )
-                            ),
-                            Modifiers.None
-                        ),
-                        Statement.MakeValueBindingForStmt(
-                            Modifiers.Immutable,
-                            Helpers.MakeSomePatternWithType("tmp"),
-                            Helpers.MakeIdentifierPath("rest"),
-                            Statement.MakeBlock(
-                                Statement.MakeExprStmt(
-                                    Helpers.MakeCallExpression(
-                                        Expression.MakeMemRef(
-                                            Helpers.MakeIdentifierPath("tmp_vec"),
-                                            Helpers.MakeSomeIdent("add")
-                                        ),
-                                        Helpers.MakeIdentifierPath("tmp")
-                                    )
-                                )
+                        Helpers.MakeSingleItemReturnStatement(
+                            Helpers.MakeSequenceInitializer(
+                                Helpers.MakeGenericType(
+                                    "vector",
+                                    AstType.MakePlaceholderType()
+                                ),
+                                Helpers.MakeIdentifierPath("a"),
+                                Helpers.MakeIdentifierPath("b"),
+                                Helpers.MakeIdentifierPath("c")
                             )
-                        ),
-                        Helpers.MakeSingleItemReturnStatement(Helpers.MakeIdentifierPath("tmp_vec"))
+                        )
                     ),
                     Helpers.MakeGenericType("vector", AstType.MakeParameterType("T")),
                     Modifiers.None
@@ -2209,7 +2178,7 @@ namespace Expresso.Test
                         Statement.MakeExprStmt(
                             Helpers.MakeCallExpression(
                                 Helpers.MakeIdentifierPath("println"),
-                                Helpers.MakeIdentifierPath("vec")
+                                Expression.MakeConstant("string", "${vec}")
                             )
                         )
                     ),
@@ -2219,7 +2188,6 @@ namespace Expresso.Test
             });
 
             Assert.IsNotNull(ast);
-
             Helpers.AstStructuralEqual(ast, expected);
         }
 
