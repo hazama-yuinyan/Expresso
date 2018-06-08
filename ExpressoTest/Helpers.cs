@@ -371,10 +371,10 @@ namespace Expresso.Test
         /// <summary>
         /// Makes a <see cref="SimpleType"/> with another <see cref="AstType"/> and optional type arguments.
         /// </summary>
-        /// <returns>The generic type with another type.</returns>
-        /// <param name="identifier">Identifier.</param>
-        /// <param name="anotherType">Another type.</param>
-        /// <param name="typeArgs">Type arguments.</param>
+        /// <returns>The generic type with another type and <paramref name="typeArgs"/>.</returns>
+        /// <param name="identifier">The name of the outer <see cref="SimpleType"/>.</param>
+        /// <param name="anotherType">Another <see cref="AstType"/>.</param>
+        /// <param name="typeArgs">Type arguments of the outer <see cref="SimpleType"/>.</param>
         public static SimpleType MakeGenericTypeWithAnotherType(string identifier, AstType anotherType, params AstType[] typeArgs)
         {
             return AstType.MakeSimpleType(
