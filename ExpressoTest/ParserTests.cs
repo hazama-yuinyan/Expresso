@@ -1132,7 +1132,7 @@ namespace Expresso.Test
 
             var expected = AstNode.MakeModuleDef("main", new List<EntityDeclaration>{
                 EntityDeclaration.MakeClassDecl(
-                    "TestClass",
+                    "TestClass6",
                     Enumerable.Empty<AstType>(),
                     Helpers.MakeSeq<EntityDeclaration>(
                         EntityDeclaration.MakeField(
@@ -4240,11 +4240,7 @@ namespace Expresso.Test
                         Statement.MakeExprStmt(
                             Helpers.MakeCallExpression(
                                 Helpers.MakeIdentifierPath("println"),
-                                Helpers.MakeIdentifierPath("a"),
-                                Helpers.MakeIdentifierPath("b"),
-                                Helpers.MakeIdentifierPath("c"),
-                                Helpers.MakeIdentifierPath("d"),
-                                Helpers.MakeIdentifierPath("e")
+                                Expression.MakeConstant("string", "${a} ${b} ${c} ${d} ${e}")
                             )
                         )
                     ),
@@ -5032,6 +5028,92 @@ namespace Expresso.Test
                         "Union",
                         null,
                         Helpers.MakePrimitiveType("intseq")
+                    ),
+                    EntityDeclaration.MakeFunc(
+                        "print",
+                        Enumerable.Empty<ParameterDeclaration>(),
+                        Statement.MakeBlock(
+                            Statement.MakeMatchStmt(
+                                Expression.MakeSelfRef(),
+                                Statement.MakeMatchClause(
+                                    null,
+                                    Statement.MakeExprStmt(
+                                        Helpers.MakeCallExpression(
+                                            Helpers.MakeIdentifierPath("println"),
+                                            Expression.MakeConstant("string", "A")
+                                        )
+                                    ),
+                                    PatternConstruct.MakeDestructuringPattern(
+                                        AstType.MakeMemberType(
+                                            Helpers.MakeGenericType("Union"),
+                                            Helpers.MakeGenericType("A")
+                                        )
+                                    )
+                                ),
+                                Statement.MakeMatchClause(
+                                    null,
+                                    Statement.MakeExprStmt(
+                                        Helpers.MakeCallExpression(
+                                            Helpers.MakeIdentifierPath("println"),
+                                            Expression.MakeConstant("string", "${some_int}, ${some_uint}")
+                                        )
+                                    ),
+                                    PatternConstruct.MakeDestructuringPattern(
+                                        AstType.MakeMemberType(
+                                            Helpers.MakeGenericType("Union"),
+                                            Helpers.MakeGenericType("B")
+                                        ),
+                                        PatternConstruct.MakeIdentifierPattern(
+                                            Helpers.MakeSomeIdent("some_int")
+                                        ),
+                                        PatternConstruct.MakeIdentifierPattern(
+                                            Helpers.MakeSomeIdent("some_uint")
+                                        )
+                                    )
+                                ),
+                                Statement.MakeMatchClause(
+                                    null,
+                                    Statement.MakeExprStmt(
+                                        Helpers.MakeCallExpression(
+                                            Helpers.MakeIdentifierPath("println"),
+                                            Expression.MakeConstant("string", "${some_str}, ${some_char}")
+                                        )
+                                    ),
+                                    PatternConstruct.MakeDestructuringPattern(
+                                        AstType.MakeMemberType(
+                                            Helpers.MakeGenericType("Union"),
+                                            Helpers.MakeGenericType("C")
+                                        ),
+                                        PatternConstruct.MakeIdentifierPattern(
+                                            Helpers.MakeSomeIdent("some_str")
+                                        ),
+                                        PatternConstruct.MakeIdentifierPattern(
+                                            Helpers.MakeSomeIdent("some_char")
+                                        )
+                                    )
+                                ),
+                                Statement.MakeMatchClause(
+                                    null,
+                                    Statement.MakeExprStmt(
+                                        Helpers.MakeCallExpression(
+                                            Helpers.MakeIdentifierPath("println"),
+                                            Expression.MakeConstant("string", "${some_intseq}")
+                                        )
+                                    ),
+                                    PatternConstruct.MakeDestructuringPattern(
+                                        AstType.MakeMemberType(
+                                            Helpers.MakeGenericType("Union"),
+                                            Helpers.MakeGenericType("D")
+                                        ),
+                                        PatternConstruct.MakeIdentifierPattern(
+                                            Helpers.MakeSomeIdent("some_intseq")
+                                        )
+                                    )
+                                )
+                            )
+                        ),
+                        Helpers.MakeVoidType(),
+                        Modifiers.Public
                     )
                 ),
                 EntityDeclaration.MakeFunc(
@@ -5164,81 +5246,11 @@ namespace Expresso.Test
                                 )
                             )
                         ),
-                        Statement.MakeMatchStmt(
-                            Helpers.MakeIdentifierPath("some_enum2"),
-                            Statement.MakeMatchClause(
-                                null,
-                                Statement.MakeExprStmt(
-                                    Helpers.MakeCallExpression(
-                                        Helpers.MakeIdentifierPath("println"),
-                                        Expression.MakeConstant("string", "A")
-                                    )
-                                ),
-                                PatternConstruct.MakeDestructuringPattern(
-                                    AstType.MakeMemberType(
-                                        Helpers.MakeGenericType("Union"),
-                                        Helpers.MakeGenericType("A")
-                                    )
-                                )
-                            ),
-                            Statement.MakeMatchClause(
-                                null,
-                                Statement.MakeExprStmt(
-                                    Helpers.MakeCallExpression(
-                                        Helpers.MakeIdentifierPath("println"),
-                                        Expression.MakeConstant("string", "${some_int}, ${some_uint}")
-                                    )
-                                ),
-                                PatternConstruct.MakeDestructuringPattern(
-                                    AstType.MakeMemberType(
-                                        Helpers.MakeGenericType("Union"),
-                                        Helpers.MakeGenericType("B")
-                                    ),
-                                    PatternConstruct.MakeIdentifierPattern(
-                                        Helpers.MakeSomeIdent("some_int")
-                                    ),
-                                    PatternConstruct.MakeIdentifierPattern(
-                                        Helpers.MakeSomeIdent("some_uint")
-                                    )
-                                )
-                            ),
-                            Statement.MakeMatchClause(
-                                null,
-                                Statement.MakeExprStmt(
-                                    Helpers.MakeCallExpression(
-                                        Helpers.MakeIdentifierPath("println"),
-                                        Expression.MakeConstant("string", "${some_str}, ${some_char}")
-                                    )
-                                ),
-                                PatternConstruct.MakeDestructuringPattern(
-                                    AstType.MakeMemberType(
-                                        Helpers.MakeGenericType("Union"),
-                                        Helpers.MakeGenericType("C")
-                                    ),
-                                    PatternConstruct.MakeIdentifierPattern(
-                                        Helpers.MakeSomeIdent("some_str")
-                                    ),
-                                    PatternConstruct.MakeIdentifierPattern(
-                                        Helpers.MakeSomeIdent("some_char")
-                                    )
-                                )
-                            ),
-                            Statement.MakeMatchClause(
-                                null,
-                                Statement.MakeExprStmt(
-                                    Helpers.MakeCallExpression(
-                                        Helpers.MakeIdentifierPath("println"),
-                                        Expression.MakeConstant("string", "${some_intseq}")
-                                    )
-                                ),
-                                PatternConstruct.MakeDestructuringPattern(
-                                    AstType.MakeMemberType(
-                                        Helpers.MakeGenericType("Union"),
-                                        Helpers.MakeGenericType("D")
-                                    ),
-                                    PatternConstruct.MakeIdentifierPattern(
-                                        Helpers.MakeSomeIdent("some_intseq")
-                                    )
+                        Statement.MakeExprStmt(
+                            Helpers.MakeCallExpression(
+                                Expression.MakeMemRef(
+                                    Helpers.MakeIdentifierPath("some_enum2"),
+                                    Helpers.MakeSomeIdent("print")
                                 )
                             )
                         )
@@ -5277,7 +5289,7 @@ namespace Expresso.Test
                             Helpers.MakePrimitiveType("int")
                         ),
                         Expression.MakeConstant("int", 1),
-                        Modifiers.Public
+                        Modifiers.Public | Modifiers.Static
                     ),
                     EntityDeclaration.MakeField(
                         PatternConstruct.MakePatternWithType(
@@ -5291,7 +5303,7 @@ namespace Expresso.Test
                             Helpers.MakePrimitiveType("int")
                         ),
                         Expression.MakeConstant("int", 2),
-                        Modifiers.Public
+                        Modifiers.Public | Modifiers.Static
                     ),
                     EntityDeclaration.MakeField(
                         PatternConstruct.MakePatternWithType(
@@ -5305,6 +5317,90 @@ namespace Expresso.Test
                             Helpers.MakePrimitiveType("int")
                         ),
                         Expression.MakeConstant("int", 3),
+                        Modifiers.Public | Modifiers.Static
+                    ),
+                    EntityDeclaration.MakeFunc(
+                        "print",
+                        Enumerable.Empty<ParameterDeclaration>(),
+                        Statement.MakeBlock(
+                            Statement.MakeMatchStmt(
+                                Expression.MakeSelfRef(),
+                                Statement.MakeMatchClause(
+                                    null,
+                                    Statement.MakeExprStmt(
+                                        Helpers.MakeCallExpression(
+                                            Helpers.MakeIdentifierPath("println"),
+                                            Expression.MakeConstant("string", "A")
+                                        )
+                                    ),
+                                    PatternConstruct.MakeTypePathPattern(
+                                        AstType.MakeMemberType(
+                                            Helpers.MakeGenericType("SomeEnum"),
+                                            Helpers.MakeGenericType("A")
+                                        )
+                                    )
+                                ),
+                                Statement.MakeMatchClause(
+                                    null,
+                                    Statement.MakeExprStmt(
+                                        Helpers.MakeCallExpression(
+                                            Helpers.MakeIdentifierPath("println"),
+                                            Expression.MakeConstant("string", "B")
+                                        )
+                                    ),
+                                    PatternConstruct.MakeTypePathPattern(
+                                        AstType.MakeMemberType(
+                                            Helpers.MakeGenericType("SomeEnum"),
+                                            Helpers.MakeGenericType("B")
+                                        )
+                                    )
+                                ),
+                                Statement.MakeMatchClause(
+                                    null,
+                                    Statement.MakeExprStmt(
+                                        Helpers.MakeCallExpression(
+                                            Helpers.MakeIdentifierPath("println"),
+                                            Expression.MakeConstant("string", "C")
+                                        )
+                                    ),
+                                    PatternConstruct.MakeTypePathPattern(
+                                        AstType.MakeMemberType(
+                                            Helpers.MakeGenericType("SomeEnum"),
+                                            Helpers.MakeGenericType("C")
+                                        )
+                                    )
+                                )
+                            )
+                        ),
+                        Helpers.MakeVoidType(),
+                        Modifiers.Public
+                    ),
+                    EntityDeclaration.MakeFunc(
+                        "printUsingIf",
+                        Enumerable.Empty<ParameterDeclaration>(),
+                        Statement.MakeBlock(
+                            Statement.MakeIfStmt(
+                                PatternConstruct.MakeExpressionPattern(
+                                    Expression.MakeBinaryExpr(
+                                        OperatorType.Equality,
+                                        Expression.MakeSelfRef(),
+                                        Expression.MakePath(
+                                            AstNode.MakeIdentifier("SomeEnum"),
+                                            Helpers.MakeSomeIdent("A")
+                                        )
+                                    )
+                                ),
+                                Statement.MakeBlock(
+                                    Statement.MakeExprStmt(
+                                        Helpers.MakeCallExpression(
+                                            Helpers.SomeWellKnownExpressions.Println,
+                                            Expression.MakeConstant("string", "A in if")
+                                        )
+                                    )
+                                )
+                            )
+                        ),
+                        Helpers.MakeVoidType(),
                         Modifiers.Public
                     )
                 ),
@@ -5369,6 +5465,42 @@ namespace Expresso.Test
                                         Helpers.MakeGenericType("SomeEnum"),
                                         Helpers.MakeGenericType("C")
                                     )
+                                )
+                            )
+                        ),
+                        Statement.MakeExprStmt(
+                            Helpers.MakeCallExpression(
+                                Expression.MakeMemRef(
+                                    Helpers.MakeIdentifierPath("enum_a"),
+                                    Helpers.MakeSomeIdent("print")
+                                )
+                            )
+                        ),
+                        Statement.MakeIfStmt(
+                            PatternConstruct.MakeExpressionPattern(
+                                Expression.MakeBinaryExpr(
+                                    OperatorType.Equality,
+                                    Helpers.MakeIdentifierPath("enum_a"),
+                                    Expression.MakePath(
+                                        AstNode.MakeIdentifier("SomeEnum"),
+                                        Helpers.MakeSomeIdent("A")
+                                    )
+                                )
+                            ),
+                            Statement.MakeBlock(
+                                Statement.MakeExprStmt(
+                                    Helpers.MakeCallExpression(
+                                        Helpers.SomeWellKnownExpressions.Println,
+                                        Expression.MakeConstant("string", "A in if")
+                                    )
+                                )
+                            )
+                        ),
+                        Statement.MakeExprStmt(
+                            Helpers.MakeCallExpression(
+                                Expression.MakeMemRef(
+                                    Helpers.MakeIdentifierPath("enum_a"),
+                                    Helpers.MakeSomeIdent("printUsingIf")
                                 )
                             )
                         )
