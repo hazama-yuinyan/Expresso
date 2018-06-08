@@ -24,5 +24,5 @@ def main()
 	let d = "the 6th fibonacci number is ${ary[5]}";
     let e = "a string containing dollar symbol: $$x = ${x}";
 
-	println(a, b, c, d, e);
+	println("${a} ${b} ${c} ${d} ${e}");
 }

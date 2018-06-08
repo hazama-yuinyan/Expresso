@@ -439,34 +439,9 @@ namespace Expresso.Test
                             ),
                             Statement.MakeExprStmt(
                                 Helpers.MakeCallExpression(
-                                    Helpers.MakeFunctionIdentifierPath(
-                                        "println",
-                                        Helpers.MakeVoidType(),
-                                        Helpers.MakePrimitiveType("string"),
-                                        Helpers.MakeGenericType(
-                                            "array",
-                                            Helpers.MakeGenericType("object")
-                                        )
-                                    ),
+                                    Helpers.SomeWellKnownExpressions.Println,
                                     Helpers.MakeCallExpression(
-                                        Expression.MakeMemRef(
-                                            Helpers.MakeIdentifierPath(
-                                                "string",
-                                                Helpers.MakePrimitiveType("string")
-                                            ),
-                                            Helpers.MakeFunctionIdentifier(
-                                                "Format",
-                                                Helpers.MakePrimitiveType("string"),
-                                                Helpers.MakePrimitiveType("string"),
-                                                Helpers.MakeGenericType(
-                                                    "array",
-                                                    Helpers.MakeGenericTypeWithRealName(
-                                                        "Object",
-                                                        "System.Object"
-                                                    )
-                                                )
-                                            )
-                                        ),
+                                        Helpers.SomeWellKnownExpressions.StringFormatN,
                                         Expression.MakeConstant("string", "{0}, {1}, {2}, {3}, {4}, {5}, {6}, {7}, {8}, {9}, {10}, {11}, {12}, {13}, {14}, {15}, {16}, {17}, {18}, {19}, {20}"),
                                         Helpers.MakeIdentifierPath(
                                             "a",
@@ -569,34 +544,9 @@ namespace Expresso.Test
                             ),
                             Statement.MakeExprStmt(
                                 Helpers.MakeCallExpression(
-                                    Helpers.MakeFunctionIdentifierPath(
-                                        "println",
-                                        Helpers.MakeVoidType(),
-                                        Helpers.MakePrimitiveType("string"),
-                                        Helpers.MakeGenericType(
-                                            "array",
-                                            Helpers.MakeGenericType("object")
-                                        )
-                                    ),
+                                    Helpers.SomeWellKnownExpressions.Println,
                                     Helpers.MakeCallExpression(
-                                        Expression.MakeMemRef(
-                                            Helpers.MakeIdentifierPath(
-                                                "string",
-                                                Helpers.MakePrimitiveType("string")
-                                            ),
-                                            Helpers.MakeFunctionIdentifier(
-                                                "Format",
-                                                Helpers.MakePrimitiveType("string"),
-                                                Helpers.MakePrimitiveType("string"),
-                                                Helpers.MakeGenericType(
-                                                    "array",
-                                                    Helpers.MakeGenericTypeWithRealName(
-                                                        "Object",
-                                                        "System.Object"
-                                                    )
-                                                )
-                                            )
-                                        ),
+                                        Helpers.SomeWellKnownExpressions.StringFormatN,
                                         Expression.MakeConstant("string", "{0}, {1}, {2}, {3}, {4}, {5}, {6}, {7}, {8}, {9}, {10}, {11}, {12}, {13}, {14}, {15}, {16}, {17}, {18}, {19}, {20}"),
                                         Helpers.MakeIdentifierPath(
                                             "f3_",
@@ -868,34 +818,9 @@ namespace Expresso.Test
                         ),
                         Statement.MakeExprStmt(
                             Helpers.MakeCallExpression(
-                                Helpers.MakeFunctionIdentifierPath(
-                                    "println",
-                                    Helpers.MakeVoidType(),
-                                    Helpers.MakePrimitiveType("string"),
-                                    Helpers.MakeGenericType(
-                                        "array",
-                                        Helpers.MakeGenericType("object")
-                                    )
-                                ),
+                                Helpers.SomeWellKnownExpressions.Println,
                                 Helpers.MakeCallExpression(
-                                    Expression.MakeMemRef(
-                                        Helpers.MakeIdentifierPath(
-                                            "string",
-                                            Helpers.MakePrimitiveType("string")
-                                        ),
-                                        Helpers.MakeFunctionIdentifier(
-                                            "Format",
-                                            Helpers.MakePrimitiveType("string"),
-                                            Helpers.MakePrimitiveType("string"),
-                                            Helpers.MakeGenericType(
-                                                "array",
-                                                Helpers.MakeGenericTypeWithRealName(
-                                                    "Object",
-                                                    "System.Object"
-                                                )
-                                            )
-                                        )
-                                    ),
+                                    Helpers.SomeWellKnownExpressions.StringFormatN,
                                     Expression.MakeConstant("string", "{0}, {1}, {2}, {3}, {4}, {5}, {6}, {7}, {8}, {9}, {10}, {11}, {12}"),
                                     Helpers.MakeIdentifierPath(
                                         "x",
@@ -1202,34 +1127,9 @@ namespace Expresso.Test
                         ),
                         Statement.MakeExprStmt(
                             Helpers.MakeCallExpression(
-                                Helpers.MakeFunctionIdentifierPath(
-                                    "println",
-                                    Helpers.MakeVoidType(),
-                                    Helpers.MakePrimitiveType("string"),
-                                    Helpers.MakeGenericType(
-                                        "array",
-                                        Helpers.MakeGenericType("object")
-                                    )
-                                ),
+                                Helpers.SomeWellKnownExpressions.Println,
                                 Helpers.MakeCallExpression(
-                                    Expression.MakeMemRef(
-                                        Helpers.MakeIdentifierPath(
-                                            "string",
-                                            Helpers.MakePrimitiveType("string")
-                                        ),
-                                        Helpers.MakeFunctionIdentifier(
-                                            "Format",
-                                            Helpers.MakePrimitiveType("string"),
-                                            Helpers.MakePrimitiveType("string"),
-                                            Helpers.MakeGenericType(
-                                                "array",
-                                                Helpers.MakeGenericTypeWithRealName(
-                                                    "Object",
-                                                    "System.Object"
-                                                )
-                                            )
-                                        )
-                                    ),
+                                    Helpers.SomeWellKnownExpressions.StringFormatN,
                                     Expression.MakeConstant("string", "{0}, {1}, {2}, {3}, {4}, {5}, {6}, {7}, {8}, {9}, {10}, {11}, {12}, {13}"),
                                     Helpers.MakeIdentifierPath(
                                         "ary",
@@ -1344,34 +1244,9 @@ namespace Expresso.Test
                         ),
                         Statement.MakeExprStmt(
                             Helpers.MakeCallExpression(
-                                Helpers.MakeFunctionIdentifierPath(
-                                    "print",
-                                    Helpers.MakeVoidType(),
-                                    Helpers.MakePrimitiveType("string"),
-                                    Helpers.MakeGenericType(
-                                        "array",
-                                        Helpers.MakeGenericType("object")
-                                    )
-                                ),
+                                Helpers.SomeWellKnownExpressions.Print,
                                 Helpers.MakeCallExpression(
-                                    Expression.MakeMemRef(
-                                        Helpers.MakeIdentifierPath(
-                                            "string",
-                                            Helpers.MakePrimitiveType("string")
-                                        ),
-                                        Helpers.MakeFunctionIdentifier(
-                                            "Format",
-                                            Helpers.MakePrimitiveType("string"),
-                                            Helpers.MakePrimitiveType("string"),
-                                            Helpers.MakeGenericType(
-                                                "array",
-                                                Helpers.MakeGenericTypeWithRealName(
-                                                    "Object",
-                                                    "System.Object"
-                                                )
-                                            )
-                                        )
-                                    ),
+                                    Helpers.SomeWellKnownExpressions.StringFormatN,
                                     Expression.MakeConstant("string", "{0}, {1}, {2}, {3}"),
                                     Helpers.MakeIdentifierPath(
                                         "x",
@@ -1486,35 +1361,9 @@ namespace Expresso.Test
                                 ),
                                 Statement.MakeExprStmt(
                                     Helpers.MakeCallExpression(
-                                        Helpers.MakeFunctionIdentifierPath(
-                                            "println",
-                                            Helpers.MakeVoidType(),
-                                            Helpers.MakePrimitiveType("string"),
-                                            Helpers.MakeGenericType(
-                                                "array",
-                                                Helpers.MakeGenericType("object")
-                                            )
-                                        ),
+                                        Helpers.SomeWellKnownExpressions.Println,
                                         Helpers.MakeCallExpression(
-                                            Expression.MakeMemRef(
-                                                Helpers.MakeIdentifierPath(
-                                                    "string",
-                                                    Helpers.MakePrimitiveType("string")
-                                                ),
-                                                Helpers.MakeFunctionIdentifier(
-                                                    "Format",
-                                                    Helpers.MakePrimitiveType("string"),
-                                                    Helpers.MakePrimitiveType("string"),
-                                                    Helpers.MakeGenericTypeWithRealName(
-                                                        "Object",
-                                                        "System.Object"
-                                                    ),
-                                                    Helpers.MakeGenericTypeWithRealName(
-                                                        "Object",
-                                                        "System.Object"
-                                                    )
-                                                )
-                                            ),
+                                            Helpers.SomeWellKnownExpressions.StringFormat2,
                                             Expression.MakeConstant("string", "{0}, {1}"),
                                             Helpers.MakeIdentifierPath(
                                                 "p",
@@ -1659,31 +1508,9 @@ namespace Expresso.Test
                                 ),
                                 Statement.MakeExprStmt(
                                     Helpers.MakeCallExpression(
-                                        Helpers.MakeFunctionIdentifierPath(
-                                            "println",
-                                            Helpers.MakeVoidType(),
-                                            Helpers.MakePrimitiveType("string"),
-                                            Helpers.MakeGenericType(
-                                                "array",
-                                                Helpers.MakeGenericType("object")
-                                            )
-                                        ),
+                                        Helpers.SomeWellKnownExpressions.Println,
                                         Helpers.MakeCallExpression(
-                                            Expression.MakeMemRef(
-                                                Helpers.MakeIdentifierPath(
-                                                    "string",
-                                                    Helpers.MakePrimitiveType("string")
-                                                ),
-                                                Helpers.MakeFunctionIdentifier(
-                                                    "Format",
-                                                    Helpers.MakePrimitiveType("string"),
-                                                    Helpers.MakePrimitiveType("string"),
-                                                    Helpers.MakeGenericTypeWithRealName(
-                                                        "Object",
-                                                        "System.Object"
-                                                    )
-                                                )
-                                            ),
+                                            Helpers.SomeWellKnownExpressions.StringFormat1,
                                             Expression.MakeConstant("string", "{0}"),
                                             Helpers.MakeIdentifierPath(
                                                 "n",
@@ -1859,35 +1686,9 @@ namespace Expresso.Test
                                         ),
                                         Statement.MakeExprStmt(
                                             Helpers.MakeCallExpression(
-                                                Helpers.MakeFunctionIdentifierPath(
-                                                    "println",
-                                                    Helpers.MakeVoidType(),
-                                                    Helpers.MakePrimitiveType("string"),
-                                                    Helpers.MakeGenericType(
-                                                        "array",
-                                                        Helpers.MakeGenericType("object")
-                                                    )
-                                                ),
+                                                Helpers.SomeWellKnownExpressions.Println,
                                                 Helpers.MakeCallExpression(
-                                                    Expression.MakeMemRef(
-                                                        Helpers.MakeIdentifierPath(
-                                                            "string",
-                                                            Helpers.MakePrimitiveType("string")
-                                                        ),
-                                                        Helpers.MakeFunctionIdentifier(
-                                                            "Format",
-                                                            Helpers.MakePrimitiveType("string"),
-                                                            Helpers.MakePrimitiveType("string"),
-                                                            Helpers.MakeGenericTypeWithRealName(
-                                                                "Object",
-                                                                "System.Object"
-                                                            ),
-                                                            Helpers.MakeGenericTypeWithRealName(
-                                                                "Object",
-                                                                "System.Object"
-                                                            )
-                                                        )
-                                                    ),
+                                                    Helpers.SomeWellKnownExpressions.StringFormat2,
                                                     Expression.MakeConstant("string", "{0}, {1}"),
                                                     Helpers.MakeIdentifierPath(
                                                         "i",
@@ -1906,34 +1707,9 @@ namespace Expresso.Test
                         ),
                         Statement.MakeExprStmt(
                             Helpers.MakeCallExpression(
-                                Helpers.MakeFunctionIdentifierPath(
-                                    "println",
-                                    Helpers.MakeVoidType(),
-                                    Helpers.MakePrimitiveType("string"),
-                                    Helpers.MakeGenericType(
-                                        "array",
-                                        Helpers.MakeGenericType("object")
-                                    )
-                                ),
+                                Helpers.SomeWellKnownExpressions.Println,
                                 Helpers.MakeCallExpression(
-                                    Expression.MakeMemRef(
-                                        Helpers.MakeIdentifierPath(
-                                            "string",
-                                            Helpers.MakePrimitiveType("string")
-                                        ),
-                                        Helpers.MakeFunctionIdentifier(
-                                            "Format",
-                                            Helpers.MakePrimitiveType("string"),
-                                            Helpers.MakePrimitiveType("string"),
-                                            Helpers.MakeGenericType(
-                                                "array",
-                                                Helpers.MakeGenericTypeWithRealName(
-                                                    "Object",
-                                                    "System.Object"
-                                                )
-                                            )
-                                        )
-                                    ),
+                                    Helpers.SomeWellKnownExpressions.StringFormat1,
                                     Expression.MakeConstant("string", "{0}, {1}, {2}, {3}, {4}, {5}"),
                                     Helpers.MakeIdentifierPath(
                                         "flag",
@@ -2036,15 +1812,7 @@ namespace Expresso.Test
                                 null,
                                 Statement.MakeExprStmt(
                                     Helpers.MakeCallExpression(
-                                        Helpers.MakeFunctionIdentifierPath(
-                                            "println",
-                                            Helpers.MakeVoidType(),
-                                            Helpers.MakePrimitiveType("string"),
-                                            Helpers.MakeGenericType(
-                                                "array",
-                                                Helpers.MakeGenericType("object")
-                                            )
-                                        ),
+                                        Helpers.SomeWellKnownExpressions.Println,
                                         Expression.MakeConstant(
                                             "string",
                                             "kawakawa"
@@ -2059,15 +1827,7 @@ namespace Expresso.Test
                                 Expression.MakeConstant("bool", true),
                                 Statement.MakeExprStmt(
                                     Helpers.MakeCallExpression(
-                                        Helpers.MakeFunctionIdentifierPath(
-                                            "println",
-                                            Helpers.MakeVoidType(),
-                                            Helpers.MakePrimitiveType("string"),
-                                            Helpers.MakeGenericType(
-                                                "array",
-                                                Helpers.MakeGenericType("object")
-                                            )
-                                        ),
+                                        Helpers.SomeWellKnownExpressions.Println,
                                         Expression.MakeConstant(
                                             "string",
                                             "ankokuthunder!"
@@ -2082,15 +1842,7 @@ namespace Expresso.Test
                                 null,
                                 Statement.MakeExprStmt(
                                     Helpers.MakeCallExpression(
-                                        Helpers.MakeFunctionIdentifierPath(
-                                            "println",
-                                            Helpers.MakeVoidType(),
-                                            Helpers.MakePrimitiveType("string"),
-                                            Helpers.MakeGenericType(
-                                                "array",
-                                                Helpers.MakeGenericType("object")
-                                            )
-                                        ),
+                                        Helpers.SomeWellKnownExpressions.Println,
                                         Expression.MakeConstant(
                                             "string",
                                             "gaichiban!"
@@ -2105,15 +1857,7 @@ namespace Expresso.Test
                                 null,
                                 Statement.MakeExprStmt(
                                     Helpers.MakeCallExpression(
-                                        Helpers.MakeFunctionIdentifierPath(
-                                            "println",
-                                            Helpers.MakeVoidType(),
-                                            Helpers.MakePrimitiveType("string"),
-                                            Helpers.MakeGenericType(
-                                                "array",
-                                                Helpers.MakeGenericType("object")
-                                            )
-                                        ),
+                                        Helpers.SomeWellKnownExpressions.Println,
                                         Expression.MakeConstant(
                                             "string",
                                             "doyaxtu!"
@@ -2141,15 +1885,7 @@ namespace Expresso.Test
                                 Statement.MakeExprStmt(
                                     Expression.MakeSequenceExpression(
                                         Helpers.MakeCallExpression(
-                                            Helpers.MakeFunctionIdentifierPath(
-                                                "println",
-                                                Helpers.MakeVoidType(),
-                                                Helpers.MakePrimitiveType("string"),
-                                                Helpers.MakeGenericType(
-                                                    "array",
-                                                    Helpers.MakeGenericType("object")
-                                                )
-                                            ),
+                                            Helpers.SomeWellKnownExpressions.Println,
                                             Expression.MakeConstant("string", "0")
                                         )
                                     )
@@ -2163,15 +1899,7 @@ namespace Expresso.Test
                                 Statement.MakeExprStmt(
                                     Expression.MakeSequenceExpression(
                                         Helpers.MakeCallExpression(
-                                            Helpers.MakeFunctionIdentifierPath(
-                                                "println",
-                                                Helpers.MakeVoidType(),
-                                                Helpers.MakePrimitiveType("string"),
-                                                Helpers.MakeGenericType(
-                                                    "array",
-                                                    Helpers.MakeGenericType("object")
-                                                )
-                                            ),
+                                            Helpers.SomeWellKnownExpressions.Println,
                                             Expression.MakeConstant("string", "1 or 2")
                                         )
                                     )
@@ -2188,31 +1916,9 @@ namespace Expresso.Test
                                 Statement.MakeExprStmt(
                                     Expression.MakeSequenceExpression(
                                         Helpers.MakeCallExpression(
-                                            Helpers.MakeFunctionIdentifierPath(
-                                                "println",
-                                                Helpers.MakeVoidType(),
-                                                Helpers.MakePrimitiveType("string"),
-                                                Helpers.MakeGenericType(
-                                                    "array",
-                                                    Helpers.MakeGenericType("object")
-                                                )
-                                            ),
+                                            Helpers.SomeWellKnownExpressions.Println,
                                             Helpers.MakeCallExpression(
-                                                Expression.MakeMemRef(
-                                                    Helpers.MakeIdentifierPath(
-                                                        "string",
-                                                        Helpers.MakePrimitiveType("string")
-                                                    ),
-                                                    Helpers.MakeFunctionIdentifier(
-                                                        "Format",
-                                                        Helpers.MakePrimitiveType("string"),
-                                                        Helpers.MakePrimitiveType("string"),
-                                                        Helpers.MakeGenericTypeWithRealName(
-                                                            "Object",
-                                                            "System.Object"
-                                                        )
-                                                    )
-                                                ),
+                                                Helpers.SomeWellKnownExpressions.StringFormat1,
                                                 Expression.MakeConstant("string", "{0} is in the range of 3 to 10"),
                                                 Helpers.MakeIdentifierPath(
                                                     "i",
@@ -2240,15 +1946,7 @@ namespace Expresso.Test
                                 Statement.MakeExprStmt(
                                     Expression.MakeSequenceExpression(
                                         Helpers.MakeCallExpression(
-                                            Helpers.MakeFunctionIdentifierPath(
-                                                "println",
-                                                Helpers.MakeVoidType(),
-                                                Helpers.MakePrimitiveType("string"),
-                                                Helpers.MakeGenericType(
-                                                    "array",
-                                                    Helpers.MakeGenericType("object")
-                                                )
-                                            ),
+                                            Helpers.SomeWellKnownExpressions.Println,
                                             Expression.MakeConstant("string", "otherwise")
                                         )
                                     )
@@ -2284,31 +1982,9 @@ namespace Expresso.Test
                                 Statement.MakeExprStmt(
                                     Expression.MakeSequenceExpression(
                                         Helpers.MakeCallExpression(
-                                            Helpers.MakeFunctionIdentifierPath(
-                                                "println",
-                                                Helpers.MakeVoidType(),
-                                                Helpers.MakePrimitiveType("string"),
-                                                Helpers.MakeGenericType(
-                                                    "array",
-                                                    Helpers.MakeGenericType("object")
-                                                )
-                                            ),
+                                            Helpers.SomeWellKnownExpressions.Println,
                                             Helpers.MakeCallExpression(
-                                                Expression.MakeMemRef(
-                                                    Helpers.MakeIdentifierPath(
-                                                        "string",
-                                                        Helpers.MakePrimitiveType("string")
-                                                    ),
-                                                    Helpers.MakeFunctionIdentifier(
-                                                        "Format",
-                                                        Helpers.MakePrimitiveType("string"),
-                                                        Helpers.MakePrimitiveType("string"),
-                                                        Helpers.MakeGenericTypeWithRealName(
-                                                            "Object",
-                                                            "System.Object"
-                                                        )
-                                                    )
-                                                ),
+                                                Helpers.SomeWellKnownExpressions.StringFormat1,
                                                 Expression.MakeConstant("string", "x is {0}"),
                                                 Helpers.MakeIdentifierPath(
                                                     "x",
@@ -2333,35 +2009,9 @@ namespace Expresso.Test
                                 Statement.MakeExprStmt(
                                     Expression.MakeSequenceExpression(
                                         Helpers.MakeCallExpression(
-                                            Helpers.MakeFunctionIdentifierPath(
-                                                "println",
-                                                Helpers.MakeVoidType(),
-                                                Helpers.MakePrimitiveType("string"),
-                                                Helpers.MakeGenericType(
-                                                    "array",
-                                                    Helpers.MakeGenericType("object")
-                                                )
-                                            ),
+                                            Helpers.SomeWellKnownExpressions.Println,
                                             Helpers.MakeCallExpression(
-                                                Expression.MakeMemRef(
-                                                    Helpers.MakeIdentifierPath(
-                                                        "string",
-                                                        Helpers.MakePrimitiveType("string")
-                                                    ),
-                                                    Helpers.MakeFunctionIdentifier(
-                                                        "Format",
-                                                        Helpers.MakePrimitiveType("string"),
-                                                        Helpers.MakePrimitiveType("string"),
-                                                        Helpers.MakeGenericTypeWithRealName(
-                                                            "Object",
-                                                            "System.Object"
-                                                        ),
-                                                        Helpers.MakeGenericTypeWithRealName(
-                                                            "Object",
-                                                            "System.Object"
-                                                        )
-                                                    )
-                                                ),
+                                                Helpers.SomeWellKnownExpressions.StringFormat2,
                                                 Expression.MakeConstant("string", "x is {0} and y is {1}"),
                                                 Helpers.MakeIdentifierPath(
                                                     "x",
@@ -2416,39 +2066,9 @@ namespace Expresso.Test
                                 Statement.MakeExprStmt(
                                     Expression.MakeSequenceExpression(
                                         Helpers.MakeCallExpression(
-                                            Helpers.MakeFunctionIdentifierPath(
-                                                "println",
-                                                Helpers.MakeVoidType(),
-                                                Helpers.MakePrimitiveType("string"),
-                                                Helpers.MakeGenericType(
-                                                    "array",
-                                                    Helpers.MakeGenericType("object")
-                                                )
-                                            ),
+                                            Helpers.SomeWellKnownExpressions.Println,
                                             Helpers.MakeCallExpression(
-                                                Expression.MakeMemRef(
-                                                    Helpers.MakeIdentifierPath(
-                                                        "string",
-                                                        Helpers.MakePrimitiveType("string")
-                                                    ),
-                                                    AstNode.MakeIdentifier(
-                                                        "Format",
-                                                        AstType.MakeFunctionType(
-                                                            "Format",
-                                                            Helpers.MakePrimitiveType("string"),
-                                                            TextLocation.Empty,
-                                                            TextLocation.Empty,
-                                                            Helpers.MakePrimitiveType("string"),
-                                                            Helpers.MakeGenericType(
-                                                                "array",
-                                                                Helpers.MakeGenericTypeWithRealName(
-                                                                    "Object",
-                                                                    "System.Object"
-                                                                )
-                                                            )
-                                                        )
-                                                    )
-                                                ),
+                                                Helpers.SomeWellKnownExpressions.StringFormat2,
                                                 Expression.MakeConstant("string", "x and y are both vector's elements and the values are {0} and {1} respectively"),
                                                 Helpers.MakeIdentifierPath(
                                                     "x",
@@ -2482,18 +2102,7 @@ namespace Expresso.Test
                                 Statement.MakeExprStmt(
                                     Expression.MakeSequenceExpression(
                                         Helpers.MakeCallExpression(
-                                            Helpers.MakeFunctionIdentifierPath(
-                                                "print",
-                                                Helpers.MakeVoidType(),
-                                                Helpers.MakePrimitiveType("string"),
-                                                Helpers.MakeGenericType(
-                                                    "array",
-                                                    Helpers.MakeGEnericTypeWithRealName(
-                                                        "Object",
-                                                        "System.Object"
-                                                    )
-                                                )
-                                            ),
+                                            Helpers.SomeWellKnownExpressions.Print,
                                             Expression.MakeConstant("string", "tmp4 is a vector")
                                         )
                                     )
@@ -2538,39 +2147,9 @@ namespace Expresso.Test
                                 Statement.MakeExprStmt(
                                     Expression.MakeSequenceExpression(
                                         Helpers.MakeCallExpression(
-                                            Helpers.MakeFunctionIdentifierPath(
-                                                "println",
-                                                Helpers.MakeVoidType(),
-                                                Helpers.MakePrimitiveType("string"),
-                                                Helpers.MakeGenericType(
-                                                    "array",
-                                                    Helpers.MakeGenericType("object")
-                                                )
-                                            ),
+                                            Helpers.SomeWellKnownExpressions.Println,
                                             Helpers.MakeCallExpression(
-                                                Expression.MakeMemRef(
-                                                    Helpers.MakeIdentifierPath(
-                                                        "string",
-                                                        Helpers.MakePrimitiveType("string")
-                                                    ),
-                                                    AstNode.MakeIdentifier(
-                                                        "Format",
-                                                        AstType.MakeFunctionType(
-                                                            "Format",
-                                                            Helpers.MakePrimitiveType("string"),
-                                                            TextLocation.Empty,
-                                                            TextLocation.Empty,
-                                                            Helpers.MakePrimitiveType("string"),
-                                                            Helpers.MakeGenericType(
-                                                                "array",
-                                                                Helpers.MakeGenericTypeWithRealName(
-                                                                    "Object",
-                                                                    "System.Object"
-                                                                )
-                                                            )
-                                                        )
-                                                    )
-                                                ),
+                                                Helpers.SomeWellKnownExpressions.StringFormatN,
                                                 Expression.MakeConstant("string", "x and y are both array's elements and the values are {0} and {1} respectively"),
                                                 Helpers.MakeIdentifierPath(
                                                     "x",
@@ -2604,15 +2183,7 @@ namespace Expresso.Test
                                 Statement.MakeExprStmt(
                                     Expression.MakeSequenceExpression(
                                         Helpers.MakeCallExpression(
-                                            Helpers.MakeFunctionIdentifierPath(
-                                                "print",
-                                                Helpers.MakeVoidType(),
-                                                Helpers.MakePrimitiveType("string"),
-                                                Helpers.MakeGenericType(
-                                                    "array",
-                                                    Helpers.MakeGenericType("object")
-                                                )
-                                            ),
+                                            Helpers.SomeWellKnownExpressions.Print,
                                             Expression.MakeConstant("string", "tmp5 is an array")
                                         )
                                     )
@@ -2667,31 +2238,9 @@ namespace Expresso.Test
                                 Statement.MakeExprStmt(
                                     Expression.MakeSequenceExpression(
                                         Helpers.MakeCallExpression(
-                                            Helpers.MakeFunctionIdentifierPath(
-                                                "println",
-                                                Helpers.MakeVoidType(),
-                                                Helpers.MakePrimitiveType("string"),
-                                                Helpers.MakeGenericType(
-                                                    "array",
-                                                    Helpers.MakeGenericType("object")
-                                                )
-                                            ),
+                                            Helpers.SomeWellKnownExpressions.Println,
                                             Helpers.MakeCallExpression(
-                                                Expression.MakeMemRef(
-                                                    Helpers.MakeIdentifierPath(
-                                                        "string",
-                                                        Helpers.MakePrimitiveType("string")
-                                                    ),
-                                                    Helpers.MakeFunctionIdentifier(
-                                                        "Format",
-                                                        Helpers.MakePrimitiveType("string"),
-                                                        Helpers.MakePrimitiveType("string"),
-                                                        Helpers.MakeGenericTypeWithRealName(
-                                                            "Object",
-                                                            "System.Object"
-                                                        )
-                                                    )
-                                                ),
+                                                Helpers.SomeWellKnownExpressions.StringFormat1,
                                                 Expression.MakeConstant("string", "x is {0}"),
                                                 Helpers.MakeIdentifierPath(
                                                     "x",
@@ -2715,35 +2264,9 @@ namespace Expresso.Test
                                 Statement.MakeExprStmt(
                                     Expression.MakeSequenceExpression(
                                         Helpers.MakeCallExpression(
-                                            Helpers.MakeFunctionIdentifierPath(
-                                                "println",
-                                                Helpers.MakeVoidType(),
-                                                Helpers.MakePrimitiveType("string"),
-                                                Helpers.MakeGenericType(
-                                                    "array",
-                                                    Helpers.MakeGenericType("object")
-                                                )
-                                            ),
+                                            Helpers.SomeWellKnownExpressions.Println,
                                             Helpers.MakeCallExpression(
-                                                Expression.MakeMemRef(
-                                                    Helpers.MakeIdentifierPath(
-                                                        "string",
-                                                        Helpers.MakePrimitiveType("string")
-                                                    ),
-                                                    Helpers.MakeFunctionIdentifier(
-                                                        "Format",
-                                                        Helpers.MakePrimitiveType("string"),
-                                                        Helpers.MakePrimitiveType("string"),
-                                                        Helpers.MakeGenericTypeWithRealName(
-                                                            "Object",
-                                                            "System.Object"
-                                                        ),
-                                                        Helpers.MakeGenericTypeWithRealName(
-                                                            "Object",
-                                                            "System.Object"
-                                                        )
-                                                    )
-                                                ),
+                                                Helpers.SomeWellKnownExpressions.StringFormat2,
                                                 Expression.MakeConstant("string", "x is {0} and y is {1}"),
                                                 Helpers.MakeIdentifierPath(
                                                     "x",
@@ -3053,34 +2576,9 @@ namespace Expresso.Test
                         ),
                         Statement.MakeExprStmt(
                             Helpers.MakeCallExpression(
-                                Helpers.MakeFunctionIdentifierPath(
-                                    "println",
-                                    Helpers.MakeVoidType(),
-                                    Helpers.MakePrimitiveType("string"),
-                                    Helpers.MakeGenericType(
-                                        "array",
-                                        Helpers.MakeGenericType("object")
-                                    )
-                                ),
+                                Helpers.SomeWellKnownExpressions.Println,
                                 Helpers.MakeCallExpression(
-                                    Expression.MakeMemRef(
-                                        Helpers.MakeIdentifierPath(
-                                            "string",
-                                            Helpers.MakePrimitiveType("string")
-                                        ),
-                                        Helpers.MakeFunctionIdentifier(
-                                            "Format",
-                                            Helpers.MakePrimitiveType("string"),
-                                            Helpers.MakePrimitiveType("string"),
-                                            Helpers.MakeGenericType(
-                                                "array",
-                                                Helpers.MakeGenericTypeWithRealName(
-                                                    "Object",
-                                                    "System.Object"
-                                                )
-                                            )
-                                        )
-                                    ),
+                                    Helpers.SomeWellKnownExpressions.StringFormatN,
                                     Expression.MakeConstant("string", "{0}, {1}, {2}, {3}, {4}, {5}"),
                                     Helpers.MakeIdentifierPath(
                                         "a",
@@ -3596,75 +3094,71 @@ namespace Expresso.Test
                         ),
                         Statement.MakeExprStmt(
                             Helpers.MakeCallExpression(
-                                Helpers.MakeFunctionIdentifierPath(
-                                    "println", 
-                                    Helpers.MakeVoidType(),
-                                    Helpers.MakePrimitiveType("string"),
-                                    Helpers.MakeGenericType(
-                                        "array",
-                                        Helpers.MakeGenericType("object")
-                                    )
-                                ),
-                                Helpers.MakeIdentifierPath(
-                                    "x",
-                                    Helpers.MakeGenericType(
-                                        "vector",
+                                Helpers.SomeWellKnownExpressions.Println,
+                                Helpers.MakeCallExpression(
+                                    Helpers.SomeWellKnownExpressions.StringFormatN,
+                                    Expression.MakeConstant("string", "{0}, {1}, {2}, {3}, {4}, {5}, {6}, {7}"),
+                                    Helpers.MakeIdentifierPath(
+                                        "x",
+                                        Helpers.MakeGenericType(
+                                            "vector",
+                                            Helpers.MakePrimitiveType("int")
+                                        )
+                                    ),
+                                    Helpers.MakeIdentifierPath(
+                                        "y",
+                                        Helpers.MakeGenericType(
+                                            "vector",
+                                            Helpers.MakePrimitiveType("int")
+                                        )
+                                    ),
+                                    Helpers.MakeIdentifierPath(
+                                        "z",
+                                        Helpers.MakeGenericType(
+                                            "vector",
+                                            Helpers.MakeGenericType(
+                                                "tuple",
+                                                Helpers.MakePrimitiveType("int"),
+                                                Helpers.MakePrimitiveType("int")
+                                            )
+                                        )
+                                    ),
+                                    Helpers.MakeIdentifierPath(
+                                        "triangles",
+                                        Helpers.MakeGenericType(
+                                            "vector",
+                                            Helpers.MakeGenericType(
+                                                "tuple",
+                                                Helpers.MakePrimitiveType("int"),
+                                                Helpers.MakePrimitiveType("int"),
+                                                Helpers.MakePrimitiveType("int")
+                                            )
+                                        )
+                                    ),
+                                    Helpers.MakeIdentifierPath(
+                                        "specific_triangles",
+                                        Helpers.MakeGenericType(
+                                            "vector",
+                                            Helpers.MakeGenericType(
+                                                "tuple",
+                                                Helpers.MakePrimitiveType("int"),
+                                                Helpers.MakePrimitiveType("int"),
+                                                Helpers.MakePrimitiveType("int")
+                                            )
+                                        )
+                                    ),
+                                    Helpers.MakeIdentifierPath(
+                                        "a",
+                                        Helpers.MakePrimitiveType("int")
+                                    ),
+                                    Helpers.MakeIdentifierPath(
+                                        "b",
+                                        Helpers.MakePrimitiveType("int")
+                                    ),
+                                    Helpers.MakeIdentifierPath(
+                                        "c",
                                         Helpers.MakePrimitiveType("int")
                                     )
-                                ),
-                                Helpers.MakeIdentifierPath(
-                                    "y",
-                                    Helpers.MakeGenericType(
-                                        "vector",
-                                        Helpers.MakePrimitiveType("int")
-                                    )
-                                ),
-                                Helpers.MakeIdentifierPath(
-                                    "z",
-                                    Helpers.MakeGenericType(
-                                        "vector",
-                                        Helpers.MakeGenericType(
-                                            "tuple",
-                                            Helpers.MakePrimitiveType("int"),
-                                            Helpers.MakePrimitiveType("int")
-                                        )
-                                    )
-                                ),
-                                Helpers.MakeIdentifierPath(
-                                    "triangles",
-                                    Helpers.MakeGenericType(
-                                        "vector",
-                                        Helpers.MakeGenericType(
-                                            "tuple",
-                                            Helpers.MakePrimitiveType("int"),
-                                            Helpers.MakePrimitiveType("int"),
-                                            Helpers.MakePrimitiveType("int")
-                                        )
-                                    )
-                                ),
-                                Helpers.MakeIdentifierPath(
-                                    "specific_triangles",
-                                    Helpers.MakeGenericType(
-                                        "vector",
-                                        Helpers.MakeGenericType(
-                                            "tuple",
-                                            Helpers.MakePrimitiveType("int"),
-                                            Helpers.MakePrimitiveType("int"),
-                                            Helpers.MakePrimitiveType("int")
-                                        )
-                                    )
-                                ),
-                                Helpers.MakeIdentifierPath(
-                                    "a",
-                                    Helpers.MakePrimitiveType("int")
-                                ),
-                                Helpers.MakeIdentifierPath(
-                                    "b",
-                                    Helpers.MakePrimitiveType("int")
-                                ),
-                                Helpers.MakeIdentifierPath(
-                                    "c",
-                                    Helpers.MakePrimitiveType("int")
                                 )
                             )
                         )
@@ -3853,20 +3347,16 @@ namespace Expresso.Test
                         ),
                         Statement.MakeExprStmt(
                             Helpers.MakeCallExpression(
-                                Helpers.MakeFunctionIdentifierPath(
-                                    "println",
-                                    Helpers.MakeVoidType(),
-                                    Helpers.MakePrimitiveType("string"),
-                                    Helpers.MakeGenericType(
-                                        "array",
-                                        Helpers.MakeGenericType("object")
-                                    )
-                                ),
-                                Helpers.MakeIdentifierPath(
-                                    "vec",
-                                    Helpers.MakeGenericType(
-                                        "vector",
-                                        Helpers.MakePrimitiveType("int")
+                                Helpers.SomeWellKnownExpressions.Println,
+                                Helpers.MakeCallExpression(
+                                    Helpers.SomeWellKnownExpressions.StringFormat1,
+                                    Expression.MakeConstant("string", "{0}"),
+                                    Helpers.MakeIdentifierPath(
+                                        "vec",
+                                        Helpers.MakeGenericType(
+                                            "vector",
+                                            Helpers.MakePrimitiveType("int")
+                                        )
                                     )
                                 )
                             )
@@ -4194,34 +3684,9 @@ namespace Expresso.Test
                         ),
                         Statement.MakeExprStmt(
                             Helpers.MakeCallExpression(
-                                Helpers.MakeFunctionIdentifierPath(
-                                    "println",
-                                    Helpers.MakeVoidType(),
-                                    Helpers.MakePrimitiveType("string"),
-                                    Helpers.MakeGenericType(
-                                        "array",
-                                        Helpers.MakeGenericType("object")
-                                    )
-                                ),
+                                Helpers.SomeWellKnownExpressions.Println,
                                 Helpers.MakeCallExpression(
-                                    Expression.MakeMemRef(
-                                        Helpers.MakeIdentifierPath(
-                                            "string",
-                                            Helpers.MakePrimitiveType("string")
-                                        ),
-                                        Helpers.MakeFunctionIdentifier(
-                                            "Format",
-                                            Helpers.MakePrimitiveType("string"),
-                                            Helpers.MakePrimitiveType("string"),
-                                            Helpers.MakeGenericType(
-                                                "array",
-                                                Helpers.MakeGenericTypeWithRealName(
-                                                    "Object",
-                                                    "System.Object"
-                                                )
-                                            )
-                                        )
-                                    ),
+                                    Helpers.SomeWellKnownExpressions.StringFormatN,
                                     Expression.MakeConstant("string", "{0}, {1}, {2}, {3}, {4}"),
                                     Helpers.MakeIdentifierPath(
                                         "a",
@@ -4541,34 +4006,9 @@ namespace Expresso.Test
                         ),
                         Statement.MakeExprStmt(
                             Helpers.MakeCallExpression(
-                                Helpers.MakeFunctionIdentifierPath(
-                                    "println",
-                                    Helpers.MakeVoidType(),
-                                    Helpers.MakePrimitiveType("string"),
-                                    Helpers.MakeGenericType(
-                                        "array",
-                                        Helpers.MakeGenericType("object")
-                                    )
-                                ),
+                                Helpers.SomeWellKnownExpressions.Println,
                                 Helpers.MakeCallExpression(
-                                    Expression.MakeMemRef(
-                                        Helpers.MakeIdentifierPath(
-                                            "string",
-                                            Helpers.MakePrimitiveType("string")
-                                        ),
-                                        Helpers.MakeFunctionIdentifier(
-                                            "Format",
-                                            Helpers.MakePrimitiveType("string"),
-                                            Helpers.MakePrimitiveType("string"),
-                                            Helpers.MakeGenericType(
-                                                "array",
-                                                Helpers.MakeGenericTypeWithRealName(
-                                                    "Object",
-                                                    "System.Object"
-                                                )
-                                            )
-                                        )
-                                    ),
+                                    Helpers.SomeWellKnownExpressions.StringFormatN,
                                     Expression.MakeConstant("string", "(a.x, a.y, a.z, x) = ({0}, {1}, {2}, {3})"),
                                     Helpers.MakeIdentifierPath(
                                         "c",
@@ -4893,34 +4333,9 @@ namespace Expresso.Test
                         ),
                         Statement.MakeExprStmt(
                             Helpers.MakeCallExpression(
-                                Helpers.MakeFunctionIdentifierPath(
-                                    "println",
-                                    Helpers.MakeVoidType(),
-                                    Helpers.MakePrimitiveType("string"),
-                                    Helpers.MakeGenericType(
-                                        "array",
-                                        Helpers.MakeGenericType("object")
-                                    )
-                                ),
+                                Helpers.SomeWellKnownExpressions.Println,
                                 Helpers.MakeCallExpression(
-                                    Expression.MakeMemRef(
-                                        Helpers.MakeIdentifierPath(
-                                            "string",
-                                            Helpers.MakePrimitiveType("string")
-                                        ),
-                                        Helpers.MakeFunctionIdentifier(
-                                            "Format",
-                                            Helpers.MakePrimitiveType("string"),
-                                            Helpers.MakePrimitiveType("string"),
-                                            Helpers.MakeGenericType(
-                                                "array",
-                                                Helpers.MakeGenericTypeWithRealName(
-                                                    "Object",
-                                                    "System.Object"
-                                                )
-                                            )
-                                        )
-                                    ),
+                                    Helpers.SomeWellKnownExpressions.StringFormatN,
                                     Expression.MakeConstant("string", "{0}, {1}, {2}, {3}"),
                                     Helpers.MakeIdentifierPath(
                                         "a",
@@ -5168,31 +4583,9 @@ namespace Expresso.Test
                                             Statement.MakeBlock(
                                                 Statement.MakeExprStmt(
                                                     Helpers.MakeCallExpression(
-                                                        Helpers.MakeFunctionIdentifierPath(
-                                                            "println",
-                                                            Helpers.MakeVoidType(),
-                                                            Helpers.MakePrimitiveType("string"),
-                                                            Helpers.MakeGenericType(
-                                                                "array",
-                                                                Helpers.MakeGenericType("object")
-                                                            )
-                                                        ),
+                                                        Helpers.SomeWellKnownExpressions.Println,
                                                         Helpers.MakeCallExpression(
-                                                            Expression.MakeMemRef(
-                                                                Helpers.MakeIdentifierPath(
-                                                                    "string",
-                                                                    Helpers.MakePrimitiveType("string")
-                                                                ),
-                                                                Helpers.MakeFunctionIdentifier(
-                                                                    "Format",
-                                                                    Helpers.MakePrimitiveType("string"),
-                                                                    Helpers.MakePrimitiveType("string"),
-                                                                    Helpers.MakeGenericTypeWithRealName(
-                                                                        "Object",
-                                                                        "System.Object"
-                                                                    )
-                                                                )
-                                                            ),
+                                                            Helpers.SomeWellKnownExpressions.StringFormat1,
                                                             Expression.MakeConstant("string", "{0}"),
                                                             Helpers.MakeIdentifierPath(
                                                                 "j",
@@ -5215,15 +4608,7 @@ namespace Expresso.Test
                                         ),
                                         Statement.MakeExprStmt(
                                             Helpers.MakeCallExpression(
-                                                Helpers.MakeFunctionIdentifierPath(
-                                                    "println",
-                                                    Helpers.MakeVoidType(),
-                                                    Helpers.MakePrimitiveType("string"),
-                                                    Helpers.MakeGenericType(
-                                                        "array",
-                                                        Helpers.MakeGenericType("object")
-                                                    )
-                                                ),
+                                                Helpers.SomeWellKnownExpressions.Println,
                                                 Expression.MakeConstant("string", "BOOM!")
                                             )
                                         )
@@ -5252,35 +4637,9 @@ namespace Expresso.Test
                         ),
                         Statement.MakeExprStmt(
                             Helpers.MakeCallExpression(
-                                Helpers.MakeFunctionIdentifierPath(
-                                    "println",
-                                    Helpers.MakeVoidType(),
-                                    Helpers.MakePrimitiveType("string"),
-                                    Helpers.MakeGenericType(
-                                        "array",
-                                        Helpers.MakeGenericType("object")
-                                    )
-                                ),
+                                Helpers.SomeWellKnownExpressions.Println,
                                 Helpers.MakeCallExpression(
-                                    Expression.MakeMemRef(
-                                        Helpers.MakeIdentifierPath(
-                                            "string",
-                                            Helpers.MakePrimitiveType("string")
-                                        ),
-                                        Helpers.MakeFunctionIdentifier(
-                                            "Format",
-                                            Helpers.MakePrimitiveType("string"),
-                                            Helpers.MakePrimitiveType("string"),
-                                            Helpers.MakeGenericTypeWithRealName(
-                                                "Object",
-                                                "System.Object"
-                                            ),
-                                            Helpers.MakeGenericTypeWithRealName(
-                                                "Object",
-                                                "System.Object"
-                                            )
-                                        )
-                                    ),
+                                    Helpers.SomeWellKnownExpressions.StringFormat2,
                                     Expression.MakeConstant("string", "{0}, {1}"),
                                     Helpers.MakeIdentifierPath(
                                         "a",
@@ -5343,15 +4702,7 @@ namespace Expresso.Test
                             Statement.MakeBlock(
                                 Statement.MakeExprStmt(
                                     Helpers.MakeCallExpression(
-                                        Helpers.MakeFunctionIdentifierPath(
-                                            "println",
-                                            Helpers.MakeVoidType(),
-                                            Helpers.MakePrimitiveType("string"),
-                                            Helpers.MakeGenericType(
-                                                "array",
-                                                Helpers.MakeGenericType("object")
-                                            )
-                                        ),
+                                        Helpers.SomeWellKnownExpressions.Println,
                                         Expression.MakeConstant("string", "First try block")
                                     )
                                 ),
@@ -5376,29 +4727,13 @@ namespace Expresso.Test
                                 Statement.MakeBlock(
                                     Statement.MakeExprStmt(
                                         Helpers.MakeCallExpression(
-                                            Helpers.MakeFunctionIdentifierPath(
-                                                "println",
-                                                Helpers.MakeVoidType(),
-                                                Helpers.MakePrimitiveType("string"),
-                                                Helpers.MakeGenericType(
-                                                    "array",
-                                                    Helpers.MakeGenericType("object")
-                                                )
-                                            ),
+                                            Helpers.SomeWellKnownExpressions.Println,
                                             Expression.MakeConstant("string", "First catch block")
                                         )
                                     ),
                                     Statement.MakeExprStmt(
                                         Helpers.MakeCallExpression(
-                                            Helpers.MakeFunctionIdentifierPath(
-                                                "println",
-                                                Helpers.MakeVoidType(),
-                                                Helpers.MakePrimitiveType("string"),
-                                                Helpers.MakeGenericType(
-                                                    "array",
-                                                    Helpers.MakeGenericType("object")
-                                                )
-                                            ),
+                                            Helpers.SomeWellKnownExpressions.Println,
                                             Expression.MakeMemRef(
                                                 Helpers.MakeIdentifierPath(
                                                     "e",
@@ -5436,36 +4771,9 @@ namespace Expresso.Test
                             Statement.MakeBlock(
                                 Statement.MakeExprStmt(
                                     Helpers.MakeCallExpression(
-                                        Helpers.MakeFunctionIdentifierPath(
-                                            "println",
-                                            Helpers.MakeVoidType(),
-                                            Helpers.MakePrimitiveType("string"),
-                                            Helpers.MakeGenericType(
-                                                "array",
-                                                Helpers.MakeGenericType("object")
-                                            )
-                                        ),
+                                        Helpers.SomeWellKnownExpressions.Println,
                                         Helpers.MakeCallExpression(
-                                            Expression.MakeMemRef(
-                                                Helpers.MakeIdentifierPath(
-                                                    "string",
-                                                    Helpers.MakePrimitiveType("string")
-                                                ),
-                                                AstNode.MakeIdentifier(
-                                                    "Format",
-                                                    AstType.MakeFunctionType(
-                                                        "Format",
-                                                        Helpers.MakePrimitiveType("string"),
-                                                        TextLocation.Empty,
-                                                        TextLocation.Empty,
-                                                        Helpers.MakePrimitiveType("string"),
-                                                        Helpers.MakeGenericType(
-                                                            "array",
-                                                            Helpers.MakeGenericType("Object")
-                                                        )
-                                                    )
-                                                )
-                                            ),
+                                            Helpers.SomeWellKnownExpressions.StringFormat1,
                                             Expression.MakeConstant("string", "tmp is {0} at first"),
                                             Helpers.MakeIdentifierPath(
                                                 "tmp",
@@ -5492,15 +4800,7 @@ namespace Expresso.Test
                                 Statement.MakeBlock(
                                     Statement.MakeExprStmt(
                                         Helpers.MakeCallExpression(
-                                            Helpers.MakeIdentifierPath(
-                                                "println",
-                                                Helpers.MakeVoidType(),
-                                                Helpers.MakePrimitiveType("string"),
-                                                Helpers.MakeGenericType(
-                                                    "array",
-                                                    Helpers.MakeGenericType("object")
-                                                )
-                                            ),
+                                            Helpers.SomeWellKnownExpressions.Println,
                                             Expression.MakeConstant("string", "First finally block")
                                         )
                                     ),
@@ -5518,36 +4818,9 @@ namespace Expresso.Test
                         ),
                         Statement.MakeExprStmt(
                             Helpers.MakeCallExpression(
-                                Helpers.MakeIdentifierPath(
-                                    "println",
-                                    Helpers.MakeVoidType(),
-                                    Helpers.MakePrimitiveType("string"),
-                                    Helpers.MakeGenericType(
-                                        "array",
-                                        Helpers.MakeGenericType("object")
-                                    )
-                                ),
+                                Helpers.SomeWellKnownExpressions.Println,
                                 Helpers.MakeCallExpression(
-                                    Expression.MakeMemRef(
-                                        Helpers.MakeIdentifierPath(
-                                            "string",
-                                            Helpers.MakePrimitiveType("string")
-                                        ),
-                                        AstNode.MakeIdentifier(
-                                            "Format",
-                                            AstType.MakeFunctionType(
-                                                "Format",
-                                                Helpers.MakePrimitiveType("string"),
-                                                TextLocation.Empty,
-                                                TextLocation.Empty,
-                                                Helpers.MakePrimitiveType("string"),
-                                                Helpers.MakeGenericType(
-                                                    "array",
-                                                    Helpers.MakeGenericType("Object")
-                                                )
-                                            )
-                                        )
-                                    ),
+                                    Helpers.SomeWellKnownExpressions.StringFormat1,
                                     Expression.MakeConstant("string", "tmp is {0} at last"),
                                     Helpers.MakeIdentifierPath(
                                         "tmp",
@@ -5572,31 +4845,9 @@ namespace Expresso.Test
                             Statement.MakeBlock(
                                 Statement.MakeExprStmt(
                                     Helpers.MakeCallExpression(
-                                        Helpers.MakeFunctionIdentifierPath(
-                                            "println",
-                                            Helpers.MakeVoidType(),
-                                            Helpers.MakePrimitiveType("string"),
-                                            Helpers.MakeGenericType(
-                                                "array",
-                                                Helpers.MakeGenericType("object")
-                                            )
-                                        ),
+                                        Helpers.SomeWellKnownExpressions.Println,
                                         Helpers.MakeCallExpression(
-                                            Expression.MakeMemRef(
-                                                Helpers.MakeIdentifierPath(
-                                                    "string",
-                                                    Helpers.MakePrimitiveType("string")
-                                                ),
-                                                Helpers.MakeFunctionIdentifier(
-                                                    "Format",
-                                                    Helpers.MakePrimitiveType("string"),
-                                                    Helpers.MakePrimitiveType("string"),
-                                                    Helpers.MakeGenericTypeWithRealName(
-                                                        "Object",
-                                                        "System.Object"
-                                                    )
-                                                )
-                                            ),
+                                            Helpers.SomeWellKnownExpressions.StringFormat1,
                                             Expression.MakeConstant("string", "tmp2 is {0} at first"),
                                             Helpers.MakeIdentifierPath(
                                                 "tmp2",
@@ -5618,15 +4869,7 @@ namespace Expresso.Test
                                 Statement.MakeBlock(
                                     Statement.MakeExprStmt(
                                         Helpers.MakeCallExpression(
-                                            Helpers.MakeFunctionIdentifierPath(
-                                                "println",
-                                                Helpers.MakeVoidType(),
-                                                Helpers.MakePrimitiveType("string"),
-                                                Helpers.MakeGenericType(
-                                                    "array",
-                                                    Helpers.MakeGenericType("object")
-                                                )
-                                            ),
+                                            Helpers.SomeWellKnownExpressions.Println,
                                             Expression.MakeConstant("string", "Second finally block")
                                         )
                                     ),
@@ -5652,15 +4895,7 @@ namespace Expresso.Test
                                 Statement.MakeBlock(
                                     Statement.MakeExprStmt(
                                         Helpers.MakeCallExpression(
-                                            Helpers.MakeFunctionIdentifierPath(
-                                                "println",
-                                                Helpers.MakeVoidType(),
-                                                Helpers.MakePrimitiveType("string"),
-                                                Helpers.MakeGenericType(
-                                                    "array",
-                                                    Helpers.MakeGenericType("object")
-                                                )
-                                            ),
+                                            Helpers.SomeWellKnownExpressions.Println,
                                             Expression.MakeConstant("string", "Second catch block")
                                         )
                                     ),
@@ -5675,15 +4910,7 @@ namespace Expresso.Test
                                     ),
                                     Statement.MakeExprStmt(
                                         Helpers.MakeCallExpression(
-                                            Helpers.MakeFunctionIdentifierPath(
-                                                "println",
-                                                Helpers.MakeVoidType(),
-                                                Helpers.MakePrimitiveType("string"),
-                                                Helpers.MakeGenericType(
-                                                    "array",
-                                                    Helpers.MakeGenericType("object")
-                                                )
-                                            ),
+                                            Helpers.SomeWellKnownExpressions.Println,
                                             Expression.MakeMemRef(
                                                 Helpers.MakeIdentifierPath(
                                                     "e",
@@ -5707,31 +4934,9 @@ namespace Expresso.Test
                         ),
                         Statement.MakeExprStmt(
                             Helpers.MakeCallExpression(
-                                Helpers.MakeFunctionIdentifierPath(
-                                    "println",
-                                    Helpers.MakeVoidType(),
-                                    Helpers.MakePrimitiveType("string"),
-                                    Helpers.MakeGenericType(
-                                        "array",
-                                        Helpers.MakeGenericType("object")
-                                    )
-                                ),
+                                Helpers.SomeWellKnownExpressions.Println,
                                 Helpers.MakeCallExpression(
-                                    Expression.MakeMemRef(
-                                        Helpers.MakeIdentifierPath(
-                                            "string",
-                                            Helpers.MakePrimitiveType("string")
-                                        ),
-                                        Helpers.MakeFunctionIdentifier(
-                                            "Format",
-                                            Helpers.MakePrimitiveType("string"),
-                                            Helpers.MakePrimitiveType("string"),
-                                            Helpers.MakeGenericTypeWithRealName(
-                                                "Object",
-                                                "System.Object"
-                                            )
-                                        )
-                                    ),
+                                    Helpers.SomeWellKnownExpressions.StringFormat1,
                                     Expression.MakeConstant("string", "tmp2 is {0} at last"),
                                     Helpers.MakeIdentifierPath(
                                         "tmp2",
@@ -6134,31 +5339,9 @@ namespace Expresso.Test
                             Statement.MakeBlock(
                                 Statement.MakeExprStmt(
                                     Helpers.MakeCallExpression(
-                                        Helpers.MakeFunctionIdentifierPath(
-                                            "print",
-                                            Helpers.MakeVoidType(),
-                                            Helpers.MakePrimitiveType("string"),
-                                            Helpers.MakeGenericType(
-                                                "array",
-                                                Helpers.MakeGenericType("object")
-                                            )
-                                        ),
+                                        Helpers.SomeWellKnownExpressions.Print,
                                         Helpers.MakeCallExpression(
-                                            Expression.MakeMemRef(
-                                                Helpers.MakeIdentifierPath(
-                                                    "string",
-                                                    Helpers.MakePrimitiveType("string")
-                                                ),
-                                                Helpers.MakeFunctionIdentifier(
-                                                    "Format",
-                                                    Helpers.MakePrimitiveType("string"),
-                                                    Helpers.MakePrimitiveType("string"),
-                                                    Helpers.MakeGenericTypeWithRealName(
-                                                        "Object",
-                                                        "System.Object"
-                                                    )
-                                                )
-                                            ),
+                                            Helpers.SomeWellKnownExpressions.StringFormat1,
                                             Expression.MakeConstant("string", "{0}"),
                                             Helpers.MakeIdentifierPath(
                                                 "x",
@@ -6193,34 +5376,9 @@ namespace Expresso.Test
                         ),
                         Statement.MakeExprStmt(
                             Helpers.MakeCallExpression(
-                                Helpers.MakeFunctionIdentifierPath(
-                                    "println",
-                                    Helpers.MakeVoidType(),
-                                    Helpers.MakePrimitiveType("string"),
-                                    Helpers.MakeGenericType(
-                                        "array",
-                                        Helpers.MakeGenericType("object")
-                                    )
-                                ),
+                                Helpers.SomeWellKnownExpressions.Println,
                                 Helpers.MakeCallExpression(
-                                    Expression.MakeMemRef(
-                                        Helpers.MakeIdentifierPath(
-                                            "string",
-                                            Helpers.MakePrimitiveType("string")
-                                        ),
-                                        Helpers.MakeFunctionIdentifier(
-                                            "Format",
-                                            Helpers.MakePrimitiveType("string"),
-                                            Helpers.MakePrimitiveType("string"),
-                                            Helpers.MakeGenericType(
-                                                "array",
-                                                Helpers.MakeGenericTypeWithRealName(
-                                                    "Object",
-                                                    "System.Object"
-                                                )
-                                            )
-                                        )
-                                    ),
+                                    Helpers.SomeWellKnownExpressions.StringFormatN,
                                     Expression.MakeConstant("string", "{0}, {1}, {2}, {3}, {4}, {5}, {6}"),
                                     Helpers.MakeIdentifierPath(
                                         "a",
@@ -6284,39 +5442,9 @@ namespace Expresso.Test
                         ),
                         Statement.MakeExprStmt(
                             Helpers.MakeCallExpression(
-                                Helpers.MakeFunctionIdentifierPath(
-                                    "println",
-                                    Helpers.MakeVoidType(),
-                                    Helpers.MakePrimitiveType("string"),
-                                    Helpers.MakeGenericType(
-                                        "array",
-                                        Helpers.MakeGenericType("object")
-                                    )
-                                ),
+                                Helpers.SomeWellKnownExpressions.Println,
                                 Helpers.MakeCallExpression(
-                                    Expression.MakeMemRef(
-                                        Helpers.MakeIdentifierPath(
-                                            "string",
-                                            Helpers.MakePrimitiveType("string")
-                                        ),
-                                        Helpers.MakeFunctionIdentifier(
-                                            "Format",
-                                            Helpers.MakePrimitiveType("string"),
-                                            Helpers.MakePrimitiveType("string"),
-                                            Helpers.MakeGenericTypeWithRealName(
-                                                "Object",
-                                                "System.Object"
-                                            ),
-                                            Helpers.MakeGenericTypeWithRealName(
-                                                "Object",
-                                                "System.Object"
-                                            ),
-                                            Helpers.MakeGenericTypeWithRealName(
-                                                "Object",
-                                                "System.Object"
-                                            )
-                                        )
-                                    ),
+                                    Helpers.SomeWellKnownExpressions.StringFormat3,
                                     Expression.MakeConstant("string", "{0}, {1}, {2}"),
                                     Helpers.MakeIdentifierPath(
                                         "h",
@@ -6459,31 +5587,9 @@ namespace Expresso.Test
                         ),
                         Statement.MakeExprStmt(
                             Helpers.MakeCallExpression(
-                                Helpers.MakeFunctionIdentifierPath(
-                                    "println",
-                                    Helpers.MakeVoidType(),
-                                    Helpers.MakePrimitiveType("string"),
-                                    Helpers.MakeGenericType(
-                                        "array",
-                                        Helpers.MakeGenericType("object")
-                                    )
-                                ),
+                                Helpers.SomeWellKnownExpressions.Println,
                                 Helpers.MakeCallExpression(
-                                    Expression.MakeMemRef(
-                                        Helpers.MakeIdentifierPath(
-                                            "string",
-                                            Helpers.MakePrimitiveType("string")
-                                        ),
-                                        Helpers.MakeFunctionIdentifier(
-                                            "Format",
-                                            Helpers.MakePrimitiveType("string"),
-                                            Helpers.MakePrimitiveType("string"),
-                                            Helpers.MakeGenericTypeWithRealName(
-                                                "Object",
-                                                "System.Object"
-                                            )
-                                        )
-                                    ),
+                                    Helpers.SomeWellKnownExpressions.StringFormat1,
                                     Expression.MakeConstant("string", "t.x = {0}"),
                                     Helpers.MakeIdentifierPath(
                                         "a",
@@ -6708,35 +5814,9 @@ namespace Expresso.Test
                         ),
                         Statement.MakeExprStmt(
                             Helpers.MakeCallExpression(
-                                Helpers.MakeFunctionIdentifierPath(
-                                    "println",
-                                    Helpers.MakeVoidType(),
-                                    Helpers.MakePrimitiveType("string"),
-                                    Helpers.MakeGenericType(
-                                        "array",
-                                        Helpers.MakeGenericType("object")
-                                    )
-                                ),
+                                Helpers.SomeWellKnownExpressions.Println,
                                 Helpers.MakeCallExpression(
-                                    Expression.MakeMemRef(
-                                        Helpers.MakeIdentifierPath(
-                                            "string",
-                                            Helpers.MakePrimitiveType("string")
-                                        ),
-                                        Helpers.MakeFunctionIdentifier(
-                                            "Format",
-                                            Helpers.MakePrimitiveType("string"),
-                                            Helpers.MakePrimitiveType("string"),
-                                            Helpers.MakeGenericTypeWithRealName(
-                                                "Object",
-                                                "System.Object"
-                                            ),
-                                            Helpers.MakeGenericTypeWithRealName(
-                                                "Object",
-                                                "System.Object"
-                                            )
-                                        )
-                                    ),
+                                    Helpers.SomeWellKnownExpressions.StringFormat2,
                                     Expression.MakeConstant("string", "{0}, {1}"),
                                     Helpers.MakeIdentifierPath(
                                         "b",
@@ -6819,35 +5899,9 @@ namespace Expresso.Test
                         ),
                         Statement.MakeExprStmt(
                             Helpers.MakeCallExpression(
-                                Helpers.MakeFunctionIdentifierPath(
-                                    "println",
-                                    Helpers.MakeVoidType(),
-                                    Helpers.MakePrimitiveType("string"),
-                                    Helpers.MakeGenericType(
-                                        "array",
-                                        Helpers.MakeGenericType("object")
-                                    )
-                                ),
+                                Helpers.SomeWellKnownExpressions.Println,
                                 Helpers.MakeCallExpression(
-                                    Expression.MakeMemRef(
-                                        Helpers.MakeIdentifierPath(
-                                            "string",
-                                            Helpers.MakePrimitiveType("string")
-                                        ),
-                                        Helpers.MakeFunctionIdentifier(
-                                            "Format",
-                                            Helpers.MakePrimitiveType("string"),
-                                            Helpers.MakePrimitiveType("string"),
-                                            Helpers.MakeGenericTypeWithRealName(
-                                                "Object",
-                                                "System.Object"
-                                            ),
-                                            Helpers.MakeGenericTypeWithRealName(
-                                                "Object",
-                                                "System.Object"
-                                            )
-                                        )
-                                    ),
+                                    Helpers.SomeWellKnownExpressions.StringFormat2,
                                     Expression.MakeConstant("string", "{0}, {1}"),
                                     Helpers.MakeIdentifierPath(
                                         "a",
@@ -7230,21 +6284,7 @@ namespace Expresso.Test
                             ),
                             Helpers.MakeSeq(
                                 Helpers.MakeCallExpression(
-                                    Expression.MakeMemRef(
-                                        Helpers.MakeIdentifierPath(
-                                            "string",
-                                            Helpers.MakePrimitiveType("string")
-                                        ),
-                                        Helpers.MakeFunctionIdentifier(
-                                            "Format",
-                                            Helpers.MakePrimitiveType("string"),
-                                            Helpers.MakePrimitiveType("string"),
-                                            Helpers.MakeGenericTypeWithRealName(
-                                                "Object",
-                                                "System.Object"
-                                            )
-                                        )
-                                    ),
+                                    Helpers.SomeWellKnownExpressions.StringFormat1,
                                     Expression.MakeConstant(
                                         "string",
                                         "some string containing templates: {0}"
@@ -7273,25 +6313,7 @@ namespace Expresso.Test
                             ),
                             Helpers.MakeSeq(
                                 Helpers.MakeCallExpression(
-                                    Expression.MakeMemRef(
-                                        Helpers.MakeIdentifierPath(
-                                            "string",
-                                            Helpers.MakePrimitiveType("string")
-                                        ),
-                                        Helpers.MakeFunctionIdentifier(
-                                            "Format",
-                                            Helpers.MakePrimitiveType("string"),
-                                            Helpers.MakePrimitiveType("string"),
-                                            Helpers.MakeGenericTypeWithRealName(
-                                                "Object",
-                                                "System.Object"
-                                            ),
-                                            Helpers.MakeGenericTypeWithRealName(
-                                                "Object",
-                                                "System.Object"
-                                            )
-                                        )
-                                    ),
+                                    Helpers.SomeWellKnownExpressions.StringFormat2,
                                     Expression.MakeConstant(
                                         "string",
                                         "another string containing templates: {0}, {1}"
@@ -7331,21 +6353,7 @@ namespace Expresso.Test
                             ),
                             Helpers.MakeSeq(
                                 Helpers.MakeCallExpression(
-                                    Expression.MakeMemRef(
-                                        Helpers.MakeIdentifierPath(
-                                            "string",
-                                            Helpers.MakePrimitiveType("string")
-                                        ),
-                                        Helpers.MakeFunctionIdentifier(
-                                            "Format",
-                                            Helpers.MakePrimitiveType("string"),
-                                            Helpers.MakePrimitiveType("string"),
-                                            Helpers.MakeGenericTypeWithRealName(
-                                                "Object",
-                                                "System.Object"
-                                            )
-                                        )
-                                    ),
+                                    Helpers.SomeWellKnownExpressions.StringFormat1,
                                     Expression.MakeConstant(
                                         "string",
                                         "the 6th fibonacci number is {0}"
@@ -7376,21 +6384,7 @@ namespace Expresso.Test
                             ),
                             Helpers.MakeSeq(
                                 Helpers.MakeCallExpression(
-                                    Expression.MakeMemRef(
-                                        Helpers.MakeIdentifierPath(
-                                            "string",
-                                            Helpers.MakePrimitiveType("string")
-                                        ),
-                                        Helpers.MakeFunctionIdentifier(
-                                            "Format",
-                                            Helpers.MakePrimitiveType("string"),
-                                            Helpers.MakePrimitiveType("string"),
-                                            Helpers.MakeGenericTypeWithRealName(
-                                                "Object",
-                                                "System.Object"
-                                            )
-                                        )
-                                    ),
+                                    Helpers.SomeWellKnownExpressions.StringFormat1,
                                     Expression.MakeConstant(
                                         "string",
                                         "a string containing dollar symbol: $x = {0}"
@@ -7405,34 +6399,30 @@ namespace Expresso.Test
                         ),
                         Statement.MakeExprStmt(
                             Helpers.MakeCallExpression(
-                                Helpers.MakeFunctionIdentifierPath(
-                                    "println",
-                                    Helpers.MakeVoidType(),
-                                    Helpers.MakePrimitiveType("string"),
-                                    Helpers.MakeGenericType(
-                                        "array",
-                                        Helpers.MakeGenericType("object")
+                                Helpers.SomeWellKnownExpressions.Println,
+                                Helpers.MakeCallExpression(
+                                    Helpers.SomeWellKnownExpressions.StringFormatN,
+                                    Expression.MakeConstant("string", "{0}, {1}, {2}, {3}, {4}"),
+                                    Helpers.MakeIdentifierPath(
+                                        "a",
+                                        Helpers.MakePrimitiveType("string")
+                                    ),
+                                    Helpers.MakeIdentifierPath(
+                                        "b",
+                                        Helpers.MakePrimitiveType("string")
+                                    ),
+                                    Helpers.MakeIdentifierPath(
+                                        "c",
+                                        Helpers.MakePrimitiveType("string")
+                                    ),
+                                    Helpers.MakeIdentifierPath(
+                                        "d",
+                                        Helpers.MakePrimitiveType("string")
+                                    ),
+                                    Helpers.MakeIdentifierPath(
+                                        "e",
+                                        Helpers.MakePrimitiveType("string")
                                     )
-                                ),
-                                Helpers.MakeIdentifierPath(
-                                    "a",
-                                    Helpers.MakePrimitiveType("string")
-                                ),
-                                Helpers.MakeIdentifierPath(
-                                    "b",
-                                    Helpers.MakePrimitiveType("string")
-                                ),
-                                Helpers.MakeIdentifierPath(
-                                    "c",
-                                    Helpers.MakePrimitiveType("string")
-                                ),
-                                Helpers.MakeIdentifierPath(
-                                    "d",
-                                    Helpers.MakePrimitiveType("string")
-                                ),
-                                Helpers.MakeIdentifierPath(
-                                    "e",
-                                    Helpers.MakePrimitiveType("string")
                                 )
                             )
                         )
@@ -7528,39 +6518,9 @@ namespace Expresso.Test
                         ),
                         Statement.MakeExprStmt(
                             Helpers.MakeCallExpression(
-                                Helpers.MakeFunctionIdentifierPath(
-                                    "println",
-                                    Helpers.MakeVoidType(),
-                                    Helpers.MakePrimitiveType("string"),
-                                    Helpers.MakeGenericType(
-                                        "array",
-                                        Helpers.MakeGenericType("object")
-                                    )
-                                ),
+                                Helpers.SomeWellKnownExpressions.Println,
                                 Helpers.MakeCallExpression(
-                                    Expression.MakeMemRef(
-                                        Helpers.MakeIdentifierPath(
-                                            "string",
-                                            Helpers.MakePrimitiveType("string")
-                                        ),
-                                        Helpers.MakeFunctionIdentifier(
-                                            "Format",
-                                            Helpers.MakePrimitiveType("string"),
-                                            Helpers.MakePrimitiveType("string"),
-                                            Helpers.MakeGenericTypeWithRealName(
-                                                "Object",
-                                                "System.Object"
-                                            ),
-                                            Helpers.MakeGenericTypeWithRealName(
-                                                "Object",
-                                                "System.Object"
-                                            ),
-                                            Helpers.MakeGenericTypeWithRealName(
-                                                "Object",
-                                                "System.Object"
-                                            )
-                                        )
-                                    ),
+                                    Helpers.SomeWellKnownExpressions.StringFormat3,
                                     Expression.MakeConstant("string", "{0}, {1}, {2}"),
                                     Helpers.MakeIdentifierPath(
                                         "t",
@@ -7786,34 +6746,9 @@ namespace Expresso.Test
                         ),
                         Statement.MakeExprStmt(
                             Helpers.MakeCallExpression(
-                                Helpers.MakeFunctionIdentifierPath(
-                                    "println",
-                                    Helpers.MakeVoidType(),
-                                    Helpers.MakePrimitiveType("string"),
-                                    Helpers.MakeGenericType(
-                                        "array",
-                                        Helpers.MakeGenericType("object")
-                                    )
-                                ),
+                                Helpers.SomeWellKnownExpressions.Println,
                                 Helpers.MakeCallExpression(
-                                    Expression.MakeMemRef(
-                                        Helpers.MakeIdentifierPath(
-                                            "string",
-                                            Helpers.MakePrimitiveType("string")
-                                        ),
-                                        Helpers.MakeFunctionIdentifier(
-                                            "Format",
-                                            Helpers.MakePrimitiveType("string"),
-                                            Helpers.MakePrimitiveType("string"),
-                                            Helpers.MakeGenericType(
-                                                "array",
-                                                Helpers.MakeGenericTypeWithRealName(
-                                                    "Object",
-                                                    "System.Object"
-                                                )
-                                            )
-                                        )
-                                    ),
+                                    Helpers.SomeWellKnownExpressions.StringFormatN,
                                     Expression.MakeConstant("string", "{0}, {1}, {2}, {3}"),
                                     Helpers.MakeIdentifierPath(
                                         "i",
@@ -8025,35 +6960,9 @@ namespace Expresso.Test
                             Statement.MakeBlock(
                                 Statement.MakeExprStmt(
                                     Helpers.MakeCallExpression(
-                                        Helpers.MakeFunctionIdentifierPath(
-                                            "println",
-                                            Helpers.MakeVoidType(),
-                                            Helpers.MakePrimitiveType("string"),
-                                            Helpers.MakeGenericType(
-                                                "array",
-                                                Helpers.MakeGenericType("object")
-                                            )
-                                        ),
+                                        Helpers.SomeWellKnownExpressions.Println,
                                         Helpers.MakeCallExpression(
-                                            Expression.MakeMemRef(
-                                                Helpers.MakeIdentifierPath(
-                                                    "string",
-                                                    Helpers.MakePrimitiveType("string")
-                                                ),
-                                                Helpers.MakeFunctionIdentifier(
-                                                    "Format",
-                                                    Helpers.MakePrimitiveType("string"),
-                                                    Helpers.MakePrimitiveType("string"),
-                                                    Helpers.MakeGenericTypeWithRealName(
-                                                        "Object",
-                                                        "System.Object"
-                                                    ),
-                                                    Helpers.MakeGenericTypeWithRealName(
-                                                        "Object",
-                                                        "System.Object"
-                                                    )
-                                                )
-                                            ),
+                                            Helpers.SomeWellKnownExpressions.StringFormat2,
                                             Expression.MakeConstant(
                                                 "string",
                                                 "{0}: {1}, "
@@ -8095,35 +7004,9 @@ namespace Expresso.Test
                             Statement.MakeBlock(
                                 Statement.MakeExprStmt(
                                     Helpers.MakeCallExpression(
-                                        Helpers.MakeFunctionIdentifierPath(
-                                            "println",
-                                            Helpers.MakeVoidType(),
-                                            Helpers.MakePrimitiveType("string"),
-                                            Helpers.MakeGenericType(
-                                                "array",
-                                                Helpers.MakeGenericType("object")
-                                            )
-                                        ),
+                                        Helpers.SomeWellKnownExpressions.Println,
                                         Helpers.MakeCallExpression(
-                                            Expression.MakeMemRef(
-                                                Helpers.MakeIdentifierPath(
-                                                    "string",
-                                                    Helpers.MakePrimitiveType("string")
-                                                ),
-                                                Helpers.MakeFunctionIdentifier(
-                                                    "Format",
-                                                    Helpers.MakePrimitiveType("string"),
-                                                    Helpers.MakePrimitiveType("string"),
-                                                    Helpers.MakeGenericTypeWithRealName(
-                                                        "Object",
-                                                        "System.Object"
-                                                    ),
-                                                    Helpers.MakeGenericTypeWithRealName(
-                                                        "Object",
-                                                        "System.Object"
-                                                    )
-                                                )
-                                            ),
+                                            Helpers.SomeWellKnownExpressions.StringFormat2,
                                             Expression.MakeConstant(
                                                 "string",
                                                 "({0}, {1}), "
@@ -8165,35 +7048,9 @@ namespace Expresso.Test
                             Statement.MakeBlock(
                                 Statement.MakeExprStmt(
                                     Helpers.MakeCallExpression(
-                                        Helpers.MakeFunctionIdentifierPath(
-                                            "println",
-                                            Helpers.MakeVoidType(),
-                                            Helpers.MakePrimitiveType("string"),
-                                            Helpers.MakeGenericType(
-                                                "array",
-                                                Helpers.MakeGenericType("object")
-                                            )
-                                        ),
+                                        Helpers.SomeWellKnownExpressions.Println,
                                         Helpers.MakeCallExpression(
-                                            Expression.MakeMemRef(
-                                                Helpers.MakeIdentifierPath(
-                                                    "string",
-                                                    Helpers.MakePrimitiveType("string")
-                                                ),
-                                                Helpers.MakeFunctionIdentifier(
-                                                    "Format",
-                                                    Helpers.MakePrimitiveType("string"),
-                                                    Helpers.MakePrimitiveType("string"),
-                                                    Helpers.MakeGenericTypeWithRealName(
-                                                        "Object",
-                                                        "System.Object"
-                                                    ),
-                                                    Helpers.MakeGenericTypeWithRealName(
-                                                        "Object",
-                                                        "System.Object"
-                                                    )
-                                                )
-                                            ),
+                                            Helpers.SomeWellKnownExpressions.StringFormat2,
                                             Expression.MakeConstant(
                                                 "string",
                                                 "({0}, {1}), "
@@ -8238,31 +7095,9 @@ namespace Expresso.Test
                     Statement.MakeBlock(
                         Statement.MakeExprStmt(
                             Helpers.MakeCallExpression(
-                                Helpers.MakeFunctionIdentifierPath(
-                                    "println",
-                                    Helpers.MakeVoidType(),
-                                    Helpers.MakePrimitiveType("string"),
-                                    Helpers.MakeGenericType(
-                                        "array",
-                                        Helpers.MakeGenericType("object")
-                                    )
-                                ),
+                                Helpers.SomeWellKnownExpressions.Println,
                                 Helpers.MakeCallExpression(
-                                    Expression.MakeMemRef(
-                                        Helpers.MakeIdentifierPath(
-                                            "string",
-                                            Helpers.MakePrimitiveType("string")
-                                        ),
-                                        Helpers.MakeFunctionIdentifier(
-                                            "Format",
-                                            Helpers.MakePrimitiveType("string"),
-                                            Helpers.MakePrimitiveType("string"),
-                                            Helpers.MakeGenericTypeWithRealName(
-                                                "Object",
-                                                "System.Object"
-                                            )
-                                        )
-                                    ),
+                                    Helpers.SomeWellKnownExpressions.StringFormat1,
                                     Expression.MakeConstant(
                                         "string",
                                         "before: {0}"
@@ -8307,31 +7142,9 @@ namespace Expresso.Test
                         ),
                         Statement.MakeExprStmt(
                             Helpers.MakeCallExpression(
-                                Helpers.MakeFunctionIdentifierPath(
-                                    "println",
-                                    Helpers.MakeVoidType(),
-                                    Helpers.MakePrimitiveType("string"),
-                                    Helpers.MakeGenericType(
-                                        "array",
-                                        Helpers.MakeGenericType("object")
-                                    )
-                                ),
+                                Helpers.SomeWellKnownExpressions.Println,
                                 Helpers.MakeCallExpression(
-                                    Expression.MakeMemRef(
-                                        Helpers.MakeIdentifierPath(
-                                            "string",
-                                            Helpers.MakePrimitiveType("string")
-                                        ),
-                                        Helpers.MakeFunctionIdentifier(
-                                            "Format",
-                                            Helpers.MakePrimitiveType("string"),
-                                            Helpers.MakePrimitiveType("string"),
-                                            Helpers.MakeGenericTypeWithRealName(
-                                                "Object",
-                                                "System.Object"
-                                            )
-                                        )
-                                    ),
+                                    Helpers.SomeWellKnownExpressions.StringFormat1,
                                     Expression.MakeConstant(
                                         "string",
                                         "after: {0}"
@@ -8378,31 +7191,9 @@ namespace Expresso.Test
                         ),
                         Statement.MakeExprStmt(
                             Helpers.MakeCallExpression(
-                                Helpers.MakeFunctionIdentifierPath(
-                                    "println",
-                                    Helpers.MakeVoidType(),
-                                    Helpers.MakePrimitiveType("string"),
-                                    Helpers.MakeGenericType(
-                                        "array",
-                                        Helpers.MakeGenericType("object")
-                                    )
-                                ),
+                                Helpers.SomeWellKnownExpressions.Println,
                                 Helpers.MakeCallExpression(
-                                    Expression.MakeMemRef(
-                                        Helpers.MakeIdentifierPath(
-                                            "string",
-                                            Helpers.MakePrimitiveType("string")
-                                        ),
-                                        Helpers.MakeFunctionIdentifier(
-                                            "Format",
-                                            Helpers.MakePrimitiveType("string"),
-                                            Helpers.MakePrimitiveType("string"),
-                                            Helpers.MakeGenericTypeWithRealName(
-                                                "Object",
-                                                "System.Object"
-                                            )
-                                        )
-                                    ),
+                                    Helpers.SomeWellKnownExpressions.StringFormat1,
                                     Expression.MakeConstant(
                                         "string",
                                         "before: {0}"
@@ -8449,31 +7240,9 @@ namespace Expresso.Test
                         ),
                         Statement.MakeExprStmt(
                             Helpers.MakeCallExpression(
-                                Helpers.MakeFunctionIdentifierPath(
-                                    "println",
-                                    Helpers.MakeVoidType(),
-                                    Helpers.MakePrimitiveType("string"),
-                                    Helpers.MakeGenericType(
-                                        "array",
-                                        Helpers.MakeGenericType("object")
-                                    )
-                                ),
+                                Helpers.SomeWellKnownExpressions.Println,
                                 Helpers.MakeCallExpression(
-                                    Expression.MakeMemRef(
-                                        Helpers.MakeIdentifierPath(
-                                            "string",
-                                            Helpers.MakePrimitiveType("string")
-                                        ),
-                                        Helpers.MakeFunctionIdentifier(
-                                            "Format",
-                                            Helpers.MakePrimitiveType("string"),
-                                            Helpers.MakePrimitiveType("string"),
-                                            Helpers.MakeGenericTypeWithRealName(
-                                                "Object",
-                                                "System.Object"
-                                            )
-                                        )
-                                    ),
+                                    Helpers.SomeWellKnownExpressions.StringFormat1,
                                     Expression.MakeConstant(
                                         "string",
                                         "after: {0}"
@@ -8557,15 +7326,7 @@ namespace Expresso.Test
                             Statement.MakeBlock(
                                 Statement.MakeExprStmt(
                                     Helpers.MakeCallExpression(
-                                        Helpers.MakeFunctionIdentifierPath(
-                                            "println",
-                                            Helpers.MakeVoidType(),
-                                            Helpers.MakePrimitiveType("string"),
-                                            Helpers.MakeGenericType(
-                                                "array",
-                                                Helpers.MakeGenericType("object")
-                                            )
-                                        ),
+                                        Helpers.SomeWellKnownExpressions.Println,
                                         Expression.MakeConstant("string", "matched!")
                                     )
                                 )
@@ -8650,15 +7411,7 @@ namespace Expresso.Test
                             Statement.MakeBlock(
                                 Statement.MakeExprStmt(
                                     Helpers.MakeCallExpression(
-                                        Helpers.MakeFunctionIdentifierPath(
-                                            "println",
-                                            Helpers.MakeVoidType(),
-                                            Helpers.MakePrimitiveType("string"),
-                                            Helpers.MakeGenericType(
-                                                "array",
-                                                Helpers.MakeGenericType("object")
-                                            )
-                                        ),
+                                        Helpers.SomeWellKnownExpressions.Println,
                                         Expression.MakeConstant("string", "matched again!")
                                     )
                                 )
@@ -8810,15 +7563,7 @@ namespace Expresso.Test
                         Statement.MakeBlock(
                             Statement.MakeExprStmt(
                                 Helpers.MakeCallExpression(
-                                    Helpers.MakeFunctionIdentifierPath(
-                                        "println",
-                                        Helpers.MakeVoidType(),
-                                        Helpers.MakePrimitiveType("string"),
-                                        Helpers.MakeGenericType(
-                                            "array",
-                                            Helpers.MakeGenericType("object")
-                                        )
-                                    ),
+                                    Helpers.SomeWellKnownExpressions.Println,
                                     Expression.MakeConstant("string", "Do something")
                                 )
                             )
@@ -8838,31 +7583,9 @@ namespace Expresso.Test
                         Statement.MakeBlock(
                             Statement.MakeExprStmt(
                                 Helpers.MakeCallExpression(
-                                    Helpers.MakeFunctionIdentifierPath(
-                                        "println",
-                                        Helpers.MakeVoidType(),
-                                        Helpers.MakePrimitiveType("string"),
-                                        Helpers.MakeGenericType(
-                                            "array",
-                                            Helpers.MakeGenericType("object")
-                                        )
-                                    ),
+                                    Helpers.SomeWellKnownExpressions.Println,
                                     Helpers.MakeCallExpression(
-                                        Expression.MakeMemRef(
-                                            Helpers.MakeIdentifierPath(
-                                                "string",
-                                                Helpers.MakePrimitiveType("string")
-                                            ),
-                                            Helpers.MakeFunctionIdentifier(
-                                                "Format",
-                                                Helpers.MakePrimitiveType("string"),
-                                                Helpers.MakePrimitiveType("string"),
-                                                Helpers.MakeGenericTypeWithRealName(
-                                                    "Object",
-                                                    "System.Object"
-                                                )
-                                            )
-                                        ),
+                                        Helpers.SomeWellKnownExpressions.StringFormat1,
                                         Expression.MakeConstant(
                                             "string",
                                             "{0}"
