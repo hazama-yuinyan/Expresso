@@ -20,6 +20,29 @@ enum SomeEnum
             SomeEnum::C{derived_class} => println("${derived_class}");
         }
     }
+
+    public def printUsingIf()
+    {
+        if self == SomeEnum::A{some_int} {
+            println("${some_int}");
+        }
+    }
+}
+
+enum SomeEnum2
+{
+    A = 1,
+    B,
+    C
+
+    public def print()
+    {
+        match self {
+            SomeEnum2::A => println("A");,
+            SomeEnum2::B => println("B");,
+            SomeEnum2::C => println("C");
+        }
+    }
 }
 
 #[Serializable]
@@ -109,9 +132,11 @@ def main()
         println(j);
     }
 
-    let flag = true;
+    let flag = true, another_flag = false;
     if flag {
         println("true");
+    }else if another_flag {
+        println("another_flag");
     }else{
         println("false");
     }

@@ -325,96 +325,6 @@
             "comment": "Use of attributes"
         },
         {
-            "begin": "\\s*(public|private|protected|export)?\\s*(def)\\s+([\\w_0-9]+)\\s*(\\()",
-            "beginCaptures": {
-                "1" : {
-                    "name" : "keyword.other.access.expresso"
-                },
-                "2" : {
-                    "name" : "keyword.other.def.expresso"
-                },
-                "3" : {
-                    "name" : "entity.name.function.expresso"
-                },
-                "4" : {
-                    "name" : "punctuation.definition.l-parenthesis.expresso"
-                }
-            },
-            "end": "(\\))\\s*(?:->\\s+(.+?)\\s*)?({?)$",
-            "endCaptures": {
-                "1" : {
-                    "name" : "punctuation.definition.r-parenthesis.expresso"
-                },
-                "2" : {
-                    "patterns": [
-                        {
-                            "include": "#builtinTypes"
-                        },
-                        {
-                            "include": "#typesInModule"
-                        },
-                        {
-                            "include": "#typesInTypes"
-                        }
-                    ]
-                },
-                "3" : {
-                    "name" : "punctuation.definition.l-curlybrace.expresso"
-                }
-            },
-            "patterns": [
-                {
-                    "match": ",?\\s*([\\w_0-9]+)\\s*(\\(-)\\s+([^\\),\\s]+)",
-                    "captures": {
-                        "1" : {
-                            "name" : "variable.parameter.expresso"
-                        },
-                        "2" : {
-                            "name" : "punctuation.definition.includes.expresso"
-                        },
-                        "3" : {
-                            "patterns": [
-                                {
-                                    "include": "#builtinTypes"
-                                },
-                                {
-                                    "include": "#typesInModule"
-                                },
-                                {
-                                    "include": "#typesInTypes"
-                                }
-                            ]
-                        }
-                    }
-                },
-                {
-                    "match": ",?\\s*([\\w_0-9]+)\\s+(=)\\s+([^\\),\\s]+)",
-                    "captures": {
-                        "1" : {
-                            "name" : "variable.parameter.expresso"
-                        },
-                        "2" : {
-                            "name" : "punctuation.definition.equal.expresso"
-                        },
-                        "3" : {
-                            "patterns": [
-                                {
-                                    "include": "#stringLiterals"
-                                },
-                                {
-                                    "include": "#numberLiterals"
-                                },
-                                {
-                                    "include": "#languageConstants"
-                                }
-                            ]
-                        }
-                    }
-                }
-            ],
-            "name" : "meta.definition.function.expresso"
-        },
-        {
             "begin": "^\\s*(export)?\\s*(enum)\\s+([\\w_0-9]+)\\s*({)?$",
             "beginCaptures": {
                 "1" : {
@@ -464,56 +374,30 @@
                             "include": "#typesInTypes"
                         }
                     ]
-                }
-            ]
-        },
-        {
-            "begin": "(for)\\s+(let|var)?\\s*",
-            "beginCaptures": {
-                "1" : {
-                    "name" : "keyword.control.for.expresso"
                 },
-                "2" : {
-                    "name" : "keyword.other.let-var.expresso"
-                }
-            },
-            "end" : "(in)",
-            "endCaptures": {
-                "1" : {
-                    "name" : "keyword.control.in.expresso"
-                }
-            },
-            "patterns": [
+                {
+                    "include": "#forStatement"
+                },
+                {
+                    "include": "#ifStatement"
+                },
+                {
+                    "include": "#matchStatement"
+                },
+                {
+                    "include": "#functionDefinition"
+                },
                 {
                     "include": "#simpleVariableName"
-                }
-            ]
-        },
-        {
-            "begin": "(if)\\s+",
-            "beginCaptures": {
-                "1" : {
-                    "name" : "keyword.control.if.expresso"
-                }
-            },
-            "end": "\\s*({)",
-            "endCaptures": {
-                "1" : {
-                    "name" : "punctuation.definition.l-curlybrace.expresso"
-                }
-            },
-            "patterns": [
-                {
-                    "include": "#simpleVariableName"
-                },
-                {
-                    "include": "#languageConstants"
-                },
-                {
-                    "include": "#keywordVariables"
                 },
                 {
                     "include": "#simpleFunctionCall"
+                },
+                {
+                    "include": "#castExpression"
+                },
+                {
+                    "include": "#keywordVariables"
                 },
                 {
                     "include": "#numberLiterals"
@@ -524,49 +408,26 @@
             ]
         },
         {
-            "begin": "(match)\\s+",
-            "beginCaptures": {
-                "1" : {
-                    "name" : "keyword.control.match.expresso"
-                }
-            },
-            "end": "\\s*({)",
-            "endCaptures": {
-                "1" : {
-                    "name" : "punctuation.definition.l-curlybrace.expresso"
-                }
-            },
-            "patterns": [
-                {
-                    "include": "#simpleVariableName"
-                },
-                {
-                    "include": "#languageConstants"
-                },
-                {
-                    "include": "#keywordVariables"
-                },
-                {
-                    "include": "#simpleFunctionCall"
-                },
-                {
-                    "include": "#numberLiterals"
-                },
-                {
-                    "include": "#stringLiterals"
-                }
-            ]
+            "include": "#forStatement"
+        },
+        {
+            "include": "#ifStatement"
+        },
+        {
+            "include": "#matchStatement"
         },
         {
             "include": "#stringLiterals"
         },
         {
-            "include": "#numberLiterals",
-            "name": "constant.numeric.expresso"
+            "include": "#numberLiterals"
         },
         {
             "include": "#simpleFunctionCall",
             "name": "meta.function.call.expresso"
+        },
+        {
+            "include": "#functionDefinition"
         },
         {
             "include": "#castExpression",
@@ -769,7 +630,7 @@
         "numberLitrals" : {
            "patterns" : [
                 {
-                    "match" : "\\b(?:(?:0(?:x|X)[0-9a-fA-F]+))|[0-9]+)(?:u|U|l|L)?\\b",
+                    "match" : "\\b(?:(?:0(?:x|X)[0-9a-fA-F]+)|[0-9]+)(?:u|U|l|L)?\\b",
                     "name" : "constant.numeric.expresso"
                 },
                 {
@@ -924,6 +785,205 @@
                 {
                     "match" : "\\b(true|false|null)\\b",
                     "name" : "constant.language.expresso"
+                }
+            ]
+        },
+        "forStatement" : {
+            "patterns": [
+                {
+                    "begin": "(for)\\s+(let|var)?\\s*",
+                    "beginCaptures": {
+                        "1" : {
+                            "name" : "keyword.control.for.expresso"
+                        },
+                        "2" : {
+                            "name" : "keyword.other.let-var.expresso"
+                        }
+                    },
+                    "end" : "(in)",
+                    "endCaptures": {
+                        "1" : {
+                            "name" : "keyword.control.in.expresso"
+                        }
+                    },
+                    "patterns": [
+                        {
+                            "include": "#simpleVariableName"
+                        }
+                    ],
+                    "name" : "meta.definition.statement.for.expresso"
+                }
+            ]
+        },
+        "ifStatement" : {
+            "patterns" : [
+                {
+                    "begin": "(if)\\s+",
+                    "beginCaptures": {
+                        "1" : {
+                            "name" : "keyword.control.if.expresso"
+                        }
+                    },
+                    "end": "\\s*({)",
+                    "endCaptures": {
+                        "1" : {
+                            "name" : "punctuation.definition.l-curlybrace.expresso"
+                        }
+                    },
+                    "patterns": [
+                        {
+                            "include": "#keywordVariables"
+                        },
+                        {
+                            "include": "#simpleVariableName"
+                        },
+                        {
+                            "include": "#languageConstants"
+                        },
+                        {
+                            "include": "#simpleFunctionCall"
+                        },
+                        {
+                            "include": "#numberLiterals"
+                        },
+                        {
+                            "include": "#stringLiterals"
+                        }
+                    ],
+                    "name" : "meta.defitinion.statement.if.expresso"
+                }
+            ]
+        },
+        "matchStatement" : {
+            "patterns" : [
+                {
+                    "begin": "(match)\\s+",
+                    "beginCaptures": {
+                        "1" : {
+                            "name" : "keyword.control.match.expresso"
+                        }
+                    },
+                    "end": "\\s*({)",
+                    "endCaptures": {
+                        "1" : {
+                            "name" : "punctuation.definition.l-curlybrace.expresso"
+                        }
+                    },
+                    "patterns": [
+                        {
+                            "include": "#keywordVariables"
+                        },
+                        {
+                            "include": "#simpleVariableName"
+                        },
+                        {
+                            "include": "#languageConstants"
+                        },
+                        {
+                            "include": "#simpleFunctionCall"
+                        },
+                        {
+                            "include": "#numberLiterals"
+                        },
+                        {
+                            "include": "#stringLiterals"
+                        }
+                    ],
+                    "name" : "meta.definition.statement.match.expresso"
+                }
+            ]
+        },
+        "functionDefinition" : {
+            "patterns": [
+                {
+                    "begin": "\\s*(public|private|protected|export)?\\s*(def)\\s+([\\w_0-9]+)\\s*(\\()",
+                    "beginCaptures": {
+                        "1" : {
+                            "name" : "keyword.other.access.expresso"
+                        },
+                        "2" : {
+                            "name" : "keyword.other.def.expresso"
+                        },
+                        "3" : {
+                            "name" : "entity.name.function.expresso"
+                        },
+                        "4" : {
+                            "name" : "punctuation.definition.l-parenthesis.expresso"
+                        }
+                    },
+                    "end": "(\\))\\s*(?:->\\s+(.+?)\\s*)?({?)$",
+                    "endCaptures": {
+                        "1" : {
+                            "name" : "punctuation.definition.r-parenthesis.expresso"
+                        },
+                        "2" : {
+                            "patterns": [
+                                {
+                                    "include": "#builtinTypes"
+                                },
+                                {
+                                    "include": "#typesInModule"
+                                },
+                                {
+                                    "include": "#typesInTypes"
+                                }
+                            ]
+                        },
+                        "3" : {
+                            "name" : "punctuation.definition.l-curlybrace.expresso"
+                        }
+                    },
+                    "patterns": [
+                        {
+                            "match": ",?\\s*([\\w_0-9]+)\\s*(\\(-)\\s+([^\\),\\s]+)",
+                            "captures": {
+                                "1" : {
+                                    "name" : "variable.parameter.expresso"
+                                },
+                                "2" : {
+                                    "name" : "punctuation.definition.includes.expresso"
+                                },
+                                "3" : {
+                                    "patterns": [
+                                        {
+                                            "include": "#builtinTypes"
+                                        },
+                                        {
+                                            "include": "#typesInModule"
+                                        },
+                                        {
+                                            "include": "#typesInTypes"
+                                        }
+                                    ]
+                                }
+                            }
+                        },
+                        {
+                            "match": ",?\\s*([\\w_0-9]+)\\s+(=)\\s+([^\\),\\s]+)",
+                            "captures": {
+                                "1" : {
+                                    "name" : "variable.parameter.expresso"
+                                },
+                                "2" : {
+                                    "name" : "punctuation.definition.equal.expresso"
+                                },
+                                "3" : {
+                                    "patterns": [
+                                        {
+                                            "include": "#stringLiterals"
+                                        },
+                                        {
+                                            "include": "#numberLiterals"
+                                        },
+                                        {
+                                            "include": "#languageConstants"
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    ],
+                    "name" : "meta.definition.function.expresso"
                 }
             ]
         }
