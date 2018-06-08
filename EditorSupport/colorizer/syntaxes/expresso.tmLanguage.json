@@ -415,6 +415,149 @@
             "name" : "meta.definition.function.expresso"
         },
         {
+            "begin": "^\\s*(export)?\\s*(enum)\\s+([\\w_0-9]+)\\s*({)?$",
+            "beginCaptures": {
+                "1" : {
+                    "name" : "keyword.other.export.expresso"
+                },
+                "2" : {
+                    "name" : "keyword.other.enum.expresso"
+                },
+                "3" : {
+                    "name" : "entity.name.class.expresso"
+                },
+                "4" : {
+                    "name" : "punctuation.definition.l-curlybrace.expresso"
+                }
+            },
+            "end" : "\\n?\\s*(})",
+            "endCaptures": {
+                "1" : {
+                    "name" : "punctuation.definition.r-curlybrace.expresso"
+                }
+            },
+            "patterns": [
+                {
+                    "begin": "([\\w_0-9]+)(\\()",
+                    "beginCaptures": {
+                        "1" : {
+                            "name" : "entity.name.variant.expresso"
+                        },
+                        "2" : {
+                            "name" : "punctuation.defitinion.l-parenthesis.expresso"
+                        }
+                    },
+                    "end": "(\\))",
+                    "endCaptures": {
+                        "1" : {
+                            "name" : "punctuation.defitinion.r-parenthesis.expresso"
+                        }
+                    },
+                    "patterns": [
+                        {
+                            "include": "#builtinTypes"
+                        },
+                        {
+                            "include": "#typesInModule"
+                        },
+                        {
+                            "include": "#typesInTypes"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "begin": "(for)\\s+(let|var)?\\s*",
+            "beginCaptures": {
+                "1" : {
+                    "name" : "keyword.control.for.expresso"
+                },
+                "2" : {
+                    "name" : "keyword.other.let-var.expresso"
+                }
+            },
+            "end" : "(in)",
+            "endCaptures": {
+                "1" : {
+                    "name" : "keyword.control.in.expresso"
+                }
+            },
+            "patterns": [
+                {
+                    "include": "#simpleVariableName"
+                }
+            ]
+        },
+        {
+            "begin": "(if)\\s+",
+            "beginCaptures": {
+                "1" : {
+                    "name" : "keyword.control.if.expresso"
+                }
+            },
+            "end": "\\s*({)",
+            "endCaptures": {
+                "1" : {
+                    "name" : "punctuation.definition.l-curlybrace.expresso"
+                }
+            },
+            "patterns": [
+                {
+                    "include": "#simpleVariableName"
+                },
+                {
+                    "include": "#languageConstants"
+                },
+                {
+                    "include": "#keywordVariables"
+                },
+                {
+                    "include": "#simpleFunctionCall"
+                },
+                {
+                    "include": "#numberLiterals"
+                },
+                {
+                    "include": "#stringLiterals"
+                }
+            ]
+        },
+        {
+            "begin": "(match)\\s+",
+            "beginCaptures": {
+                "1" : {
+                    "name" : "keyword.control.match.expresso"
+                }
+            },
+            "end": "\\s*({)",
+            "endCaptures": {
+                "1" : {
+                    "name" : "punctuation.definition.l-curlybrace.expresso"
+                }
+            },
+            "patterns": [
+                {
+                    "include": "#simpleVariableName"
+                },
+                {
+                    "include": "#languageConstants"
+                },
+                {
+                    "include": "#keywordVariables"
+                },
+                {
+                    "include": "#simpleFunctionCall"
+                },
+                {
+                    "include": "#numberLiterals"
+                },
+                {
+                    "include": "#stringLiterals"
+                }
+            ]
+        },
+        {
             "include": "#stringLiterals"
         },
         {
@@ -685,7 +828,7 @@
         "builtinTypes": {
             "patterns": [
                 {
-                    "match" : "\\b(bool|byte|float|double|int|uint|bigint|vector|dictionary|tuple|intseq|char|string|array|slice|function|void|class|interface)\\b",
+                    "match" : "\\b(bool|byte|float|double|int|uint|bigint|vector|dictionary|tuple|intseq|char|string|array|slice|function|void|class|interface|enum)\\b",
                     "name" : "keyword.other.expresso"
                 }
             ]

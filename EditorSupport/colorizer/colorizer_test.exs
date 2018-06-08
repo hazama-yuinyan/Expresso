@@ -6,6 +6,22 @@ import System.Text.RegularExpressions.Regex as Regex;
 import test_module::TestClass from "./testmodule.exs" as TestClass;
 import OtherLanguageWorld.{StaticClass, TestEnum} from "./InteroperabilityTest.dll" as {StaticClass, TestEnum};
 
+enum SomeEnum
+{
+    A(int),
+    B(int, uint),
+    C(SomeDerivedClass)
+    
+    public def print()
+    {
+        match self {
+            SomeEnum::A{some_int} => println("${some_int}");,
+            SomeEnum::B{some_int, some_uint} => println("${some_int} ${some_uint}");,
+            SomeEnum::C{derived_class} => println("${derived_class}");
+        }
+    }
+}
+
 #[Serializable]
 export class TestClass
 {
@@ -88,8 +104,9 @@ def main()
     var f = returnInt(10, 20);
     var g = e as double;
 
-    for let i in returnIntSeq() {
+    for let (i, j) in (returnIntSeq(), returnIntSeq()) {
         println(i);
+        println(j);
     }
 
     let flag = true;
@@ -100,4 +117,10 @@ def main()
     }
     
     println(a, sin);
+
+    let str = "abc";
+    match str {
+        "abc" => println("abc");,
+        "def" => println("def");
+    }
 }
