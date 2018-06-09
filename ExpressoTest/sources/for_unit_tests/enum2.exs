@@ -24,7 +24,7 @@ enum SomeEnum
     }
 }
 
-/*class SomeClass
+class SomeClass
 {
     private let x (- SomeEnum;
 
@@ -43,7 +43,7 @@ enum SomeEnum
             println("A in ifEnum");
         }
     }
-}*/
+}
 
 def main()
 {
@@ -63,7 +63,7 @@ def main()
 
     enum_a.printUsingIf();
 
-    //let some_class = SomeClass{x: enum_a};
-    //some_class.matchEnum();
-    //some_class.ifEnum();
+    let some_class = SomeClass{x: enum_a};
+    some_class.matchEnum();
+    some_class.ifEnum();
 }

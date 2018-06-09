@@ -658,7 +658,8 @@ namespace Expresso.Ast.Analysis
             var type_table = ident.Type.IdentifierNode.Type.IsNull ? symbols.GetTypeTable(ident.Type.Name) : null;
             var value_symbol = (type_table != null) ? type_table.GetSymbol(RawValueEnumValueFieldName) : null;
             var mem_ref = (value_symbol != null) ? ident.Ancestors.OfType<MemberReferenceExpression>().FirstOrDefault() : null;
-            if(type_table != null && type_table.TypeKind == ClassType.Enum && value_symbol != null && (mem_ref == null || mem_ref.Member.IsMatch(ident))){
+            if(type_table != null && type_table.TypeKind == ClassType.Enum && value_symbol != null && !ident.Ancestors.Any(a => a is ObjectCreationExpression)
+               && (mem_ref == null || mem_ref.Member.IsMatch(ident))){
                 // We recognize an identifier whose type is an enum and which is the last child
                 // as specifying the enum value
                 // We know that an identifier that represents an enum object will never show up on its own as an identifier
@@ -821,6 +822,7 @@ namespace Expresso.Ast.Analysis
                 );
             }*/
 
+            VisitIdentifier(memRef.Member);
             var name = (type is MemberType member) ? member.Target.Name + "::" + member.MemberName :
                                                            !type.IdentifierNode.Type.IsNull ? type.IdentifierNode.Type.Name : type.Name;
             var type_table = symbols.GetTypeTable(name);

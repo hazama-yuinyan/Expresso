@@ -8222,6 +8222,127 @@ namespace Expresso.Test
                         Modifiers.Public
                     )
                 ),
+                Helpers.MakeClassDecl(
+                    "SomeClass",
+                    Enumerable.Empty<AstType>(),
+                    Modifiers.None,
+                    EntityDeclaration.MakeField(
+                        Helpers.MakeExactPatternWithType(
+                            "x",
+                            Helpers.MakeGenericType("SomeEnum")
+                        ),
+                        Expression.Null,
+                        Modifiers.Private | Modifiers.Immutable
+                    ),
+                    EntityDeclaration.MakeFunc(
+                        "matchEnum",
+                        Enumerable.Empty<ParameterDeclaration>(),
+                        Statement.MakeBlock(
+                            Statement.MakeMatchStmt(
+                                Expression.MakeMemRef(
+                                    Expression.MakeMemRef(
+                                        Expression.MakeSelfRef(),
+                                        AstNode.MakeIdentifier(
+                                            "x",
+                                            Helpers.MakeGenericType("SomeEnum")
+                                        )
+                                    ),
+                                    Helpers.MakeSomeIdent("<>__value")
+                                ),
+                                Statement.MakeMatchClause(
+                                    null,
+                                    Statement.MakeExprStmt(
+                                        Helpers.MakeCallExpression(
+                                            Helpers.SomeWellKnownExpressions.Println,
+                                            Expression.MakeConstant("string", "A in matchEnum")
+                                        )
+                                    ),
+                                    PatternConstruct.MakeTypePathPattern(
+                                        AstType.MakeMemberType(
+                                            Helpers.MakeGenericType("SomeEnum"),
+                                            Helpers.MakeGenericType("A")
+                                        )
+                                    )
+                                ),
+                                Statement.MakeMatchClause(
+                                    null,
+                                    Statement.MakeExprStmt(
+                                        Helpers.MakeCallExpression(
+                                            Helpers.SomeWellKnownExpressions.Println,
+                                            Expression.MakeConstant("string", "B in matchEnum")
+                                        )
+                                    ),
+                                    PatternConstruct.MakeTypePathPattern(
+                                        AstType.MakeMemberType(
+                                            Helpers.MakeGenericType("SomeEnum"),
+                                            Helpers.MakeGenericType("B")
+                                        )
+                                    )
+                                ),
+                                Statement.MakeMatchClause(
+                                    null,
+                                    Statement.MakeExprStmt(
+                                        Helpers.MakeCallExpression(
+                                            Helpers.SomeWellKnownExpressions.Println,
+                                            Expression.MakeConstant("string", "C in matchEnum")
+                                        )
+                                    ),
+                                    PatternConstruct.MakeTypePathPattern(
+                                        AstType.MakeMemberType(
+                                            Helpers.MakeGenericType("SomeEnum"),
+                                            Helpers.MakeGenericType("C")
+                                        )
+                                    )
+                                )
+                            )
+                        ),
+                        Helpers.MakeVoidType(),
+                        Modifiers.Public
+                    ),
+                    EntityDeclaration.MakeFunc(
+                        "ifEnum",
+                        Enumerable.Empty<ParameterDeclaration>(),
+                        Statement.MakeBlock(
+                            Statement.MakeIfStmt(
+                                PatternConstruct.MakeExpressionPattern(
+                                    Expression.MakeBinaryExpr(
+                                        OperatorType.Equality,
+                                        Expression.MakeMemRef(
+                                            Expression.MakeMemRef(
+                                                Expression.MakeSelfRef(),
+                                                AstNode.MakeIdentifier(
+                                                    "x",
+                                                    Helpers.MakeGenericType("SomeEnum")
+                                                )
+                                            ),
+                                            Helpers.MakeSomeIdent("<>__value")
+                                        ),
+                                        Expression.MakePath(
+                                            AstNode.MakeIdentifier("SomeEnum"),
+                                            AstNode.MakeIdentifier(
+                                                "A",
+                                                Helpers.MakeGenericTypeWithAnotherType(
+                                                    "SomeEnum",
+                                                    Helpers.MakePrimitiveType("int")
+                                                )
+                                            )
+                                        )
+                                    )
+                                ),
+                                Statement.MakeBlock(
+                                    Statement.MakeExprStmt(
+                                        Helpers.MakeCallExpression(
+                                            Helpers.SomeWellKnownExpressions.Println,
+                                            Expression.MakeConstant("string", "A in ifEnum")
+                                        )
+                                    )
+                                )
+                            )
+                        ),
+                        Helpers.MakeVoidType(),
+                        Modifiers.Public
+                    )
+                ),
                 EntityDeclaration.MakeFunc(
                     "main",
                     Enumerable.Empty<ParameterDeclaration>(),
@@ -8366,9 +8487,62 @@ namespace Expresso.Test
                                     )
                                 )
                             )
+                        ),
+                        Statement.MakeVarDecl(
+                            Helpers.MakeSeq(
+                                Helpers.MakePaticularPatternWithType(
+                                    "some_class",
+                                    Helpers.MakeGenericType("SomeClass")
+                                )
+                            ),
+                            Helpers.MakeSeq(
+                                Expression.MakeObjectCreation(
+                                    Helpers.MakeGenericType("SomeClass"),
+                                    AstNode.MakeIdentifier("x"),
+                                    Helpers.MakeIdentifierPath(
+                                        "enum_a",
+                                        Helpers.MakeGenericType("SomeEnum")
+                                    )
+                                )
+                            ),
+                            Modifiers.Immutable
+                        ),
+                        Statement.MakeExprStmt(
+                            Helpers.MakeCallExpression(
+                                Expression.MakeMemRef(
+                                    Helpers.MakeIdentifierPath(
+                                        "some_class",
+                                        Helpers.MakeGenericType("SomeClass")
+                                    ),
+                                    AstNode.MakeIdentifier(
+                                        "matchEnum",
+                                        Helpers.MakeFunctionType(
+                                            "matchEnum",
+                                            Helpers.MakeVoidType()
+                                        )
+                                    )
+                                )
+                            )
+                        ),
+                        Statement.MakeExprStmt(
+                            Helpers.MakeCallExpression(
+                                Expression.MakeMemRef(
+                                    Helpers.MakeIdentifierPath(
+                                        "some_class",
+                                        Helpers.MakeGenericType("SomeClass")
+                                    ),
+                                    AstNode.MakeIdentifier(
+                                        "ifEnum",
+                                        Helpers.MakeFunctionType(
+                                            "ifEnum",
+                                            Helpers.MakeVoidType()
+                                        )
+                                    )
+                                )
+                            )
                         )
                     ),
-                    Helpers.MakePlaceholderType(),
+                    Helpers.MakeVoidType(),
                     Modifiers.None
                 )
             ));

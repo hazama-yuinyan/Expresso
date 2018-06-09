@@ -5364,6 +5364,109 @@ namespace Expresso.Test
                         Modifiers.Public
                     )
                 ),
+                Helpers.MakeClassDecl(
+                    "SomeClass",
+                    Enumerable.Empty<AstType>(),
+                    Modifiers.None,
+                    EntityDeclaration.MakeField(
+                        Helpers.MakeExactPatternWithType(
+                            "x",
+                            Helpers.MakeGenericType("SomeEnum")
+                        ),
+                        Expression.Null,
+                        Modifiers.Private | Modifiers.Immutable
+                    ),
+                    EntityDeclaration.MakeFunc(
+                        "matchEnum",
+                        Enumerable.Empty<ParameterDeclaration>(),
+                        Statement.MakeBlock(
+                            Statement.MakeMatchStmt(
+                                Expression.MakeMemRef(
+                                    Expression.MakeSelfRef(),
+                                    Helpers.MakeSomeIdent("x")
+                                ),
+                                Statement.MakeMatchClause(
+                                    null,
+                                    Statement.MakeExprStmt(
+                                        Helpers.MakeCallExpression(
+                                            Helpers.MakeIdentifierPath("println"),
+                                            Expression.MakeConstant("string", "A in matchEnum")
+                                        )
+                                    ),
+                                    PatternConstruct.MakeTypePathPattern(
+                                        AstType.MakeMemberType(
+                                            Helpers.MakeGenericType("SomeEnum"),
+                                            Helpers.MakeGenericType("A")
+                                        )
+                                    )
+                                ),
+                                Statement.MakeMatchClause(
+                                    null,
+                                    Statement.MakeExprStmt(
+                                        Helpers.MakeCallExpression(
+                                            Helpers.MakeIdentifierPath("println"),
+                                            Expression.MakeConstant("string", "B in matchEnum")
+                                        )
+                                    ),
+                                    PatternConstruct.MakeTypePathPattern(
+                                        AstType.MakeMemberType(
+                                            Helpers.MakeGenericType("SomeEnum"),
+                                            Helpers.MakeGenericType("B")
+                                        )
+                                    )
+                                ),
+                                Statement.MakeMatchClause(
+                                    null,
+                                    Statement.MakeExprStmt(
+                                        Helpers.MakeCallExpression(
+                                            Helpers.MakeIdentifierPath("println"),
+                                            Expression.MakeConstant("string", "C in matchEnum")
+                                        )
+                                    ),
+                                    PatternConstruct.MakeTypePathPattern(
+                                        AstType.MakeMemberType(
+                                            Helpers.MakeGenericType("SomeEnum"),
+                                            Helpers.MakeGenericType("C")
+                                        )
+                                    )
+                                )
+                            )
+                        ),
+                        Helpers.MakePlaceholderType(),
+                        Modifiers.Public
+                    ),
+                    EntityDeclaration.MakeFunc(
+                        "ifEnum",
+                        Enumerable.Empty<ParameterDeclaration>(),
+                        Statement.MakeBlock(
+                            Statement.MakeIfStmt(
+                                PatternConstruct.MakeExpressionPattern(
+                                    Expression.MakeBinaryExpr(
+                                        OperatorType.Equality,
+                                        Expression.MakeMemRef(
+                                            Expression.MakeSelfRef(),
+                                            Helpers.MakeSomeIdent("x")
+                                        ),
+                                        Expression.MakePath(
+                                            AstNode.MakeIdentifier("SomeEnum"),
+                                            Helpers.MakeSomeIdent("A")
+                                        )
+                                    )
+                                ),
+                                Statement.MakeBlock(
+                                    Statement.MakeExprStmt(
+                                        Helpers.MakeCallExpression(
+                                            Helpers.MakeIdentifierPath("println"),
+                                            Expression.MakeConstant("string", "A in ifEnum")
+                                        )
+                                    )
+                                )
+                            )
+                        ),
+                        Helpers.MakePlaceholderType(),
+                        Modifiers.Public
+                    )
+                ),
                 EntityDeclaration.MakeFunc(
                     "main",
                     Enumerable.Empty<ParameterDeclaration>(),
@@ -5450,7 +5553,7 @@ namespace Expresso.Test
                             Statement.MakeBlock(
                                 Statement.MakeExprStmt(
                                     Helpers.MakeCallExpression(
-                                        Helpers.SomeWellKnownExpressions.Println,
+                                        Helpers.MakeIdentifierPath("println"),
                                         Expression.MakeConstant("string", "A in if")
                                     )
                                 )
@@ -5461,6 +5564,35 @@ namespace Expresso.Test
                                 Expression.MakeMemRef(
                                     Helpers.MakeIdentifierPath("enum_a"),
                                     Helpers.MakeSomeIdent("printUsingIf")
+                                )
+                            )
+                        ),
+                        Statement.MakeVarDecl(
+                            Helpers.MakeSeq(
+                                Helpers.MakeSomePatternWithType("some_class")
+                            ),
+                            Helpers.MakeSeq(
+                                Expression.MakeObjectCreation(
+                                    Helpers.MakeGenericType("SomeClass"),
+                                    AstNode.MakeIdentifier("x"),
+                                    Helpers.MakeIdentifierPath("enum_a")
+                                )
+                            ),
+                            Modifiers.Immutable
+                        ),
+                        Statement.MakeExprStmt(
+                            Helpers.MakeCallExpression(
+                                Expression.MakeMemRef(
+                                    Helpers.MakeIdentifierPath("some_class"),
+                                    Helpers.MakeSomeIdent("matchEnum")
+                                )
+                            )
+                        ),
+                        Statement.MakeExprStmt(
+                            Helpers.MakeCallExpression(
+                                Expression.MakeMemRef(
+                                    Helpers.MakeIdentifierPath("some_class"),
+                                    Helpers.MakeSomeIdent("ifEnum")
                                 )
                             )
                         )
