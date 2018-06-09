@@ -15,9 +15,7 @@ namespace Expresso.Ast.Analysis
     /// </summary>
     partial class TypeChecker : IAstWalker<AstType>
     {
-        const string RawValueEnumValueFieldName = "<>__value";
         static List<AstType> TemporaryTypes = new List<AstType>();
-        readonly IEnumerable<(string, Identifier)> raw_value_enum_identifiers;
         bool inspecting_immutability = false;
         bool? is_main_function_defined;
         int scope_counter;
@@ -37,9 +35,6 @@ namespace Expresso.Ast.Analysis
             inference_runner = new TypeInferenceRunner(parser, this);
             closure_parameter_inferencer = new ClosureParameterInferencer(parser, this);
             null_checker = new NullCheckWalker(this);
-
-            raw_value_enum_identifiers = symbols.Children
-                                                .Select(child => (child.Name, child.GetSymbol(RawValueEnumValueFieldName)));
         }
 
         public static void Check(ExpressoAst ast, Parser parser)
@@ -656,7 +651,7 @@ namespace Expresso.Ast.Analysis
             // Infer and spread the type of the identifier to this node
             inference_runner.VisitIdentifier(ident);
             var type_table = ident.Type.IdentifierNode.Type.IsNull ? symbols.GetTypeTable(ident.Type.Name) : null;
-            var value_symbol = (type_table != null) ? type_table.GetSymbol(RawValueEnumValueFieldName) : null;
+            var value_symbol = (type_table != null) ? type_table.GetSymbol(Utilities.RawValueEnumValueFieldName) : null;
             var mem_ref = (value_symbol != null) ? ident.Ancestors.OfType<MemberReferenceExpression>().FirstOrDefault() : null;
             if(type_table != null && type_table.TypeKind == ClassType.Enum && value_symbol != null && !ident.Ancestors.Any(a => a is ObjectCreationExpression)
                && (mem_ref == null || mem_ref.Member.IsMatch(ident))){
@@ -664,11 +659,11 @@ namespace Expresso.Ast.Analysis
                 // as specifying the enum value
                 // We know that an identifier that represents an enum object will never show up on its own as an identifier
                 var parent = (Expression)ident.Parent;
-                var new_mem_ref = Expression.MakeMemRef(parent.Clone(), AstNode.MakeIdentifier(RawValueEnumValueFieldName, AstType.MakePlaceholderType()));
+                var new_mem_ref = Expression.MakeMemRef(parent.Clone(), AstNode.MakeIdentifier(Utilities.RawValueEnumValueFieldName, AstType.MakePlaceholderType()));
                 ident.Parent.ReplaceWith(new_mem_ref);
 
                 // We leave the Type property of symbol as is because we don't use it
-                var symbol = type_table.GetSymbol(RawValueEnumValueFieldName);
+                var symbol = type_table.GetSymbol(Utilities.RawValueEnumValueFieldName);
                 new_mem_ref.Member.IdentifierId = symbol.IdentifierId;
                 //
                 //mem_ref.Member.Type = ident.Type.Clone();
@@ -1077,14 +1072,14 @@ namespace Expresso.Ast.Analysis
 
             var type_table = symbols.GetTypeTable(selfRef.SelfIdentifier.Type.Name);
             var next_sibling = selfRef.NextSibling;
-            var value_symbol = type_table.GetSymbol(RawValueEnumValueFieldName);
+            var value_symbol = type_table.GetSymbol(Utilities.RawValueEnumValueFieldName);
             if(type_table != null && type_table.TypeKind == ClassType.Enum && value_symbol != null && (next_sibling == null || next_sibling.NodeType == NodeType.Expression
                                                                                                        || next_sibling.NodeType == NodeType.Statement)){
                 // We recognize a self identifier whose type is an enum and which is the last child
                 // as referencing the enum value
-                var mem_ref = Expression.MakeMemRef(selfRef.Clone(), AstNode.MakeIdentifier(RawValueEnumValueFieldName, AstType.MakePlaceholderType()));
+                var mem_ref = Expression.MakeMemRef(selfRef.Clone(), AstNode.MakeIdentifier(Utilities.RawValueEnumValueFieldName, AstType.MakePlaceholderType()));
                 // We leave the Type property of symbol as is because we don't use it
-                var symbol = type_table.GetSymbol(RawValueEnumValueFieldName);
+                var symbol = type_table.GetSymbol(Utilities.RawValueEnumValueFieldName);
                 mem_ref.Member.IdentifierId = symbol.IdentifierId;
                 //
                 //mem_ref.Member.Type = selfRef.SelfIdentifier.Type.Clone();

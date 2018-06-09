@@ -8132,7 +8132,7 @@ namespace Expresso.Test
                             Statement.MakeMatchStmt(
                                 Expression.MakeMemRef(
                                     Expression.MakeSelfRef(),
-                                    Helpers.MakeSomeIdent("<>__value")
+                                    Helpers.MakeSomeIdent(Utilities.RawValueEnumValueFieldName)
                                 ),
                                 Statement.MakeMatchClause(
                                     null,
@@ -8194,7 +8194,7 @@ namespace Expresso.Test
                                         OperatorType.Equality,
                                         Expression.MakeMemRef(
                                             Expression.MakeSelfRef(),
-                                            Helpers.MakeSomeIdent("<>__value")
+                                            Helpers.MakeSomeIdent(Utilities.RawValueEnumValueFieldName)
                                         ),
                                         Expression.MakePath(
                                             AstNode.MakeIdentifier("SomeEnum"),
@@ -8247,7 +8247,7 @@ namespace Expresso.Test
                                             Helpers.MakeGenericType("SomeEnum")
                                         )
                                     ),
-                                    Helpers.MakeSomeIdent("<>__value")
+                                    Helpers.MakeSomeIdent(Utilities.RawValueEnumValueFieldName)
                                 ),
                                 Statement.MakeMatchClause(
                                     null,
@@ -8315,7 +8315,7 @@ namespace Expresso.Test
                                                     Helpers.MakeGenericType("SomeEnum")
                                                 )
                                             ),
-                                            Helpers.MakeSomeIdent("<>__value")
+                                            Helpers.MakeSomeIdent(Utilities.RawValueEnumValueFieldName)
                                         ),
                                         Expression.MakePath(
                                             AstNode.MakeIdentifier("SomeEnum"),
@@ -8374,7 +8374,7 @@ namespace Expresso.Test
                                     "enum_a",
                                     Helpers.MakeGenericType("SomeEnum")
                                 ),
-                                Helpers.MakeSomeIdent("<>__value")
+                                Helpers.MakeSomeIdent(Utilities.RawValueEnumValueFieldName)
                             ),
                             Statement.MakeMatchClause(
                                 null,
@@ -8448,7 +8448,7 @@ namespace Expresso.Test
                                             "enum_a",
                                             Helpers.MakeGenericType("SomeEnum")
                                         ),
-                                        Helpers.MakeSomeIdent("<>__value")
+                                        Helpers.MakeSomeIdent(Utilities.RawValueEnumValueFieldName)
                                     ),
                                     Expression.MakePath(
                                         AstNode.MakeIdentifier("SomeEnum"),

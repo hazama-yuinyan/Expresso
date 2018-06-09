@@ -1004,8 +1004,8 @@ static uint ScopeId = 1;
 				RawValueStyleEnumMember(out entity, item_attribute, ref raw_value);
 				decls.Add(entity);
 				if(!has_value_identifier_added){
-				   var ident2 = AstNode.MakeIdentifier("<>__value", ExpressoModifiers.Public);
-				   Symbols.AddSymbol("<>__value", ident2);
+				   var ident2 = AstNode.MakeIdentifier(Utilities.RawValueEnumValueFieldName, ExpressoModifiers.Public);
+				   Symbols.AddSymbol(Utilities.RawValueEnumValueFieldName, ident2);
 				   has_value_identifier_added = true;
 				}
 				

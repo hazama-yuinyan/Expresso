@@ -618,7 +618,7 @@ namespace Expresso.Ast.Analysis
             UniqueIdGenerator.DefineNewId(self_ident);
             typeDecl.Members.AcceptWalker(this);
 
-            var value_symbol = symbol_table.GetSymbol("<>__value");
+            var value_symbol = symbol_table.GetSymbol(Utilities.RawValueEnumValueFieldName);
             if(typeDecl.TypeKind == ClassType.Enum && value_symbol != null)
                 UniqueIdGenerator.DefineNewId(value_symbol);
 

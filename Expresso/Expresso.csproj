@@ -218,6 +218,7 @@
     <Compile Include="CodeGen\MatchClauseIdentifierDefiner.cs" />
     <Compile Include="Ast\GeneralScope\AttributeSection.cs" />
     <Compile Include="Ast\Patterns\TypePathPattern.cs" />
+    <Compile Include="Utilities\Utilities.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System" />

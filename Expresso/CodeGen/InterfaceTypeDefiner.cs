@@ -378,7 +378,7 @@ namespace Expresso.CodeGen
                 if(first_type != null && !first_type.IsClass)
                     base_types = new []{typeof(object)}.Concat(base_types);
 
-                var have_implicit_value = emitter.symbol_table.GetSymbol("<>__value") != null;
+                var have_implicit_value = emitter.symbol_table.GetSymbol(Utilities.RawValueEnumValueFieldName) != null;
                 if(typeDecl.TypeKind == ClassType.Interface){
                     context.InterfaceTypeBuilder = context.ModuleBuilder.DefineType(name, TypeAttributes.Interface | TypeAttributes.Abstract);
                     context.CustomAttributeSetter = context.InterfaceTypeBuilder.SetCustomAttribute;
@@ -441,8 +441,8 @@ namespace Expresso.CodeGen
                         var enum_interface_type = type_builder.CreateInterfaceType();
                         type_builder.CreateType();
 
-                        var field_builder = interface_type_builder.DefineField("<>__value", enum_interface_type, false);
-                        var value_symbol = emitter.symbol_table.GetSymbol("<>__value");
+                        var field_builder = interface_type_builder.DefineField(Utilities.RawValueEnumValueFieldName, enum_interface_type, false);
+                        var value_symbol = emitter.symbol_table.GetSymbol(Utilities.RawValueEnumValueFieldName);
                         AddSymbol(value_symbol, new ExpressoSymbol{PropertyOrField = field_builder});
 
                         var interface_interface_type = interface_type_builder.CreateInterfaceType();

@@ -18,7 +18,7 @@
     <IntermediateOutputPath>obj\$(Configuration)\</IntermediateOutputPath>
     <RunCodeAnalysis>False</RunCodeAnalysis>
     <TargetFrameworkProfile />
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7</TargetFrameworkVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
     <DebugSymbols>True</DebugSymbols>
@@ -38,12 +38,6 @@
     <DefineConstants>WINDOWS;</DefineConstants>
     <CustomCommands>
       <CustomCommands>
-        <Command>
-          <type>BeforeBuild</type>
-          <command>./parserCompile.sh</command>
-          <workingdir>
-          </workingdir>
-        </Command>
         <Command>
           <type>BeforeExecute</type>
           <command>mono ./Coco Expresso.ATG -trace GJSP</command>
@@ -73,8 +67,7 @@
         <Command>
           <type>BeforeBuild</type>
           <command>./parserCompile.sh</command>
-          <workingdir>
-          </workingdir>
+          <workingdir></workingdir>
         </Command>
         <Command>
           <type>BeforeExecute</type>
@@ -214,6 +207,7 @@
     <Compile Include="CodeGen\MatchClauseIdentifierDefiner.cs" />
     <Compile Include="CodeGen\CSharpCompilerHelpers.cs" />
     <Compile Include="Ast\GeneralScope\AttributeSection.cs" />
+    <Compile Include="Ast\Patterns\TypePathPattern.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System" />
