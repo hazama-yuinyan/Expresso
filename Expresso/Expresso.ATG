@@ -24,6 +24,7 @@ $namespace=Expresso
     ExpressoModifiers cur_modifiers;
     bool is_first_comprehension_for_clause = true, defining_closure_parameters = false;
     TextLocation parent_location;
+    List<ParameterType> type_params = new List<ParameterType>();
     internal SymbolTable Symbols{get; set;}
     /// <summary>
     /// This flag determines whether we are doing post-parse processing including name binding,
@@ -688,15 +689,15 @@ AttributeSection<. out AttributeSection section .>      (. var attributes = new 
 /*------------------------------------------------------------------------*/
 Attribute<out ObjectCreationExpression creation>     (. creation = null; Expression expr = null; string name = null; AstType type_path = null; var start_loc = NextLocation; .)
 =
-  ident                                     (. 
-                                               name = !t.val.EndsWith("Attribute", StringComparison.CurrentCulture) ? t.val + "Attribute" : t.val;
-                                               type_path = AstType.MakeSimpleType(name, start_loc);
-                                            .)
-  [ ObjectCreation<type_path, out expr>     (. creation = (ObjectCreationExpression)expr; .)
-  ]                                         (.
-                                               if(creation == null)
-                                                   creation = Expression.MakeObjectCreation(type_path, CurrentEndLocation);
-                                            .).
+  ident                                              (. 
+                                                       name = !t.val.EndsWith("Attribute", StringComparison.CurrentCulture) ? t.val + "Attribute" : t.val;
+                                                       type_path = AstType.MakeSimpleType(name, start_loc);
+                                                     .)
+  [ ObjectCreation<type_path, null, out expr>         (. creation = (ObjectCreationExpression)expr; .)
+  ]                                                  (.
+                                                       if(creation == null)
+                                                           creation = Expression.MakeObjectCreation(type_path, CurrentEndLocation);
+                                                     .).
 /*------------------------------------------------------------------------*/
 ModuleNameDefinition<. out string moduleName, out List<AttributeSection> attributes .>
 =                                   (. attributes = new List<AttributeSection>(); AttributeSection attribute = null; .)
@@ -835,6 +836,7 @@ InterfaceDecl<out EntityDeclaration decl, ExpressoModifiers modifiers, Attribute
 
                                            }
                                         .)
+  [ GenericTypeParameters<ref type_params> ]
   [ ':'
     Type<out type_path>                 (. bases.Add(type_path); .)
     { ','
@@ -852,14 +854,16 @@ InterfaceDecl<out EntityDeclaration decl, ExpressoModifiers modifiers, Attribute
   rcurly                                (.
                                            decl = EntityDeclaration.MakeInterfaceDecl(ident, bases, decls, modifiers, attribute, start_loc, CurrentEndLocation);
                                            GoUpScope();
+                                           type_params.Clear();
                                         .).
 /*------------------------------------------------------------------------*/
 MethodSignature<out EntityDeclaration method, AttributeSection attribute>
                                 (. Identifier ident = null;
                                    string name = null; AstType type = null;
-                                   var type_params = new List<ParameterType>();
+                                   var type_params = new List<ParameterType>(this.type_params);
                                    var @params = new List<ParameterDeclaration>();
                                    var start_loc = NextLocation;
+                                   var replacer = new ParameterTypeReplacer(type_params);
                                 .)
 =
   SYNC
@@ -884,7 +888,9 @@ MethodSignature<out EntityDeclaration method, AttributeSection attribute>
   ')'
   "->"
   Type<out type>
-  ';'                           (. method = EntityDeclaration.MakeFunc(ident, @params, null, type, ExpressoModifiers.Public, attribute, start_loc);
+  ';'                           (.
+                                   method = EntityDeclaration.MakeFunc(ident, @params, null, type, ExpressoModifiers.Public, attribute, start_loc);
+                                   method.ReturnType.AcceptWalker(replacer);
                                    GoUpScope();
                                 .).
 /*------------------------------------------------------------------------*/
@@ -908,6 +914,7 @@ ClassDecl<out EntityDeclaration decl, ExpressoModifiers modifiers, AttributeSect
                                                       // Leave the parser to recover its state.
                                                   }
                                                .)
+  [ GenericTypeParameters<ref type_params> ]
   [ ':'
     Type<out type_path>	                       (. bases.Add(type_path); .)
     { ','
@@ -934,6 +941,7 @@ ClassDecl<out EntityDeclaration decl, ExpressoModifiers modifiers, AttributeSect
                                                   decl = EntityDeclaration.MakeClassDecl(ident, bases, decls, modifiers, attribute, start_loc, CurrentEndLocation);
                                                   GoUpScope();
                                                   cur_modifiers = ExpressoModifiers.None;
+                                                  type_params.Clear();
                                                .).
 /*------------------------------------------------------------------------*/
 EnumDecl<out EntityDeclaration decl, ExpressoModifiers modifiers, AttributeSection attribute>
@@ -955,6 +963,7 @@ EnumDecl<out EntityDeclaration decl, ExpressoModifiers modifiers, AttributeSecti
                                                        cur_class_name = name;
                                                    }
                                                 .)
+  [ GenericTypeParameters<ref type_params> ]
   lcurly                                        (.
                                                    GoDownScope();
                                                    Symbols.Name = "type_" + name + "`" + ScopeId++;
@@ -1004,7 +1013,7 @@ Modifiers<>
 FuncDecl<out EntityDeclaration decl, ExpressoModifiers modifiers, AttributeSection attribute>
                                 (.  Identifier ident = null;
 									string name; AstType type = null; BlockStatement block;
-									var type_params = new List<ParameterType>();
+									var type_params = new List<ParameterType>(this.type_params);
 									var @params = new List<ParameterDeclaration>();
                                     var start_loc = NextLocation;
                                     var replacer = new ParameterTypeReplacer(type_params);
@@ -1032,12 +1041,13 @@ FuncDecl<out EntityDeclaration decl, ExpressoModifiers modifiers, AttributeSecti
   ')'
   [ "->"
     Type<out type>
-  ]                             (. if(type == null)
+  ]                             (.
+                                   if(type == null)
                                        type = new PlaceholderType(CurrentLocation);
-
-                                   type.AcceptWalker(replacer);
                                 .)
-  Block<out block> 				(. decl = EntityDeclaration.MakeFunc(ident, @params, block, type, modifiers, attribute, start_loc);
+  Block<out block> 				(.
+                                   decl = EntityDeclaration.MakeFunc(ident, @params, block, type, modifiers, attribute, start_loc);
+                                   decl.ReturnType.AcceptWalker(replacer);
                                    GoUpScope();
                                 .).
 /*------------------------------------------------------------------------*/
@@ -1189,7 +1199,7 @@ GenericTypeParameters<. ref List<ParameterType> types .>
   '>'.
 /*------------------------------------------------------------------------*/
 Type<out AstType type>				(. var start_loc = NextLocation; type = new PlaceholderType(NextLocation);
-       								   var is_reference = false; string name = null;
+       								   var is_reference = false;
     								.)
 =
  ( [ '&'                            (.
@@ -1207,17 +1217,24 @@ Type<out AstType type>				(. var start_loc = NextLocation; type = new Placeholde
    | "byte"						    (. type = CreateType(t.val, start_loc, is_reference); .)
    | "char"                         (. type = CreateType(t.val, start_loc, is_reference); .)
    | TupleTypeSignature<out type>
-   | "vector"						(. name = t.val; .)
-   | "dictionary"					(. name = t.val; .)
-   | "slice"                        (. name = t.val; .)
+   | "vector"						(. type = CreateType(t.val, start_loc, is_reference); .)
+   | "dictionary"					(. type = CreateType(t.val, start_loc, is_reference); .)
+   | "slice"                        (. type = CreateType(t.val, start_loc, is_reference); .)
    | "intseq"						(. type = CreateType(t.val, start_loc, is_reference); .)
    | "void"							(. type = AstType.MakeSimpleType("tuple", Enumerable.Empty<AstType>(), start_loc, CurrentEndLocation); .)
-   | TypePathExpression<out type>   (. if(is_reference)
+   | TypePathExpression<out type>   (.
+                                       if(is_reference)
                                            type = AstType.MakeReferenceType(type, start_loc);
+
+                                       var name = type.Name;
+                                       if(type_params.Any(param => param.Name == name)){
+                                           var param_type = type_params.First(arg => arg.Name == name);
+                                           type = param_type.Clone();
+                                       }
                                     .)
    )                                (. start_loc = NextLocation; .)
    [ /*IF(IsGenericTypeSignature())*/       /* For ambiguity in Comparison on '<' */
-     GenericTypeSignature<name, is_reference, start_loc, out type>
+     GenericTypeSignature<is_reference, ref type>
                                     (.
                                         /*if(!IsPrimitiveGenericType(name)){
                                             SemanticError("ES0006", "`{0}` is not a generic type!", name);
@@ -1234,9 +1251,21 @@ Type<out AstType type>				(. var start_loc = NextLocation; type = new Placeholde
                 
                                        type = AstType.MakeSimpleType("array", start_loc, CurrentEndLocation, type);
                                     .)
-   }
+   }                                (.
+                                       var replacer = new ParameterTypeReplacer(type_params);
+                                       type.AcceptWalker(replacer);
+                                    .)
  | FunctionTypeSignature<out type>
  ).
+/*------------------------------------------------------------------------*/
+GenericTypeArguments<. ref List<AstType> typeArgs .>    (. AstType type = null; .)
+=
+  '<'
+  Type<out type>                                        (. typeArgs.Add(type); .)
+  { ','
+    Type<out type>                                      (. typeArgs.Add(type); .)
+  }
+  '>'.
 /*------------------------------------------------------------------------*/
 TupleTypeSignature<out AstType type> (. var inners = new List<AstType>(); var start_loc = NextLocation; .)
 =
@@ -1248,8 +1277,8 @@ TupleTypeSignature<out AstType type> (. var inners = new List<AstType>(); var st
   }
   ')'                               (. type = AstType.MakeSimpleType("tuple", inners, start_loc, CurrentEndLocation); .).
 /*------------------------------------------------------------------------*/
-GenericTypeSignature<string name, bool isReference, TextLocation startLoc, out AstType genericType> 
-                                    (. var type_args = new List<AstType>(); AstType child_type; .)
+GenericTypeSignature<bool isReference, ref AstType type> 
+                                    (. var type_args = new List<AstType>(); AstType child_type; var replacer = new ParameterTypeReplacer(type_params); .)
 =
   '<'
   Type<out child_type>              (. type_args.Add(child_type); .)
@@ -1257,9 +1286,19 @@ GenericTypeSignature<string name, bool isReference, TextLocation startLoc, out A
     Type<out child_type>            (. type_args.Add(child_type); .)
   }
   '>'                               (.
-                                       genericType = AstType.MakeSimpleType(name, type_args, startLoc, CurrentEndLocation);
+                                       if(type is SimpleType generic_type){
+                                           type = AstType.MakeSimpleType(generic_type.Name, type_args, generic_type.StartLocation, CurrentEndLocation);
+                                           type.AcceptWalker(replacer);
+                                       }else if(type is MemberType member_type){
+                                           if(member_type.ChildType is SimpleType generic_type2){
+                                               var new_type = AstType.MakeSimpleType(generic_type2.Name, type_args, generic_type2.StartLocation, CurrentEndLocation);
+                                               generic_type2.ReplaceWith(new_type);
+                                               new_type.AcceptWalker(replacer);
+                                           }
+                                       }
+
                                        if(isReference)
-                                       	   genericType = AstType.MakeReferenceType(genericType, CurrentEndLocation);
+                                       	   type = AstType.MakeReferenceType(type, CurrentEndLocation);
                                     .).
 /*------------------------------------------------------------------------*/
 FunctionTypeSignature<out AstType type> (. var start_loc = NextLocation; AstType inner_type; List<AstType> arg_types = new List<AstType>(); .)
@@ -1326,7 +1365,7 @@ ThrowStmt<out Statement stmt>        (. Expression obj; var start_loc = NextLoca
 =
   "throw"
   Type<out type_path>
-  ObjectCreation<type_path, out obj>
+  ObjectCreation<type_path, null, out obj>
   SYNC ';'                           (. stmt = Statement.MakeThrowStmt((ObjectCreationExpression)obj, start_loc); .).
 /*------------------------------------------------------------------------*/
 EmptyStmt<out Statement stmt>
@@ -1598,14 +1637,19 @@ VarDeclStmt<out Statement stmt>           (. Expression rhs = null; var start_lo
   }
   SYNC ';'     						      (. stmt = Statement.MakeVarDecl(patterns, exprs, cur_modifiers, start_loc, CurrentEndLocation); .).
 /*------------------------------------------------------------------------*/
-VarDef<out PatternWithType typed_pattern, out Expression option> (. option = null; var loc = NextLocation; .)
+VarDef<out PatternWithType typed_pattern, out Expression option>
+                                    (. option = null; var loc = NextLocation; var replacer = new ParameterTypeReplacer(type_params); .)
 =
   PatternWithType<out typed_pattern>
   [ '='
     CondExpr<out option>
-  ]                                 (. if(typed_pattern.Pattern is IdentifierPattern ident_pat){
+  ]                                 (.
+                                       if(typed_pattern.Pattern is IdentifierPattern ident_pat){
                                            if(typed_pattern.Type is PlaceholderType && option == null)
                                                SemanticError(loc, "ES0003", "Give me some context or I can't infer the type of {0}.", ident_pat.Identifier.Name);
+
+                                           ident_pat.Identifier.Type.AcceptWalker(replacer);
+                                           typed_pattern.Type.AcceptWalker(replacer);
                                        }
                                     .).
 /*------------------------------------------------------------------------*/
@@ -1948,11 +1992,12 @@ UnaryOperator<out OperatorType opType>  (. opType = OperatorType.None; .)
   | '&'                                 (. opType = OperatorType.Reference; .)
   ).
 /*------------------------------------------------------------------------*/
-Primary<out Expression expr>		    (. expr = null; PathExpression path; AstType type_path = null; .)
+Primary<out Expression expr>		    (. expr = null; PathExpression path; AstType type_path = null; var type_args = new List<AstType>(); .)
 =
   ( PathExpression<out path>            (. expr = path; .) /* It's possible that a PathExpression turns out to be just an identifier */
+    [ GenericTypeArguments<ref type_args> ]
     [ IF(IsObjectCreation())            (. type_path = ConvertPathToType(path); .) /* Ambiguous between this and MatchStmt */
-      ObjectCreation<type_path, out expr>
+      ObjectCreation<type_path, type_args, out expr>
     ]
   | Atom<out expr>
   )
@@ -2084,7 +2129,7 @@ LiteralIntSeqExpr<out Expression expr>  (. Expression start = null, end = null, 
                                         .)
   ].
 /*------------------------------------------------------------------------*/
-ObjectCreation<AstType typePath, out Expression expr>
+ObjectCreation<. AstType typePath, List<AstType> typeArgs, out Expression expr .>
                                         (. var fields = new List<Identifier>(); var values = new List<Expression>(); .)
 =
   lcurly
@@ -2103,13 +2148,14 @@ ObjectCreation<AstType typePath, out Expression expr>
     
     CondExpr<out expr>                  (. values.Add(expr); .)
   }
-  SYNC rcurly                           (. expr = Expression.MakeObjectCreation(typePath, fields, values, CurrentEndLocation); .).
+  SYNC rcurly                           (. expr = Expression.MakeObjectCreation(typePath, fields, values, typeArgs, CurrentEndLocation); .).
 /*------------------------------------------------------------------------*/
-Trailer<ref Expression expr>	(. var args = new List<Expression>(); var start_loc = NextLocation; .)
+Trailer<ref Expression expr>	(. var args = new List<Expression>(); var start_loc = NextLocation; var type_args = new List<AstType>(); .)
 =
+  [ GenericTypeArguments<ref type_args> ]
   '('
   [ArgList<out args>]
-  ')'							(. expr = Expression.MakeCallExpr(expr, args, CurrentEndLocation); .)
+  ')'							(. expr = Expression.MakeCallExpr(expr, args, type_args, CurrentEndLocation); .)
   | '['
     ArgList<out args>
     ']'							(. expr = Expression.MakeIndexer(expr, args, CurrentEndLocation); .)

@@ -237,7 +237,7 @@ The `intseq` type has the corresponding literal form and it is written as follow
 
 An integer sequence expression does not create a vector of integers by itself. Instead, it creates a new object that is ready
 to produce integers that are in the range specified in the expression. Note in Listing 11 that the intseq expression initializes
-an array. This is a unique feature in Expresso. As far as I know, all the other programming languages don't support it.
+an array. This is a unique feature in Expresso. As far as I know, all the other programming languages don't support it (except for Haskell).
 Of course, you can initialize a vector if you write it as `[1..10, ...];` instead.
 Unlike the LINQ operations(the methods defined on the `System.Linq.Enumerable` class), it is 'eager', meaning that objects will be created
 at where the expression is written.
@@ -404,6 +404,256 @@ let two = 1 + 1;
 <span class="caption">Listing 19: An offensive comment</span>
 
 But don't try to write comments like above. Be kind to others, and of course, to yourself ;)
+
+## Interfaces and Classes
+
+### Classes
+
+Like the tuple type, which was discussed above, classes are another way to structure up multiple values into one type. The difference is that with classes you will name
+each field so you will recognize each field easily.
+
+Tuples are commonly used to return multiple values from functions. Because those values are immediately destructured into separate variables, we don't need names on fields.
+It would be rather verbose.
+Classes, on the other hand, are used for longer-lived objects. Here, we will consider a `Circle` class, which represents a circle.
+
+```expresso
+class Circle
+{
+    let x, y, radius;
+}
+```
+
+<span class="caption">Listing 20: A `Circle` class definition</span>
+
+As you may imagine, this class has x, y coordinates and the radius. You can represent a circle using this class like so.
+
+```expresso
+let circle_a = Circle{x: 0, y: 0, radius: 10};
+```
+
+<span class="caption">Listing 21: An object of the `Circle` class</span>
+
+Let's add a method that determines whether another circle touches this one.
+
+```expresso
+class Circle
+{
+    // fields omitted
+
+    public def touchesCirlce(Circle other)
+    {
+        return (other.x - x) ^ 2 + (other.y - y) ^ 2 <= (other.radius + radius) ^ 2;
+    }
+}
+```
+
+<span class="caption">Listing 22: A method that determines whether the circle touches another circle</span>
+
+This method calculates the distance between the center points of the circles and compares it to the sum of the radii of the circles.
+Let's add another shape, a rectangle.
+
+```expresso
+class Rectangle
+{
+    let x, y, width, height;
+}
+```
+
+<span class="caption">Listing 23: A `Rectangle` class definition</span>
+
+This class should also be self-explanatory. It has the x, y coordinates and the width and the height.
+Then let's say we need to calculate the area of the two shapes. Of course, we could just add another method that does that, but there's something that prevents you
+from doing so.
+You can calculate the area for both the shapes. Would it be nice if we can abstract it away and make it a common interface? So I'll introduce the interface.
+
+### Interfaces
+
+First, look at the definitions.
+
+```expresso
+interface HasArea
+{
+    calculateArea() -> int;
+}
+```
+
+<span class="caption">Listing 24: An interface</span>
+
+This interface declares what a class that implements the interface should have and what is declared here is a method that named 'calculateArea' and has the signature
+that has no parameters and returns an `int`.
+Then you can implement it on the concrete classes like this.
+
+```expresso
+import System.Math as Math;
+
+
+class Circle : HasArea
+{
+    public calculateArea() -> int
+    {
+        return 2 * Math.PI * radius * radius;
+    }
+}
+
+class Rectangle : HasArea
+{
+    public calculateArea() -> int
+    {
+        return width * height;
+    }
+}
+```
+
+<span class="caption">Listing 25: Classes that implement the interface</span>
+
+This way, we can treat an object of the `Circle` class as the `HasArea` interface.
+
+```expresso
+def main()
+{
+    let has_area (- HasArea = Circle{x: 0, y: 0, radius: 10};
+    println("${has_area.calculateArea()}");
+}
+```
+
+<span class="caption">Listing 26: Treating an object of the `Circle` class as the `HasArea` interface</span>
+
+Interfaces are useful when you want to create abstractions over methods.
+Oh, we've forgotten to mention that we've called a method in Listing 26. Methods can be called if you write an object, a dot, the method name and a pair of parentheses
+as in Listing 26.
+
+> ### Functions and Methods
+> Do you notice the difference between the function and the method? In Expresso, subroutines that live in classes are called methods and those in modules are called functions.
+> In other words, methods take a self object as its first parameter, and functions don't.
+
+## Functions
+
+Speaking of methods, we haven't yet talked about what functions are. Functions are common in Expresso and useful considering the power of them. It can create abstractions
+over a sequence of operations.
+
+```expresso
+def isZero(n (- int) -> bool
+{
+    return n == 0;
+}
+```
+
+<span class="caption">Listing 27: An example of a function</span>
+
+Look at the above code. This function determines whether the input is equal to 0. From now on, we can call this function to determine whether some integer is 0.
+Abstractions are useful when there are multiple places that call the function. Imagine that we have the following code.
+
+```expresso
+let n = 1;
+if n == 0 {
+    println("${n == 0}");
+}else{
+    println("otherwise");
+}
+```
+
+<span class="caption">Listing 28: Several uses of the same expression</span>
+
+In this little example, we have only two places that has the same expression `n == 0`, but you will see the advantage in a moment. Say you need to change
+the implementation.
+
+```expresso
+let n = 1;
+if n == 1 {
+    println("${n == 1}");
+}else{
+    println("otherwise");
+}
+```
+
+<span class="caption">Listing 29: A modified implementation</span>
+
+In Listing 28, you need to change two places. But if you created the function, you would need to change one place in the function(and possibly the function name). 
+
+### Parameters and the Return Type
+
+As shown in the above code, functions (and methods) can have parameters and the return type. Parameters are listed in the parentheses with comma separated, 
+and the return type follows after `->`. The return type can be omitted and will be inferred from the body. Parameters can also be omitted if they have optional values.
+This is deliberate choice in language design.
+We could make it so that we could always omit parameter types. But that way it would take longer to compile because we would need to infer the parameter types from
+the function body.
+We could make it so that we have to always explicitly write the parameter types. But then it would be less convenient to programmers.
+Everything is in trade-off and we need to make decisions at somewhere. You will see other instances of choice in language design in this tutorial. Keep in mind that we,
+especially I, are focusing on taking balance between ergonomics and performance where suits me. I hope it would suit you, too.
+
+## Enums
+
+## Modules
+
+Have you heard of modules? Even if you say no, we've defined them hundreds of times already. Look at the beginning of the source codes we've written so far, do you see
+`module main;`? Yes, this defines a module named `main`. The main module provides the program's entry point and it is called `main`.
+Here let's define an external module that can be used in the main module.
+
+```expresso
+module test_module;
+
+export class TestClass
+{
+    let x (- int, y (- int;
+
+    public def getX()
+    {
+        return self.x;
+    }
+
+    public def getY()
+    {
+        return self.y;
+    }
+}
+
+export let pair = (100, 200);
+
+export def createInstance(x (- int, y (- int)
+{
+    return TestClass{x: x, y: y};
+}
+```
+
+<span class="caption">Listing 30: An external module definition</span>
+
+You can define module functions, module variables and classes in modules and specify whether each of them will be exported with the `export` modifier. Only exported items
+can be accessed from external modules.
+
+### The import statement
+
+To use module items, you need to put import statements before using.
+
+```expresso
+module main;
+
+import test_module from "./test_module.exs" as TestModule;
+```
+
+<span class="caption">Listing 31: An import statement that imports a whole module</span>
+
+To import a whole module, you write like the above, and access to the module object using `TestModule` in this Listing. So for example, to call
+the `createInstance` function, you need to write `TestModule.createInstance()`.
+If you don't need everything in a module, you can import some of the items.
+
+```expresso
+module main;
+
+import test_module.{TestClass, pair} as {TestClass, pair};
+```
+
+<span class="caption">Listing 32: Another import statement that imports only parts of the items</span>
+
+This statement states that we will import `TestClass` and `pair`. Then you can construct a `TestClass` object like writing `let a = TestClass{x: 1, y: 2}`.
+Even though the names are matched, you can't omit the as clause. I may change this in the future.
+
+## Error Handling
+
+Like most other programming languages, Expresso has exceptions. But that's not the end of the story. Here, we'll look at exceptions and the `Result<T, E>` type.
+
+### Unrecoverable Errors with Exceptions
+
+
 
 The main policy for Expresso is that "Programming languages must allow programmers to write what it does, not how it does something".
 In traditional C, we often end up writing something like the following:

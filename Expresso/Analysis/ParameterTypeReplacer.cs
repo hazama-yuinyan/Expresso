@@ -1,12 +1,12 @@
 ﻿using System;
-using ICSharpCode.NRefactory.PatternMatching;
 using System.Collections.Generic;
 using System.Linq;
+using ICSharpCode.NRefactory.PatternMatching;
 
 namespace Expresso.Ast
 {
     /// <summary>
-    /// This class is responsible for 
+    /// This class is responsible for replacing <see cref="SimpleType"/> nodes with <see cref="ParameterType"/> nodes.
     /// </summary>
     public class ParameterTypeReplacer : IAstWalker
     {
@@ -230,6 +230,8 @@ namespace Expresso.Ast
 
         public void VisitMemberType(MemberType memberType)
         {
+            memberType.Target.AcceptWalker(this);
+            VisitSimpleType(memberType.ChildType);
         }
 
         public void VisitNewLine(NewLineNode newlineNode)
@@ -320,11 +322,8 @@ namespace Expresso.Ast
                 type_arg.AcceptWalker(this);
 
             if(type_params.Any(arg => arg.Name == simpleType.Name)){
-                var param_type = type_params.Where(arg => arg.Name == simpleType.Name)
-                                            .Select(arg => arg)
-                                            .First()
-                                            .Clone();
-                simpleType.ReplaceWith(param_type);
+                var param_type = type_params.First(arg => arg.Name == simpleType.Name);
+                simpleType.ReplaceWith(param_type.Clone());
             }
         }
 

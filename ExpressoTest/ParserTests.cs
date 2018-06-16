@@ -4964,7 +4964,6 @@ namespace Expresso.Test
                 Helpers.MakeEnumDecl(
                     "Union",
                     Modifiers.None,
-                    null,
                     Helpers.MakeTupleStyleMember(
                         "A",
                         "Union"
@@ -5236,7 +5235,6 @@ namespace Expresso.Test
                 Helpers.MakeEnumDecl(
                     "SomeEnum",
                     Modifiers.None,
-                    null,
                     EntityDeclaration.MakeField(
                         PatternConstruct.MakePatternWithType(
                             PatternConstruct.MakeIdentifierPattern(
@@ -5594,6 +5592,153 @@ namespace Expresso.Test
                                     Helpers.MakeIdentifierPath("some_class"),
                                     Helpers.MakeSomeIdent("ifEnum")
                                 )
+                            )
+                        )
+                    ),
+                    Helpers.MakePlaceholderType(),
+                    Modifiers.None
+                )
+            ));
+
+            Assert.IsNotNull(ast);
+            Helpers.AstStructuralEqual(ast, expected);
+        }
+
+        [Test]
+        public void GenericClass()
+        {
+            var parser = new Parser(new Scanner("../../sources/for_unit_tests/generic_class.exs"));
+            parser.Parse();
+
+            var ast = parser.TopmostAst;
+
+            var expected = AstNode.MakeModuleDef("main", Helpers.MakeSeq<EntityDeclaration>(
+                Helpers.MakeInterfaceDecl(
+                    "SomeInterface",
+                    Enumerable.Empty<AstType>(),
+                    Modifiers.None,
+                    EntityDeclaration.MakeFunc(
+                        "getX",
+                        Enumerable.Empty<ParameterDeclaration>(),
+                        null,
+                        AstType.MakeParameterType("T"),
+                        Modifiers.Public
+                    )
+                ),
+                Helpers.MakeClassDecl(
+                    "GenericClass",
+                    Helpers.MakeSeq(
+                        Helpers.MakeGenericType(
+                            "SomeInterface",
+                            AstType.MakeParameterType("T")
+                        )
+                    ),
+                    Modifiers.None,
+                    EntityDeclaration.MakeField(
+                        Helpers.MakeExactPatternWithType(
+                            "x",
+                            AstType.MakeParameterType("T")
+                        ),
+                        Expression.Null,
+                        Modifiers.Private | Modifiers.Immutable
+                    ),
+                    EntityDeclaration.MakeFunc(
+                        "getX",
+                        Enumerable.Empty<ParameterDeclaration>(),
+                        Statement.MakeBlock(
+                            Helpers.MakeSingleItemReturnStatement(
+                                Expression.MakeMemRef(
+                                    Expression.MakeSelfRef(),
+                                    Helpers.MakeSomeIdent("x")
+                                )
+                            )
+                        ),
+                        AstType.MakeParameterType("T"),
+                        Modifiers.Public
+                    )
+                ),
+                Helpers.MakeEnumDecl(
+                    "MyOption",
+                    Modifiers.None,
+                    Helpers.MakeTupleStyleMember(
+                        "Ok",
+                        "MyOption",
+                        null,
+                        AstType.MakeParameterType("T")
+                    ),
+                    Helpers.MakeTupleStyleMember(
+                        "Error",
+                        "MyOption"
+                    )
+                ),
+                EntityDeclaration.MakeFunc(
+                    "main",
+                    Enumerable.Empty<ParameterDeclaration>(),
+                    Statement.MakeBlock(
+                        Statement.MakeVarDecl(
+                            Helpers.MakeSeq(
+                                Helpers.MakeSomePatternWithType("a")
+                            ),
+                            Helpers.MakeSeq(
+                                Expression.MakeObjectCreation(
+                                    Helpers.MakeGenericType("GenericClass"),
+                                    AstNode.MakeIdentifier("x"),
+                                    Expression.MakeConstant("int", 10),
+                                    AstType.MakePrimitiveType("int")
+                                )
+                            ),
+                            Modifiers.Immutable
+                        ),
+                        Statement.MakeVarDecl(
+                            Helpers.MakeSeq(
+                                Helpers.MakeSomePatternWithType("b")
+                            ),
+                            Helpers.MakeSeq(
+                                Expression.MakeObjectCreation(
+                                    Helpers.MakeGenericType("GenericClass"),
+                                    AstNode.MakeIdentifier("x"),
+                                    Expression.MakeConstant("int", 20)
+                                )
+                            ),
+                            Modifiers.Immutable
+                        ),
+                        Statement.MakeVarDecl(
+                            Helpers.MakeSeq(
+                                Helpers.MakeSomePatternWithType("c")
+                            ),
+                            Helpers.MakeSeq(
+                                Expression.MakeObjectCreation(
+                                    AstType.MakeMemberType(
+                                        Helpers.MakeGenericType("MyOption"),
+                                        Helpers.MakeGenericType("Ok")
+                                    ),
+                                    AstNode.MakeIdentifier("0"),
+                                    Expression.MakeConstant("int", 10),
+                                    AstType.MakePrimitiveType("int")
+                                )
+                            ),
+                            Modifiers.Immutable
+                        ),
+                        Statement.MakeVarDecl(
+                            Helpers.MakeSeq(
+                                Helpers.MakeSomePatternWithType("d")
+                            ),
+                            Helpers.MakeSeq(
+                                Expression.MakeObjectCreation(
+                                    AstType.MakeMemberType(
+                                        Helpers.MakeGenericType("MyOption"),
+                                        Helpers.MakeGenericType("Ok")
+                                    ),
+                                    AstNode.MakeIdentifier("0"),
+                                    Expression.MakeConstant("int", 20)
+                                )
+                            ),
+                            Modifiers.Immutable
+                        ),
+                        Statement.MakeExprStmt(
+                            Helpers.MakeCallExpression(
+                                Helpers.MakeIdentifierPath("println"),
+                                Expression.MakeConstant("string", "${a}, ${b}, ${c}, ${d}")
                             )
                         )
                     ),

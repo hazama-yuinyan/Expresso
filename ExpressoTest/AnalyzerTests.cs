@@ -7658,7 +7658,6 @@ namespace Expresso.Test
                 Helpers.MakeEnumDecl(
                     "Union",
                     Modifiers.None,
-                    null,
                     Helpers.MakeTupleStyleMember(
                         "A",
                         "Union"
@@ -8082,7 +8081,6 @@ namespace Expresso.Test
                 Helpers.MakeEnumDecl(
                     "SomeEnum",
                     Modifiers.None,
-                    null,
                     EntityDeclaration.MakeField(
                         PatternConstruct.MakePatternWithType(
                             PatternConstruct.MakeIdentifierPattern(

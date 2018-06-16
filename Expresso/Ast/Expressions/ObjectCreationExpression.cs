@@ -44,6 +44,12 @@ namespace Expresso.Ast
         }
 
         /// <summary>
+        /// Represents the type arguments.
+        /// </summary>
+        /// <value>The type arguments.</value>
+        public AstNodeCollection<AstType> TypeArguments => GetChildrenByRole(Roles.TypeArgument);
+
+        /// <summary>
         /// Gets all the key-value pairs.
         /// </summary>
         /// <value>The field names.</value>
@@ -63,10 +69,14 @@ namespace Expresso.Ast
         {
         }
 
-        public ObjectCreationExpression(AstType path, IEnumerable<PathExpression> fields, IEnumerable<Expression> values, TextLocation end)
+        public ObjectCreationExpression(AstType path, IEnumerable<AstType> typeArgs, IEnumerable<PathExpression> fields, IEnumerable<Expression> values,
+                                        TextLocation end)
             : base(path.StartLocation, end)
         {
             TypePath = path;
+            if(typeArgs != null)
+                TypeArguments.AddRange(typeArgs);
+            
             foreach(var item in fields.Zip(values, (field, value) => new KeyValueLikeExpression(field, value)))
                 Items.Add(item);
         }
@@ -91,7 +101,7 @@ namespace Expresso.Ast
         protected internal override bool DoMatch(AstNode other, Match match)
         {
             var o = other as ObjectCreationExpression;
-            return o != null && TypePath.DoMatch(o.TypePath, match) && Items.DoMatch(o.Items, match);
+            return o != null && TypePath.DoMatch(o.TypePath, match) && TypeArguments.DoMatch(o.TypeArguments, match) && Items.DoMatch(o.Items, match);
         }
 
         #endregion

@@ -70,6 +70,7 @@ static uint ScopeId = 1;
     ExpressoModifiers cur_modifiers;
     bool is_first_comprehension_for_clause = true, defining_closure_parameters = false;
     TextLocation parent_location;
+    List<ParameterType> type_params = new List<ParameterType>();
     internal SymbolTable Symbols{get; set;}
     /// <summary>
     /// This flag determines whether we are doing post-parse processing including name binding,
@@ -766,7 +767,7 @@ static uint ScopeId = 1;
 	void FuncDecl(out EntityDeclaration decl, ExpressoModifiers modifiers, AttributeSection attribute) {
 		Identifier ident = null;
 		string name; AstType type = null; BlockStatement block;
-		var type_params = new List<ParameterType>();
+		var type_params = new List<ParameterType>(this.type_params);
 		var @params = new List<ParameterDeclaration>();
 		var start_loc = NextLocation;
 		var replacer = new ParameterTypeReplacer(type_params);
@@ -804,12 +805,11 @@ static uint ScopeId = 1;
 		if(type == null)
 		   type = new PlaceholderType(CurrentLocation);
 		
-		type.AcceptWalker(replacer);
-		
 		Block(out block);
 		decl = EntityDeclaration.MakeFunc(ident, @params, block, type, modifiers, attribute, start_loc);
-		        GoUpScope();
-		     
+		decl.ReturnType.AcceptWalker(replacer);
+		GoUpScope();
+		
 	}
 
 	void FieldDecl(out EntityDeclaration field, AttributeSection attribute) {
@@ -868,6 +868,9 @@ static uint ScopeId = 1;
 		                        // Leave the parser to recover its state.
 		                    }
 		                 
+		if (la.kind == 8) {
+			GenericTypeParameters(ref type_params);
+		}
 		if (la.kind == 3) {
 			Get();
 			Type(out type_path);
@@ -911,6 +914,7 @@ static uint ScopeId = 1;
 		decl = EntityDeclaration.MakeClassDecl(ident, bases, decls, modifiers, attribute, start_loc, CurrentEndLocation);
 		GoUpScope();
 		cur_modifiers = ExpressoModifiers.None;
+		type_params.Clear();
 		
 	}
 
@@ -935,6 +939,9 @@ static uint ScopeId = 1;
 		
 		}
 		
+		if (la.kind == 8) {
+			GenericTypeParameters(ref type_params);
+		}
 		if (la.kind == 3) {
 			Get();
 			Type(out type_path);
@@ -959,6 +966,7 @@ static uint ScopeId = 1;
 		Expect(11);
 		decl = EntityDeclaration.MakeInterfaceDecl(ident, bases, decls, modifiers, attribute, start_loc, CurrentEndLocation);
 		GoUpScope();
+		type_params.Clear();
 		
 	}
 
@@ -980,6 +988,9 @@ static uint ScopeId = 1;
 		   cur_class_name = name;
 		}
 		
+		if (la.kind == 8) {
+			GenericTypeParameters(ref type_params);
+		}
 		Expect(6);
 		GoDownScope();
 		Symbols.Name = "type_" + name + "`" + ScopeId++;
@@ -1068,7 +1079,7 @@ static uint ScopeId = 1;
 		type_path = AstType.MakeSimpleType(name, start_loc);
 		
 		if (la.kind == 6) {
-			ObjectCreation(type_path, out expr);
+			ObjectCreation(type_path, null, out expr);
 			creation = (ObjectCreationExpression)expr; 
 		}
 		if(creation == null)
@@ -1076,7 +1087,7 @@ static uint ScopeId = 1;
 		
 	}
 
-	void ObjectCreation(AstType typePath, out Expression expr) {
+	void ObjectCreation(AstType typePath, List<AstType> typeArgs, out Expression expr ) {
 		var fields = new List<Identifier>(); var values = new List<Expression>(); 
 		Expect(6);
 		if (la.kind == 18 || la.kind == 19) {
@@ -1104,7 +1115,7 @@ static uint ScopeId = 1;
 		}
 		while (!(la.kind == 0 || la.kind == 11)) {SynErr(133); Get();}
 		Expect(11);
-		expr = Expression.MakeObjectCreation(typePath, fields, values, CurrentEndLocation); 
+		expr = Expression.MakeObjectCreation(typePath, fields, values, typeArgs, CurrentEndLocation); 
 	}
 
 	void ImportDecl(out ImportDeclaration decl) {
@@ -1239,9 +1250,21 @@ static uint ScopeId = 1;
 		
 	}
 
+	void GenericTypeParameters(ref List<ParameterType> types ) {
+		Expect(8);
+		Expect(18);
+		types.Add(AstType.MakeParameterType(t.val)); 
+		while (la.kind == 14) {
+			Get();
+			Expect(18);
+			types.Add(AstType.MakeParameterType(t.val)); 
+		}
+		Expect(12);
+	}
+
 	void Type(out AstType type) {
 		var start_loc = NextLocation; type = new PlaceholderType(NextLocation);
-		var is_reference = false; string name = null;
+		var is_reference = false;
 		
 		if (StartOf(6)) {
 			if (la.kind == 52) {
@@ -1302,17 +1325,17 @@ static uint ScopeId = 1;
 			}
 			case 62: {
 				Get();
-				name = t.val; 
+				type = CreateType(t.val, start_loc, is_reference); 
 				break;
 			}
 			case 63: {
 				Get();
-				name = t.val; 
+				type = CreateType(t.val, start_loc, is_reference); 
 				break;
 			}
 			case 64: {
 				Get();
-				name = t.val; 
+				type = CreateType(t.val, start_loc, is_reference); 
 				break;
 			}
 			case 65: {
@@ -1330,13 +1353,19 @@ static uint ScopeId = 1;
 				if(is_reference)
 				   type = AstType.MakeReferenceType(type, start_loc);
 				
+				var name = type.Name;
+				if(type_params.Any(param => param.Name == name)){
+				   var param_type = type_params.First(arg => arg.Name == name);
+				   type = param_type.Clone();
+				}
+				
 				break;
 			}
 			default: SynErr(140); break;
 			}
 			start_loc = NextLocation; 
 			if (la.kind == 8) {
-				GenericTypeSignature(name, is_reference, start_loc, out type);
+				GenericTypeSignature(is_reference, ref type);
 				
 			}
 			while (IsArrayTypeSignature()) {
@@ -1345,6 +1374,9 @@ static uint ScopeId = 1;
 				type = AstType.MakeSimpleType("array", start_loc, CurrentEndLocation, type);
 				
 			}
+			var replacer = new ParameterTypeReplacer(type_params);
+			type.AcceptWalker(replacer);
+			
 		} else if (la.kind == 67) {
 			FunctionTypeSignature(out type);
 		} else SynErr(141);
@@ -1353,9 +1385,10 @@ static uint ScopeId = 1;
 	void MethodSignature(out EntityDeclaration method, AttributeSection attribute) {
 		Identifier ident = null;
 		string name = null; AstType type = null;
-		var type_params = new List<ParameterType>();
+		var type_params = new List<ParameterType>(this.type_params);
 		var @params = new List<ParameterDeclaration>();
 		var start_loc = NextLocation;
+		var replacer = new ParameterTypeReplacer(type_params);
 		
 		while (!(la.kind == 0 || la.kind == 41)) {SynErr(142); Get();}
 		Expect(41);
@@ -1387,20 +1420,9 @@ static uint ScopeId = 1;
 		Type(out type);
 		Expect(5);
 		method = EntityDeclaration.MakeFunc(ident, @params, null, type, ExpressoModifiers.Public, attribute, start_loc);
+		method.ReturnType.AcceptWalker(replacer);
 		GoUpScope();
 		
-	}
-
-	void GenericTypeParameters(ref List<ParameterType> types ) {
-		Expect(8);
-		Expect(18);
-		types.Add(AstType.MakeParameterType(t.val)); 
-		while (la.kind == 14) {
-			Get();
-			Expect(18);
-			types.Add(AstType.MakeParameterType(t.val)); 
-		}
-		Expect(12);
 	}
 
 	void ParamList(List<ParameterType> typeParams, ref List<ParameterDeclaration> @params ) {
@@ -1667,7 +1689,7 @@ static uint ScopeId = 1;
 	}
 
 	void VarDef(out PatternWithType typed_pattern, out Expression option) {
-		option = null; var loc = NextLocation; 
+		option = null; var loc = NextLocation; var replacer = new ParameterTypeReplacer(type_params); 
 		PatternWithType(out typed_pattern);
 		if (la.kind == 17) {
 			Get();
@@ -1676,6 +1698,9 @@ static uint ScopeId = 1;
 		if(typed_pattern.Pattern is IdentifierPattern ident_pat){
 		   if(typed_pattern.Type is PlaceholderType && option == null)
 		       SemanticError(loc, "ES0003", "Give me some context or I can't infer the type of {0}.", ident_pat.Identifier.Name);
+		
+		   ident_pat.Identifier.Type.AcceptWalker(replacer);
+		   typed_pattern.Type.AcceptWalker(replacer);
 		}
 		
 	}
@@ -1706,8 +1731,8 @@ static uint ScopeId = 1;
 		}
 	}
 
-	void GenericTypeSignature(string name, bool isReference, TextLocation startLoc, out AstType genericType) {
-		var type_args = new List<AstType>(); AstType child_type; 
+	void GenericTypeSignature(bool isReference, ref AstType type) {
+		var type_args = new List<AstType>(); AstType child_type; var replacer = new ParameterTypeReplacer(type_params); 
 		Expect(8);
 		Type(out child_type);
 		type_args.Add(child_type); 
@@ -1717,9 +1742,19 @@ static uint ScopeId = 1;
 			type_args.Add(child_type); 
 		}
 		Expect(12);
-		genericType = AstType.MakeSimpleType(name, type_args, startLoc, CurrentEndLocation);
+		if(type is SimpleType generic_type){
+		   type = AstType.MakeSimpleType(generic_type.Name, type_args, generic_type.StartLocation, CurrentEndLocation);
+		   type.AcceptWalker(replacer);
+		}else if(type is MemberType member_type){
+		   if(member_type.ChildType is SimpleType generic_type2){
+		       var new_type = AstType.MakeSimpleType(generic_type2.Name, type_args, generic_type2.StartLocation, CurrentEndLocation);
+		       generic_type2.ReplaceWith(new_type);
+		       new_type.AcceptWalker(replacer);
+		   }
+		}
+		
 		if(isReference)
-		   genericType = AstType.MakeReferenceType(genericType, CurrentEndLocation);
+		   type = AstType.MakeReferenceType(type, CurrentEndLocation);
 		
 	}
 
@@ -1734,6 +1769,19 @@ static uint ScopeId = 1;
 		Expect(42);
 		Type(out inner_type);
 		type = AstType.MakeFunctionType("closure", inner_type, arg_types, start_loc, CurrentEndLocation); 
+	}
+
+	void GenericTypeArguments(ref List<AstType> typeArgs ) {
+		AstType type = null; 
+		Expect(8);
+		Type(out type);
+		typeArgs.Add(type); 
+		while (la.kind == 14) {
+			Get();
+			Type(out type);
+			typeArgs.Add(type); 
+		}
+		Expect(12);
 	}
 
 	void Stmt(out Statement stmt) {
@@ -1934,7 +1982,7 @@ static uint ScopeId = 1;
 		Expression obj; var start_loc = NextLocation; AstType type_path; 
 		Expect(72);
 		Type(out type_path);
-		ObjectCreation(type_path, out obj);
+		ObjectCreation(type_path, null, out obj);
 		while (!(la.kind == 0 || la.kind == 5)) {SynErr(156); Get();}
 		Expect(5);
 		stmt = Statement.MakeThrowStmt((ObjectCreationExpression)obj, start_loc); 
@@ -2051,7 +2099,7 @@ static uint ScopeId = 1;
 		} else if (la.kind == 115) {
 			SuperReferenceExpression(out expr);
 		} else SynErr(160);
-		while (la.kind == 7 || la.kind == 9 || la.kind == 15) {
+		while (StartOf(21)) {
 			Trailer(ref expr);
 		}
 	}
@@ -2304,7 +2352,7 @@ static uint ScopeId = 1;
 			IdentifierPattern(out pattern);
 		} else if (DistinguishBetweenDestructuringPatternAndEnumMember()) {
 			DestructuringPattern(out pattern);
-		} else if (StartOf(21)) {
+		} else if (StartOf(22)) {
 			RValuePattern(out pattern);
 		} else if (la.kind == 18) {
 			EnumMemberPattern(out pattern);
@@ -2373,12 +2421,12 @@ static uint ScopeId = 1;
 	void TuplePattern(out PatternConstruct pattern) {
 		var inners = new List<PatternConstruct>(); pattern = null; 
 		Expect(7);
-		if (StartOf(22)) {
+		if (StartOf(23)) {
 			TupleElementPattern(out pattern);
 			inners.Add(pattern); 
 			Expect(14);
-			if (StartOf(23)) {
-				if (StartOf(22)) {
+			if (StartOf(24)) {
+				if (StartOf(23)) {
 					TupleElementPattern(out pattern);
 				} else {
 					Get();
@@ -2389,7 +2437,7 @@ static uint ScopeId = 1;
 		}
 		while (la.kind == 14) {
 			Get();
-			if (StartOf(22)) {
+			if (StartOf(23)) {
 				TupleElementPattern(out pattern);
 			} else if (la.kind == 1) {
 				Get();
@@ -2427,7 +2475,7 @@ static uint ScopeId = 1;
 		if (la.kind == 18) {
 			TypePathExpression(out type_path);
 			Expect(6);
-			if (StartOf(24)) {
+			if (StartOf(25)) {
 				if (IsKeyIdentifier()) {
 					Expect(18);
 					key = t.val; 
@@ -2449,7 +2497,7 @@ static uint ScopeId = 1;
 					key = t.val; 
 					Expect(3);
 				}
-				if (StartOf(24)) {
+				if (StartOf(25)) {
 					Pattern(out pattern);
 					if(key != null){
 					   pattern = PatternConstruct.MakeKeyValuePattern(key, pattern);
@@ -2467,13 +2515,13 @@ static uint ScopeId = 1;
 			pattern = PatternConstruct.MakeDestructuringPattern(type_path, patterns); 
 		} else if (la.kind == 9) {
 			Get();
-			if (StartOf(24)) {
+			if (StartOf(25)) {
 				Pattern(out pattern);
 				patterns.Add(pattern); 
 			}
 			while (NotFinalComma()) {
-				ExpectWeak(14, 25);
-				if (StartOf(24)) {
+				ExpectWeak(14, 26);
+				if (StartOf(25)) {
 					Pattern(out pattern);
 					patterns.Add(pattern); 
 				} else if (la.kind == 1) {
@@ -2542,7 +2590,7 @@ static uint ScopeId = 1;
 			IdentifierPattern(out pattern);
 		} else if (IsDestructuringPattern()) {
 			DestructuringPattern(out pattern);
-		} else if (StartOf(26)) {
+		} else if (StartOf(27)) {
 			ExpressionPattern(out pattern);
 		} else SynErr(172);
 	}
@@ -2619,7 +2667,7 @@ static uint ScopeId = 1;
 		Expression rhs; OperatorType type; 
 		IntSeqExpr(out expr);
 		type = OperatorType.Equality; 
-		if (StartOf(27)) {
+		if (StartOf(28)) {
 			ComparisonOperator(out type);
 			Comparison(out rhs);
 			expr = Expression.MakeBinaryExpr(type, expr, rhs); 
@@ -2800,9 +2848,9 @@ static uint ScopeId = 1;
 
 	void Factor(out Expression expr) {
 		OperatorType type; Expression factor; expr = null; var start_loc = NextLocation; 
-		if (StartOf(28)) {
+		if (StartOf(29)) {
 			Primary(out expr);
-		} else if (StartOf(29)) {
+		} else if (StartOf(30)) {
 			UnaryOperator(out type);
 			Factor(out factor);
 			expr = Expression.MakeUnaryExpr(type, factor, start_loc); 
@@ -2810,18 +2858,21 @@ static uint ScopeId = 1;
 	}
 
 	void Primary(out Expression expr) {
-		expr = null; PathExpression path; AstType type_path = null; 
+		expr = null; PathExpression path; AstType type_path = null; var type_args = new List<AstType>(); 
 		if (la.kind == 18) {
 			PathExpression(out path);
 			expr = path; 
+			if (la.kind == 8) {
+				GenericTypeArguments(ref type_args);
+			}
 			if (IsObjectCreation()) {
 				type_path = ConvertPathToType(path); 
-				ObjectCreation(type_path, out expr);
+				ObjectCreation(type_path, type_args, out expr);
 			}
-		} else if (StartOf(30)) {
+		} else if (StartOf(31)) {
 			Atom(out expr);
 		} else SynErr(180);
-		while (la.kind == 7 || la.kind == 9 || la.kind == 15) {
+		while (StartOf(21)) {
 			Trailer(ref expr);
 		}
 		if (la.kind == 39) {
@@ -2873,7 +2924,7 @@ static uint ScopeId = 1;
 
 	void Atom(out Expression expr) {
 		var exprs = new List<Expression>(); expr = null; bool seen_trailing_comma = false; var start_loc = NextLocation; 
-		if (StartOf(21)) {
+		if (StartOf(22)) {
 			Literal(out expr);
 		} else if (la.kind == 7) {
 			Get();
@@ -2884,7 +2935,7 @@ static uint ScopeId = 1;
 				CondExpr(out expr);
 				exprs.Add(expr); 
 				while (NotFinalComma()) {
-					ExpectWeak(14, 31);
+					ExpectWeak(14, 32);
 					CondExpr(out expr);
 					exprs.Add(expr); 
 				}
@@ -2901,7 +2952,7 @@ static uint ScopeId = 1;
 			} else SynErr(182);
 		} else if (la.kind == 9) {
 			Get();
-			if (StartOf(32)) {
+			if (StartOf(33)) {
 				SequenceMaker(out expr);
 			}
 			while (!(la.kind == 0 || la.kind == 13)) {SynErr(183); Get();}
@@ -2927,14 +2978,17 @@ static uint ScopeId = 1;
 	}
 
 	void Trailer(ref Expression expr) {
-		var args = new List<Expression>(); var start_loc = NextLocation; 
-		if (la.kind == 7) {
-			Get();
+		var args = new List<Expression>(); var start_loc = NextLocation; var type_args = new List<AstType>(); 
+		if (la.kind == 7 || la.kind == 8) {
+			if (la.kind == 8) {
+				GenericTypeArguments(ref type_args);
+			}
+			Expect(7);
 			if (StartOf(17)) {
 				ArgList(out args);
 			}
 			Expect(10);
-			expr = Expression.MakeCallExpr(expr, args, CurrentEndLocation); 
+			expr = Expression.MakeCallExpr(expr, args, type_args, CurrentEndLocation); 
 		} else if (la.kind == 9) {
 			Get();
 			ArgList(out args);
@@ -2960,7 +3014,7 @@ static uint ScopeId = 1;
 	void PatternComparison(out Expression expr) {
 		Expression rhs; OperatorType type = OperatorType.None; 
 		PatternIntSeqExpr(out expr);
-		if (StartOf(27)) {
+		if (StartOf(28)) {
 			ComparisonOperator(out type);
 			PatternComparison(out rhs);
 			expr = Expression.MakeBinaryExpr(type, expr, rhs); 
@@ -3058,9 +3112,9 @@ static uint ScopeId = 1;
 
 	void PatternFactor(out Expression expr) {
 		OperatorType type; Expression factor; expr = null; var start_loc = NextLocation; 
-		if (StartOf(33)) {
+		if (StartOf(34)) {
 			PatternPrimary(out expr);
-		} else if (StartOf(29)) {
+		} else if (StartOf(30)) {
 			UnaryOperator(out type);
 			PatternFactor(out factor);
 			expr = Expression.MakeUnaryExpr(type, factor, start_loc); 
@@ -3072,10 +3126,10 @@ static uint ScopeId = 1;
 		if (la.kind == 18) {
 			PathExpression(out path);
 			expr = path; 
-		} else if (StartOf(21)) {
+		} else if (StartOf(22)) {
 			Literal(out expr);
 		} else SynErr(188);
-		while (la.kind == 7 || la.kind == 9 || la.kind == 15) {
+		while (StartOf(21)) {
 			Trailer(ref expr);
 		}
 	}
@@ -3122,7 +3176,7 @@ static uint ScopeId = 1;
 			exprs.Add(expr); 
 			if (la.kind == 13 || la.kind == 14) {
 				while (NotFinalComma()) {
-					ExpectWeak(14, 31);
+					ExpectWeak(14, 32);
 					CondExpr(out expr);
 					exprs.Add(expr); 
 				}
@@ -3157,7 +3211,7 @@ static uint ScopeId = 1;
 		list.Add(pair);
 		
 		if (la.kind == 11 || la.kind == 14) {
-			while (WeakSeparator(14,18,34) ) {
+			while (WeakSeparator(14,18,35) ) {
 				BitOr(out key);
 				Expect(3);
 				CondExpr(out val);
@@ -3260,6 +3314,7 @@ static uint ScopeId = 1;
 		{_x,_x,_x,_x, _x,_x,_T,_T, _x,_T,_x,_x, _x,_x,_x,_x, _x,_x,_T,_T, _T,_T,_x,_T, _T,_T,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _T,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _T,_T,_x,_x, _x,_x,_T,_T, _T,_T,_T,_T, _x,_x},
 		{_x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_T,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_T,_T, _x,_x},
 		{_x,_x,_x,_x, _x,_T,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_T,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x},
+		{_x,_x,_x,_x, _x,_x,_x,_T, _T,_T,_x,_x, _x,_x,_x,_T, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x},
 		{_x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_T, _T,_T,_x,_T, _T,_T,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_T, _T,_T,_T,_T, _x,_x},
 		{_x,_x,_x,_x, _x,_x,_x,_T, _x,_T,_x,_x, _x,_x,_x,_x, _x,_x,_T,_T, _T,_T,_x,_T, _T,_T,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _T,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_T,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _T,_T,_x,_x, _x,_x,_T,_T, _T,_T,_T,_T, _x,_x},
 		{_x,_T,_x,_x, _x,_x,_x,_T, _x,_T,_x,_x, _x,_x,_x,_x, _x,_x,_T,_T, _T,_T,_x,_T, _T,_T,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _T,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_T,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _T,_T,_x,_x, _x,_x,_T,_T, _T,_T,_T,_T, _x,_x},

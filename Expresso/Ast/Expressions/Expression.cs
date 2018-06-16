@@ -146,9 +146,12 @@ namespace Expresso.Ast
         /// <returns>A call expression.</returns>
         /// <param name="target">The target expression to call. It has to be a callable object.</param>
         /// <param name="args">Arguments.</param>
-        public static CallExpression MakeCallExpr(Expression target, IEnumerable<Expression> args, TextLocation loc = default)
+        /// <param name="typeArgs">Type arguments.</param>
+        /// <param name="loc">Location.</param>
+        public static CallExpression MakeCallExpr(Expression target, IEnumerable<Expression> args, IEnumerable<AstType> typeArgs = null,
+                                                  TextLocation loc = default)
         {
-            return new CallExpression(target, args, loc);
+            return new CallExpression(target, typeArgs, args, loc);
         }
 
         /// <summary>
@@ -157,9 +160,11 @@ namespace Expresso.Ast
         /// <returns>A call expression.</returns>
         /// <param name="target">The target expression to call. It has to be a callable object.</param>
         /// <param name="args">Arguments.</param>
-        public static CallExpression MakeCallExpr(Expression target, TextLocation loc, params Expression[] args)
+        /// <param name="typeArgs">Type arguments.</param>
+        /// <param name="loc">Location.</param>
+        public static CallExpression MakeCallExpr(Expression target, IEnumerable<AstType> typeArgs = null, TextLocation loc = default, params Expression[] args)
         {
-            return new CallExpression(target, args, loc);
+            return new CallExpression(target, typeArgs, args, loc);
         }
 
         /// <summary>
@@ -219,18 +224,18 @@ namespace Expresso.Ast
 
         public static ObjectCreationExpression MakeObjectCreation(AstType typePath, TextLocation end = default)
         {
-            return new ObjectCreationExpression(typePath, Enumerable.Empty<PathExpression>(), Enumerable.Empty<Expression>(), end);
+            return new ObjectCreationExpression(typePath, Enumerable.Empty<ParameterType>(), Enumerable.Empty<PathExpression>(), Enumerable.Empty<Expression>(), end);
         }
 
-        public static ObjectCreationExpression MakeObjectCreation(AstType path, Identifier name, Expression value, TextLocation end = default)
+        public static ObjectCreationExpression MakeObjectCreation(AstType path, Identifier name, Expression value, AstType typeArg = null, TextLocation end = default)
         {
-            return new ObjectCreationExpression(path, new []{MakePath(name)}, new []{value}, end);
+            return new ObjectCreationExpression(path, (typeArg == null) ? null : new []{typeArg}, new []{MakePath(name)}, new []{value}, end);
         }
 
-        public static ObjectCreationExpression MakeObjectCreation(AstType path, IEnumerable<Identifier> names,
-            IEnumerable<Expression> values, TextLocation end = default)
+        public static ObjectCreationExpression MakeObjectCreation(AstType path, IEnumerable<Identifier> names, IEnumerable<Expression> values,
+                                                                  IEnumerable<AstType> typeArgs = null, TextLocation end = default)
         {
-            return new ObjectCreationExpression(path, names.Select(ident => new PathExpression(ident)), values, end);
+            return new ObjectCreationExpression(path, typeArgs, names.Select(ident => new PathExpression(ident)), values, end);
         }
 
         public static KeyValueLikeExpression MakeKeyValuePair(Expression key, Expression value)

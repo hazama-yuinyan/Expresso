@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using ICSharpCode.NRefactory.PatternMatching;
 using ICSharpCode.NRefactory.TypeSystem;
 

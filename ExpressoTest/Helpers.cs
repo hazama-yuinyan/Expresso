@@ -465,7 +465,7 @@ namespace Expresso.Test
         }
 
         /// <summary>
-        /// Makes an AstType instance that identifies the void type.
+        /// Makes an <see cref="AstType"/> instance that identifies the void type.
         /// </summary>
         /// <returns>The void type.</returns>
         /// <param name="loc">Location.</param>
@@ -564,6 +564,11 @@ namespace Expresso.Test
         public static TypeDeclaration MakeEnumDecl(string name, Modifiers modifiers, AttributeSection attribute = null, params EntityDeclaration[] decls)
         {
             return EntityDeclaration.MakeEnumDecl(AstNode.MakeIdentifier(name), decls, modifiers, attribute);
+        }
+
+        public static TypeDeclaration MakeEnumDecl(string name, Modifiers modifiers, params EntityDeclaration[] decls)
+        {
+            return EntityDeclaration.MakeEnumDecl(AstNode.MakeIdentifier(name), decls, modifiers);
         }
 
         public static TryStatement MakeTryStmt(BlockStatement block, FinallyClause @finally, params CatchClause[] catches)

@@ -334,6 +334,7 @@ namespace Expresso.Ast.Analysis
                             AstNode.MakeIdentifier("Format", AstType.MakePlaceholderType())
                         ),
                         new []{literal.Clone()}.Concat(exprs),
+                        null,
                         literal.StartLocation
                     );
                     literal.ReplaceWith(call_expr);

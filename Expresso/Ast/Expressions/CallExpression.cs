@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using ICSharpCode.NRefactory;
 using ICSharpCode.NRefactory.PatternMatching;
 
@@ -28,6 +27,13 @@ namespace Expresso.Ast
         public ExpressoTokenNode LPar => GetChildByRole(Roles.LParenthesisToken);
 
         /// <summary>
+        /// 実型引数リスト。
+        /// Represents the type arguments.
+        /// </summary>
+        /// <value>The type arguments.</value>
+        public AstNodeCollection<AstType> TypeArguments => GetChildrenByRole(Roles.TypeArgument);
+
+        /// <summary>
         /// 与える実引数リスト。
 		/// The argument list to be supplied to the call.
         /// </summary>
@@ -45,10 +51,13 @@ namespace Expresso.Ast
 
         public ExpressoTokenNode RPar => GetChildByRole(Roles.RParenthesisToken);
 
-        public CallExpression(Expression targetExpr, IEnumerable<Expression> arguments, TextLocation loc)
+        public CallExpression(Expression targetExpr, IEnumerable<AstType> typeArgs, IEnumerable<Expression> arguments, TextLocation loc)
             : base(targetExpr.StartLocation, loc)
         {
             Target = targetExpr;
+            if(typeArgs != null)
+                TypeArguments.AddRange(typeArgs);
+
             Arguments.AddRange(arguments);
         }
 

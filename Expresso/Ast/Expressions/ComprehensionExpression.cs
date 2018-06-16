@@ -92,7 +92,7 @@ namespace Expresso.Ast
         }
         #endregion
 
-        public static readonly Role<ComprehensionIter> CompBody = new Role<ComprehensionIter>("CompBody", ComprehensionIter.Null);
+        public static readonly Role<ComprehensionIter> CompBody = new Role<ComprehensionIter>("CompBody", Null);
 
         protected ComprehensionIter()
         {
@@ -105,7 +105,7 @@ namespace Expresso.Ast
 	}
 
     /// <summary>
-    /// Represents the for clause in a comprehension expression.
+    /// Represents a for clause in comprehension expressions.
     /// "for" PatternConstruct "in" Expression [ ComprehensionIter ] ;
     /// </summary>
     public class ComprehensionForClause : ComprehensionIter
@@ -158,8 +158,8 @@ namespace Expresso.Ast
         /// The body that will be executed.
         /// </summary>
 		public ComprehensionIter Body{
-            get => GetChildByRole(ComprehensionIter.CompBody);
-            set => SetChildByRole(ComprehensionIter.CompBody, value);
+            get => GetChildByRole(CompBody);
+            set => SetChildByRole(CompBody, value);
 		}
 
         protected ComprehensionForClause()
@@ -202,7 +202,7 @@ namespace Expresso.Ast
 	}
 
     /// <summary>
-    /// Represents the if clause in a comprehension expression.
+    /// Represents an if clause in comprehension expressions.
     /// "if" Expression [ ComprehensionIter ] ;
     /// </summary>
     public class ComprehensionIfClause : ComprehensionIter
@@ -221,8 +221,8 @@ namespace Expresso.Ast
         /// The body that will be executed.
         /// </summary>
 		public ComprehensionIter Body{
-            get => GetChildByRole(ComprehensionIter.CompBody);
-            set => SetChildByRole(ComprehensionIter.CompBody, value);
+            get => GetChildByRole(CompBody);
+            set => SetChildByRole(CompBody, value);
 		}
 
         public ComprehensionIfClause(Expression test, ComprehensionIter bodyIter)
