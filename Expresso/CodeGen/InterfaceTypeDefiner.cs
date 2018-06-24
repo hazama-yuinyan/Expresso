@@ -259,6 +259,11 @@ namespace Expresso.CodeGen
                 throw new InvalidOperationException();
             }
 
+            public void VisitTypeConstraint(TypeConstraint constraint)
+            {
+                throw new InvalidOperationException();
+            }
+
             public void VisitSimpleType(SimpleType simpleType)
             {
                 throw new InvalidOperationException();
@@ -285,6 +290,11 @@ namespace Expresso.CodeGen
             }
 
             public void VisitParameterType(ParameterType paramType)
+            {
+                throw new InvalidOperationException();
+            }
+
+            public void VisitKeyValueType(KeyValueType keyValueType)
             {
                 throw new InvalidOperationException();
             }
@@ -378,14 +388,20 @@ namespace Expresso.CodeGen
                 if(first_type != null && !first_type.IsClass)
                     base_types = new []{typeof(object)}.Concat(base_types);
 
-                var have_implicit_value = emitter.symbol_table.GetSymbol(Utilities.RawValueEnumValueFieldName) != null;
+                var is_raw_value_enum = emitter.symbol_table.GetSymbol(Utilities.RawValueEnumValueFieldName) != null;
                 if(typeDecl.TypeKind == ClassType.Interface){
                     context.InterfaceTypeBuilder = context.ModuleBuilder.DefineType(name, TypeAttributes.Interface | TypeAttributes.Abstract);
+                    if(typeDecl.TypeConstraints.Any())
+                        emitter.generic_types = context.InterfaceTypeBuilder.DefineGenericParameters(typeDecl.TypeConstraints.Select(c => c.TypeParameter.Name).ToArray());
+                    
                     context.CustomAttributeSetter = context.InterfaceTypeBuilder.SetCustomAttribute;
                     // We don't call VisitAttributeSection directly so that we can avoid unnecessary method calls
                     typeDecl.Attribute.AcceptWalker(emitter, context);
                 }else{
-                    context.LazyTypeBuilder = new LazyTypeBuilder(context.ModuleBuilder, name, attr, base_types, false, have_implicit_value);
+                    context.LazyTypeBuilder = new LazyTypeBuilder(context.ModuleBuilder, name, attr, base_types, false, is_raw_value_enum);
+                    if(typeDecl.TypeConstraints.Any())
+                        emitter.generic_types = context.LazyTypeBuilder.InterfaceTypeBuilder.DefineGenericParameters(typeDecl.TypeConstraints.Select(c => c.TypeParameter.Name).ToArray());
+
                     context.CustomAttributeSetter = context.LazyTypeBuilder.InterfaceTypeBuilder.SetCustomAttribute;
                     context.AttributeTarget = AttributeTargets.Class | AttributeTargets.Struct | AttributeTargets.Enum;
                     // We don't call VisitAttributeSection directly so that we can avoid unnecessary method calls
@@ -402,7 +418,7 @@ namespace Expresso.CodeGen
                         context.LazyTypeBuilder.InterfaceTypeBuilder.AddInterfaceImplementation(base_type);
                 }
 
-                if(typeDecl.TypeKind != ClassType.Enum || !have_implicit_value){
+                if(typeDecl.TypeKind != ClassType.Enum || !is_raw_value_enum){
                     try{
                         foreach(var member in typeDecl.Members)
                             member.AcceptWalker(this);
@@ -493,7 +509,7 @@ namespace Expresso.CodeGen
                     attr ^= FieldAttributes.Private;
 
                 foreach(var init in fieldDecl.Initializers){
-                    var type = (self_type != null) ? self_type : CSharpCompilerHelpers.GetNativeType(init.NameToken.Type);
+                    var type = DetermineType(init.NameToken.Type);
                     var field_builder = context.LazyTypeBuilder.DefineField(field_prefix + init.Name, type, !Expression.IsNullNode(init.Initializer), attr);
 
                     context.CustomAttributeSetter = field_builder.SetCustomAttribute;
@@ -604,6 +620,20 @@ namespace Expresso.CodeGen
                         UpdateSymbol(initializer.NameToken, new ExpressoSymbol{PropertyOrField = field});
                     }
                 }
+            }
+
+            Type DetermineType(AstType astType)
+            {
+                if(self_type != null)
+                    return self_type;
+
+                if(astType is ParameterType param_type){
+                    var generic_type = emitter.generic_types.Where(gt => gt.Name == astType.Name)
+                                                    .First();
+                    return generic_type;
+                }
+
+                return CSharpCompilerHelpers.GetNativeType(astType);
             }
         }
     }

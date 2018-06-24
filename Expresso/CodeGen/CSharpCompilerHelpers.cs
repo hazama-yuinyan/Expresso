@@ -96,6 +96,9 @@ namespace Expresso.CodeGen
 
         public static Type GetNativeType(AstType astType)
         {
+            if(astType.IdentifierNode.IdentifierId != 0u && CSharpEmitter.Symbols.TryGetValue(astType.IdentifierNode.IdentifierId, out var symbol))
+                return symbol.Type;
+
             if(astType is PrimitiveType primitive)
                 return GetPrimitiveType(primitive);
 
@@ -128,7 +131,8 @@ namespace Expresso.CodeGen
 
                 if(simple.TypeArguments.Any()){
                     var element_types = simple.TypeArguments.Select(ta => GetNativeType(ta));
-                    type = type.MakeGenericType(element_types.ToArray());
+                    if(element_types.All(et => et != null))
+                        type = type.MakeGenericType(element_types.ToArray());
                 }
 
                 if(type == null && !astType.IdentifierNode.Type.IsNull)

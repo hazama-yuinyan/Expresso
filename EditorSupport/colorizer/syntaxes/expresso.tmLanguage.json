@@ -229,7 +229,7 @@
             "name" : "meta.statement.variable-declaration.expresso"
         },
         {
-            "begin": "^\\s*(export)?\\s*(class)\\s+([\\w0-9_]+)\\s*(?:(:)\\s+)?",
+            "begin": "^\\s*(export)?\\s*(interface|class)\\s+([\\w0-9_]+)\\s*(?:(:)\\s+)?",
             "beginCaptures": {
                 "1" : {
                     "name" : "keyword.other.export.expresso"
@@ -264,6 +264,43 @@
                 }
             ],
             "name" : "meta.class.expresso"
+        },
+        {
+            "begin": "^\\s*(export)?\\s*(interface)\\s+([\\w0-9_]+)\\s*(?:(:)\\s+)?",
+            "beginCaptures": {
+                "1" : {
+                    "name" : "keyword.other.export.expresso"
+                },
+                "2" : {
+                    "name" : "keyword.other.interface.expresso"
+                },
+                "3" : {
+                    "name" : "entity.name.interface.expresso"
+                },
+                "4" : {
+                    "name" : "punctuation.definition.colon.expresso"
+                }
+            },
+            "end": "\\n?\\s*({)",
+            "endCaptures": {
+                "1" : {
+                    "name" : "punctuation.defitinion.curly-brackets.expresso"
+                }
+            },
+            "patterns": [
+                {
+                    "match": "(,?)\\s*([\\w0-9_]+)",
+                    "captures": {
+                        "1" : {
+                            "name" : "punctuation.definition.comma.expresso"
+                        },
+                        "2" : {
+                            "name" : "entity.name.class.expresso"
+                        }
+                    }
+                }
+            ],
+            "name" : "meta.interfface.expresso"
         },
         {
             "begin": "(#\\[)",
@@ -325,7 +362,7 @@
             "comment": "Use of attributes"
         },
         {
-            "begin": "^\\s*(export)?\\s*(enum)\\s+([\\w_0-9]+)\\s*({)?$",
+            "begin": "^\\s*(export)?\\s*(enum)\\s+([\\w_0-9]+)<?",
             "beginCaptures": {
                 "1" : {
                     "name" : "keyword.other.export.expresso"
@@ -335,9 +372,6 @@
                 },
                 "3" : {
                     "name" : "entity.name.class.expresso"
-                },
-                "4" : {
-                    "name" : "punctuation.definition.l-curlybrace.expresso"
                 }
             },
             "end" : "\\n?\\s*(})",
@@ -348,62 +382,81 @@
             },
             "patterns": [
                 {
-                    "begin": "([\\w_0-9]+)(\\()",
+                    "begin": ">?({)?$",
                     "beginCaptures": {
                         "1" : {
-                            "name" : "entity.name.variant.expresso"
-                        },
-                        "2" : {
-                            "name" : "punctuation.defitinion.l-parenthesis.expresso"
+                            "name" : "punctuation.definition.l-curlybrace.expresso"
                         }
                     },
-                    "end": "(\\))",
-                    "endCaptures": {
-                        "1" : {
-                            "name" : "punctuation.defitinion.r-parenthesis.expresso"
-                        }
-                    },
+                    "end": "(?=\\n?\\s*})",
                     "patterns": [
                         {
-                            "include": "#builtinTypes"
+                            "begin": "([\\w_0-9]+)(\\()",
+                            "beginCaptures": {
+                                "1" : {
+                                    "name" : "entity.name.variant.expresso"
+                                },
+                                "2" : {
+                                    "name" : "punctuation.defitinion.l-parenthesis.expresso"
+                                }
+                            },
+                            "end": "(\\))",
+                            "endCaptures": {
+                                "1" : {
+                                    "name" : "punctuation.defitinion.r-parenthesis.expresso"
+                                }
+                            },
+                            "patterns": [
+                                {
+                                    "include": "#builtinTypes"
+                                },
+                                {
+                                    "include": "#typesInModule"
+                                },
+                                {
+                                    "include": "#typesInTypes"
+                                }
+                            ]
                         },
                         {
-                            "include": "#typesInModule"
+                            "include": "#forStatement"
                         },
                         {
-                            "include": "#typesInTypes"
+                            "include": "#ifStatement"
+                        },
+                        {
+                            "include": "#matchStatement"
+                        },
+                        {
+                            "include": "#functionDefinition"
+                        },
+                        {
+                            "include": "#simpleVariableName"
+                        },
+                        {
+                            "include": "#simpleFunctionCall"
+                        },
+                        {
+                            "include": "#castExpression"
+                        },
+                        {
+                            "include": "#keywordVariables"
+                        },
+                        {
+                            "include": "#numberLiterals"
+                        },
+                        {
+                            "include": "#stringLiterals"
                         }
                     ]
                 },
                 {
-                    "include": "#forStatement"
-                },
-                {
-                    "include": "#ifStatement"
-                },
-                {
-                    "include": "#matchStatement"
-                },
-                {
-                    "include": "#functionDefinition"
-                },
-                {
-                    "include": "#simpleVariableName"
-                },
-                {
-                    "include": "#simpleFunctionCall"
-                },
-                {
-                    "include": "#castExpression"
-                },
-                {
-                    "include": "#keywordVariables"
-                },
-                {
-                    "include": "#numberLiterals"
-                },
-                {
-                    "include": "#stringLiterals"
+                    "match": ",?\\s*([\\w_0-9]+)",
+                    "captures": {
+                        "1" : {
+                            "name" : "entity.name.type.expresso"
+                        }
+                    }
                 }
             ]
         },

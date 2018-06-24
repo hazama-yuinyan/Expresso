@@ -254,6 +254,11 @@ namespace Expresso.Ast
         {
             return new ParameterType(identifier);
         }
+
+        public static KeyValueType MakeKeyValueType(ParameterType keyType, AstType valueType)
+        {
+            return new KeyValueType(keyType, valueType);
+        }
         #endregion
     }
 }

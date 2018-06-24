@@ -117,61 +117,52 @@ namespace Expresso.Ast
             return new ParameterDeclaration(identifier, option ?? Expression.Null, isVariadic, attribute, loc);
         }
 
-        public static TypeDeclaration MakeClassDecl(string className, IEnumerable<AstType> bases,
-                                                    IEnumerable<EntityDeclaration> decls, Modifiers modifiers, AttributeSection attribute = null,
+        public static TypeDeclaration MakeClassDecl(string className, IEnumerable<AstType> bases, IEnumerable<EntityDeclaration> decls,
+                                                    Modifiers modifiers, IEnumerable<TypeConstraint> constraints = null, AttributeSection attribute = null,
                                                     TextLocation start = default, TextLocation end = default)
         {
-            return new TypeDeclaration(ClassType.Class, MakeIdentifier(className), bases, decls, attribute, modifiers, start, end);
+            return new TypeDeclaration(ClassType.Class, MakeIdentifier(className), bases, decls, constraints, attribute, modifiers, start, end);
         }
 
-        public static TypeDeclaration MakeClassDecl(Identifier ident, IEnumerable<AstType> bases,
-                                                    IEnumerable<EntityDeclaration> decls, Modifiers modifiers, AttributeSection attribute = null,
+        public static TypeDeclaration MakeClassDecl(Identifier ident, IEnumerable<AstType> bases, IEnumerable<EntityDeclaration> decls,
+                                                    Modifiers modifiers, IEnumerable<TypeConstraint> constraints = null, AttributeSection attribute = null,
                                                     TextLocation start = default, TextLocation end = default)
         {
-            return new TypeDeclaration(ClassType.Class, ident, bases, decls, attribute, modifiers, start, end);
+            return new TypeDeclaration(ClassType.Class, ident, bases, decls, constraints, attribute, modifiers, start, end);
         }
 
-        public static TypeDeclaration MakeClassDecl(string name, IEnumerable<AstType> bases,
-                                                    Modifiers modifiers, TextLocation start, TextLocation end, params EntityDeclaration[] decls)
-        {
-            return new TypeDeclaration(ClassType.Class, MakeIdentifier(name), bases, decls, null, modifiers, start, end);
-        }
-
-        public static TypeDeclaration MakeInterfaceDecl(string interfaceName, IEnumerable<AstType> bases,
-                                                        IEnumerable<EntityDeclaration> decls, Modifiers modifiers, AttributeSection attribute = null,
+        public static TypeDeclaration MakeInterfaceDecl(string interfaceName, IEnumerable<AstType> bases, IEnumerable<EntityDeclaration> decls,
+                                                        Modifiers modifiers, IEnumerable<TypeConstraint> constraints = null, AttributeSection attribute = null,
                                                         TextLocation start = default, TextLocation end = default)
         {
-            return new TypeDeclaration(ClassType.Interface, MakeIdentifier(interfaceName), bases, decls, attribute, modifiers, start, end);
+            return new TypeDeclaration(ClassType.Interface, MakeIdentifier(interfaceName), bases, decls, constraints, attribute, modifiers, start, end);
         }
 
         public static TypeDeclaration MakeInterfaceDecl(Identifier ident, IEnumerable<AstType> bases, IEnumerable<EntityDeclaration> decls, Modifiers modifiers,
-                                                        AttributeSection attribute = null, TextLocation start = default, TextLocation end = default)
+                                                        IEnumerable<TypeConstraint> constraints =null, AttributeSection attribute = null,
+                                                        TextLocation start = default, TextLocation end = default)
         {
-            return new TypeDeclaration(ClassType.Interface, ident, bases, decls, attribute, modifiers, start, end);
-        }
-
-        public static TypeDeclaration MakeInterfaceDecl(string name, IEnumerable<AstType> bases, Modifiers modifiers, TextLocation start, TextLocation end,
-                                                        params EntityDeclaration[] decls)
-        {
-            return new TypeDeclaration(ClassType.Interface, MakeIdentifier(name), bases, decls, null, modifiers, start, end);
+            return new TypeDeclaration(ClassType.Interface, ident, bases, decls, constraints, attribute, modifiers, start, end);
         }
 
         public static FunctionDeclaration MakeFunc(string name, IEnumerable<ParameterDeclaration> parameters, BlockStatement body, AstType returnType,
-                                                   Modifiers modifiers, AttributeSection attribute = null, TextLocation loc = default)
+                                                   Modifiers modifiers, IEnumerable<TypeConstraint> constraints = null, AttributeSection attribute = null,
+                                                   TextLocation loc = default)
         {
-            return new FunctionDeclaration(MakeIdentifier(name), parameters, body, returnType, attribute, modifiers, loc);;
+            return new FunctionDeclaration(MakeIdentifier(name), parameters, constraints, body, returnType, attribute, modifiers, loc);;
         }
 
         public static FunctionDeclaration MakeFunc(Identifier ident, IEnumerable<ParameterDeclaration> parameters, BlockStatement body, AstType returnType,
-                                                   Modifiers modifiers, AttributeSection attribute = null, TextLocation loc = default)
+                                                   Modifiers modifiers, IEnumerable<TypeConstraint> constraints = null, AttributeSection attribute = null,
+                                                   TextLocation loc = default)
         {
-            return new FunctionDeclaration(ident, parameters, body, returnType, attribute, modifiers, loc);
+            return new FunctionDeclaration(ident, parameters, constraints, body, returnType, attribute, modifiers, loc);
         }
 
-        public static TypeDeclaration MakeEnumDecl(Identifier ident, IEnumerable<EntityDeclaration> decls, Modifiers modifiers, AttributeSection attribute = null,
-                                                   TextLocation start = default, TextLocation end = default)
+        public static TypeDeclaration MakeEnumDecl(Identifier ident, IEnumerable<EntityDeclaration> decls, Modifiers modifiers, IEnumerable<TypeConstraint> constraints = null,
+                                                   AttributeSection attribute = null, TextLocation start = default, TextLocation end = default)
         {
-            return new TypeDeclaration(ClassType.Enum, ident, Enumerable.Empty<AstType>(), decls, attribute, modifiers, start, end);
+            return new TypeDeclaration(ClassType.Enum, ident, Enumerable.Empty<AstType>(), decls, constraints, attribute, modifiers, start, end);
         }
         #endregion
     }

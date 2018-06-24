@@ -713,7 +713,11 @@ namespace Expresso.Test
             Assert.IsNotNull(attribute1);
             Assert.AreEqual(type1.Name, "AssemblyDescriptionAttribute");
 
+#if WINDOWS
+            var module = asm.GetModule("main.exe");
+#else
             var module = asm.GetModule("main");
+            #endif
             var author_attribute_type = module.GetType("AuthorAttribute");
             var attribute2 = module.GetCustomAttributes(true).First();
             var type2 = attribute2.GetType();
@@ -797,6 +801,33 @@ namespace Expresso.Test
         public void Enum2()
         {
             var parser = new Parser(new Scanner("../../sources/for_unit_tests/enum2.exs"));
+            parser.DoPostParseProcessing = true;
+            parser.Parse();
+
+            var ast = parser.TopmostAst;
+
+            var options = new ExpressoCompilerOptions{
+                OutputPath = "../../test_executables",
+                BuildType = BuildType.Debug | BuildType.Executable,
+                ExecutableName = "main"
+            };
+            var emitter = new CSharpEmitter(parser, options);
+            ast.AcceptWalker(emitter, null);
+
+            var asm = emitter.AssemblyBuilder;
+            var main_method = asm.EntryPoint;
+            Assert.AreEqual(main_method.Name, "main");
+            Assert.IsTrue(main_method.IsStatic);
+            Assert.AreEqual(typeof(void), main_method.ReturnType);
+            Assert.AreEqual(0, main_method.GetParameters().Length);
+
+            main_method.Invoke(null, new object[]{});
+        }
+
+        [Test]
+        public void GenericClass()
+        {
+            var parser = new Parser(new Scanner("../../sources/for_unit_tests/generic_class.exs"));
             parser.DoPostParseProcessing = true;
             parser.Parse();
 

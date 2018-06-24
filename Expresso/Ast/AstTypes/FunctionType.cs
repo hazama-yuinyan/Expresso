@@ -65,6 +65,13 @@ namespace Expresso.Ast
             set => SetChildByRole(Roles.Identifier, value);
         }
 
+        /// <summary>
+        /// Represents the type parameters.
+        /// Only used in the symbol table.
+        /// </summary>
+        /// <value>The type parameters.</value>
+        public AstNodeCollection<ParameterType> TypeParameters => GetChildrenByRole(Roles.TypeParameter);
+
         public override string Name => Identifier.Name;
 
         public override Identifier IdentifierNode => Identifier;

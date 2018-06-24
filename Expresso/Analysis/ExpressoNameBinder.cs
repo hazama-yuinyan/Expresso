@@ -421,6 +421,11 @@ namespace Expresso.Ast.Analysis
             // no op
         }
 
+        public void VisitTypeConstraint(TypeConstraint constraint)
+        {
+            throw new InvalidOperationException("Can not work on that node");
+        }
+
         public void VisitSimpleType(SimpleType simpleType)
         {
             BindTypeName(simpleType.IdentifierNode);
@@ -458,6 +463,11 @@ namespace Expresso.Ast.Analysis
         }
 
         public void VisitPlaceholderType(PlaceholderType placeholderType)
+        {
+            // no op
+        }
+
+        public void VisitKeyValueType(KeyValueType keyValueType)
         {
             // no op
         }
@@ -584,6 +594,15 @@ namespace Expresso.Ast.Analysis
         public void VisitObjectCreationExpression(ObjectCreationExpression creation)
         {
             creation.TypePath.AcceptWalker(this);
+            if(creation.TypeArguments.HasChildren){
+                var type_path = creation.TypePath;
+                var table = (type_path is MemberType member) ? symbol_table.GetTypeTable(member.Target.Name) : symbol_table;
+                var type_table = table.GetTypeTable(!type_path.IdentifierNode.Type.IsNull ? type_path.IdentifierNode.Type.Name : type_path.Name);
+
+                foreach(var args in creation.TypeArguments.Zip((type_table??table).TypeParameters, (l, r) => new {TypeArgument = l, TypeParameter = r}))
+                    args.TypeArgument.KeyType.IdentifierNode.ReplaceWith(args.TypeParameter.IdentifierNode.Clone());
+            }
+
             foreach(var keyvalue in creation.Items)
                 keyvalue.ValueExpression.AcceptWalker(this);
         }

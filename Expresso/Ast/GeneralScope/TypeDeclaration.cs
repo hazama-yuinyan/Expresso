@@ -56,10 +56,7 @@ namespace Expresso.Ast
         ClassType type_kind;
 
         public ClassType TypeKind{
-            get{
-                return type_kind;
-            }
-
+            get => type_kind;
             set{
                 ThrowIfFrozen();
                 type_kind = value;
@@ -95,15 +92,22 @@ namespace Expresso.Ast
         /// <value>The members.</value>
         public AstNodeCollection<EntityDeclaration> Members => GetChildrenByRole(Roles.TypeMember);
 
+        /// <summary>
+        /// Represents the type constaints on the generic types.
+        /// </summary>
+        /// <value>The type constraints.</value>
+        public AstNodeCollection<TypeConstraint> TypeConstraints => GetChildrenByRole(Roles.TypeConstraint);
+
         public ExpressoTokenNode RBrace => GetChildByRole(Roles.RBraceToken);
 
-        public TypeDeclaration(ClassType classType, Identifier ident, IEnumerable<AstType> supers,
-                               IEnumerable<EntityDeclaration> decls, AttributeSection attribute, Modifiers modifiers, TextLocation start, TextLocation end)
+        public TypeDeclaration(ClassType classType, Identifier ident, IEnumerable<AstType> supers, IEnumerable<EntityDeclaration> decls,
+                               IEnumerable<TypeConstraint> constraints, AttributeSection attribute, Modifiers modifiers, TextLocation start, TextLocation end)
             : base(start, end)
         {
             TypeKind = classType;
             SetChildByRole(Roles.Identifier, ident);
             BaseTypes.AddRange(supers);
+            TypeConstraints.AddRange(constraints);
             Members.AddRange(decls);
             Attribute = attribute;
             SetModifiers(this, modifiers);
@@ -129,8 +133,8 @@ namespace Expresso.Ast
         protected internal override bool DoMatch(AstNode other, Match match)
         {
             var o = other as TypeDeclaration;
-            return o != null && TypeKind == o.TypeKind && MatchString(Name, o.Name) && BaseTypes.DoMatch(o.BaseTypes, match)
-                && Members.DoMatch(o.Members, match);
+            return o != null && TypeKind == o.TypeKind && MatchString(Name, o.Name) && BaseTypes.DoMatch(o.BaseTypes, match) 
+                                             && TypeConstraints.DoMatch(o.TypeConstraints, match) && Members.DoMatch(o.Members, match);
         }
 
         #endregion

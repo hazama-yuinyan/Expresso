@@ -180,7 +180,7 @@ namespace Expresso.CodeGen
         /// <returns>The constructor.</returns>
         /// <param name="parameterTypes">Parameter types.</param>
         /// <param name="body">Body.</param>
-        public ConstructorBuilder DefineConstructor(Type[] parameterTypes, Expression body = null)
+        private ConstructorBuilder DefineConstructor(Type[] parameterTypes, Expression body = null)
         {
             var ctor = interface_type.DefineConstructor(
                 MethodAttributes.Public | MethodAttributes.HideBySig | MethodAttributes.SpecialName | MethodAttributes.RTSpecialName,
@@ -196,7 +196,7 @@ namespace Expresso.CodeGen
             LoadArgs(il, 0);
             il.Emit(OpCodes.Call, prologue);
 
-            LoadArgs(il, (real_params.Length == 0) ? new int[]{} : Enumerable.Range(0, real_params.Length));
+            /*LoadArgs(il, (real_params.Length == 0) ? new int[]{} : Enumerable.Range(0, real_params.Length));
             var impl_method = impl_type.DefineMethod("Ctor_Impl", MethodAttributes.Assembly | MethodAttributes.Static, typeof(void), real_params);
             il.Emit(OpCodes.Call, impl_method);
             if(body == null)
@@ -204,7 +204,7 @@ namespace Expresso.CodeGen
             
             AddImplementer(body, impl_method);
 
-            il.Emit(OpCodes.Ret);
+            il.Emit(OpCodes.Ret);*/
             members.Add(ctor);
             return ctor;
         }
@@ -245,9 +245,9 @@ namespace Expresso.CodeGen
                 type_cache = interface_type.CreateType();
 
             if(ctor != null){
-                var parameters = members.OfType<FieldBuilder>()
-                                        .Where(t => !has_initializer_list.Any(name => t.Name == name))
-                                        .Select(t => Expression.Parameter(t.FieldType, t.Name))
+                /*var parameters = members.OfType<FieldBuilder>()
+                                        .Where(fb => !has_initializer_list.Any(name => fb.Name == name))
+                                        .Select(fb => Expression.Parameter(fb.FieldType, fb.Name))
                                         .ToList();
 
                 var self_param = Expression.Parameter(type_cache, "self");
@@ -265,7 +265,39 @@ namespace Expresso.CodeGen
                     Expression.Block(block_contents),
                     parameters
                 );
-                SetBody(ctor, impl_tree);
+                SetBody(ctor, impl_tree);*/
+
+                var il_generator = ctor.GetILGenerator();
+                var param_types = members.OfType<FieldBuilder>()
+                                         .Where(t => !has_initializer_list.Any(name => t.Name == name))
+                                         .Select(t => t.FieldType)
+                                         .ToArray();
+                var fields = interface_type.GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+                foreach(var pair in Enumerable.Range(0, param_types.Count()).Zip(fields, (i, r) => new {Counter = i, Field = r})){
+                    switch(pair.Counter){
+                    case 0:
+                        il_generator.Emit(OpCodes.Ldarg_0);
+                        break;
+
+                    case 1:
+                        il_generator.Emit(OpCodes.Ldarg_1);
+                        break;
+
+                    case 2:
+                        il_generator.Emit(OpCodes.Ldarg_2);
+                        break;
+
+                    case 3:
+                        il_generator.Emit(OpCodes.Ldarg_3);
+                        break;
+
+                    default:
+                        il_generator.Emit(OpCodes.Ldarg, pair.Counter);
+                        break;
+                    }
+
+                    il_generator.Emit(OpCodes.Stfld, pair.Field);
+                }
             }
 
             return type_cache;

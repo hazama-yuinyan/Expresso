@@ -4766,7 +4766,7 @@ namespace Expresso.Test
                         )
                     )
                 ),
-                EntityDeclaration.MakeFunc(
+                Helpers.MakeFunc(
                     "doSomethingInModule",
                     Enumerable.Empty<ParameterDeclaration>(),
                     Statement.MakeBlock(
@@ -5684,7 +5684,10 @@ namespace Expresso.Test
                                     Helpers.MakeGenericType("GenericClass"),
                                     AstNode.MakeIdentifier("x"),
                                     Expression.MakeConstant("int", 10),
-                                    AstType.MakePrimitiveType("int")
+                                    AstType.MakeKeyValueType(
+                                        AstType.MakeParameterType("T"),
+                                        AstType.MakePrimitiveType("int")
+                                    )
                                 )
                             ),
                             Modifiers.Immutable
@@ -5714,7 +5717,10 @@ namespace Expresso.Test
                                     ),
                                     AstNode.MakeIdentifier("0"),
                                     Expression.MakeConstant("int", 10),
-                                    AstType.MakePrimitiveType("int")
+                                    AstType.MakeKeyValueType(
+                                        AstType.MakeParameterType("T"),
+                                        AstType.MakePrimitiveType("int")
+                                    )
                                 )
                             ),
                             Modifiers.Immutable

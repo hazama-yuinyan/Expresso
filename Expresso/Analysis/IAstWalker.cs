@@ -60,6 +60,7 @@ namespace Expresso.Ast
 
         void VisitCommentNode(CommentNode comment);
         void VisitTextNode(TextNode textNode);
+        void VisitTypeConstraint(TypeConstraint constraint);
 
         void VisitSimpleType(SimpleType simpleType);
         void VisitPrimitiveType(PrimitiveType primitiveType);
@@ -68,6 +69,7 @@ namespace Expresso.Ast
         void VisitFunctionType(FunctionType funcType);
         void VisitParameterType(ParameterType paramType);
         void VisitPlaceholderType(PlaceholderType placeholderType);
+        void VisitKeyValueType(KeyValueType keyValueType);
 
         void VisitAttributeSection(AttributeSection section);
         void VisitImportDeclaration(ImportDeclaration importDecl);
@@ -149,6 +151,7 @@ namespace Expresso.Ast
 
         TResult VisitCommentNode(CommentNode comment);
         TResult VisitTextNode(TextNode textNode);
+        TResult VisitTypeConstraint(TypeConstraint constraint);
 
         TResult VisitSimpleType(SimpleType simpleType);
         TResult VisitPrimitiveType(PrimitiveType primitiveType);
@@ -157,6 +160,7 @@ namespace Expresso.Ast
         TResult VisitFunctionType(FunctionType funcType);
         TResult VisitParameterType(ParameterType paramType);
         TResult VisitPlaceholderType(PlaceholderType placeholderType);
+        TResult VisitKeyValueType(KeyValueType keyValueType);
 
         TResult VisitAttributeSection(AttributeSection section);
         TResult VisitImportDeclaration(ImportDeclaration importDecl);
@@ -248,6 +252,7 @@ namespace Expresso.Ast
 
         TResult VisitCommentNode(CommentNode comment, TData data);
         TResult VisitTextNode(TextNode textNode, TData data);
+        TResult VisitTypeConstraint(TypeConstraint constraint, TData data);
 
         TResult VisitSimpleType(SimpleType simpleType, TData data);
         TResult VisitPrimitiveType(PrimitiveType primitiveType, TData data);
@@ -256,6 +261,7 @@ namespace Expresso.Ast
         TResult VisitFunctionType(FunctionType funcType, TData data);
         TResult VisitParameterType(ParameterType paramType, TData data);
         TResult VisitPlaceholderType(PlaceholderType placeholderType, TData data);
+        TResult VisitKeyValueType(KeyValueType keyValueType, TData data);
 
         TResult VisitAttributeSection(AttributeSection section, TData data);
         TResult VisitImportDeclaration(ImportDeclaration importDecl, TData data);

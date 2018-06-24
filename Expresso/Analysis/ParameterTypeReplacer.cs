@@ -208,6 +208,10 @@ namespace Expresso.Ast
             throw new InvalidOperationException("can not work on that node");
         }
 
+        public void VisitKeyValueType(KeyValueType keyValueType)
+        {
+        }
+
         public void VisitLiteralExpression(LiteralExpression literal)
         {
             throw new InvalidOperationException("Can not work on that node");
@@ -348,6 +352,11 @@ namespace Expresso.Ast
         }
 
         public void VisitTuplePattern(TuplePattern tuplePattern)
+        {
+            throw new InvalidOperationException("Can not work on that node");
+        }
+
+        public void VisitTypeConstraint(TypeConstraint constraint)
         {
             throw new InvalidOperationException("Can not work on that node");
         }

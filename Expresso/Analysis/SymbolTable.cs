@@ -72,6 +72,10 @@ namespace Expresso.Ast.Analysis
             get;
         }
 
+        public List<ParameterType> TypeParameters{
+            get; private set;
+        }
+
         static SymbolTable()
         {
             NativeMapping = new Dictionary<string, Identifier>();
@@ -619,6 +623,16 @@ namespace Expresso.Ast.Analysis
                 throw new InvalidOperationException(string.Format("Expected to call this method on programRoot but you called it on `{0}`", Name));
             
             ExpressoCompilerHelpers.AddNativeSymbolTable(symbol, Parent);
+        }
+
+        /// <summary>
+        /// Adds type parameters.
+        /// </summary>
+        /// <param name="parameters">Parameters.</param>
+        public void AddTypeParameters(IEnumerable<ParameterType> parameters)
+        {
+            TypeParameters = new List<ParameterType>();
+            TypeParameters.AddRange(parameters);
         }
 
         public override string ToString()

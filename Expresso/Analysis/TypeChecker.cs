@@ -879,6 +879,7 @@ namespace Expresso.Ast.Analysis
             inference_runner.VisitObjectCreationExpression(creation);
             var type_path = creation.TypePath;
             var table = (type_path is MemberType member) ? symbols.GetTypeTable(member.Target.Name) : symbols;
+
             // It is guaranteed that if the type table is for an enum, member2 is valid
             if(table.TypeKind == ClassType.Enum && type_path is MemberType member2){
                 var enum_member = table.GetSymbol(member2.MemberName);
@@ -886,16 +887,27 @@ namespace Expresso.Ast.Analysis
                 //if(enum_member == null){
 
                 var member_type = (SimpleType)enum_member.Type;
-                foreach(var pair in creation.Items.Zip(member_type.TypeArguments, (item, ta) => new {KeyValue = item, Argument = ta})){
-                    var item_value_type = pair.KeyValue.ValueExpression.AcceptWalker(this);
-                    if(IsCompatibleWith(item_value_type, pair.Argument) == TriBool.False){
+                var arg_types2 = creation.Items.Select(item => item.ValueExpression.AcceptWalker(this));
+                var type_params = ((SimpleType)member_type.IdentifierNode.Type).TypeArguments;
+                foreach(var pair in arg_types2.Zip(type_params, (type, ta) => new {Type = type, Argument = ta})){
+                    if(IsCompatibleWith(pair.Type, pair.Argument) == TriBool.False){
                         throw new ParserException(
                             "Type mismatch in enum construction; Expected: {0}, Actual: {1}",
                             "ES2004",
                             creation,
-                            item_value_type, pair.Argument
+                            pair.Type, pair.Argument
                         );
                     }
+                }
+
+                if(creation.TypeArguments.Any()){
+                    CheckTypeArguments(creation, type_params, arg_types2);
+                }else{
+                    // Infer the type arguments here
+                    var type_args = arg_types2.Zip(type_params, (l, r) => new {ArgumentType = l, ParameterType = r})
+                                              .Where(args => args.ParameterType is ParameterType)
+                                              .Select(args => AstType.MakeKeyValueType((ParameterType)args.ParameterType.Clone(), args.ArgumentType.Clone()));
+                    creation.TypeArguments.AddRange(type_args);
                 }
 
                 return enum_member.Type;
@@ -957,6 +969,19 @@ namespace Expresso.Ast.Analysis
                     creation,
                     creation.TypePath.ToString(), ExpressoCompilerHelpers.StringifyList(ctor_type.Parameters)
                 );
+            }
+
+            if(ctor_symbol.Type.Children.Any(c => c is ParameterType)){
+                var type_params = ((FunctionType)ctor_symbol.Type).Parameters;
+                if(creation.TypeArguments.Any()){
+                    CheckTypeArguments(creation, type_params, arg_types);
+                }else{
+                    // Infer the type arguments here
+                    var type_args = arg_types.Zip(type_params, (l, r) => new {ArgumentType = l, ParameterType = r})
+                                             .Where(args => args.ParameterType is ParameterType)
+                                             .Select(args => AstType.MakeKeyValueType((ParameterType)args.ParameterType.Clone(), args.ArgumentType.Clone()));
+                    creation.TypeArguments.AddRange(type_args);
+                }
             }
             creation.CtorType = (FunctionType)ctor_symbol.Type.Clone();
             return creation.TypePath;
@@ -1123,6 +1148,11 @@ namespace Expresso.Ast.Analysis
             return null;
         }
 
+        public AstType VisitTypeConstraint(TypeConstraint constraint)
+        {
+            return null;
+        }
+
         public AstType VisitSimpleType(SimpleType simpleType)
         {
             BindFullyQualifiedTypeName(simpleType.IdentifierToken);
@@ -1162,6 +1192,11 @@ namespace Expresso.Ast.Analysis
         public AstType VisitPlaceholderType(PlaceholderType placeholderType)
         {
             return AstType.Null;
+        }
+
+        public AstType VisitKeyValueType(KeyValueType keyValueType)
+        {
+            return null;
         }
 
         public AstType VisitAttributeSection(AttributeSection section)
@@ -1789,7 +1824,7 @@ namespace Expresso.Ast.Analysis
                     return TriBool.True;
             }
 
-            if(first is ParameterType)
+            if(first is ParameterType || second is ParameterType)
                 return TriBool.True;
 
             return TriBool.False;
@@ -2065,6 +2100,44 @@ namespace Expresso.Ast.Analysis
             var referenced = symbols.GetTypeSymbolInAnyScope(ident.Name);
             if(referenced != null)
                 ident.Type = referenced.Type.Clone();
+        }
+
+        void CheckTypeArguments(ObjectCreationExpression creation, AstNodeCollection<AstType> typeParams, IEnumerable<AstType> argTypes)
+        {
+            var param_count = typeParams.Count(c => c is ParameterType);
+            var arg_count = creation.TypeArguments.Count;
+            if(arg_count < param_count){
+                throw new ParserException(
+                    "There are too few type parameters provided: expected {0} parameters, {1} provided.",
+                    "ES2020",
+                    creation,
+                    param_count, arg_count
+                );
+            }
+
+            foreach(var args in argTypes.Zip(typeParams, (l, r) => new {ArgumentType = l, ParameterType = r})){
+                if(args.ParameterType is ParameterType param_type){
+                    var type_arg = creation.TypeArguments.Where(ta => ta.KeyType.IsMatch(param_type))
+                                                   .FirstOrDefault();
+                    if(type_arg != null){
+                        if(!type_arg.ValueType.IsMatch(args.ArgumentType)){
+                            throw new ParserException(
+                                "Mismatched types found in type arguments and arguments! Expected {0}, found {1}.",
+                                "ES2021",
+                                creation,
+                                type_arg.ValueType.ToString(), args.ArgumentType
+                            );
+                        }
+                    }else{
+                        throw new ParserException(
+                            "A necessary type parameter `{0}` is missing!",
+                            "ES2022",
+                            creation,
+                            param_type
+                        );
+                    }
+                }
+            }
         }
     }
 }

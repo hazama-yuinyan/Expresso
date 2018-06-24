@@ -530,12 +530,6 @@ namespace Expresso.Test
             return Statement.MakeReturnStmt(Expression.MakeSequenceExpression(expr));
         }
 
-        public static TypeDeclaration MakeClassDecl(string identifier, IEnumerable<AstType> baseTypes, Modifiers modifiers, AttributeSection attribute,
-                                                    params EntityDeclaration[] decls)
-        {
-            return EntityDeclaration.MakeClassDecl(identifier, baseTypes, decls, modifiers, attribute);
-        }
-
         public static SequenceInitializer MakeSequenceInitializer(SimpleType type, params Expression[] initializers)
         {
             return Expression.MakeSequenceInitializer(type, default, default, initializers);
@@ -553,22 +547,69 @@ namespace Expresso.Test
 
         public static TypeDeclaration MakeInterfaceDecl(string name, IEnumerable<AstType> baseTypes, Modifiers modifiers, params EntityDeclaration[] decls)
         {
-            return EntityDeclaration.MakeInterfaceDecl(name, baseTypes, modifiers, default, default, decls);
+            return EntityDeclaration.MakeInterfaceDecl(name, baseTypes, decls, modifiers);
+        }
+
+        public static TypeDeclaration MakeInterfaceDecl(string name, IEnumerable<AstType> baseTypes, Modifiers modifiers, IEnumerable<TypeConstraint> constraints,
+                                                        params EntityDeclaration[] decls)
+        {
+            return EntityDeclaration.MakeInterfaceDecl(name, baseTypes, decls, modifiers, constraints);
+        }
+
+        public static TypeDeclaration MakeClassDecl(string identifier, IEnumerable<AstType> baseTypes, Modifiers modifiers, IEnumerable<TypeConstraint> constraints,
+                                                    AttributeSection attribute, params EntityDeclaration[] decls)
+        {
+            return EntityDeclaration.MakeClassDecl(identifier, baseTypes, decls, modifiers, constraints, attribute);
+        }
+
+        public static TypeDeclaration MakeClassDecl(string identifier, IEnumerable<AstType> baseTypes, Modifiers modifiers, IEnumerable<TypeConstraint> constraints,
+                                                    params EntityDeclaration[] decls)
+        {
+            return EntityDeclaration.MakeClassDecl(identifier, baseTypes, decls, modifiers, constraints);
+        }
+
+        public static TypeDeclaration MakeClassDecl(string identifier, IEnumerable<AstType> baseTypes, Modifiers modifiers, AttributeSection attribute,
+                                                    params EntityDeclaration[] decls)
+        {
+            return EntityDeclaration.MakeClassDecl(identifier, baseTypes, decls, modifiers, null, attribute);
         }
 
         public static TypeDeclaration MakeClassDecl(string name, IEnumerable<AstType> baseTypes, Modifiers modifiers, params EntityDeclaration[] decls)
         {
-            return EntityDeclaration.MakeClassDecl(name, baseTypes, modifiers, default, default, decls);
+            return EntityDeclaration.MakeClassDecl(name, baseTypes, decls, modifiers);
+        }
+
+        public static TypeDeclaration MakeEnumDecl(string name, Modifiers modifiers, IEnumerable<TypeConstraint> constraints, AttributeSection attribute,
+                                                   params EntityDeclaration[] decls)
+        {
+            return EntityDeclaration.MakeEnumDecl(AstNode.MakeIdentifier(name), decls, modifiers, constraints, attribute);
         }
 
         public static TypeDeclaration MakeEnumDecl(string name, Modifiers modifiers, AttributeSection attribute = null, params EntityDeclaration[] decls)
         {
-            return EntityDeclaration.MakeEnumDecl(AstNode.MakeIdentifier(name), decls, modifiers, attribute);
+            return EntityDeclaration.MakeEnumDecl(AstNode.MakeIdentifier(name), decls, modifiers, null, attribute);
+        }
+
+        public static TypeDeclaration MakeEnumDecl(string name, Modifiers modifiers, IEnumerable<TypeConstraint> constraints, params EntityDeclaration[] decls)
+        {
+            return EntityDeclaration.MakeEnumDecl(AstNode.MakeIdentifier(name), decls, modifiers, constraints);
         }
 
         public static TypeDeclaration MakeEnumDecl(string name, Modifiers modifiers, params EntityDeclaration[] decls)
         {
             return EntityDeclaration.MakeEnumDecl(AstNode.MakeIdentifier(name), decls, modifiers);
+        }
+
+        public static FunctionDeclaration MakeFunc(string name, IEnumerable<ParameterDeclaration> parameters, BlockStatement body, AstType returnType,
+                                                   Modifiers modifiers, IEnumerable<TypeConstraint> constraints)
+        {
+            return EntityDeclaration.MakeFunc(name, parameters, body, returnType, modifiers, constraints);
+        }
+
+        public static FunctionDeclaration MakeFunc(string name, IEnumerable<ParameterDeclaration> parameters, BlockStatement body, AstType returnType,
+                                                   Modifiers modifiers, AttributeSection attribute)
+        {
+            return EntityDeclaration.MakeFunc(name, parameters, body, returnType, modifiers, null, attribute);
         }
 
         public static TryStatement MakeTryStmt(BlockStatement block, FinallyClause @finally, params CatchClause[] catches)

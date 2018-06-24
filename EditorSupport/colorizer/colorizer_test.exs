@@ -45,6 +45,17 @@ enum SomeEnum2
     }
 }
 
+enum SomeEnum3<T, U>
+{
+    A(int),
+    B(uint, float)
+}
+
+export interface SomeInterface<T>
+{
+    def getX() -> T;
+}
+
 #[Serializable]
 export class TestClass
 {
@@ -62,8 +73,9 @@ export class TestClass
     }
 }
 
-class SomeDerivedClass : IInterface, IInterface2, TestClass
+class SomeDerivedClass<T> : IInterface, IInterface2, TestClass
 {
+    let x (- T;
 }
 
 class SomeDerivedClass2: IInterface, IInterface2{

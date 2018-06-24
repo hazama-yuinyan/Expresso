@@ -33,6 +33,12 @@ namespace Expresso.Ast
         public AstNodeCollection<ParameterDeclaration> Parameters => GetChildrenByRole(Roles.Parameter);
 
         /// <summary>
+        /// Represents the type constraints on the generic types.
+        /// </summary>
+        /// <value>The type constraints.</value>
+        public AstNodeCollection<TypeConstraint> TypeConstraints => GetChildrenByRole(Roles.TypeConstraint);
+
+        /// <summary>
         /// 関数本体。
 		/// The body of the function.
         /// </summary>
@@ -49,7 +55,7 @@ namespace Expresso.Ast
 		/// </value>
         public bool IsStatic => HasModifier(Modifiers.Static);
 
-        public FunctionDeclaration(Identifier ident, IEnumerable<ParameterDeclaration> formalParameters,
+        public FunctionDeclaration(Identifier ident, IEnumerable<ParameterDeclaration> formalParameters, IEnumerable<TypeConstraint> constraints,
                                    BlockStatement body, AstType returnType, AttributeSection attribute, Modifiers modifiers, TextLocation loc)
             : base(loc, body == null ? returnType.EndLocation : body.EndLocation)
 		{
@@ -57,6 +63,9 @@ namespace Expresso.Ast
             Attribute = attribute;
             if(formalParameters != null)
                 Parameters.AddRange(formalParameters);
+
+            if(constraints != null)
+                TypeConstraints.AddRange(constraints);
 
             Body = body;
             SetChildByRole(Roles.Type, returnType);
@@ -81,7 +90,7 @@ namespace Expresso.Ast
         internal protected override bool DoMatch(AstNode other, Match match)
         {
             var o = other as FunctionDeclaration;
-            return o != null && Name == o.Name && Parameters.DoMatch(o.Parameters, match)
+            return o != null && Name == o.Name && Parameters.DoMatch(o.Parameters, match) && TypeConstraints.DoMatch(o.TypeConstraints, match)
                 && ReturnType.DoMatch(o.ReturnType, match) && Body.DoMatch(o.Body, match);
         }
     }

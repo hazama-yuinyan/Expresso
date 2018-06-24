@@ -1291,6 +1291,11 @@ namespace Expresso.Ast
         {
             return new AttributeSection((identifier == null) ? null : MakeIdentifier(identifier, AstType.Null), attributes, start, end);
         }
+
+        public static TypeConstraint MakeTypeConstraint(ParameterType parameter, IEnumerable<AstType> typeConstraints, TextLocation loc = default)
+        {
+            return new TypeConstraint(parameter, typeConstraints, loc);
+        }
 		#endregion
     }
 }

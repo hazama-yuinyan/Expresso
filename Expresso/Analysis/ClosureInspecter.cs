@@ -267,6 +267,11 @@ namespace Expresso.Ast.Analysis
                 keyValuePattern.Value.AcceptWalker(this);
             }
 
+            public void VisitKeyValueType(KeyValueType keyValueType)
+            {
+                throw new InvalidOperationException("Can not work on that node");
+            }
+
 	        public void VisitLiteralExpression(LiteralExpression literal)
 	        {
 	        }
@@ -403,6 +408,11 @@ namespace Expresso.Ast.Analysis
 	        {
                 tuplePattern.Patterns.AcceptWalker(this);
 	        }
+
+            public void VisitTypeConstraint(TypeConstraint constraint)
+            {
+                throw new InvalidOperationException("Can not work on that node");
+            }
 
 	        public void VisitTypeDeclaration(TypeDeclaration typeDecl)
 	        {

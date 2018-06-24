@@ -242,6 +242,11 @@ namespace Expresso.CodeGen
                 return keyValuePattern.KeyIdentifier.Type;
             }
 
+            public AstType VisitKeyValueType(KeyValueType keyValueType)
+            {
+                throw new InvalidOperationException("Can not work on that node");
+            }
+
             public AstType VisitLiteralExpression(LiteralExpression literal)
             {
                 throw new InvalidOperationException("Can not work on that node");
@@ -381,6 +386,11 @@ namespace Expresso.CodeGen
             public AstType VisitTuplePattern(TuplePattern tuplePattern)
             {
                 return tuplePattern.Parent.AcceptWalker(this);
+            }
+
+            public AstType VisitTypeConstraint(TypeConstraint constraint)
+            {
+                throw new InvalidOperationException("Can not work on that node");
             }
 
             public AstType VisitTypeDeclaration(TypeDeclaration typeDecl)

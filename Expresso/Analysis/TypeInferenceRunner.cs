@@ -705,6 +705,11 @@ namespace Expresso.Ast.Analysis
                 throw new InvalidOperationException("Can not work on that node!");
             }
 
+            public AstType VisitTypeConstraint(TypeConstraint constraint)
+            {
+                throw new InvalidOperationException("Can not work on that node!");
+            }
+
             public AstType VisitSimpleType(SimpleType simpleType)
             {
                 throw new InvalidOperationException("Can not work on that node!");
@@ -736,6 +741,11 @@ namespace Expresso.Ast.Analysis
             }
 
             public AstType VisitPlaceholderType(PlaceholderType placeholderType)
+            {
+                throw new InvalidOperationException("Can not work on that node!");
+            }
+
+            public AstType VisitKeyValueType(KeyValueType keyValueType)
             {
                 throw new InvalidOperationException("Can not work on that node!");
             }

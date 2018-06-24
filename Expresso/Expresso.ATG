@@ -377,6 +377,14 @@ $namespace=Expresso
         return tt.kind == _ident && x.kind == _lcurly;
     }
 
+    bool IsTypeParameter()
+    {
+        var tt = la;
+        var x = scanner.Peek();
+        scanner.ResetPeek();
+        return tt.kind == _ident && x.kind == _equal; 
+    }
+
     /*bool IsLValueList()
     {
         var tt = la;
@@ -823,6 +831,7 @@ InterfaceDecl<out EntityDeclaration decl, ExpressoModifiers modifiers, Attribute
                                             var bases = new List<AstType>();
                                             var decls = new List<EntityDeclaration>();
                                             var start_loc = NextLocation;
+                                            var type_constraints = new List<TypeConstraint>();
                                         .)
 =
   SYNC
@@ -833,7 +842,6 @@ InterfaceDecl<out EntityDeclaration decl, ExpressoModifiers modifiers, Attribute
                                            if(!CheckKeyword(name)){
                                                ident = AstNode.MakeIdentifier(name, modifiers, ident_start_loc);
                                                Symbols.AddTypeSymbol(name, ident);
-
                                            }
                                         .)
   [ GenericTypeParameters<ref type_params> ]
@@ -843,8 +851,15 @@ InterfaceDecl<out EntityDeclaration decl, ExpressoModifiers modifiers, Attribute
       Type<out type_path>               (. bases.Add(type_path); .)
     }
   ]
+  [ TypeConstraints<ref type_constraints>
+  ]                                     (. 
+                                           if(!type_constraints.Any()){
+                                               type_constraints = type_params.Select(p => AstNode.MakeTypeConstraint((ParameterType)p.Clone(), null)).ToList();
+                                           }
+                                        .)
   lcurly                                (. GoDownScope();
                                            Symbols.Name = "type_" + name + "`" + ScopeId++;
+                                           Symbols.AddTypeParameters(type_params);
                                         .)
   {
     [ AttributeSection<out item_attribute>
@@ -852,7 +867,7 @@ InterfaceDecl<out EntityDeclaration decl, ExpressoModifiers modifiers, Attribute
     MethodSignature<out method, item_attribute>         (. decls.Add(method); .)
   }
   rcurly                                (.
-                                           decl = EntityDeclaration.MakeInterfaceDecl(ident, bases, decls, modifiers, attribute, start_loc, CurrentEndLocation);
+                                           decl = EntityDeclaration.MakeInterfaceDecl(ident, bases, decls, modifiers, type_constraints, attribute, start_loc, CurrentEndLocation);
                                            GoUpScope();
                                            type_params.Clear();
                                         .).
@@ -863,6 +878,7 @@ MethodSignature<out EntityDeclaration method, AttributeSection attribute>
                                    var type_params = new List<ParameterType>(this.type_params);
                                    var @params = new List<ParameterDeclaration>();
                                    var start_loc = NextLocation;
+                                   var type_constraints = new List<TypeConstraint>();
                                    var replacer = new ParameterTypeReplacer(type_params);
                                 .)
 =
@@ -880,7 +896,7 @@ MethodSignature<out EntityDeclaration method, AttributeSection attribute>
                                        // Leave the parser to recover its state.
                                    }
                                 .)
- [ GenericTypeParameters<ref type_params> ]
+  [ GenericTypeParameters<ref type_params> ]
   '('                           (. GoDownScope();
                                    Symbols.Name = "method_signature " + name + "`" + ScopeId++;
                                 .)
@@ -888,8 +904,15 @@ MethodSignature<out EntityDeclaration method, AttributeSection attribute>
   ')'
   "->"
   Type<out type>
+  [ TypeConstraints<ref type_constraints>
+  ]                             (.
+                                   if(!type_constraints.Any()){
+                                       type_constraints = type_params.Where(p => !this.type_params.Any(tp => tp.Name == p.Name))
+                                                                     .Select(p => AstNode.MakeTypeConstraint((ParameterType)p.Clone(), null)).ToList();
+                                   }
+                                .)
   ';'                           (.
-                                   method = EntityDeclaration.MakeFunc(ident, @params, null, type, ExpressoModifiers.Public, attribute, start_loc);
+                                   method = EntityDeclaration.MakeFunc(ident, @params, null, type, ExpressoModifiers.Public, type_constraints, attribute, start_loc);
                                    method.ReturnType.AcceptWalker(replacer);
                                    GoUpScope();
                                 .).
@@ -897,7 +920,7 @@ MethodSignature<out EntityDeclaration method, AttributeSection attribute>
 ClassDecl<out EntityDeclaration decl, ExpressoModifiers modifiers, AttributeSection attribute>   
   (.  EntityDeclaration entity = null; var decls = new List<EntityDeclaration>(); AstType type_path;
       string name; var bases = new List<AstType>(); var start_loc = NextLocation;
-      Identifier ident = null; AttributeSection item_attribute = null;
+      Identifier ident = null; AttributeSection item_attribute = null; var type_constraints = new List<TypeConstraint>();
   .)
 =
   SYNC
@@ -921,8 +944,15 @@ ClassDecl<out EntityDeclaration decl, ExpressoModifiers modifiers, AttributeSect
       Type<out type_path>	                   (. bases.Add(type_path); .)
     }
   ]
+  [ TypeConstraints<ref type_constraints>
+  ]                                            (.
+                                                  if(!type_constraints.Any()){
+                                                      type_constraints = type_params.Select(p => AstNode.MakeTypeConstraint((ParameterType)p.Clone(), null)).ToList();
+                                                  }
+                                               .)
   lcurly                                       (. GoDownScope();
                                                   Symbols.Name = "type_" + name + "`" + ScopeId++;
+                                                  Symbols.AddTypeParameters(type_params);
                                                .)
   {                                            (. cur_modifiers = ExpressoModifiers.Private; 
                                                   item_attribute = null;
@@ -938,7 +968,7 @@ ClassDecl<out EntityDeclaration decl, ExpressoModifiers modifiers, AttributeSect
     )
   }
   SYNC rcurly							       (. 
-                                                  decl = EntityDeclaration.MakeClassDecl(ident, bases, decls, modifiers, attribute, start_loc, CurrentEndLocation);
+                                                  decl = EntityDeclaration.MakeClassDecl(ident, bases, decls, modifiers, type_constraints, attribute, start_loc, CurrentEndLocation);
                                                   GoUpScope();
                                                   cur_modifiers = ExpressoModifiers.None;
                                                   type_params.Clear();
@@ -947,7 +977,7 @@ ClassDecl<out EntityDeclaration decl, ExpressoModifiers modifiers, AttributeSect
 EnumDecl<out EntityDeclaration decl, ExpressoModifiers modifiers, AttributeSection attribute>
         (. EntityDeclaration entity = null; var decls = new List<EntityDeclaration>(); string name;
            var start_loc = NextLocation; Identifier ident = null; AttributeSection item_attribute = null;
-           int raw_value = 0; bool has_value_identifier_added = false;
+           int raw_value = 0; bool has_value_identifier_added = false; var type_constraints = new List<TypeConstraint>();
         .)
 =
   SYNC
@@ -964,9 +994,16 @@ EnumDecl<out EntityDeclaration decl, ExpressoModifiers modifiers, AttributeSecti
                                                    }
                                                 .)
   [ GenericTypeParameters<ref type_params> ]
+  [ TypeConstraints<ref type_constraints>
+  ]                                             (.
+                                                   if(!type_constraints.Any()){
+                                                       type_constraints = type_params.Select(p => AstNode.MakeTypeConstraint((ParameterType)p.Clone(), null)).ToList();
+                                                   }
+                                                .)
   lcurly                                        (.
                                                    GoDownScope();
                                                    Symbols.Name = "type_" + name + "`" + ScopeId++;
+                                                   Symbols.AddTypeParameters(type_params);
                                                 .)
   {                                             (.
                                                    cur_modifiers = ExpressoModifiers.Private;
@@ -991,7 +1028,7 @@ EnumDecl<out EntityDeclaration decl, ExpressoModifiers modifiers, AttributeSecti
     [ ',' ]
   }
   SYNC rcurly                                               (.
-                                                               decl = EntityDeclaration.MakeEnumDecl(ident, decls, modifiers, attribute, start_loc, CurrentEndLocation);
+                                                               decl = EntityDeclaration.MakeEnumDecl(ident, decls, modifiers, type_constraints, attribute, start_loc, CurrentEndLocation);
                                                                GoUpScope();
                                                                cur_modifiers = ExpressoModifiers.None;
                                                             .).
@@ -1016,6 +1053,7 @@ FuncDecl<out EntityDeclaration decl, ExpressoModifiers modifiers, AttributeSecti
 									var type_params = new List<ParameterType>(this.type_params);
 									var @params = new List<ParameterDeclaration>();
                                     var start_loc = NextLocation;
+                                    var type_constraints = new List<TypeConstraint>();
                                     var replacer = new ParameterTypeReplacer(type_params);
 								.)
 =
@@ -1033,11 +1071,11 @@ FuncDecl<out EntityDeclaration decl, ExpressoModifiers modifiers, AttributeSecti
                                        // Leave the parser to recover its state.
                                    }
                                 .)
- [ GenericTypeParameters<ref type_params> ]
+  [ GenericTypeParameters<ref type_params> ]
   '('                           (. GoDownScope();
                                    Symbols.Name = "func " + name + "`" + ScopeId++;
                                 .)
-  [ParamList<type_params, ref @params>]
+  [ ParamList<type_params, ref @params> ]
   ')'
   [ "->"
     Type<out type>
@@ -1045,8 +1083,15 @@ FuncDecl<out EntityDeclaration decl, ExpressoModifiers modifiers, AttributeSecti
                                    if(type == null)
                                        type = new PlaceholderType(CurrentLocation);
                                 .)
+  [ TypeConstraints<ref type_constraints>
+  ]                             (.
+                                   if(!type_constraints.Any()){
+                                       type_constraints = type_params.Where(p => !this.type_params.Any(tp => tp.Name == p.Name))
+                                                                     .Select(p => AstNode.MakeTypeConstraint((ParameterType)p.Clone(), null)).ToList();
+                                   }
+                                .)
   Block<out block> 				(.
-                                   decl = EntityDeclaration.MakeFunc(ident, @params, block, type, modifiers, attribute, start_loc);
+                                   decl = EntityDeclaration.MakeFunc(ident, @params, block, type, modifiers, type_constraints, attribute, start_loc);
                                    decl.ReturnType.AcceptWalker(replacer);
                                    GoUpScope();
                                 .).
@@ -1189,6 +1234,22 @@ RawValueStyleEnumMember<out EntityDeclaration entity, AttributeSection attribute
                                              entity = EntityDeclaration.MakeField(pattern, expr, ExpressoModifiers.Public | ExpressoModifiers.Static, attribute, start_loc, CurrentEndLocation);
                                           .).
 /*------------------------------------------------------------------------*/
+TypeConstraints<. ref List<TypeConstraint> constraints .>   (. TypeConstraint constraint = null; .)
+=
+  TypeConstraint<out constraint>                            (. constraints.Add(constraint); .)
+  { TypeConstraint<out constraint>                          (. constraints.Add(constraint); .)
+  }.
+/*------------------------------------------------------------------------*/
+TypeConstraint<out TypeConstraint constraint>   (. AstType type = null; var types = new List<AstType>(); var start_loc = NextLocation; .)
+=
+  "where"
+  ident                                         (. var param_type = AstType.MakeParameterType(t.val); .)
+  ':'
+  Type<out type>                                (. types.Add(type); .)
+  { ','
+    Type<out type>                              (. types.Add(type); .)
+  }                                             (. constraint = AstNode.MakeTypeConstraint(param_type, types, start_loc); .).
+/*------------------------------------------------------------------------*/
 GenericTypeParameters<. ref List<ParameterType> types .>
 =
   '<'
@@ -1233,7 +1294,7 @@ Type<out AstType type>				(. var start_loc = NextLocation; type = new Placeholde
                                        }
                                     .)
    )                                (. start_loc = NextLocation; .)
-   [ /*IF(IsGenericTypeSignature())*/       /* For ambiguity in Comparison on '<' */
+   [ IF(IsGenericTypeSignature())       /* For ambiguity in Comparison on '<' */
      GenericTypeSignature<is_reference, ref type>
                                     (.
                                         /*if(!IsPrimitiveGenericType(name)){
@@ -1258,12 +1319,24 @@ Type<out AstType type>				(. var start_loc = NextLocation; type = new Placeholde
  | FunctionTypeSignature<out type>
  ).
 /*------------------------------------------------------------------------*/
-GenericTypeArguments<. ref List<AstType> typeArgs .>    (. AstType type = null; .)
+GenericTypeArguments<. ref List<KeyValueType> typeArgs .>   (. AstType type = null; ParameterType param_type = null; .)
 =
   '<'
-  Type<out type>                                        (. typeArgs.Add(type); .)
-  { ','
-    Type<out type>                                      (. typeArgs.Add(type); .)
+  [ IF(IsTypeParameter())
+    ident                                                   (. param_type = AstType.MakeParameterType(t.val); .)
+    '='
+  ]                                                         (. if(param_type == null)
+                                                                   param_type = AstType.MakeParameterType("");
+                                                            .)
+  Type<out type>                                            (. typeArgs.Add(AstType.MakeKeyValueType(param_type, type)); .)
+  { ','                                                     (. param_type = null; .)
+    [ IF(IsTypeParameter())
+      ident                                                 (. param_type = AstType.MakeParameterType(t.val); .)
+      '='
+    ]                                                       (. if(param_type == null)
+                                                                   param_type = AstType.MakeParameterType(t.val);
+                                                            .)
+    Type<out type>                                          (. typeArgs.Add(AstType.MakeKeyValueType(param_type, type)); .)
   }
   '>'.
 /*------------------------------------------------------------------------*/
@@ -1992,13 +2065,15 @@ UnaryOperator<out OperatorType opType>  (. opType = OperatorType.None; .)
   | '&'                                 (. opType = OperatorType.Reference; .)
   ).
 /*------------------------------------------------------------------------*/
-Primary<out Expression expr>		    (. expr = null; PathExpression path; AstType type_path = null; var type_args = new List<AstType>(); .)
+Primary<out Expression expr>		        (. expr = null; PathExpression path; AstType type_path = null; var type_args = new List<KeyValueType>(); .)
 =
-  ( PathExpression<out path>            (. expr = path; .) /* It's possible that a PathExpression turns out to be just an identifier */
-    [ GenericTypeArguments<ref type_args> ]
-    [ IF(IsObjectCreation())            (. type_path = ConvertPathToType(path); .) /* Ambiguous between this and MatchStmt */
+  ( PathExpression<out path>                (. expr = path; .) /* It's possible that a PathExpression turns out to be just an identifier */
+    ( GenericTypeArguments<ref type_args>   (. type_path = ConvertPathToType(path); .)
       ObjectCreation<type_path, type_args, out expr>
-    ]
+    | [ IF(IsObjectCreation())              (. type_path = ConvertPathToType(path); .)  /* Ambiguous between this and MatchStmt */
+        ObjectCreation<type_path, type_args, out expr>
+      ]
+    )
   | Atom<out expr>
   )
   { Trailer<ref expr>
@@ -2129,7 +2204,7 @@ LiteralIntSeqExpr<out Expression expr>  (. Expression start = null, end = null, 
                                         .)
   ].
 /*------------------------------------------------------------------------*/
-ObjectCreation<. AstType typePath, List<AstType> typeArgs, out Expression expr .>
+ObjectCreation<. AstType typePath, List<KeyValueType> typeArgs, out Expression expr .>
                                         (. var fields = new List<Identifier>(); var values = new List<Expression>(); .)
 =
   lcurly
@@ -2150,7 +2225,7 @@ ObjectCreation<. AstType typePath, List<AstType> typeArgs, out Expression expr .
   }
   SYNC rcurly                           (. expr = Expression.MakeObjectCreation(typePath, fields, values, typeArgs, CurrentEndLocation); .).
 /*------------------------------------------------------------------------*/
-Trailer<ref Expression expr>	(. var args = new List<Expression>(); var start_loc = NextLocation; var type_args = new List<AstType>(); .)
+Trailer<ref Expression expr>	(. var args = new List<Expression>(); var start_loc = NextLocation; var type_args = new List<KeyValueType>(); .)
 =
   [ GenericTypeArguments<ref type_args> ]
   '('

@@ -41,6 +41,12 @@ namespace Expresso.Ast
             new Role<PatternWithType>("TypedPattern", PatternWithType.Null);
         public static readonly Role<ObjectCreationExpression> ObjectCreation =
             new Role<ObjectCreationExpression>("ObjectCreation", ObjectCreationExpression.Null);
+        public static readonly Role<KeyValueType> KeyValueType =
+            new Role<KeyValueType>("KeyValueType");
+        public static readonly Role<ParameterType> TypeParameter = 
+            new Role<ParameterType>("TypeParameter", ParameterType.Null);
+        public static readonly Role<TypeConstraint> TypeConstraint =
+            new Role<TypeConstraint>("TypeConstraint");
 
         // some pre-defined roles for most used punctuations
         public static readonly TokenRole LParenthesisToken = new TokenRole("(", ExpressoTokenNode.Null);

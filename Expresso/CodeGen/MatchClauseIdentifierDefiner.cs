@@ -203,6 +203,11 @@ namespace Expresso.CodeGen
                 keyValuePattern.Value.AcceptWalker(this);
             }
 
+            public void VisitKeyValueType(KeyValueType keyValueType)
+            {
+                throw new InvalidOperationException("Can not work on that node");
+            }
+
             public void VisitLiteralExpression(LiteralExpression literal)
             {
                 throw new InvalidOperationException("Can not work on that node");
@@ -341,6 +346,11 @@ namespace Expresso.CodeGen
             public void VisitTuplePattern(TuplePattern tuplePattern)
             {
                 tuplePattern.Patterns.AcceptWalker(this);
+            }
+
+            public void VisitTypeConstraint(TypeConstraint constraint)
+            {
+                throw new InvalidOperationException("Can not work on that node");
             }
 
             public void VisitTypeDeclaration(TypeDeclaration typeDecl)

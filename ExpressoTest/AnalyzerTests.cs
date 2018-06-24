@@ -7419,7 +7419,7 @@ namespace Expresso.Test
                         )
                     )
                 ),
-                EntityDeclaration.MakeFunc(
+                Helpers.MakeFunc(
                     "doSomethingInModule",
                     Enumerable.Empty<ParameterDeclaration>(),
                     Statement.MakeBlock(
@@ -8534,6 +8534,245 @@ namespace Expresso.Test
                                         Helpers.MakeFunctionType(
                                             "ifEnum",
                                             Helpers.MakeVoidType()
+                                        )
+                                    )
+                                )
+                            )
+                        )
+                    ),
+                    Helpers.MakeVoidType(),
+                    Modifiers.None
+                )
+            ));
+
+            Assert.IsNotNull(ast);
+            Helpers.AstStructuralEqual(ast, expected);
+        }
+
+        [Test]
+        public void GenericClass()
+        {
+            var parser = new Parser(new Scanner("../../sources/for_unit_tests/generic_class.exs")){
+                DoPostParseProcessing = true
+            };
+            parser.Parse();
+
+            var ast = parser.TopmostAst;
+
+            var expected = AstNode.MakeModuleDef("main", Helpers.MakeSeq<EntityDeclaration>(
+                Helpers.MakeInterfaceDecl(
+                    "SomeInterface",
+                    Enumerable.Empty<AstType>(),
+                    Modifiers.None,
+                    Helpers.MakeSeq(
+                        AstNode.MakeTypeConstraint(
+                            AstType.MakeParameterType("T"),
+                            null
+                        )
+                    ),
+                    EntityDeclaration.MakeFunc(
+                        "getX",
+                        Enumerable.Empty<ParameterDeclaration>(),
+                        null,
+                        AstType.MakeParameterType("T"),
+                        Modifiers.Public
+                    )
+                ),
+                Helpers.MakeClassDecl(
+                    "GenericClass",
+                    Helpers.MakeSeq(
+                        Helpers.MakeGenericType(
+                            "SomeInterface",
+                            AstType.MakeParameterType("T")
+                        )
+                    ),
+                    Modifiers.None,
+                    Helpers.MakeSeq(
+                        AstNode.MakeTypeConstraint(
+                            AstType.MakeParameterType("T"),
+                            null
+                        )
+                    ),
+                    EntityDeclaration.MakeField(
+                        Helpers.MakeExactPatternWithType(
+                            "x",
+                            AstType.MakeParameterType("T")
+                        ),
+                        Expression.Null,
+                        Modifiers.Private | Modifiers.Immutable
+                    ),
+                    EntityDeclaration.MakeFunc(
+                        "getX",
+                        Enumerable.Empty<ParameterDeclaration>(),
+                        Statement.MakeBlock(
+                            Helpers.MakeSingleItemReturnStatement(
+                                Expression.MakeMemRef(
+                                    Expression.MakeSelfRef(),
+                                    AstNode.MakeIdentifier(
+                                        "x",
+                                        AstType.MakeParameterType("T")
+                                    )
+                                )
+                            )
+                        ),
+                        AstType.MakeParameterType("T"),
+                        Modifiers.Public
+                    )
+                ),
+                Helpers.MakeEnumDecl(
+                    "MyOption",
+                    Modifiers.None,
+                    Helpers.MakeSeq(
+                        AstNode.MakeTypeConstraint(
+                            AstType.MakeParameterType("T"),
+                            null
+                        )
+                    ),
+                    Helpers.MakeTupleStyleMember(
+                        "Ok",
+                        "MyOption",
+                        null,
+                        AstType.MakeParameterType("T")
+                    ),
+                    Helpers.MakeTupleStyleMember(
+                        "Error",
+                        "MyOption"
+                    )
+                ),
+                EntityDeclaration.MakeFunc(
+                    "main",
+                    Enumerable.Empty<ParameterDeclaration>(),
+                    Statement.MakeBlock(
+                        Statement.MakeVarDecl(
+                            Helpers.MakeSeq(
+                                Helpers.MakePaticularPatternWithType(
+                                    "a",
+                                    Helpers.MakeGenericType("GenericClass")
+                                )
+                            ),
+                            Helpers.MakeSeq(
+                                Expression.MakeObjectCreation(
+                                    Helpers.MakeGenericType("GenericClass"),
+                                    AstNode.MakeIdentifier("x"),
+                                    Expression.MakeConstant("int", 10),
+                                    AstType.MakeKeyValueType(
+                                        AstType.MakeParameterType("T"),
+                                        AstType.MakePrimitiveType("int")
+                                    )
+                                )
+                            ),
+                            Modifiers.Immutable
+                        ),
+                        Statement.MakeVarDecl(
+                            Helpers.MakeSeq(
+                                Helpers.MakePaticularPatternWithType(
+                                    "b",
+                                    Helpers.MakeGenericType("GenericClass")
+                                )
+                            ),
+                            Helpers.MakeSeq(
+                                Expression.MakeObjectCreation(
+                                    Helpers.MakeGenericType("GenericClass"),
+                                    AstNode.MakeIdentifier("x"),
+                                    Expression.MakeConstant("int", 20),
+                                    AstType.MakeKeyValueType(
+                                        AstType.MakeParameterType("T"),
+                                        AstType.MakePrimitiveType("int")
+                                    )
+                                )
+                            ),
+                            Modifiers.Immutable
+                        ),
+                        Statement.MakeVarDecl(
+                            Helpers.MakeSeq(
+                                Helpers.MakePaticularPatternWithType(
+                                    "c",
+                                    Helpers.MakeGenericTypeWithAnotherType(
+                                        "MyOption",
+                                        Helpers.MakeGenericType(
+                                            "tuple",
+                                            AstType.MakeParameterType("T")
+                                        )
+                                    )
+                                )
+                            ),
+                            Helpers.MakeSeq(
+                                Expression.MakeObjectCreation(
+                                    AstType.MakeMemberType(
+                                        Helpers.MakeGenericType("MyOption"),
+                                        Helpers.MakeGenericType("Ok")
+                                    ),
+                                    AstNode.MakeIdentifier("0"),
+                                    Expression.MakeConstant("int", 10),
+                                    AstType.MakeKeyValueType(
+                                        AstType.MakeParameterType("T"),
+                                        AstType.MakePrimitiveType("int")
+                                    )
+                                )
+                            ),
+                            Modifiers.Immutable
+                        ),
+                        Statement.MakeVarDecl(
+                            Helpers.MakeSeq(
+                                Helpers.MakePaticularPatternWithType(
+                                    "d",
+                                    Helpers.MakeGenericTypeWithAnotherType(
+                                        "MyOption",
+                                        Helpers.MakeGenericType(
+                                            "tuple",
+                                            AstType.MakeParameterType("T")
+                                        )
+                                    )
+                                )
+                            ),
+                            Helpers.MakeSeq(
+                                Expression.MakeObjectCreation(
+                                    AstType.MakeMemberType(
+                                        Helpers.MakeGenericType("MyOption"),
+                                        Helpers.MakeGenericType("Ok")
+                                    ),
+                                    AstNode.MakeIdentifier("0"),
+                                    Expression.MakeConstant("int", 20),
+                                    AstType.MakeKeyValueType(
+                                        AstType.MakeParameterType("T"),
+                                        AstType.MakePrimitiveType("int")
+                                    )
+                                )
+                            ),
+                            Modifiers.Immutable
+                        ),
+                        Statement.MakeExprStmt(
+                            Helpers.MakeCallExpression(
+                                Helpers.SomeWellKnownExpressions.Println,
+                                Helpers.MakeCallExpression(
+                                    Helpers.SomeWellKnownExpressions.StringFormatN,
+                                    Expression.MakeConstant("string", "{0}, {1}, {2}, {3}"),
+                                    Helpers.MakeIdentifierPath(
+                                        "a",
+                                        Helpers.MakeGenericType("GenericClass")
+                                    ),
+                                    Helpers.MakeIdentifierPath(
+                                        "b",
+                                        Helpers.MakeGenericType("GenericClass")
+                                    ),
+                                    Helpers.MakeIdentifierPath(
+                                        "c",
+                                        Helpers.MakeGenericTypeWithAnotherType(
+                                            "MyOption",
+                                            Helpers.MakeGenericType(
+                                                "tuple",
+                                                AstType.MakeParameterType("T")
+                                            )
+                                        )
+                                    ),
+                                    Helpers.MakeIdentifierPath(
+                                        "d",
+                                        Helpers.MakeGenericTypeWithAnotherType(
+                                            "MyOption",
+                                            Helpers.MakeGenericType(
+                                                "tuple",
+                                                AstType.MakeParameterType("T")
+                                            )
                                         )
                                     )
                                 )

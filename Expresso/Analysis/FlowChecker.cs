@@ -465,6 +465,11 @@ namespace Expresso.Ast.Analysis
             throw new NotImplementedException();
         }
 
+        public void VisitTypeConstraint(TypeConstraint constraint)
+        {
+            throw new InvalidOperationException("Can not work on that node");
+        }
+
         public void VisitSimpleType(SimpleType simpleType)
         {
             throw new NotImplementedException();
@@ -496,6 +501,11 @@ namespace Expresso.Ast.Analysis
         }
 
         public void VisitPlaceholderType(PlaceholderType placeholderType)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void VisitKeyValueType(KeyValueType keyValueType)
         {
             throw new NotImplementedException();
         }

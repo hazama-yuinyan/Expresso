@@ -73,6 +73,7 @@ namespace Expresso.CodeGen
         ExpressoCompilerOptions options;
         MatchClauseIdentifierDefiner identifier_definer;
         ItemTypeInferencer item_type_inferencer;
+        GenericTypeParameterBuilder[] generic_types;
 
         List<ExprTree.LabelTarget> break_targets = new List<ExprTree.LabelTarget>();
         List<ExprTree.LabelTarget> continue_targets = new List<ExprTree.LabelTarget>();
@@ -1570,6 +1571,11 @@ namespace Expresso.CodeGen
             return null;
         }
 
+        public CSharpExpr VisitTypeConstraint(TypeConstraint constraint, CSharpEmitterContext context)
+        {
+            return null;
+        }
+
         // AstType nodes should be treated with special care
         public CSharpExpr VisitSimpleType(SimpleType simpleType, CSharpEmitterContext context)
         {
@@ -1624,6 +1630,11 @@ namespace Expresso.CodeGen
         }
 
         public CSharpExpr VisitPlaceholderType(PlaceholderType placeholderType, CSharpEmitterContext context)
+        {
+            return null;
+        }
+
+        public CSharpExpr VisitKeyValueType(KeyValueType keyValueType, CSharpEmitterContext context)
         {
             return null;
         }
@@ -1793,7 +1804,7 @@ namespace Expresso.CodeGen
             var formal_parameters = funcDecl.Parameters.Select(param => param.AcceptWalker(this, context))
                                             .OfType<ExprTree.ParameterExpression>();
 
-            var return_type = CSharpCompilerHelpers.GetNativeType(funcDecl.ReturnType);
+            var return_type = RetrieveType(funcDecl.ReturnType);
             ReturnTarget = CSharpExpr.Label(return_type, "returnTarget");
             DefaultReturnValue = CSharpExpr.Default(return_type);
 
@@ -2724,6 +2735,15 @@ namespace Expresso.CodeGen
             }
 
             return tupleType.GetProperty("Item" + i);
+        }
+
+        Type RetrieveType(AstType astType)
+        {
+            var generic_type_candidates = generic_types.Where(gt => gt.Name == astType.Name);
+            if(generic_type_candidates.Any())
+                return generic_type_candidates.First();
+            else    
+                return CSharpCompilerHelpers.GetNativeType(astType);
         }
 		#endregion
 	}

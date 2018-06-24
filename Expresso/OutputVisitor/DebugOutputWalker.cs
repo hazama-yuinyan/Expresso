@@ -461,6 +461,11 @@ namespace Expresso.Ast
         public void VisitObjectCreationExpression(ObjectCreationExpression creation)
         {
             creation.TypePath.AcceptWalker(this);
+            if(creation.TypeArguments.Any()){
+                writer.Write("<");
+                PrintList(creation.TypeArguments);
+                writer.Write(">");
+            }
             writer.Write("{");
             PrintLongList(creation.Items);
             writer.Write("}");
@@ -498,6 +503,11 @@ namespace Expresso.Ast
             writer.Write("<?");
             writer.Write(textNode.Text);
             writer.Write("?>");
+        }
+
+        public void VisitTypeConstraint(TypeConstraint constraint)
+        {
+            writer.Write(constraint.TypeParameter.Name);
         }
 
         public void VisitSimpleType(SimpleType simpleType)
@@ -545,6 +555,13 @@ namespace Expresso.Ast
         public void VisitPlaceholderType(PlaceholderType placeholderType)
         {
             writer.Write("<placeholder type>");
+        }
+
+        public void VisitKeyValueType(KeyValueType keyValueType)
+        {
+            VisitParameterType(keyValueType.KeyType);
+            writer.Write(" = ");
+            keyValueType.ValueType.AcceptWalker(this);
         }
 
         public void VisitAttributeSection(AttributeSection section)
@@ -603,6 +620,12 @@ namespace Expresso.Ast
             }
             writer.Write("def ");
             writer.Write(funcDecl.Name);
+            if(funcDecl.TypeConstraints.Any()){
+                writer.Write("<");
+                PrintList(funcDecl.TypeConstraints);
+                writer.Write(">");
+            }
+                
             writer.Write("(");
             PrintList(funcDecl.Parameters);
             writer.Write(") -> ");
@@ -617,6 +640,12 @@ namespace Expresso.Ast
             
             writer.Write("{0} ", typeDecl.TypeKind.ToString());
             writer.Write(typeDecl.Name);
+            if(typeDecl.TypeConstraints.Any()){
+                writer.Write("<");
+                PrintList(typeDecl.TypeConstraints);
+                writer.Write(">");
+            }
+
             if(typeDecl.BaseTypes.HasChildren){
                 writer.Write(" : ");
                 PrintList(typeDecl.BaseTypes);

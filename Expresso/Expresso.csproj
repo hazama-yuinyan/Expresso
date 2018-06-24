@@ -108,7 +108,6 @@
     <Compile Include="ParserException.cs" />
     <Compile Include="Ast\AstNode.cs" />
     <Compile Include="Ast\NodeType.cs" />
-    <Compile Include="Ast\AstType.cs" />
     <Compile Include="Formatting\ExpressoFormattingOptions.cs" />
     <Compile Include="Formatting\FormattingOptionsFactory.cs" />
     <Compile Include="OutputVisitor\DebugOutputWalker.cs" />
@@ -142,9 +141,7 @@
     <Compile Include="Ast\Statements\BreakStatement.cs" />
     <Compile Include="Ast\Statements\ContinueStatement.cs" />
     <Compile Include="Ast\GeneralScope\FunctionDeclaration.cs" />
-    <Compile Include="Ast\PrimitiveType.cs" />
     <Compile Include="TypeSystem\KnownTypeReference.cs" />
-    <Compile Include="Ast\SimpleType.cs" />
     <Compile Include="Ast\Expressions\IndexerExpression.cs" />
     <Compile Include="Ast\Expressions\AssignmentExpression.cs" />
     <Compile Include="Ast\Statements\Statement.cs" />
@@ -171,12 +168,9 @@
     <Compile Include="Analysis\SymbolTable.cs" />
     <Compile Include="Analysis\ExpressoNameBinder.cs" />
     <Compile Include="Analysis\IAstWalker.cs" />
-    <Compile Include="Ast\PlaceholderType.cs" />
     <Compile Include="Ast\Expressions\OperatorType.cs" />
     <Compile Include="Ast\Expressions\PathExpression.cs" />
     <Compile Include="Ast\Expressions\KeyValueLikeExpression.cs" />
-    <Compile Include="Ast\MemberType.cs" />
-    <Compile Include="Ast\ReferenceType.cs" />
     <Compile Include="CodeGen\EmitterException.cs" />
     <Compile Include="CodeGen\CSharpEmitter.cs" />
     <Compile Include="CodeGen\CSharpCompilerHelpers.cs" />
@@ -191,11 +185,9 @@
     <Compile Include="Analysis\TypeChecker.cs" />
     <Compile Include="Analysis\TypeInferenceRunner.cs" />
     <Compile Include="Analysis\UniqueIdGenerator.cs" />
-    <Compile Include="Ast\FunctionType.cs" />
     <Compile Include="Ast\Statements\ValueBindingForStatement.cs" />
     <Compile Include="TriBool.cs" />
     <Compile Include="Ast\Expressions\MemberReferenceExpression.cs" />
-    <Compile Include="Ast\ParameterType.cs" />
     <Compile Include="CodeGen\LazyTypeBuilder.cs" />
     <Compile Include="CodeGen\InterfaceTypeDefiner.cs" />
     <Compile Include="Analysis\ParameterTypeReplacer.cs" />
@@ -219,6 +211,16 @@
     <Compile Include="Ast\GeneralScope\AttributeSection.cs" />
     <Compile Include="Ast\Patterns\TypePathPattern.cs" />
     <Compile Include="Utilities\Utilities.cs" />
+    <Compile Include="Ast\AstTypes\AstType.cs" />
+    <Compile Include="Ast\AstTypes\FunctionType.cs" />
+    <Compile Include="Ast\AstTypes\MemberType.cs" />
+    <Compile Include="Ast\AstTypes\ParameterType.cs" />
+    <Compile Include="Ast\AstTypes\PlaceholderType.cs" />
+    <Compile Include="Ast\AstTypes\PrimitiveType.cs" />
+    <Compile Include="Ast\AstTypes\ReferenceType.cs" />
+    <Compile Include="Ast\AstTypes\SimpleType.cs" />
+    <Compile Include="Ast\AstTypes\KeyValueType.cs" />
+    <Compile Include="Ast\GeneralScope\TypeConstraint.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -262,6 +264,7 @@
     <Folder Include="Analysis\" />
     <Folder Include="CodeGen\" />
     <Folder Include="Utilities\" />
+    <Folder Include="Ast\AstTypes\" />
   </ItemGroup>
   <ProjectExtensions>
     <MonoDevelop>

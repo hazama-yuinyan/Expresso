@@ -436,6 +436,20 @@ namespace Expresso.CodeGen
                 Console.WriteLine("Types are mismatched. Did you forget to cast arguments?");
                 break;
 
+            case "2020":
+                Console.WriteLine("Too few parameters are provided in the type arguments.");
+                Console.WriteLine("Consider adding more type arguments.");
+                break;
+
+            case "2021":
+                Console.WriteLine("Types are different in the type arguments and that of an argument.");
+                Console.WriteLine("It's possible that you are adding a type casting.");
+                break;
+
+            case "2022":
+                Console.WriteLine("You have to provide that argument!");
+                break;
+
             case "2100":
                 Console.WriteLine("You can't call a mutable method on an immutable variable because it modifies the state of the object.");
                 Console.WriteLine("If you absolutely need to do so, consider changing the `let` keyword to `var` in the variable declaration.");

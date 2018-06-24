@@ -47,7 +47,7 @@ namespace Expresso.Ast
         /// Represents the type arguments.
         /// </summary>
         /// <value>The type arguments.</value>
-        public AstNodeCollection<AstType> TypeArguments => GetChildrenByRole(Roles.TypeArgument);
+        public AstNodeCollection<KeyValueType> TypeArguments => GetChildrenByRole(Roles.KeyValueType);
 
         /// <summary>
         /// Gets all the key-value pairs.
@@ -69,7 +69,7 @@ namespace Expresso.Ast
         {
         }
 
-        public ObjectCreationExpression(AstType path, IEnumerable<AstType> typeArgs, IEnumerable<PathExpression> fields, IEnumerable<Expression> values,
+        public ObjectCreationExpression(AstType path, IEnumerable<KeyValueType> typeArgs, IEnumerable<PathExpression> fields, IEnumerable<Expression> values,
                                         TextLocation end)
             : base(path.StartLocation, end)
         {

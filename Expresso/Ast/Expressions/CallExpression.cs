@@ -31,7 +31,7 @@ namespace Expresso.Ast
         /// Represents the type arguments.
         /// </summary>
         /// <value>The type arguments.</value>
-        public AstNodeCollection<AstType> TypeArguments => GetChildrenByRole(Roles.TypeArgument);
+        public AstNodeCollection<KeyValueType> TypeArguments => GetChildrenByRole(Roles.KeyValueType);
 
         /// <summary>
         /// 与える実引数リスト。
@@ -51,7 +51,7 @@ namespace Expresso.Ast
 
         public ExpressoTokenNode RPar => GetChildByRole(Roles.RParenthesisToken);
 
-        public CallExpression(Expression targetExpr, IEnumerable<AstType> typeArgs, IEnumerable<Expression> arguments, TextLocation loc)
+        public CallExpression(Expression targetExpr, IEnumerable<KeyValueType> typeArgs, IEnumerable<Expression> arguments, TextLocation loc)
             : base(targetExpr.StartLocation, loc)
         {
             Target = targetExpr;
@@ -81,7 +81,7 @@ namespace Expresso.Ast
         protected internal override bool DoMatch(AstNode other, Match match)
         {
             var o = other as CallExpression;
-            return o != null && Target.DoMatch(o.Target, match) && Arguments.DoMatch(o.Arguments, match);
+            return o != null && Target.DoMatch(o.Target, match) && TypeArguments.DoMatch(o.TypeArguments, match) && Arguments.DoMatch(o.Arguments, match);
         }
 
         #endregion
