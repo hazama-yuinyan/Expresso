@@ -113,7 +113,7 @@ $namespace=Expresso
 		return result;
 	}
 
-    AstType CreateType(string keyword, TextLocation loc, bool isReference)
+    AstType CreatePrimitiveType(string keyword, TextLocation loc, bool isReference)
     {
         AstType type = new PrimitiveType(keyword, loc);
         if(isReference)
@@ -383,6 +383,37 @@ $namespace=Expresso
         var x = scanner.Peek();
         scanner.ResetPeek();
         return tt.kind == _ident && x.kind == _equal; 
+    }
+
+    bool FollowsObjectCreation()
+    {
+        var tt = la;
+        if(tt.kind != _langle_bracket)
+            return false;
+
+        var x = scanner.Peek();
+        while(x.kind != _rangle_bracket)
+            x = scanner.Peek();
+
+        while(x.kind != _lcurly && x.kind != _lparen)
+            x = scanner.Peek();
+
+        scanner.ResetPeek();
+        return x.kind == _lcurly;
+    }
+
+    bool IsTrailer()
+    {
+        var tt = la;
+        if(tt.kind != _langle_bracket)
+            return false;
+
+        var x = scanner.Peek();
+        while(x.kind != _rangle_bracket && x.kind != _semicolon && x.kind != _lcurly)
+            x = scanner.Peek();
+
+        scanner.ResetPeek();
+        return x.kind == _rangle_bracket;
     }
 
     /*bool IsLValueList()
@@ -1268,20 +1299,20 @@ Type<out AstType type>				(. var start_loc = NextLocation; type = new Placeholde
                                        start_loc = NextLocation;
                                     .)
    ]
-   ( "int"                			(. type = CreateType(t.val, start_loc, is_reference); .)
-   | "uint"                         (. type = CreateType(t.val, start_loc, is_reference); .)
-   | "bool"               			(. type = CreateType(t.val, start_loc, is_reference); .)
-   | "float"						(. type = CreateType(t.val, start_loc, is_reference); .)
-   | "double"                       (. type = CreateType(t.val, start_loc, is_reference); .)
-   | "bigint"						(. type = CreateType(t.val, start_loc, is_reference); .)
-   | "string"						(. type = CreateType(t.val, start_loc, is_reference); .)
-   | "byte"						    (. type = CreateType(t.val, start_loc, is_reference); .)
-   | "char"                         (. type = CreateType(t.val, start_loc, is_reference); .)
+   ( "int"                			(. type = CreatePrimitiveType(t.val, start_loc, is_reference); .)
+   | "uint"                         (. type = CreatePrimitiveType(t.val, start_loc, is_reference); .)
+   | "bool"               			(. type = CreatePrimitiveType(t.val, start_loc, is_reference); .)
+   | "float"						(. type = CreatePrimitiveType(t.val, start_loc, is_reference); .)
+   | "double"                       (. type = CreatePrimitiveType(t.val, start_loc, is_reference); .)
+   | "bigint"						(. type = CreatePrimitiveType(t.val, start_loc, is_reference); .)
+   | "string"						(. type = CreatePrimitiveType(t.val, start_loc, is_reference); .)
+   | "byte"						    (. type = CreatePrimitiveType(t.val, start_loc, is_reference); .)
+   | "char"                         (. type = CreatePrimitiveType(t.val, start_loc, is_reference); .)
    | TupleTypeSignature<out type>
-   | "vector"						(. type = CreateType(t.val, start_loc, is_reference); .)
-   | "dictionary"					(. type = CreateType(t.val, start_loc, is_reference); .)
-   | "slice"                        (. type = CreateType(t.val, start_loc, is_reference); .)
-   | "intseq"						(. type = CreateType(t.val, start_loc, is_reference); .)
+   | "vector"						(. type = AstType.MakeSimpleType(t.val, Enumerable.Empty<AstType>(), start_loc, CurrentEndLocation); .)
+   | "dictionary"					(. type = AstType.MakeSimpleType(t.val, Enumerable.Empty<AstType>(), start_loc, CurrentEndLocation); .)
+   | "slice"                        (. type = AstType.MakeSimpleType(t.val, Enumerable.Empty<AstType>(), start_loc, CurrentEndLocation); .)
+   | "intseq"						(. type = CreatePrimitiveType(t.val, start_loc, is_reference); .)
    | "void"							(. type = AstType.MakeSimpleType("tuple", Enumerable.Empty<AstType>(), start_loc, CurrentEndLocation); .)
    | TypePathExpression<out type>   (.
                                        if(is_reference)
@@ -2068,7 +2099,8 @@ UnaryOperator<out OperatorType opType>  (. opType = OperatorType.None; .)
 Primary<out Expression expr>		        (. expr = null; PathExpression path; AstType type_path = null; var type_args = new List<KeyValueType>(); .)
 =
   ( PathExpression<out path>                (. expr = path; .) /* It's possible that a PathExpression turns out to be just an identifier */
-    ( GenericTypeArguments<ref type_args>   (. type_path = ConvertPathToType(path); .)
+    ( IF(FollowsObjectCreation())
+      GenericTypeArguments<ref type_args>   (. type_path = ConvertPathToType(path); .)
       ObjectCreation<type_path, type_args, out expr>
     | [ IF(IsObjectCreation())              (. type_path = ConvertPathToType(path); .)  /* Ambiguous between this and MatchStmt */
         ObjectCreation<type_path, type_args, out expr>
@@ -2076,7 +2108,8 @@ Primary<out Expression expr>		        (. expr = null; PathExpression path; AstTy
     )
   | Atom<out expr>
   )
-  { Trailer<ref expr>
+  { IF(IsTrailer())         /* Ambiguous between Comparison and this*/
+    Trailer<ref expr>
   }
   [ "as"
     Type<out type_path>                 (. expr = Expression.MakeCastExpr(expr, type_path); .)
@@ -2178,7 +2211,8 @@ PatternPrimary<out Expression expr>     (. expr = null; PathExpression path; .)
   ( PathExpression<out path>            (. expr = path; .) /* It's possible that a PathExpression turns out to be just an identifier */
   | Literal<out expr>
   )
-  { Trailer<ref expr>
+  { IF(IsTrailer())
+    Trailer<ref expr>
   }.
 /*------------------------------------------------------------------------*/
 LhsPrimary<out Expression expr>         (. expr = null; PathExpression path; .)
@@ -2227,15 +2261,16 @@ ObjectCreation<. AstType typePath, List<KeyValueType> typeArgs, out Expression e
 /*------------------------------------------------------------------------*/
 Trailer<ref Expression expr>	(. var args = new List<Expression>(); var start_loc = NextLocation; var type_args = new List<KeyValueType>(); .)
 =
-  [ GenericTypeArguments<ref type_args> ]
-  '('
-  [ArgList<out args>]
-  ')'							(. expr = Expression.MakeCallExpr(expr, args, type_args, CurrentEndLocation); .)
+  ( [ GenericTypeArguments<ref type_args> ]
+    '('
+    [ ArgList<out args> ]
+    ')'							(. expr = Expression.MakeCallExpr(expr, args, type_args, CurrentEndLocation); .)
   | '['
     ArgList<out args>
     ']'							(. expr = Expression.MakeIndexer(expr, args, CurrentEndLocation); .)
   | '.'
-    ident						(. expr = Expression.MakeMemRef(expr, AstNode.MakeIdentifier(t.val, AstType.MakePlaceholderType(CurrentEndLocation), ExpressoModifiers.None, start_loc)); .).
+    ident						(. expr = Expression.MakeMemRef(expr, AstNode.MakeIdentifier(t.val, AstType.MakePlaceholderType(CurrentEndLocation), ExpressoModifiers.None, start_loc)); .)
+  ).
 /*------------------------------------------------------------------------*/
 ArgList<. out List<Expression> args .>		(. args = new List<Expression>(); Expression expr; .)
 =
@@ -2262,14 +2297,14 @@ Atom<out Expression expr>			(. var exprs = new List<Expression>(); expr = null; 
                                     .)
     )
   | '['
-    [SequenceMaker<out expr>]
+    [ SequenceMaker<out expr> ]
     SYNC ']'						(.  if(expr == null){
                                             var type = CreateTypeWithArgs("array", AstType.MakePlaceholderType(start_loc));
     										expr = Expression.MakeSequenceInitializer(type, Enumerable.Empty<Expression>());
                                         }
     								.)
   | lcurly
-    [DictMaker<out expr>]
+    [ DictMaker<out expr> ]
     SYNC rcurly                     (. if(expr == null){
                                            var type = CreateTypeWithArgs("dictionary", AstType.MakePlaceholderType(start_loc), AstType.MakePlaceholderType(start_loc));
                                            expr = Expression.MakeSequenceInitializer(type, Enumerable.Empty<Expression>());

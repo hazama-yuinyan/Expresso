@@ -5,20 +5,18 @@ using ICSharpCode.NRefactory.PatternMatching;
 
 namespace Expresso.CodeGen
 {
-    using CSharpExpr = System.Linq.Expressions.Expression;
-
-    public partial class CSharpEmitter : IAstWalker<CSharpEmitterContext, CSharpExpr>
+    public partial class CodeGenerator : IAstWalker<CSharpEmitterContext, Type>
     {
         /// <summary>
         /// This class is responsible for infering the type of a pattern.
         /// </summary>
         public class ItemTypeInferencer : IAstWalker<AstType>
 	    {
-            CSharpEmitter emitter;
+            CodeGenerator generator;
 
-            public ItemTypeInferencer(CSharpEmitter emitter)
+            public ItemTypeInferencer(CodeGenerator generator)
 	        {
-                this.emitter = emitter;
+                this.generator = generator;
 	        }
 
             public AstType VisitAliasDeclaration(AliasDeclaration aliasDecl)

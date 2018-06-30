@@ -159,7 +159,7 @@ static uint ScopeId = 1;
 		return result;
 	}
 
-    AstType CreateType(string keyword, TextLocation loc, bool isReference)
+    AstType CreatePrimitiveType(string keyword, TextLocation loc, bool isReference)
     {
         AstType type = new PrimitiveType(keyword, loc);
         if(isReference)
@@ -429,6 +429,37 @@ static uint ScopeId = 1;
         var x = scanner.Peek();
         scanner.ResetPeek();
         return tt.kind == _ident && x.kind == _equal; 
+    }
+
+    bool FollowsObjectCreation()
+    {
+        var tt = la;
+        if(tt.kind != _langle_bracket)
+            return false;
+
+        var x = scanner.Peek();
+        while(x.kind != _rangle_bracket)
+            x = scanner.Peek();
+
+        while(x.kind != _lcurly && x.kind != _lparen)
+            x = scanner.Peek();
+
+        scanner.ResetPeek();
+        return x.kind == _lcurly;
+    }
+
+    bool IsTrailer()
+    {
+        var tt = la;
+        if(tt.kind != _langle_bracket)
+            return false;
+
+        var x = scanner.Peek();
+        while(x.kind != _rangle_bracket && x.kind != _semicolon && x.kind != _lcurly)
+            x = scanner.Peek();
+
+        scanner.ResetPeek();
+        return x.kind == _rangle_bracket;
     }
 
     /*bool IsLValueList()
@@ -1317,47 +1348,47 @@ static uint ScopeId = 1;
 			switch (la.kind) {
 			case 54: {
 				Get();
-				type = CreateType(t.val, start_loc, is_reference); 
+				type = CreatePrimitiveType(t.val, start_loc, is_reference); 
 				break;
 			}
 			case 55: {
 				Get();
-				type = CreateType(t.val, start_loc, is_reference); 
+				type = CreatePrimitiveType(t.val, start_loc, is_reference); 
 				break;
 			}
 			case 56: {
 				Get();
-				type = CreateType(t.val, start_loc, is_reference); 
+				type = CreatePrimitiveType(t.val, start_loc, is_reference); 
 				break;
 			}
 			case 57: {
 				Get();
-				type = CreateType(t.val, start_loc, is_reference); 
+				type = CreatePrimitiveType(t.val, start_loc, is_reference); 
 				break;
 			}
 			case 58: {
 				Get();
-				type = CreateType(t.val, start_loc, is_reference); 
+				type = CreatePrimitiveType(t.val, start_loc, is_reference); 
 				break;
 			}
 			case 59: {
 				Get();
-				type = CreateType(t.val, start_loc, is_reference); 
+				type = CreatePrimitiveType(t.val, start_loc, is_reference); 
 				break;
 			}
 			case 60: {
 				Get();
-				type = CreateType(t.val, start_loc, is_reference); 
+				type = CreatePrimitiveType(t.val, start_loc, is_reference); 
 				break;
 			}
 			case 61: {
 				Get();
-				type = CreateType(t.val, start_loc, is_reference); 
+				type = CreatePrimitiveType(t.val, start_loc, is_reference); 
 				break;
 			}
 			case 62: {
 				Get();
-				type = CreateType(t.val, start_loc, is_reference); 
+				type = CreatePrimitiveType(t.val, start_loc, is_reference); 
 				break;
 			}
 			case 7: {
@@ -1366,22 +1397,22 @@ static uint ScopeId = 1;
 			}
 			case 63: {
 				Get();
-				type = CreateType(t.val, start_loc, is_reference); 
+				type = AstType.MakeSimpleType(t.val, Enumerable.Empty<AstType>(), start_loc, CurrentEndLocation); 
 				break;
 			}
 			case 64: {
 				Get();
-				type = CreateType(t.val, start_loc, is_reference); 
+				type = AstType.MakeSimpleType(t.val, Enumerable.Empty<AstType>(), start_loc, CurrentEndLocation); 
 				break;
 			}
 			case 65: {
 				Get();
-				type = CreateType(t.val, start_loc, is_reference); 
+				type = AstType.MakeSimpleType(t.val, Enumerable.Empty<AstType>(), start_loc, CurrentEndLocation); 
 				break;
 			}
 			case 66: {
 				Get();
-				type = CreateType(t.val, start_loc, is_reference); 
+				type = CreatePrimitiveType(t.val, start_loc, is_reference); 
 				break;
 			}
 			case 67: {
@@ -2955,7 +2986,7 @@ static uint ScopeId = 1;
 		if (la.kind == 18) {
 			PathExpression(out path);
 			expr = path; 
-			if (la.kind == 8) {
+			if (FollowsObjectCreation()) {
 				GenericTypeArguments(ref type_args);
 				type_path = ConvertPathToType(path); 
 				ObjectCreation(type_path, type_args, out expr);
@@ -2968,7 +2999,7 @@ static uint ScopeId = 1;
 		} else if (StartOf(32)) {
 			Atom(out expr);
 		} else SynErr(182);
-		while (StartOf(21)) {
+		while (IsTrailer()) {
 			Trailer(ref expr);
 		}
 		if (la.kind == 39) {
@@ -3225,7 +3256,7 @@ static uint ScopeId = 1;
 		} else if (StartOf(22)) {
 			Literal(out expr);
 		} else SynErr(190);
-		while (StartOf(21)) {
+		while (IsTrailer()) {
 			Trailer(ref expr);
 		}
 	}

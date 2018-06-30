@@ -4,9 +4,7 @@ using Expresso.Ast;
 
 namespace Expresso.CodeGen
 {
-    using CSharpExpr = System.Linq.Expressions.Expression;
-
-    public partial class CSharpEmitter : IAstWalker<CSharpEmitterContext, CSharpExpr>
+    public partial class CodeGenerator : IAstWalker<CSharpEmitterContext, Type>
     {
         /// <summary>
         /// This class is responsible for defining inner variables before inspecting the body statements of a match clause.
@@ -165,7 +163,7 @@ namespace Expresso.CodeGen
             public void VisitIdentifierPattern(IdentifierPattern identifierPattern)
             {
                 var native_type = CSharpCompilerHelpers.GetNativeType(identifierPattern.Identifier.Type);
-                var native_param = CSharpExpr.Parameter(native_type, identifierPattern.Identifier.Name);
+                var native_param = System.Linq.Expressions.Expression.Parameter(native_type, identifierPattern.Identifier.Name);
                 AddSymbol(identifierPattern.Identifier, new ExpressoSymbol{Parameter = native_param});
             }
 

@@ -646,7 +646,7 @@ namespace Expresso.Ast
                 writer.Write(">");
             }
 
-            if(typeDecl.BaseTypes.HasChildren){
+            if(typeDecl.BaseTypes.Any()){
                 writer.Write(" : ");
                 PrintList(typeDecl.BaseTypes);
             }

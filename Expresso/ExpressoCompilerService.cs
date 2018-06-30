@@ -35,10 +35,12 @@ namespace Expresso
             var parser = new Parser(new Scanner(filePath));
             parser.DoPostParseProcessing = true;
             parser.Parse();
+
             var ast = parser.TopmostAst;
-            var emitter = new CSharpEmitter(parser, options);
-            ast.AcceptWalker(emitter, new CSharpEmitterContext());
-            return emitter.AssemblyBuilder;
+            //var emitter = new CSharpEmitter(parser, options);
+            var generator = new CodeGenerator(parser, options);
+            ast.AcceptWalker(generator, null);
+            return generator.AssemblyBuilder;
         }
     }
 }

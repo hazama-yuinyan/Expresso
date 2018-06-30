@@ -1158,7 +1158,7 @@ namespace Expresso.Ast.Analysis
             BindFullyQualifiedTypeName(simpleType.IdentifierToken);
             // If the type arguments contain any unsubstituted ones(placeholder nodes)
             // return the statically defined placeholder type node to indicate that it needs to be inferred
-            if(simpleType.TypeArguments.HasChildren && simpleType.TypeArguments.Any(ta => IsPlaceholderType(ta)))
+            if(simpleType.TypeArguments.Any(ta => IsPlaceholderType(ta)))
                 return AstType.MakePlaceholderType();
             else
                 return simpleType;
@@ -1576,9 +1576,8 @@ namespace Expresso.Ast.Analysis
                 // The right-hand-side contains some placeholders, so infer them
                 var lhs_simple = left_type as SimpleType;
                 var rhs_simple = rhs_type as SimpleType;
-                foreach(var pair in lhs_simple.TypeArguments.Zip(rhs_simple.TypeArguments,(l, r) => new Tuple<AstType, AstType>(l, r))){
-                    pair.Item2.ReplaceWith(pair.Item1.Clone());
-                }
+                foreach(var pair in lhs_simple.TypeArguments.Zip(rhs_simple.TypeArguments, (l, r) => new {Lhs = l, Rhs = r}))
+                    pair.Rhs.ReplaceWith(pair.Lhs.Clone());
             }else if(rhs_type != null && IsCompatibleWith(left_type, rhs_type) == TriBool.False){
                 parser.ReportSemanticErrorRegional(
                     "The type `{0}` on the left-hand-side is not compatible with `{1}` on the right-hand-side.",

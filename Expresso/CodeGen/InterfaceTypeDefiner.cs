@@ -9,21 +9,21 @@ namespace Expresso.CodeGen
 {
     using CSharpExpr = System.Linq.Expressions.Expression;
 
-    public partial class CSharpEmitter : IAstWalker<CSharpEmitterContext, CSharpExpr>
+    public partial class CodeGenerator : IAstWalker<CSharpEmitterContext, Type>
     {
         /// <summary>
         /// An InterfaceTypeDefiner is responsible for inspecting types and defining the outlines of types.
         /// </summary>
         public class InterfaceTypeDefiner : IAstWalker
         {
-            CSharpEmitter emitter;
+            CodeGenerator generator;
             CSharpEmitterContext context;
             string field_prefix;
             Type self_type;
 
-            public InterfaceTypeDefiner(CSharpEmitter emitter, CSharpEmitterContext context)
+            public InterfaceTypeDefiner(CodeGenerator generator, CSharpEmitterContext context)
             {
-                this.emitter = emitter;
+                this.generator = generator;
                 this.context = context;
             }
 
@@ -316,59 +316,58 @@ namespace Expresso.CodeGen
 
             public void VisitFunctionDeclaration(FunctionDeclaration funcDecl)
             {
-                context.Additionals = new List<object>();
-                int tmp_counter = emitter.scope_counter;
-                emitter.DescendScope();
-                emitter.scope_counter = 0;
+                int tmp_counter = generator.scope_counter;
+                generator.DescendScope();
+                generator.scope_counter = 0;
 
                 var context_ast = context.ContextAst;
                 context.ContextAst = funcDecl;
 
-                var param_types = funcDecl.Parameters.Select(param => param.AcceptWalker(emitter, context).Type);
+                var param_types = funcDecl.Parameters.Select(param => generator.VisitParameterDeclaration(param, context));
 
                 var return_type = CSharpCompilerHelpers.GetNativeType(funcDecl.ReturnType);
 
-                var attr = (context.LazyTypeBuilder != null) ? MethodAttributes.Private : MethodAttributes.Static | MethodAttributes.Private;
+                var flags = (context.LazyTypeBuilder != null) ? MethodAttributes.Private : MethodAttributes.Static | MethodAttributes.Private;
                 if(funcDecl.Modifiers.HasFlag(Modifiers.Public)){
-                    attr |= MethodAttributes.Public;
-                    attr ^= MethodAttributes.Private;
+                    flags |= MethodAttributes.Public;
+                    flags ^= MethodAttributes.Private;
                 }
 
                 if(funcDecl.Parent is TypeDeclaration type_decl && type_decl.TypeKind == ClassType.Interface){
-                    attr |= MethodAttributes.Abstract | MethodAttributes.Virtual;
+                    flags |= MethodAttributes.Abstract | MethodAttributes.Virtual;
                 }else if(funcDecl.Parent is TypeDeclaration type_decl2){
                     foreach(var base_type in type_decl2.BaseTypes){
                         var native_type = Symbols[base_type.IdentifierNode.IdentifierId].Type;
                         // interfaces methods must be virtual
                         if(native_type.GetMethod(funcDecl.Name) != null)
-                            attr |= MethodAttributes.Virtual;
+                            flags |= MethodAttributes.Virtual;
                     }
                 }
 
                 MethodBuilder method_builder;
                 if(funcDecl.Parent is TypeDeclaration type_decl3 && type_decl3.TypeKind == ClassType.Interface)
-                    method_builder = context.InterfaceTypeBuilder.DefineMethod(funcDecl.Name, attr, return_type, param_types.ToArray());
+                    method_builder = context.InterfaceTypeBuilder.DefineMethod(funcDecl.Name, flags, return_type, param_types.ToArray());
                 else
-                    method_builder = context.LazyTypeBuilder.DefineMethod(funcDecl.Name, attr, return_type, param_types.ToArray(), emitter, context, funcDecl);
+                    method_builder = context.LazyTypeBuilder.DefineMethod(funcDecl.Name, flags, return_type, param_types.ToArray());
 
-                context.CustomAttributeSetter = method_builder.SetCustomAttribute;
+                /*context.CustomAttributeSetter = method_builder.SetCustomAttribute;
                 context.AttributeTarget = AttributeTargets.Method;
                 // We don't call VisitAttributeSection directly so that we can avoid unnecessary method calls
-                funcDecl.Attribute.AcceptWalker(emitter, context);
+                funcDecl.Attribute.AcceptWalker(generator, context);*/
 
-                emitter.AscendScope();
-                emitter.scope_counter = tmp_counter + 1;
+                generator.AscendScope();
+                generator.scope_counter = tmp_counter + 1;
             }
 
             public void VisitTypeDeclaration(TypeDeclaration typeDecl)
             {
-                int tmp_counter = emitter.scope_counter;
-                emitter.DescendScope();
-                emitter.scope_counter = 0;
+                int tmp_counter = generator.scope_counter;
+                generator.DescendScope();
+                generator.scope_counter = 0;
 
                 var parent_type = context.LazyTypeBuilder;
-                var attr = typeDecl.Modifiers.HasFlag(Modifiers.Export) ? TypeAttributes.Public : TypeAttributes.NotPublic;
-                attr |= (typeDecl.TypeKind == ClassType.Interface) ? TypeAttributes.Interface | TypeAttributes.Abstract : TypeAttributes.Class | TypeAttributes.BeforeFieldInit;
+                var flags = typeDecl.Modifiers.HasFlag(Modifiers.Export) ? TypeAttributes.Public : TypeAttributes.NotPublic;
+                flags |= (typeDecl.TypeKind == ClassType.Interface) ? TypeAttributes.Interface | TypeAttributes.Abstract : TypeAttributes.Class | TypeAttributes.BeforeFieldInit;
                 var name = typeDecl.Name;
 
                 foreach(var base_type in typeDecl.BaseTypes){
@@ -388,24 +387,24 @@ namespace Expresso.CodeGen
                 if(first_type != null && !first_type.IsClass)
                     base_types = new []{typeof(object)}.Concat(base_types);
 
-                var is_raw_value_enum = emitter.symbol_table.GetSymbol(Utilities.RawValueEnumValueFieldName) != null;
+                var is_raw_value_enum = generator.symbol_table.GetSymbol(Utilities.RawValueEnumValueFieldName) != null;
                 if(typeDecl.TypeKind == ClassType.Interface){
                     context.InterfaceTypeBuilder = context.ModuleBuilder.DefineType(name, TypeAttributes.Interface | TypeAttributes.Abstract);
                     if(typeDecl.TypeConstraints.Any())
-                        emitter.generic_types = context.InterfaceTypeBuilder.DefineGenericParameters(typeDecl.TypeConstraints.Select(c => c.TypeParameter.Name).ToArray());
+                        generator.generic_types = context.InterfaceTypeBuilder.DefineGenericParameters(typeDecl.TypeConstraints.Select(c => c.TypeParameter.Name).ToArray());
                     
-                    context.CustomAttributeSetter = context.InterfaceTypeBuilder.SetCustomAttribute;
+                    /*context.CustomAttributeSetter = context.InterfaceTypeBuilder.SetCustomAttribute;
                     // We don't call VisitAttributeSection directly so that we can avoid unnecessary method calls
-                    typeDecl.Attribute.AcceptWalker(emitter, context);
+                    typeDecl.Attribute.AcceptWalker(generator, context);*/
                 }else{
-                    context.LazyTypeBuilder = new LazyTypeBuilder(context.ModuleBuilder, name, attr, base_types, false, is_raw_value_enum);
-                    if(typeDecl.TypeConstraints.Any())
-                        emitter.generic_types = context.LazyTypeBuilder.InterfaceTypeBuilder.DefineGenericParameters(typeDecl.TypeConstraints.Select(c => c.TypeParameter.Name).ToArray());
+                    context.LazyTypeBuilder = new WrappedTypeBuilder(context.ModuleBuilder, name, flags, base_types, false, is_raw_value_enum);
+                    /*if(typeDecl.TypeConstraints.Any())
+                        generator.generic_types = context.LazyTypeBuilder.TypeBuilder.DefineGenericParameters(typeDecl.TypeConstraints.Select(c => c.TypeParameter.Name).ToArray());
 
-                    context.CustomAttributeSetter = context.LazyTypeBuilder.InterfaceTypeBuilder.SetCustomAttribute;
+                    context.CustomAttributeSetter = context.LazyTypeBuilder.TypeBuilder.SetCustomAttribute;
                     context.AttributeTarget = AttributeTargets.Class | AttributeTargets.Struct | AttributeTargets.Enum;
                     // We don't call VisitAttributeSection directly so that we can avoid unnecessary method calls
-                    typeDecl.Attribute.AcceptWalker(emitter, context);
+                    typeDecl.Attribute.AcceptWalker(generator, context);*/
 
                     if(typeDecl.TypeKind == ClassType.Enum)
                         field_prefix = "<>__";
@@ -415,7 +414,7 @@ namespace Expresso.CodeGen
 
                 foreach(var base_type in base_types){
                     if(base_type.IsInterface)
-                        context.LazyTypeBuilder.InterfaceTypeBuilder.AddInterfaceImplementation(base_type);
+                        context.LazyTypeBuilder.TypeBuilder.AddInterfaceImplementation(base_type);
                 }
 
                 if(typeDecl.TypeKind != ClassType.Enum || !is_raw_value_enum){
@@ -423,7 +422,7 @@ namespace Expresso.CodeGen
                         foreach(var member in typeDecl.Members)
                             member.AcceptWalker(this);
 
-                        var type = (typeDecl.TypeKind == ClassType.Interface) ? context.InterfaceTypeBuilder.CreateType() : context.LazyTypeBuilder.CreateInterfaceType();
+                        var type = (typeDecl.TypeKind == ClassType.Interface) ? context.InterfaceTypeBuilder.CreateType() : context.LazyTypeBuilder.TypeAsType;
                         var expresso_symbol = (typeDecl.TypeKind == ClassType.Interface) ? new ExpressoSymbol{Type = type} : new ExpressoSymbol{Type = type, TypeBuilder = context.LazyTypeBuilder};
                         AddSymbol(typeDecl.NameToken, expresso_symbol);
 
@@ -440,7 +439,7 @@ namespace Expresso.CodeGen
                     try{
                         var interface_type_builder = context.LazyTypeBuilder;
                         var type_builder = interface_type_builder.DefineNestedType("<RealEnum>", TypeAttributes.NotPublic | TypeAttributes.Class, new []{typeof(Enum)});
-                        self_type = type_builder.InterfaceTypeAsType;
+                        self_type = type_builder.TypeAsType;
 
                         context.LazyTypeBuilder = type_builder;
                         foreach(var member in typeDecl.Members.OfType<FieldDeclaration>())
@@ -454,20 +453,19 @@ namespace Expresso.CodeGen
                         // It seems to be needed so that it will be recognized as an enum
                         type_builder.DefineField("value__", typeof(int), false, FieldAttributes.Public | FieldAttributes.SpecialName | FieldAttributes.RTSpecialName);
 
-                        var enum_interface_type = type_builder.CreateInterfaceType();
-                        type_builder.CreateType();
+                        var real_enum_type = type_builder.CreateType();
 
-                        var field_builder = interface_type_builder.DefineField(Utilities.RawValueEnumValueFieldName, enum_interface_type, false);
-                        var value_symbol = emitter.symbol_table.GetSymbol(Utilities.RawValueEnumValueFieldName);
+                        var field_builder = interface_type_builder.DefineField(Utilities.RawValueEnumValueFieldName, real_enum_type, false);
+                        var value_symbol = generator.symbol_table.GetSymbol(Utilities.RawValueEnumValueFieldName);
                         AddSymbol(value_symbol, new ExpressoSymbol{PropertyOrField = field_builder});
 
-                        var interface_interface_type = interface_type_builder.CreateInterfaceType();
-                        var expresso_symbol = new ExpressoSymbol{Type = interface_interface_type, TypeBuilder = interface_type_builder};
+                        var enum_interface_type = interface_type_builder.TypeAsType;
+                        var expresso_symbol = new ExpressoSymbol{Type = enum_interface_type, TypeBuilder = interface_type_builder};
                         AddSymbol(typeDecl.NameToken, expresso_symbol);
 
                         // Add fields as ExpressoSymbols so that we can refer to raw value style enum members
                         // This operation can't be moved to CSharpEmitter because we have no reference to the enum interface type there
-                        RegisterFields(typeDecl, enum_interface_type);
+                        RegisterFields(typeDecl, real_enum_type);
                     }
                     finally{
                         context.LazyTypeBuilder = parent_type;
@@ -475,8 +473,8 @@ namespace Expresso.CodeGen
                     }
                 }
 
-                emitter.AscendScope();
-                emitter.scope_counter = tmp_counter + 1;
+                generator.AscendScope();
+                generator.scope_counter = tmp_counter + 1;
             }
 
             public void VisitAliasDeclaration(AliasDeclaration aliasDecl)
@@ -486,9 +484,9 @@ namespace Expresso.CodeGen
 
             public void VisitFieldDeclaration(FieldDeclaration fieldDecl)
             {
-                FieldAttributes attr = FieldAttributes.Private;
+                var flags = FieldAttributes.Private;
                 if(fieldDecl.Modifiers.HasFlag(Modifiers.Static))
-                    attr |= FieldAttributes.Static;
+                    flags |= FieldAttributes.Static;
 
                 // Don't set InitOnly flag or we'll fail to initialize the fields
                 // because fields are initialized via impl methods.
@@ -497,25 +495,25 @@ namespace Expresso.CodeGen
                 //    attr |= FieldAttributes.InitOnly;
 
                 if(fieldDecl.Modifiers.HasFlag(Modifiers.Private))
-                    attr |= FieldAttributes.Private;
+                    flags |= FieldAttributes.Private;
                 else if(fieldDecl.Modifiers.HasFlag(Modifiers.Protected))
-                    attr |= FieldAttributes.Family;
+                    flags |= FieldAttributes.Family;
                 else if(fieldDecl.Modifiers.HasFlag(Modifiers.Public))
-                    attr |= FieldAttributes.Public;
+                    flags |= FieldAttributes.Public;
                 else
                     throw new EmitterException("Unknown modifiers!");
 
                 if(!fieldDecl.Modifiers.HasFlag(Modifiers.Private))
-                    attr ^= FieldAttributes.Private;
+                    flags ^= FieldAttributes.Private;
 
                 foreach(var init in fieldDecl.Initializers){
                     var type = DetermineType(init.NameToken.Type);
-                    var field_builder = context.LazyTypeBuilder.DefineField(field_prefix + init.Name, type, !Expression.IsNullNode(init.Initializer), attr);
+                    var field_builder = context.LazyTypeBuilder.DefineField(field_prefix + init.Name, type, !Expression.IsNullNode(init.Initializer), flags);
 
-                    context.CustomAttributeSetter = field_builder.SetCustomAttribute;
+                    /*context.CustomAttributeSetter = field_builder.SetCustomAttribute;
                     context.AttributeTarget = AttributeTargets.Field;
                     // We don't call VisitAttributeSection directly so that we can avoid unnecessary method calls
-                    fieldDecl.Attribute.AcceptWalker(emitter, context);
+                    fieldDecl.Attribute.AcceptWalker(generator, context);*/
 
                     AddSymbol(init.NameToken, new ExpressoSymbol{FieldBuilder = field_builder});
                 }
@@ -628,8 +626,8 @@ namespace Expresso.CodeGen
                     return self_type;
 
                 if(astType is ParameterType param_type){
-                    var generic_type = emitter.generic_types.Where(gt => gt.Name == astType.Name)
-                                                    .First();
+                    var generic_type = generator.generic_types.Where(gt => gt.Name == astType.Name)
+                                                .First();
                     return generic_type;
                 }
 

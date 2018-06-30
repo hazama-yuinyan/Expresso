@@ -172,7 +172,6 @@
     <Compile Include="Ast\Expressions\PathExpression.cs" />
     <Compile Include="Ast\Expressions\KeyValueLikeExpression.cs" />
     <Compile Include="CodeGen\EmitterException.cs" />
-    <Compile Include="CodeGen\CSharpEmitter.cs" />
     <Compile Include="CodeGen\CSharpCompilerHelpers.cs" />
     <Compile Include="Ast\GeneralScope\AliasDeclaration.cs" />
     <Compile Include="CodeGen\CSharpEmitterContext.cs" />
@@ -188,7 +187,7 @@
     <Compile Include="Ast\Statements\ValueBindingForStatement.cs" />
     <Compile Include="TriBool.cs" />
     <Compile Include="Ast\Expressions\MemberReferenceExpression.cs" />
-    <Compile Include="CodeGen\LazyTypeBuilder.cs" />
+    <Compile Include="CodeGen\WrappedTypeBuilder.cs" />
     <Compile Include="CodeGen\InterfaceTypeDefiner.cs" />
     <Compile Include="Analysis\ParameterTypeReplacer.cs" />
     <Compile Include="Utilities\ICloneable.cs" />
@@ -221,6 +220,7 @@
     <Compile Include="Ast\AstTypes\SimpleType.cs" />
     <Compile Include="Ast\AstTypes\KeyValueType.cs" />
     <Compile Include="Ast\GeneralScope\TypeConstraint.cs" />
+    <Compile Include="CodeGen\CodeGenerator.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -250,6 +250,7 @@
     <None Include="packages.config" />
     <None Include="Documentations\TODO.txt" />
     <None Include="Ast\Patterns\ValueBindingPattern.cs" />
+    <None Include="CodeGen\CSharpEmitter.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Formatting\" />

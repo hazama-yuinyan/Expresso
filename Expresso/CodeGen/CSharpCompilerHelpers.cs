@@ -96,7 +96,7 @@ namespace Expresso.CodeGen
 
         public static Type GetNativeType(AstType astType)
         {
-            if(astType.IdentifierNode.IdentifierId != 0u && CSharpEmitter.Symbols.TryGetValue(astType.IdentifierNode.IdentifierId, out var symbol))
+            if(astType.IdentifierNode.IdentifierId != 0u && CodeGenerator.Symbols.TryGetValue(astType.IdentifierNode.IdentifierId, out var symbol))
                 return symbol.Type;
 
             if(astType is PrimitiveType primitive)
@@ -362,12 +362,12 @@ namespace Expresso.CodeGen
 
         public static void AddPrimitiveNativeSymbols()
         {
-            CSharpEmitter.Symbols.Add(1000000000u, new ExpressoSymbol{
+            CodeGenerator.Symbols.Add(1000000000u, new ExpressoSymbol{
                 Method = typeof(Console).GetMethod("Write", new []{
                     typeof(string), typeof(object[])
                 })
             });
-            CSharpEmitter.Symbols.Add(1000000001u, new ExpressoSymbol{
+            CodeGenerator.Symbols.Add(1000000001u, new ExpressoSymbol{
                 Method = typeof(Console).GetMethod("WriteLine", new []{
                     typeof(string), typeof(object[])
                 })
@@ -382,7 +382,7 @@ namespace Expresso.CodeGen
                 var primitive = AstType.MakePrimitiveType(builtin_pair.Key);
                 var type = GetPrimitiveType(primitive);
 
-                CSharpEmitter.Symbols.Add(builtin_pair.Value.Item2, new ExpressoSymbol{
+                CodeGenerator.Symbols.Add(builtin_pair.Value.Item2, new ExpressoSymbol{
                     Type = type
                 });
             }

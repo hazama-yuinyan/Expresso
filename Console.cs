@@ -35,8 +35,8 @@ To execute the resulting binary: mono the_name_of_the_executable"
                     BuildType = BuildType.Debug | BuildType.Executable,
                     ExecutableName = executable_name
                 };
-                var emitter = new CSharpEmitter(parser, options);
-                ast.AcceptWalker(emitter, null);
+                var generator = new CodeGenerator(parser, options);
+                ast.AcceptWalker(generator, null);
             }
             catch(ParserException){
                 // Ignore the exception because the parser already handled this case

@@ -7,6 +7,13 @@ using Expresso.Ast;
 
 namespace Expresso.CodeGen
 {
+    public enum OperationType
+    {
+        Load,
+        Set,
+        None
+    }
+
     /// <summary>
     /// Represents the current context for <see cref="Expresso.CodeGen.CSharpEmitter"/>.
     /// </summary>
@@ -30,7 +37,7 @@ namespace Expresso.CodeGen
         /// Current type builder.
         /// It will be null if we are not constructing a type declaration.
         /// </summary>
-        public LazyTypeBuilder LazyTypeBuilder{
+        public WrappedTypeBuilder LazyTypeBuilder{
             get; set;
         }
 
@@ -83,27 +90,6 @@ namespace Expresso.CodeGen
         }
 
         /// <summary>
-        /// In type declarations, this property represents the type being declared.
-        /// </summary>
-        public TypeDeclaration DeclaringType{
-            get; set;
-        }
-
-        /// <summary>
-        /// The assembly object that we are currently constructing.
-        /// </summary>
-        public Assembly Assembly{
-            get; set;
-        }
-
-        /// <summary>
-        /// The module object that we are targeting at.
-        /// </summary>
-        public Module Module{
-            get; set;
-        }
-
-        /// <summary>
         /// The type that is concerned to the current expression.
         /// </summary>
         public Type TargetType{
@@ -114,6 +100,21 @@ namespace Expresso.CodeGen
         /// This flag indicates whether we are interested in types or not.
         /// </summary>
         public bool RequestType{
+            get; set;
+        }
+
+        /// <summary>
+        /// Currently targeted <see cref="LocalBuilder"/>.
+        /// </summary>
+        /// <value>The target local builder.</value>
+        public LocalBuilder TargetLocalBuilder{
+            get; set;
+        }
+
+        /// <summary>
+        /// Indicates whether to set or load a local variable or an argument.
+        /// </summary>
+        public OperationType OperationTypeOnIdentifier{
             get; set;
         }
 
@@ -235,6 +236,14 @@ namespace Expresso.CodeGen
         /// </summary>
         /// <value>The attribute target.</value>
         public AttributeTargets AttributeTarget{
+            get; set;
+        }
+
+        /// <summary>
+        /// Represents the current parameter index.
+        /// </summary>
+        /// <value>The index of the parameter.</value>
+        public int ParameterIndex{
             get; set;
         }
     }

@@ -14,7 +14,7 @@ namespace Expresso.Test
         [TearDown]
         public void Cleanup()
         {
-            CSharpEmitter.Symbols.Clear();
+            CodeGenerator.Symbols.Clear();
         }
 
         [Test]
@@ -30,10 +30,10 @@ namespace Expresso.Test
                 BuildType = BuildType.Debug | BuildType.Executable,
                 ExecutableName = "main"
             };
-            var emitter = new CSharpEmitter(parser, options);
-            ast.AcceptWalker(emitter, null);
+            var generator = new CodeGenerator(parser, options);
+            ast.AcceptWalker(generator, null);
 
-            var asm = emitter.AssemblyBuilder;
+            var asm = generator.AssemblyBuilder;
             var main_method = asm.EntryPoint;
             Assert.AreEqual(main_method.Name, "main");
             Assert.IsTrue(main_method.IsStatic);
@@ -56,10 +56,10 @@ namespace Expresso.Test
                 BuildType = BuildType.Debug | BuildType.Executable,
                 ExecutableName = "main"
             };
-            var emitter = new CSharpEmitter(parser, options);
-            ast.AcceptWalker(emitter, null);
+            var generator = new CodeGenerator(parser, options);
+            ast.AcceptWalker(generator, null);
 
-            var asm = emitter.AssemblyBuilder;
+            var asm = generator.AssemblyBuilder;
             var main_method = asm.EntryPoint;
             Assert.AreEqual(main_method.Name, "main");
             Assert.IsTrue(main_method.IsStatic);
@@ -85,10 +85,10 @@ namespace Expresso.Test
                 BuildType = BuildType.Debug | BuildType.Executable,
                 ExecutableName = "main"
             };
-            var emitter = new CSharpEmitter(parser, options);
-            ast.AcceptWalker(emitter, null);
+            var generator = new CodeGenerator(parser, options);
+            ast.AcceptWalker(generator, null);
 
-            var asm = emitter.AssemblyBuilder;
+            var asm = generator.AssemblyBuilder;
             var main_method = asm.EntryPoint;
             Assert.AreEqual(main_method.Name, "main");
             Assert.IsTrue(main_method.IsStatic);
@@ -114,10 +114,10 @@ namespace Expresso.Test
                 BuildType = BuildType.Debug | BuildType.Executable,
                 ExecutableName = "main"
             };
-            var emitter = new CSharpEmitter(parser, options);
-            ast.AcceptWalker(emitter, null);
+            var generator = new CodeGenerator(parser, options);
+            ast.AcceptWalker(generator, null);
 
-            var asm = emitter.AssemblyBuilder;
+            var asm = generator.AssemblyBuilder;
             var main_method = asm.EntryPoint;
             Assert.AreEqual(main_method.Name, "main");
             Assert.IsTrue(main_method.IsStatic);
@@ -143,10 +143,10 @@ namespace Expresso.Test
                 BuildType = BuildType.Debug | BuildType.Executable,
                 ExecutableName = "main"
             };
-            var emitter = new CSharpEmitter(parser, options);
-            ast.AcceptWalker(emitter, null);
+            var generator = new CodeGenerator(parser, options);
+            ast.AcceptWalker(generator, null);
 
-            var asm = emitter.AssemblyBuilder;
+            var asm = generator.AssemblyBuilder;
             var main_method = asm.EntryPoint;
             Assert.AreEqual(main_method.Name, "main");
             Assert.IsTrue(main_method.IsStatic);
@@ -172,10 +172,10 @@ namespace Expresso.Test
                 BuildType = BuildType.Debug | BuildType.Executable,
                 ExecutableName = "main"
             };
-            var emitter = new CSharpEmitter(parser, options);
-            ast.AcceptWalker(emitter, null);
+            var generator = new CodeGenerator(parser, options);
+            ast.AcceptWalker(generator, null);
 
-            var asm = emitter.AssemblyBuilder;
+            var asm = generator.AssemblyBuilder;
             var main_method = asm.EntryPoint;
             Assert.AreEqual(main_method.Name, "main");
             Assert.IsTrue(main_method.IsStatic);
@@ -201,10 +201,10 @@ namespace Expresso.Test
                 BuildType = BuildType.Debug | BuildType.Executable,
                 ExecutableName = "main"
             };
-            var emitter = new CSharpEmitter(parser, options);
-            ast.AcceptWalker(emitter, null);
+            var generator = new CodeGenerator(parser, options);
+            ast.AcceptWalker(generator, null);
 
-            var asm = emitter.AssemblyBuilder;
+            var asm = generator.AssemblyBuilder;
             var main_method = asm.EntryPoint;
             Assert.AreEqual(main_method.Name, "main");
             Assert.IsTrue(main_method.IsStatic);
@@ -236,10 +236,10 @@ namespace Expresso.Test
                 BuildType = BuildType.Debug | BuildType.Executable,
                 ExecutableName = "main"
             };
-            var emitter = new CSharpEmitter(parser, options);
-            ast.AcceptWalker(emitter, null);
+            var generator = new CodeGenerator(parser, options);
+            ast.AcceptWalker(generator, null);
 
-            var asm = emitter.AssemblyBuilder;
+            var asm = generator.AssemblyBuilder;
             var main_method = asm.EntryPoint;
             Assert.AreEqual(main_method.Name, "main");
             Assert.IsTrue(main_method.IsStatic);
@@ -266,10 +266,10 @@ namespace Expresso.Test
                 BuildType = BuildType.Debug | BuildType.Executable,
                 ExecutableName = "main"
             };
-            var emitter = new CSharpEmitter(parser, options);
-            ast.AcceptWalker(emitter, null);
+            var generator = new CodeGenerator(parser, options);
+            ast.AcceptWalker(generator, null);
 
-            var asm = emitter.AssemblyBuilder;
+            var asm = generator.AssemblyBuilder;
             var main_method = asm.EntryPoint;
             Assert.AreEqual(main_method.Name, "main");
             Assert.IsTrue(main_method.IsStatic);
@@ -293,10 +293,10 @@ namespace Expresso.Test
                 BuildType = BuildType.Debug | BuildType.Executable,
                 ExecutableName = "main"
             };
-            var emitter = new CSharpEmitter(parser, options);
-            ast.AcceptWalker(emitter, null);
+            var generator = new CodeGenerator(parser, options);
+            ast.AcceptWalker(generator, null);
 
-            var asm = emitter.AssemblyBuilder;
+            var asm = generator.AssemblyBuilder;
             var main_method = asm.EntryPoint;
             Assert.AreEqual(main_method.Name, "main");
             Assert.IsTrue(main_method.IsStatic);
@@ -320,10 +320,10 @@ namespace Expresso.Test
                 BuildType = BuildType.Debug | BuildType.Executable,
                 ExecutableName = "main"
             };
-            var emitter = new CSharpEmitter(parser, options);
-            ast.AcceptWalker(emitter, null);
+            var generator = new CodeGenerator(parser, options);
+            ast.AcceptWalker(generator, null);
 
-            var asm = emitter.AssemblyBuilder;
+            var asm = generator.AssemblyBuilder;
             var main_method = asm.EntryPoint;
             Assert.AreEqual(main_method.Name, "main");
             Assert.IsTrue(main_method.IsStatic);
@@ -347,10 +347,10 @@ namespace Expresso.Test
                 BuildType = BuildType.Debug | BuildType.Executable,
                 ExecutableName = "main"
             };
-            var emitter = new CSharpEmitter(parser, options);
-            ast.AcceptWalker(emitter, null);
+            var generator = new CodeGenerator(parser, options);
+            ast.AcceptWalker(generator, null);
 
-            var asm = emitter.AssemblyBuilder;
+            var asm = generator.AssemblyBuilder;
             var main_method = asm.EntryPoint;
             Assert.AreEqual(main_method.Name, "main");
             Assert.IsTrue(main_method.IsStatic);
@@ -374,10 +374,10 @@ namespace Expresso.Test
                 BuildType = BuildType.Debug | BuildType.Executable,
                 ExecutableName = "main"
             };
-            var emitter = new CSharpEmitter(parser, options);
-            ast.AcceptWalker(emitter, null);
+            var generator = new CodeGenerator(parser, options);
+            ast.AcceptWalker(generator, null);
 
-            var asm = emitter.AssemblyBuilder;
+            var asm = generator.AssemblyBuilder;
             var main_method = asm.EntryPoint;
             Assert.AreEqual(main_method.Name, "main");
             Assert.IsTrue(main_method.IsStatic);
@@ -401,10 +401,10 @@ namespace Expresso.Test
                 BuildType = BuildType.Debug | BuildType.Executable,
                 ExecutableName = "main"
             };
-            var emitter = new CSharpEmitter(parser, options);
-            ast.AcceptWalker(emitter, null);
+            var generator = new CodeGenerator(parser, options);
+            ast.AcceptWalker(generator, null);
 
-            var asm = emitter.AssemblyBuilder;
+            var asm = generator.AssemblyBuilder;
             var main_method = asm.EntryPoint;
             Assert.AreEqual(main_method.Name, "main");
             Assert.IsTrue(main_method.IsStatic);
@@ -428,10 +428,10 @@ namespace Expresso.Test
                 BuildType = BuildType.Debug | BuildType.Executable,
                 ExecutableName = "main"
             };
-            var emitter = new CSharpEmitter(parser, options);
-            ast.AcceptWalker(emitter, null);
+            var generator = new CodeGenerator(parser, options);
+            ast.AcceptWalker(generator, null);
 
-            var asm = emitter.AssemblyBuilder;
+            var asm = generator.AssemblyBuilder;
             var main_method = asm.EntryPoint;
             Assert.AreEqual(main_method.Name, "main");
             Assert.IsTrue(main_method.IsStatic);
@@ -455,10 +455,10 @@ namespace Expresso.Test
                 BuildType = BuildType.Debug | BuildType.Executable,
                 ExecutableName = "main"
             };
-            var emitter = new CSharpEmitter(parser, options);
-            ast.AcceptWalker(emitter, null);
+            var generator = new CodeGenerator(parser, options);
+            ast.AcceptWalker(generator, null);
 
-            var asm = emitter.AssemblyBuilder;
+            var asm = generator.AssemblyBuilder;
             var main_method = asm.EntryPoint;
             Assert.AreEqual(main_method.Name, "main");
             Assert.IsTrue(main_method.IsStatic);
@@ -482,10 +482,10 @@ namespace Expresso.Test
                 BuildType = BuildType.Debug | BuildType.Executable,
                 ExecutableName = "main"
             };
-            var emitter = new CSharpEmitter(parser, options);
-            ast.AcceptWalker(emitter, null);
+            var generator = new CodeGenerator(parser, options);
+            ast.AcceptWalker(generator, null);
 
-            var asm = emitter.AssemblyBuilder;
+            var asm = generator.AssemblyBuilder;
             var main_method = asm.EntryPoint;
             Assert.AreEqual(main_method.Name, "main");
             Assert.IsTrue(main_method.IsStatic);
@@ -509,10 +509,10 @@ namespace Expresso.Test
                 BuildType = BuildType.Debug | BuildType.Executable,
                 ExecutableName = "main"
             };
-            var emitter = new CSharpEmitter(parser, options);
-            ast.AcceptWalker(emitter, null);
+            var generator = new CodeGenerator(parser, options);
+            ast.AcceptWalker(generator, null);
 
-            var asm = emitter.AssemblyBuilder;
+            var asm = generator.AssemblyBuilder;
             var main_method = asm.EntryPoint;
             Assert.AreEqual(main_method.Name, "main");
             Assert.IsTrue(main_method.IsStatic);
@@ -536,10 +536,10 @@ namespace Expresso.Test
                 BuildType = BuildType.Debug | BuildType.Executable,
                 ExecutableName = "main"
             };
-            var emitter = new CSharpEmitter(parser, options);
-            ast.AcceptWalker(emitter, null);
+            var generator = new CodeGenerator(parser, options);
+            ast.AcceptWalker(generator, null);
 
-            var asm = emitter.AssemblyBuilder;
+            var asm = generator.AssemblyBuilder;
             var main_method = asm.EntryPoint;
             Assert.AreEqual(main_method.Name, "main");
             Assert.IsTrue(main_method.IsStatic);
@@ -563,10 +563,10 @@ namespace Expresso.Test
                 BuildType = BuildType.Debug | BuildType.Executable,
                 ExecutableName = "main"
             };
-            var emitter = new CSharpEmitter(parser, options);
-            ast.AcceptWalker(emitter, null);
+            var generator = new CodeGenerator(parser, options);
+            ast.AcceptWalker(generator, null);
 
-            var asm = emitter.AssemblyBuilder;
+            var asm = generator.AssemblyBuilder;
             var main_method = asm.EntryPoint;
             Assert.AreEqual(main_method.Name, "main");
             Assert.IsTrue(main_method.IsStatic);
@@ -590,10 +590,10 @@ namespace Expresso.Test
                 BuildType = BuildType.Debug | BuildType.Executable,
                 ExecutableName = "main"
             };
-            var emitter = new CSharpEmitter(parser, options);
-            ast.AcceptWalker(emitter, null);
+            var generator = new CodeGenerator(parser, options);
+            ast.AcceptWalker(generator, null);
 
-            var asm = emitter.AssemblyBuilder;
+            var asm = generator.AssemblyBuilder;
             var main_method = asm.EntryPoint;
             Assert.AreEqual(main_method.Name, "main");
             Assert.IsTrue(main_method.IsStatic);
@@ -617,10 +617,10 @@ namespace Expresso.Test
                 BuildType = BuildType.Debug | BuildType.Executable,
                 ExecutableName = "main"
             };
-            var emitter = new CSharpEmitter(parser, options);
-            ast.AcceptWalker(emitter, null);
+            var generator = new CodeGenerator(parser, options);
+            ast.AcceptWalker(generator, null);
 
-            var asm = emitter.AssemblyBuilder;
+            var asm = generator.AssemblyBuilder;
             var main_method = asm.EntryPoint;
             Assert.AreEqual(main_method.Name, "main");
             Assert.IsTrue(main_method.IsStatic);
@@ -644,10 +644,10 @@ namespace Expresso.Test
                 BuildType = BuildType.Debug | BuildType.Executable,
                 ExecutableName = "main"
             };
-            var emitter = new CSharpEmitter(parser, options);
-            ast.AcceptWalker(emitter, null);
+            var generator = new CodeGenerator(parser, options);
+            ast.AcceptWalker(generator, null);
 
-            var asm = emitter.AssemblyBuilder;
+            var asm = generator.AssemblyBuilder;
             var main_method = asm.EntryPoint;
             Assert.AreEqual(main_method.Name, "main");
             Assert.IsTrue(main_method.IsStatic);
@@ -671,10 +671,10 @@ namespace Expresso.Test
                 BuildType = BuildType.Debug | BuildType.Executable,
                 ExecutableName = "main"
             };
-            var emitter = new CSharpEmitter(parser, options);
-            ast.AcceptWalker(emitter, null);
+            var generator = new CodeGenerator(parser, options);
+            ast.AcceptWalker(generator, null);
 
-            var asm = emitter.AssemblyBuilder;
+            var asm = generator.AssemblyBuilder;
             var main_method = asm.EntryPoint;
             Assert.AreEqual(main_method.Name, "main");
             Assert.IsTrue(main_method.IsStatic);
@@ -698,10 +698,10 @@ namespace Expresso.Test
                 BuildType = BuildType.Debug | BuildType.Executable,
                 ExecutableName = "main"
             };
-            var emitter = new CSharpEmitter(parser, options);
-            ast.AcceptWalker(emitter, null);
+            var generator = new CodeGenerator(parser, options);
+            ast.AcceptWalker(generator, null);
 
-            var asm = emitter.AssemblyBuilder;
+            var asm = generator.AssemblyBuilder;
             var main_method = asm.EntryPoint;
             Assert.AreEqual(main_method.Name, "main");
             Assert.IsTrue(main_method.IsStatic);
@@ -784,10 +784,10 @@ namespace Expresso.Test
                 BuildType = BuildType.Debug | BuildType.Executable,
                 ExecutableName = "main"
             };
-            var emitter = new CSharpEmitter(parser, options);
-            ast.AcceptWalker(emitter, null);
+            var generator = new CodeGenerator(parser, options);
+            ast.AcceptWalker(generator, null);
 
-            var asm = emitter.AssemblyBuilder;
+            var asm = generator.AssemblyBuilder;
             var main_method = asm.EntryPoint;
             Assert.AreEqual(main_method.Name, "main");
             Assert.IsTrue(main_method.IsStatic);
@@ -811,10 +811,10 @@ namespace Expresso.Test
                 BuildType = BuildType.Debug | BuildType.Executable,
                 ExecutableName = "main"
             };
-            var emitter = new CSharpEmitter(parser, options);
-            ast.AcceptWalker(emitter, null);
+            var generator = new CodeGenerator(parser, options);
+            ast.AcceptWalker(generator, null);
 
-            var asm = emitter.AssemblyBuilder;
+            var asm = generator.AssemblyBuilder;
             var main_method = asm.EntryPoint;
             Assert.AreEqual(main_method.Name, "main");
             Assert.IsTrue(main_method.IsStatic);
@@ -838,10 +838,10 @@ namespace Expresso.Test
                 BuildType = BuildType.Debug | BuildType.Executable,
                 ExecutableName = "main"
             };
-            var emitter = new CSharpEmitter(parser, options);
-            ast.AcceptWalker(emitter, null);
+            var generator = new CodeGenerator(parser, options);
+            ast.AcceptWalker(generator, null);
 
-            var asm = emitter.AssemblyBuilder;
+            var asm = generator.AssemblyBuilder;
             var main_method = asm.EntryPoint;
             Assert.AreEqual(main_method.Name, "main");
             Assert.IsTrue(main_method.IsStatic);

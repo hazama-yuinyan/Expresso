@@ -594,12 +594,12 @@ namespace Expresso.Ast.Analysis
         public void VisitObjectCreationExpression(ObjectCreationExpression creation)
         {
             creation.TypePath.AcceptWalker(this);
-            if(creation.TypeArguments.HasChildren){
+            if(creation.TypeArguments.Any()){
                 var type_path = creation.TypePath;
                 var table = (type_path is MemberType member) ? symbol_table.GetTypeTable(member.Target.Name) : symbol_table;
                 var type_table = table.GetTypeTable(!type_path.IdentifierNode.Type.IsNull ? type_path.IdentifierNode.Type.Name : type_path.Name);
 
-                foreach(var args in creation.TypeArguments.Zip((type_table??table).TypeParameters, (l, r) => new {TypeArgument = l, TypeParameter = r}))
+                foreach(var args in creation.TypeArguments.Zip((type_table ?? table).TypeParameters, (l, r) => new {TypeArgument = l, TypeParameter = r}))
                     args.TypeArgument.KeyType.IdentifierNode.ReplaceWith(args.TypeParameter.IdentifierNode.Clone());
             }
 

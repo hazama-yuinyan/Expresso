@@ -71,7 +71,7 @@ namespace Expresso.CodeGen
         /// Gets or sets the type builder.
         /// </summary>
         /// <value>The type builder.</value>
-        public LazyTypeBuilder TypeBuilder{
+        public WrappedTypeBuilder TypeBuilder{
             get; set;
         }
 
@@ -83,9 +83,28 @@ namespace Expresso.CodeGen
             get; set;
         }
 
+        /// <summary>
+        /// When this symbol represents a parameter, this will indicate the index of it.
+        /// </summary>
+        /// <value>The index of the argumnet.</value>
+        public int ParameterIndex{
+            get; set;
+        }
+
+        /// <summary>
+        /// Represents a local variable.
+        /// </summary>
+        /// <value>The local builder.</value>
+        public LocalBuilder LocalBuilder{
+            get; set;
+        }
+
         public override string ToString()
         {
-            return string.Format("[ExpressoSymbol: Parameter={0}, Method={1}, PropertyOrField={2}, FieldBuilder={3}, Lambda={4}, Member={5}, Type={6}, Length of Parameters={7}]", Parameter, Method, PropertyOrField, FieldBuilder, Lambda, Member, Type, Parameters.Count);
+            return string.Format(
+                "[ExpressoSymbol: Parameter={0}, Method={1}, PropertyOrField={2}, FieldBuilder={3}, Lambda={4}, Member={5}, Type={6}, LocalBuilder={7}, Length of Parameters={8}]",
+                Parameter, Method, PropertyOrField, FieldBuilder, Lambda, Member, Type, LocalBuilder, Parameters.Count
+            );
         }
     }
 }
