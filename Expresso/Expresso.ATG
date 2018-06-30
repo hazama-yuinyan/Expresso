@@ -392,19 +392,19 @@ $namespace=Expresso
             return false;
 
         var x = scanner.Peek();
-        while(x.kind != _rangle_bracket)
-            x = scanner.Peek();
-
-        while(x.kind != _lcurly && x.kind != _lparen)
+        while(x.kind != _rangle_bracket && x.kind != _lcurly && x.kind != _semicolon)
             x = scanner.Peek();
 
         scanner.ResetPeek();
-        return x.kind == _lcurly;
+        return x.kind == _rangle_bracket;
     }
 
     bool IsTrailer()
     {
         var tt = la;
+        if(tt.kind == _dot || tt.kind == _lbracket || tt.kind == _lparen)
+            return true;
+
         if(tt.kind != _langle_bracket)
             return false;
 
@@ -942,7 +942,7 @@ MethodSignature<out EntityDeclaration method, AttributeSection attribute>
                                                                      .Select(p => AstNode.MakeTypeConstraint((ParameterType)p.Clone(), null)).ToList();
                                    }
                                 .)
-  ';'                           (.
+  SYNC ';'                      (.
                                    method = EntityDeclaration.MakeFunc(ident, @params, null, type, ExpressoModifiers.Public, type_constraints, attribute, start_loc);
                                    method.ReturnType.AcceptWalker(replacer);
                                    GoUpScope();
@@ -1592,7 +1592,7 @@ DoWhileStmt<out Statement stmt>     (. var start_loc = NextLocation; Expression 
   Block<out body>
   "while"
   CondExpr<out expr>
-  ';'                               (. 
+  SYNC ';'                          (. 
                                        stmt = Statement.MakeDoWhileStmt(expr, body, start_loc, CurrentEndLocation);
                                        GoUpScope();
                                     .).
@@ -1843,12 +1843,11 @@ TupleElementPattern<out PatternConstruct pattern>   (. pattern = PatternConstruc
 TuplePattern<out PatternConstruct pattern>  (. var inners = new List<PatternConstruct>(); pattern = null; .)
 =
   '('
-  [ TupleElementPattern<out pattern>        (. inners.Add(pattern); .)
-    ','
-    [ ( TupleElementPattern<out pattern>
-      | ".."                                (. pattern = PatternConstruct.MakeIgnoringRestPattern(CurrentLocation); .)
-      )                                     (. inners.Add(pattern); .)
-    ]
+  TupleElementPattern<out pattern>        (. inners.Add(pattern); .)
+  ','
+  [ ( TupleElementPattern<out pattern>
+    | ".."                                (. pattern = PatternConstruct.MakeIgnoringRestPattern(CurrentLocation); .)
+    )                                     (. inners.Add(pattern); .)
   ]
   { ','
     ( TupleElementPattern<out pattern>
@@ -1949,7 +1948,7 @@ ClosureLiteral<out Expression expr>     (. var parameters = new List<ParameterDe
                                            }
                                         .)
   ]
-  ( IF(IsStartOfBlockScope())    /*Here is the place that is ambiguous for Block and DictMaker. We always choose the first variant(Block scope)*/
+  ( IF(IsStartOfBlockScope())    /*Here is the place that is ambiguous for this and DictMaker. We always choose the first variant(Block scope)*/
     Block<out body_block>
   | CondExpr<out body_expr>             (. var seq_expr = Expression.MakeSequenceExpression(body_expr);
                                            body_block = Statement.MakeBlock(Statement.MakeReturnStmt(seq_expr, seq_expr.StartLocation));
@@ -2099,13 +2098,12 @@ UnaryOperator<out OperatorType opType>  (. opType = OperatorType.None; .)
 Primary<out Expression expr>		        (. expr = null; PathExpression path; AstType type_path = null; var type_args = new List<KeyValueType>(); .)
 =
   ( PathExpression<out path>                (. expr = path; .) /* It's possible that a PathExpression turns out to be just an identifier */
-    ( IF(FollowsObjectCreation())
-      GenericTypeArguments<ref type_args>   (. type_path = ConvertPathToType(path); .)
+    [ IF(FollowsObjectCreation())
+      GenericTypeArguments<ref type_args>
+    ]
+    [ IF(IsObjectCreation())              (. type_path = ConvertPathToType(path); .)  /* Ambiguous between this and MatchStmt */
       ObjectCreation<type_path, type_args, out expr>
-    | [ IF(IsObjectCreation())              (. type_path = ConvertPathToType(path); .)  /* Ambiguous between this and MatchStmt */
-        ObjectCreation<type_path, type_args, out expr>
-      ]
-    )
+    ]
   | Atom<out expr>
   )
   { IF(IsTrailer())         /* Ambiguous between Comparison and this*/
@@ -2211,7 +2209,7 @@ PatternPrimary<out Expression expr>     (. expr = null; PathExpression path; .)
   ( PathExpression<out path>            (. expr = path; .) /* It's possible that a PathExpression turns out to be just an identifier */
   | Literal<out expr>
   )
-  { IF(IsTrailer())
+  { IF(IsTrailer())                 /* Ambiguous between Comparison and this*/
     Trailer<ref expr>
   }.
 /*------------------------------------------------------------------------*/
@@ -2254,7 +2252,6 @@ ObjectCreation<. AstType typePath, List<KeyValueType> typeArgs, out Expression e
     | ident 
     )                                   (. fields.Add(AstNode.MakeIdentifier(t.val, ExpressoModifiers.None, CurrentLocation)); .)
     ':'
-    
     CondExpr<out expr>                  (. values.Add(expr); .)
   }
   SYNC rcurly                           (. expr = Expression.MakeObjectCreation(typePath, fields, values, typeArgs, CurrentEndLocation); .).

@@ -50,12 +50,12 @@ public class Parser {
 	}
 
 	void SynErr (int n) {
-		if (errDist >= minErrDist) errors.SynErr(la.line, la.col, n);
+		if (errDist >= minErrDist) errors.SynErr(NextLocation.Line, NextLocation.Column, n);
 		errDist = 0;
 	}
 
 	public void SemErr (string msg) {
-		if (errDist >= minErrDist) errors.SemErr(t.line, t.col, msg);
+		if (errDist >= minErrDist) errors.SemErr(CurrentLocation.Line, CurrentLocation.Column, msg);
 		errDist = 0;
 	}
 	
