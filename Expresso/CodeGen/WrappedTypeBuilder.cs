@@ -45,7 +45,7 @@ namespace Expresso.CodeGen
         public Type Type{
             get{
                 if(type_cache == null)
-                    throw new InvalidOperationException("The interface type is yet to be defined");
+                    throw new InvalidOperationException("The type is yet to be defined");
                 
                 return type_cache;
             }
@@ -201,7 +201,7 @@ namespace Expresso.CodeGen
         Type CreateConstructor()
         {
             ConstructorBuilder ctor = null;
-            if(is_raw_value_enum || !members.OfType<ConstructorBuilder>().Any() && types.Any()){
+            if(is_raw_value_enum || types.Any()){
                 var param_types = members.OfType<FieldBuilder>()
                                          .Where(t => !has_initializer_list.Any(name => t.Name == name))
                                          .Select(t => t.FieldType)
@@ -211,9 +211,6 @@ namespace Expresso.CodeGen
 
             if(HasStaticFields)
                 DefineStaticConstructor();
-
-            //if(type_cache == null)
-            //    type_cache = type_builder.CreateType();
 
             if(ctor != null){
                 /*var parameters = members.OfType<FieldBuilder>()
@@ -263,9 +260,6 @@ namespace Expresso.CodeGen
             if(type_builder.Attributes.HasFlag(TypeAttributes.Interface))
                 return null;
 
-            if(type_cache == null)
-                throw new InvalidOperationException("Call CreateInterfaceType before completing the type.");
-            
             if(is_created)
                 return type_cache;
 
@@ -301,41 +295,16 @@ namespace Expresso.CodeGen
         }
 
         /// <summary>
-        /// Gets a method on the interface type.
-        /// Note that it only gets public methods.
-        /// </summary>
-        /// <returns>The interface method.</returns>
-        /// <param name="name">Name.</param>
-        public MethodInfo GetMethod(string name)
-        {
-            if(type_cache == null)
-                throw new InvalidOperationException(string.Format("The interface type is yet to be defined: you are trying to get the interface method of '{0}'.", name));
-
-            return type_cache.GetMethod(name);
-        }
-
-        /// <summary>
-        /// Gets a method on the interface type using name and flags.
-        /// </summary>
-        /// <returns>The interface method.</returns>
-        /// <param name="name">Name.</param>
-        /// <param name="flags">Flags.</param>
-        public MethodInfo GetMethod(string name, BindingFlags flags)
-        {
-            if(type_cache == null)
-                throw new InvalidOperationException(string.Format("The interface type is yet to be defined: you are trying to get the interface method of '{0}'.", name));
-
-            return type_cache.GetMethod(name, flags);
-        }
-
-        /// <summary>
         /// Gets a method defined on this type. Note that it searches for non-public methods.
         /// </summary>
         /// <returns>The method.</returns>
         /// <param name="name">Name.</param>
         public MethodBuilder GetMethodBuilder(string name)
         {
-            return (MethodBuilder)members[name];
+            if(members.TryGetValue(name, out var method))
+                return (MethodBuilder)method;
+            else
+                return null;
         }
 
         /// <summary>
@@ -345,7 +314,10 @@ namespace Expresso.CodeGen
         /// <param name="name">Name.</param>
         public FieldBuilder GetFieldBuilder(string name)
         {
-            return (FieldBuilder)members[name];
+            if(members.TryGetValue(name, out var field))
+                return (FieldBuilder)field;
+            else
+                return null;
         }
 
         public FieldInfo GetField(string name, BindingFlags flags)

@@ -59,8 +59,6 @@ namespace Expresso.CodeGen
         // FIXME: make it accessible only from the tester class
         public static Dictionary<uint, ExpressoSymbol> Symbols = new Dictionary<uint, ExpressoSymbol>();
         static int LoopCounter = 1, ClosureId = 0;
-        static ExprTree.LabelTarget ReturnTarget = null;
-        static CSharpExpr DefaultReturnValue = null;
         static int VariableCount = 0;
 		
         const string ClosureMethodName = "__Apply";
@@ -97,6 +95,7 @@ namespace Expresso.CodeGen
             this.options = options;
             identifier_definer = new MatchClauseIdentifierDefiner();
             item_type_inferencer = new ItemTypeInferencer(this);
+            generic_types = new GenericTypeParameterBuilder[]{};
 
             CSharpCompilerHelpers.AddPrimitiveNativeSymbols();
         }
@@ -280,8 +279,8 @@ namespace Expresso.CodeGen
 
             // Leave the ast.Name as is because otherwise we can't refer to it later when visiting ImportDeclarations
             var type_builder = ContainsFunctionDefinitions(ast.Declarations) ? new WrappedTypeBuilder(mod_builder, CSharpCompilerHelpers.ConvertToPascalCase(ast.Name),
-                                                                                                   TypeAttributes.Class | TypeAttributes.Public, Enumerable.Empty<Type>(),
-                                                                                                   true, false) : null;
+                                                                                                      TypeAttributes.Class | TypeAttributes.Public, Enumerable.Empty<Type>(),
+                                                                                                      true, false) : null;
             var local_parser = parser;
             if(ast.ExternalModules.Any()){
                 context.CurrentModuleCount = ast.ExternalModules.Count;
@@ -305,18 +304,18 @@ namespace Expresso.CodeGen
             context.ExternalModuleType = null;
             ast.Imports.OrderBy(i => i.ImportPaths.First().Name, new ImportPathComparer());
             foreach(var pair in ast.ExternalModules.Zip(ast.Imports.SkipWhile(i => i.ImportPaths.First().Name.StartsWith("System.", StringComparison.CurrentCulture)),
-                                                        (l, r) => new Tuple<ExpressoAst, ImportDeclaration>(l, r))){
-                Debug.Assert(pair.Item2.ImportPaths.First().Name.StartsWith(pair.Item1.Name, StringComparison.CurrentCulture), "The module name must be matched to the import path");
+                                                        (l, r) => new {Ast = l, Import = r})){
+                Debug.Assert(pair.Import.ImportPaths.First().Name.StartsWith(pair.Ast.Name, StringComparison.CurrentCulture), "The module name must be matched to the import path");
 
                 var external_module_count = context.CurrentModuleCount;
                 var tmp_counter = scope_counter;
-                VisitAst(pair.Item1, context);
+                VisitAst(pair.Ast, context);
                 context.CurrentModuleCount = external_module_count;
                 scope_counter = tmp_counter;
 
-                var first_import = pair.Item2.ImportPaths.First();
+                var first_import = pair.Import.ImportPaths.First();
                 if(!first_import.Name.Contains("::") && !first_import.Name.Contains(".")){
-                    var first_alias = pair.Item2.AliasTokens.First();
+                    var first_alias = pair.Import.AliasTokens.First();
                     Symbols.Add(first_alias.IdentifierId, new ExpressoSymbol{
                         Type = context.ExternalModuleType
                     });
@@ -368,7 +367,11 @@ namespace Expresso.CodeGen
             //if(type_builder != null && !type_builder.IsDefined)
             //    type_builder.CreateInterfaceType();
 
-            context.ExternalModuleType = (type_builder != null) ? type_builder.CreateType() : null;
+            var type = context.ExternalModuleType = (type_builder != null) ? type_builder.CreateType() : null;
+            if(ast.Name == "main"){
+                var main_method = type.GetMethod("main", BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Static);
+                asm_builder.SetEntryPoint(main_method);
+            }
             asm_builder.Save(file_name);
 
             AssemblyBuilder = asm_builder;
@@ -398,7 +401,7 @@ namespace Expresso.CodeGen
 
             context.ContextAst = parent_block;
 
-            var variables = ConvertSymbolsToParameters().ToList();
+            /*var variables = ConvertSymbolsToParameters().ToList();
             if(block.Parent is CatchClause){
                 var catch_clause = (CatchClause)block.Parent;
                 var identifier = catch_clause.Identifier;
@@ -406,12 +409,13 @@ namespace Expresso.CodeGen
                                      .Select(v => v)
                                      .ToList();
             }
-            if(context.ContextAst is FunctionDeclaration || context.ContextClosureLiteral != null && block.Parent is ClosureLiteralExpression)
-                contents.Add(CSharpExpr.Label(ReturnTarget, DefaultReturnValue));
+            //if(context.ContextAst is FunctionDeclaration || context.ContextClosureLiteral != null && block.Parent is ClosureLiteralExpression)
+            //    contents.Add(CSharpExpr.Label(ReturnTarget, DefaultReturnValue));*/
 
             AscendScope();
             scope_counter = tmp_counter + 1;
-            return null;//CSharpExpr.Block(contents.Last().Type, variables, contents);
+
+            return null;
         }
 
         public Type VisitBreakStatement(BreakStatement breakStmt, CSharpEmitterContext context)
@@ -804,15 +808,13 @@ namespace Expresso.CodeGen
             context.ArgumentTypes = ConvertToNativeTypes(call.OverloadSignature.Parameters);
 
             context.RequestMethod = true;
-            context.Method = null;
             call.Target.AcceptWalker(this, context);
             context.RequestMethod = false;
             context.ArgumentTypes = parent_args;
 
-            context.ArgumentTypes = parent_args;
-
-            EmitCallExpression(context.Method, call, context);
-            var result = context.Method.ReturnType;
+            var method = context.Method;
+            EmitCallExpression(method, call, context);
+            var result = method.ReturnType;
             context.Method = null;
 
             return result;
@@ -996,28 +998,16 @@ namespace Expresso.CodeGen
             }else{
                 // In a dictionary literal, the key can be any expression that is evaluated
                 // to a hashable object.
-                var key_type = keyValue.KeyExpression.AcceptWalker(this, context);
-                var value_type = keyValue.ValueExpression.AcceptWalker(this, context);
-                if(context.TargetType == null || !context.TargetType.Name.StartsWith("Dictionary", StringComparison.CurrentCulture))
-                    context.TargetType = typeof(Dictionary<,>).MakeGenericType(key_type, value_type);
-
-                var add_method = context.TargetType.GetMethod("Add");
-                EmitCall(add_method);
+                keyValue.KeyExpression.AcceptWalker(this, context);
+                keyValue.ValueExpression.AcceptWalker(this, context);
                 return null;
             }
         }
 
         public Type VisitLiteralExpression(LiteralExpression literal, CSharpEmitterContext context)
         {
-            if(literal.Type.Name == "bigint"){
-                var ctor = typeof(BigInteger).GetMethod("Parse", new []{typeof(string)});
-                EmitObject(literal.Value);
-                EmitCall(ctor);
-                return typeof(BigInteger);
-            }else{
-                EmitObject(literal.Value);
-                return literal.Value.GetType();
-            }
+            EmitObject(literal.Value);
+            return literal.Value.GetType();
         }
 
         public Type VisitIdentifier(Identifier ident, CSharpEmitterContext context)
@@ -1027,15 +1017,7 @@ namespace Expresso.CodeGen
 
             var symbol = GetRuntimeSymbol(ident);
             if(symbol != null){
-                if(symbol.Parameter != null){
-                    if(context.RequestType)
-                        context.TargetType = symbol.Parameter.Type;
-
-                    if(context.OperationTypeOnIdentifier == OperationType.Load && symbol.ParameterIndex != -1)
-                        LoadArg(symbol.ParameterIndex);
-
-                    return symbol.Parameter.Type;
-                }else if(symbol.LocalBuilder != null){
+                if(symbol.LocalBuilder != null){
                     if(context.RequestType)
                         context.TargetType = symbol.LocalBuilder.LocalType;
 
@@ -1043,6 +1025,14 @@ namespace Expresso.CodeGen
                         il_generator.Emit(OpCodes.Ldloc, symbol.LocalBuilder);
 
                     return symbol.LocalBuilder.LocalType;
+                }else if(symbol.Parameter != null){
+                    if(context.RequestType)
+                        context.TargetType = symbol.Parameter.Type;
+
+                    if(context.OperationTypeOnIdentifier == OperationType.Load && symbol.ParameterIndex != -1)
+                        LoadArg(symbol.ParameterIndex);
+
+                    return symbol.Parameter.Type;
                 }else if(context.RequestPropertyOrField && symbol.PropertyOrField != null){
                     context.PropertyOrField = symbol.PropertyOrField;
                     return (symbol.PropertyOrField is PropertyInfo) ? ((PropertyInfo)symbol.PropertyOrField).PropertyType : ((FieldInfo)symbol.PropertyOrField).FieldType;
@@ -1053,7 +1043,7 @@ namespace Expresso.CodeGen
                         context.Constructor = context.TargetType.GetConstructors().Last();
                     }
 
-                    return symbol.Parameter.Type;
+                    return symbol.Type;
                 }else if(context.RequestMethod){
                     if(symbol.Method == null)
                         throw new EmitterException("The native symbol '{0}' isn't defined.", ident.Name);
@@ -1349,10 +1339,6 @@ namespace Expresso.CodeGen
             context.Constructor = null;
             var prev_additionals = context.Additionals;
             context.Additionals = new List<object>();
-            // In order to force execution we call ToArray here because otherwise it results in a different code in Dictionary case
-            var types = seqInitializer.Items.Select(item => item.AcceptWalker(this, context))
-                                      .ToArray();
-
             if(seq_type == typeof(Array)){
                 var elem_type = CSharpCompilerHelpers.GetNativeType(obj_type.TypeArguments.First());
                 if(elem_type == typeof(ExpressoIntegerSequence)){
@@ -1801,35 +1787,19 @@ namespace Expresso.CodeGen
             var prev_context_ast = context.ContextAst;
             context.ContextAst = funcDecl;
 
-            var formal_parameters = funcDecl.Parameters.Select(param => param.AcceptWalker(this, context))
-                                            .OfType<ExprTree.ParameterExpression>();
+            var func_builder = context.LazyTypeBuilder.GetMethodBuilder(funcDecl.Name);
+            AddSymbol(funcDecl.NameToken, new ExpressoSymbol{Method = func_builder});
 
-            var return_type = RetrieveType(funcDecl.ReturnType);
-            //ReturnTarget = CSharpExpr.Label(return_type, "returnTarget");
-            //DefaultReturnValue = CSharpExpr.Default(return_type);
-
-            var is_global_function = !funcDecl.Modifiers.HasFlag(Modifiers.Public) && !funcDecl.Modifiers.HasFlag(Modifiers.Protected) && !funcDecl.Modifiers.HasFlag(Modifiers.Private);
-            var parameters = is_global_function ? formal_parameters : new []{context.ParameterSelf}.Concat(formal_parameters);
-
-            var flags = is_global_function ? BindingFlags.Static : BindingFlags.Instance;
-            if(funcDecl.Modifiers.HasFlag(Modifiers.Export) || funcDecl.Modifiers.HasFlag(Modifiers.Public))
-                flags |= BindingFlags.Public;
-            else
-                flags |= BindingFlags.NonPublic;
-
-            var interface_func = context.LazyTypeBuilder.GetMethod(funcDecl.Name, flags);
-            AddSymbol(funcDecl.NameToken, new ExpressoSymbol{Method = interface_func});
-
-            var method_builder = context.LazyTypeBuilder.GetMethodBuilder(funcDecl.Name);
             var prev_il_generator = il_generator;
-            il_generator = method_builder.GetILGenerator();
+            il_generator = func_builder.GetILGenerator();
 
-            var body = funcDecl.Body.AcceptWalker(this, context);
+            funcDecl.Body.AcceptWalker(this, context);
             context.ContextAst = prev_context_ast;
-            il_generator = prev_il_generator;
 
-            if(funcDecl.Name == "main")
-                context.AssemblyBuilder.SetEntryPoint(interface_func, PEFileKinds.ConsoleApplication);
+            if(!(funcDecl.Body.Statements.Last() is ReturnStatement))
+                il_generator.Emit(OpCodes.Ret);
+            
+            il_generator = prev_il_generator;
 
             AscendScope();
             scope_counter = tmp_counter + 1;
@@ -1926,6 +1896,7 @@ namespace Expresso.CodeGen
                         var type = initializer.Initializer.AcceptWalker(this, context);
                         var prev_op_type = context.OperationTypeOnIdentifier;
                         context.OperationTypeOnIdentifier = OperationType.Set;
+
                         foreach(var pair in Enumerable.Range(1, tuple_pattern.Patterns.Count).Zip(tuple_pattern.Patterns, (l, r) => new {Index = l, Pattern = r})){
                             il_generator.Emit(OpCodes.Dup);
                             var property = type.GetProperty("Item" + pair.Index);
@@ -1983,10 +1954,13 @@ namespace Expresso.CodeGen
             // An identifier pattern can arise by itself or as a child
             Type type = null;
             if(!(context.ContextAst is MatchStatement)){
-                type = CSharpCompilerHelpers.GetNativeType(identifierPattern.Identifier.Type);
-                var param = CSharpExpr.Parameter(type, identifierPattern.Identifier.Name);
-                AddSymbol(identifierPattern.Identifier, new ExpressoSymbol{Parameter = param});
+                type = RetrieveType(identifierPattern.Identifier.Type);
+                var local_builder = il_generator.DeclareLocal(type);
+                AddSymbol(identifierPattern.Identifier, new ExpressoSymbol{LocalBuilder = local_builder});
 
+                if(context.OperationTypeOnIdentifier == OperationType.Set)
+                    EmitSet(null, local_builder);
+                
                 var start_loc = identifierPattern.Identifier.StartLocation;
                 var end_loc = identifierPattern.Identifier.EndLocation;
                 //il_generator.MarkSequencePoint();
@@ -2530,7 +2504,7 @@ namespace Expresso.CodeGen
                     switch(parameters.Length){
                     case 2:
                         if(parameters[1].ParameterType.IsArray){
-                            EmitNewArray(parameters[1].ParameterType, call.Arguments.Skip(1), arg => {
+                            EmitNewArray(parameters[1].ParameterType.GetElementType(), call.Arguments.Skip(1), arg => {
                                 var original_type = arg.AcceptWalker(this, context);
                                 EmitCast(original_type, typeof(object));
                                 il_generator.Emit(OpCodes.Call, expand_method);
@@ -2567,11 +2541,14 @@ namespace Expresso.CodeGen
 
                     il_generator.Emit(OpCodes.Ldstr, builder.ToString());
 
+                    var prev_op_type = context.OperationTypeOnIdentifier;
+                    context.OperationTypeOnIdentifier = OperationType.Load;
                     EmitNewArray(typeof(string), call.Arguments, arg => {
                         var original_type = arg.AcceptWalker(this, context);
                         EmitCast(original_type, typeof(object));
                         il_generator.Emit(OpCodes.Call, expand_method);
                     });
+                    context.OperationTypeOnIdentifier = prev_op_type;
                     il_generator.Emit(OpCodes.Call, method);
                 }
             }else{
@@ -2769,28 +2746,33 @@ namespace Expresso.CodeGen
 
         void EmitObject(object obj)
         {
-            if(obj is string str)
+            if(obj is string str){
                 il_generator.Emit(OpCodes.Ldstr, str);
-            else if(obj is int integer)
+            }else if(obj is char ch){
+                il_generator.Emit(OpCodes.Ldc_I4, ch);
+            }else if(obj is int integer){
                 il_generator.Emit(OpCodes.Ldc_I4, integer);
-            else if(obj is uint unsigned)
-                il_generator.Emit(OpCodes.Ldc_I8, (long)unsigned);
-            else if(obj is float f)
+            }else if(obj is uint unsigned){
+                il_generator.Emit(OpCodes.Ldc_I4, (int)unsigned);
+            }else if(obj is float f){
                 il_generator.Emit(OpCodes.Ldc_R4, f);
-            else if(obj is double d)
+            }else if(obj is double d){
                 il_generator.Emit(OpCodes.Ldc_R8, d);
-            else if(obj is bool b && b)
-                il_generator.Emit(OpCodes.Ldc_I4_1);
-            else if(obj is bool b2 && !b2)
-                il_generator.Emit(OpCodes.Ldc_I4_0);
-            else
-                throw new ArgumentException("Unknown object type!: {0}", obj.GetType().Name);
+            }else if(obj is bool b){
+                il_generator.Emit(b ? OpCodes.Ldc_I4_1 : OpCodes.Ldc_I4_0);
+            }else if(obj is BigInteger big_int){
+                var parse_method = typeof(BigInteger).GetMethod("Parse", new []{typeof(string)});
+                il_generator.Emit(OpCodes.Ldstr, big_int.ToString());
+                il_generator.Emit(OpCodes.Call, parse_method);
+            }else{
+                throw new ArgumentException(string.Format("Unknown object type!: {0}", obj.GetType().Name));
+            }
         }
 
         void EmitCast(Type originalType, Type type)
         {
-            if(type == typeof(object) && originalType.IsPrimitive){
-                il_generator.Emit(OpCodes.Box);
+            if(type == typeof(object) && !originalType.IsClass){
+                il_generator.Emit(OpCodes.Box, originalType);
                 il_generator.Emit(OpCodes.Castclass, typeof(object));
                 return;
             }
@@ -2850,7 +2832,7 @@ namespace Expresso.CodeGen
         void EmitNewArray(Type elementType, IEnumerable<Expression> initializers, Action<Expression> action)
         {
             var count = initializers.Count();
-            il_generator.Emit(OpCodes.Ldc_I4, count);
+            EmitInt(count);
             il_generator.Emit(OpCodes.Newarr, elementType);
             foreach(var pair in Enumerable.Range(0, count).Zip(initializers, (l, r) => new {Index = l, Initializer = r})){
                 il_generator.Emit(OpCodes.Dup);
@@ -2858,8 +2840,6 @@ namespace Expresso.CodeGen
                 action(pair.Initializer);
                 il_generator.Emit(OpCodes.Stelem_I4);
             }
-
-            il_generator.Emit(OpCodes.Dup);
         }
 
         void EmitInt(int i)
@@ -2947,13 +2927,16 @@ namespace Expresso.CodeGen
             var add_method = generic_type.GetMethod("Add");
             var ctor = generic_type.GetConstructor(new Type[]{});
 
+            var prev_op_type = context.OperationTypeOnIdentifier;
+            context.OperationTypeOnIdentifier = OperationType.Load;
             il_generator.Emit(OpCodes.Newobj, ctor);
             foreach(var initializer in initializers){
                 il_generator.Emit(OpCodes.Dup);
                 initializer.AcceptWalker(this, context);
                 il_generator.Emit(OpCodes.Callvirt, add_method);
             }
-            il_generator.Emit(OpCodes.Dup);
+            //il_generator.Emit(OpCodes.Dup);
+            context.OperationTypeOnIdentifier = prev_op_type;
 
             return generic_type;
         }
@@ -2965,13 +2948,16 @@ namespace Expresso.CodeGen
             var add_method = generic_type.GetMethod("Add");
             var ctor = generic_type.GetConstructor(new Type[]{});
 
+            var prev_op_type = context.OperationTypeOnIdentifier;
+            context.OperationTypeOnIdentifier = OperationType.Load;
             il_generator.Emit(OpCodes.Newobj, ctor);
             foreach(var initializer in initializers){
                 il_generator.Emit(OpCodes.Dup);
                 initializer.AcceptWalker(this, context);
                 il_generator.Emit(OpCodes.Callvirt, add_method);
             }
-            il_generator.Emit(OpCodes.Dup);
+            //il_generator.Emit(OpCodes.Dup);
+            context.OperationTypeOnIdentifier = prev_op_type;
 
             return generic_type;
         }
