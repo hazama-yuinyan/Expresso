@@ -398,6 +398,7 @@ namespace Expresso.Ast.Analysis
 
         public void VisitSelfReferenceExpression(SelfReferenceExpression selfRef)
         {
+            // Defer binding the name until type check phase if the self identifier isn't type-aware
             BindName(selfRef.SelfIdentifier);
         }
 

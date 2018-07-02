@@ -16,8 +16,9 @@ namespace Expresso.CodeGen
     /// </summary>
     public class WrappedTypeBuilder
     {
-        readonly TypeBuilder type_builder;
+        readonly TypeBuilder interface_type_builder;
         readonly Type[] types;
+        readonly TypeBuilder impl_type_builder;
         readonly MethodBuilder prologue, static_prologue;
         readonly Dictionary<string, MemberInfo> members;
         readonly List<string> has_initializer_list = new List<string>();
@@ -36,7 +37,7 @@ namespace Expresso.CodeGen
         /// Gets the base type.
         /// </summary>
         /// <value>The base type.</value>
-        public Type BaseType => type_builder.BaseType;
+        public Type BaseType => interface_type_builder.BaseType;
 
         /// <summary>
         /// Gets the interface type as <see cref="Type"/>.
@@ -45,7 +46,7 @@ namespace Expresso.CodeGen
         public Type Type{
             get{
                 if(type_cache == null)
-                    throw new InvalidOperationException("The type is yet to be defined");
+                    throw new InvalidOperationException("The interface type is yet to be defined");
                 
                 return type_cache;
             }
@@ -55,19 +56,19 @@ namespace Expresso.CodeGen
         /// Gets the type of the interface type using the <see cref="TypeInfo.AsType"/> method.
         /// </summary>
         /// <value>The type of the interface type as.</value>
-        public Type TypeAsType => type_builder.AsType();
+        public Type TypeAsType => interface_type_builder.AsType();
 
         /// <summary>
         /// Gets the <see cref="System.Reflection.Emit.TypeBuilder"/> that represents the interface type.
         /// </summary>
         /// <value>The interface type builder.</value>
-        public TypeBuilder TypeBuilder => type_builder;
+        public TypeBuilder TypeBuilder => interface_type_builder;
 
         /// <summary>
         /// Gets the name of this type.
         /// </summary>
         /// <value>The name.</value>
-        public string Name => type_builder.Name;
+        public string Name => interface_type_builder.Name;
 
         public bool HasStaticFields{
             get{
@@ -84,10 +85,11 @@ namespace Expresso.CodeGen
 
         WrappedTypeBuilder(TypeBuilder builder, bool isGlobalFunctions, bool isTupleStyleEnum)
         {
-            type_builder = builder;
+            interface_type_builder = builder;
             types = isGlobalFunctions ? new Type[]{} : new []{ builder };
-            prologue = type_builder.DefineMethod("Prologue", MethodAttributes.Assembly | MethodAttributes.Static, typeof(void), types);
-            static_prologue = type_builder.DefineMethod("StaticPrologue", MethodAttributes.Assembly | MethodAttributes.Static, typeof(void), null);
+            impl_type_builder = interface_type_builder.DefineNestedType("<Impl>", TypeAttributes.NestedPrivate);
+            prologue = impl_type_builder.DefineMethod("Prologue", MethodAttributes.Assembly | MethodAttributes.Static, typeof(void), types);
+            static_prologue = impl_type_builder.DefineMethod("StaticPrologue", MethodAttributes.Assembly | MethodAttributes.Static, typeof(void), null);
 #if WINDOWS
             members = new Dictionary<string, MemberInfo>();
 #else
@@ -108,7 +110,7 @@ namespace Expresso.CodeGen
         /// <param name="attr">Attr.</param>
         public FieldBuilder DefineField(string name, Type type, bool hasInitializer, FieldAttributes attr = FieldAttributes.Public)
         {
-            var field = type_builder.DefineField(name, type, attr);
+            var field = interface_type_builder.DefineField(name, type, attr);
             if(hasInitializer)
                 has_initializer_list.Add(name);
             
@@ -127,7 +129,7 @@ namespace Expresso.CodeGen
         public MethodBuilder DefineMethod(string name, MethodAttributes attr, Type returnType, Type[] parameterTypes/*, CodeGenerator generator = null,
                                           CSharpEmitterContext context = null, Ast.FunctionDeclaration funcDecl = null, Expression body = null*/)
         {
-            var method = type_builder.DefineMethod(name, attr, returnType, parameterTypes);
+            var method = interface_type_builder.DefineMethod(name, attr, returnType, parameterTypes);
             /*if(funcDecl != null){
                 var return_value_builder = method.DefineParameter(0, ParameterAttributes.Retval, null);
                 context.CustomAttributeSetter = return_value_builder.SetCustomAttribute;
@@ -151,7 +153,16 @@ namespace Expresso.CodeGen
                 }
             }*/
 
-            members.Add(name, method);
+            var il = method.GetILGenerator();
+            // Emit call to the implementation method no matter whether we actually need it.
+            // TODO: Consider a better solution
+            var real_params = types.Concat(parameterTypes).ToArray();
+            var impl_method = impl_type_builder.DefineMethod(name + "_Impl", MethodAttributes.Assembly | MethodAttributes.Static, returnType, real_params);
+            LoadArgs(il, (real_params.Length == 0) ? new int[]{} : Enumerable.Range(0, real_params.Length));
+            il.Emit(OpCodes.Call, impl_method);
+            il.Emit(OpCodes.Ret);
+
+            members.Add(name, impl_method);
             return method;
         }
 
@@ -161,16 +172,16 @@ namespace Expresso.CodeGen
         /// <returns>The constructor.</returns>
         /// <param name="parameterTypes">Parameter types.</param>
         /// <param name="body">Body.</param>
-        private ConstructorBuilder DefineConstructor(Type[] parameterTypes, Expression body = null)
+        ConstructorBuilder DefineConstructor(Type[] parameterTypes, Expression body = null)
         {
-            var ctor = type_builder.DefineConstructor(
+            var ctor = interface_type_builder.DefineConstructor(
                 MethodAttributes.Public | MethodAttributes.HideBySig | MethodAttributes.SpecialName | MethodAttributes.RTSpecialName,
                 CallingConventions.Standard, parameterTypes
             );
             var il = ctor.GetILGenerator();
-            if(!type_builder.BaseType.Attributes.HasFlag(TypeAttributes.Interface)){
+            if(!interface_type_builder.BaseType.Attributes.HasFlag(TypeAttributes.Interface)){
                 LoadArgs(il, 0);
-                il.Emit(OpCodes.Call, type_builder.BaseType.GetConstructor(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance, null, Type.EmptyTypes, null));
+                il.Emit(OpCodes.Call, interface_type_builder.BaseType.GetConstructor(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance, null, Type.EmptyTypes, null));
             }
 
             LoadArgs(il, 0);
@@ -189,7 +200,7 @@ namespace Expresso.CodeGen
         public WrappedTypeBuilder DefineNestedType(string name, TypeAttributes attr, IEnumerable<Type> baseTypes)
         {
             var real_attr = attr.HasFlag(TypeAttributes.Public) ? TypeAttributes.NestedPublic : TypeAttributes.NestedPrivate;
-            var tmp = new WrappedTypeBuilder(type_builder.DefineNestedType(name, real_attr, baseTypes.Any() ? baseTypes.First() : typeof(object), baseTypes.Skip(1).ToArray()), false, is_raw_value_enum);
+            var tmp = new WrappedTypeBuilder(interface_type_builder.DefineNestedType(name, real_attr, baseTypes.Any() ? baseTypes.First() : typeof(object), baseTypes.Skip(1).ToArray()), false, is_raw_value_enum);
             nested_types.Add(name, tmp);
             return tmp;
         }
@@ -198,7 +209,7 @@ namespace Expresso.CodeGen
         /// Completes defining the interface type(the outer type that the user actually accesses).
         /// </summary>
         /// <returns>The interface type.</returns>
-        Type CreateConstructor()
+        public Type CreateInterfaceType()
         {
             ConstructorBuilder ctor = null;
             if(is_raw_value_enum || types.Any()){
@@ -211,6 +222,9 @@ namespace Expresso.CodeGen
 
             if(HasStaticFields)
                 DefineStaticConstructor();
+
+            if(type_cache == null)
+                type_cache = interface_type_builder.CreateType();
 
             if(ctor != null){
                 /*var parameters = members.OfType<FieldBuilder>()
@@ -240,7 +254,7 @@ namespace Expresso.CodeGen
                                          .Where(t => !has_initializer_list.Any(name => t.Name == name))
                                          .Select(t => t.FieldType)
                                          .ToArray();
-                var fields = type_builder.GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+                var fields = interface_type_builder.GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
                 foreach(var pair in Enumerable.Range(0, param_types.Count()).Zip(fields, (i, r) => new {Counter = i, Field = r})){
                     LoadArgs(il_generator, new []{pair.Counter});
 
@@ -257,13 +271,14 @@ namespace Expresso.CodeGen
         /// <returns>The type.</returns>
         public Type CreateType()
         {
-            if(type_builder.Attributes.HasFlag(TypeAttributes.Interface))
+            if(interface_type_builder.Attributes.HasFlag(TypeAttributes.Interface))
                 return null;
+
+            if(type_cache == null)
+                throw new InvalidOperationException("Call CreateInterfaceType before completing the type.");
 
             if(is_created)
                 return type_cache;
-
-            CreateConstructor();
 
 /*#if WINDOWS
             var debug_info_generator = DebugInfoGenerator.CreatePdbGenerator();
@@ -281,7 +296,7 @@ namespace Expresso.CodeGen
             }*/
 
             #if !NETCOREAPP2_0
-            Console.WriteLine("Emitting a PDB on type {0}...", type_builder.Name);
+            Console.WriteLine("Emitting a PDB on type {0}...", interface_type_builder.Name);
             #endif
             //debug_info_generator.WriteToFile(pdb_file_path);
             //#endif
@@ -289,9 +304,23 @@ namespace Expresso.CodeGen
             prologue.GetILGenerator().Emit(OpCodes.Ret);
             static_prologue.GetILGenerator().Emit(OpCodes.Ret);
 
-            type_cache = type_builder.CreateType();
+            type_cache = impl_type_builder.CreateType();
             is_created = true;
             return type_cache;
+        }
+
+        /// <summary>
+        /// Gets a method on the interface type using name and flags.
+        /// </summary>
+        /// <returns>The interface method.</returns>
+        /// <param name="name">Name.</param>
+        /// <param name="flags">Flags.</param>
+        public MethodInfo GetInterfaceMethod(string name, BindingFlags flags)
+        {
+            if(type_cache == null)
+                throw new InvalidOperationException(string.Format("The interface type is yet to be defined: you are trying to get the interface method of '{0}'.", name));
+
+            return type_cache.GetMethod(name, flags);
         }
 
         /// <summary>
@@ -330,7 +359,10 @@ namespace Expresso.CodeGen
 
         public ConstructorBuilder GetConstructor(Type[] paramTypes)
         {
-            return (ConstructorBuilder)members["constructor"];
+            if(members.TryGetValue("constructor", out var ctor))
+                return (ConstructorBuilder)ctor;
+            else
+                return null;
         }
 
         /// <summary>
@@ -357,12 +389,12 @@ namespace Expresso.CodeGen
 
         public override string ToString()
         {
-            return string.Format("[LazyTypeBuilder: Name={0}, BaseType={1}]", type_builder.Name, BaseType);
+            return string.Format("[LazyTypeBuilder: Name={0}, BaseType={1}]", interface_type_builder.Name, BaseType);
         }
 
         ConstructorBuilder DefineStaticConstructor()
         {
-            var cctor = type_builder.DefineConstructor(
+            var cctor = interface_type_builder.DefineConstructor(
                 MethodAttributes.Public | MethodAttributes.Static | MethodAttributes.HideBySig | MethodAttributes.SpecialName | MethodAttributes.RTSpecialName,
                 CallingConventions.Standard, null
             );

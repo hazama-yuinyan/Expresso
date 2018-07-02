@@ -672,6 +672,8 @@ namespace Expresso.Ast.Analysis
 
                 var self_type = decl_types.First();
                 selfRef.SelfIdentifier.Type.ReplaceWith(self_type.Clone());
+
+                checker.BindTypeName(selfRef.SelfIdentifier.Type.IdentifierNode);
                 return self_type;
             }
 
@@ -687,6 +689,8 @@ namespace Expresso.Ast.Analysis
 
                 var super_type = decls.First();
                 superRef.SuperIdentifier.Type.ReplaceWith(super_type.Clone());
+
+                checker.BindTypeName(superRef.SuperIdentifier.Type.IdentifierNode);
                 return super_type;
             }
 

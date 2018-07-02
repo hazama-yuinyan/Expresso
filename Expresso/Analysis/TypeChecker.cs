@@ -1092,8 +1092,11 @@ namespace Expresso.Ast.Analysis
 
         public AstType VisitSelfReferenceExpression(SelfReferenceExpression selfRef)
         {
-            if(selfRef.SelfIdentifier.Type is PlaceholderType)
+            // selfRef.SelfIdentifier is always type-aware at this point because MemberReference infers its target's type
+            /*if(selfRef.SelfIdentifier.Type is PlaceholderType){
                 inference_runner.VisitSelfReferenceExpression(selfRef);
+                BindTypeName(selfRef.SelfIdentifier.Type.IdentifierNode);
+            }*/
 
             var type_table = symbols.GetTypeTable(selfRef.SelfIdentifier.Type.Name);
             var next_sibling = selfRef.NextSibling;
@@ -1117,10 +1120,13 @@ namespace Expresso.Ast.Analysis
 
         public AstType VisitSuperReferenceExpression(SuperReferenceExpression superRef)
         {
-            if(superRef.SuperIdentifier.Type is PlaceholderType)
-                return inference_runner.VisitSuperReferenceExpression(superRef);
-            else
-                return superRef.SuperIdentifier.Type;
+            // superRef.SuperIdentifier is always type-aware at this point because MemberReference infers its target's type
+            /*if(superRef.SuperIdentifier.Type is PlaceholderType){
+                inference_runner.VisitSuperReferenceExpression(superRef);
+                BindTypeName(superRef.SuperIdentifier.Type.IdentifierNode);
+            }*/
+
+            return superRef.SuperIdentifier.Type;
         }
 
         public AstType VisitNullReferenceExpression(NullReferenceExpression nullRef)
@@ -1381,11 +1387,11 @@ namespace Expresso.Ast.Analysis
             foreach(var super_type in typeDecl.BaseTypes){
                 super_type.AcceptWalker(this);
                 if(super_type is SimpleType simple){
-                    var suprt_type_name = !super_type.IdentifierNode.Type.IsNull ? super_type.IdentifierNode.Type.Name : super_type.Name;
-                    var super_type_table = symbols.GetTypeTable(suprt_type_name);
+                    var super_type_name = !super_type.IdentifierNode.Type.IsNull ? super_type.IdentifierNode.Type.Name : super_type.Name;
+                    var super_type_table = symbols.GetTypeTable(super_type_name);
                     if(super_type_table == null){
                         throw new ParserException(
-                            "`{0}` is missing.",
+                            "The base type `{0}` is missing.",
                             "ES1912",
                             super_type,
                             super_type.Name
@@ -2135,6 +2141,31 @@ namespace Expresso.Ast.Analysis
                             param_type
                         );
                     }
+                }
+            }
+        }
+
+        void BindTypeName(Identifier ident)
+        {
+            var symbol = symbols.GetTypeSymbolInAnyScope(ident.Name);
+            if(symbol != null)
+                ident.IdentifierId = symbol.IdentifierId;
+
+            if(ident.IdentifierId == 0){
+                if(symbol != null){
+                    parser.ReportSemanticError(
+                        "You can't use the type symbol '{0}' before defined!",
+                        "ES0121",
+                        ident,
+                        ident.Name
+                    );
+                }else{
+                    parser.ReportSemanticError(
+                        "The type symbol '{0}' turns out not to be declared or accessible in the current scope {1}!",
+                        "ES0101",
+                        ident,
+                        ident.Name, symbols.Name
+                    );
                 }
             }
         }

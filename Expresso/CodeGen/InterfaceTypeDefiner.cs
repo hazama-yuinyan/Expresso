@@ -7,8 +7,6 @@ using System.Reflection.Emit;
 
 namespace Expresso.CodeGen
 {
-    using CSharpExpr = System.Linq.Expressions.Expression;
-
     public partial class CodeGenerator : IAstWalker<CSharpEmitterContext, Type>
     {
         /// <summary>
@@ -422,7 +420,7 @@ namespace Expresso.CodeGen
                         foreach(var member in typeDecl.Members)
                             member.AcceptWalker(this);
 
-                        var type = (typeDecl.TypeKind == ClassType.Interface) ? context.InterfaceTypeBuilder.CreateType() : context.LazyTypeBuilder.TypeAsType;
+                        var type = (typeDecl.TypeKind == ClassType.Interface) ? context.InterfaceTypeBuilder.CreateType() : context.LazyTypeBuilder.CreateInterfaceType();
                         var expresso_symbol = (typeDecl.TypeKind == ClassType.Interface) ? new ExpressoSymbol{Type = type} : new ExpressoSymbol{Type = type, TypeBuilder = context.LazyTypeBuilder};
                         AddSymbol(typeDecl.NameToken, expresso_symbol);
 

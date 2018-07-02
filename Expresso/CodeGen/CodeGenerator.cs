@@ -363,15 +363,11 @@ namespace Expresso.CodeGen
                 decl.AcceptWalker(this, context);
             }
 
-            // If the module ends with a type we couldn't call CreateInterfaceType
-            //if(type_builder != null && !type_builder.IsDefined)
-            //    type_builder.CreateInterfaceType();
+            // If the module ends with a type we can't call CreateInterfaceType
+            if(type_builder != null && !type_builder.IsDefined)
+                type_builder.CreateInterfaceType();
 
-            var type = context.ExternalModuleType = (type_builder != null) ? type_builder.CreateType() : null;
-            if(ast.Name == "main"){
-                var main_method = type.GetMethod("main", BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Static);
-                asm_builder.SetEntryPoint(main_method);
-            }
+            context.ExternalModuleType = (type_builder != null) ? type_builder.CreateType() : null;
             asm_builder.Save(file_name);
 
             AssemblyBuilder = asm_builder;
@@ -563,12 +559,15 @@ namespace Expresso.CodeGen
 
             var jump_label = il_generator.DefineLabel();
             var false_label = il_generator.DefineLabel();
+            var prev_op_type = context.OperationTypeOnIdentifier;
+            context.OperationTypeOnIdentifier = OperationType.Load;
             ifStmt.Condition.AcceptWalker(this, context);
+            context.OperationTypeOnIdentifier = prev_op_type;
             il_generator.Emit(OpCodes.Brfalse_S, false_label);
 
             VisitBlock(ifStmt.TrueBlock, context);
-
             if(ifStmt.FalseStatement.IsNull){
+                il_generator.MarkLabel(jump_label);
                 il_generator.MarkLabel(false_label);
 
                 AscendScope();
@@ -686,13 +685,17 @@ namespace Expresso.CodeGen
 
             if(!(whileStmt.Parent is DoWhileStatement))
                 il_generator.Emit(OpCodes.Br_S, loop_start);
-
+            
             VisitBlock(whileStmt.Body, context);
+
+            il_generator.MarkLabel(loop_start);
             whileStmt.Condition.AcceptWalker(this, context);
             il_generator.Emit(OpCodes.Brtrue_S, loop_start);
             
             break_targets.RemoveAt(break_targets.Count - 1);
             continue_targets.RemoveAt(continue_targets.Count - 1);
+
+            il_generator.MarkLabel(end_loop);
 
             AscendScope();
             scope_counter = tmp_counter + 1;
@@ -764,7 +767,7 @@ namespace Expresso.CodeGen
                         break;
                     }
 
-                    EmitLoad((FieldInfo)context.PropertyOrField, context.TargetLocalBuilder);
+                    EmitSet((FieldInfo)context.PropertyOrField, context.TargetLocalBuilder, result);
                 }
             }else{
                 // falls into composition branch
@@ -774,7 +777,7 @@ namespace Expresso.CodeGen
                 assignment.Right.AcceptWalker(this, context);
                 result = assignment.Left.AcceptWalker(this, context);
 
-                EmitLoad((FieldInfo)context.PropertyOrField, context.TargetLocalBuilder);
+                EmitSet((FieldInfo)context.PropertyOrField, context.TargetLocalBuilder, result);
             }
 
             context.RequestPropertyOrField = false;
@@ -791,13 +794,12 @@ namespace Expresso.CodeGen
             var result = binaryExpr.Left.AcceptWalker(this, context);
             binaryExpr.Right.AcceptWalker(this, context);
 
-            Label? label = il_generator.DefineLabel();
+            var label = il_generator.DefineLabel();
 
             context.RequestPropertyOrField = false;
             context.PropertyOrField = null;
             EmitBinaryOp(binaryExpr.Operator, ref label);
-            if(label != null)
-                il_generator.MarkLabel(label.Value);
+            il_generator.MarkLabel(label);
 
             return result;
         }
@@ -1124,8 +1126,9 @@ namespace Expresso.CodeGen
             }
 
             var type = target_type;
+            // We don't need to set here because Assignment calls this only when it should read values
             if(type.IsArray){
-                il_generator.Emit(OpCodes.Ldelem, target_type);
+                EmitLoadElem(target_type);
                 return target_type.GetElementType();
             }else{
                 var property_info = type.GetProperty("Item");
@@ -1787,17 +1790,28 @@ namespace Expresso.CodeGen
             var prev_context_ast = context.ContextAst;
             context.ContextAst = funcDecl;
 
-            var func_builder = context.LazyTypeBuilder.GetMethodBuilder(funcDecl.Name);
-            AddSymbol(funcDecl.NameToken, new ExpressoSymbol{Method = func_builder});
+            var is_global_function = !funcDecl.Modifiers.HasFlag(Modifiers.Public) && !funcDecl.Modifiers.HasFlag(Modifiers.Protected) && !funcDecl.Modifiers.HasFlag(Modifiers.Private);
+            var flags = is_global_function ? BindingFlags.Static : BindingFlags.Instance;
+            if(funcDecl.Modifiers.HasFlag(Modifiers.Export) || funcDecl.Modifiers.HasFlag(Modifiers.Public))
+                flags |= BindingFlags.Public;
+            else
+                flags |= BindingFlags.NonPublic;
 
+            var interface_func = context.LazyTypeBuilder.GetInterfaceMethod(funcDecl.Name, flags);
+            AddSymbol(funcDecl.NameToken, new ExpressoSymbol{Method = interface_func});
+
+            var method_builder = context.LazyTypeBuilder.GetMethodBuilder(funcDecl.Name);
             var prev_il_generator = il_generator;
-            il_generator = func_builder.GetILGenerator();
+            il_generator = method_builder.GetILGenerator();
 
             funcDecl.Body.AcceptWalker(this, context);
             context.ContextAst = prev_context_ast;
 
             if(!(funcDecl.Body.Statements.Last() is ReturnStatement))
                 il_generator.Emit(OpCodes.Ret);
+
+            if(funcDecl.Name == "main")
+                context.AssemblyBuilder.SetEntryPoint(interface_func);
             
             il_generator = prev_il_generator;
 
@@ -1871,7 +1885,7 @@ namespace Expresso.CodeGen
         {
             if(initializer.Initializer.IsNull){
                 var prev_op_type = context.OperationTypeOnIdentifier;
-                context.OperationTypeOnIdentifier = OperationType.Set;
+                context.OperationTypeOnIdentifier = OperationType.None;
                 initializer.Pattern.AcceptWalker(this, context);
                 context.OperationTypeOnIdentifier = prev_op_type;
                 return null;
@@ -1903,6 +1917,7 @@ namespace Expresso.CodeGen
                             il_generator.Emit(OpCodes.Callvirt, property.GetMethod);
                             pair.Pattern.AcceptWalker(this, context);
                         }
+                        il_generator.Emit(OpCodes.Pop);
 
                         //var debug_info_list = debug_infos.ToList();
                         //debug_info_list.AddRange(tmps);
@@ -1959,7 +1974,7 @@ namespace Expresso.CodeGen
                 AddSymbol(identifierPattern.Identifier, new ExpressoSymbol{LocalBuilder = local_builder});
 
                 if(context.OperationTypeOnIdentifier == OperationType.Set)
-                    EmitSet(null, local_builder);
+                    EmitSet(null, local_builder, null);
                 
                 var start_loc = identifierPattern.Identifier.StartLocation;
                 var end_loc = identifierPattern.Identifier.EndLocation;
@@ -2347,93 +2362,80 @@ namespace Expresso.CodeGen
         #endregion
 
 		#region methods
-        void EmitBinaryOp(OperatorType opType, ref Label? label)
+        void EmitBinaryOp(OperatorType opType, ref Label label)
 		{
 			switch(opType){
 			case OperatorType.BitwiseAnd:
                 il_generator.Emit(OpCodes.And);
-                label = null;
                 break;
 
 			case OperatorType.BitwiseShiftLeft:
                 il_generator.Emit(OpCodes.Shl);
-                label = null;
                 break;
 
 			case OperatorType.BitwiseOr:
                 il_generator.Emit(OpCodes.Or);
-                label = null;
                 break;
 
 			case OperatorType.BitwiseShiftRight:
                 il_generator.Emit(OpCodes.Shr);
-                label = null;
                 break;
 
             case OperatorType.ConditionalAnd:
             case OperatorType.ConditionalOr:
-                label = null;
                 break;
 
 			case OperatorType.ExclusiveOr:
                 il_generator.Emit(OpCodes.Xor);
-                label = null;
                 break;
 
 			case OperatorType.Divide:
                 il_generator.Emit(OpCodes.Div);
-                label = null;
                 break;
 
 			case OperatorType.Equality:
                 il_generator.Emit(OpCodes.Ceq);
-                label = null;
                 break;
 
 			case OperatorType.GreaterThan:
-                il_generator.Emit(OpCodes.Bgt, label.Value);
+                il_generator.Emit(OpCodes.Bgt, label);
                 break;
 
 			case OperatorType.GreaterThanOrEqual:
-                il_generator.Emit(OpCodes.Bge, label.Value);
+                il_generator.Emit(OpCodes.Bge, label);
                 break;
 
 			case OperatorType.LessThanOrEqual:
-                il_generator.Emit(OpCodes.Ble, label.Value);
+                il_generator.Emit(OpCodes.Ble, label);
                 break;
 
 			case OperatorType.LessThan:
-                il_generator.Emit(OpCodes.Blt, label.Value);
+                il_generator.Emit(OpCodes.Blt, label);
                 break;
 
 			case OperatorType.Minus:
                 il_generator.Emit(OpCodes.Sub);
-                label = null;
                 break;
 
 			case OperatorType.Modulus:
                 il_generator.Emit(OpCodes.Rem);
-                label = null;
                 break;
 
 			case OperatorType.InEquality:
-                il_generator.Emit(OpCodes.Bne_Un_S, label.Value);
+                il_generator.Emit(OpCodes.Bne_Un_S, label);
                 break;
 
 			case OperatorType.Plus:
                 il_generator.Emit(OpCodes.Add);
-                label = null;
                 break;
 
 			case OperatorType.Power:
                 var pow_method = typeof(Math);
                 il_generator.Emit(OpCodes.Call, pow_method);
-                label = null;
                 break;
 
 			case OperatorType.Times:
                 il_generator.Emit(OpCodes.Mul);
-                label = null;
                 break;
 
 			default:
@@ -2464,16 +2466,6 @@ namespace Expresso.CodeGen
 				throw new EmitterException("Unknown unary operator!");
 			}
 		}
-
-        CSharpExpr ConstructAssignment(CSharpExpr lhs, CSharpExpr rhs)
-        {
-            // C# doesn't have alternative expressions to patterns
-            // so translate them to semantically equivalent expressions
-            // taking transformation into account.
-
-            // See if the left-hand-side represents destructuring or not
-            return null;
-        }
 
         IEnumerable<ExprTree.ParameterExpression> ConvertSymbolsToParameters()
         {
@@ -2552,7 +2544,7 @@ namespace Expresso.CodeGen
                     il_generator.Emit(OpCodes.Call, method);
                 }
             }else{
-                if(method.ContainsGenericParameters){
+                if(method.IsGenericMethod){//method.ContainsGenericParameters){
                     var parameters = method.GetParameters();
                     var generic_param_names = parameters.Where(p => p.ParameterType.IsGenericParameter)
                                                         .Select(p => p.Name);
@@ -2625,6 +2617,9 @@ namespace Expresso.CodeGen
                         && context.LazyTypeBuilder.GetFieldBuilder(field_decl.Initializers.First().Name) == null)
                     DefineField(field_decl, context);
             }
+
+            if(context.LazyTypeBuilder != null)
+                context.LazyTypeBuilder.CreateInterfaceType();
 
             scope_counter = tmp_counter;
         }
@@ -2744,16 +2739,17 @@ namespace Expresso.CodeGen
                 return CSharpCompilerHelpers.GetNativeType(astType);
         }
 
+        #region Emit methods
         void EmitObject(object obj)
         {
             if(obj is string str){
                 il_generator.Emit(OpCodes.Ldstr, str);
             }else if(obj is char ch){
-                il_generator.Emit(OpCodes.Ldc_I4, ch);
+                EmitInt(ch);
             }else if(obj is int integer){
-                il_generator.Emit(OpCodes.Ldc_I4, integer);
+                EmitInt(integer);
             }else if(obj is uint unsigned){
-                il_generator.Emit(OpCodes.Ldc_I4, (int)unsigned);
+                EmitUInt(unsigned);
             }else if(obj is float f){
                 il_generator.Emit(OpCodes.Ldc_R4, f);
             }else if(obj is double d){
@@ -2771,13 +2767,9 @@ namespace Expresso.CodeGen
 
         void EmitCast(Type originalType, Type type)
         {
-            if(type == typeof(object) && !originalType.IsClass){
+            if(type == typeof(object) && !originalType.IsClass)
                 il_generator.Emit(OpCodes.Box, originalType);
-                il_generator.Emit(OpCodes.Castclass, typeof(object));
-                return;
-            }
-                
-            if(type == typeof(int))
+            else if(type == typeof(int))
                 il_generator.Emit(OpCodes.Conv_I4);
             else if(type == typeof(uint))
                 il_generator.Emit(OpCodes.Conv_U4);
@@ -2797,12 +2789,14 @@ namespace Expresso.CodeGen
                 il_generator.Emit(OpCodes.Callvirt, method);
         }
 
-        void EmitLoad(FieldInfo field, LocalBuilder localBuilder)
+        void EmitLoad(FieldInfo field, LocalBuilder localBuilder, Type targetType)
         {
             if(localBuilder != null)
                 il_generator.Emit(OpCodes.Ldloc, localBuilder);
-            else
+            else if(field != null)
                 EmitLoadField(field);
+            else
+                EmitLoadElem(targetType);
         }
 
         void EmitLoadField(FieldInfo field)
@@ -2813,12 +2807,14 @@ namespace Expresso.CodeGen
                 il_generator.Emit(OpCodes.Ldfld, field);
         }
 
-        void EmitSet(FieldInfo field, LocalBuilder localBuilder)
+        void EmitSet(FieldInfo field, LocalBuilder localBuilder, Type targetType)
         {
             if(localBuilder != null)
                 il_generator.Emit(OpCodes.Stloc, localBuilder);
-            else
+            else if(field != null)
                 EmitSetField(field);
+            else
+                EmitSetElem(targetType);
         }
 
         void EmitSetField(FieldInfo field)
@@ -2838,7 +2834,7 @@ namespace Expresso.CodeGen
                 il_generator.Emit(OpCodes.Dup);
                 EmitInt(pair.Index);
                 action(pair.Initializer);
-                il_generator.Emit(OpCodes.Stelem_I4);
+                EmitSetElem(elementType);
             }
         }
 
@@ -2886,9 +2882,23 @@ namespace Expresso.CodeGen
                 break;
 
             default:
-                il_generator.Emit(OpCodes.Ldc_I4, i);
+                if(i <= sbyte.MaxValue)
+                    il_generator.Emit(OpCodes.Ldc_I4_S, (sbyte)i);
+                else
+                    il_generator.Emit(OpCodes.Ldc_I4, i);
+                
                 break;
             }
+        }
+
+        void EmitUInt(uint n)
+        {
+            if(n <= sbyte.MaxValue)
+                il_generator.Emit(OpCodes.Ldc_I4, n);
+            else
+                EmitInt((int)n);
+
+            il_generator.Emit(OpCodes.Conv_I4);
         }
 
         void LoadArg(int i)
@@ -2935,7 +2945,6 @@ namespace Expresso.CodeGen
                 initializer.AcceptWalker(this, context);
                 il_generator.Emit(OpCodes.Callvirt, add_method);
             }
-            //il_generator.Emit(OpCodes.Dup);
             context.OperationTypeOnIdentifier = prev_op_type;
 
             return generic_type;
@@ -2956,11 +2965,57 @@ namespace Expresso.CodeGen
                 initializer.AcceptWalker(this, context);
                 il_generator.Emit(OpCodes.Callvirt, add_method);
             }
-            //il_generator.Emit(OpCodes.Dup);
             context.OperationTypeOnIdentifier = prev_op_type;
 
             return generic_type;
         }
+
+        void EmitSetElem(Type targetElementType)
+        {
+            if(!targetElementType.IsPrimitive)
+                il_generator.Emit(OpCodes.Stelem_Ref);
+            else if(targetElementType == typeof(byte) || targetElementType == typeof(sbyte))
+                il_generator.Emit(OpCodes.Stelem_I1);
+            else if(targetElementType == typeof(short) || targetElementType == typeof(ushort) || targetElementType == typeof(char))
+                il_generator.Emit(OpCodes.Stelem_I2);
+            else if(targetElementType == typeof(int) || targetElementType == typeof(uint))
+                il_generator.Emit(OpCodes.Stelem_I4);
+            else if(targetElementType == typeof(long) || targetElementType == typeof(ulong))
+                il_generator.Emit(OpCodes.Stelem_I8);
+            else if(targetElementType == typeof(float))
+                il_generator.Emit(OpCodes.Stelem_R4);
+            else if(targetElementType == typeof(double))
+                il_generator.Emit(OpCodes.Stelem_R8);
+            else
+                il_generator.Emit(OpCodes.Stelem, targetElementType);
+        }
+
+        void EmitLoadElem(Type targetElementType)
+        {
+            if(!targetElementType.IsPrimitive)
+                il_generator.Emit(OpCodes.Ldelem_Ref);
+            else if(targetElementType == typeof(byte))
+                il_generator.Emit(OpCodes.Ldelem_U1);
+            else if(targetElementType == typeof(sbyte))
+                il_generator.Emit(OpCodes.Ldelem_I1);
+            else if(targetElementType == typeof(ushort))
+                il_generator.Emit(OpCodes.Ldelem_U2);
+            else if(targetElementType == typeof(short))
+                il_generator.Emit(OpCodes.Ldelem_I2);
+            else if(targetElementType == typeof(uint))
+                il_generator.Emit(OpCodes.Ldelem_U4);
+            else if(targetElementType == typeof(int))
+                il_generator.Emit(OpCodes.Ldelem_I4);
+            else if(targetElementType == typeof(long) || targetElementType == typeof(ulong))
+                il_generator.Emit(OpCodes.Ldelem_I8);
+            else if(targetElementType == typeof(float))
+                il_generator.Emit(OpCodes.Ldelem_R4);
+            else if(targetElementType == typeof(double))
+                il_generator.Emit(OpCodes.Ldelem_R8);
+            else
+                il_generator.Emit(OpCodes.Ldelem, targetElementType);
+        }
+        #endregion
 		#endregion
 	}
 }
