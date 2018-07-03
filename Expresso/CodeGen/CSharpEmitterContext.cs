@@ -15,7 +15,7 @@ namespace Expresso.CodeGen
     }
 
     /// <summary>
-    /// Represents the current context for <see cref="Expresso.CodeGen.CSharpEmitter"/>.
+    /// Represents the current context for <see cref="Expresso.CodeGen.CodeGenerator"/>.
     /// </summary>
     public class CSharpEmitterContext
     {

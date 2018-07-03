@@ -321,7 +321,10 @@ namespace Expresso.CodeGen
                 var context_ast = context.ContextAst;
                 context.ContextAst = funcDecl;
 
-                var param_types = funcDecl.Parameters.Select(param => generator.VisitParameterDeclaration(param, context));
+                var param_types = funcDecl.Parameters.Select((param, index) => {
+                    context.ParameterIndex = index + 1;
+                    return generator.VisitParameterDeclaration(param, context);
+                });
 
                 var return_type = CSharpCompilerHelpers.GetNativeType(funcDecl.ReturnType);
 
@@ -346,7 +349,7 @@ namespace Expresso.CodeGen
                 if(funcDecl.Parent is TypeDeclaration type_decl3 && type_decl3.TypeKind == ClassType.Interface)
                     method_builder = context.InterfaceTypeBuilder.DefineMethod(funcDecl.Name, flags, return_type, param_types.ToArray());
                 else
-                    method_builder = context.LazyTypeBuilder.DefineMethod(funcDecl.Name, flags, return_type, param_types.ToArray());
+                    method_builder = context.LazyTypeBuilder.DefineMethod(funcDecl.Name, flags, return_type, param_types.ToArray(), generator, context, funcDecl);
 
                 /*context.CustomAttributeSetter = method_builder.SetCustomAttribute;
                 context.AttributeTarget = AttributeTargets.Method;

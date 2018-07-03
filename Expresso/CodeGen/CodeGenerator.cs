@@ -257,7 +257,7 @@ namespace Expresso.CodeGen
         public Type VisitAst(ExpressoAst ast, CSharpEmitterContext context)
         {
             if(context == null)
-                context = new CSharpEmitterContext(){OperationTypeOnIdentifier = OperationType.Load};
+                context = new CSharpEmitterContext(){OperationTypeOnIdentifier = OperationType.Load, ParameterIndex = -1};
             
             var assembly_name = options.BuildType.HasFlag(BuildType.Assembly) ? ast.Name : options.ExecutableName;
             var name = new AssemblyName(assembly_name);
@@ -1140,11 +1140,12 @@ namespace Expresso.CodeGen
         public Type VisitMemberReference(MemberReferenceExpression memRef, CSharpEmitterContext context)
         {
             // In Expresso, a member access can be resolved either to a field reference or an (instance and static) method call
+            var prev_op_type = context.OperationTypeOnIdentifier;
+            context.OperationTypeOnIdentifier = OperationType.Load;
             var expr = memRef.Target.AcceptWalker(this, context);
+            context.OperationTypeOnIdentifier = prev_op_type;
             context.RequestPropertyOrField = true;
             context.RequestMethod = true;
-            context.PropertyOrField = null;
-            context.Method = null;
 
             VisitIdentifier(memRef.Member, context);
             context.RequestPropertyOrField = false;
@@ -1153,10 +1154,13 @@ namespace Expresso.CodeGen
             if(context.Method != null){
                 return null;    // Parent should be a CallExpression
             }else if(context.PropertyOrField is PropertyInfo property){
+                context.PropertyOrField = null;
                 il_generator.Emit(OpCodes.Callvirt, property.GetMethod);
                 return property.GetMethod.ReturnType;
             }else{
                 var field = (FieldInfo)context.PropertyOrField;
+                context.PropertyOrField = null;
+
                 EmitLoadField(field);
                 return field.FieldType;
             }
@@ -2272,13 +2276,20 @@ namespace Expresso.CodeGen
             // In the former case we should test an integer against an IntSeq type object using an IntSeq's method
             // while in the latter case we should just test the value against the literal
             // TODO: implement it
-            /*context.RequestMethod = true;
+            context.RequestMethod = true;
             context.Method = null;
-            var expr = exprPattern.Expression.AcceptWalker(this, context);
+            var type = exprPattern.Expression.AcceptWalker(this, context);
             context.RequestMethod = false;
-            return (context.Method != null && context.Method.DeclaringType.Name == "ExpressoIntegerSequence") ? CSharpExpr.Call(expr, context.Method, context.TemporaryVariable) :
-                                                                                                                          (context.ContextAst is MatchStatement) ? CSharpExpr.Equal(context.TemporaryVariable, expr)  : expr;*/
-            return null;
+
+            if(context.Method != null && context.Method.DeclaringType.Name == "ExpressoIntegerSequence"){
+                il_generator.Emit(OpCodes.Callvirt, context.Method);
+                return null;
+            }else if(context.ContextAst is MatchStatement){
+                il_generator.Emit(OpCodes.Ceq);
+                return null;
+            }else{
+                return type;
+            }
         }
 
         public Type VisitIgnoringRestPattern(IgnoringRestPattern restPattern, CSharpEmitterContext context)
@@ -2383,6 +2394,7 @@ namespace Expresso.CodeGen
 
             case OperatorType.ConditionalAnd:
             case OperatorType.ConditionalOr:
+                // nothing to emit
                 break;
 
 			case OperatorType.ExclusiveOr:
@@ -2398,19 +2410,27 @@ namespace Expresso.CodeGen
                 break;
 
 			case OperatorType.GreaterThan:
-                il_generator.Emit(OpCodes.Bgt, label);
+                il_generator.Emit(OpCodes.Cgt);
+                //il_generator.Emit(OpCodes.Ldc_I4_1);
+                //il_generator.Emit(OpCodes.Ceq);
                 break;
 
-			case OperatorType.GreaterThanOrEqual:
-                il_generator.Emit(OpCodes.Bge, label);
+            case OperatorType.GreaterThanOrEqual:
+                il_generator.Emit(OpCodes.Clt);
+                il_generator.Emit(OpCodes.Ldc_I4_0);
+                il_generator.Emit(OpCodes.Ceq);
                 break;
 
-			case OperatorType.LessThanOrEqual:
-                il_generator.Emit(OpCodes.Ble, label);
+            case OperatorType.LessThan:
+                il_generator.Emit(OpCodes.Clt);
+                //il_generator.Emit(OpCodes.Ldc_I4_1);
+                //il_generator.Emit(OpCodes.Ceq);
                 break;
 
-			case OperatorType.LessThan:
-                il_generator.Emit(OpCodes.Blt, label);
+            case OperatorType.LessThanOrEqual:
+                il_generator.Emit(OpCodes.Cgt);
+                il_generator.Emit(OpCodes.Ldc_I4_0);
+                il_generator.Emit(OpCodes.Ceq);
                 break;
 
 			case OperatorType.Minus:
@@ -2422,7 +2442,8 @@ namespace Expresso.CodeGen
                 break;
 
 			case OperatorType.InEquality:
-                il_generator.Emit(OpCodes.Bne_Un_S, label);
+                il_generator.Emit(OpCodes.Ceq);
+                il_generator.Emit(OpCodes.Not);
                 break;
 
 			case OperatorType.Plus:
@@ -2459,7 +2480,8 @@ namespace Expresso.CodeGen
                 break;
 
 			case OperatorType.Not:
-                il_generator.Emit(OpCodes.Not);
+                il_generator.Emit(OpCodes.Ldc_I4_0);
+                il_generator.Emit(OpCodes.Ceq);
                 break;
 
 			default:
@@ -2630,7 +2652,10 @@ namespace Expresso.CodeGen
             DescendScope();
             scope_counter = 0;
 
-            var param_types = funcDecl.Parameters.Select(param => VisitParameterDeclaration(param, context));
+            var param_types = funcDecl.Parameters.Select((param, index) => {
+                context.ParameterIndex = index;
+                return VisitParameterDeclaration(param, context);
+            });
             var return_type = CSharpCompilerHelpers.GetNativeType(funcDecl.ReturnType);
 
             var is_global_function = !funcDecl.Modifiers.HasFlag(Modifiers.Public) && !funcDecl.Modifiers.HasFlag(Modifiers.Protected) && !funcDecl.Modifiers.HasFlag(Modifiers.Private);
@@ -2642,7 +2667,7 @@ namespace Expresso.CodeGen
             else if(is_global_function)
                 flags |= MethodAttributes.Private;
 
-            var method_builder = context.LazyTypeBuilder.DefineMethod(funcDecl.Name, flags, return_type, param_types.ToArray());
+            var method_builder = context.LazyTypeBuilder.DefineMethod(funcDecl.Name, flags, return_type, param_types.ToArray(), this, context, funcDecl);
 
             /*context.CustomAttributeSetter = method_builder.SetCustomAttribute;
             context.AttributeTarget = AttributeTargets.Method;
@@ -2769,6 +2794,8 @@ namespace Expresso.CodeGen
         {
             if(type == typeof(object) && !originalType.IsClass)
                 il_generator.Emit(OpCodes.Box, originalType);
+            else if(type == typeof(byte))
+                il_generator.Emit(OpCodes.Conv_U1);
             else if(type == typeof(int))
                 il_generator.Emit(OpCodes.Conv_I4);
             else if(type == typeof(uint))

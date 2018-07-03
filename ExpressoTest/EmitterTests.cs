@@ -20,6 +20,8 @@ namespace Expresso.Test
         [Test]
         public void SimpleLiterals()
         {
+            Console.WriteLine("Test SimpleLiterals");
+
             var parser = new Parser(new Scanner("../../sources/for_unit_tests/simple_literals.exs"));
             parser.DoPostParseProcessing = true;
             parser.Parse();
@@ -46,6 +48,8 @@ namespace Expresso.Test
         [Test]
         public void SimpleArithmetic()
         {
+            Console.WriteLine("Test SimpleArithmetic");
+
             var parser = new Parser(new Scanner("../../sources/for_unit_tests/simple_arithmetic.exs"));
             parser.DoPostParseProcessing = true;
             parser.Parse();
@@ -75,6 +79,8 @@ namespace Expresso.Test
         [Test]
         public void GeneralExpressions()
         {
+            Console.WriteLine("Test GeneralExpressions");
+
             var parser = new Parser(new Scanner("../../sources/for_unit_tests/general_expressions.exs"));
             parser.DoPostParseProcessing = true;
             parser.Parse();
@@ -104,6 +110,8 @@ namespace Expresso.Test
         [Test]
         public void BasicStatements()
         {
+            Console.WriteLine("Test BasicStatements");
+
             var parser = new Parser(new Scanner("../../sources/for_unit_tests/basic_statements.exs"));
             parser.DoPostParseProcessing = true;
             parser.Parse();
@@ -133,6 +141,8 @@ namespace Expresso.Test
         [Test]
         public void ComplexExpressions()
         {
+            Console.WriteLine("Test ComplextExpressions");
+
             var parser = new Parser(new Scanner("../../sources/for_unit_tests/complex_expressions.exs"));
             parser.DoPostParseProcessing = true;
             parser.Parse();
@@ -162,6 +172,8 @@ namespace Expresso.Test
         [Test]
         public void MatchStatements()
         {
+            Console.WriteLine("Test MatchStatements");
+
             var parser = new Parser(new Scanner("../../sources/for_unit_tests/match_statements.exs"));
             parser.DoPostParseProcessing = true;
             parser.Parse();
@@ -191,6 +203,8 @@ namespace Expresso.Test
         [Test]
         public void Functions()
         {
+            Console.WriteLine("Test Functions");
+
             var parser = new Parser(new Scanner("../../sources/for_unit_tests/functions.exs"));
             parser.DoPostParseProcessing = true;
             parser.Parse();
@@ -210,22 +224,17 @@ namespace Expresso.Test
             Assert.IsTrue(main_method.IsStatic);
             Assert.AreEqual(typeof(void), main_method.ReturnType);
             Assert.AreEqual(0, main_method.GetParameters().Length);
-            //Assert.IsTrue(main_method.GetParameters().SequenceEqual(new []{typeof(string[])}));
             Console.Out.WriteLine("テスト実行");
             Console.Out.WriteLine(main_method.ToString());
 
-            try{
-                main_method.Invoke(null, new object[]{});
-            }catch(Exception e){
-                Console.WriteLine(e.Message);
-                Console.WriteLine(e.StackTrace);
-                Console.WriteLine(e.InnerException);
-            }
+            main_method.Invoke(null, new object[]{});
         }
 
         [Test]
         public void Class()
         {
+            Console.WriteLine("Test Class");
+
             var parser = new Parser(new Scanner("../../sources/for_unit_tests/class.exs"));
             parser.DoPostParseProcessing = true;
             parser.Parse();
@@ -255,6 +264,8 @@ namespace Expresso.Test
         [Test]
         public void Module()
         {
+            Console.WriteLine("Test Module");
+
             var parser = new Parser(new Scanner("../../sources/for_unit_tests/module.exs"));
             parser.DoPostParseProcessing = true;
             parser.Parse();
@@ -282,6 +293,8 @@ namespace Expresso.Test
         [Test]
         public void Closures()
         {
+            Console.WriteLine("Test Closures");
+
             var parser = new Parser(new Scanner("../../sources/for_unit_tests/closures.exs"));
             parser.DoPostParseProcessing = true;
             parser.Parse();
@@ -309,6 +322,8 @@ namespace Expresso.Test
         [Test]
         public void ClosuresWithCompoundStatements()
         {
+            Console.WriteLine("Test ClosuresWithCompoundStatements");
+
             var parser = new Parser(new Scanner("../../sources/for_unit_tests/closures_with_compound_statements.exs"));
             parser.DoPostParseProcessing = true;
             parser.Parse();
@@ -336,6 +351,8 @@ namespace Expresso.Test
         [Test]
         public void TryStatements()
         {
+            Console.WriteLine("Test TryStatements");
+
             var parser = new Parser(new Scanner("../../sources/for_unit_tests/try_statements.exs"));
             parser.DoPostParseProcessing = true;
             parser.Parse();
@@ -363,6 +380,8 @@ namespace Expresso.Test
         [Test]
         public void BuiltinObjects()
         {
+            Console.WriteLine("Test BuiltinObjects");
+
             var parser = new Parser(new Scanner("../../sources/for_unit_tests/builtin_objects.exs"));
             parser.DoPostParseProcessing = true;
             parser.Parse();
@@ -390,6 +409,8 @@ namespace Expresso.Test
         [Test]
         public void Interface()
         {
+            Console.WriteLine("Test Interface");
+
             var parser = new Parser(new Scanner("../../sources/for_unit_tests/interface.exs"));
             parser.DoPostParseProcessing = true;
             parser.Parse();
@@ -417,6 +438,8 @@ namespace Expresso.Test
         [Test]
         public void Slices()
         {
+            Console.WriteLine("Test Slices");
+
             var parser = new Parser(new Scanner("../../sources/for_unit_tests/slices.exs"));
             parser.DoPostParseProcessing = true;
             parser.Parse();
@@ -444,6 +467,8 @@ namespace Expresso.Test
         [Test]
         public void TypeCast()
         {
+            Console.WriteLine("Test TypeCast");
+
             var parser = new Parser(new Scanner("../../sources/for_unit_tests/type_cast.exs"));
             parser.DoPostParseProcessing = true;
             parser.Parse();
@@ -471,6 +496,8 @@ namespace Expresso.Test
         [Test]
         public void UseOfTheStandardLibrary()
         {
+            Console.WriteLine("Test UseOfTheStandardLibrary");
+
             var parser = new Parser(new Scanner("../../sources/for_unit_tests/use_of_the_standard_library.exs"));
             parser.DoPostParseProcessing = true;
             parser.Parse();
@@ -498,6 +525,8 @@ namespace Expresso.Test
         [Test]
         public void VariousStrings()
         {
+            Console.WriteLine("Test VariousStrings");
+
             var parser = new Parser(new Scanner("../../sources/for_unit_tests/various_strings.exs"));
             parser.DoPostParseProcessing = true;
             parser.Parse();
@@ -525,6 +554,8 @@ namespace Expresso.Test
         [Test]
         public void Module2()
         {
+            Console.WriteLine("Test Module2");
+
             var parser = new Parser(new Scanner("../../sources/for_unit_tests/module2.exs"));
             parser.DoPostParseProcessing = true;
             parser.Parse();
@@ -552,6 +583,8 @@ namespace Expresso.Test
         [Test]
         public void InteroperabilityTestWithCSharp()
         {
+            Console.WriteLine("Test InteroperabilityTestWithCSharp");
+
             var parser = new Parser(new Scanner("../../sources/for_unit_tests/interoperability_test_with_csharp.exs"));
             parser.DoPostParseProcessing = true;
             parser.Parse();
@@ -579,6 +612,8 @@ namespace Expresso.Test
         [Test]
         public void AdvancedForLoops()
         {
+            Console.WriteLine("Test AdvancedForLoops");
+
             var parser = new Parser(new Scanner("../../sources/for_unit_tests/advanced_for_loops.exs"));
             parser.DoPostParseProcessing = true;
             parser.Parse();
@@ -606,6 +641,8 @@ namespace Expresso.Test
         [Test]
         public void PropertyTests()
         {
+            Console.WriteLine("Test PropertyTests");
+
             var parser = new Parser(new Scanner("../../sources/for_unit_tests/property_tests.exs"));
             parser.DoPostParseProcessing = true;
             parser.Parse();
@@ -633,6 +670,8 @@ namespace Expresso.Test
         [Test]
         public void TestEnumInCSharp()
         {
+            Console.WriteLine("Test TestEnumInCSharp");
+
             var parser = new Parser(new Scanner("../../sources/for_unit_tests/test_enum_in_csharp.exs"));
             parser.DoPostParseProcessing = true;
             parser.Parse();
@@ -660,6 +699,8 @@ namespace Expresso.Test
         [Test]
         public void TestReference()
         {
+            Console.WriteLine("Test TestReference");
+
             var parser = new Parser(new Scanner("../../sources/for_unit_tests/test_reference.exs"));
             parser.DoPostParseProcessing = true;
             parser.Parse();
@@ -687,6 +728,8 @@ namespace Expresso.Test
         [Test]
         public void Attributes()
         {
+            Console.WriteLine("Test Attributes");
+
             var parser = new Parser(new Scanner("../../sources/for_unit_tests/attributes.exs"));
             parser.DoPostParseProcessing = true;
             parser.Parse();
@@ -773,6 +816,8 @@ namespace Expresso.Test
         [Test]
         public void Enum1()
         {
+            Console.WriteLine("Test Enum1");
+
             var parser = new Parser(new Scanner("../../sources/for_unit_tests/enum1.exs"));
             parser.DoPostParseProcessing = true;
             parser.Parse();
@@ -800,6 +845,8 @@ namespace Expresso.Test
         [Test]
         public void Enum2()
         {
+            Console.WriteLine("Test Enum2");
+
             var parser = new Parser(new Scanner("../../sources/for_unit_tests/enum2.exs"));
             parser.DoPostParseProcessing = true;
             parser.Parse();
@@ -827,6 +874,8 @@ namespace Expresso.Test
         [Test]
         public void GenericClass()
         {
+            Console.WriteLine("Test GenericClass");
+
             var parser = new Parser(new Scanner("../../sources/for_unit_tests/generic_class.exs"));
             parser.DoPostParseProcessing = true;
             parser.Parse();

@@ -126,32 +126,30 @@ namespace Expresso.CodeGen
         /// <param name="name">Name.</param>
         /// <param name="returnType">Return type.</param>
         /// <param name="parameterTypes">Parameter types.</param>
-        public MethodBuilder DefineMethod(string name, MethodAttributes attr, Type returnType, Type[] parameterTypes/*, CodeGenerator generator = null,
-                                          CSharpEmitterContext context = null, Ast.FunctionDeclaration funcDecl = null, Expression body = null*/)
+        public MethodBuilder DefineMethod(string name, MethodAttributes attr, Type returnType, Type[] parameterTypes, CodeGenerator generator = null,
+                                          CSharpEmitterContext context = null, Ast.FunctionDeclaration funcDecl = null)
         {
             var method = interface_type_builder.DefineMethod(name, attr, returnType, parameterTypes);
-            /*if(funcDecl != null){
-                var return_value_builder = method.DefineParameter(0, ParameterAttributes.Retval, null);
+            if(funcDecl != null){
+                /*var return_value_builder = method.DefineParameter(0, ParameterAttributes.Retval, null);
                 context.CustomAttributeSetter = return_value_builder.SetCustomAttribute;
                 context.AttributeTarget = AttributeTargets.ReturnValue;
-                funcDecl.Attribute.AcceptWalker(generator, context);
+                funcDecl.Attribute.AcceptWalker(generator, context);*/
 
-                foreach(var pair in Enumerable.Range(0, parameterTypes.Length).Zip(funcDecl.Parameters, (p, arg) => new Tuple<int, Ast.ParameterDeclaration>(p, arg))){
-                    var param_attr = pair.Item2.Option.IsNull ? ParameterAttributes.None : ParameterAttributes.HasDefault | ParameterAttributes.Optional;
-                    var param_builder = method.DefineParameter(pair.Item1 + 1, param_attr, pair.Item2.Name);
-                    if(!pair.Item2.Option.IsNull){
-                        var option = pair.Item2.Option.AcceptWalker(generator, context);
-                        var default_value = (option is ConstantExpression constant) ? constant.Value :
-                                                                                              (option is MemberExpression member) ? ((FieldInfo)member.Member).GetValue(null)
-                                                                                              : throw new InvalidOperationException(string.Format("Invalid default value: {0}!", option));
+                foreach(var pair in Enumerable.Range(0, parameterTypes.Length).Zip(funcDecl.Parameters, (p, arg) => new {Index = p, ParameterDeclaration = arg})){
+                    var param_attr = pair.ParameterDeclaration.Option.IsNull ? ParameterAttributes.None : ParameterAttributes.HasDefault | ParameterAttributes.Optional;
+                    var param_builder = method.DefineParameter(pair.Index + 1, param_attr, pair.ParameterDeclaration.Name);
+                    if(!pair.ParameterDeclaration.Option.IsNull){
+                        var option = pair.ParameterDeclaration.Option;
+                        var default_value = (option is Ast.LiteralExpression literal) ? literal.Value : throw new InvalidOperationException(string.Format("Invalid default value: {0}!", option));;
                         param_builder.SetConstant(default_value);
                     }
 
-                    context.CustomAttributeSetter = param_builder.SetCustomAttribute;
+                    /*context.CustomAttributeSetter = param_builder.SetCustomAttribute;
                     context.AttributeTarget = AttributeTargets.Parameter;
-                    pair.Item2.Attribute.AcceptWalker(generator, context);
+                    pair.ParameterDeclaration.Attribute.AcceptWalker(generator, context);*/
                 }
-            }*/
+            }
 
             var il = method.GetILGenerator();
             // Emit call to the implementation method no matter whether we actually need it.
@@ -211,22 +209,28 @@ namespace Expresso.CodeGen
         /// <returns>The interface type.</returns>
         public Type CreateInterfaceType()
         {
-            ConstructorBuilder ctor = null;
             if(is_raw_value_enum || types.Any()){
-                var param_types = members.OfType<FieldBuilder>()
-                                         .Where(t => !has_initializer_list.Any(name => t.Name == name))
-                                         .Select(t => t.FieldType)
-                                         .ToArray();
-                ctor = DefineConstructor(param_types);
+                var fields = members.Values
+                                    .OfType<FieldBuilder>()
+                                    .Where(fb => !has_initializer_list.Contains(fb.Name));
+                var param_types = fields.Select(fb => fb.FieldType)
+                                        .ToArray();
+                var ctor = DefineConstructor(param_types);
+
+                var il_generator = ctor.GetILGenerator();
+                foreach(var pair in Enumerable.Range(1, fields.Count()).Zip(fields, (i, r) => new {Counter = i, Field = r})){
+                    LoadArgs(il_generator, new []{0});
+                    LoadArgs(il_generator, new []{pair.Counter});
+
+                    il_generator.Emit(OpCodes.Stfld, pair.Field);
+                }
+                il_generator.Emit(OpCodes.Ret);
             }
 
             if(HasStaticFields)
                 DefineStaticConstructor();
 
-            if(type_cache == null)
-                type_cache = interface_type_builder.CreateType();
-
-            if(ctor != null){
+            //if(ctor != null){
                 /*var parameters = members.OfType<FieldBuilder>()
                                         .Where(fb => !has_initializer_list.Any(name => fb.Name == name))
                                         .Select(fb => Expression.Parameter(fb.FieldType, fb.Name))
@@ -249,18 +253,11 @@ namespace Expresso.CodeGen
                 );
                 SetBody(ctor, impl_tree);*/
 
-                var il_generator = ctor.GetILGenerator();
-                var param_types = members.OfType<FieldBuilder>()
-                                         .Where(t => !has_initializer_list.Any(name => t.Name == name))
-                                         .Select(t => t.FieldType)
-                                         .ToArray();
-                var fields = interface_type_builder.GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
-                foreach(var pair in Enumerable.Range(0, param_types.Count()).Zip(fields, (i, r) => new {Counter = i, Field = r})){
-                    LoadArgs(il_generator, new []{pair.Counter});
 
-                    il_generator.Emit(OpCodes.Stfld, pair.Field);
-                }
-            }
+            //}
+
+            if(type_cache == null)
+                type_cache = interface_type_builder.CreateType();
 
             return type_cache;
         }
