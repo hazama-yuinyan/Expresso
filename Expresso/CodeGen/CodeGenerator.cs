@@ -1040,6 +1040,7 @@ namespace Expresso.CodeGen
                     if(context.OperationTypeOnIdentifier == OperationType.Load)
                         il_generator.Emit(OpCodes.Ldloc, symbol.LocalBuilder);
 
+                    context.TargetLocalBuilder = symbol.LocalBuilder;
                     return symbol.LocalBuilder.LocalType;
                 }else if(symbol.Parameter != null){
                     if(context.RequestType)
@@ -1195,6 +1196,7 @@ namespace Expresso.CodeGen
                 // Assume m is a module variable and it's for let b = m;
                 if(context.PropertyOrField != null && context.PropertyOrField is FieldInfo field){
                     il_generator.Emit(OpCodes.Ldsfld, field);
+                    context.PropertyOrField = null;
                     return field.FieldType;
                 }else{
                     return type;
@@ -1358,11 +1360,10 @@ namespace Expresso.CodeGen
             // If this node represents a dictionary literal
             // context.Constructor will get set the appropriate constructor method.
             context.Constructor = null;
-            var prev_additionals = context.Additionals;
-            context.Additionals = new List<object>();
+
             if(seq_type == typeof(Array)){
-                var elem_type = CSharpCompilerHelpers.GetNativeType(obj_type.TypeArguments.First());
-                if(elem_type == typeof(ExpressoIntegerSequence)){
+                var first_elem = seqInitializer.Items.FirstOrDefault();
+                if(first_elem is IntegerSequenceExpression){
                     foreach(var item in seqInitializer.Items)
                         item.AcceptWalker(this, context);
                     
@@ -1370,14 +1371,15 @@ namespace Expresso.CodeGen
                     il_generator.Emit(OpCodes.Call, array_create_method);
                     return typeof(int[]);
                 }else{
+                    var elem_type = CSharpCompilerHelpers.GetNativeType(obj_type.TypeArguments.First());
                     EmitNewArray(elem_type, seqInitializer.Items, item => {
                         item.AcceptWalker(this, context);
                     });
                     return elem_type.MakeArrayType();
                 }
             }else if(seq_type == typeof(List<>)){
-                var elem_type = CSharpCompilerHelpers.GetNativeType(obj_type.TypeArguments.First());
-                if(elem_type == typeof(ExpressoIntegerSequence)){
+                var first_elem = seqInitializer.Items.FirstOrDefault();
+                if(first_elem is IntegerSequenceExpression){
                     foreach(var item in seqInitializer.Items)
                         item.AcceptWalker(this, context);
                     
@@ -1385,6 +1387,7 @@ namespace Expresso.CodeGen
                     il_generator.Emit(OpCodes.Call, list_create_method);
                     return typeof(List<int>);
                 }else{
+                    var elem_type = CSharpCompilerHelpers.GetNativeType(obj_type.TypeArguments.First());
                     var generic_type = EmitListInitForList(elem_type, seqInitializer.Items, context);
                     return generic_type;
                 }
@@ -1875,7 +1878,15 @@ namespace Expresso.CodeGen
                 var field_builder = (init.NameToken != null) ? Symbols[init.NameToken.IdentifierId].FieldBuilder : throw new EmitterException("Invalid field: {0}", init.Pattern);
                 var prev_il_generator = il_generator;
                 il_generator = context.LazyTypeBuilder.GetILGeneratorForFieldInit(field_builder);
-                init.Initializer.AcceptWalker(this, context);
+                var type = init.Initializer.AcceptWalker(this, context);
+                if(type != null){
+                    if(field_builder.IsStatic){
+                        il_generator.Emit(OpCodes.Stsfld, field_builder);
+                    }else{
+                        LoadArg(0);
+                        il_generator.Emit(OpCodes.Stfld, field_builder);
+                    }
+                }
 
                 il_generator = prev_il_generator;
             }
@@ -2574,6 +2585,23 @@ namespace Expresso.CodeGen
                     context.OperationTypeOnIdentifier = prev_op_type;
                     il_generator.Emit(OpCodes.Call, method);
                 }
+            }else if(method.DeclaringType.Name == "Math" && method.Name == "Pow"){
+                // Specilize the Pow method so that it can return int
+                var arg_count = args.Count();
+                Type expected_type = null;
+                foreach(var pair in Enumerable.Range(0, arg_count).Zip(method.GetParameters(), (l, r) => new {Index = l, Param = r})){
+                    var arg = args.ElementAt(pair.Index);
+                    var type = arg.AcceptWalker(this, context);
+                    if(expected_type == null)
+                        expected_type = type;
+
+                    if(pair.Param.ParameterType != type && !pair.Param.ParameterType.IsByRef)
+                        EmitCast(type, pair.Param.ParameterType);
+                }
+
+                EmitCall(method);
+                if(expected_type != typeof(double))
+                    EmitCast(typeof(double), expected_type);
             }else{
                 if(method.ContainsGenericParameters){
                     var parameters = method.GetParameters();

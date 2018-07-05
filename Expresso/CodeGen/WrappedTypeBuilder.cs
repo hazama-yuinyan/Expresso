@@ -72,7 +72,8 @@ namespace Expresso.CodeGen
 
         public bool HasStaticFields{
             get{
-                return members.OfType<FieldBuilder>()
+                return members.Values
+                              .OfType<FieldBuilder>()
                               .Where(fb => fb.IsStatic)
                               .Any();
             }
