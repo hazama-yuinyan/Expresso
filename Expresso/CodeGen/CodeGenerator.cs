@@ -729,42 +729,50 @@ namespace Expresso.CodeGen
                 // that is, they will be evaluated as a = 1, b = 2, ...
                 var rhs = (SequenceExpression)assignment.Right;
                 context.RequestPropertyOrField = true;
+                var prev_op_type = context.OperationTypeOnIdentifier;
                 foreach(var operands in lhs.Items.Zip(rhs.Items, (l, r) => new {Lhs = l, Rhs = r})){
-                    if(assignment.Operator == OperatorType.Assign)
-                        context.OperationTypeOnIdentifier = OperationType.None;
-                    
-                    var tmp = operands.Lhs.AcceptWalker(this, context);
-                    if(result == null)
-                        result = tmp;
-                    
-                    context.OperationTypeOnIdentifier = OperationType.Load;
-                    operands.Rhs.AcceptWalker(this, context);
-
-                    switch(assignment.Operator){
-                    case OperatorType.Plus:
-                        il_generator.Emit(OpCodes.Add);
-                        break;
-
-                    case OperatorType.Minus:
-                        il_generator.Emit(OpCodes.Sub);
-                        break;
-
-                    case OperatorType.Times:
-                        il_generator.Emit(OpCodes.Mul);
-                        break;
-
-                    case OperatorType.Divide:
-                        il_generator.Emit(OpCodes.Div);
-                        break;
-
-                    case OperatorType.Modulus:
-                        il_generator.Emit(OpCodes.Rem);
-                        break;
-
-                    case OperatorType.Power:
+                    if(assignment.Operator == OperatorType.Power){
                         var pow_method = typeof(Math).GetMethod("Pow");
-                        il_generator.Emit(OpCodes.Call, pow_method);
-                        break;
+                        if(result == null)
+                            result = pow_method.ReturnType;
+
+                        context.OperationTypeOnIdentifier = OperationType.Load;
+                        EmitCallExpression(pow_method, new []{operands.Lhs, operands.Rhs}, null, context);
+                    }else{
+                        if(assignment.Operator == OperatorType.Assign)
+                            context.OperationTypeOnIdentifier = OperationType.None;
+                        
+                        var tmp = operands.Lhs.AcceptWalker(this, context);
+                        if(result == null)
+                            result = tmp;
+                        
+                        context.OperationTypeOnIdentifier = OperationType.Load;
+                        operands.Rhs.AcceptWalker(this, context);
+
+                        switch(assignment.Operator){
+                        case OperatorType.Plus:
+                            il_generator.Emit(OpCodes.Add);
+                            break;
+
+                        case OperatorType.Minus:
+                            il_generator.Emit(OpCodes.Sub);
+                            break;
+
+                        case OperatorType.Times:
+                            il_generator.Emit(OpCodes.Mul);
+                            break;
+
+                        case OperatorType.Divide:
+                            il_generator.Emit(OpCodes.Div);
+                            break;
+
+                        case OperatorType.Modulus:
+                            il_generator.Emit(OpCodes.Rem);
+                            break;
+
+                        default:
+                            throw new InvalidOperationException("Unknown operation!");
+                        }
                     }
 
                     EmitSet((FieldInfo)context.PropertyOrField, context.TargetLocalBuilder, result);
@@ -791,17 +799,23 @@ namespace Expresso.CodeGen
         {
             context.RequestPropertyOrField = true;
 
-            var result = binaryExpr.Left.AcceptWalker(this, context);
-            binaryExpr.Right.AcceptWalker(this, context);
+            if(binaryExpr.Operator == OperatorType.Power){
+                var pow_method = typeof(Math).GetMethod("Pow");
+                EmitCallExpression(pow_method, new []{binaryExpr.Left, binaryExpr.Right}, null, context);
+                context.RequestPropertyOrField = false;
+                context.PropertyOrField = null;
 
-            var label = il_generator.DefineLabel();
+                return pow_method.ReturnType;
+            }else{
+                var result = binaryExpr.Left.AcceptWalker(this, context);
+                binaryExpr.Right.AcceptWalker(this, context);
 
-            context.RequestPropertyOrField = false;
-            context.PropertyOrField = null;
-            EmitBinaryOp(binaryExpr.Operator, ref label);
-            il_generator.MarkLabel(label);
+                context.RequestPropertyOrField = false;
+                context.PropertyOrField = null;
+                EmitBinaryOp(binaryExpr.Operator);
 
-            return result;
+                return result;
+            }
         }
 
         public Type VisitCallExpression(CallExpression call, CSharpEmitterContext context)
@@ -815,7 +829,7 @@ namespace Expresso.CodeGen
             context.ArgumentTypes = parent_args;
 
             var method = context.Method;
-            EmitCallExpression(method, call, context);
+            EmitCallExpression(method, call.Arguments, call.TypeArguments, context);
             var result = method.ReturnType;
             context.Method = null;
 
@@ -1113,7 +1127,8 @@ namespace Expresso.CodeGen
         public Type VisitIndexerExpression(IndexerExpression indexExpr, CSharpEmitterContext context)
         {
             var target_type = indexExpr.Target.AcceptWalker(this, context);
-            var arg_types = indexExpr.Arguments.Select(a => a.AcceptWalker(this, context));
+            // We need to call ToArray here so that the enumerable will be evaluated once
+            var arg_types = indexExpr.Arguments.Select(a => a.AcceptWalker(this, context)).ToArray();
 
             if(arg_types.Count() == 1 && arg_types.First().Name == "ExpressoIntegerSequence"){
                 var seq_type = target_type;
@@ -1125,13 +1140,12 @@ namespace Expresso.CodeGen
                 return slice_type;   // a[ExpressoIntegerSequence]
             }
 
-            var type = target_type;
             // We don't need to set here because Assignment calls this only when it should read values
-            if(type.IsArray){
-                EmitLoadElem(target_type);
+            if(target_type.IsArray){
+                EmitLoadElem(target_type.GetElementType());
                 return target_type.GetElementType();
             }else{
-                var property_info = type.GetProperty("Item");
+                var property_info = target_type.GetProperty("Item");
                 il_generator.Emit(OpCodes.Callvirt, property_info.GetMethod);
                 return property_info.GetMethod.ReturnType;
             }
@@ -2373,7 +2387,7 @@ namespace Expresso.CodeGen
         #endregion
 
 		#region methods
-        void EmitBinaryOp(OperatorType opType, ref Label label)
+        void EmitBinaryOp(OperatorType opType)
 		{
 			switch(opType){
 			case OperatorType.BitwiseAnd:
@@ -2450,11 +2464,6 @@ namespace Expresso.CodeGen
                 il_generator.Emit(OpCodes.Add);
                 break;
 
-			case OperatorType.Power:
-                var pow_method = typeof(Math);
-                il_generator.Emit(OpCodes.Call, pow_method);
-                break;
-
 			case OperatorType.Times:
                 il_generator.Emit(OpCodes.Mul);
                 break;
@@ -2502,14 +2511,14 @@ namespace Expresso.CodeGen
             return parameters;
         }
 
-        void EmitCallExpression(MethodInfo method, CallExpression call, CSharpEmitterContext context)
+        void EmitCallExpression(MethodInfo method, IEnumerable<Expression> args, IEnumerable<KeyValueType> typeArgs, CSharpEmitterContext context)
         {
             if(method == null)
                 throw new ArgumentNullException(nameof(method));
 
             if(method.DeclaringType.Name == "Console" && (method.Name == "Write" || method.Name == "WriteLine") ||
                      method.DeclaringType.Name == "String" && method.Name == "Format"){
-                var first = call.Arguments.First();
+                var first = args.First();
                 var expand_method = typeof(CSharpCompilerHelpers).GetMethod("ExpandContainer");
                 if(first is LiteralExpression first_string && first_string.Value is string && ((string)first_string.Value).Contains("{0}")){
                     var parameters = method.GetParameters();
@@ -2518,14 +2527,14 @@ namespace Expresso.CodeGen
                     switch(parameters.Length){
                     case 2:
                         if(parameters[1].ParameterType.IsArray){
-                            EmitNewArray(parameters[1].ParameterType.GetElementType(), call.Arguments.Skip(1), arg => {
+                            EmitNewArray(parameters[1].ParameterType.GetElementType(), args.Skip(1), arg => {
                                 var original_type = arg.AcceptWalker(this, context);
                                 EmitCast(original_type, typeof(object));
                                 il_generator.Emit(OpCodes.Call, expand_method);
                             });
                             il_generator.Emit(OpCodes.Call, method);
                         }else{
-                            var original_type = call.Arguments.ElementAt(1).AcceptWalker(this, context);
+                            var original_type = args.ElementAt(1).AcceptWalker(this, context);
                             EmitCast(original_type, typeof(object));
                             il_generator.Emit(OpCodes.Call, expand_method);
                             il_generator.Emit(OpCodes.Call, method);
@@ -2534,7 +2543,7 @@ namespace Expresso.CodeGen
 
                     case 3:
                     case 4:
-                        foreach(var arg in call.Arguments.Skip(1)){
+                        foreach(var arg in args.Skip(1)){
                             var original_type = arg.AcceptWalker(this, context);
                             EmitCast(original_type, typeof(object));
                             il_generator.Emit(OpCodes.Call, expand_method);
@@ -2548,7 +2557,7 @@ namespace Expresso.CodeGen
                     }
                 }else{
                     var builder = new StringBuilder("{0}");
-                    for(int i = 1; i < call.Arguments.Count; ++i){
+                    for(int i = 1; i < args.Count(); ++i){
                         builder.Append(", ");
                         builder.Append("{" + i.ToString() + "}");
                     }
@@ -2557,7 +2566,7 @@ namespace Expresso.CodeGen
 
                     var prev_op_type = context.OperationTypeOnIdentifier;
                     context.OperationTypeOnIdentifier = OperationType.Load;
-                    EmitNewArray(typeof(string), call.Arguments, arg => {
+                    EmitNewArray(typeof(string), args, arg => {
                         var original_type = arg.AcceptWalker(this, context);
                         EmitCast(original_type, typeof(object));
                         il_generator.Emit(OpCodes.Call, expand_method);
@@ -2566,11 +2575,11 @@ namespace Expresso.CodeGen
                     il_generator.Emit(OpCodes.Call, method);
                 }
             }else{
-                if(method.IsGenericMethod){//method.ContainsGenericParameters){
+                if(method.ContainsGenericParameters){
                     var parameters = method.GetParameters();
                     var generic_param_names = parameters.Where(p => p.ParameterType.IsGenericParameter)
                                                         .Select(p => p.Name);
-                    var method_generic_types = call.TypeArguments.Where(ta => generic_param_names.Contains(ta.Name))
+                    var method_generic_types = typeArgs.Where(ta => generic_param_names.Contains(ta.Name))
                                                    .Select(e => CSharpCompilerHelpers.GetNativeType(e));
                     if(method.IsGenericMethod){
                         method = method.MakeGenericMethod(method_generic_types.ToArray());
@@ -2582,7 +2591,8 @@ namespace Expresso.CodeGen
                 }
 
                 var method_params = method.GetParameters();
-                if(method_params.Length < call.Arguments.Count){
+                var arg_count = args.Count();
+                if(method_params.Length < arg_count){
                     // For varargs methods
                     int base_index = method_params.Length;
                     var array_param = method_params.Last();
@@ -2590,30 +2600,31 @@ namespace Expresso.CodeGen
                         throw new EmitterException("Expected the last parameter is an array(params): {0}", array_param.Name);
                     
                     var array_type = array_param.ParameterType.GetElementType();
-                    foreach(var arg in call.Arguments)
+                    foreach(var arg in args)
                         arg.AcceptWalker(this, context);
 
-                    foreach(var arg in call.Arguments.Skip(base_index - 1)){
+                    foreach(var arg in args.Skip(base_index - 1)){
                         var original_type = arg.AcceptWalker(this, context);
                         EmitCast(original_type, array_type);
                     }
-                }else if(method_params.Length > call.Arguments.Count){
+                }else if(method_params.Length > arg_count){
                     // For optional parameters
-                    foreach(var arg in call.Arguments)
+                    foreach(var arg in args)
                         arg.AcceptWalker(this, context);
                     
-                    foreach(var i in Enumerable.Range(call.Arguments.Count, method_params.Length - call.Arguments.Count)){
+                    foreach(var i in Enumerable.Range(arg_count, method_params.Length - arg_count)){
                         if(!method_params[i].HasDefaultValue)
                             throw new InvalidOperationException(string.Format("Expected #{0} of the parameters of {1} has default value.", i, method.Name));
 
                         EmitObject(method_params[i].RawDefaultValue);
                     }
                 }else{
-                    foreach(var pair in Enumerable.Range(0, call.Arguments.Count).Zip(method.GetParameters(), (l, r) => new {Index = l, Param = r})){
-                        var arg = call.Arguments.ElementAt(pair.Index);
-                        arg.AcceptWalker(this, context);
-                        //if(pair.Param.ParameterType != arg.Type && !pair.Param.ParameterType.IsByRef)
-                        //    call[pair.Item1] = CSharpExpr.Convert(arg, pair.Item2.ParameterType);
+                    foreach(var pair in Enumerable.Range(0, arg_count).Zip(method.GetParameters(), (l, r) => new {Index = l, Param = r})){
+                        var arg = args.ElementAt(pair.Index);
+                        var type = arg.AcceptWalker(this, context);
+
+                        if(pair.Param.ParameterType != type && !pair.Param.ParameterType.IsByRef)
+                            EmitCast(type, pair.Param.ParameterType);
                     }
                 }
 
@@ -2796,6 +2807,8 @@ namespace Expresso.CodeGen
                 il_generator.Emit(OpCodes.Box, originalType);
             else if(type == typeof(byte))
                 il_generator.Emit(OpCodes.Conv_U1);
+            else if(type == typeof(char))
+                il_generator.Emit(OpCodes.Conv_I2);
             else if(type == typeof(int))
                 il_generator.Emit(OpCodes.Conv_I4);
             else if(type == typeof(uint))
