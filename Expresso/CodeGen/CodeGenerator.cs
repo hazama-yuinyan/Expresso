@@ -233,8 +233,7 @@ namespace Expresso.CodeGen
 
         ExpressoSymbol GetRuntimeSymbol(Identifier ident)
         {
-            ExpressoSymbol symbol;
-            if(Symbols.TryGetValue(ident.IdentifierId, out symbol))
+            if(Symbols.TryGetValue(ident.IdentifierId, out var symbol))
                 return symbol;
             else
                 return null;
@@ -739,9 +738,7 @@ namespace Expresso.CodeGen
                         context.OperationTypeOnIdentifier = OperationType.Load;
                         EmitCallExpression(pow_method, new []{operands.Lhs, operands.Rhs}, null, context);
                     }else{
-                        if(assignment.Operator == OperatorType.Assign)
-                            context.OperationTypeOnIdentifier = OperationType.None;
-                        
+                        context.OperationTypeOnIdentifier = OperationType.Set;
                         var tmp = operands.Lhs.AcceptWalker(this, context);
                         if(result == null)
                             result = tmp;
@@ -770,12 +767,15 @@ namespace Expresso.CodeGen
                             il_generator.Emit(OpCodes.Rem);
                             break;
 
+                        case OperatorType.Assign:
+                            break;
+
                         default:
-                            throw new InvalidOperationException("Unknown operation!");
+                            throw new InvalidOperationException(string.Format("Unknown operation: {0}!", assignment.Operator));
                         }
                     }
 
-                    EmitSet((FieldInfo)context.PropertyOrField, context.TargetLocalBuilder, result);
+                    EmitSet(context.PropertyOrField, context.TargetLocalBuilder, context.ParameterIndex, result);
                 }
             }else{
                 // falls into composition branch
@@ -783,14 +783,19 @@ namespace Expresso.CodeGen
                 context.RequestPropertyOrField = true;
                 context.PropertyOrField = null;
                 assignment.Right.AcceptWalker(this, context);
-                result = assignment.Left.AcceptWalker(this, context);
 
-                EmitSet((FieldInfo)context.PropertyOrField, context.TargetLocalBuilder, result);
+                var prev_op_type = context.OperationTypeOnIdentifier;
+                context.OperationTypeOnIdentifier = OperationType.Set;
+                result = assignment.Left.AcceptWalker(this, context);
+                context.OperationTypeOnIdentifier = prev_op_type;
+
+                //EmitSet(context.PropertyOrField, context.TargetLocalBuilder, result);
             }
 
             context.RequestPropertyOrField = false;
             context.PropertyOrField = null;
             context.TargetLocalBuilder = null;
+            context.ParameterIndex = -1;
 
             return result;
         }
@@ -821,6 +826,7 @@ namespace Expresso.CodeGen
         public Type VisitCallExpression(CallExpression call, CSharpEmitterContext context)
         {
             var parent_args = context.ArgumentTypes;
+            var prev_method = context.Method;
             context.ArgumentTypes = ConvertToNativeTypes(call.OverloadSignature.Parameters);
 
             context.RequestMethod = true;
@@ -829,6 +835,7 @@ namespace Expresso.CodeGen
             context.ArgumentTypes = parent_args;
 
             var method = context.Method;
+            context.Method = prev_method;
             EmitCallExpression(method, call.Arguments, call.TypeArguments, context);
             var result = method.ReturnType;
             context.Method = null;
@@ -1038,7 +1045,7 @@ namespace Expresso.CodeGen
                         context.TargetType = symbol.LocalBuilder.LocalType;
 
                     if(context.OperationTypeOnIdentifier == OperationType.Load)
-                        il_generator.Emit(OpCodes.Ldloc, symbol.LocalBuilder);
+                        EmitLoadLocal(symbol.LocalBuilder, context.ExpectsReference);
 
                     context.TargetLocalBuilder = symbol.LocalBuilder;
                     return symbol.LocalBuilder.LocalType;
@@ -1046,13 +1053,14 @@ namespace Expresso.CodeGen
                     if(context.RequestType)
                         context.TargetType = symbol.Parameter.Type;
 
-                    if(context.OperationTypeOnIdentifier == OperationType.Load && symbol.ParameterIndex != -1)
+                    if(context.OperationTypeOnIdentifier == OperationType.Load && symbol.ParameterIndex != -1 || symbol.Parameter.IsByRef)
                         LoadArg(symbol.ParameterIndex);
 
+                    context.ParameterIndex = symbol.ParameterIndex;
                     return symbol.Parameter.Type;
                 }else if(context.RequestPropertyOrField && symbol.PropertyOrField != null){
                     context.PropertyOrField = symbol.PropertyOrField;
-                    return (symbol.PropertyOrField is PropertyInfo) ? ((PropertyInfo)symbol.PropertyOrField).PropertyType : ((FieldInfo)symbol.PropertyOrField).FieldType;
+                    return (symbol.PropertyOrField is PropertyInfo property) ? property.PropertyType : ((FieldInfo)symbol.PropertyOrField).FieldType;
                 }else if(context.RequestType && symbol.Type != null){
                     context.TargetType = symbol.Type;
                     if(context.TargetType.GetConstructors().Any()){
@@ -1156,27 +1164,38 @@ namespace Expresso.CodeGen
         {
             // In Expresso, a member access can be resolved either to a field reference or an (instance and static) method call
             var prev_op_type = context.OperationTypeOnIdentifier;
-            context.OperationTypeOnIdentifier = OperationType.Load;
-            var expr = memRef.Target.AcceptWalker(this, context);
+            if(context.OperationTypeOnIdentifier != OperationType.None)
+                context.OperationTypeOnIdentifier = OperationType.Load;
+
+            memRef.Target.AcceptWalker(this, context);
             context.OperationTypeOnIdentifier = prev_op_type;
             context.RequestPropertyOrField = true;
             context.RequestMethod = true;
+            var prev_member = context.PropertyOrField;
 
             VisitIdentifier(memRef.Member, context);
             context.RequestPropertyOrField = false;
             context.RequestMethod = false;
 
             if(context.Method != null){
-                return null;    // Parent should be a CallExpression
+                return context.Method.ReturnType;    // Parent should be a CallExpression
             }else if(context.PropertyOrField is PropertyInfo property){
-                context.PropertyOrField = null;
-                il_generator.Emit(OpCodes.Callvirt, property.GetMethod);
+                if(context.OperationTypeOnIdentifier == OperationType.Load){
+                    context.PropertyOrField = prev_member;
+                    EmitCall(property.GetMethod);
+                }
                 return property.GetMethod.ReturnType;
             }else{
                 var field = (FieldInfo)context.PropertyOrField;
-                context.PropertyOrField = null;
+                if(field.DeclaringType.IsEnum){
+                    context.PropertyOrField = prev_member;
 
-                EmitLoadField(field);
+                    EmitInt((int)field.GetValue(null));
+                }else if(context.OperationTypeOnIdentifier == OperationType.Load){
+                    context.PropertyOrField = prev_member;
+
+                    EmitLoadField(field);
+                }
                 return field.FieldType;
             }
         }
@@ -2003,7 +2022,7 @@ namespace Expresso.CodeGen
                 AddSymbol(identifierPattern.Identifier, new ExpressoSymbol{LocalBuilder = local_builder});
 
                 if(context.OperationTypeOnIdentifier == OperationType.Set)
-                    EmitSet(null, local_builder, null);
+                    EmitSet(null, local_builder, -1, null);
                 
                 var start_loc = identifierPattern.Identifier.StartLocation;
                 var end_loc = identifierPattern.Identifier.EndLocation;
@@ -2468,7 +2487,8 @@ namespace Expresso.CodeGen
 
 			case OperatorType.InEquality:
                 il_generator.Emit(OpCodes.Ceq);
-                il_generator.Emit(OpCodes.Not);
+                il_generator.Emit(OpCodes.Ldc_I4_0);
+                il_generator.Emit(OpCodes.Ceq);
                 break;
 
 			case OperatorType.Plus:
@@ -2608,7 +2628,7 @@ namespace Expresso.CodeGen
                     var generic_param_names = parameters.Where(p => p.ParameterType.IsGenericParameter)
                                                         .Select(p => p.Name);
                     var method_generic_types = typeArgs.Where(ta => generic_param_names.Contains(ta.Name))
-                                                   .Select(e => CSharpCompilerHelpers.GetNativeType(e));
+                                                       .Select(e => CSharpCompilerHelpers.GetNativeType(e));
                     if(method.IsGenericMethod){
                         method = method.MakeGenericMethod(method_generic_types.ToArray());
                     }else{
@@ -2628,8 +2648,7 @@ namespace Expresso.CodeGen
                         throw new EmitterException("Expected the last parameter is an array(params): {0}", array_param.Name);
                     
                     var array_type = array_param.ParameterType.GetElementType();
-                    foreach(var arg in args)
-                        arg.AcceptWalker(this, context);
+                    EmitArguments(method_params, args, context);
 
                     foreach(var arg in args.Skip(base_index - 1)){
                         var original_type = arg.AcceptWalker(this, context);
@@ -2637,8 +2656,7 @@ namespace Expresso.CodeGen
                     }
                 }else if(method_params.Length > arg_count){
                     // For optional parameters
-                    foreach(var arg in args)
-                        arg.AcceptWalker(this, context);
+                    EmitArguments(method_params, args, context);
                     
                     foreach(var i in Enumerable.Range(arg_count, method_params.Length - arg_count)){
                         if(!method_params[i].HasDefaultValue)
@@ -2647,17 +2665,30 @@ namespace Expresso.CodeGen
                         EmitObject(method_params[i].RawDefaultValue);
                     }
                 }else{
-                    foreach(var pair in Enumerable.Range(0, arg_count).Zip(method.GetParameters(), (l, r) => new {Index = l, Param = r})){
-                        var arg = args.ElementAt(pair.Index);
-                        var type = arg.AcceptWalker(this, context);
-
-                        if(pair.Param.ParameterType != type && !pair.Param.ParameterType.IsByRef)
-                            EmitCast(type, pair.Param.ParameterType);
-                    }
+                    EmitArguments(method_params, args, context);
                 }
 
                 EmitCall(method);
             }
+        }
+
+        void EmitArguments(ParameterInfo[] parameters, IEnumerable<Expression> args, CSharpEmitterContext context)
+        {
+            var arg_count = args.Count();
+            foreach(var pair in Enumerable.Range(0, arg_count).Zip(parameters, (l, r) => new {Index = l, Param = r})){
+                var arg = args.ElementAt(pair.Index);
+                if(pair.Param.ParameterType.IsByRef)
+                    context.ExpectsReference = true;
+                else
+                    context.ExpectsReference = false;
+
+                var type = arg.AcceptWalker(this, context);
+
+                if(pair.Param.ParameterType != type && !pair.Param.ParameterType.IsByRef)
+                    EmitCast(type, pair.Param.ParameterType);
+            }
+
+            context.ExpectsReference = false;
         }
 
         void DefineFunctionSignaturesAndFields(IEnumerable<EntityDeclaration> entities, CSharpEmitterContext context)
@@ -2857,14 +2888,12 @@ namespace Expresso.CodeGen
                 il_generator.Emit(OpCodes.Callvirt, method);
         }
 
-        void EmitLoad(FieldInfo field, LocalBuilder localBuilder, Type targetType)
+        void EmitLoadLocal(LocalBuilder localBuilder, bool expectsReference)
         {
-            if(localBuilder != null)
-                il_generator.Emit(OpCodes.Ldloc, localBuilder);
-            else if(field != null)
-                EmitLoadField(field);
+            if(expectsReference)
+                il_generator.Emit(OpCodes.Ldloca_S, localBuilder.LocalIndex);
             else
-                EmitLoadElem(targetType);
+                il_generator.Emit(OpCodes.Ldloc, localBuilder);
         }
 
         void EmitLoadField(FieldInfo field)
@@ -2875,12 +2904,16 @@ namespace Expresso.CodeGen
                 il_generator.Emit(OpCodes.Ldfld, field);
         }
 
-        void EmitSet(FieldInfo field, LocalBuilder localBuilder, Type targetType)
+        void EmitSet(MemberInfo member, LocalBuilder localBuilder, int parameterIndex, Type targetType)
         {
-            if(localBuilder != null)
-                il_generator.Emit(OpCodes.Stloc, localBuilder);
-            else if(field != null)
+            if(member is PropertyInfo property)
+                EmitCall(property.SetMethod);
+            else if(member is FieldInfo field)
                 EmitSetField(field);
+            else if(localBuilder != null)
+                il_generator.Emit(OpCodes.Stloc, localBuilder);
+            else if(parameterIndex >= 0)
+                EmitSetInd(targetType);
             else
                 EmitSetElem(targetType);
         }
@@ -2891,6 +2924,20 @@ namespace Expresso.CodeGen
                 il_generator.Emit(OpCodes.Stsfld, field);
             else
                 il_generator.Emit(OpCodes.Stfld, field);
+        }
+
+        void EmitSetInd(Type targetType)
+        {
+            if(targetType == typeof(byte))
+                il_generator.Emit(OpCodes.Stind_I1);
+            else if(targetType == typeof(int) || targetType == typeof(uint))
+                il_generator.Emit(OpCodes.Stind_I4);
+            else if(targetType == typeof(float))
+                il_generator.Emit(OpCodes.Stind_R4);
+            else if(targetType == typeof(double))
+                il_generator.Emit(OpCodes.Stind_R8);
+            else
+                il_generator.Emit(OpCodes.Stind_Ref);
         }
 
         void EmitNewArray(Type elementType, IEnumerable<Expression> initializers, Action<Expression> action)

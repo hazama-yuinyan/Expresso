@@ -156,13 +156,6 @@ namespace Expresso.CodeGen
         }
 
         /// <summary>
-        /// Represents the current context type or module as a ParameterExpression.
-        /// </summary>
-        public System.Linq.Expressions.ParameterExpression ParameterSelf{
-            get; set;
-        }
-
-        /// <summary>
         /// It will be set to an Expression that represents the temporary expression.
         /// </summary>
         /// <value>The temporary expression.</value>
@@ -244,6 +237,14 @@ namespace Expresso.CodeGen
         /// </summary>
         /// <value>The index of the parameter.</value>
         public int ParameterIndex{
+            get; set;
+        }
+
+        /// <summary>
+        /// Indicates that we expect a reference at this point.
+        /// </summary>
+        /// <value><c>true</c> if expects reference; otherwise, <c>false</c>.</value>
+        public bool ExpectsReference{
             get; set;
         }
     }
