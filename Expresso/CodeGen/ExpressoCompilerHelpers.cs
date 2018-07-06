@@ -398,6 +398,11 @@ namespace Expresso.CodeGen
                 Console.WriteLine("Immutable fields can't be assigned values more than 1 time because it is the fate that the fields are imposed.");
                 break;
 
+            case "1903":
+                Console.WriteLine("In order to change parameters, you need to add & before the type and make it a reference type.");
+                Console.WriteLine("With reference types, values will be changed via references thus the changes can be seen outside the functions.");
+                break;
+
             case "1910":
                 Console.WriteLine("A derived class must implement all the functions that an interface defines.");
                 break;

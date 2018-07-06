@@ -812,13 +812,13 @@ namespace Expresso.Test
         }
 
         [Test]
-        public void AssignmentOnArgument()
+        public void AssignmentOnParameter()
         {
-            var parser = new Parser(new Scanner("../../sources/for_unit_tests/erroneous/assignment_on_argument.exs")){
+            var parser = new Parser(new Scanner("../../sources/for_unit_tests/erroneous/assignment_on_parameter.exs")){
                 DoPostParseProcessing = true
             };
 
-            Assert.That(() => parser.Parse(), Throws.TypeOf<ParserException>().With.Message.Contains(""));
+            Assert.That(() => parser.Parse(), Throws.TypeOf<ParserException>().With.Message.Contains("ES1903"));
             Assert.AreEqual(1, parser.errors.count);
         }
     }

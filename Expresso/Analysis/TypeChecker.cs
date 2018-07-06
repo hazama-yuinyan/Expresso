@@ -670,12 +670,32 @@ namespace Expresso.Ast.Analysis
             }
 
             if(inspecting_immutability && ident.Modifiers.HasFlag(Modifiers.Immutable)){
-                throw new ParserException(
-                    "Re-assignment on an immutable variable '{0}'.",
-                    "ES1900",
-                    ident,
-                    ident.Name
-                );
+                bool is_parameter = false;
+                var tmp_table = symbols;
+                while(tmp_table.Parent != null){
+                    if(tmp_table.HasSymbol(ident.Name)){
+                        is_parameter = tmp_table.Name.Contains("func");
+                        break;
+                    }
+
+                    tmp_table = tmp_table.Parent;
+                }
+
+                if(is_parameter){
+                    throw new ParserException(
+                        "Can't assign to a normal parameter '{0}'.",
+                        "ES1903",
+                        ident,
+                        ident.Name
+                    );
+                }else{
+                    throw new ParserException(
+                        "Re-assignment on an immutable variable '{0}'.",
+                        "ES1900",
+                        ident,
+                        ident.Name
+                    );
+                }
             }
             return ident.Type;
         }

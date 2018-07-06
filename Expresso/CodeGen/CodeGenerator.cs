@@ -738,7 +738,11 @@ namespace Expresso.CodeGen
                         context.OperationTypeOnIdentifier = OperationType.Load;
                         EmitCallExpression(pow_method, new []{operands.Lhs, operands.Rhs}, null, context);
                     }else{
-                        context.OperationTypeOnIdentifier = OperationType.Set;
+                        if(assignment.Operator == OperatorType.Assign)
+                            context.OperationTypeOnIdentifier = OperationType.Set;
+                        else
+                            context.OperationTypeOnIdentifier = OperationType.Load;
+                        
                         var tmp = operands.Lhs.AcceptWalker(this, context);
                         if(result == null)
                             result = tmp;

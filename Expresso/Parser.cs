@@ -1691,7 +1691,8 @@ static uint ScopeId = 1;
 			Get();
 			Literal(out option);
 		}
-		identifier = AstNode.MakeIdentifier(name, type ?? new PlaceholderType(CurrentLocation), ExpressoModifiers.None, start_loc);
+		var modifiers = (type is ReferenceType) ? ExpressoModifiers.None : ExpressoModifiers.Immutable;
+		identifier = AstNode.MakeIdentifier(name, type ?? new PlaceholderType(CurrentLocation), modifiers, start_loc);
 		if(!defining_closure_parameters && type == null && option == null)
 		SemanticError("ES0004", "You can't omit both the type annotation and the optional value in a function parameter definition!; `{0}`", name);
 		
