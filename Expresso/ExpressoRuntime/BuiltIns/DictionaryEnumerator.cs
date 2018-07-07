@@ -6,6 +6,7 @@ namespace Expresso.Runtime.Builtins
 {
     /// <summary>
     /// IEnumerator adaptor in Expresso for Dictionary.
+    /// This have to return its Current as a Tuple.
     /// </summary>
     public class DictionaryEnumerator<K, V> : IEnumerator<Tuple<K, V>>
     {

@@ -164,10 +164,10 @@ namespace Expresso.CodeGen
         }
 
         /// <summary>
-        /// Represents the parameters that expressions that additionals contain refer to.
+        /// Represents the local variables that the current expression refers to.
         /// </summary>
         /// <value>The additional parameters.</value>
-        public List<System.Linq.Expressions.ParameterExpression> AdditionalParameters{
+        public List<LocalBuilder> Parameters{
             get; set;
         }
 

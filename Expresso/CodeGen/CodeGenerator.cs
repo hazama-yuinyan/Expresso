@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.SymbolStore;
 using System.IO;
 using System.Linq;
 using System.Numerics;
@@ -58,13 +59,13 @@ namespace Expresso.CodeGen
         //###################################################
         // FIXME: make it accessible only from the tester class
         public static Dictionary<uint, ExpressoSymbol> Symbols = new Dictionary<uint, ExpressoSymbol>();
-        static int LoopCounter = 1, ClosureId = 0;
+        static int ClosureId = 0;
         static int VariableCount = 0;
 		
         const string ClosureMethodName = "__Apply";
         const string ClosureDelegateName = "__ApplyMethod";
         const string HiddenMemberPrefix = "<>__";
-        bool has_continue;
+        bool has_continue, not_forward_scope;
 
         Parser parser;
         SymbolTable symbol_table;
@@ -79,7 +80,7 @@ namespace Expresso.CodeGen
 
         int scope_counter = 0;
 
-        ExprTree.SymbolDocumentInfo document_info;
+        ISymbolDocumentWriter document;
 
         /// <summary>
         /// Gets the generated assembly.
@@ -100,62 +101,67 @@ namespace Expresso.CodeGen
             CSharpCompilerHelpers.AddPrimitiveNativeSymbols();
         }
 
-        static Tuple<CSharpExpr, ExprTree.ParameterExpression> MakeEnumeratorCreations(CSharpExpr iterator)
+        LocalBuilder MakeEnumeratorCreations(Type iteratorType)
         {
-            ExprTree.ParameterExpression param;
-            CSharpExpr creation;
+            LocalBuilder iterator_builder;
 
-            if(iterator.Type.Name.Contains("Dictionary")){
+            if(iteratorType.Name.Contains("Dictionary")){
                 var type = typeof(DictionaryEnumerator<,>);
-                var iterator_type = iterator.Type;
-                var substituted_type = type.MakeGenericType(iterator_type.GetGenericArguments());
+                var substituted_type = type.MakeGenericType(iteratorType.GetGenericArguments());
                 var ctor = substituted_type.GetConstructors().First();
 
-                param = CSharpExpr.Parameter(substituted_type, "__iter");
-                creation = CSharpExpr.Assign(param, CSharpExpr.New(ctor, iterator));
+                iterator_builder = il_generator.DeclareLocal(substituted_type);    //__iter
+                il_generator.Emit(OpCodes.Newobj, ctor);
+                EmitSet(null, iterator_builder, -1, null);
             }else{
                 Type enumerator_type;
-                if(iterator.Type.Name.StartsWith("ExpressoIntegerSequence", StringComparison.CurrentCulture) || iterator.Type.Name.StartsWith("Slice", StringComparison.CurrentCulture))
-                    enumerator_type = iterator.Type;
+                if(iteratorType.Name.StartsWith("ExpressoIntegerSequence", StringComparison.CurrentCulture) || iteratorType.Name.StartsWith("Slice", StringComparison.CurrentCulture))
+                    enumerator_type = iteratorType;
                 else
-                    enumerator_type = typeof(IEnumerable<>).MakeGenericType(iterator.Type.IsArray ? iterator.Type.GetElementType() : iterator.Type.GenericTypeArguments.First());
+                    enumerator_type = typeof(IEnumerable<>).MakeGenericType(iteratorType.IsArray ? iteratorType.GetElementType() : iteratorType.GenericTypeArguments.First());
                 
                 var get_enumerator_method = enumerator_type.GetMethod("GetEnumerator");
-                param = CSharpExpr.Parameter(get_enumerator_method.ReturnType, "__iter");
+                iterator_builder = il_generator.DeclareLocal(get_enumerator_method.ReturnType);
 
-                creation = CSharpExpr.Assign(param, CSharpExpr.Call(iterator, get_enumerator_method));
+                EmitCall(get_enumerator_method);
+                EmitSet(null, iterator_builder, -1, null);
             }
 
-            return new Tuple<CSharpExpr, ExprTree.ParameterExpression>(creation, param);
+            return iterator_builder;
         }
 
-        static IEnumerable<CSharpExpr> MakeIterableAssignments(IEnumerable<ExprTree.ParameterExpression> variables, ExprTree.ParameterExpression enumerator,
-            ExprTree.LabelTarget breakTarget)
+        void EmitIterableAssignments(IEnumerable<LocalBuilder> variables, LocalBuilder enumerator, Label breakTarget)
         {
             var contents = new List<CSharpExpr>();
-            var iterator_type = enumerator.Type;
+            var iterator_type = enumerator.LocalType;
+            var move_false_label = il_generator.DefineLabel();
             var move_method = iterator_type.GetInterface("IEnumerator").GetMethod("MoveNext");
-            var move_call = CSharpExpr.Call(enumerator, move_method);
-            var check_failure = CSharpExpr.IfThen(CSharpExpr.IsFalse(move_call), CSharpExpr.Goto(breakTarget));
-            contents.Add(check_failure);
+            EmitLoadLocal(enumerator, false);
+            il_generator.Emit(OpCodes.Callvirt, move_method);
+
+            EmitUnaryOp(OperatorType.Not);
+            il_generator.Emit(OpCodes.Brfalse, move_false_label);
+            il_generator.Emit(OpCodes.Br, breakTarget);
+            il_generator.MarkLabel(move_false_label);
 
             var current_property = iterator_type.GetProperty("Current");
             if(variables.Count() == 1){
-                contents.Add(CSharpExpr.Assign(variables.First(), CSharpExpr.Property(enumerator, current_property)));
+                EmitLoadLocal(enumerator, false);
+                EmitCall(current_property.GetMethod);
+                EmitSet(null, variables.First(), -1, null);
             }else{
-                var current_access = CSharpExpr.Property(enumerator, current_property);
+                EmitLoadLocal(enumerator, false);
+                EmitCall(current_property.GetMethod);
                 var tuple_type = current_property.PropertyType;
                 if(!tuple_type.Name.Contains("Tuple"))
-                    throw new InvalidOperationException("iterators must return a tuple type when assigned to a tuple pattern");
+                    throw new InvalidOperationException("iterators must return a tuple type when assigned to a tuple pattern.");
                 
-                foreach(var pair in Enumerable.Range(1, variables.Count() + 1).Zip(variables, (l, r) => new Tuple<int, ExprTree.ParameterExpression>(l, r))){
-                    var item_property = tuple_type.GetProperty("Item" + pair.Item1);
-                    var item_access = CSharpExpr.Property(current_access, item_property);
-                    contents.Add(CSharpExpr.Assign(pair.Item2, item_access));
+                foreach(var pair in Enumerable.Range(1, variables.Count() + 1).Zip(variables, (l, r) => new {Index = l, LocalBuilder = r})){
+                    var item_property = tuple_type.GetProperty("Item" + pair.Index);
+                    EmitCall(item_property.GetMethod);
+                    EmitSet(null, pair.LocalBuilder, -1, null);
                 }
             }
-
-            return contents;
         }
 
         internal static void AddSymbol(Identifier ident, ExpressoSymbol symbol)
@@ -274,7 +280,7 @@ namespace Expresso.CodeGen
             }
 
             var mod_builder = asm_builder.DefineDynamicModule(assembly_name, file_name, options.BuildType.HasFlag(BuildType.Debug));
-            //var doc = mod_builder.DefineDocument(Path.GetFileName(parser.scanner.FilePath), LanguageGuid, Guid.Empty, Guid.Empty);
+            document = mod_builder.DefineDocument(Path.GetFileName(parser.scanner.FilePath), ExpressoCompilerHelpers.LanguageGuid, Guid.Empty, Guid.Empty);
 
             // Leave the ast.Name as is because otherwise we can't refer to it later when visiting ImportDeclarations
             var type_builder = ContainsFunctionDefinitions(ast.Declarations) ? new WrappedTypeBuilder(mod_builder, CSharpCompilerHelpers.ConvertToPascalCase(ast.Name),
@@ -388,7 +394,6 @@ namespace Expresso.CodeGen
 
             il_generator.BeginScope();
 
-            var contents = new List<CSharpExpr>();
             foreach(var stmt in block.Statements)
                 stmt.AcceptWalker(this, context);
 
@@ -408,7 +413,7 @@ namespace Expresso.CodeGen
             //    contents.Add(CSharpExpr.Label(ReturnTarget, DefaultReturnValue));*/
 
             AscendScope();
-            scope_counter = tmp_counter + 1;
+            scope_counter = not_forward_scope ? tmp_counter : tmp_counter + 1;
 
             return null;
         }
@@ -420,7 +425,7 @@ namespace Expresso.CodeGen
                 throw new EmitterException("Can not break out of loops that many times!");
 
             //break upto Count; => goto label;
-            il_generator.Emit(OpCodes.Br_S, break_targets[break_targets.Count - count]);
+            il_generator.Emit(OpCodes.Br, break_targets[break_targets.Count - count]);
             return null;// CSharpExpr.Break(break_targets[break_targets.Count - count]);
         }
 
@@ -431,13 +436,16 @@ namespace Expresso.CodeGen
                 throw new EmitterException("Can not break out of loops that many times!");
 
             //continue upto Count; => goto label;
-            il_generator.Emit(OpCodes.Br_S, continue_targets[continue_targets.Count - count]);
+            il_generator.Emit(OpCodes.Br, continue_targets[continue_targets.Count - count]);
             return null;//return CSharpExpr.Continue(continue_targets[continue_targets.Count - count]);
         }
 
         public Type VisitDoWhileStatement(DoWhileStatement doWhileStmt, CSharpEmitterContext context)
         {
-            VisitBlock(doWhileStmt.Delegator.Body, context);
+            //not_forward_scope = true;
+            //VisitBlock(doWhileStmt.Delegator.Body, context);
+            //not_forward_scope = false;
+
             VisitWhileStatement(doWhileStmt.Delegator, context);
                                                             //{ body;
             return null;                                    //  while_stmt}
@@ -499,55 +507,48 @@ namespace Expresso.CodeGen
 
         public Type VisitValueBindingForStatement(ValueBindingForStatement valueBindingForStatement, CSharpEmitterContext context)
         {
-            // TODO: implement it 
-            /*int tmp_counter = scope_counter;
+            int tmp_counter = scope_counter;
             DescendScope();
             scope_counter = 0;
 
-            var parent_params = context.AdditionalParameters;
-            context.AdditionalParameters = new List<ExprTree.ParameterExpression>();
+            var parent_params = context.Parameters;
+            context.Parameters = new List<LocalBuilder>();
             valueBindingForStatement.Initializer.Pattern.AcceptWalker(this, context);
-            var bound_variables = context.AdditionalParameters;
-            context.AdditionalParameters = parent_params;
-            //foreach(var variable in valueBindingForStatement.Pattern){
-            //    var bound_variable = CSharpExpr.Variable(CSharpCompilerHelper.GetNativeType(variable.NameToken.Type), variable.Name);
-            //    AddSymbol(variable.NameToken, new ExpressoSymbol{Parameter = bound_variable});
-            //    bound_variables.Add(bound_variable);
-            //    iterators.Add(variable.Initializer.AcceptWalker(this, context));
-            //}
-            var iterator = valueBindingForStatement.Initializer.Initializer.AcceptWalker(this, context);
+            var bound_variables = context.Parameters;
+            context.Parameters = parent_params;
 
-            var break_target = CSharpExpr.Label("__EndFor" + LoopCounter.ToString());
-            var continue_target = CSharpExpr.Label("__StartFor" + LoopCounter.ToString());
-            ++LoopCounter;
+            var initializer_type = valueBindingForStatement.Initializer.Initializer.AcceptWalker(this, context);
+
+            var break_target = il_generator.DefineLabel();
+            var continue_target = il_generator.DefineLabel();
             break_targets.Add(break_target);
             continue_targets.Add(continue_target);
 
-            // Here, `body` represents just the body block itself
+            il_generator.BeginScope();
+            var enumerator_builder = MakeEnumeratorCreations(initializer_type);
+
+            il_generator.BeginScope();      // the beginning of the loop
+            il_generator.MarkLabel(continue_target);
+
+            EmitIterableAssignments(bound_variables, enumerator_builder, break_target);
+
+            // Here, `Body` represents just the body block itself
             // In a for statement, we must move the iterator a step forward
             // and assign the result to inner-scope variables
-            var real_body = (ExprTree.BlockExpression)VisitBlock(valueBindingForStatement.Body, context);
+            VisitBlock(valueBindingForStatement.Body, context);
+            il_generator.Emit(OpCodes.Br, continue_target);
+            il_generator.EndScope();
+            il_generator.EndScope();
 
-            var tmp = MakeEnumeratorCreations(iterator);
-            var creation = tmp.Item1;
-            var enumerator = tmp.Item2;
-            var assignments = MakeIterableAssignments(bound_variables, enumerator, break_target);
-            var parameters = ConvertSymbolsToParameters();
-
-            var body = CSharpExpr.Block(parameters.Concat(real_body.Variables),
-                assignments.Concat(real_body.Expressions)
-            );
-            var loop = CSharpExpr.Loop(body, break_target, continue_target);
+            il_generator.MarkLabel(break_target);
             break_targets.RemoveAt(break_targets.Count - 1);
             continue_targets.RemoveAt(continue_targets.Count - 1);
+
             AscendScope();
             scope_counter = tmp_counter + 1;
 
-            var contents = new List<CSharpExpr>();
-            contents.Add(creation);
-            contents.Add(loop);*/
-            return null; //CSharpExpr.Block(new []{enumerator}, contents);
-            // for let x in some_sequence {} => (enumerator){ creation (loop_variables, block_variables){ loop_variable_initializer { real_body } } }
+            return null;
+            // for let x in some_sequence {} => (enumerator){ creation (bound_variables, block_variables){ loop_variable_initializer { real_body } } }
         }
 
         public Type VisitIfStatement(IfStatement ifStmt, CSharpEmitterContext context)
@@ -562,7 +563,7 @@ namespace Expresso.CodeGen
             context.OperationTypeOnIdentifier = OperationType.Load;
             ifStmt.Condition.AcceptWalker(this, context);
             context.OperationTypeOnIdentifier = prev_op_type;
-            il_generator.Emit(OpCodes.Brfalse_S, false_label);
+            il_generator.Emit(OpCodes.Brfalse, false_label);
 
             VisitBlock(ifStmt.TrueBlock, context);
             if(ifStmt.FalseStatement.IsNull){
@@ -574,7 +575,7 @@ namespace Expresso.CodeGen
 
                 return null;
             }else{
-                il_generator.Emit(OpCodes.Br_S, jump_label);
+                il_generator.Emit(OpCodes.Br, jump_label);
                 il_generator.MarkLabel(false_label);
 
                 ifStmt.FalseStatement.AcceptWalker(this, context);
@@ -672,29 +673,31 @@ namespace Expresso.CodeGen
 
         public Type VisitWhileStatement(WhileStatement whileStmt, CSharpEmitterContext context)
         {
-            var end_loop = il_generator.DefineLabel();
+            var break_target = il_generator.DefineLabel();
             var loop_start = il_generator.DefineLabel();
-            ++LoopCounter;
-            break_targets.Add(end_loop);
-            continue_targets.Add(loop_start);
+            var continue_target = il_generator.DefineLabel();
+            break_targets.Add(break_target);
+            continue_targets.Add(continue_target);
 
             int tmp_counter = scope_counter;
             DescendScope();
             scope_counter = 0;
 
             if(!(whileStmt.Parent is DoWhileStatement))
-                il_generator.Emit(OpCodes.Br_S, loop_start);
+                il_generator.Emit(OpCodes.Br, continue_target);
+
+            il_generator.MarkLabel(loop_start);
             
             VisitBlock(whileStmt.Body, context);
 
-            il_generator.MarkLabel(loop_start);
+            il_generator.MarkLabel(continue_target);
             whileStmt.Condition.AcceptWalker(this, context);
             il_generator.Emit(OpCodes.Brtrue_S, loop_start);
             
             break_targets.RemoveAt(break_targets.Count - 1);
             continue_targets.RemoveAt(continue_targets.Count - 1);
 
-            il_generator.MarkLabel(end_loop);
+            il_generator.MarkLabel(break_target);
 
             AscendScope();
             scope_counter = tmp_counter + 1;
@@ -727,28 +730,37 @@ namespace Expresso.CodeGen
                 // evaluation order: we will see the left-hand-side and right-hand-side as a pair and evaluate them from left to right
                 // that is, they will be evaluated as a = 1, b = 2, ...
                 var rhs = (SequenceExpression)assignment.Right;
+                if(rhs == null)
+                    throw new EmitterException("Expected a sequence expression!");
                 context.RequestPropertyOrField = true;
                 var prev_op_type = context.OperationTypeOnIdentifier;
-                foreach(var operands in lhs.Items.Zip(rhs.Items, (l, r) => new {Lhs = l, Rhs = r})){
+
+                if(rhs.Items.Count == 1){
+                    // If there is just 1 item on each side
+                    // skip making temporary variables
                     if(assignment.Operator == OperatorType.Power){
                         var pow_method = typeof(Math).GetMethod("Pow");
                         if(result == null)
                             result = pow_method.ReturnType;
 
                         context.OperationTypeOnIdentifier = OperationType.Load;
-                        EmitCallExpression(pow_method, new []{operands.Lhs, operands.Rhs}, null, context);
+                        EmitCallExpression(pow_method, new []{lhs.Items.First(), rhs.Items.First()}, null, context);
                     }else{
                         if(assignment.Operator == OperatorType.Assign)
                             context.OperationTypeOnIdentifier = OperationType.Set;
                         else
                             context.OperationTypeOnIdentifier = OperationType.Load;
-                        
-                        var tmp = operands.Lhs.AcceptWalker(this, context);
+
+                        var tmp = lhs.Items.First().AcceptWalker(this, context);
                         if(result == null)
                             result = tmp;
-                        
+
                         context.OperationTypeOnIdentifier = OperationType.Load;
-                        operands.Rhs.AcceptWalker(this, context);
+                        var prev_local_builder = context.TargetLocalBuilder;
+                        var prev_member = context.PropertyOrField;
+                        rhs.Items.First().AcceptWalker(this, context);
+                        context.TargetLocalBuilder = prev_local_builder;
+                        context.PropertyOrField = prev_member;
 
                         switch(assignment.Operator){
                         case OperatorType.Plus:
@@ -780,7 +792,29 @@ namespace Expresso.CodeGen
                     }
 
                     EmitSet(context.PropertyOrField, context.TargetLocalBuilder, context.ParameterIndex, result);
+                }else{
+                    var tmp_variables = new List<LocalBuilder>();
+                    context.OperationTypeOnIdentifier = OperationType.Load;
+                    foreach(var item in rhs.Items){
+                        var type = item.AcceptWalker(this, context);
+                        if(result == null)
+                            result = type;
+
+                        var tmp_variable = il_generator.DeclareLocal(type);
+                        tmp_variables.Add(tmp_variable);
+
+                        EmitSet(null, tmp_variable, -1, null);
+                    }
+
+                    context.OperationTypeOnIdentifier = OperationType.Set;
+                    foreach(var pair in lhs.Items.Zip(tmp_variables, (l, t) => new {Lhs = l, TemporaryVariable = t})){
+                        var type = pair.Lhs.AcceptWalker(this, context);
+                        EmitLoadLocal(pair.TemporaryVariable, false);
+                        EmitSet(context.PropertyOrField, context.TargetLocalBuilder, context.ParameterIndex, type);
+                    }
                 }
+
+                context.OperationTypeOnIdentifier = prev_op_type;
             }else{
                 // falls into composition branch
                 // expected form: a = b = ...
@@ -986,10 +1020,10 @@ namespace Expresso.CodeGen
             var end_label = il_generator.DefineLabel();
 
             condExpr.Condition.AcceptWalker(this, context);
-            il_generator.Emit(OpCodes.Brfalse_S, false_label);
+            il_generator.Emit(OpCodes.Brfalse, false_label);
 
             var result = condExpr.TrueExpression.AcceptWalker(this, context);
-            il_generator.Emit(OpCodes.Br_S, end_label);
+            il_generator.Emit(OpCodes.Br, end_label);
             il_generator.MarkLabel(false_label);
 
             condExpr.FalseExpression.AcceptWalker(this, context);
@@ -2024,6 +2058,9 @@ namespace Expresso.CodeGen
                 type = RetrieveType(identifierPattern.Identifier.Type);
                 var local_builder = il_generator.DeclareLocal(type);
                 AddSymbol(identifierPattern.Identifier, new ExpressoSymbol{LocalBuilder = local_builder});
+
+                if(context.Parameters != null)
+                    context.Parameters.Add(local_builder);
 
                 if(context.OperationTypeOnIdentifier == OperationType.Set)
                     EmitSet(null, local_builder, -1, null);

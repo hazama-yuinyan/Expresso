@@ -14,7 +14,7 @@ namespace Expresso.Runtime.Builtins
 	/// (<c>seq</c> this time).
     /// Note that an `intseq` object affecting on sequence types doesn't create a new copy
     /// of the original sequence. It just returns an iterator that views into the original sequence.
-    /// If you do need another copy of the array, then consider using the clone method.
+    /// If you do need another copy of the array, then consider using the System.Linq methods.
 	/// </summary>
     public class ExpressoIntegerSequence : IEnumerable<int>
 	{
