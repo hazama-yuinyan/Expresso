@@ -157,10 +157,12 @@ namespace Expresso.CodeGen
                     throw new InvalidOperationException("iterators must return a tuple type when assigned to a tuple pattern.");
                 
                 foreach(var pair in Enumerable.Range(1, variables.Count() + 1).Zip(variables, (l, r) => new {Index = l, LocalBuilder = r})){
+                    il_generator.Emit(OpCodes.Dup);
                     var item_property = tuple_type.GetProperty("Item" + pair.Index);
                     EmitCall(item_property.GetMethod);
                     EmitSet(null, pair.LocalBuilder, -1, null);
                 }
+                il_generator.Emit(OpCodes.Pop);
             }
         }
 
@@ -2282,76 +2284,83 @@ namespace Expresso.CodeGen
         {
             // Tuple patterns should always be combined with value binding patterns
             // TODO: implement it
-            /*var prev_additionals = context.Additionals;
-            context.Additionals = new List<object>();
-            var prev_addtional_params = context.AdditionalParameters;
-            context.AdditionalParameters = new List<ExprTree.ParameterExpression>();
+            if(tuplePattern.Ancestors.Any(a => a is MatchStatement)){
+                /*var prev_additionals = context.Additionals;
+                context.Additionals = new List<object>();
+                var prev_addtional_params = context.AdditionalParameters;
+                context.AdditionalParameters = new List<ExprTree.ParameterExpression>();
 
-            var element_types = new List<Type>();
-            var block_params = new List<ExprTree.ParameterExpression>();
-            var block = new List<CSharpExpr>();
-            CSharpExpr res = null;
-            int i = 1;
-            foreach(var pattern in tuplePattern.Patterns){
-                var item_ast_type = pattern.AcceptWalker(item_type_inferencer);
-                if(item_ast_type == null)
-                    continue;
-                
-                var item_type = CSharpCompilerHelpers.GetNativeType(item_ast_type);
-                //var tmp_param = CSharpExpr.Parameter(item_type, "__" + VariableCount++);
-                var prop_name = "Item" + i++;
-                var property_access = CSharpExpr.Property(context.TemporaryExpression, prop_name);
-                //var assignment = CSharpExpr.Assign(tmp_param, property_access);
-                element_types.Add(item_type);
-                //context.Additionals.Add(assignment);
-                //context.AdditionalParameters.Add(tmp_param);
-                //block.Add(assignment);
-                //block_params.Add(tmp_param);
+                var element_types = new List<Type>();
+                var block_params = new List<ExprTree.ParameterExpression>();
+                var block = new List<CSharpExpr>();
+                CSharpExpr res = null;
+                int i = 1;
+                foreach(var pattern in tuplePattern.Patterns){
+                    var item_ast_type = pattern.AcceptWalker(item_type_inferencer);
+                    if(item_ast_type == null)
+                        continue;
+                    
+                    var item_type = CSharpCompilerHelpers.GetNativeType(item_ast_type);
+                    //var tmp_param = CSharpExpr.Parameter(item_type, "__" + VariableCount++);
+                    var prop_name = "Item" + i++;
+                    var property_access = CSharpExpr.Property(context.TemporaryExpression, prop_name);
+                    //var assignment = CSharpExpr.Assign(tmp_param, property_access);
+                    element_types.Add(item_type);
+                    //context.Additionals.Add(assignment);
+                    //context.AdditionalParameters.Add(tmp_param);
+                    //block.Add(assignment);
+                    //block_params.Add(tmp_param);
 
-                var prev_tmp_expr = context.TemporaryExpression;
-                context.TemporaryExpression = property_access;
-                var expr = pattern.AcceptWalker(this, context);
-                context.TemporaryExpression = prev_tmp_expr;
+                    var prev_tmp_expr = context.TemporaryExpression;
+                    context.TemporaryExpression = property_access;
+                    var expr = pattern.AcceptWalker(this, context);
+                    context.TemporaryExpression = prev_tmp_expr;
 
-                var param = expr as ExprTree.ParameterExpression;
-                if(param != null){
-                    var assignment2 = CSharpExpr.Assign(param, property_access);
-                    block.Add(assignment2);
-                    block_params.Add(param);
-                }else{
-                    if(context.Additionals.Any()){
-                        var block_contents = context.Additionals.OfType<CSharpExpr>().ToList();
-                        if(expr != null){
-                            var if_content = CSharpExpr.IfThen(expr, context.ContextExpression);
-                            block_contents.Add(if_content);
-                        }
-                        context.ContextExpression = CSharpExpr.Block(context.AdditionalParameters, block_contents);
-                    }else if(res == null){
-                        res = expr;
+                    var param = expr as ExprTree.ParameterExpression;
+                    if(param != null){
+                        var assignment2 = CSharpExpr.Assign(param, property_access);
+                        block.Add(assignment2);
+                        block_params.Add(param);
                     }else{
-                        res = CSharpExpr.AndAlso(res, expr);
+                        if(context.Additionals.Any()){
+                            var block_contents = context.Additionals.OfType<CSharpExpr>().ToList();
+                            if(expr != null){
+                                var if_content = CSharpExpr.IfThen(expr, context.ContextExpression);
+                                block_contents.Add(if_content);
+                            }
+                            context.ContextExpression = CSharpExpr.Block(context.AdditionalParameters, block_contents);
+                        }else if(res == null){
+                            res = expr;
+                        }else{
+                            res = CSharpExpr.AndAlso(res, expr);
+                        }
                     }
                 }
+
+                if(res == null){
+                    var tuple_type = CSharpCompilerHelpers.GuessTupleType(element_types);
+                    res = CSharpExpr.TypeIs(context.TemporaryVariable, tuple_type);
+                }
+
+                if(res != null)
+                    block.Add(CSharpExpr.IfThen(res, context.ContextExpression));
+                else
+                    block.Add(context.ContextExpression);
+
+                context.Additionals = prev_additionals;
+                context.AdditionalParameters = prev_addtional_params;
+                
+                if(block.Any())
+                    context.ContextExpression = CSharpExpr.Block(block_params, block);
+
+                return res;//CSharpExpr.TypeIs(context.TemporaryVariable, tuple_type);*/
+                return null;
+            }else{
+                foreach(var pattern in tuplePattern.Patterns)
+                    pattern.AcceptWalker(this, context);
+
+                return null;
             }
-
-            if(res == null){
-                var tuple_type = CSharpCompilerHelpers.GuessTupleType(element_types);
-                res = CSharpExpr.TypeIs(context.TemporaryVariable, tuple_type);
-            }
-
-            if(res != null)
-                block.Add(CSharpExpr.IfThen(res, context.ContextExpression));
-            else
-                block.Add(context.ContextExpression);
-
-            context.Additionals = prev_additionals;
-            context.AdditionalParameters = prev_addtional_params;
-            
-            if(block.Any())
-                context.ContextExpression = CSharpExpr.Block(block_params, block);
-
-            return res;//CSharpExpr.TypeIs(context.TemporaryVariable, tuple_type);*/
-            return null;
         }
 
         public Type VisitExpressionPattern(ExpressionPattern exprPattern, CSharpEmitterContext context)
