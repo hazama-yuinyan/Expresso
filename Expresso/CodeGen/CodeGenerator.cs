@@ -65,7 +65,7 @@ namespace Expresso.CodeGen
         const string ClosureMethodName = "__Apply";
         const string ClosureDelegateName = "__ApplyMethod";
         const string HiddenMemberPrefix = "<>__";
-        bool has_continue, not_forward_scope;
+        bool has_continue;
 
         Parser parser;
         SymbolTable symbol_table;
@@ -415,7 +415,7 @@ namespace Expresso.CodeGen
             //    contents.Add(CSharpExpr.Label(ReturnTarget, DefaultReturnValue));*/
 
             AscendScope();
-            scope_counter = not_forward_scope ? tmp_counter : tmp_counter + 1;
+            scope_counter = tmp_counter + 1;
 
             return null;
         }
@@ -466,45 +466,47 @@ namespace Expresso.CodeGen
 
         public Type VisitForStatement(ForStatement forStmt, CSharpEmitterContext context)
         {
-            //TODO: implement it
-            /*int tmp_counter = scope_counter;
+            int tmp_counter = scope_counter;
             DescendScope();
             scope_counter = 0;
 
+            var prev_parameters = context.Parameters;
+            context.Parameters = new List<LocalBuilder>();
             forStmt.Left.AcceptWalker(this, context);
-            var iterator = forStmt.Target.AcceptWalker(this, context);
+            var variables = context.Parameters;
+            context.Parameters = prev_parameters;
+
+            var iterator_type = forStmt.Target.AcceptWalker(this, context);
 
             var break_target = il_generator.DefineLabel();
             var continue_target = il_generator.DefineLabel();
-            ++LoopCounter;
             break_targets.Add(break_target);
             continue_targets.Add(continue_target);
 
-            var variables = ConvertSymbolsToParameters();
-            var tmp = MakeEnumeratorCreations(iterator);
-            var creation = tmp.Item1;
-            var enumerator = tmp.Item2;
-            var assignments = MakeIterableAssignments(variables, enumerator, break_target);
+            il_generator.BeginScope();
+            var enumerator_builder = MakeEnumeratorCreations(iterator_type);
 
-            var body = CSharpExpr.Block(variables,
-                assignments.Concat(real_body.Expressions)
-            );
-            var loop = CSharpExpr.Loop(body, break_target, continue_target);
-            il_generator.DeclareLocal();
+            il_generator.BeginScope();      //the beginning of the loop
+            il_generator.MarkLabel(continue_target);
+
+            EmitIterableAssignments(variables, enumerator_builder, break_target);
+
             // Here, `Body` represents just the body block itself
             // In a for statement, we must move the iterator a step forward
             // and assign the result to inner-scope variables
             VisitBlock(forStmt.Body, context);
+            il_generator.Emit(OpCodes.Br, continue_target);
+            il_generator.EndScope();
+            il_generator.EndScope();
 
+            il_generator.MarkLabel(break_target);
             break_targets.RemoveAt(break_targets.Count - 1);
             continue_targets.RemoveAt(continue_targets.Count - 1);
+
             AscendScope();
             scope_counter = tmp_counter + 1;
 
-            var contents = new List<CSharpExpr>();
-            contents.Add(creation);
-            contents.Add(loop);*/
-            return null;//CSharpExpr.Block(new []{enumerator}, contents);
+            return null;
         }
 
         public Type VisitValueBindingForStatement(ValueBindingForStatement valueBindingForStatement, CSharpEmitterContext context)
@@ -907,34 +909,33 @@ namespace Expresso.CodeGen
 
         public Type VisitClosureLiteralExpression(ClosureLiteralExpression closure, CSharpEmitterContext context)
         {
-            //TODO: impelement it
-            /*var prev_additionals = context.Additionals;
-            context.Additionals = new List<object>();
-
+            // This AST creates the following class
+            // class <>__Closure<id>
+            // {
+            //     Func|Action __ApplyMethod;
+            //     <the Closure method>
+            // }
             int tmp_counter = scope_counter;
             DescendScope();
             scope_counter = 0;
 
-            var closure_type_builder = new LazyTypeBuilder(context.ModuleBuilder, HiddenMemberPrefix + "Closure`" + ClosureId++, TypeAttributes.Class, Enumerable.Empty<Type>(), false, false);
+            var closure_type_builder = new WrappedTypeBuilder(context.ModuleBuilder, HiddenMemberPrefix + "Closure`" + ClosureId++, TypeAttributes.Class, Enumerable.Empty<Type>(), false, false);
 
-            var formal_parameters = closure.Parameters.Select(p => p.AcceptWalker(this, context))
-                                           .OfType<ExprTree.ParameterExpression>();
-            var param_types = formal_parameters.Select(p => p.Type)
-                                               .ToArray();
+            var param_types = closure.Parameters
+                                     .Select((p, index) => {
+                context.ParameterIndex = index + 1;
+                return p.AcceptWalker(this, context);
+            }).ToArray();
 
-            var prev_context_closure = context.ContextClosureLiteral;
+            var prev_context_closure_expr = context.ContextClosureLiteral;
             context.ContextClosureLiteral = closure;
 
             var return_type = CSharpCompilerHelpers.GetNativeType(closure.ReturnType);
-            var prev_return_target = ReturnTarget;
-            var prev_default_return_value = DefaultReturnValue;
-            ReturnTarget = CSharpExpr.Label(return_type, "ReturnTarget");
-            DefaultReturnValue = CSharpExpr.Default(return_type);
 
-            var closure_method_buider = closure_type_builder.DefineMethod(ClosureMethodName, MethodAttributes.Public, return_type, param_types);
+            closure_type_builder.DefineMethod(ClosureMethodName, MethodAttributes.Public, return_type, param_types);
 
             var field_idents = closure.LiftedIdentifiers
-                                      .Select(ident => new {Name = ident.Name, Type = CSharpCompilerHelpers.GetNativeType(ident.Type)});
+                                      .Select(ident => new {ident.Name, Type = CSharpCompilerHelpers.GetNativeType(ident.Type)});
             foreach(var ctor_param in field_idents)
                 closure_type_builder.DefineField(ctor_param.Name, ctor_param.Type, false);
 
@@ -946,44 +947,43 @@ namespace Expresso.CodeGen
             var closure_delegate_field = closure_type_builder.DefineField(ClosureDelegateName, closure_native_type, true);
             var interface_type = closure_type_builder.CreateInterfaceType();
 
-            var prev_self = context.ParameterSelf;
-            context.ParameterSelf = CSharpExpr.Parameter(interface_type, "self");
+            var prev_context_closure = context.ContextClosureType;
+            context.ContextClosureType = interface_type;
 
-            var body = VisitBlock(closure.Body, context);
-            var parameters = new []{context.ParameterSelf}.Concat(formal_parameters);
-            var lambda = CSharpExpr.Lambda(body, parameters);
-            closure_type_builder.SetBody(closure_method_buider, lambda);
+            var closure_method_builder = closure_type_builder.GetMethodBuilder(ClosureMethodName);
+            var prev_il_generator = il_generator;
+            il_generator = closure_method_builder.GetILGenerator();
+            VisitBlock(closure.Body, context);
+            if(!(closure.Body.Statements.Last() is ReturnStatement))
+                il_generator.Emit(OpCodes.Ret);
 
-            var lifted_params = closure.LiftedIdentifiers
-                                       .Select(ident => VisitIdentifier(ident, context))
-                                       .OfType<ExprTree.ParameterExpression>();
+            il_generator = prev_il_generator;
 
-            closure_type_builder.SetBody(closure_delegate_field, (il, field) => {
-                var closure_call_method = interface_type.GetMethod(ClosureMethodName);
+            var prologue_il = closure_type_builder.GetILGeneratorForFieldInit(closure_delegate_field);
+            var closure_call_method = interface_type.GetMethod(ClosureMethodName);
 
-                il.Emit(OpCodes.Nop);
-                il.Emit(OpCodes.Ldarg_0);
-                il.Emit(OpCodes.Ldarg_0);
-                il.Emit(OpCodes.Ldftn, closure_call_method);
-                il.Emit(OpCodes.Newobj, delegate_ctor);
-                il.Emit(OpCodes.Stfld, field);
-            });
+            prologue_il.Emit(OpCodes.Nop);
+            prologue_il.Emit(OpCodes.Ldarg_0);
+            prologue_il.Emit(OpCodes.Ldarg_0);
+            prologue_il.Emit(OpCodes.Ldftn, closure_call_method);
+            prologue_il.Emit(OpCodes.Newobj, delegate_ctor);
+            prologue_il.Emit(OpCodes.Stfld, closure_delegate_field);
             var closure_type = closure_type_builder.CreateType();
 
-            context.Additionals = prev_additionals;
-            context.ContextClosureLiteral = prev_context_closure;
-            context.ParameterSelf = prev_self;
-            ReturnTarget = prev_return_target;
-            DefaultReturnValue = prev_default_return_value;
+            context.ContextClosureType = prev_context_closure;
+            context.ContextClosureLiteral = prev_context_closure_expr;
 
+            foreach(var lifted_ident in closure.LiftedIdentifiers)
+                VisitIdentifier(lifted_ident, context);
+            
             var ctor = closure_type.GetConstructors().First();
-            var new_expr = CSharpExpr.New(ctor, lifted_params);
+            il_generator.Emit(OpCodes.Newobj, ctor);
 
             var closure_call_target = closure_type.GetField(ClosureDelegateName);
-            var member_access = CSharpExpr.Field(new_expr, closure_call_target);
+            il_generator.Emit(OpCodes.Ldfld, closure_call_target);
 
             AscendScope();
-            scope_counter = tmp_counter + 1;*/
+            scope_counter = tmp_counter + 1;
 
             return null;
         }
@@ -1075,8 +1075,12 @@ namespace Expresso.CodeGen
 
         public Type VisitIdentifier(Identifier ident, CSharpEmitterContext context)
         {
-            //if(context.ContextClosureLiteral != null && context.ContextClosureLiteral.LiftedIdentifiers.Any(i => i.Name == ident.Name))
-            //    return CSharpExpr.Field(context.ParameterSelf, ident.Name);
+            if(context.ContextClosureType != null && context.ContextClosureLiteral.LiftedIdentifiers.Any(i => i.Name == ident.Name)){
+                var lifted_field = context.ContextClosureType.GetField(ident.Name);
+                LoadArg(0);
+                EmitLoadField(lifted_field);
+                return lifted_field.FieldType;
+            }
 
             var symbol = GetRuntimeSymbol(ident);
             if(symbol != null){
@@ -1087,6 +1091,9 @@ namespace Expresso.CodeGen
                     if(context.OperationTypeOnIdentifier == OperationType.Load)
                         EmitLoadLocal(symbol.LocalBuilder, context.ExpectsReference);
 
+                    if(symbol.LocalBuilder.LocalType.Name.StartsWith("Func", StringComparison.Ordinal) || symbol.LocalBuilder.LocalType.Name.StartsWith("Action", StringComparison.Ordinal))
+                        context.Method = symbol.LocalBuilder.LocalType.GetMethod("Invoke");
+
                     context.TargetLocalBuilder = symbol.LocalBuilder;
                     return symbol.LocalBuilder.LocalType;
                 }else if(symbol.Parameter != null){
@@ -1095,6 +1102,9 @@ namespace Expresso.CodeGen
 
                     if(context.OperationTypeOnIdentifier == OperationType.Load && symbol.ParameterIndex != -1 || symbol.Parameter.IsByRef)
                         LoadArg(symbol.ParameterIndex);
+
+                    if(symbol.Parameter.Type.Name.StartsWith("Func", StringComparison.Ordinal) || symbol.Parameter.Type.Name.StartsWith("Action", StringComparison.Ordinal))
+                        context.Method = symbol.Parameter.Type.GetMethod("Invoke");
 
                     context.ParameterIndex = symbol.ParameterIndex;
                     return symbol.Parameter.Type;

@@ -40,10 +40,10 @@ namespace Expresso.CodeGen
         public Type BaseType => interface_type_builder.BaseType;
 
         /// <summary>
-        /// Gets the interface type as <see cref="Type"/>.
+        /// Gets the interface type as <see cref="InterfaceType"/>.
         /// </summary>
-        /// <value>The interface type as <see cref="Type"/>.</value>
-        public Type Type{
+        /// <value>The interface type as <see cref="InterfaceType"/>.</value>
+        public Type InterfaceType{
             get{
                 if(type_cache == null)
                     throw new InvalidOperationException("The interface type is yet to be defined");
@@ -302,7 +302,7 @@ namespace Expresso.CodeGen
             prologue.GetILGenerator().Emit(OpCodes.Ret);
             static_prologue.GetILGenerator().Emit(OpCodes.Ret);
 
-            type_cache = impl_type_builder.CreateType();
+            var type = impl_type_builder.CreateType();
             is_created = true;
             return type_cache;
         }

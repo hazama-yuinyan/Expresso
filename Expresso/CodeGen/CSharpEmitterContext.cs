@@ -149,6 +149,15 @@ namespace Expresso.CodeGen
         }
 
         /// <summary>
+        /// The current context closure type. Used to retrieve the lifted identifiers as fields.
+        /// It is null if we are not inside a closure literal expression.
+        /// </summary>
+        /// <value>The context closure literal.</value>
+        public Type ContextClosureType{
+            get; set;
+        }
+
+        /// <summary>
         /// It will be set to a ParameterExpression that represents the temporary variable.
         /// </summary>
         public System.Linq.Expressions.ParameterExpression TemporaryVariable{
