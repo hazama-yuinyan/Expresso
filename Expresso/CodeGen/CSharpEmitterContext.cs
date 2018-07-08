@@ -193,14 +193,6 @@ namespace Expresso.CodeGen
         }
 
         /// <summary>
-        /// It will be set to a <see cref="System.Linq.Expressions.CatchBlock"/>.
-        /// </summary>
-        /// <value>The catch block.</value>
-        public System.Linq.Expressions.CatchBlock CatchBlock{
-            get; set;
-        }
-
-        /// <summary>
         /// The number of the current external module being inspected.
         /// </summary>
         /// <value>The current module count.</value>

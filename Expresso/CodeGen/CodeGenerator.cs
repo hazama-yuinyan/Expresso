@@ -652,27 +652,24 @@ namespace Expresso.CodeGen
         public Type VisitThrowStatement(ThrowStatement throwStmt, CSharpEmitterContext context)
         {
             VisitObjectCreationExpression(throwStmt.CreationExpression, context);
-            il_generator.ThrowException(context.TargetType);
+            il_generator.Emit(OpCodes.Throw);
             return null;
         }
 
         public Type VisitTryStatement(TryStatement tryStmt, CSharpEmitterContext context)
         {
-            // TODO: implement it
-            var body_block = VisitBlock(tryStmt.EnclosingBlock, context);
-            var catches = new List<ExprTree.CatchBlock>();
-            foreach(var @catch in tryStmt.CatchClauses){
+            // Start the try block
+            il_generator.BeginExceptionBlock();
+
+            VisitBlock(tryStmt.EnclosingBlock, context);
+
+            foreach(var @catch in tryStmt.CatchClauses)
                 VisitCatchClause(@catch, context);
-                catches.Add(context.CatchBlock);
-            }
 
             var finally_clause = tryStmt.FinallyClause.AcceptWalker(this, context);
-            if(finally_clause == null)
-                return null;//CSharpExpr.TryCatch(body_block, catches.ToArray());
-            else if(!catches.Any())
-                return null;//CSharpExpr.TryFinally(body_block, finally_clause);
-            else
-                return null;//CSharpExpr.TryCatchFinally(body_block, finally_clause, catches.ToArray());
+            il_generator.EndExceptionBlock();
+
+            return null;
         }
 
         public Type VisitWhileStatement(WhileStatement whileStmt, CSharpEmitterContext context)
@@ -896,14 +893,14 @@ namespace Expresso.CodeGen
 
         public Type VisitCatchClause(CatchClause catchClause, CSharpEmitterContext context)
         {
-            // TODO: implement it
-            /*var ident = catchClause.Identifier;
+            var ident = catchClause.Identifier;
             var exception_type = CSharpCompilerHelpers.GetNativeType((ident.Type.IdentifierNode.Type != null) ? ident.Type.IdentifierNode.Type : ident.Type);
-            var param = CSharpExpr.Parameter(exception_type, ident.Name);
-            AddSymbol(ident, new ExpressoSymbol{Parameter = param});
+            var exception_builder = il_generator.DeclareLocal(exception_type);
+            AddSymbol(ident, new ExpressoSymbol{LocalBuilder = exception_builder});
 
+            il_generator.BeginCatchBlock(exception_type);
+            EmitSet(null, exception_builder, -1, null);
             var body = VisitBlock(catchClause.Body, context);
-            context.CatchBlock = CSharpExpr.Catch(param, body);*/
             return null;
         }
 
@@ -1036,6 +1033,7 @@ namespace Expresso.CodeGen
 
         public Type VisitFinallyClause(FinallyClause finallyClause, CSharpEmitterContext context)
         {
+            il_generator.BeginFinallyBlock();
             VisitBlock(finallyClause.Body, context);
             return null;
         }
@@ -1395,7 +1393,6 @@ namespace Expresso.CodeGen
             }
 
             var formal_params = context.Constructor.GetParameters();
-            var args = new CSharpExpr[creation.Items.Count];
             context.RequestPropertyOrField = true;
             // TODO: make object creation arguments pair to constructor parameters
             foreach(var item in creation.Items){
