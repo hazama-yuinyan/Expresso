@@ -80,7 +80,7 @@ namespace Expresso.Test
                 DoPostParseProcessing = true
             };
 
-            // TODO: consider it again
+                                                                                       // TODO: consider it again
             Assert.That(() => parser.Parse(), Throws.TypeOf<ParserException>().With.Message.Contains("ES1602"));
             Assert.AreEqual(2, parser.errors.count);
         }
@@ -819,6 +819,17 @@ namespace Expresso.Test
             };
 
             Assert.That(() => parser.Parse(), Throws.TypeOf<ParserException>().With.Message.Contains("ES1903"));
+            Assert.AreEqual(1, parser.errors.count);
+        }
+
+        [Test]
+        public void MultipleItemsOnAugmentedAssignment()
+        {
+            var parser = new Parser(new Scanner("../../sources/for_unit_tests/erroneous/multiple_items_on_augmented_assignment.exs")){
+                DoPostParseProcessing = true
+            };
+
+            Assert.That(() => parser.Parse(), Throws.TypeOf<ParserException>().With.Message.Contains("ES2101"));
             Assert.AreEqual(1, parser.errors.count);
         }
     }

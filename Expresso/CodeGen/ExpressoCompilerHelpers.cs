@@ -425,7 +425,7 @@ namespace Expresso.CodeGen
 
             case "2002":
                 Console.WriteLine("It's most likely that you misspelled the method name. So check for spelling, taking casing into account.");
-                Console.WriteLine("The second most likely is you specifying invalid signatures. So check for the argument' types.");
+                Console.WriteLine("The second most likely is you specifying invalid signatures. So check for the arguments' types.");
                 break;
 
             case "2003":
@@ -448,7 +448,7 @@ namespace Expresso.CodeGen
 
             case "2021":
                 Console.WriteLine("Types are different in the type arguments and that of an argument.");
-                Console.WriteLine("It's possible that you are adding a type casting.");
+                Console.WriteLine("It's possible that you are adding an extra type casting.");
                 break;
 
             case "2022":
@@ -458,6 +458,10 @@ namespace Expresso.CodeGen
             case "2100":
                 Console.WriteLine("You can't call a mutable method on an immutable variable because it modifies the state of the object.");
                 Console.WriteLine("If you absolutely need to do so, consider changing the `let` keyword to `var` in the variable declaration.");
+                break;
+
+            case "2101":
+                Console.WriteLine("Augmented assignments can't be simultaneous assignments.");
                 break;
 
             case "3000":

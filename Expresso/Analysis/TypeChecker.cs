@@ -302,6 +302,14 @@ namespace Expresso.Ast.Analysis
             TemporaryTypes.Clear();
             assignment.AcceptWalker(inference_runner);
 
+            if(assignment.Left is SequenceExpression || assignment.Right is SequenceExpression){
+                throw new ParserException(
+                    "Augmented assignments can't have multiple items on each side.",
+                    "ES2101",
+                    assignment
+                );
+            }
+
             inspecting_immutability = true;
             var left_type = assignment.Left.AcceptWalker(this);
             inspecting_immutability = false;
