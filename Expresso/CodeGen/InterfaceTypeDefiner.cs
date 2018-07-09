@@ -351,10 +351,10 @@ namespace Expresso.CodeGen
                 else
                     method_builder = context.LazyTypeBuilder.DefineMethod(funcDecl.Name, flags, return_type, param_types.ToArray(), generator, context, funcDecl);
 
-                /*context.CustomAttributeSetter = method_builder.SetCustomAttribute;
+                context.CustomAttributeSetter = method_builder.SetCustomAttribute;
                 context.AttributeTarget = AttributeTargets.Method;
                 // We don't call VisitAttributeSection directly so that we can avoid unnecessary method calls
-                funcDecl.Attribute.AcceptWalker(generator, context);*/
+                funcDecl.Attribute.AcceptWalker(generator, context);
 
                 generator.AscendScope();
                 generator.scope_counter = tmp_counter + 1;
@@ -394,18 +394,18 @@ namespace Expresso.CodeGen
                     if(typeDecl.TypeConstraints.Any())
                         generator.generic_types = context.InterfaceTypeBuilder.DefineGenericParameters(typeDecl.TypeConstraints.Select(c => c.TypeParameter.Name).ToArray());
                     
-                    /*context.CustomAttributeSetter = context.InterfaceTypeBuilder.SetCustomAttribute;
+                    context.CustomAttributeSetter = context.InterfaceTypeBuilder.SetCustomAttribute;
                     // We don't call VisitAttributeSection directly so that we can avoid unnecessary method calls
-                    typeDecl.Attribute.AcceptWalker(generator, context);*/
+                    typeDecl.Attribute.AcceptWalker(generator, context);
                 }else{
                     context.LazyTypeBuilder = new WrappedTypeBuilder(context.ModuleBuilder, name, flags, base_types, false, is_raw_value_enum);
-                    /*if(typeDecl.TypeConstraints.Any())
-                        generator.generic_types = context.LazyTypeBuilder.TypeBuilder.DefineGenericParameters(typeDecl.TypeConstraints.Select(c => c.TypeParameter.Name).ToArray());
+                    //if(typeDecl.TypeConstraints.Any())
+                    //    generator.generic_types = context.LazyTypeBuilder.TypeBuilder.DefineGenericParameters(typeDecl.TypeConstraints.Select(c => c.TypeParameter.Name).ToArray());
 
                     context.CustomAttributeSetter = context.LazyTypeBuilder.TypeBuilder.SetCustomAttribute;
                     context.AttributeTarget = AttributeTargets.Class | AttributeTargets.Struct | AttributeTargets.Enum;
                     // We don't call VisitAttributeSection directly so that we can avoid unnecessary method calls
-                    typeDecl.Attribute.AcceptWalker(generator, context);*/
+                    typeDecl.Attribute.AcceptWalker(generator, context);
 
                     if(typeDecl.TypeKind == ClassType.Enum)
                         field_prefix = "<>__";
@@ -511,10 +511,10 @@ namespace Expresso.CodeGen
                     var type = DetermineType(init.NameToken.Type);
                     var field_builder = context.LazyTypeBuilder.DefineField(field_prefix + init.Name, type, !Expression.IsNullNode(init.Initializer), flags);
 
-                    /*context.CustomAttributeSetter = field_builder.SetCustomAttribute;
+                    context.CustomAttributeSetter = field_builder.SetCustomAttribute;
                     context.AttributeTarget = AttributeTargets.Field;
                     // We don't call VisitAttributeSection directly so that we can avoid unnecessary method calls
-                    fieldDecl.Attribute.AcceptWalker(generator, context);*/
+                    fieldDecl.Attribute.AcceptWalker(generator, context);
 
                     AddSymbol(init.NameToken, new ExpressoSymbol{FieldBuilder = field_builder});
                 }

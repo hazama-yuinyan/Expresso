@@ -244,8 +244,15 @@ namespace Expresso.CodeGen
         /// <summary>
         /// Indicates that we expect a reference at this point.
         /// </summary>
-        /// <value><c>true</c> if expects reference; otherwise, <c>false</c>.</value>
+        /// <value><c>true</c> if it expects a reference; otherwise, <c>false</c>.</value>
         public bool ExpectsReference{
+            get; set;
+        }
+
+        /// <summary>
+        /// Indicates whether to emit IL codes or not.
+        /// </summary>
+        public bool ShouldEmit{
             get; set;
         }
     }

@@ -132,10 +132,10 @@ namespace Expresso.CodeGen
         {
             var method = interface_type_builder.DefineMethod(name, attr, returnType, parameterTypes);
             if(funcDecl != null){
-                /*var return_value_builder = method.DefineParameter(0, ParameterAttributes.Retval, null);
+                var return_value_builder = method.DefineParameter(0, ParameterAttributes.Retval, null);
                 context.CustomAttributeSetter = return_value_builder.SetCustomAttribute;
                 context.AttributeTarget = AttributeTargets.ReturnValue;
-                funcDecl.Attribute.AcceptWalker(generator, context);*/
+                funcDecl.Attribute.AcceptWalker(generator, context);
 
                 foreach(var pair in Enumerable.Range(0, parameterTypes.Length).Zip(funcDecl.Parameters, (p, arg) => new {Index = p, ParameterDeclaration = arg})){
                     var param_attr = pair.ParameterDeclaration.Option.IsNull ? ParameterAttributes.None : ParameterAttributes.HasDefault | ParameterAttributes.Optional;
@@ -146,9 +146,9 @@ namespace Expresso.CodeGen
                         param_builder.SetConstant(default_value);
                     }
 
-                    /*context.CustomAttributeSetter = param_builder.SetCustomAttribute;
+                    context.CustomAttributeSetter = param_builder.SetCustomAttribute;
                     context.AttributeTarget = AttributeTargets.Parameter;
-                    pair.ParameterDeclaration.Attribute.AcceptWalker(generator, context);*/
+                    pair.ParameterDeclaration.Attribute.AcceptWalker(generator, context);
                 }
             }
 

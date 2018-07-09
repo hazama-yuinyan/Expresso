@@ -340,8 +340,6 @@ namespace Expresso.CodeGen
                 symbol_table = parser.Symbols;
             }
 
-            //document_info = CSharpExpr.SymbolDocument(parser.scanner.FilePath, ExpressoCompilerHelpers.LanguageGuid);
-
             context.CustomAttributeSetter = asm_builder.SetCustomAttribute;
             context.AttributeTarget = AttributeTargets.Assembly;
             foreach(var attribute in ast.Attributes)
@@ -403,17 +401,6 @@ namespace Expresso.CodeGen
 
             context.ContextAst = parent_block;
 
-            /*var variables = ConvertSymbolsToParameters().ToList();
-            if(block.Parent is CatchClause){
-                var catch_clause = (CatchClause)block.Parent;
-                var identifier = catch_clause.Identifier;
-                variables = variables.Where(v => v.Name != identifier.Name)
-                                     .Select(v => v)
-                                     .ToList();
-            }
-            //if(context.ContextAst is FunctionDeclaration || context.ContextClosureLiteral != null && block.Parent is ClosureLiteralExpression)
-            //    contents.Add(CSharpExpr.Label(ReturnTarget, DefaultReturnValue));*/
-
             AscendScope();
             scope_counter = tmp_counter + 1;
 
@@ -428,7 +415,7 @@ namespace Expresso.CodeGen
 
             //break upto Count; => goto label;
             il_generator.Emit(OpCodes.Br, break_targets[break_targets.Count - count]);
-            return null;// CSharpExpr.Break(break_targets[break_targets.Count - count]);
+            return null;
         }
 
         public Type VisitContinueStatement(ContinueStatement continueStmt, CSharpEmitterContext context)
@@ -439,15 +426,11 @@ namespace Expresso.CodeGen
 
             //continue upto Count; => goto label;
             il_generator.Emit(OpCodes.Br, continue_targets[continue_targets.Count - count]);
-            return null;//return CSharpExpr.Continue(continue_targets[continue_targets.Count - count]);
+            return null;
         }
 
         public Type VisitDoWhileStatement(DoWhileStatement doWhileStmt, CSharpEmitterContext context)
         {
-            //not_forward_scope = true;
-            //VisitBlock(doWhileStmt.Delegator.Body, context);
-            //not_forward_scope = false;
-
             VisitWhileStatement(doWhileStmt.Delegator, context);
                                                             //{ body;
             return null;                                    //  while_stmt}
@@ -879,6 +862,12 @@ namespace Expresso.CodeGen
             var result = method.ReturnType;
             context.Method = null;
 
+            // Ignore the return value
+            if(method.ReturnType != typeof(void) && call.Ancestors.TakeWhile(a => !(a is BlockStatement) && !(a is CallExpression))
+               .Any(a => a is ExpressionStatement)){
+                il_generator.Emit(OpCodes.Pop);
+            }
+
             return result;
         }
 
@@ -1235,7 +1224,7 @@ namespace Expresso.CodeGen
                 return property.GetMethod.ReturnType;
             }else{
                 var field = (FieldInfo)context.PropertyOrField;
-                if(field.DeclaringType.IsEnum){
+                if(context.OperationTypeOnIdentifier != OperationType.None && field.DeclaringType.IsEnum){
                     context.PropertyOrField = prev_member;
 
                     EmitInt((int)field.GetValue(null));
@@ -1377,7 +1366,7 @@ namespace Expresso.CodeGen
                 return context.TargetType;
             }
 
-            // Don't report TargetType missing error because it was already reported in TypeChecker
+            // Don't report TargetType missing error because TypeChecker has already reported it
             //if(context.TargetType == null)
             //    throw new EmitterException("")
             var arg_types =
@@ -1392,6 +1381,9 @@ namespace Expresso.CodeGen
                 );
             }
 
+            if(context.OperationTypeOnIdentifier == OperationType.None)
+                return context.Constructor.DeclaringType;
+            
             var formal_params = context.Constructor.GetParameters();
             context.RequestPropertyOrField = true;
             // TODO: make object creation arguments pair to constructor parameters
@@ -1717,22 +1709,33 @@ namespace Expresso.CodeGen
 
         public Type VisitAttributeSection(AttributeSection section, CSharpEmitterContext context)
         {
-            // TODO: implement it
-            /*var target_context = context.AttributeTarget;
+            var target_context = context.AttributeTarget;
 
+            var prev_op_type = context.OperationTypeOnIdentifier;
+            context.OperationTypeOnIdentifier = OperationType.None;
+            // We need to force execution at this point by calling ToArray() here
+            // Or otherwise context.OperationTypeOnIdentifier = OperationType.None has no effect
             var attributes = section.Attributes.Select(attribute => {
-                var creation = (ExprTree.NewExpression)VisitObjectCreationExpression(attribute, context);
-                var args = creation.Arguments
-                                   .Select(attr => {
-                    if(attr is ExprTree.ConstantExpression constant)
-                        return constant.Value;
-                    else if(attr is ExprTree.MemberExpression member)
-                        return ((FieldInfo)member.Member).GetValue(null);
-                    else
+                VisitObjectCreationExpression(attribute, context);
+                var ctor = context.Constructor;
+                context.Constructor = null;
+
+                var args = attribute.Items
+                                    .Select(pair => {
+                    if(pair.ValueExpression is LiteralExpression literal){
+                        return literal.Value;
+                    }else if(pair.ValueExpression is MemberReferenceExpression member){
+                        member.AcceptWalker(this, context);
+                        var field = (FieldInfo)context.PropertyOrField;
+                        context.PropertyOrField = null;
+                        return field.GetValue(null);
+                    }else{
                         throw new InvalidOperationException("Unknown argument expression!");
+                    }
                 }).ToArray();
-                return new {Ctor = creation.Constructor, Arguments = args};
-            });
+                return new {Ctor = ctor, Arguments = args};
+            }).ToArray();
+            context.OperationTypeOnIdentifier = prev_op_type;
                
             IEnumerable<AttributeTargets> allowed_targets;
             AttributeTargets preferable_target;
@@ -1794,7 +1797,7 @@ namespace Expresso.CodeGen
                     foreach(var attribute in attributes)
                         context.CustomAttributeSetter(new CustomAttributeBuilder(attribute.Ctor, attribute.Arguments));
                 }
-            }*/
+            }
 
             return null;
         }
@@ -2586,19 +2589,6 @@ namespace Expresso.CodeGen
 			}
 		}
 
-        IEnumerable<ExprTree.ParameterExpression> ConvertSymbolsToParameters()
-        {
-            var parameters =
-                from symbol in symbol_table.Symbols
-                where symbol.IdentifierId != 0
-                group symbol by symbol.IdentifierId into same_values
-                from unique_symbol in same_values
-                let param = Symbols[unique_symbol.IdentifierId]
-                select param.Parameter;
-
-            return parameters;
-        }
-
         void EmitCallExpression(MethodInfo method, IEnumerable<Expression> args, IEnumerable<KeyValueType> typeArgs, CSharpEmitterContext context)
         {
             if(method == null)
@@ -2796,10 +2786,10 @@ namespace Expresso.CodeGen
 
             var method_builder = context.LazyTypeBuilder.DefineMethod(funcDecl.Name, flags, return_type, param_types.ToArray(), this, context, funcDecl);
 
-            /*context.CustomAttributeSetter = method_builder.SetCustomAttribute;
+            context.CustomAttributeSetter = method_builder.SetCustomAttribute;
             context.AttributeTarget = AttributeTargets.Method;
             // We don't call VisitAttributeSection directly so that we can avoid unnecessary method calls
-            funcDecl.Attribute.AcceptWalker(this, context);*/
+            funcDecl.Attribute.AcceptWalker(this, context);
 
             AscendScope();
             scope_counter = tmp_counter + 1;
@@ -2823,10 +2813,10 @@ namespace Expresso.CodeGen
                     var type = CSharpCompilerHelpers.GetNativeType(ident_pat.Identifier.Type);
                     var field_builder = context.LazyTypeBuilder.DefineField(init.Name, type, !Expression.IsNullNode(init.Initializer), attr);
 
-                    /*context.CustomAttributeSetter = field_builder.SetCustomAttribute;
+                    context.CustomAttributeSetter = field_builder.SetCustomAttribute;
                     context.AttributeTarget = AttributeTargets.Field;
                     // We don't call VisitAttributeSection directly so that we can avoid unnecessary method calls
-                    fieldDecl.Attribute.AcceptWalker(this, context);*/
+                    fieldDecl.Attribute.AcceptWalker(this, context);
 
                     // PropertyOrField is needed so that we can refer to it easily later on
                     // We can do this because we wouldn't need to be able to return module classes
