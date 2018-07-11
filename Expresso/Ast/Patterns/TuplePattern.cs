@@ -1,7 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using ICSharpCode.NRefactory;
 using ICSharpCode.NRefactory.PatternMatching;
 
 namespace Expresso.Ast
@@ -17,6 +15,16 @@ namespace Expresso.Ast
         /// Gets all the child patterns.
         /// </summary>
         public AstNodeCollection<PatternConstruct> Patterns => GetChildrenByRole(Roles.Pattern);
+
+        /// <summary>
+        /// Represents the resolved type as <see cref="SimpleType"/>.
+        /// Will be resolved in <see cref="Analysis.TypeChecker"/>
+        /// </summary>
+        /// <value>The type of the resolved.</value>
+        public SimpleType ResolvedType{
+            get => GetChildByRole(Roles.GenericType);
+            set => SetChildByRole(Roles.GenericType, value);
+        }
 
         public TuplePattern(IEnumerable<PatternConstruct> patterns)
             : base(patterns.First().StartLocation, patterns.Last().EndLocation)

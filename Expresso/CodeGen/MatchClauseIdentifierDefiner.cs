@@ -1,16 +1,26 @@
 ﻿using System;
 using ICSharpCode.NRefactory.PatternMatching;
 using Expresso.Ast;
+using System.Reflection.Emit;
 
 namespace Expresso.CodeGen
 {
     public partial class CodeGenerator : IAstWalker<CSharpEmitterContext, Type>
     {
         /// <summary>
-        /// This class is responsible for defining inner variables before inspecting the body statements of a match clause.
+        /// This class is responsible for defining the conditions of match clauses before inspecting the body statements of a match clause.
         /// </summary>
-        public class MatchClauseIdentifierDefiner : IAstWalker
+        public class MatchClauseConditionDefiner : IAstWalker
 	    {
+            CodeGenerator generator;
+            CSharpEmitterContext context;
+
+            public MatchClauseConditionDefiner(CodeGenerator generator, CSharpEmitterContext context)
+            {
+                this.generator = generator;
+                this.context = context;
+            }
+
             public void VisitAliasDeclaration(AliasDeclaration aliasDecl)
             {
                 throw new InvalidOperationException("Can not work on that node");
@@ -103,7 +113,20 @@ namespace Expresso.CodeGen
 
             public void VisitDestructuringPattern(DestructuringPattern destructuringPattern)
             {
-                destructuringPattern.Items.AcceptWalker(this);
+                destructuringPattern.TypePath.AcceptWalker(generator, context);
+
+                if(destructuringPattern.IsEnum){
+                    var variant_name = ((MemberType)destructuringPattern.TypePath).ChildType.Name;
+                    var field = context.TargetType.GetField(HiddenMemberPrefix + variant_name);
+                    generator.EmitLoadField(field);
+                    generator.EmitObject(null);
+                    generator.EmitBinaryOp(OperatorType.InEquality);
+                }else{
+                    var native_type = CSharpCompilerHelpers.GetNativeType(destructuringPattern.TypePath);
+                    generator.il_generator.Emit(OpCodes.Isinst, native_type);
+                    generator.EmitObject(null);
+                    generator.EmitBinaryOp(OperatorType.Equality);
+                }
             }
 
             public void VisitDoWhileStatement(DoWhileStatement doWhileStmt)
@@ -162,9 +185,11 @@ namespace Expresso.CodeGen
 
             public void VisitIdentifierPattern(IdentifierPattern identifierPattern)
             {
-                var native_type = CSharpCompilerHelpers.GetNativeType(identifierPattern.Identifier.Type);
+                /*var native_type = CSharpCompilerHelpers.GetNativeType(identifierPattern.Identifier.Type);
                 var native_param = System.Linq.Expressions.Expression.Parameter(native_type, identifierPattern.Identifier.Name);
-                AddSymbol(identifierPattern.Identifier, new ExpressoSymbol{Parameter = native_param});
+                AddSymbol(identifierPattern.Identifier, new ExpressoSymbol{Parameter = native_param});*/
+                var symbol = generator.GetRuntimeSymbol(identifierPattern.Identifier);
+                context.CurrentTargetVariable = symbol.LocalBuilder;
             }
 
             public void VisitIfStatement(IfStatement ifStmt)
@@ -343,7 +368,9 @@ namespace Expresso.CodeGen
 
             public void VisitTuplePattern(TuplePattern tuplePattern)
             {
-                tuplePattern.Patterns.AcceptWalker(this);
+                var tuple_type = CSharpCompilerHelpers.GetNativeType(tuplePattern.ResolvedType);
+                generator.EmitLoadLocal(context.TemporaryVariable, false);
+                generator.il_generator.Emit(OpCodes.Isinst, tuple_type);
             }
 
             public void VisitTypeConstraint(TypeConstraint constraint)
@@ -377,7 +404,7 @@ namespace Expresso.CodeGen
 
             public void VisitVariableInitializer(VariableInitializer initializer)
             {
-                initializer.Pattern.AcceptWalker(this);
+                throw new InvalidOperationException("Can not work on that node");
             }
 
             public void VisitWhileStatement(WhileStatement whileStmt)

@@ -70,7 +70,7 @@ namespace Expresso.CodeGen
         Parser parser;
         SymbolTable symbol_table;
         ExpressoCompilerOptions options;
-        MatchClauseIdentifierDefiner identifier_definer;
+        MatchClauseConditionDefiner condition_definer;
         ItemTypeInferencer item_type_inferencer;
         ILGenerator il_generator;
         GenericTypeParameterBuilder[] generic_types;
@@ -94,7 +94,6 @@ namespace Expresso.CodeGen
             this.parser = parser;
             symbol_table = parser.Symbols;
             this.options = options;
-            identifier_definer = new MatchClauseIdentifierDefiner();
             item_type_inferencer = new ItemTypeInferencer(this);
             generic_types = new GenericTypeParameterBuilder[]{};
 
@@ -265,7 +264,9 @@ namespace Expresso.CodeGen
         {
             if(context == null)
                 context = new CSharpEmitterContext(){OperationTypeOnIdentifier = OperationType.Load, ParameterIndex = -1};
-            
+
+            condition_definer = new MatchClauseConditionDefiner(this, context);
+
             var assembly_name = options.BuildType.HasFlag(BuildType.Assembly) ? ast.Name : options.ExecutableName;
             var name = new AssemblyName(assembly_name);
 
@@ -546,12 +547,17 @@ namespace Expresso.CodeGen
 
             var jump_label = il_generator.DefineLabel();
             var false_label = il_generator.DefineLabel();
+            var true_label = il_generator.DefineLabel();
+            context.CurrentAndTargetLabel = false_label;
+            context.CurrentOrTargetLabel = true_label;
+
             var prev_op_type = context.OperationTypeOnIdentifier;
             context.OperationTypeOnIdentifier = OperationType.Load;
             ifStmt.Condition.AcceptWalker(this, context);
             context.OperationTypeOnIdentifier = prev_op_type;
             il_generator.Emit(OpCodes.Brfalse, false_label);
 
+            il_generator.MarkLabel(true_label);
             VisitBlock(ifStmt.TrueBlock, context);
             if(ifStmt.FalseStatement.IsNull){
                 il_generator.MarkLabel(jump_label);
@@ -588,19 +594,21 @@ namespace Expresso.CodeGen
 
         public Type VisitMatchStatement(MatchStatement matchStmt, CSharpEmitterContext context)
         {
-            //TODO : implement it
             // Match statement semantics: First we evaluate the target expression
             // and assign the result to a temporary variable that's alive within the whole statement.
             // All the pattern clauses must meet the same condition.
             // If context.ContextExpression is an ExprTree.ConditionalExpression
             // we know that we're at least at the second branch.
             // If it is null, then we're at the first branch so just set it to the context expression.
-            /*var target = matchStmt.Target.AcceptWalker(this, context);
-            var target_var = CSharpExpr.Parameter(target.Type, "__match_target");
+            var prev_op_type = context.OperationTypeOnIdentifier;
+            context.OperationTypeOnIdentifier = OperationType.Load;
+            var target_type = matchStmt.Target.AcceptWalker(this, context);
+            context.OperationTypeOnIdentifier = prev_op_type;
+            var tmp_var = il_generator.DeclareLocal(target_type);
+            EmitSet(null, tmp_var, -1, null);
 
-            var block_contents = ExpandCollection(target.Type, target_var, out var parameters);
-            context.TemporaryVariable = target_var;
-            context.TemporaryExpression = target_var;
+            var parameters = ExpandTuple(target_type, tmp_var);
+            context.TemporaryVariable = tmp_var;
             context.ContextExpression = null;
             var context_ast = context.ContextAst;
             context.ContextAst = matchStmt;
@@ -609,25 +617,25 @@ namespace Expresso.CodeGen
             DescendScope();
             scope_counter = 0;
 
+            context.CurrentJumpLabel = il_generator.DefineLabel();
+
             //ExprTree.ConditionalExpression res = null, tmp_res = res;
-            var exprs = new List<ExprTree.ConditionalExpression>(matchStmt.Clauses.Count);
             foreach(var clause in matchStmt.Clauses){
-                var tmp = clause.AcceptWalker(this, context) as ExprTree.ConditionalExpression;
-                //exprs.Add(tmp);
+                var or_label = il_generator.DefineLabel();
+                var and_label = il_generator.DefineLabel();
+                context.CurrentOrTargetLabel = or_label;
+                context.CurrentAndTargetLabel = and_label;
+                clause.AcceptWalker(this, context);
+                il_generator.MarkLabel(and_label);
             }
 
-            /*var res = ConstructConditionalExpressions(exprs, 0);
-
-            var target_var_assignment = CSharpExpr.Assign(target_var, target);
-            block_contents.Insert(0, target_var_assignment);
-            block_contents.Add(res);
-            parameters.Add(target_var);
+            il_generator.MarkLabel(context.CurrentJumpLabel);
 
             AscendScope();
             scope_counter = tmp_counter + 1;
 
             context.TemporaryVariable = null;
-            context.ContextAst = context_ast;*/
+            context.ContextAst = context_ast;
 
             return null;//CSharpExpr.Block(parameters, block_contents);
         }
@@ -835,6 +843,7 @@ namespace Expresso.CodeGen
                 return pow_method.ReturnType;
             }else{
                 var result = binaryExpr.Left.AcceptWalker(this, context);
+                EmitBinaryOpInMiddle(binaryExpr.Operator, context);
                 binaryExpr.Right.AcceptWalker(this, context);
 
                 context.RequestPropertyOrField = false;
@@ -864,7 +873,8 @@ namespace Expresso.CodeGen
 
             // Ignore the return value
             if(method.ReturnType != typeof(void) && call.Ancestors.TakeWhile(a => !(a is BlockStatement) && !(a is CallExpression))
-               .Any(a => a is ExpressionStatement)){
+               .Any(a => a is ExpressionStatement) && call.Ancestors.TakeWhile(a => !(a is ExpressionStatement))
+               .All(a => !(a is AssignmentExpression))){
                 il_generator.Emit(OpCodes.Pop);
             }
 
@@ -1250,7 +1260,7 @@ namespace Expresso.CodeGen
                 context.RequestPropertyOrField = false;
 
                 // Assume m is a module variable and it's for let b = m;
-                if(context.PropertyOrField != null && context.PropertyOrField is FieldInfo field){
+                if(context.PropertyOrField != null && context.PropertyOrField is FieldInfo field && field.IsStatic && context.OperationTypeOnIdentifier == OperationType.Load){
                     il_generator.Emit(OpCodes.Ldsfld, field);
                     context.PropertyOrField = null;
                     return field.FieldType;
@@ -1274,6 +1284,8 @@ namespace Expresso.CodeGen
             }
 
             if(native_symbol.PropertyOrField != null && native_symbol.PropertyOrField is FieldInfo field2){
+                context.PropertyOrField = null;
+
                 var first_item = pathExpr.Items.First();
                 var type_table = symbol_table.GetTypeTable(first_item.Name);
                 if(type_table != null && type_table.TypeKind == ClassType.Enum && pathExpr.Ancestors.Any(a => a is VariableInitializer)){
@@ -1542,24 +1554,18 @@ namespace Expresso.CodeGen
             //       }else if(__0 == 1 && __1 == 'a'){
             //           Console.WriteLine("t is (1, 'a', _)");
             //       }
-            // TODO: implement it
-            /*int tmp_counter = scope_counter;
+            int tmp_counter = scope_counter;
             DescendScope();
             scope_counter = 0;
 
-            // Define identifiers before inspecting the body statement.
-            matchClause.AcceptWalker(identifier_definer);
+            // Emit destructuring code
+            var res = matchClause.Patterns.First().AcceptWalker(this, context);
 
-            var body = matchClause.Body.AcceptWalker(this, context);
-            context.ContextExpression = body;
-
-            CSharpExpr res = null;
-            foreach(var pattern in matchClause.Patterns){
-                var pattern_cond = pattern.AcceptWalker(this, context);
-                if(res == null)
-                    res = pattern_cond;
-                else
-                    res = CSharpExpr.OrElse(res, pattern_cond);
+            // Emit conditions
+            matchClause.Patterns.First().AcceptWalker(condition_definer);
+            foreach(var pattern in matchClause.Patterns.Skip(1)){
+                il_generator.Emit(OpCodes.Brtrue, context.CurrentOrTargetLabel);
+                pattern.AcceptWalker(condition_definer);
             }
 
             //if(destructuring_exprs.Count() != context.Additionals.Count()){
@@ -1570,14 +1576,21 @@ namespace Expresso.CodeGen
             //    );
             //}
 
+            if(!matchClause.Guard.IsNull)
+                il_generator.Emit(OpCodes.Brfalse, context.CurrentAndTargetLabel);
+            
             var guard = matchClause.Guard.AcceptWalker(this, context);
-            if(guard != null)
-                res = CSharpExpr.AndAlso(res, guard);
+
+            il_generator.Emit(OpCodes.Brfalse, context.CurrentAndTargetLabel);
+
+            il_generator.MarkLabel(context.CurrentOrTargetLabel);
+            matchClause.Body.AcceptWalker(this, context);
+
+            il_generator.Emit(OpCodes.Br, context.CurrentJumpLabel);
 
             AscendScope();
             scope_counter = tmp_counter + 1;
 
-            return (res == null) ? null : CSharpExpr.IfThen(res, context.ContextExpression);*/
             return null;
         }
 
@@ -2082,15 +2095,20 @@ namespace Expresso.CodeGen
                 //il_generator.MarkSequencePoint();
                 //var debug_info = CSharpExpr.DebugInfo(document_info, start_loc.Line, start_loc.Column, end_loc.Line, end_loc.Column);
             }else{
+                var prev_op_type = context.OperationTypeOnIdentifier;
+                context.OperationTypeOnIdentifier = OperationType.None;
                 type = VisitIdentifier(identifierPattern.Identifier, context);
+                context.OperationTypeOnIdentifier = prev_op_type;
             }
 
-            /*if(identifierPattern.Parent is MatchPatternClause){
+            if(identifierPattern.Parent is MatchPatternClause){
                 // Set context.ContextExpression to a block
                 //var native_type = CSharpCompilerHelper.GetNativeType(identifierPattern.Identifier.Type);
-                var param = GetRuntimeSymbol(identifierPattern.Identifier).Parameter;
-                var assignment = CSharpExpr.Assign(param, context.TemporaryVariable);
-                context.ContextExpression = CSharpExpr.Block(new []{type}, new []{assignment, context.ContextExpression});
+                var symbol = GetRuntimeSymbol(identifierPattern.Identifier);
+                EmitLoadLocal(context.TemporaryVariable, false);
+                EmitSet(null, symbol.LocalBuilder, -1, null);
+                context.CurrentTargetVariable = symbol.LocalBuilder;
+                //context.ContextExpression = CSharpExpr.Block(new []{type}, new []{assignment, context.ContextExpression});
             }
 
             if(context.PropertyOrField == null && context.TargetType != null && context.ContextAst is MatchStatement 
@@ -2104,7 +2122,7 @@ namespace Expresso.CodeGen
                     );
                 }
                 context.PropertyOrField = field;
-            }*/
+            }
 
             if(!identifierPattern.InnerPattern.IsNull)
                 return identifierPattern.InnerPattern.AcceptWalker(this, context);
@@ -2185,26 +2203,19 @@ namespace Expresso.CodeGen
 
         public Type VisitDestructuringPattern(DestructuringPattern destructuringPattern, CSharpEmitterContext context)
         {
-            // TODO: implement it
-            /*context.TargetType = null;
+            context.TargetType = null;
             destructuringPattern.TypePath.AcceptWalker(this, context);
 
             var type = context.TargetType;
-            if(destructuringPattern.IsEnum){
+            /*if(destructuringPattern.IsEnum){
                 var variant_name = ((MemberType)destructuringPattern.TypePath).ChildType.Name;
                 context.TemporaryExpression = CSharpExpr.Field(context.TemporaryVariable, HiddenMemberPrefix + variant_name);
-            }
+            }*/
 
             context.RequestPropertyOrField = true;
-            var prev_additionals = context.Additionals;
-            context.Additionals = new List<object>();
-            var prev_additional_params = context.AdditionalParameters;
-            context.AdditionalParameters = new List<ExprTree.ParameterExpression>();
 
-            CSharpExpr res = null;
             var block = new List<CSharpExpr>();
             var block_params = new List<ExprTree.ParameterExpression>();
-            var i = 1;
             foreach(var pattern in destructuringPattern.Items){
                 var item_ast_type = pattern.AcceptWalker(item_type_inferencer);
                 if(item_ast_type == null)
@@ -2215,95 +2226,67 @@ namespace Expresso.CodeGen
 
                 //var prev_tmp_variable = context.TemporaryVariable;
                 //context.TemporaryVariable = tmp_param;
-                CSharpExpr prev_tmp_expr = null;
-                if(destructuringPattern.IsEnum){
+                //CSharpExpr prev_tmp_expr = null;
+                /*if(destructuringPattern.IsEnum){
                     var field_name = "Item" + i++;
                     var field_access = CSharpExpr.PropertyOrField(context.TemporaryExpression, field_name);
                     prev_tmp_expr = context.TemporaryExpression;
                     context.TemporaryExpression = field_access;
-                }
+                }*/
                 context.PropertyOrField = null;
-                var expr = pattern.AcceptWalker(this, context);
+                var pattern_type = pattern.AcceptWalker(this, context);
                 //context.TemporaryVariable = prev_tmp_variable;
 
                 if(destructuringPattern.IsEnum){
-                    var param = (ExprTree.ParameterExpression)expr;
+                    /*var param = (ExprTree.ParameterExpression)expr;
                     var assignment2 = CSharpExpr.Assign(param, context.TemporaryExpression);
                     block_params.Add(param);
                     block.Add(assignment2);
 
-                    context.TemporaryExpression = prev_tmp_expr;
+                    context.TemporaryExpression = prev_tmp_expr;*/
                 }else{
-                    var field_access = CSharpExpr.Field(context.TemporaryExpression, (FieldInfo)context.PropertyOrField);
-                    //var assignment = CSharpExpr.Assign(tmp_param, field_access);
-                    //context.Additionals.Add(assignment);
-                    //context.AdditionalParameters.Add(tmp_param);
-                    //block.Add(assignment);
-                    //block_params.Add(tmp_param);
+                    var field = (FieldInfo)context.PropertyOrField;
+                    context.PropertyOrField = null;
+                    EmitLoadField(field);
 
-                    var param = expr as ExprTree.ParameterExpression;
-                    if(param != null){
-                        var assignment2 = CSharpExpr.Assign(param, field_access);
-                        block_params.Add(param);
-                        block.Add(assignment2);
+                    if(context.CurrentTargetVariable != null){
+                        EmitSet(null, context.CurrentTargetVariable, -1, null);
+                        context.CurrentTargetVariable = null;
                     }else{
                         if(context.Additionals.Any()){
-                            var block_contents = context.Additionals.OfType<CSharpExpr>().ToList();
+                            /*var block_contents = context.Additionals.OfType<CSharpExpr>().ToList();
                             if(expr != null){
                                 var if_content = CSharpExpr.IfThen(expr, context.ContextExpression);
                                 block_contents.Add(if_content);
                             }
-                            context.ContextExpression = CSharpExpr.Block(context.AdditionalParameters, block_contents);
-                        }else if(res == null){
-                            res = expr;
+                            context.ContextExpression = CSharpExpr.Block(context.AdditionalParameters, block_contents);*/
                         }else{
-                            res = CSharpExpr.AndAlso(res, expr);
+                            EmitBinaryOpInMiddle(OperatorType.ConditionalAnd, context);
                         }
                     }
                 }
             }
 
-            if(res == null){
-                if(destructuringPattern.IsEnum){
-                    var variant_name = ((MemberType)destructuringPattern.TypePath).ChildType.Name;
-                    var field_access = CSharpExpr.Field(context.TemporaryVariable, HiddenMemberPrefix + variant_name);
-                    res = CSharpExpr.NotEqual(field_access, CSharpExpr.Constant(null));
-                }else{
-                    var native_type = CSharpCompilerHelpers.GetNativeType(destructuringPattern.TypePath);
-                    res = CSharpExpr.TypeIs(context.TemporaryVariable, native_type);
-                }
-            }
-
-            if(res != null)
+            /*if(res != null)
                 block.Add(CSharpExpr.IfThen(res, context.ContextExpression));
             else
-                block.Add(context.ContextExpression);
-
-            context.Additionals = prev_additionals;
-            context.AdditionalParameters = prev_additional_params;
+                block.Add(context.ContextExpression);*/
 
             context.RequestPropertyOrField = false;
             if(block.Any())
                 context.ContextExpression = CSharpExpr.Block(block_params, block);
 
-            return res;//CSharpExpr.TypeIs(context.TemporaryVariable, type);*/
-            return null;
+            return type;
         }
 
         public Type VisitTuplePattern(TuplePattern tuplePattern, CSharpEmitterContext context)
         {
             // Tuple patterns should always be combined with value binding patterns
-            // TODO: implement it
             if(tuplePattern.Ancestors.Any(a => a is MatchStatement)){
-                /*var prev_additionals = context.Additionals;
-                context.Additionals = new List<object>();
-                var prev_addtional_params = context.AdditionalParameters;
-                context.AdditionalParameters = new List<ExprTree.ParameterExpression>();
-
-                var element_types = new List<Type>();
+                var tuple_type = item_type_inferencer.VisitTuplePattern(tuplePattern);
+                var native_tuple_type = CSharpCompilerHelpers.GetNativeType(tuple_type);
                 var block_params = new List<ExprTree.ParameterExpression>();
                 var block = new List<CSharpExpr>();
-                CSharpExpr res = null;
                 int i = 1;
                 foreach(var pattern in tuplePattern.Patterns){
                     var item_ast_type = pattern.AcceptWalker(item_type_inferencer);
@@ -2313,26 +2296,25 @@ namespace Expresso.CodeGen
                     var item_type = CSharpCompilerHelpers.GetNativeType(item_ast_type);
                     //var tmp_param = CSharpExpr.Parameter(item_type, "__" + VariableCount++);
                     var prop_name = "Item" + i++;
-                    var property_access = CSharpExpr.Property(context.TemporaryExpression, prop_name);
+                    var property = native_tuple_type.GetProperty(prop_name);
+                    EmitCall(property.GetMethod);
                     //var assignment = CSharpExpr.Assign(tmp_param, property_access);
-                    element_types.Add(item_type);
                     //context.Additionals.Add(assignment);
                     //context.AdditionalParameters.Add(tmp_param);
                     //block.Add(assignment);
                     //block_params.Add(tmp_param);
 
-                    var prev_tmp_expr = context.TemporaryExpression;
-                    context.TemporaryExpression = property_access;
+                    //var prev_tmp_expr = context.TemporaryExpression;
+                    //context.TemporaryExpression = property_access;
                     var expr = pattern.AcceptWalker(this, context);
-                    context.TemporaryExpression = prev_tmp_expr;
+                    //context.TemporaryExpression = prev_tmp_expr;
 
-                    var param = expr as ExprTree.ParameterExpression;
-                    if(param != null){
-                        var assignment2 = CSharpExpr.Assign(param, property_access);
-                        block.Add(assignment2);
-                        block_params.Add(param);
+                    //var param = expr as ExprTree.ParameterExpression;
+                    if(context.CurrentTargetVariable != null){
+                        EmitSet(null, context.CurrentTargetVariable, -1, null);
+                        context.CurrentTargetVariable = null;
                     }else{
-                        if(context.Additionals.Any()){
+                        /*if(context.Additionals.Any()){
                             var block_contents = context.Additionals.OfType<CSharpExpr>().ToList();
                             if(expr != null){
                                 var if_content = CSharpExpr.IfThen(expr, context.ContextExpression);
@@ -2343,28 +2325,19 @@ namespace Expresso.CodeGen
                             res = expr;
                         }else{
                             res = CSharpExpr.AndAlso(res, expr);
-                        }
+                        }*/
                     }
                 }
 
-                if(res == null){
-                    var tuple_type = CSharpCompilerHelpers.GuessTupleType(element_types);
-                    res = CSharpExpr.TypeIs(context.TemporaryVariable, tuple_type);
-                }
-
-                if(res != null)
+                /*if(res != null)
                     block.Add(CSharpExpr.IfThen(res, context.ContextExpression));
                 else
-                    block.Add(context.ContextExpression);
+                    block.Add(context.ContextExpression);*/
 
-                context.Additionals = prev_additionals;
-                context.AdditionalParameters = prev_addtional_params;
-                
                 if(block.Any())
                     context.ContextExpression = CSharpExpr.Block(block_params, block);
 
-                return res;//CSharpExpr.TypeIs(context.TemporaryVariable, tuple_type);*/
-                return null;
+                return native_tuple_type;
             }else{
                 foreach(var pattern in tuplePattern.Patterns)
                     pattern.AcceptWalker(this, context);
@@ -2379,7 +2352,6 @@ namespace Expresso.CodeGen
             // An integer sequence expression or a literal expression.
             // In the former case we should test an integer against an IntSeq type object using an IntSeq's method
             // while in the latter case we should just test the value against the literal
-            // TODO: implement it
             context.RequestMethod = true;
             context.Method = null;
             var type = exprPattern.Expression.AcceptWalker(this, context);
@@ -2403,19 +2375,20 @@ namespace Expresso.CodeGen
 
         public Type VisitKeyValuePattern(KeyValuePattern keyValuePattern, CSharpEmitterContext context)
         {
-            // TODO: implement it
-            /*context.PropertyOrField = null;
             context.RequestPropertyOrField = true;
             VisitIdentifier(keyValuePattern.KeyIdentifier, context);
-            var expr = keyValuePattern.Value.AcceptWalker(this, context);
+            var type = keyValuePattern.Value.AcceptWalker(this, context);
 
-            var param = expr as ExprTree.ParameterExpression;
-            if(param != null){
-                var assignment = CSharpExpr.Assign(param, CSharpExpr.Field(context.TemporaryVariable, (FieldInfo)context.PropertyOrField));
-                return assignment;
+            if(context.CurrentTargetVariable != null){
+                EmitLoadLocal(context.TemporaryVariable, false);
+                var field = (FieldInfo)context.PropertyOrField;
+                context.PropertyOrField = null;
+                EmitLoadField(field);
+                EmitSet(null, context.CurrentTargetVariable, -1, null);
+                return null;
             }
-            return expr;*/
-            return null;
+
+            return type;
         }
 
         public Type VisitPatternWithType(PatternWithType pattern, CSharpEmitterContext context)
@@ -2425,23 +2398,29 @@ namespace Expresso.CodeGen
 
         public Type VisitTypePathPattern(TypePathPattern pathPattern, CSharpEmitterContext context)
         {
-            // TODO: implement it
             // We can't just delegate it to VisitMemberType because we can't distinguish between tuple style enums and raw value style enums
-            /*var member = (MemberType)pathPattern.TypePath;
+            var member = (MemberType)pathPattern.TypePath;
             context.RequestType = true;
             member.Target.AcceptWalker(this, context);
             context.RequestType = false;
 
             // We can't just delegate to VisitSimpleType because it doesn't take properties or fields into account
+            var prev_op_type = context.OperationTypeOnIdentifier;
+            context.OperationTypeOnIdentifier = OperationType.None;
             context.RequestMethod = true;
             context.RequestPropertyOrField = true;
             VisitIdentifier(member.ChildType.IdentifierNode, context);
             context.RequestMethod = false;
             context.RequestPropertyOrField = false;
+            context.OperationTypeOnIdentifier = prev_op_type;
 
-            var field_access = CSharpExpr.Field(null, (FieldInfo)context.PropertyOrField);
-            return CSharpExpr.Equal(context.TemporaryVariable, field_access);*/
-            return null;
+            var field = (FieldInfo)context.PropertyOrField;
+            context.PropertyOrField = null;
+
+            EmitLoadField(field);
+            EmitLoadLocal(context.TemporaryVariable, false);
+            EmitBinaryOp(OperatorType.Equality);
+            return field.FieldType;
         }
 
         public Type VisitNullNode(AstNode nullNode, CSharpEmitterContext context)
@@ -2468,7 +2447,7 @@ namespace Expresso.CodeGen
             return null;
         }
 
-        public Type VisitPatternPlaceholder(AstNode placeholder, ICSharpCode.NRefactory.PatternMatching.Pattern child, CSharpEmitterContext context)
+        public Type VisitPatternPlaceholder(AstNode placeholder, Pattern child, CSharpEmitterContext context)
         {
             // Ignore placeholder nodes because they are just placeholders...
             return null;
@@ -2498,7 +2477,7 @@ namespace Expresso.CodeGen
 
             case OperatorType.ConditionalAnd:
             case OperatorType.ConditionalOr:
-                // nothing to emit
+                // Nothing to emit
                 break;
 
 			case OperatorType.ExclusiveOr:
@@ -2563,6 +2542,22 @@ namespace Expresso.CodeGen
 				throw new EmitterException("Unknown binary operator!");
 			}
 		}
+
+        void EmitBinaryOpInMiddle(OperatorType operatorType, CSharpEmitterContext context)
+        {
+            switch(operatorType){
+            case OperatorType.ConditionalAnd:
+                il_generator.Emit(OpCodes.Brfalse, context.CurrentAndTargetLabel);
+                break;
+
+            case OperatorType.ConditionalOr:
+                il_generator.Emit(OpCodes.Brtrue, context.CurrentOrTargetLabel);
+                break;
+
+            default:
+                break;
+            }
+        }
 
         void EmitUnaryOp(OperatorType opType)
 		{
@@ -2827,21 +2822,23 @@ namespace Expresso.CodeGen
             }
         }
 
-        List<CSharpExpr> ExpandCollection(Type collectionType, ExprTree.ParameterExpression param, out List<ExprTree.ParameterExpression> parameters)
+        List<LocalBuilder> ExpandTuple(Type tupleType, LocalBuilder builder)
         {
-            parameters = new List<ExprTree.ParameterExpression>();
-            var out_parameters = parameters;
-            if(collectionType.Name.StartsWith("Tuple", StringComparison.CurrentCulture)){
-                var content = collectionType.GenericTypeArguments.Select((t, i) => {
-                    var tmp_param = CSharpExpr.Parameter(t, "__" + VariableCount++);
-                    out_parameters.Add(tmp_param);
-                    return CSharpExpr.Assign(tmp_param, CSharpExpr.Property(param, "Item" + (i + 1)));
-                }).OfType<CSharpExpr>()
-                  .ToList();
-                
-                return content;
+            if(tupleType.Name.StartsWith("Tuple", StringComparison.CurrentCulture)){
+                var parameters = tupleType.GenericTypeArguments.Select((t, i) => {
+                    var tmp = il_generator.DeclareLocal(t);
+
+                    var property = tupleType.GetProperty("Item" + (i + 1));
+                    il_generator.Emit(OpCodes.Dup);
+                    EmitCall(property.GetMethod);
+                    EmitSet(null, tmp, -1, null);
+                    return tmp;
+                }).ToList();
+                il_generator.Emit(OpCodes.Pop);
+
+                return parameters;
             }else{
-                return new List<CSharpExpr>();
+                return new List<LocalBuilder>{builder};
             }
         }
 

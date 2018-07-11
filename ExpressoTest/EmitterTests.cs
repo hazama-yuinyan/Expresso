@@ -899,6 +899,35 @@ namespace Expresso.Test
 
             main_method.Invoke(null, new object[]{});
         }
+
+        [Test]
+        public void ConditionalXXOperators()
+        {
+            Console.WriteLine("Test ConditionalXXOperators");
+
+            var parser = new Parser(new Scanner("../../sources/for_unit_tests/conditional_xx_operators.exs"));
+            parser.DoPostParseProcessing = true;
+            parser.Parse();
+
+            var ast = parser.TopmostAst;
+
+            var options = new ExpressoCompilerOptions{
+                OutputPath = "../../test_executables",
+                BuildType = BuildType.Debug | BuildType.Executable,
+                ExecutableName = "main"
+            };
+            var generator = new CodeGenerator(parser, options);
+            ast.AcceptWalker(generator, null);
+
+            var asm = generator.AssemblyBuilder;
+            var main_method = asm.EntryPoint;
+            Assert.AreEqual(main_method.Name, "main");
+            Assert.IsTrue(main_method.IsStatic);
+            Assert.AreEqual(typeof(void), main_method.ReturnType);
+            Assert.AreEqual(0, main_method.GetParameters().Length);
+
+            main_method.Invoke(null, new object[]{});
+        }
     }
 }
 

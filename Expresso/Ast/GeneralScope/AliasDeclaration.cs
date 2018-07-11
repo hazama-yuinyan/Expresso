@@ -7,7 +7,7 @@ namespace Expresso.Ast
     /// Represents an alias declaration.
     /// An alias declaration, as the name implies, introduces a new name that corresponds to
     /// an existing type, a module-level variable or a module itself.
-    /// "alias" PathExpression Identifier ';' ;
+    /// "alias" Identifier PathExpression ';' ;
     /// </summary>
     public class AliasDeclaration : AstNode
     {
@@ -39,7 +39,7 @@ namespace Expresso.Ast
         public AliasDeclaration(PathExpression path, string alias)
         {
             Path = path;
-            AliasToken = AstNode.MakeIdentifier(alias);
+            AliasToken = MakeIdentifier(alias);
         }
 
         #region implemented abstract members of AstNode

@@ -302,7 +302,8 @@ namespace Expresso.Ast.Analysis
             TemporaryTypes.Clear();
             assignment.AcceptWalker(inference_runner);
 
-            if(assignment.Left is SequenceExpression || assignment.Right is SequenceExpression){
+            if((assignment.Left is SequenceExpression sequence1 && sequence1.Items.Count > 1 || assignment.Right is SequenceExpression sequence2 && sequence2.Items.Count > 1)
+               && assignment.Operator != OperatorType.Assign){
                 throw new ParserException(
                     "Augmented assignments can't have multiple items on each side.",
                     "ES2101",
@@ -1120,11 +1121,11 @@ namespace Expresso.Ast.Analysis
 
         public AstType VisitSelfReferenceExpression(SelfReferenceExpression selfRef)
         {
-            // selfRef.SelfIdentifier is always type-aware at this point because MemberReference infers its target's type
-            /*if(selfRef.SelfIdentifier.Type is PlaceholderType){
+            // We need to infer this here because self can appear by itself
+            if(selfRef.SelfIdentifier.Type is PlaceholderType){
                 inference_runner.VisitSelfReferenceExpression(selfRef);
                 BindTypeName(selfRef.SelfIdentifier.Type.IdentifierNode);
-            }*/
+            }
 
             var type_table = symbols.GetTypeTable(selfRef.SelfIdentifier.Type.Name);
             var next_sibling = selfRef.NextSibling;
@@ -1680,7 +1681,9 @@ namespace Expresso.Ast.Analysis
                 from p in tuplePattern.Patterns
                                       select p.AcceptWalker(this).Clone();
             // TODO: consider the case that the tuple contains an IgnoringRestPattern
-            return AstType.MakeSimpleType("tuple", types, tuplePattern.StartLocation, tuplePattern.EndLocation);
+            var tuple_type = AstType.MakeSimpleType("tuple", types, tuplePattern.StartLocation, tuplePattern.EndLocation);
+            tuplePattern.ResolvedType = tuple_type;
+            return tuple_type;
         }
 
         public AstType VisitExpressionPattern(ExpressionPattern exprPattern)

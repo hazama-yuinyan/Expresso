@@ -454,19 +454,20 @@ namespace Expresso.CodeGen
                         // It seems to be needed so that it will be recognized as an enum
                         type_builder.DefineField("value__", typeof(int), false, FieldAttributes.Public | FieldAttributes.SpecialName | FieldAttributes.RTSpecialName);
 
-                        var real_enum_type = type_builder.CreateType();
+                        var enum_interface_type = type_builder.CreateInterfaceType();
+                        type_builder.CreateType();
 
-                        var field_builder = interface_type_builder.DefineField(Utilities.RawValueEnumValueFieldName, real_enum_type, false);
+                        var field_builder = interface_type_builder.DefineField(Utilities.RawValueEnumValueFieldName, enum_interface_type, false);
                         var value_symbol = generator.symbol_table.GetSymbol(Utilities.RawValueEnumValueFieldName);
                         AddSymbol(value_symbol, new ExpressoSymbol{PropertyOrField = field_builder});
 
-                        var enum_interface_type = interface_type_builder.TypeAsType;
-                        var expresso_symbol = new ExpressoSymbol{Type = enum_interface_type, TypeBuilder = interface_type_builder};
+                        var interface_interface_type = interface_type_builder.CreateInterfaceType();
+                        var expresso_symbol = new ExpressoSymbol{Type = interface_interface_type, TypeBuilder = interface_type_builder};
                         AddSymbol(typeDecl.NameToken, expresso_symbol);
 
                         // Add fields as ExpressoSymbols so that we can refer to raw value style enum members
-                        // This operation can't be moved to CSharpEmitter because we have no reference to the enum interface type there
-                        RegisterFields(typeDecl, real_enum_type);
+                        // This operation can't be moved to CodeGenerator because we have no reference to the enum interface type there
+                        RegisterFields(typeDecl, enum_interface_type);
                     }
                     finally{
                         context.LazyTypeBuilder = parent_type;

@@ -252,12 +252,12 @@ namespace Expresso.CodeGen
 
             public AstType VisitMatchClause(MatchPatternClause matchClause)
             {
-                return matchClause.Parent.AcceptWalker(this);
+                throw new InvalidOperationException("Can not work on that node");
             }
 
             public AstType VisitMatchStatement(MatchStatement matchStmt)
             {
-                return matchStmt.Target.AcceptWalker(this);
+                throw new InvalidOperationException("Can not work on that node");
             }
 
             public AstType VisitMemberReference(MemberReferenceExpression memRef)
@@ -312,8 +312,7 @@ namespace Expresso.CodeGen
 
             public AstType VisitPathExpression(PathExpression pathExpr)
             {
-                var type = pathExpr.Items.Last().Type;
-                return type;
+                throw new InvalidOperationException("Can not work on that node");
             }
 
             public AstType VisitPatternPlaceholder(AstNode placeholder, Pattern child)
@@ -383,7 +382,7 @@ namespace Expresso.CodeGen
 
             public AstType VisitTuplePattern(TuplePattern tuplePattern)
             {
-                return tuplePattern.Parent.AcceptWalker(this);
+                return tuplePattern.ResolvedType;
             }
 
             public AstType VisitTypeConstraint(TypeConstraint constraint)
@@ -439,30 +438,6 @@ namespace Expresso.CodeGen
             public AstType VisitYieldStatement(YieldStatement yieldStmt)
             {
                 throw new InvalidOperationException("Can not work on that node");
-            }
-
-            static bool IsContainerType(AstType type)
-            {
-                if(type.Name == "array" || type.Name == "vector")
-                    return true;
-                else
-                    return false;
-            }
-
-            static bool IsTupleType(AstType type)
-            {
-                if(type.Name == "tuple")
-                    return true;
-                else
-                    return false;
-            }
-
-            static bool IsIntSeqType(AstType type)
-            {
-                if(type is PrimitiveType primitive && primitive.KnownTypeCode == TypeSystem.KnownTypeCode.IntSeq)
-                    return true;
-                else
-                    return false;
             }
         }
     }

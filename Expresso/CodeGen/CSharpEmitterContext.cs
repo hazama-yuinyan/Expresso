@@ -158,9 +158,41 @@ namespace Expresso.CodeGen
         }
 
         /// <summary>
-        /// It will be set to a ParameterExpression that represents the temporary variable.
+        /// It will be set to a <see cref="LocalBuilder"/> that represents the temporary variable.
         /// </summary>
-        public System.Linq.Expressions.ParameterExpression TemporaryVariable{
+        public LocalBuilder TemporaryVariable{
+            get; set;
+        }
+
+        /// <summary>
+        /// Current context <see cref="LocalBuilder"/>.
+        /// </summary>
+        /// <value>The current target variable.</value>
+        public LocalBuilder CurrentTargetVariable{
+            get; set;
+        }
+
+        /// <summary>
+        /// Current label that conditional or label jumps to.
+        /// </summary>
+        /// <value>The current else label.</value>
+        public Label CurrentOrTargetLabel{
+            get; set;
+        }
+
+        /// <summary>
+        /// Current label that conditional and label jumps to.
+        /// </summary>
+        /// <value>The current and target label.</value>
+        public Label CurrentAndTargetLabel{
+            get; set;
+        }
+
+        /// <summary>
+        /// Current jump label that the current match pattern clause should jump to after it is executed.
+        /// </summary>
+        /// <value>The current jump label.</value>
+        public Label CurrentJumpLabel{
             get; set;
         }
 
@@ -246,13 +278,6 @@ namespace Expresso.CodeGen
         /// </summary>
         /// <value><c>true</c> if it expects a reference; otherwise, <c>false</c>.</value>
         public bool ExpectsReference{
-            get; set;
-        }
-
-        /// <summary>
-        /// Indicates whether to emit IL codes or not.
-        /// </summary>
-        public bool ShouldEmit{
             get; set;
         }
     }
