@@ -382,7 +382,8 @@ namespace Expresso.CodeGen
 
             public AstType VisitTuplePattern(TuplePattern tuplePattern)
             {
-                return tuplePattern.ResolvedType;
+                var item_types = tuplePattern.Patterns.Select(pat => pat.AcceptWalker(this));
+                return AstType.MakeSimpleType("tuple", item_types);
             }
 
             public AstType VisitTypeConstraint(TypeConstraint constraint)

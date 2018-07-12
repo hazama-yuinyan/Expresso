@@ -119,13 +119,14 @@ namespace Expresso.CodeGen
                     var variant_name = ((MemberType)destructuringPattern.TypePath).ChildType.Name;
                     var field = context.TargetType.GetField(HiddenMemberPrefix + variant_name);
                     generator.EmitLoadField(field);
-                    generator.EmitObject(null);
+                    generator.il_generator.Emit(OpCodes.Ldnull);
                     generator.EmitBinaryOp(OperatorType.InEquality);
                 }else{
                     var native_type = CSharpCompilerHelpers.GetNativeType(destructuringPattern.TypePath);
+                    generator.EmitLoadLocal(context.TemporaryVariable, false);
                     generator.il_generator.Emit(OpCodes.Isinst, native_type);
-                    generator.EmitObject(null);
-                    generator.EmitBinaryOp(OperatorType.Equality);
+                    generator.il_generator.Emit(OpCodes.Ldnull);
+                    generator.EmitBinaryOp(OperatorType.InEquality);
                 }
             }
 
@@ -141,6 +142,25 @@ namespace Expresso.CodeGen
 
             public void VisitExpressionPattern(ExpressionPattern exprPattern)
             {
+                // Common scinario in an expression pattern:
+                // An integer sequence expression or a literal expression.
+                // In the former case we should test an integer against an IntSeq type object using an IntSeq's method
+                // while in the latter case we should just test the value against the literal
+                context.RequestMethod = true;
+                context.Method = null;
+                var type = exprPattern.Expression.AcceptWalker(generator, context);
+                context.RequestMethod = false;
+
+                if(context.Method != null && context.Method.DeclaringType.Name == "ExpressoIntegerSequence"){
+                    var method = context.Method;
+                    context.Method = null;
+
+                    generator.EmitLoadLocal(context.TemporaryVariable, false);
+                    generator.il_generator.Emit(OpCodes.Callvirt, method);
+                }else if(context.ContextAst is MatchStatement){
+                    generator.EmitLoadLocal(context.TemporaryVariable, false);
+                    generator.il_generator.Emit(OpCodes.Ceq);
+                }
             }
 
             public void VisitExpressionStatement(ExpressionStatement exprStmt)
@@ -185,11 +205,9 @@ namespace Expresso.CodeGen
 
             public void VisitIdentifierPattern(IdentifierPattern identifierPattern)
             {
-                /*var native_type = CSharpCompilerHelpers.GetNativeType(identifierPattern.Identifier.Type);
-                var native_param = System.Linq.Expressions.Expression.Parameter(native_type, identifierPattern.Identifier.Name);
-                AddSymbol(identifierPattern.Identifier, new ExpressoSymbol{Parameter = native_param});*/
                 var symbol = generator.GetRuntimeSymbol(identifierPattern.Identifier);
                 context.CurrentTargetVariable = symbol.LocalBuilder;
+                identifierPattern.InnerPattern.AcceptWalker(this);
             }
 
             public void VisitIfStatement(IfStatement ifStmt)
@@ -368,7 +386,7 @@ namespace Expresso.CodeGen
 
             public void VisitTuplePattern(TuplePattern tuplePattern)
             {
-                var tuple_type = CSharpCompilerHelpers.GetNativeType(tuplePattern.ResolvedType);
+                var tuple_type = context.TemporaryVariable.LocalType;
                 generator.EmitLoadLocal(context.TemporaryVariable, false);
                 generator.il_generator.Emit(OpCodes.Isinst, tuple_type);
             }

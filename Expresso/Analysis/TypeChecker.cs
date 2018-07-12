@@ -1681,9 +1681,7 @@ namespace Expresso.Ast.Analysis
                 from p in tuplePattern.Patterns
                                       select p.AcceptWalker(this).Clone();
             // TODO: consider the case that the tuple contains an IgnoringRestPattern
-            var tuple_type = AstType.MakeSimpleType("tuple", types, tuplePattern.StartLocation, tuplePattern.EndLocation);
-            tuplePattern.ResolvedType = tuple_type;
-            return tuple_type;
+            return AstType.MakeSimpleType("tuple", types, tuplePattern.StartLocation, tuplePattern.EndLocation);
         }
 
         public AstType VisitExpressionPattern(ExpressionPattern exprPattern)
@@ -1693,7 +1691,7 @@ namespace Expresso.Ast.Analysis
 
         public AstType VisitIgnoringRestPattern(IgnoringRestPattern restPattern)
         {
-            return AstType.MakePlaceholderType();
+            return SimpleType.Null;
         }
 
         public AstType VisitKeyValuePattern(KeyValuePattern keyValuePattern)

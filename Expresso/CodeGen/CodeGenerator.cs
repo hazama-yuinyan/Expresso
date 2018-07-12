@@ -607,7 +607,7 @@ namespace Expresso.CodeGen
             var tmp_var = il_generator.DeclareLocal(target_type);
             EmitSet(null, tmp_var, -1, null);
 
-            var parameters = ExpandTuple(target_type, tmp_var);
+            //var parameters = ExpandTuple(target_type, tmp_var);
             context.TemporaryVariable = tmp_var;
             context.ContextExpression = null;
             var context_ast = context.ContextAst;
@@ -637,7 +637,7 @@ namespace Expresso.CodeGen
             context.TemporaryVariable = null;
             context.ContextAst = context_ast;
 
-            return null;//CSharpExpr.Block(parameters, block_contents);
+            return null;
         }
 
         public Type VisitThrowStatement(ThrowStatement throwStmt, CSharpEmitterContext context)
@@ -1562,6 +1562,8 @@ namespace Expresso.CodeGen
             var res = matchClause.Patterns.First().AcceptWalker(this, context);
 
             // Emit conditions
+            var prev_op_type = context.OperationTypeOnIdentifier;
+            context.OperationTypeOnIdentifier = OperationType.Load;
             matchClause.Patterns.First().AcceptWalker(condition_definer);
             foreach(var pattern in matchClause.Patterns.Skip(1)){
                 il_generator.Emit(OpCodes.Brtrue, context.CurrentOrTargetLabel);
@@ -1581,9 +1583,11 @@ namespace Expresso.CodeGen
             
             var guard = matchClause.Guard.AcceptWalker(this, context);
 
-            il_generator.Emit(OpCodes.Brfalse, context.CurrentAndTargetLabel);
+            if(!(matchClause.Patterns.First() is WildcardPattern))
+                il_generator.Emit(OpCodes.Brfalse, context.CurrentAndTargetLabel);
 
             il_generator.MarkLabel(context.CurrentOrTargetLabel);
+            context.OperationTypeOnIdentifier = prev_op_type;
             matchClause.Body.AcceptWalker(this, context);
 
             il_generator.Emit(OpCodes.Br, context.CurrentJumpLabel);
@@ -2079,7 +2083,7 @@ namespace Expresso.CodeGen
         {
             // An identifier pattern can arise by itself or as a child
             Type type = null;
-            if(!(context.ContextAst is MatchStatement)){
+            //if(!(context.ContextAst is MatchStatement)){
                 type = RetrieveType(identifierPattern.Identifier.Type);
                 var local_builder = il_generator.DeclareLocal(type);
                 AddSymbol(identifierPattern.Identifier, new ExpressoSymbol{LocalBuilder = local_builder});
@@ -2090,16 +2094,19 @@ namespace Expresso.CodeGen
                 if(context.OperationTypeOnIdentifier == OperationType.Set)
                     EmitSet(null, local_builder, -1, null);
                 
+            if(context.ContextAst is MatchStatement)
+                context.CurrentTargetVariable = local_builder;
+            
                 var start_loc = identifierPattern.Identifier.StartLocation;
                 var end_loc = identifierPattern.Identifier.EndLocation;
                 //il_generator.MarkSequencePoint();
                 //var debug_info = CSharpExpr.DebugInfo(document_info, start_loc.Line, start_loc.Column, end_loc.Line, end_loc.Column);
-            }else{
+            /*}else{
                 var prev_op_type = context.OperationTypeOnIdentifier;
                 context.OperationTypeOnIdentifier = OperationType.None;
                 type = VisitIdentifier(identifierPattern.Identifier, context);
                 context.OperationTypeOnIdentifier = prev_op_type;
-            }
+            }*/
 
             if(identifierPattern.Parent is MatchPatternClause){
                 // Set context.ContextExpression to a block
@@ -2216,6 +2223,8 @@ namespace Expresso.CodeGen
 
             var block = new List<CSharpExpr>();
             var block_params = new List<ExprTree.ParameterExpression>();
+            var prev_op_type = context.OperationTypeOnIdentifier;
+            context.OperationTypeOnIdentifier = OperationType.None;
             foreach(var pattern in destructuringPattern.Items){
                 var item_ast_type = pattern.AcceptWalker(item_type_inferencer);
                 if(item_ast_type == null)
@@ -2247,25 +2256,27 @@ namespace Expresso.CodeGen
                 }else{
                     var field = (FieldInfo)context.PropertyOrField;
                     context.PropertyOrField = null;
+                    EmitLoadLocal(context.TemporaryVariable, false);
                     EmitLoadField(field);
 
                     if(context.CurrentTargetVariable != null){
                         EmitSet(null, context.CurrentTargetVariable, -1, null);
                         context.CurrentTargetVariable = null;
                     }else{
-                        if(context.Additionals.Any()){
-                            /*var block_contents = context.Additionals.OfType<CSharpExpr>().ToList();
+                        /*if(context.Additionals.Any()){
+                            var block_contents = context.Additionals.OfType<CSharpExpr>().ToList();
                             if(expr != null){
                                 var if_content = CSharpExpr.IfThen(expr, context.ContextExpression);
                                 block_contents.Add(if_content);
                             }
-                            context.ContextExpression = CSharpExpr.Block(context.AdditionalParameters, block_contents);*/
-                        }else{
+                            context.ContextExpression = CSharpExpr.Block(context.AdditionalParameters, block_contents);
+                        }else{*/
                             EmitBinaryOpInMiddle(OperatorType.ConditionalAnd, context);
-                        }
+                        //}
                     }
                 }
             }
+            context.OperationTypeOnIdentifier = prev_op_type;
 
             /*if(res != null)
                 block.Add(CSharpExpr.IfThen(res, context.ContextExpression));
@@ -2283,11 +2294,12 @@ namespace Expresso.CodeGen
         {
             // Tuple patterns should always be combined with value binding patterns
             if(tuplePattern.Ancestors.Any(a => a is MatchStatement)){
-                var tuple_type = item_type_inferencer.VisitTuplePattern(tuplePattern);
-                var native_tuple_type = CSharpCompilerHelpers.GetNativeType(tuple_type);
+                var native_tuple_type = context.TemporaryVariable.LocalType;
                 var block_params = new List<ExprTree.ParameterExpression>();
                 var block = new List<CSharpExpr>();
                 int i = 1;
+                var prev_op_type = context.OperationTypeOnIdentifier;
+                context.OperationTypeOnIdentifier = OperationType.None;
                 foreach(var pattern in tuplePattern.Patterns){
                     var item_ast_type = pattern.AcceptWalker(item_type_inferencer);
                     if(item_ast_type == null)
@@ -2297,6 +2309,7 @@ namespace Expresso.CodeGen
                     //var tmp_param = CSharpExpr.Parameter(item_type, "__" + VariableCount++);
                     var prop_name = "Item" + i++;
                     var property = native_tuple_type.GetProperty(prop_name);
+                    EmitLoadLocal(context.TemporaryVariable, false);
                     EmitCall(property.GetMethod);
                     //var assignment = CSharpExpr.Assign(tmp_param, property_access);
                     //context.Additionals.Add(assignment);
@@ -2328,6 +2341,7 @@ namespace Expresso.CodeGen
                         }*/
                     }
                 }
+                context.OperationTypeOnIdentifier = prev_op_type;
 
                 /*if(res != null)
                     block.Add(CSharpExpr.IfThen(res, context.ContextExpression));
@@ -2348,24 +2362,24 @@ namespace Expresso.CodeGen
 
         public Type VisitExpressionPattern(ExpressionPattern exprPattern, CSharpEmitterContext context)
         {
-            // Common scinario in an expression pattern:
-            // An integer sequence expression or a literal expression.
-            // In the former case we should test an integer against an IntSeq type object using an IntSeq's method
-            // while in the latter case we should just test the value against the literal
-            context.RequestMethod = true;
+            /*context.RequestMethod = true;
             context.Method = null;
             var type = exprPattern.Expression.AcceptWalker(this, context);
             context.RequestMethod = false;
 
             if(context.Method != null && context.Method.DeclaringType.Name == "ExpressoIntegerSequence"){
-                il_generator.Emit(OpCodes.Callvirt, context.Method);
+                var method = context.Method;
+                context.Method = null;
+                il_generator.Emit(OpCodes.Callvirt, method);
                 return null;
             }else if(context.ContextAst is MatchStatement){
+                EmitLoadLocal(context.TemporaryVariable, false);
                 il_generator.Emit(OpCodes.Ceq);
-                return null;
+                return type;
             }else{
                 return type;
-            }
+            }*/
+            return null;
         }
 
         public Type VisitIgnoringRestPattern(IgnoringRestPattern restPattern, CSharpEmitterContext context)
