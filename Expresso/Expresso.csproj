@@ -206,7 +206,7 @@
     <Compile Include="Analysis\PreProcessor.cs" />
     <Compile Include="Ast\Statements\DoWhileStatement.cs" />
     <Compile Include="CodeGen\PortablePdbGenerator.cs" />
-    <Compile Include="CodeGen\MatchClauseIdentifierDefiner.cs" />
+    <Compile Include="CodeGen\MatchClauseConditionDefiner.cs" />
     <Compile Include="Ast\GeneralScope\AttributeSection.cs" />
     <Compile Include="Ast\Patterns\TypePathPattern.cs" />
     <Compile Include="Utilities\Utilities.cs" />

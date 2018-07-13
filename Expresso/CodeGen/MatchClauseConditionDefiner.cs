@@ -118,11 +118,14 @@ namespace Expresso.CodeGen
                 if(destructuringPattern.IsEnum){
                     var variant_name = ((MemberType)destructuringPattern.TypePath).ChildType.Name;
                     var field = context.TargetType.GetField(HiddenMemberPrefix + variant_name);
+
+                    generator.EmitLoadLocal(context.TemporaryVariable, false);
                     generator.EmitLoadField(field);
                     generator.il_generator.Emit(OpCodes.Ldnull);
                     generator.EmitBinaryOp(OperatorType.InEquality);
                 }else{
                     var native_type = CSharpCompilerHelpers.GetNativeType(destructuringPattern.TypePath);
+
                     generator.EmitLoadLocal(context.TemporaryVariable, false);
                     generator.il_generator.Emit(OpCodes.Isinst, native_type);
                     generator.il_generator.Emit(OpCodes.Ldnull);

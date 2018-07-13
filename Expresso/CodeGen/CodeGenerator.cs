@@ -1348,6 +1348,7 @@ namespace Expresso.CodeGen
         {
             context.TargetType = null;
             creation.TypePath.AcceptWalker(this, context);
+
             if(creation.CtorType.IsNull){
                 // Construct an enum variant
                 var variant_name = ((MemberType)creation.TypePath).ChildType.Name;
@@ -1361,18 +1362,21 @@ namespace Expresso.CodeGen
                 create_method = create_method.IsGenericMethod ? create_method.MakeGenericMethod(field_type.GenericTypeArguments) : create_method;
 
                 var ctor = context.TargetType.GetConstructors().First();
-                ctor.GetParameters().Select<ParameterInfo, Unit>(p => {
-                    if(p.ParameterType != field_type){
+                var prev_op_type = context.OperationTypeOnIdentifier;
+                context.OperationTypeOnIdentifier = OperationType.Load;
+                foreach(var param in ctor.GetParameters()){
+                    if(param.ParameterType != field_type){
                         il_generator.Emit(OpCodes.Ldnull);
-                        EmitCast(typeof(object), p.ParameterType);
-                        return null;
+                        EmitCast(typeof(object), param.ParameterType);
                     }else{
                         context.RequestPropertyOrField = true;
-                        creation.Items.Select(i => i.AcceptWalker(this, context));
+                        foreach(var item in creation.Items)
+                            item.AcceptWalker(this, context);
+                        
                         il_generator.Emit(OpCodes.Call, create_method);
-                        return null;
                     }
-                });
+                }
+                context.OperationTypeOnIdentifier = prev_op_type;
                 il_generator.Emit(OpCodes.Newobj, ctor);
                 
                 return context.TargetType;
@@ -2214,17 +2218,24 @@ namespace Expresso.CodeGen
             destructuringPattern.TypePath.AcceptWalker(this, context);
 
             var type = context.TargetType;
-            /*if(destructuringPattern.IsEnum){
+            var prev_temp_var = context.TemporaryVariable;
+            if(destructuringPattern.IsEnum){
                 var variant_name = ((MemberType)destructuringPattern.TypePath).ChildType.Name;
-                context.TemporaryExpression = CSharpExpr.Field(context.TemporaryVariable, HiddenMemberPrefix + variant_name);
-            }*/
+                var variant_type = CSharpCompilerHelpers.GetNativeType(((MemberType)destructuringPattern.TypePath).Target);
+                var variant_field = variant_type.GetField(HiddenMemberPrefix + variant_name);
+                var variant_variable = il_generator.DeclareLocal(variant_field.FieldType);
+
+                EmitLoadLocal(context.TemporaryVariable, false);
+                EmitLoadField(variant_field);
+                EmitSet(null, variant_variable, -1, null);
+                context.TemporaryVariable = variant_variable;
+            }
 
             context.RequestPropertyOrField = true;
 
-            var block = new List<CSharpExpr>();
-            var block_params = new List<ExprTree.ParameterExpression>();
             var prev_op_type = context.OperationTypeOnIdentifier;
             context.OperationTypeOnIdentifier = OperationType.None;
+            int i = 1;
             foreach(var pattern in destructuringPattern.Items){
                 var item_ast_type = pattern.AcceptWalker(item_type_inferencer);
                 if(item_ast_type == null)
@@ -2237,22 +2248,23 @@ namespace Expresso.CodeGen
                 //context.TemporaryVariable = tmp_param;
                 //CSharpExpr prev_tmp_expr = null;
                 /*if(destructuringPattern.IsEnum){
-                    var field_name = "Item" + i++;
-                    var field_access = CSharpExpr.PropertyOrField(context.TemporaryExpression, field_name);
-                    prev_tmp_expr = context.TemporaryExpression;
-                    context.TemporaryExpression = field_access;
+                    var property_name = "Item" + i++;
+                    var variant_type = context.TemporaryVariable.LocalType;
+                    var property = variant_type.GetProperty(property_name);
                 }*/
                 context.PropertyOrField = null;
                 var pattern_type = pattern.AcceptWalker(this, context);
                 //context.TemporaryVariable = prev_tmp_variable;
 
                 if(destructuringPattern.IsEnum){
-                    /*var param = (ExprTree.ParameterExpression)expr;
-                    var assignment2 = CSharpExpr.Assign(param, context.TemporaryExpression);
-                    block_params.Add(param);
-                    block.Add(assignment2);
+                    var property_name = "Item" + i++;
+                    var variant_type = context.TemporaryVariable.LocalType;
+                    var property = variant_type.GetProperty(property_name);
+                    var param = context.CurrentTargetVariable;
 
-                    context.TemporaryExpression = prev_tmp_expr;*/
+                    EmitLoadLocal(context.TemporaryVariable, false);
+                    EmitCall(property.GetMethod);
+                    EmitSet(null, param, -1, null);
                 }else{
                     var field = (FieldInfo)context.PropertyOrField;
                     context.PropertyOrField = null;
@@ -2283,9 +2295,8 @@ namespace Expresso.CodeGen
             else
                 block.Add(context.ContextExpression);*/
 
+            context.TemporaryVariable = prev_temp_var;
             context.RequestPropertyOrField = false;
-            if(block.Any())
-                context.ContextExpression = CSharpExpr.Block(block_params, block);
 
             return type;
         }
@@ -2295,8 +2306,6 @@ namespace Expresso.CodeGen
             // Tuple patterns should always be combined with value binding patterns
             if(tuplePattern.Ancestors.Any(a => a is MatchStatement)){
                 var native_tuple_type = context.TemporaryVariable.LocalType;
-                var block_params = new List<ExprTree.ParameterExpression>();
-                var block = new List<CSharpExpr>();
                 int i = 1;
                 var prev_op_type = context.OperationTypeOnIdentifier;
                 context.OperationTypeOnIdentifier = OperationType.None;
@@ -2348,9 +2357,6 @@ namespace Expresso.CodeGen
                 else
                     block.Add(context.ContextExpression);*/
 
-                if(block.Any())
-                    context.ContextExpression = CSharpExpr.Block(block_params, block);
-
                 return native_tuple_type;
             }else{
                 foreach(var pattern in tuplePattern.Patterns)
@@ -2362,7 +2368,10 @@ namespace Expresso.CodeGen
 
         public Type VisitExpressionPattern(ExpressionPattern exprPattern, CSharpEmitterContext context)
         {
-            /*context.RequestMethod = true;
+            if(context.ContextAst is MatchStatement)
+                return null;
+            
+            context.RequestMethod = true;
             context.Method = null;
             var type = exprPattern.Expression.AcceptWalker(this, context);
             context.RequestMethod = false;
@@ -2378,8 +2387,7 @@ namespace Expresso.CodeGen
                 return type;
             }else{
                 return type;
-            }*/
-            return null;
+            }
         }
 
         public Type VisitIgnoringRestPattern(IgnoringRestPattern restPattern, CSharpEmitterContext context)
@@ -2836,7 +2844,7 @@ namespace Expresso.CodeGen
             }
         }
 
-        List<LocalBuilder> ExpandTuple(Type tupleType, LocalBuilder builder)
+        /*List<LocalBuilder> ExpandTuple(Type tupleType, LocalBuilder builder)
         {
             if(tupleType.Name.StartsWith("Tuple", StringComparison.CurrentCulture)){
                 var parameters = tupleType.GenericTypeArguments.Select((t, i) => {
@@ -2854,7 +2862,7 @@ namespace Expresso.CodeGen
             }else{
                 return new List<LocalBuilder>{builder};
             }
-        }
+        }*/
 
         PropertyInfo GetTupleProperty(IdentifierPattern identifierPattern, Type tupleType)
         {
