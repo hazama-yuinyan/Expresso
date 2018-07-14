@@ -22,7 +22,6 @@ namespace Expresso.CodeGen
         readonly MethodBuilder prologue, static_prologue;
         readonly Dictionary<string, MemberInfo> members;
         readonly List<string> has_initializer_list = new List<string>();
-        readonly string pdb_file_path = "./main.pdb";
         readonly Dictionary<string, WrappedTypeBuilder> nested_types = new Dictionary<string, WrappedTypeBuilder>();
         Type type_cache;
         bool is_created, is_raw_value_enum;
@@ -231,32 +230,6 @@ namespace Expresso.CodeGen
             if(HasStaticFields)
                 DefineStaticConstructor();
 
-            //if(ctor != null){
-                /*var parameters = members.OfType<FieldBuilder>()
-                                        .Where(fb => !has_initializer_list.Any(name => fb.Name == name))
-                                        .Select(fb => Expression.Parameter(fb.FieldType, fb.Name))
-                                        .ToList();
-
-                var self_param = Expression.Parameter(type_cache, "self");
-                var block_contents = parameters.Select(p => {
-                    return Expression.Assign(
-                        Expression.Field(self_param, p.Name),
-                        p
-                    );
-                }).OfType<Expression>().ToList();
-                // It's needed because the Ctor_Impl should return nothing
-                block_contents.Add(Expression.Empty());
-
-                parameters.Insert(0, self_param);
-                var impl_tree = Expression.Lambda(
-                    Expression.Block(block_contents),
-                    parameters
-                );
-                SetBody(ctor, impl_tree);*/
-
-
-            //}
-
             if(type_cache == null)
                 type_cache = interface_type_builder.CreateType();
 
@@ -293,10 +266,11 @@ namespace Expresso.CodeGen
                 lambda.CompileToMethod(implementer.Item2, debug_info_generator);
             }*/
 
+            /*var debug_info_generator = PortablePDBGenerator.CreatePortablePDBGenerator();
             #if !NETCOREAPP2_0
             Console.WriteLine("Emitting a PDB on type {0}...", interface_type_builder.Name);
             #endif
-            //debug_info_generator.WriteToFile(pdb_file_path);
+            debug_info_generator.WriteToFile(pdb_file_path);*/
             //#endif
 
             prologue.GetILGenerator().Emit(OpCodes.Ret);

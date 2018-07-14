@@ -3084,7 +3084,7 @@ static uint ScopeId = 1;
 			Expect(13);
 			if(expr == null){
 			                     var type = CreateTypeWithArgs("array", AstType.MakePlaceholderType(start_loc));
-			expr = Expression.MakeSequenceInitializer(type, Enumerable.Empty<Expression>());
+			expr = Expression.MakeSequenceInitializer(type, Enumerable.Empty<Expression>(), start_loc, CurrentEndLocation);
 			                 }
 			
 		} else if (la.kind == 6) {
@@ -3096,7 +3096,7 @@ static uint ScopeId = 1;
 			Expect(11);
 			if(expr == null){
 			   var type = CreateTypeWithArgs("dictionary", AstType.MakePlaceholderType(start_loc), AstType.MakePlaceholderType(start_loc));
-			   expr = Expression.MakeSequenceInitializer(type, Enumerable.Empty<Expression>());
+			   expr = Expression.MakeSequenceInitializer(type, Enumerable.Empty<Expression>(), start_loc, CurrentEndLocation);
 			}
 			
 		} else SynErr(188);

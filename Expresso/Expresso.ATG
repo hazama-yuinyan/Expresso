@@ -2298,14 +2298,14 @@ Atom<out Expression expr>			(. var exprs = new List<Expression>(); expr = null; 
     [ SequenceMaker<out expr> ]
     SYNC ']'						(.  if(expr == null){
                                             var type = CreateTypeWithArgs("array", AstType.MakePlaceholderType(start_loc));
-    										expr = Expression.MakeSequenceInitializer(type, Enumerable.Empty<Expression>());
+    										expr = Expression.MakeSequenceInitializer(type, Enumerable.Empty<Expression>(), start_loc, CurrentEndLocation);
                                         }
     								.)
   | lcurly
     [ DictMaker<out expr> ]
     SYNC rcurly                     (. if(expr == null){
                                            var type = CreateTypeWithArgs("dictionary", AstType.MakePlaceholderType(start_loc), AstType.MakePlaceholderType(start_loc));
-                                           expr = Expression.MakeSequenceInitializer(type, Enumerable.Empty<Expression>());
+                                           expr = Expression.MakeSequenceInitializer(type, Enumerable.Empty<Expression>(), start_loc, CurrentEndLocation);
                                        }
                                     .).
 /*------------------------------------------------------------------------*/

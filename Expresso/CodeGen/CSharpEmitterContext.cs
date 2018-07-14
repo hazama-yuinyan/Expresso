@@ -280,6 +280,14 @@ namespace Expresso.CodeGen
         public bool ExpectsReference{
             get; set;
         }
+
+        /// <summary>
+        /// Current PDB generator.
+        /// </summary>
+        /// <value>The PDBG enerator.</value>
+        public PortablePDBGenerator PDBGenerator{
+            get; set;
+        }
     }
 }
 

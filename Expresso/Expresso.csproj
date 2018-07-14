@@ -221,6 +221,7 @@
     <Compile Include="Ast\AstTypes\KeyValueType.cs" />
     <Compile Include="Ast\GeneralScope\TypeConstraint.cs" />
     <Compile Include="CodeGen\CodeGenerator.cs" />
+    <Compile Include="CodeGen\SequencePoint.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System" />

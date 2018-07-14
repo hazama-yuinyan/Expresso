@@ -65,7 +65,6 @@ namespace Expresso.CodeGen
         const string ClosureMethodName = "__Apply";
         const string ClosureDelegateName = "__ApplyMethod";
         const string HiddenMemberPrefix = "<>__";
-        bool has_continue;
 
         Parser parser;
         SymbolTable symbol_table;
@@ -285,6 +284,9 @@ namespace Expresso.CodeGen
             var mod_builder = asm_builder.DefineDynamicModule(assembly_name, file_name, options.BuildType.HasFlag(BuildType.Debug));
             document = mod_builder.DefineDocument(Path.GetFileName(parser.scanner.FilePath), ExpressoCompilerHelpers.LanguageGuid, Guid.Empty, Guid.Empty);
 
+            context.PDBGenerator = PortablePDBGenerator.CreatePortablePDBGenerator();
+            context.PDBGenerator.AddDocument(Path.GetFullPath(parser.scanner.FilePath), ExpressoCompilerHelpers.LanguageGuid);
+
             // Leave the ast.Name as is because otherwise we can't refer to it later when visiting ImportDeclarations
             var type_builder = ContainsFunctionDefinitions(ast.Declarations) ? new WrappedTypeBuilder(mod_builder, CSharpCompilerHelpers.ConvertToPascalCase(ast.Name),
                                                                                                       TypeAttributes.Class | TypeAttributes.Public, Enumerable.Empty<Type>(),
@@ -377,6 +379,12 @@ namespace Expresso.CodeGen
             asm_builder.Save(file_name);
 
             AssemblyBuilder = asm_builder;
+
+            if(ast.Name == "main"){
+                Console.WriteLine("Emitting a PDB file...");
+                var pdb_file_path = Path.Combine(options.OutputPath, options.ExecutableName + ".pdb");
+                context.PDBGenerator.WriteToFile(pdb_file_path);
+            }
 
             return null;
         }
@@ -1915,6 +1923,8 @@ namespace Expresso.CodeGen
             var prev_il_generator = il_generator;
             il_generator = method_builder.GetILGenerator();
 
+            context.PDBGenerator.MarkFunction(funcDecl);
+
             funcDecl.Body.AcceptWalker(this, context);
             context.ContextAst = prev_context_ast;
 
@@ -2053,13 +2063,9 @@ namespace Expresso.CodeGen
                     context.OperationTypeOnIdentifier = OperationType.Set;
                     initializer.Pattern.AcceptWalker(this, context);
                     context.OperationTypeOnIdentifier = prev_op_type;
-                    /*if(options.BuildType.HasFlag(BuildType.Debug)){
-                        var debug_info_list = debug_infos.ToList();
-                        debug_info_list.Add(assignment);
-                        result = CSharpExpr.Block(debug_info_list);
-                    }else{
-                        result = assignment;
-                    }*/
+                    if(options.BuildType.HasFlag(BuildType.Debug))
+                        context.PDBGenerator.MarkSequencePoint(il_generator.ILOffset, initializer.StartLocation, initializer.EndLocation);
+
                     return type;
                 }
             }
@@ -2087,39 +2093,29 @@ namespace Expresso.CodeGen
         {
             // An identifier pattern can arise by itself or as a child
             Type type = null;
-            //if(!(context.ContextAst is MatchStatement)){
-                type = RetrieveType(identifierPattern.Identifier.Type);
-                var local_builder = il_generator.DeclareLocal(type);
-                AddSymbol(identifierPattern.Identifier, new ExpressoSymbol{LocalBuilder = local_builder});
+            type = RetrieveType(identifierPattern.Identifier.Type);
+            var local_builder = il_generator.DeclareLocal(type);
+            AddSymbol(identifierPattern.Identifier, new ExpressoSymbol{LocalBuilder = local_builder});
 
-                if(context.Parameters != null)
-                    context.Parameters.Add(local_builder);
+            if(context.Parameters != null)
+                context.Parameters.Add(local_builder);
 
-                if(context.OperationTypeOnIdentifier == OperationType.Set)
-                    EmitSet(null, local_builder, -1, null);
-                
+            if(context.OperationTypeOnIdentifier == OperationType.Set)
+                EmitSet(null, local_builder, -1, null);
+            
             if(context.ContextAst is MatchStatement)
                 context.CurrentTargetVariable = local_builder;
-            
-                var start_loc = identifierPattern.Identifier.StartLocation;
-                var end_loc = identifierPattern.Identifier.EndLocation;
-                //il_generator.MarkSequencePoint();
-                //var debug_info = CSharpExpr.DebugInfo(document_info, start_loc.Line, start_loc.Column, end_loc.Line, end_loc.Column);
-            /*}else{
-                var prev_op_type = context.OperationTypeOnIdentifier;
-                context.OperationTypeOnIdentifier = OperationType.None;
-                type = VisitIdentifier(identifierPattern.Identifier, context);
-                context.OperationTypeOnIdentifier = prev_op_type;
-            }*/
+        
+            //var start_loc = identifierPattern.Identifier.StartLocation;
+            //var end_loc = identifierPattern.Identifier.EndLocation;
+            //il_generator.MarkSequencePoint(document, start_loc.Line, start_loc.Column - 1, end_loc.Line, end_loc.Column - 1);
 
             if(identifierPattern.Parent is MatchPatternClause){
                 // Set context.ContextExpression to a block
-                //var native_type = CSharpCompilerHelper.GetNativeType(identifierPattern.Identifier.Type);
                 var symbol = GetRuntimeSymbol(identifierPattern.Identifier);
                 EmitLoadLocal(context.TemporaryVariable, false);
                 EmitSet(null, symbol.LocalBuilder, -1, null);
                 context.CurrentTargetVariable = symbol.LocalBuilder;
-                //context.ContextExpression = CSharpExpr.Block(new []{type}, new []{assignment, context.ContextExpression});
             }
 
             if(context.PropertyOrField == null && context.TargetType != null && context.ContextAst is MatchStatement 
