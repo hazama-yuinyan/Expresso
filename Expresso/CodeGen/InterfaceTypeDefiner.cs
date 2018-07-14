@@ -398,7 +398,7 @@ namespace Expresso.CodeGen
                     // We don't call VisitAttributeSection directly so that we can avoid unnecessary method calls
                     typeDecl.Attribute.AcceptWalker(generator, context);
                 }else{
-                    context.LazyTypeBuilder = new WrappedTypeBuilder(context.ModuleBuilder, name, flags, base_types, false, is_raw_value_enum);
+                    context.LazyTypeBuilder = new LazyTypeBuilder(context.ModuleBuilder, name, flags, base_types, false, is_raw_value_enum);
                     //if(typeDecl.TypeConstraints.Any())
                     //    generator.generic_types = context.LazyTypeBuilder.TypeBuilder.DefineGenericParameters(typeDecl.TypeConstraints.Select(c => c.TypeParameter.Name).ToArray());
 

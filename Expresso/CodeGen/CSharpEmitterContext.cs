@@ -37,7 +37,7 @@ namespace Expresso.CodeGen
         /// Current type builder.
         /// It will be null if we are not constructing a type declaration.
         /// </summary>
-        public WrappedTypeBuilder LazyTypeBuilder{
+        public LazyTypeBuilder LazyTypeBuilder{
             get; set;
         }
 

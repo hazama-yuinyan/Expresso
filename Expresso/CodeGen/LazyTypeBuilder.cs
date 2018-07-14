@@ -14,7 +14,7 @@ namespace Expresso.CodeGen
     /// A specialized type builder that allows users to delay the implementation of types.
     /// Most of the implementation is taken from the following web site "http://takeshik.org/blog/2011/12/14/expression-trees-with-il-emit/".
     /// </summary>
-    public class WrappedTypeBuilder
+    public class LazyTypeBuilder
     {
         readonly TypeBuilder interface_type_builder;
         readonly Type[] types;
@@ -22,7 +22,7 @@ namespace Expresso.CodeGen
         readonly MethodBuilder prologue, static_prologue;
         readonly Dictionary<string, MemberInfo> members;
         readonly List<string> has_initializer_list = new List<string>();
-        readonly Dictionary<string, WrappedTypeBuilder> nested_types = new Dictionary<string, WrappedTypeBuilder>();
+        readonly Dictionary<string, LazyTypeBuilder> nested_types = new Dictionary<string, LazyTypeBuilder>();
         Type type_cache;
         bool is_created, is_raw_value_enum;
 
@@ -78,12 +78,12 @@ namespace Expresso.CodeGen
             }
         }
 
-        public WrappedTypeBuilder(ModuleBuilder module, string name, TypeAttributes attr, IEnumerable<Type> baseTypes, bool isGlobalFunctions, bool isTupleStyleEnum)
+        public LazyTypeBuilder(ModuleBuilder module, string name, TypeAttributes attr, IEnumerable<Type> baseTypes, bool isGlobalFunctions, bool isTupleStyleEnum)
             : this(module.DefineType(name, attr, baseTypes.Any() ? baseTypes.First() : typeof(object), baseTypes.Skip(1).ToArray()), isGlobalFunctions, isTupleStyleEnum)
         {
         }
 
-        WrappedTypeBuilder(TypeBuilder builder, bool isGlobalFunctions, bool isTupleStyleEnum)
+        LazyTypeBuilder(TypeBuilder builder, bool isGlobalFunctions, bool isTupleStyleEnum)
         {
             interface_type_builder = builder;
             types = isGlobalFunctions ? new Type[]{} : new []{ builder };
@@ -195,10 +195,10 @@ namespace Expresso.CodeGen
         /// <returns>The nested type.</returns>
         /// <param name="name">Name.</param>
         /// <param name="baseTypes">Base types.</param>
-        public WrappedTypeBuilder DefineNestedType(string name, TypeAttributes attr, IEnumerable<Type> baseTypes)
+        public LazyTypeBuilder DefineNestedType(string name, TypeAttributes attr, IEnumerable<Type> baseTypes)
         {
             var real_attr = attr.HasFlag(TypeAttributes.Public) ? TypeAttributes.NestedPublic : TypeAttributes.NestedPrivate;
-            var tmp = new WrappedTypeBuilder(interface_type_builder.DefineNestedType(name, real_attr, baseTypes.Any() ? baseTypes.First() : typeof(object), baseTypes.Skip(1).ToArray()), false, is_raw_value_enum);
+            var tmp = new LazyTypeBuilder(interface_type_builder.DefineNestedType(name, real_attr, baseTypes.Any() ? baseTypes.First() : typeof(object), baseTypes.Skip(1).ToArray()), false, is_raw_value_enum);
             nested_types.Add(name, tmp);
             return tmp;
         }
@@ -342,7 +342,7 @@ namespace Expresso.CodeGen
         /// </summary>
         /// <returns>The nested type.</returns>
         /// <param name="name">The name to search.</param>
-        public WrappedTypeBuilder GetNestedType(string name)
+        public LazyTypeBuilder GetNestedType(string name)
         {
             return nested_types[name];
         }

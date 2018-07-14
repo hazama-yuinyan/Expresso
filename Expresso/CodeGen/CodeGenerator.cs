@@ -288,7 +288,7 @@ namespace Expresso.CodeGen
             context.PDBGenerator.AddDocument(Path.GetFullPath(parser.scanner.FilePath), ExpressoCompilerHelpers.LanguageGuid);
 
             // Leave the ast.Name as is because otherwise we can't refer to it later when visiting ImportDeclarations
-            var type_builder = ContainsFunctionDefinitions(ast.Declarations) ? new WrappedTypeBuilder(mod_builder, CSharpCompilerHelpers.ConvertToPascalCase(ast.Name),
+            var type_builder = ContainsFunctionDefinitions(ast.Declarations) ? new LazyTypeBuilder(mod_builder, CSharpCompilerHelpers.ConvertToPascalCase(ast.Name),
                                                                                                       TypeAttributes.Class | TypeAttributes.Public, Enumerable.Empty<Type>(),
                                                                                                       true, false) : null;
             var local_parser = parser;
@@ -923,7 +923,7 @@ namespace Expresso.CodeGen
             DescendScope();
             scope_counter = 0;
 
-            var closure_type_builder = new WrappedTypeBuilder(context.ModuleBuilder, HiddenMemberPrefix + "Closure`" + ClosureId++, TypeAttributes.Class, Enumerable.Empty<Type>(), false, false);
+            var closure_type_builder = new LazyTypeBuilder(context.ModuleBuilder, HiddenMemberPrefix + "Closure`" + ClosureId++, TypeAttributes.Class, Enumerable.Empty<Type>(), false, false);
 
             var param_types = closure.Parameters
                                      .Select((p, index) => {

@@ -187,7 +187,7 @@
     <Compile Include="Ast\Statements\ValueBindingForStatement.cs" />
     <Compile Include="TriBool.cs" />
     <Compile Include="Ast\Expressions\MemberReferenceExpression.cs" />
-    <Compile Include="CodeGen\WrappedTypeBuilder.cs" />
+    <Compile Include="CodeGen\LazyTypeBuilder.cs" />
     <Compile Include="CodeGen\InterfaceTypeDefiner.cs" />
     <Compile Include="Analysis\ParameterTypeReplacer.cs" />
     <Compile Include="Utilities\ICloneable.cs" />

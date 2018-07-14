@@ -98,7 +98,6 @@
     <Compile Include="ParserException.cs" />
     <Compile Include="Ast\AstNode.cs" />
     <Compile Include="Ast\NodeType.cs" />
-    <Compile Include="Ast\AstType.cs" />
     <Compile Include="Formatting\ExpressoFormattingOptions.cs" />
     <Compile Include="Formatting\FormattingOptionsFactory.cs" />
     <Compile Include="OutputVisitor\DebugOutputWalker.cs" />
@@ -132,9 +131,7 @@
     <Compile Include="Ast\Statements\BreakStatement.cs" />
     <Compile Include="Ast\Statements\ContinueStatement.cs" />
     <Compile Include="Ast\GeneralScope\FunctionDeclaration.cs" />
-    <Compile Include="Ast\PrimitiveType.cs" />
     <Compile Include="TypeSystem\KnownTypeReference.cs" />
-    <Compile Include="Ast\SimpleType.cs" />
     <Compile Include="Ast\Expressions\IndexerExpression.cs" />
     <Compile Include="Ast\Expressions\AssignmentExpression.cs" />
     <Compile Include="Ast\Statements\Statement.cs" />
@@ -161,14 +158,10 @@
     <Compile Include="Analysis\SymbolTable.cs" />
     <Compile Include="Analysis\ExpressoNameBinder.cs" />
     <Compile Include="Analysis\IAstWalker.cs" />
-    <Compile Include="Ast\PlaceholderType.cs" />
     <Compile Include="Ast\Expressions\OperatorType.cs" />
     <Compile Include="Ast\Expressions\PathExpression.cs" />
     <Compile Include="Ast\Expressions\KeyValueLikeExpression.cs" />
-    <Compile Include="Ast\MemberType.cs" />
-    <Compile Include="Ast\ReferenceType.cs" />
     <Compile Include="CodeGen\EmitterException.cs" />
-    <Compile Include="CodeGen\CSharpEmitter.cs" />
     <Compile Include="Ast\GeneralScope\AliasDeclaration.cs" />
     <Compile Include="CodeGen\CSharpEmitterContext.cs" />
     <Compile Include="CodeGen\ExpressoSymbol.cs" />
@@ -180,11 +173,9 @@
     <Compile Include="Analysis\TypeChecker.cs" />
     <Compile Include="Analysis\TypeInferenceRunner.cs" />
     <Compile Include="Analysis\UniqueIdGenerator.cs" />
-    <Compile Include="Ast\FunctionType.cs" />
     <Compile Include="Ast\Statements\ValueBindingForStatement.cs" />
     <Compile Include="TriBool.cs" />
     <Compile Include="Ast\Expressions\MemberReferenceExpression.cs" />
-    <Compile Include="Ast\ParameterType.cs" />
     <Compile Include="CodeGen\LazyTypeBuilder.cs" />
     <Compile Include="CodeGen\InterfaceTypeDefiner.cs" />
     <Compile Include="Analysis\ParameterTypeReplacer.cs" />
@@ -204,10 +195,21 @@
     <Compile Include="Analysis\PreProcessor.cs" />
     <Compile Include="Ast\Statements\DoWhileStatement.cs" />
     <Compile Include="CodeGen\PortablePdbGenerator.cs" />
-    <Compile Include="CodeGen\MatchClauseIdentifierDefiner.cs" />
     <Compile Include="CodeGen\CSharpCompilerHelpers.cs" />
     <Compile Include="Ast\GeneralScope\AttributeSection.cs" />
     <Compile Include="Ast\Patterns\TypePathPattern.cs" />
+    <Compile Include="CodeGen\MatchClauseConditionDefiner.cs" />
+    <Compile Include="Ast\AstTypes\AstType.cs" />
+    <Compile Include="Ast\AstTypes\FunctionType.cs" />
+    <Compile Include="Ast\AstTypes\KeyValueType.cs" />
+    <Compile Include="Ast\AstTypes\MemberType.cs" />
+    <Compile Include="Ast\AstTypes\ParameterType.cs" />
+    <Compile Include="Ast\AstTypes\PlaceholderType.cs" />
+    <Compile Include="Ast\AstTypes\PrimitiveType.cs" />
+    <Compile Include="Ast\AstTypes\ReferenceType.cs" />
+    <Compile Include="Ast\AstTypes\SimpleType.cs" />
+    <Compile Include="Ast\GeneralScope\TypeConstraint.cs" />
+    <Compile Include="CodeGen\CodeGenerator.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -227,17 +229,19 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Expresso.ATG" />
-    <None Include="Documentation\Bugs.txt" />
-    <None Include="Documentation\ExpressoDesignMemo.txt" />
-    <None Include="Documentation\ExpressoLanguageSpecificationMemo.txt" />
     <None Include="OutputVisitor\TokenWriter.cs" />
     <None Include="OutputVisitor\InsertRequiredSpacesDecorator.cs" />
     <None Include="OutputVisitor\ExpressoOutputWalker.cs" />
-    <None Include="Documentation\ExpressoReference.md" />
-    <None Include="Documentation\ExpressoTutorial.md" />
     <None Include="packages.config" />
-    <None Include="Documentation\TODO.txt" />
     <None Include="Ast\Patterns\ValueBindingPattern.cs" />
+    <None Include="Documentations\Bugs.txt" />
+    <None Include="Documentations\ExpressoDesignMemo.txt" />
+    <None Include="Documentations\ExpressoLanguageSpecificationMemo.txt" />
+    <None Include="Documentations\ExpressoReference.md" />
+    <None Include="Documentations\ExpressoTutorial.md" />
+    <None Include="Documentations\Expresso_Language_Specification.md" />
+    <None Include="Documentations\TODO.txt" />
+    <None Include="CodeGen\CSharpEmitter.cs" />
   </ItemGroup>
   <ItemGroup />
   <ProjectExtensions>
