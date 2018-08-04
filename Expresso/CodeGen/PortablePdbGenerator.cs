@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
+using System.Reflection.Emit;
 using System.Reflection.Metadata;
 using System.Reflection.Metadata.Ecma335;
 using Expresso.Ast;
@@ -15,27 +17,47 @@ namespace Expresso.CodeGen
     public class PortablePDBGenerator
     {
         static List<FunctionDeclaration> seen_funcs = new List<FunctionDeclaration>();
+        static List<List<SequencePoint>> emitted_sps = new List<List<SequencePoint>>();
+        static List<LocalScopeInformation> local_scopes = new List<LocalScopeInformation>();
 
-        int num_documents = 0, num_methods = 0;
-        MetadataBuilder metadata_builder = new MetadataBuilder();
         List<SequencePoint> sequence_points = new List<SequencePoint>();
+        List<DebugDocument> documents = new List<DebugDocument>();
+        FunctionDeclaration current_func;
         DocumentHandle current_doc_handle;
+        LocalScopeInformation current_scope;
+        Dictionary<string, MethodDefinitionHandle> impl_method_handles = new Dictionary<string, MethodDefinitionHandle>();
 
-        public void MarkFunction(FunctionDeclaration funcDecl)
+        public MetadataBuilder MetadataBuilder{
+            private get; set;
+        }
+
+        public static PortablePDBGenerator CreatePortablePDBGenerator()
         {
-            if(seen_funcs.IndexOf(funcDecl) != -1)
+            return new PortablePDBGenerator();
+        }
+
+        public void AddSequencePoints(MethodBuilder methodBuilder, FunctionDeclaration funcDecl)
+        {
+            if(seen_funcs.Contains(funcDecl))
                 throw new InvalidOperationException("The function {0} is already peeked.");
 
             seen_funcs.Add(funcDecl);
-            ++num_methods;
-            metadata_builder.SetCapacity(TableIndex.MethodDebugInformation, num_methods);
-            seen_funcs.Add(funcDecl);
+            if(current_func == null)
+                current_func = funcDecl;
 
-            if(sequence_points.Count > 0){
-                var sequence_point_blob = SerializeSequencePoints();
-                metadata_builder.AddMethodDebugInformation(current_doc_handle, sequence_point_blob);
-                sequence_points.Clear();
-            }
+            SetSequencePoints(funcDecl);
+        }
+
+        public void AddMethodDefinition(string name, MethodDefinitionHandle methodDefinitionHandle)
+        {
+            impl_method_handles.Add(name, methodDefinitionHandle);
+        }
+
+        public void AddDummySequencePoints(int index)
+        {
+            SetSequencePoints(null);
+
+            emitted_sps.Insert(index, new List<SequencePoint>());
         }
 
         public void MarkSequencePoint(int ilOffset, TextLocation startLoc, TextLocation endLoc)
@@ -43,19 +65,31 @@ namespace Expresso.CodeGen
             sequence_points.Add(new SequencePoint(ilOffset, startLoc.Line, startLoc.Column, endLoc.Line, endLoc.Column));
         }
 
-        public void WriteToFile(string filePath)
+        public void AddLocalScope(int startOffset)
         {
-            if(sequence_points.Count > 0){
-                // In order to mark sequence points on the last method
-                var sequence_points_blob = SerializeSequencePoints();
-                metadata_builder.AddMethodDebugInformation(current_doc_handle, sequence_points_blob);
-                sequence_points.Clear();
-            }
+            var new_scope = new LocalScopeInformation(current_func, default, startOffset);
+            local_scopes.Add(new_scope);
+            current_scope = new_scope;
+        }
 
-            var raw_pdb_id = new byte[]{0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01};
-            var pdb_id = new BlobContentId(raw_pdb_id);
+        public void AddLocalVariable(LocalVariableAttributes attributes, int index, string name)
+        {
+            current_scope.LocalVariables.Add(new LocalVariableInformation(attributes, index, name));
+        }
 
-            var pdb_builder = new PortablePdbBuilder(metadata_builder, metadata_builder.GetRowCounts(), default, _ => pdb_id);
+        public void SetLengthOnLocalScope(int length)
+        {
+            current_scope.Length = length;
+        }
+
+        public void WriteToFile(string filePath, BlobContentId pdbId, MethodDefinitionHandle mainMethodHandle)
+        {
+            var type_system_row_counts = MetadataBuilder.GetRowCounts();
+
+            AddDebugTables();
+
+            var pdb_builder = new PortablePdbBuilder(MetadataBuilder, type_system_row_counts, mainMethodHandle, _ => pdbId);
+
             var blob_builder = new BlobBuilder();
             pdb_builder.Serialize(blob_builder);
             using(var file_stream = File.Create(filePath)){
@@ -65,20 +99,59 @@ namespace Expresso.CodeGen
 
         public void AddDocument(string filePath, Guid languageGuid)
         {
-            ++num_documents;
-            metadata_builder.SetCapacity(TableIndex.Document, num_documents);
-
-            current_doc_handle = metadata_builder.AddDocument(metadata_builder.GetOrAddDocumentName(filePath), default, default, metadata_builder.GetOrAddGuid(languageGuid));
+            documents.Add(new DebugDocument(filePath, default, default, languageGuid));
         }
 
-        BlobHandle SerializeSequencePoints()
+        void SetSequencePoints(FunctionDeclaration nextFunc)
         {
+            if(sequence_points.Count > 0){
+                emitted_sps.Add(new List<SequencePoint>(sequence_points));
+                current_func = nextFunc;
+                sequence_points.Clear();
+            }
+        }
+
+        void AddDebugTables()
+        {
+            MetadataBuilder.SetCapacity(TableIndex.Document, documents.Count);
+            foreach(var doc in documents){
+                current_doc_handle = MetadataBuilder.AddDocument(MetadataBuilder.GetOrAddDocumentName(doc.FilePath), default, default, MetadataBuilder.GetOrAddGuid(doc.LanguageGuid));
+
+                MetadataBuilder.SetCapacity(TableIndex.MethodDebugInformation, emitted_sps.Count);
+                foreach(var sequence_point_list in emitted_sps){
+                    var sp_blob = SerializeSequencePoints(sequence_point_list);
+                    if(sp_blob.IsNil)
+                        MetadataBuilder.AddMethodDebugInformation(default, default);
+                    else
+                        MetadataBuilder.AddMethodDebugInformation(current_doc_handle, sp_blob);
+                }
+            }
+
+            var first_local_variable = default(LocalVariableHandle);
+            foreach(var scope in local_scopes){
+                foreach(var lv in scope.LocalVariables){
+                    var local_variable = MetadataBuilder.AddLocalVariable(lv.Attributes, lv.Index, MetadataBuilder.GetOrAddString(lv.Name));
+                    if(first_local_variable.IsNil)
+                        first_local_variable = local_variable;
+                }
+
+                var method_handle = impl_method_handles[scope.Func.Name];
+                MetadataBuilder.AddLocalScope(method_handle, scope.ImportScope, first_local_variable, default, scope.StartOffset, scope.Length);
+                first_local_variable = default;
+            }
+        }
+
+        BlobHandle SerializeSequencePoints(List<SequencePoint> sequencePoints)
+        {
+            if(!sequencePoints.Any())
+                return new BlobHandle();
+            
             var writer = new BlobBuilder();
 
             // header: LocalSignature
             writer.WriteCompressedInteger(0);
 
-            var first_seq_point = sequence_points.First();
+            var first_seq_point = sequencePoints.First();
             var prev_non_hidden_start_line = first_seq_point.StartLine;
             var prev_non_hidden_start_column = first_seq_point.StartColumn;
             var prev_offset = first_seq_point.IlOffset;
@@ -92,7 +165,7 @@ namespace Expresso.CodeGen
             writer.WriteCompressedInteger(first_seq_point.StartLine);
             writer.WriteCompressedInteger(first_seq_point.StartColumn);
 
-            foreach(var seq_point in sequence_points.Skip(1)){
+            foreach(var seq_point in sequencePoints.Skip(1)){
                 // δILOffset
                 writer.WriteCompressedInteger(seq_point.IlOffset - prev_offset);
 
@@ -107,7 +180,7 @@ namespace Expresso.CodeGen
                 prev_non_hidden_start_column = seq_point.StartColumn;
             }
 
-            return metadata_builder.GetOrAddBlob(writer);
+            return MetadataBuilder.GetOrAddBlob(writer);
         }
 
         static void SerializeDeltaLineColumns(BlobBuilder writer, SequencePoint sequencePoint)
@@ -122,9 +195,42 @@ namespace Expresso.CodeGen
                 writer.WriteCompressedSignedInteger(sequencePoint.EndColumn - sequencePoint.StartColumn);
         }
 
-        public static PortablePDBGenerator CreatePortablePDBGenerator()
+        static AssemblyHashAlgorithm GetHashAlgorithm(System.Configuration.Assemblies.AssemblyHashAlgorithm algorithm)
         {
-            return new PortablePDBGenerator();
+            switch(algorithm){
+            case System.Configuration.Assemblies.AssemblyHashAlgorithm.MD5:
+                return AssemblyHashAlgorithm.MD5;
+
+            case System.Configuration.Assemblies.AssemblyHashAlgorithm.SHA1:
+                return AssemblyHashAlgorithm.Sha1;
+
+            case System.Configuration.Assemblies.AssemblyHashAlgorithm.SHA256:
+                return AssemblyHashAlgorithm.Sha256;
+
+            case System.Configuration.Assemblies.AssemblyHashAlgorithm.SHA384:
+                return AssemblyHashAlgorithm.Sha384;
+
+            case System.Configuration.Assemblies.AssemblyHashAlgorithm.SHA512:
+                return AssemblyHashAlgorithm.Sha512;
+
+            case System.Configuration.Assemblies.AssemblyHashAlgorithm.None:
+                return AssemblyHashAlgorithm.None;
+
+            default:
+                throw new ArgumentOutOfRangeException(nameof(algorithm));
+            }
         }
+
+        /*AssemblyReferenceHandle AddAssemblyReference(Assembly assembly)
+        {
+            var asm_name = assembly.GetName();
+            var name_handle = MetadataBuilder.GetOrAddString(asm_name.Name);
+            var culture_name_handle = MetadataBuilder.GetOrAddString(asm_name.CultureName);
+            var public_key = asm_name.GetPublicKey();
+            var public_key_builder = new BlobBuilder(public_key.Length);
+            public_key_builder.WriteBytes(public_key);
+            var public_key_handle = MetadataBuilder.GetOrAddBlob(public_key_builder);
+            return MetadataBuilder.AddAssemblyReference(name_handle, asm_name.Version, culture_name_handle, public_key_handle, default, default);
+        }*/
     }
 }

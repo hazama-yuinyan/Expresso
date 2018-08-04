@@ -221,7 +221,11 @@
     <Compile Include="Ast\AstTypes\KeyValueType.cs" />
     <Compile Include="Ast\GeneralScope\TypeConstraint.cs" />
     <Compile Include="CodeGen\CodeGenerator.cs" />
-    <Compile Include="CodeGen\SequencePoint.cs" />
+    <Compile Include="MetadataRelated\DebugDocument.cs" />
+    <Compile Include="MetadataRelated\LocalScopeInformation.cs" />
+    <Compile Include="MetadataRelated\SequencePoint.cs" />
+    <Compile Include="MetadataRelated\LocalVariableInformation.cs" />
+    <Compile Include="CodeGen\CodeGenerator.EmitDebugDirectoryAndPdb.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -267,6 +271,7 @@
     <Folder Include="CodeGen\" />
     <Folder Include="Utilities\" />
     <Folder Include="Ast\AstTypes\" />
+    <Folder Include="MetadataRelated\" />
   </ItemGroup>
   <ProjectExtensions>
     <MonoDevelop>

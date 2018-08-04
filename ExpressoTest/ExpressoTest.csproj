@@ -50,7 +50,6 @@
     <None Include="sources\for_unit_tests\complex_expressions.exs" />
     <None Include="sources\for_unit_tests\functions.exs" />
     <None Include="sources\for_unit_tests\general_expressions.exs" />
-    <None Include="sources\for_unit_tests\generic_params.exs" />
     <None Include="sources\for_unit_tests\match_statements.exs" />
     <None Include="sources\for_unit_tests\module.exs" />
     <None Include="sources\for_unit_tests\simple_arithmetic.exs" />

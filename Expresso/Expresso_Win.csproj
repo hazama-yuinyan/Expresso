@@ -210,6 +210,7 @@
     <Compile Include="Ast\AstTypes\SimpleType.cs" />
     <Compile Include="Ast\GeneralScope\TypeConstraint.cs" />
     <Compile Include="CodeGen\CodeGenerator.cs" />
+    <Compile Include="CodeGen\SequencePoint.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System" />

@@ -7,6 +7,7 @@ using System.Linq;
 using System.Numerics;
 using System.Reflection;
 using System.Reflection.Emit;
+using System.Reflection.Metadata;
 using System.Text;
 using System.Threading;
 using Expresso.Ast;
@@ -17,7 +18,6 @@ using ICSharpCode.NRefactory.PatternMatching;
 namespace Expresso.CodeGen
 {
     using CSharpExpr = System.Linq.Expressions.Expression;
-    using ExprTree = System.Linq.Expressions;
 
     /// <summary>
     /// An <see cref="IComparer&lt;T&gt;"/> implementation that sorts import paths.
@@ -73,6 +73,7 @@ namespace Expresso.CodeGen
         ItemTypeInferencer item_type_inferencer;
         ILGenerator il_generator;
         GenericTypeParameterBuilder[] generic_types;
+        MethodDefinitionHandle main_method_def_handle;
 
         List<Label> break_targets = new List<Label>();
         List<Label> continue_targets = new List<Label>();
@@ -130,7 +131,6 @@ namespace Expresso.CodeGen
 
         void EmitIterableAssignments(IEnumerable<LocalBuilder> variables, LocalBuilder enumerator, Label breakTarget)
         {
-            var contents = new List<CSharpExpr>();
             var iterator_type = enumerator.LocalType;
             var move_false_label = il_generator.DefineLabel();
             var move_method = iterator_type.GetInterface("IEnumerator").GetMethod("MoveNext");
@@ -251,12 +251,6 @@ namespace Expresso.CodeGen
                           Path.Combine(options.OutputPath, options.ExecutableName + ".exe");
         }
 
-        string GetPdbFilePath(ExpressoAst ast)
-        {
-            return options.BuildType.HasFlag(BuildType.Assembly) ? Path.Combine(options.OutputPath, ast.Name + ".pdb") :
-                          Path.Combine(options.OutputPath, options.ExecutableName + ".pdb");
-        }
-
         #region IAstWalker implementation
 
         public Type VisitAst(ExpressoAst ast, CSharpEmitterContext context)
@@ -281,16 +275,17 @@ namespace Expresso.CodeGen
                 ));
             }
 
-            var mod_builder = asm_builder.DefineDynamicModule(assembly_name, file_name, options.BuildType.HasFlag(BuildType.Debug));
-            document = mod_builder.DefineDocument(Path.GetFileName(parser.scanner.FilePath), ExpressoCompilerHelpers.LanguageGuid, Guid.Empty, Guid.Empty);
+            var mod_builder = asm_builder.DefineDynamicModule(assembly_name, file_name);
+            document = mod_builder.DefineDocument(parser.scanner.FilePath, ExpressoCompilerHelpers.LanguageGuid, Guid.Empty, SymDocumentType.Text);
 
             context.PDBGenerator = PortablePDBGenerator.CreatePortablePDBGenerator();
-            context.PDBGenerator.AddDocument(Path.GetFullPath(parser.scanner.FilePath), ExpressoCompilerHelpers.LanguageGuid);
+            context.PDBGenerator.AddDocument(parser.scanner.FilePath, ExpressoCompilerHelpers.LanguageGuid);
 
             // Leave the ast.Name as is because otherwise we can't refer to it later when visiting ImportDeclarations
             var type_builder = ContainsFunctionDefinitions(ast.Declarations) ? new LazyTypeBuilder(mod_builder, CSharpCompilerHelpers.ConvertToPascalCase(ast.Name),
-                                                                                                      TypeAttributes.Class | TypeAttributes.Public, Enumerable.Empty<Type>(),
-                                                                                                      true, false) : null;
+                                                                                                   TypeAttributes.Class | TypeAttributes.Public, Enumerable.Empty<Type>(),
+                                                                                                   true, false) : null;
+
             var local_parser = parser;
             if(ast.ExternalModules.Any()){
                 context.CurrentModuleCount = ast.ExternalModules.Count;
@@ -378,13 +373,10 @@ namespace Expresso.CodeGen
             context.ExternalModuleType = (type_builder != null) ? type_builder.CreateType() : null;
             asm_builder.Save(file_name);
 
-            AssemblyBuilder = asm_builder;
+            var pdb_id = new BlobContentId(Guid.NewGuid(), 0xffeeddcc);
+            EmitDebugDirectoryAndPdb(Path.Combine(options.OutputPath, file_name), options.ExecutableName + ".pdb", pdb_id, context.PDBGenerator);
 
-            if(ast.Name == "main"){
-                Console.WriteLine("Emitting a PDB file...");
-                var pdb_file_path = Path.Combine(options.OutputPath, options.ExecutableName + ".pdb");
-                context.PDBGenerator.WriteToFile(pdb_file_path);
-            }
+            AssemblyBuilder = asm_builder;
 
             return null;
         }
@@ -393,20 +385,25 @@ namespace Expresso.CodeGen
         {
             if(block.IsNull)
                 return null;
-            
+
             int tmp_counter = scope_counter;
             DescendScope();
             scope_counter = 0;
 
+
             var parent_block = context.ContextAst;
             context.ContextAst = block;
 
+            var start_offset = il_generator.ILOffset;
+            context.PDBGenerator.AddLocalScope(start_offset);
             il_generator.BeginScope();
 
             foreach(var stmt in block.Statements)
                 stmt.AcceptWalker(this, context);
 
             il_generator.EndScope();
+
+            context.PDBGenerator.SetLengthOnLocalScope(il_generator.ILOffset - start_offset);
 
             context.ContextAst = parent_block;
 
@@ -1923,7 +1920,7 @@ namespace Expresso.CodeGen
             var prev_il_generator = il_generator;
             il_generator = method_builder.GetILGenerator();
 
-            context.PDBGenerator.MarkFunction(funcDecl);
+            context.PDBGenerator.AddSequencePoints(method_builder, funcDecl);
 
             funcDecl.Body.AcceptWalker(this, context);
             context.ContextAst = prev_context_ast;
@@ -2105,7 +2102,10 @@ namespace Expresso.CodeGen
             
             if(context.ContextAst is MatchStatement)
                 context.CurrentTargetVariable = local_builder;
-        
+
+            if(options.BuildType.HasFlag(BuildType.Debug))
+                context.PDBGenerator.AddLocalVariable(default, local_builder.LocalIndex, identifierPattern.Identifier.Name);
+
             //var start_loc = identifierPattern.Identifier.StartLocation;
             //var end_loc = identifierPattern.Identifier.EndLocation;
             //il_generator.MarkSequencePoint(document, start_loc.Line, start_loc.Column - 1, end_loc.Line, end_loc.Column - 1);
