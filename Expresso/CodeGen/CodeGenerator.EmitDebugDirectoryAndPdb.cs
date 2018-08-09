@@ -16,17 +16,19 @@ namespace Expresso.CodeGen
         int[] method_offsets;
         MetadataReader metadata_reader;
         MetadataBuilder metadata_builder;
+        const ulong DefaultExeBaseAddress32bit = 0x00400000;
+        const ulong DefaultDllBaseAddress32bit = 0x10000000;
 
         #region Rewriting PE
         PEHeaderBuilder CreatePEHeaderBuilder(PEReader reader)
         {
-            //return PEHeaderBuilder.CreateExecutableHeader();
             var pe_header = reader.PEHeaders.PEHeader;
-            return new PEHeaderBuilder(Machine.Unknown, pe_header.SectionAlignment, pe_header.FileAlignment, pe_header.ImageBase,
+            var dll_characteristics = DllCharacteristics.DynamicBase | DllCharacteristics.NxCompatible | DllCharacteristics.NoSeh | DllCharacteristics.TerminalServerAware;
+            return new PEHeaderBuilder(Machine.Unknown, pe_header.SectionAlignment, 0x200, DefaultExeBaseAddress32bit,
                                        pe_header.MajorLinkerVersion, pe_header.MinorLinkerVersion, pe_header.MajorOperatingSystemVersion, pe_header.MinorOperatingSystemVersion,
                                        pe_header.MajorImageVersion, pe_header.MinorImageVersion, pe_header.MajorSubsystemVersion, pe_header.MinorSubsystemVersion,
-                                       pe_header.Subsystem, pe_header.DllCharacteristics, Characteristics.ExecutableImage | Characteristics.DebugStripped/*reader.PEHeaders.CoffHeader.Characteristics*/, pe_header.SizeOfStackReserve,
-                                       pe_header.SizeOfStackCommit, pe_header.SizeOfHeapReserve, pe_header.SizeOfHeapCommit);
+                                       pe_header.Subsystem, dll_characteristics, Characteristics.ExecutableImage,
+                                       0x00100000, 0x1000, 0x00100000, 0x1000);
         }
 
         void CreateMetadataBuilder(MetadataReader reader, PortablePDBGenerator pdbGenerator)

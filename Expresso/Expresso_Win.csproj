@@ -210,7 +210,10 @@
     <Compile Include="Ast\AstTypes\SimpleType.cs" />
     <Compile Include="Ast\GeneralScope\TypeConstraint.cs" />
     <Compile Include="CodeGen\CodeGenerator.cs" />
-    <Compile Include="CodeGen\SequencePoint.cs" />
+    <Compile Include="MetadataRelated\DebugDocument.cs" />
+    <Compile Include="MetadataRelated\LocalScopeInformation.cs" />
+    <Compile Include="MetadataRelated\LocalVariableInformation.cs" />
+    <Compile Include="MetadataRelated\SequencePoint.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System" />
