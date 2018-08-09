@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
+using System.Reflection.Emit;
 using System.Reflection.Metadata;
 using System.Reflection.Metadata.Ecma335;
 using System.Reflection.PortableExecutable;
@@ -10,27 +12,33 @@ namespace Expresso.CodeGen
 {
     public partial class CodeGenerator : IAstWalker<CSharpEmitterContext, Type>
 	{
-        int param_index = 1, method_offset = 0, last_rva = -1;
+        int param_index = 1, method_index;
+        int[] method_offsets;
+        MetadataReader metadata_reader;
+        MetadataBuilder metadata_builder;
+
         #region Rewriting PE
         PEHeaderBuilder CreatePEHeaderBuilder(PEReader reader)
         {
+            //return PEHeaderBuilder.CreateExecutableHeader();
             var pe_header = reader.PEHeaders.PEHeader;
-            return new PEHeaderBuilder(reader.PEHeaders.CoffHeader.Machine, pe_header.SectionAlignment, pe_header.SectionAlignment, pe_header.ImageBase,
+            return new PEHeaderBuilder(Machine.Unknown, pe_header.SectionAlignment, pe_header.FileAlignment, pe_header.ImageBase,
                                        pe_header.MajorLinkerVersion, pe_header.MinorLinkerVersion, pe_header.MajorOperatingSystemVersion, pe_header.MinorOperatingSystemVersion,
                                        pe_header.MajorImageVersion, pe_header.MinorImageVersion, pe_header.MajorSubsystemVersion, pe_header.MinorSubsystemVersion,
-                                       pe_header.Subsystem, pe_header.DllCharacteristics, reader.PEHeaders.CoffHeader.Characteristics, pe_header.SizeOfStackReserve,
+                                       pe_header.Subsystem, pe_header.DllCharacteristics, Characteristics.ExecutableImage | Characteristics.DebugStripped/*reader.PEHeaders.CoffHeader.Characteristics*/, pe_header.SizeOfStackReserve,
                                        pe_header.SizeOfStackCommit, pe_header.SizeOfHeapReserve, pe_header.SizeOfHeapCommit);
         }
 
-        MetadataBuilder CreateMetadataBuilder(MetadataReader reader, PortablePDBGenerator pdbGenerator)
+        void CreateMetadataBuilder(MetadataReader reader, PortablePDBGenerator pdbGenerator)
         {
-            var builder = new MetadataBuilder();
-            AddAssemblyTable(reader, builder);
-            AddAssemblyRefTable(reader, builder);
-            AddModuleTable(reader, builder);
-            AddTypeDefTable(reader, builder);
-            AddTypeRefTable(reader, builder);
-            AddCustomAttributeTable(reader, builder);
+            method_index = 0;
+
+            AddAssemblyTable(reader, metadata_builder);
+            AddAssemblyRefTable(reader, metadata_builder);
+            AddModuleTable(reader, metadata_builder);
+            AddTypeDefTable(reader, metadata_builder);
+            AddTypeRefTable(reader, metadata_builder);
+            AddCustomAttributeTable(reader, metadata_builder);
 
             if(pdbGenerator != null){
                 foreach(var row_id in Enumerable.Range(1, reader.MethodDefinitions.Count)){
@@ -44,14 +52,10 @@ namespace Expresso.CodeGen
                 }
             }
 
-            AddMemberRefTable(reader, builder);
-            AddStandAloneSigTable(reader, builder);
-            AddTypeSpecTable(reader, builder);
-            AddMethodSpecTable(reader, builder);
-
-            AddUserStrings(reader, builder);
-
-            return builder;
+            AddMemberRefTable(reader, metadata_builder);
+            AddStandAloneSigTable(reader, metadata_builder);
+            AddTypeSpecTable(reader, metadata_builder);
+            AddMethodSpecTable(reader, metadata_builder);
         }
 
         void AddAssemblyTable(MetadataReader reader, MetadataBuilder builder)
@@ -78,16 +82,11 @@ namespace Expresso.CodeGen
                               RetrieveGuid(builder, reader, module_def.GenerationId), RetrieveGuid(builder, reader, module_def.BaseGenerationId));
         }
 
-        void AddMethodDef(MetadataReader reader, MetadataBuilder builder, MethodDefinitionHandle handle)
+        void AddMethodDef(MetadataReader reader, MetadataBuilder builder, MethodDefinitionHandle handle, int methodOffset)
         {
             var method_def = reader.GetMethodDefinition(handle);
-            if(last_rva != -1)
-                method_offset += method_def.RelativeVirtualAddress - last_rva;
-
-            last_rva = method_def.RelativeVirtualAddress;
-
             builder.AddMethodDefinition(method_def.Attributes, method_def.ImplAttributes, RetrieveString(builder, reader, method_def.Name),
-                                        RetrieveBlob(builder, reader, method_def.Signature), method_offset, MetadataTokens.ParameterHandle(param_index));
+                                        RetrieveBlob(builder, reader, method_def.Signature), methodOffset, MetadataTokens.ParameterHandle(param_index));
 
             foreach(var param_handle in method_def.GetParameters()){
                 var parameter = reader.GetParameter(param_handle);
@@ -102,30 +101,28 @@ namespace Expresso.CodeGen
             builder.AddFieldDefinition(field_def.Attributes, RetrieveString(builder, reader, field_def.Name), RetrieveBlob(builder, reader, field_def.Signature));
         }
 
-        void AddTypeDef(MetadataReader reader, MetadataBuilder builder, int typeIndex, TypeDefinitionHandle handle)
+        void AddTypeDef(MetadataReader reader, MetadataBuilder builder, TypeDefinition typeDef)
         {
-            var type_def = reader.GetTypeDefinition(handle);
-            foreach(var field_def_handle in type_def.GetFields())
+            foreach(var field_def_handle in typeDef.GetFields())
                 AddFieldDef(reader, builder, field_def_handle);
 
-            var methods = type_def.GetMethods();
-            foreach(var method_index in Enumerable.Range(0, methods.Count)){
-                var method_def_handle = methods.ElementAt(method_index);
-                AddMethodDef(reader, builder, method_def_handle);
-            }
+            foreach(var method_def_handle in typeDef.GetMethods())
+                AddMethodDef(reader, builder, method_def_handle, method_offsets[method_index++]);
 
-            var first_field_handle = type_def.GetFields().FirstOrDefault();
-            builder.AddTypeDefinition(type_def.Attributes, RetrieveString(builder, reader, type_def.Namespace), RetrieveString(builder, reader, type_def.Name),
-                                      type_def.BaseType, first_field_handle, type_def.GetMethods().FirstOrDefault());
+            var first_field_handle = typeDef.GetFields().FirstOrDefault();
+            builder.AddTypeDefinition(typeDef.Attributes, RetrieveString(builder, reader, typeDef.Namespace), RetrieveString(builder, reader, typeDef.Name),
+                                      typeDef.BaseType, first_field_handle, typeDef.GetMethods().FirstOrDefault());
         }
 
         void AddTypeDefTable(MetadataReader reader, MetadataBuilder builder)
         {
-            foreach(var type_index in Enumerable.Range(0, reader.TypeDefinitions.Count)){
-                var type_def_handle = reader.TypeDefinitions.ElementAt(type_index);
+            foreach(var type_def_handle in reader.TypeDefinitions){
                 var type_def = reader.GetTypeDefinition(type_def_handle);
-                AddTypeDef(reader, builder, type_index, type_def_handle);
+                AddTypeDef(reader, builder, type_def);
+            }
 
+            foreach(var type_def_handle in reader.TypeDefinitions){
+                var type_def = reader.GetTypeDefinition(type_def_handle);
                 foreach(var nested_type_handle in type_def.GetNestedTypes())
                     builder.AddNestedType(nested_type_handle, type_def_handle);
             }
@@ -183,20 +180,9 @@ namespace Expresso.CodeGen
             }
         }
 
-        void AddUserStrings(MetadataReader reader, MetadataBuilder builder)
-        {
-            var handle = MetadataTokens.UserStringHandle(0);
-            do{
-                var user_string = reader.GetUserString(handle);
-                builder.GetOrAddUserString(user_string);
-                handle = reader.GetNextHandle(handle);
-            }while(!handle.IsNil);
-        }
-
-        void RetrieveIlStream(PEReader peReader, MetadataReader metadataReader, MethodDefinitionHandle methodDefinitionHandle, MethodBodyStreamEncoder methodBodies)
+        int RetrieveIlStream(PEReader peReader, MetadataReader metadataReader, MethodDefinitionHandle methodDefinitionHandle, MethodBodyStreamEncoder methodBodies)
         {
             var method_def = metadataReader.GetMethodDefinition(methodDefinitionHandle);
-            Console.WriteLine("Adding the method body of {0}..., rva = {1}", metadataReader.GetString(method_def.Name), method_def.RelativeVirtualAddress);
             if(metadataReader.GetString(method_def.Name) == "main")
                 main_method_def_handle = methodDefinitionHandle;
 
@@ -208,33 +194,130 @@ namespace Expresso.CodeGen
             var contents = old_method_body.GetILContent();
             var method_body_attributes = old_method_body.LocalVariablesInitialized ? MethodBodyAttributes.None : MethodBodyAttributes.InitLocals;
             var method_body = methodBodies.AddMethodBody(contents.Length, old_method_body.MaxStack, old_method_body.ExceptionRegions.Length, localVariablesSignature: old_method_body.LocalSignature, attributes: method_body_attributes);
-            var writer = new BlobWriter(method_body.Instructions);
-                
-            writer.WriteBytes(contents);
-            /*writer.Offset = 0;
 
-            int offset;
-            while(offset < contents.Length){
-                inst
-            }*/
+            WriteInstructions(method_body.Instructions, contents);
+            return method_body.Offset;
         }
 
-        void EmitDebugDirectoryAndPdb(string assemblyFileName, string pdbName, BlobContentId pdbId, PortablePDBGenerator pdbGenerator)
+        #region WriteInstrcutions
+        void WriteInstructions(Blob finalIL, ImmutableArray<byte> generatedIL)
+        {
+            var writer = new BlobWriter(finalIL);
+
+            writer.WriteBytes(generatedIL);
+            writer.Offset = 0;
+
+            int offset = 0;
+            while(offset < generatedIL.Length){
+                var operand_type = InstructionOperandTypes.ReadOperandType(generatedIL, ref offset);
+                switch(operand_type){
+                case OperandType.InlineField:
+                case OperandType.InlineMethod:
+                case OperandType.InlineTok:
+                case OperandType.InlineType:
+                    //int pseudo_token = ReadInt32(generatedIL, offset);
+                    /*int token = 0;
+                    if(operand_type == OperandType.InlineTok){
+                        
+                    }
+                    writer.Offset = offset;
+                    writer.WriteInt32((token == 0) ? MetadataTokens.GetToken(ResolveEntityHandleFromPseudoToken(pseudo_token)) : token);*/
+                    offset += 4;
+                    break;
+
+                case OperandType.InlineString:
+                    {
+                        writer.Offset = offset;
+
+                        int pseudo_token = ReadInt32(generatedIL, offset);
+                        var handle = ResolveUserStringHandleFromPseudoToken(pseudo_token);
+
+                        writer.WriteInt32(MetadataTokens.GetToken(handle));
+
+                        offset += 4;
+                        break;
+                    }
+
+                case OperandType.InlineSig:
+                case OperandType.InlineBrTarget:
+                case OperandType.InlineI:
+                case OperandType.ShortInlineR:
+                    offset += 4;
+                    break;
+
+                case OperandType.InlineSwitch:
+                    int arg_count = ReadInt32(generatedIL, offset);
+                    offset += (arg_count + 1) * 4;
+                    break;
+
+                case OperandType.InlineI8:
+                case OperandType.InlineR:
+                    offset += 8;
+                    break;
+
+                case OperandType.InlineNone:
+                    break;
+
+                case OperandType.InlineVar:
+                    offset += 2;
+                    break;
+
+                case OperandType.ShortInlineBrTarget:
+                case OperandType.ShortInlineI:
+                case OperandType.ShortInlineVar:
+                    offset += 1;
+                    break;
+
+                default:
+                    throw new Exception(string.Format("Unexpected value: {0}", operand_type));
+                }
+            }
+        }
+
+        static int ReadInt32(ImmutableArray<byte> buffer, int pos)
+        {
+            return buffer[pos] | buffer[pos + 1] << 8 | buffer[pos + 2] << 16 | buffer[pos + 3] << 24;
+        }
+
+        /*EntityHandle ResolveEntityHandleFromPseudoToken(int pseudoSymbolToken)
+        {
+            int index = pseudoSymbolToken;
+
+        }*/
+
+        UserStringHandle ResolveUserStringHandleFromPseudoToken(int pseudoStringToken)
+        {
+            int index = pseudoStringToken;
+            var str = metadata_reader.GetUserString(MetadataTokens.UserStringHandle(index));
+            return metadata_builder.GetOrAddUserString(str);
+        }
+        #endregion
+
+        public void EmitDebugDirectoryAndPdb(string assemblyFileName, string pdbName, BlobContentId pdbId, PortablePDBGenerator pdbGenerator)
         {
             ManagedPEBuilder builder;
             MetadataBuilder metadata_builder2;
             using(var asm_file = File.OpenRead(assemblyFileName))
             using(var reader = new PEReader(asm_file)){
                 var header_builder = CreatePEHeaderBuilder(reader);
-                var metadata_reader = reader.GetMetadataReader();
-                var metadata_builder = CreateMetadataBuilder(metadata_reader, pdbGenerator);
-                metadata_builder2 = CreateMetadataBuilder(metadata_reader, null);
-                var metadata_root_builder = new MetadataRootBuilder(metadata_builder, metadata_reader.MetadataVersion);
+                metadata_reader = reader.GetMetadataReader();
+                metadata_builder = new MetadataBuilder();
 
                 var il_builder = new BlobBuilder();
                 var method_bodies = new MethodBodyStreamEncoder(il_builder);
-                foreach(var method_def_handle in metadata_reader.MethodDefinitions)
-                    RetrieveIlStream(reader, metadata_reader, method_def_handle, method_bodies);
+                var method_def_count = metadata_reader.MethodDefinitions.Count;
+                method_offsets = new int[method_def_count];
+                foreach(var pair in Enumerable.Range(0, method_def_count).Zip(metadata_reader.MethodDefinitions, (l, r) => new {Index = l, MethodDef = r})){
+                    var method_offset = RetrieveIlStream(reader, metadata_reader, pair.MethodDef, method_bodies);
+                    method_offsets[pair.Index] = method_offset;
+                }
+
+                CreateMetadataBuilder(metadata_reader, pdbGenerator);
+                var metadata_builder_for_pe = metadata_builder;
+                metadata_builder = new MetadataBuilder();
+                CreateMetadataBuilder(metadata_reader, null);
+                metadata_builder2 = metadata_builder;
+                var metadata_root_builder = new MetadataRootBuilder(metadata_builder_for_pe, metadata_reader.MetadataVersion);
 
                 var debug_directory_builder = new DebugDirectoryBuilder();
                 debug_directory_builder.AddCodeViewEntry(pdbName, pdbId, 0);

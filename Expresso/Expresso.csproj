@@ -226,6 +226,7 @@
     <Compile Include="MetadataRelated\SequencePoint.cs" />
     <Compile Include="MetadataRelated\LocalVariableInformation.cs" />
     <Compile Include="CodeGen\CodeGenerator.EmitDebugDirectoryAndPdb.cs" />
+    <Compile Include="CodeGen\InstructionOperandTypes.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System" />

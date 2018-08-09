@@ -16,13 +16,13 @@ namespace Expresso.CodeGen
     /// </summary>
     public class PortablePDBGenerator
     {
-        static List<FunctionDeclaration> seen_funcs = new List<FunctionDeclaration>();
+        static List<string> seen_func_names = new List<string>();
         static List<List<SequencePoint>> emitted_sps = new List<List<SequencePoint>>();
         static List<LocalScopeInformation> local_scopes = new List<LocalScopeInformation>();
 
         List<SequencePoint> sequence_points = new List<SequencePoint>();
         List<DebugDocument> documents = new List<DebugDocument>();
-        FunctionDeclaration current_func;
+        string current_func_name;
         DocumentHandle current_doc_handle;
         LocalScopeInformation current_scope;
         Dictionary<string, MethodDefinitionHandle> impl_method_handles = new Dictionary<string, MethodDefinitionHandle>();
@@ -36,16 +36,16 @@ namespace Expresso.CodeGen
             return new PortablePDBGenerator();
         }
 
-        public void AddSequencePoints(MethodBuilder methodBuilder, FunctionDeclaration funcDecl)
+        public void AddSequencePoints(string funcName)
         {
-            if(seen_funcs.Contains(funcDecl))
+            if(seen_func_names.Contains(funcName))
                 throw new InvalidOperationException("The function {0} is already peeked.");
 
-            seen_funcs.Add(funcDecl);
-            if(current_func == null)
-                current_func = funcDecl;
+            seen_func_names.Add(funcName);
+            if(current_func_name == null)
+                current_func_name = funcName;
 
-            SetSequencePoints(funcDecl);
+            SetSequencePoints(funcName);
         }
 
         public void AddMethodDefinition(string name, MethodDefinitionHandle methodDefinitionHandle)
@@ -67,7 +67,7 @@ namespace Expresso.CodeGen
 
         public void AddLocalScope(int startOffset)
         {
-            var new_scope = new LocalScopeInformation(current_func, default, startOffset);
+            var new_scope = new LocalScopeInformation(current_func_name, default, startOffset);
             local_scopes.Add(new_scope);
             current_scope = new_scope;
         }
@@ -102,11 +102,11 @@ namespace Expresso.CodeGen
             documents.Add(new DebugDocument(filePath, default, default, languageGuid));
         }
 
-        void SetSequencePoints(FunctionDeclaration nextFunc)
+        void SetSequencePoints(string nextFuncName)
         {
             if(sequence_points.Count > 0){
                 emitted_sps.Add(new List<SequencePoint>(sequence_points));
-                current_func = nextFunc;
+                current_func_name = nextFuncName;
                 sequence_points.Clear();
             }
         }
@@ -135,7 +135,7 @@ namespace Expresso.CodeGen
                         first_local_variable = local_variable;
                 }
 
-                var method_handle = impl_method_handles[scope.Func.Name];
+                var method_handle = impl_method_handles[scope.FuncName];
                 MetadataBuilder.AddLocalScope(method_handle, scope.ImportScope, first_local_variable, default, scope.StartOffset, scope.Length);
                 first_local_variable = default;
             }
@@ -220,17 +220,5 @@ namespace Expresso.CodeGen
                 throw new ArgumentOutOfRangeException(nameof(algorithm));
             }
         }
-
-        /*AssemblyReferenceHandle AddAssemblyReference(Assembly assembly)
-        {
-            var asm_name = assembly.GetName();
-            var name_handle = MetadataBuilder.GetOrAddString(asm_name.Name);
-            var culture_name_handle = MetadataBuilder.GetOrAddString(asm_name.CultureName);
-            var public_key = asm_name.GetPublicKey();
-            var public_key_builder = new BlobBuilder(public_key.Length);
-            public_key_builder.WriteBytes(public_key);
-            var public_key_handle = MetadataBuilder.GetOrAddBlob(public_key_builder);
-            return MetadataBuilder.AddAssemblyReference(name_handle, asm_name.Version, culture_name_handle, public_key_handle, default, default);
-        }*/
     }
 }

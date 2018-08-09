@@ -9,7 +9,7 @@ namespace Expresso.CodeGen
     /// </summary>
     public struct LocalScopeInformation
     {
-        public FunctionDeclaration Func{
+        public string FuncName{
             get; set;
         }
 
@@ -33,9 +33,9 @@ namespace Expresso.CodeGen
             get; set;
         }
 
-        public LocalScopeInformation(FunctionDeclaration func, ImportScopeHandle importScope, int startOffset)
+        public LocalScopeInformation(string funcName, ImportScopeHandle importScope, int startOffset)
         {
-            Func = func;
+            FuncName = funcName;
             ImportScope = importScope;
             LocalVariables = new List<LocalVariableInformation>();
             LocalConstants = new List<LocalConstantHandle>();

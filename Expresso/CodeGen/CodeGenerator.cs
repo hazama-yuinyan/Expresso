@@ -1920,7 +1920,7 @@ namespace Expresso.CodeGen
             var prev_il_generator = il_generator;
             il_generator = method_builder.GetILGenerator();
 
-            context.PDBGenerator.AddSequencePoints(method_builder, funcDecl);
+            context.PDBGenerator.AddSequencePoints(funcDecl.Name);
 
             funcDecl.Body.AcceptWalker(this, context);
             context.ContextAst = prev_context_ast;
