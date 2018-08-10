@@ -12,7 +12,7 @@ namespace Expresso.CodeGen
 {
     public partial class CodeGenerator : IAstWalker<CSharpEmitterContext, Type>
 	{
-        int param_index = 1, method_index;
+        int param_index, field_index, method_index;
         int[] method_offsets;
         MetadataReader metadata_reader;
         MetadataBuilder metadata_builder;
@@ -33,7 +33,9 @@ namespace Expresso.CodeGen
 
         void CreateMetadataBuilder(MetadataReader reader, PortablePDBGenerator pdbGenerator)
         {
-            method_index = 0;
+            method_index = 1;
+            param_index = 1;
+            field_index = 1;
 
             AddAssemblyTable(reader, metadata_builder);
             AddAssemblyRefTable(reader, metadata_builder);
@@ -105,15 +107,19 @@ namespace Expresso.CodeGen
 
         void AddTypeDef(MetadataReader reader, MetadataBuilder builder, TypeDefinition typeDef)
         {
-            foreach(var field_def_handle in typeDef.GetFields())
-                AddFieldDef(reader, builder, field_def_handle);
-
-            foreach(var method_def_handle in typeDef.GetMethods())
-                AddMethodDef(reader, builder, method_def_handle, method_offsets[method_index++]);
-
             var first_field_handle = typeDef.GetFields().FirstOrDefault();
             builder.AddTypeDefinition(typeDef.Attributes, RetrieveString(builder, reader, typeDef.Namespace), RetrieveString(builder, reader, typeDef.Name),
-                                      typeDef.BaseType, first_field_handle, typeDef.GetMethods().FirstOrDefault());
+                                      typeDef.BaseType, MetadataTokens.FieldDefinitionHandle(field_index), MetadataTokens.MethodDefinitionHandle(method_index));
+
+            foreach(var field_def_handle in typeDef.GetFields()){
+                AddFieldDef(reader, builder, field_def_handle);
+                ++field_index;
+            }
+
+            foreach(var method_def_handle in typeDef.GetMethods()){
+                AddMethodDef(reader, builder, method_def_handle, method_offsets[method_index - 1]);
+                ++method_index;
+            }
         }
 
         void AddTypeDefTable(MetadataReader reader, MetadataBuilder builder)
@@ -190,7 +196,7 @@ namespace Expresso.CodeGen
 
             var rva = method_def.RelativeVirtualAddress;
             if(rva == 0)
-                throw new InvalidOperationException("RelativeVirtualAddress is 0!");
+                return 0;
 
             var old_method_body = peReader.GetMethodBody(rva);
             var contents = old_method_body.GetILContent();
@@ -217,13 +223,6 @@ namespace Expresso.CodeGen
                 case OperandType.InlineMethod:
                 case OperandType.InlineTok:
                 case OperandType.InlineType:
-                    //int pseudo_token = ReadInt32(generatedIL, offset);
-                    /*int token = 0;
-                    if(operand_type == OperandType.InlineTok){
-                        
-                    }
-                    writer.Offset = offset;
-                    writer.WriteInt32((token == 0) ? MetadataTokens.GetToken(ResolveEntityHandleFromPseudoToken(pseudo_token)) : token);*/
                     offset += 4;
                     break;
 
@@ -280,12 +279,6 @@ namespace Expresso.CodeGen
         {
             return buffer[pos] | buffer[pos + 1] << 8 | buffer[pos + 2] << 16 | buffer[pos + 3] << 24;
         }
-
-        /*EntityHandle ResolveEntityHandleFromPseudoToken(int pseudoSymbolToken)
-        {
-            int index = pseudoSymbolToken;
-
-        }*/
 
         UserStringHandle ResolveUserStringHandleFromPseudoToken(int pseudoStringToken)
         {

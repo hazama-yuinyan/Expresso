@@ -4,7 +4,7 @@
 module main;
 
 
-def main(args (- string[]) -> void
+def main() -> void
 {
 	var x = 3, xp = 3, xm = 3, xt = 3, xd = 4, xmod = 4, xpower = 3;
 	let a = x + 4;

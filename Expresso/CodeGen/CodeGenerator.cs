@@ -275,7 +275,11 @@ namespace Expresso.CodeGen
                 ));
             }
 
+#if WINDOWS
+            var mod_builder = asm_builder.DefineDynamicModule(assembly_name, file_name, true);
+#else
             var mod_builder = asm_builder.DefineDynamicModule(assembly_name, file_name);
+#endif
             document = mod_builder.DefineDocument(parser.scanner.FilePath, ExpressoCompilerHelpers.LanguageGuid, Guid.Empty, SymDocumentType.Text);
 
             context.PDBGenerator = PortablePDBGenerator.CreatePortablePDBGenerator();

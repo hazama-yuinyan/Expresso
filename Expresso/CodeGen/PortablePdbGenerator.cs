@@ -3,10 +3,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Reflection.Emit;
 using System.Reflection.Metadata;
 using System.Reflection.Metadata.Ecma335;
-using Expresso.Ast;
 using ICSharpCode.NRefactory;
 
 namespace Expresso.CodeGen
@@ -16,16 +14,16 @@ namespace Expresso.CodeGen
     /// </summary>
     public class PortablePDBGenerator
     {
-        static List<string> seen_func_names = new List<string>();
-        static List<List<SequencePoint>> emitted_sps = new List<List<SequencePoint>>();
-        static List<LocalScopeInformation> local_scopes = new List<LocalScopeInformation>();
-
+        List<List<SequencePoint>> emitted_sps = new List<List<SequencePoint>>();
+        List<LocalScopeInformation> local_scopes = new List<LocalScopeInformation>();
+        List<string> seen_func_names = new List<string>();
         List<SequencePoint> sequence_points = new List<SequencePoint>();
         List<DebugDocument> documents = new List<DebugDocument>();
         string current_func_name;
+        int current_same_name_method_index;
         DocumentHandle current_doc_handle;
         LocalScopeInformation current_scope;
-        Dictionary<string, MethodDefinitionHandle> impl_method_handles = new Dictionary<string, MethodDefinitionHandle>();
+        MultiValueDictionary<string, MethodDefinitionHandle> impl_method_handles = new MultiValueDictionary<string, MethodDefinitionHandle>();
 
         public MetadataBuilder MetadataBuilder{
             private get; set;
@@ -39,7 +37,7 @@ namespace Expresso.CodeGen
         public void AddSequencePoints(string funcName)
         {
             if(seen_func_names.Contains(funcName))
-                throw new InvalidOperationException("The function {0} is already peeked.");
+                throw new InvalidOperationException(string.Format("The function {0} is already peeked.", funcName));
 
             seen_func_names.Add(funcName);
             if(current_func_name == null)
@@ -50,6 +48,9 @@ namespace Expresso.CodeGen
 
         public void AddMethodDefinition(string name, MethodDefinitionHandle methodDefinitionHandle)
         {
+            if(impl_method_handles.TryGetValue(name, out var method_handles))
+                current_same_name_method_index = method_handles.Count;
+                
             impl_method_handles.Add(name, methodDefinitionHandle);
         }
 
@@ -67,7 +68,7 @@ namespace Expresso.CodeGen
 
         public void AddLocalScope(int startOffset)
         {
-            var new_scope = new LocalScopeInformation(current_func_name, default, startOffset);
+            var new_scope = new LocalScopeInformation(current_func_name, current_same_name_method_index, default, startOffset);
             local_scopes.Add(new_scope);
             current_scope = new_scope;
         }
@@ -104,11 +105,9 @@ namespace Expresso.CodeGen
 
         void SetSequencePoints(string nextFuncName)
         {
-            if(sequence_points.Count > 0){
-                emitted_sps.Add(new List<SequencePoint>(sequence_points));
-                current_func_name = nextFuncName;
-                sequence_points.Clear();
-            }
+            emitted_sps.Add(new List<SequencePoint>(sequence_points));
+            current_func_name = nextFuncName;
+            sequence_points.Clear();
         }
 
         void AddDebugTables()
@@ -135,8 +134,8 @@ namespace Expresso.CodeGen
                         first_local_variable = local_variable;
                 }
 
-                var method_handle = impl_method_handles[scope.FuncName];
-                MetadataBuilder.AddLocalScope(method_handle, scope.ImportScope, first_local_variable, default, scope.StartOffset, scope.Length);
+                var method_handles = impl_method_handles[scope.FuncName];
+                MetadataBuilder.AddLocalScope(method_handles.ElementAt(scope.SameNameMethodIndex), scope.ImportScope, first_local_variable, default, scope.StartOffset, scope.Length);
                 first_local_variable = default;
             }
         }
@@ -154,10 +153,10 @@ namespace Expresso.CodeGen
             var first_seq_point = sequencePoints.First();
             var prev_non_hidden_start_line = first_seq_point.StartLine;
             var prev_non_hidden_start_column = first_seq_point.StartColumn;
-            var prev_offset = first_seq_point.IlOffset;
+            var prev_offset = first_seq_point.ILOffset;
 
             // first IL offset
-            writer.WriteCompressedInteger(first_seq_point.IlOffset);
+            writer.WriteCompressedInteger(first_seq_point.ILOffset);
             // first ΔLine and ΔColumns
             SerializeDeltaLineColumns(writer, first_seq_point);
 
@@ -167,7 +166,7 @@ namespace Expresso.CodeGen
 
             foreach(var seq_point in sequencePoints.Skip(1)){
                 // δILOffset
-                writer.WriteCompressedInteger(seq_point.IlOffset - prev_offset);
+                writer.WriteCompressedInteger(seq_point.ILOffset - prev_offset);
 
                 // ΔLine and ΔColumn
                 SerializeDeltaLineColumns(writer, seq_point);
@@ -176,6 +175,7 @@ namespace Expresso.CodeGen
                 writer.WriteCompressedSignedInteger(seq_point.StartLine - prev_non_hidden_start_line);
                 writer.WriteCompressedSignedInteger(seq_point.StartColumn - prev_non_hidden_start_column);
 
+                prev_offset = seq_point.ILOffset;
                 prev_non_hidden_start_line = seq_point.StartLine;
                 prev_non_hidden_start_column = seq_point.StartColumn;
             }

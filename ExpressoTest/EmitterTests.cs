@@ -5,12 +5,41 @@ using System.Reflection;
 using Expresso.Ast;
 using System.Linq;
 using System.Diagnostics;
+using System.IO;
 
 namespace Expresso.Test
 {
     [TestFixture]
     public class EmitterTests
     {
+        void GenerateAssembly(string filePath)
+        {
+            var parser = new Parser(new Scanner(filePath));
+            parser.DoPostParseProcessing = true;
+            parser.Parse();
+
+            var ast = parser.TopmostAst;
+            var options = new ExpressoCompilerOptions{
+                OutputPath = "../../test_executables",
+                BuildType = BuildType.Debug | BuildType.Executable,
+                ExecutableName = "main"
+            };
+            var generator = new CodeGenerator(parser, options);
+            ast.AcceptWalker(generator, null);
+        }
+
+        void TestFile(string path)
+        {
+            var asm = Assembly.LoadFrom(path);
+            var main_method = asm.EntryPoint;
+            Assert.AreEqual(main_method.Name, "main");
+            Assert.IsTrue(main_method.IsStatic);
+            Assert.AreEqual(typeof(void), main_method.ReturnType);
+            Assert.AreEqual(0, main_method.GetParameters().Length);
+
+            main_method.Invoke(null, new object[]{});
+        }
+
         [TearDown]
         public void Cleanup()
         {
@@ -22,27 +51,9 @@ namespace Expresso.Test
         {
             Console.WriteLine("Test SimpleLiterals");
 
-            var parser = new Parser(new Scanner("../../sources/for_unit_tests/simple_literals.exs"));
-            parser.DoPostParseProcessing = true;
-            parser.Parse();
+            GenerateAssembly("../../sources/for_unit_tests/simple_literals.exs");
 
-            var ast = parser.TopmostAst;
-            var options = new ExpressoCompilerOptions{
-                OutputPath = "../../test_executables",
-                BuildType = BuildType.Debug | BuildType.Executable,
-                ExecutableName = "main"
-            };
-            var generator = new CodeGenerator(parser, options);
-            ast.AcceptWalker(generator, null);
-
-            var asm = generator.AssemblyBuilder;
-            var main_method = asm.EntryPoint;
-            Assert.AreEqual(main_method.Name, "main");
-            Assert.IsTrue(main_method.IsStatic);
-            Assert.AreEqual(typeof(void), main_method.ReturnType);
-            Assert.AreEqual(0, main_method.GetParameters().Length);
-
-            main_method.Invoke(null, new object[]{});
+            TestFile(Path.Combine("../../test_executables", "main.exe"));
         }
 
         [Test]
@@ -50,30 +61,9 @@ namespace Expresso.Test
         {
             Console.WriteLine("Test SimpleArithmetic");
 
-            var parser = new Parser(new Scanner("../../sources/for_unit_tests/simple_arithmetic.exs"));
-            parser.DoPostParseProcessing = true;
-            parser.Parse();
+            GenerateAssembly("../../sources/for_unit_tests/simple_arithmetic.exs");
 
-            var ast = parser.TopmostAst;
-            var options = new ExpressoCompilerOptions{
-                OutputPath = "../../test_executables",
-                BuildType = BuildType.Debug | BuildType.Executable,
-                ExecutableName = "main"
-            };
-            var generator = new CodeGenerator(parser, options);
-            ast.AcceptWalker(generator, null);
-
-            var asm = generator.AssemblyBuilder;
-            var main_method = asm.EntryPoint;
-            Assert.AreEqual(main_method.Name, "main");
-            Assert.IsTrue(main_method.IsStatic);
-            Assert.AreEqual(typeof(void), main_method.ReturnType);
-            Assert.AreEqual(1, main_method.GetParameters().Length);
-            //Assert.IsTrue(main_method.GetParameters().SequenceEqual(new []{typeof(string[])}));
-            Console.Out.WriteLine("テスト実行");
-            Console.Out.WriteLine(main_method.ToString());
-
-            main_method.Invoke(null, new []{new string[]{"abc"}});
+            TestFile(Path.Combine("../../test_executables", "main.exe"));
         }
 
         [Test]
@@ -81,30 +71,9 @@ namespace Expresso.Test
         {
             Console.WriteLine("Test GeneralExpressions");
 
-            var parser = new Parser(new Scanner("../../sources/for_unit_tests/general_expressions.exs"));
-            parser.DoPostParseProcessing = true;
-            parser.Parse();
+            GenerateAssembly("../../sources/for_unit_tests/general_expressions.exs");
 
-            var ast = parser.TopmostAst;
-            var options = new ExpressoCompilerOptions{
-                OutputPath = "../../test_executables",
-                BuildType = BuildType.Debug | BuildType.Executable,
-                ExecutableName = "main"
-            };
-            var generator = new CodeGenerator(parser, options);
-            ast.AcceptWalker(generator, null);
-
-            var asm = generator.AssemblyBuilder;
-            var main_method = asm.EntryPoint;
-            Assert.AreEqual(main_method.Name, "main");
-            Assert.IsTrue(main_method.IsStatic);
-            Assert.AreEqual(typeof(void), main_method.ReturnType);
-            Assert.AreEqual(0, main_method.GetParameters().Length);
-            //Assert.IsTrue(main_method.GetParameters().SequenceEqual(new []{typeof(string[])}));
-            Console.Out.WriteLine("テスト実行");
-            Console.Out.WriteLine(main_method.ToString());
-
-            main_method.Invoke(null, new object[]{});
+            TestFile(Path.Combine("../../test_executables", "main.exe"));
         }
 
         [Test]
@@ -112,30 +81,9 @@ namespace Expresso.Test
         {
             Console.WriteLine("Test BasicStatements");
 
-            var parser = new Parser(new Scanner("../../sources/for_unit_tests/basic_statements.exs"));
-            parser.DoPostParseProcessing = true;
-            parser.Parse();
+            GenerateAssembly("../../sources/for_unit_tests/basic_statements.exs");
 
-            var ast = parser.TopmostAst;
-            var options = new ExpressoCompilerOptions{
-                OutputPath = "../../test_executables",
-                BuildType = BuildType.Debug | BuildType.Executable,
-                ExecutableName = "main"
-            };
-            var generator = new CodeGenerator(parser, options);
-            ast.AcceptWalker(generator, null);
-
-            var asm = generator.AssemblyBuilder;
-            var main_method = asm.EntryPoint;
-            Assert.AreEqual(main_method.Name, "main");
-            Assert.IsTrue(main_method.IsStatic);
-            Assert.AreEqual(typeof(void), main_method.ReturnType);
-            Assert.AreEqual(0, main_method.GetParameters().Length);
-            //Assert.IsTrue(main_method.GetParameters().SequenceEqual(new []{typeof(string[])}));
-            Console.Out.WriteLine("テスト実行");
-            Console.Out.WriteLine(main_method.ToString());
-
-            main_method.Invoke(null, new object[]{});
+            TestFile(Path.Combine("../../test_executables", "main.exe"));
         }
 
         [Test]
@@ -143,30 +91,9 @@ namespace Expresso.Test
         {
             Console.WriteLine("Test ComplextExpressions");
 
-            var parser = new Parser(new Scanner("../../sources/for_unit_tests/complex_expressions.exs"));
-            parser.DoPostParseProcessing = true;
-            parser.Parse();
+            GenerateAssembly("../../sources/for_unit_tests/complex_expressions.exs");
 
-            var ast = parser.TopmostAst;
-            var options = new ExpressoCompilerOptions{
-                OutputPath = "../../test_executables",
-                BuildType = BuildType.Debug | BuildType.Executable,
-                ExecutableName = "main"
-            };
-            var generator = new CodeGenerator(parser, options);
-            ast.AcceptWalker(generator, null);
-
-            var asm = generator.AssemblyBuilder;
-            var main_method = asm.EntryPoint;
-            Assert.AreEqual(main_method.Name, "main");
-            Assert.IsTrue(main_method.IsStatic);
-            Assert.AreEqual(typeof(void), main_method.ReturnType);
-            Assert.AreEqual(0, main_method.GetParameters().Length);
-            //Assert.IsTrue(main_method.GetParameters().SequenceEqual(new []{typeof(string[])}));
-            Console.Out.WriteLine("テスト実行");
-            Console.Out.WriteLine(main_method.ToString());
-
-            main_method.Invoke(null, new object[]{});
+            TestFile(Path.Combine("../../test_executables", "main.exe"));
         }
 
         [Test]
@@ -174,30 +101,9 @@ namespace Expresso.Test
         {
             Console.WriteLine("Test MatchStatements");
 
-            var parser = new Parser(new Scanner("../../sources/for_unit_tests/match_statements.exs"));
-            parser.DoPostParseProcessing = true;
-            parser.Parse();
+            GenerateAssembly("../../sources/for_unit_tests/match_statements.exs");
 
-            var ast = parser.TopmostAst;
-            var options = new ExpressoCompilerOptions{
-                OutputPath = "../../test_executables",
-                BuildType = BuildType.Debug | BuildType.Executable,
-                ExecutableName = "main"
-            };
-            var generator = new CodeGenerator(parser, options);
-            ast.AcceptWalker(generator, null);
-
-            var asm = generator.AssemblyBuilder;
-            var main_method = asm.EntryPoint;
-            Assert.AreEqual(main_method.Name, "main");
-            Assert.IsTrue(main_method.IsStatic);
-            Assert.AreEqual(typeof(void), main_method.ReturnType);
-            Assert.AreEqual(0, main_method.GetParameters().Length);
-            //Assert.IsTrue(main_method.GetParameters().SequenceEqual(new []{typeof(string[])}));
-            Console.Out.WriteLine("テスト実行");
-            Console.Out.WriteLine(main_method.ToString());
-
-            main_method.Invoke(null, new object[]{});
+            TestFile(Path.Combine("../../test_executables", "main.exe"));
         }
 
         [Test]
@@ -205,29 +111,9 @@ namespace Expresso.Test
         {
             Console.WriteLine("Test Functions");
 
-            var parser = new Parser(new Scanner("../../sources/for_unit_tests/functions.exs"));
-            parser.DoPostParseProcessing = true;
-            parser.Parse();
+            GenerateAssembly("../../sources/for_unit_tests/functions.exs");
 
-            var ast = parser.TopmostAst;
-            var options = new ExpressoCompilerOptions{
-                OutputPath = "../../test_executables",
-                BuildType = BuildType.Debug | BuildType.Executable,
-                ExecutableName = "main"
-            };
-            var generator = new CodeGenerator(parser, options);
-            ast.AcceptWalker(generator, null);
-
-            var asm = generator.AssemblyBuilder;
-            var main_method = asm.EntryPoint;
-            Assert.AreEqual(main_method.Name, "main");
-            Assert.IsTrue(main_method.IsStatic);
-            Assert.AreEqual(typeof(void), main_method.ReturnType);
-            Assert.AreEqual(0, main_method.GetParameters().Length);
-            Console.Out.WriteLine("テスト実行");
-            Console.Out.WriteLine(main_method.ToString());
-
-            main_method.Invoke(null, new object[]{});
+            TestFile(Path.Combine("../../test_executables", "main.exe"));
         }
 
         [Test]
@@ -235,30 +121,9 @@ namespace Expresso.Test
         {
             Console.WriteLine("Test Class");
 
-            var parser = new Parser(new Scanner("../../sources/for_unit_tests/class.exs"));
-            parser.DoPostParseProcessing = true;
-            parser.Parse();
+            GenerateAssembly("../../sources/for_unit_tests/class.exs");
 
-            var ast = parser.TopmostAst;
-            var options = new ExpressoCompilerOptions{
-                OutputPath = "../../test_executables",
-                BuildType = BuildType.Debug | BuildType.Executable,
-                ExecutableName = "main"
-            };
-            var generator = new CodeGenerator(parser, options);
-            ast.AcceptWalker(generator, null);
-
-            var asm = generator.AssemblyBuilder;
-            var main_method = asm.EntryPoint;
-            Assert.AreEqual(main_method.Name, "main");
-            Assert.IsTrue(main_method.IsStatic);
-            Assert.AreEqual(typeof(void), main_method.ReturnType);
-            Assert.AreEqual(0, main_method.GetParameters().Length);
-            //Assert.IsTrue(main_method.GetParameters().SequenceEqual(new []{typeof(string[])}));
-            Console.Out.WriteLine("テスト実行");
-            Console.Out.WriteLine(main_method.ToString());
-
-            main_method.Invoke(null, new object[]{});
+            TestFile(Path.Combine("../../test_executables", "main.exe"));
         }
 
         [Test]
@@ -266,28 +131,9 @@ namespace Expresso.Test
         {
             Console.WriteLine("Test Module");
 
-            var parser = new Parser(new Scanner("../../sources/for_unit_tests/module.exs"));
-            parser.DoPostParseProcessing = true;
-            parser.Parse();
+            GenerateAssembly("../../sources/for_unit_tests/module.exs");
 
-            var ast = parser.TopmostAst;
-
-            var options = new ExpressoCompilerOptions{
-                OutputPath = "../../test_executables",
-                BuildType = BuildType.Debug | BuildType.Executable,
-                ExecutableName = "main"
-            };
-            var generator = new CodeGenerator(parser, options);
-            ast.AcceptWalker(generator, null);
-
-            var asm = generator.AssemblyBuilder;
-            var main_method = asm.EntryPoint;
-            Assert.AreEqual(main_method.Name, "main");
-            Assert.IsTrue(main_method.IsStatic);
-            Assert.AreEqual(typeof(void), main_method.ReturnType);
-            Assert.AreEqual(0, main_method.GetParameters().Length);
-
-            main_method.Invoke(null, new object[]{});
+            TestFile(Path.Combine("../../test_executables", "main.exe"));
         }
 
         [Test]
@@ -295,28 +141,9 @@ namespace Expresso.Test
         {
             Console.WriteLine("Test Closures");
 
-            var parser = new Parser(new Scanner("../../sources/for_unit_tests/closures.exs"));
-            parser.DoPostParseProcessing = true;
-            parser.Parse();
+            GenerateAssembly("../../sources/for_unit_tests/closures.exs");
 
-            var ast = parser.TopmostAst;
-
-            var options = new ExpressoCompilerOptions{
-                OutputPath = "../../test_executables",
-                BuildType = BuildType.Debug | BuildType.Executable,
-                ExecutableName = "main"
-            };
-            var generator = new CodeGenerator(parser, options);
-            ast.AcceptWalker(generator, null);
-
-            var asm = generator.AssemblyBuilder;
-            var main_method = asm.EntryPoint;
-            Assert.AreEqual(main_method.Name, "main");
-            Assert.IsTrue(main_method.IsStatic);
-            Assert.AreEqual(typeof(void), main_method.ReturnType);
-            Assert.AreEqual(0, main_method.GetParameters().Length);
-
-            main_method.Invoke(null, new object[]{});
+            TestFile(Path.Combine("../../test_executables", "main.exe"));
         }
 
         [Test]
@@ -324,28 +151,9 @@ namespace Expresso.Test
         {
             Console.WriteLine("Test ClosuresWithCompoundStatements");
 
-            var parser = new Parser(new Scanner("../../sources/for_unit_tests/closures_with_compound_statements.exs"));
-            parser.DoPostParseProcessing = true;
-            parser.Parse();
+            GenerateAssembly("../../sources/for_unit_tests/closures_with_compound_statements.exs");
 
-            var ast = parser.TopmostAst;
-
-            var options = new ExpressoCompilerOptions{
-                OutputPath = "../../test_executables",
-                BuildType = BuildType.Debug | BuildType.Executable,
-                ExecutableName = "main"
-            };
-            var generator = new CodeGenerator(parser, options);
-            ast.AcceptWalker(generator, null);
-
-            var asm = generator.AssemblyBuilder;
-            var main_method = asm.EntryPoint;
-            Assert.AreEqual(main_method.Name, "main");
-            Assert.IsTrue(main_method.IsStatic);
-            Assert.AreEqual(typeof(void), main_method.ReturnType);
-            Assert.AreEqual(0, main_method.GetParameters().Length);
-
-            main_method.Invoke(null, new object[]{});
+            TestFile(Path.Combine("../../test_executables", "main.exe"));
         }
 
         [Test]
@@ -353,28 +161,9 @@ namespace Expresso.Test
         {
             Console.WriteLine("Test TryStatements");
 
-            var parser = new Parser(new Scanner("../../sources/for_unit_tests/try_statements.exs"));
-            parser.DoPostParseProcessing = true;
-            parser.Parse();
+            GenerateAssembly("../../sources/for_unit_tests/try_statements.exs");
 
-            var ast = parser.TopmostAst;
-
-            var options = new ExpressoCompilerOptions{
-                OutputPath = "../../test_executables",
-                BuildType = BuildType.Debug | BuildType.Executable,
-                ExecutableName = "main"
-            };
-            var generator = new CodeGenerator(parser, options);
-            ast.AcceptWalker(generator, null);
-
-            var asm = generator.AssemblyBuilder;
-            var main_method = asm.EntryPoint;
-            Assert.AreEqual(main_method.Name, "main");
-            Assert.IsTrue(main_method.IsStatic);
-            Assert.AreEqual(typeof(void), main_method.ReturnType);
-            Assert.AreEqual(0, main_method.GetParameters().Length);
-
-            main_method.Invoke(null, new object[]{});
+            TestFile(Path.Combine("../../test_executables", "main.exe"));
         }
 
         [Test]
@@ -382,28 +171,9 @@ namespace Expresso.Test
         {
             Console.WriteLine("Test BuiltinObjects");
 
-            var parser = new Parser(new Scanner("../../sources/for_unit_tests/builtin_objects.exs"));
-            parser.DoPostParseProcessing = true;
-            parser.Parse();
+            GenerateAssembly("../../sources/for_unit_tests/builtin_objects.exs");
 
-            var ast = parser.TopmostAst;
-
-            var options = new ExpressoCompilerOptions{
-                OutputPath = "../../test_executables",
-                BuildType = BuildType.Debug | BuildType.Executable,
-                ExecutableName = "main"
-            };
-            var generator = new CodeGenerator(parser, options);
-            ast.AcceptWalker(generator, null);
-
-            var asm = generator.AssemblyBuilder;
-            var main_method = asm.EntryPoint;
-            Assert.AreEqual(main_method.Name, "main");
-            Assert.IsTrue(main_method.IsStatic);
-            Assert.AreEqual(typeof(void), main_method.ReturnType);
-            Assert.AreEqual(0, main_method.GetParameters().Length);
-
-            main_method.Invoke(null, new object[]{});
+            TestFile(Path.Combine("../../test_executables", "main.exe"));
         }
 
         [Test]
@@ -411,28 +181,9 @@ namespace Expresso.Test
         {
             Console.WriteLine("Test Interface");
 
-            var parser = new Parser(new Scanner("../../sources/for_unit_tests/interface.exs"));
-            parser.DoPostParseProcessing = true;
-            parser.Parse();
+            GenerateAssembly("../../sources/for_unit_tests/interface.exs");
 
-            var ast = parser.TopmostAst;
-
-            var options = new ExpressoCompilerOptions{
-                OutputPath = "../../test_executables",
-                BuildType = BuildType.Debug | BuildType.Executable,
-                ExecutableName = "main"
-            };
-            var generator = new CodeGenerator(parser, options);
-            ast.AcceptWalker(generator, null);
-
-            var asm = generator.AssemblyBuilder;
-            var main_method = asm.EntryPoint;
-            Assert.AreEqual(main_method.Name, "main");
-            Assert.IsTrue(main_method.IsStatic);
-            Assert.AreEqual(typeof(void), main_method.ReturnType);
-            Assert.AreEqual(0, main_method.GetParameters().Length);
-
-            main_method.Invoke(null, new object[]{});
+            TestFile(Path.Combine("../../test_executables", "main.exe"));
         }
 
         [Test]
@@ -440,28 +191,9 @@ namespace Expresso.Test
         {
             Console.WriteLine("Test Slices");
 
-            var parser = new Parser(new Scanner("../../sources/for_unit_tests/slices.exs"));
-            parser.DoPostParseProcessing = true;
-            parser.Parse();
+            GenerateAssembly("../../sources/for_unit_tests/slices.exs");
 
-            var ast = parser.TopmostAst;
-
-            var options = new ExpressoCompilerOptions{
-                OutputPath = "../../test_executables",
-                BuildType = BuildType.Debug | BuildType.Executable,
-                ExecutableName = "main"
-            };
-            var generator = new CodeGenerator(parser, options);
-            ast.AcceptWalker(generator, null);
-
-            var asm = generator.AssemblyBuilder;
-            var main_method = asm.EntryPoint;
-            Assert.AreEqual(main_method.Name, "main");
-            Assert.IsTrue(main_method.IsStatic);
-            Assert.AreEqual(typeof(void), main_method.ReturnType);
-            Assert.AreEqual(0, main_method.GetParameters().Length);
-
-            main_method.Invoke(null, new object[]{});
+            TestFile(Path.Combine("../../test_executables", "main.exe"));
         }
 
         [Test]
@@ -469,28 +201,9 @@ namespace Expresso.Test
         {
             Console.WriteLine("Test TypeCast");
 
-            var parser = new Parser(new Scanner("../../sources/for_unit_tests/type_cast.exs"));
-            parser.DoPostParseProcessing = true;
-            parser.Parse();
+            GenerateAssembly("../../sources/for_unit_tests/type_cast.exs");
 
-            var ast = parser.TopmostAst;
-
-            var options = new ExpressoCompilerOptions{
-                OutputPath = "../../test_executables",
-                BuildType = BuildType.Debug | BuildType.Executable,
-                ExecutableName = "main"
-            };
-            var generator = new CodeGenerator(parser, options);
-            ast.AcceptWalker(generator, null);
-
-            var asm = generator.AssemblyBuilder;
-            var main_method = asm.EntryPoint;
-            Assert.AreEqual(main_method.Name, "main");
-            Assert.IsTrue(main_method.IsStatic);
-            Assert.AreEqual(typeof(void), main_method.ReturnType);
-            Assert.AreEqual(0, main_method.GetParameters().Length);
-
-            main_method.Invoke(null, new object[]{});
+            TestFile(Path.Combine("../../test_executables", "main.exe"));
         }
 
         [Test]
@@ -498,28 +211,9 @@ namespace Expresso.Test
         {
             Console.WriteLine("Test UseOfTheStandardLibrary");
 
-            var parser = new Parser(new Scanner("../../sources/for_unit_tests/use_of_the_standard_library.exs"));
-            parser.DoPostParseProcessing = true;
-            parser.Parse();
+            GenerateAssembly("../../sources/for_unit_tests/use_of_the_standard_library.exs");
 
-            var ast = parser.TopmostAst;
-
-            var options = new ExpressoCompilerOptions{
-                OutputPath = "../../test_executables",
-                BuildType = BuildType.Debug | BuildType.Executable,
-                ExecutableName = "main"
-            };
-            var generator = new CodeGenerator(parser, options);
-            ast.AcceptWalker(generator, null);
-
-            var asm = generator.AssemblyBuilder;
-            var main_method = asm.EntryPoint;
-            Assert.AreEqual(main_method.Name, "main");
-            Assert.IsTrue(main_method.IsStatic);
-            Assert.AreEqual(typeof(void), main_method.ReturnType);
-            Assert.AreEqual(0, main_method.GetParameters().Length);
-
-            main_method.Invoke(null, new object[]{});
+            TestFile(Path.Combine("../../test_executables", "main.exe"));
         }
 
         [Test]
@@ -527,28 +221,9 @@ namespace Expresso.Test
         {
             Console.WriteLine("Test VariousStrings");
 
-            var parser = new Parser(new Scanner("../../sources/for_unit_tests/various_strings.exs"));
-            parser.DoPostParseProcessing = true;
-            parser.Parse();
+            GenerateAssembly("../../sources/for_unit_tests/various_strings.exs");
 
-            var ast = parser.TopmostAst;
-
-            var options = new ExpressoCompilerOptions{
-                OutputPath = "../../test_executables",
-                BuildType = BuildType.Debug | BuildType.Executable,
-                ExecutableName = "main"
-            };
-            var generator = new CodeGenerator(parser, options);
-            ast.AcceptWalker(generator, null);
-
-            var asm = generator.AssemblyBuilder;
-            var main_method = asm.EntryPoint;
-            Assert.AreEqual(main_method.Name, "main");
-            Assert.IsTrue(main_method.IsStatic);
-            Assert.AreEqual(typeof(void), main_method.ReturnType);
-            Assert.AreEqual(0, main_method.GetParameters().Length);
-
-            main_method.Invoke(null, new object[]{});
+            TestFile(Path.Combine("../../test_executables", "main.exe"));
         }
 
         [Test]
@@ -556,28 +231,9 @@ namespace Expresso.Test
         {
             Console.WriteLine("Test Module2");
 
-            var parser = new Parser(new Scanner("../../sources/for_unit_tests/module2.exs"));
-            parser.DoPostParseProcessing = true;
-            parser.Parse();
+            GenerateAssembly("../../sources/for_unit_tests/module2.exs");
 
-            var ast = parser.TopmostAst;
-
-            var options = new ExpressoCompilerOptions{
-                OutputPath = "../../test_executables",
-                BuildType = BuildType.Debug | BuildType.Executable,
-                ExecutableName = "main"
-            };
-            var generator = new CodeGenerator(parser, options);
-            ast.AcceptWalker(generator, null);
-
-            var asm = generator.AssemblyBuilder;
-            var main_method = asm.EntryPoint;
-            Assert.AreEqual(main_method.Name, "main");
-            Assert.IsTrue(main_method.IsStatic);
-            Assert.AreEqual(typeof(void), main_method.ReturnType);
-            Assert.AreEqual(0, main_method.GetParameters().Length);
-
-            main_method.Invoke(null, new object[]{});
+            TestFile(Path.Combine("../../test_executables", "main.exe"));
         }
 
         [Test]
@@ -585,28 +241,9 @@ namespace Expresso.Test
         {
             Console.WriteLine("Test InteroperabilityTestWithCSharp");
 
-            var parser = new Parser(new Scanner("../../sources/for_unit_tests/interoperability_test_with_csharp.exs"));
-            parser.DoPostParseProcessing = true;
-            parser.Parse();
+            GenerateAssembly("../../sources/for_unit_tests/interoperability_test_with_csharp.exs");
 
-            var ast = parser.TopmostAst;
-
-            var options = new ExpressoCompilerOptions{
-                OutputPath = "../../test_executables",
-                BuildType = BuildType.Debug | BuildType.Executable,
-                ExecutableName = "main"
-            };
-            var generator = new CodeGenerator(parser, options);
-            ast.AcceptWalker(generator, null);
-
-            var asm = generator.AssemblyBuilder;
-            var main_method = asm.EntryPoint;
-            Assert.AreEqual(main_method.Name, "main");
-            Assert.IsTrue(main_method.IsStatic);
-            Assert.AreEqual(typeof(void), main_method.ReturnType);
-            Assert.AreEqual(0, main_method.GetParameters().Length);
-
-            main_method.Invoke(null, new object[]{});
+            TestFile(Path.Combine("../../test_executables", "main.exe"));
         }
 
         [Test]
@@ -614,28 +251,9 @@ namespace Expresso.Test
         {
             Console.WriteLine("Test AdvancedForLoops");
 
-            var parser = new Parser(new Scanner("../../sources/for_unit_tests/advanced_for_loops.exs"));
-            parser.DoPostParseProcessing = true;
-            parser.Parse();
+            GenerateAssembly("../../sources/for_unit_tests/advanced_for_loops.exs");
 
-            var ast = parser.TopmostAst;
-
-            var options = new ExpressoCompilerOptions{
-                OutputPath = "../../test_executables",
-                BuildType = BuildType.Debug | BuildType.Executable,
-                ExecutableName = "main"
-            };
-            var generator = new CodeGenerator(parser, options);
-            ast.AcceptWalker(generator, null);
-
-            var asm = generator.AssemblyBuilder;
-            var main_method = asm.EntryPoint;
-            Assert.AreEqual(main_method.Name, "main");
-            Assert.IsTrue(main_method.IsStatic);
-            Assert.AreEqual(typeof(void), main_method.ReturnType);
-            Assert.AreEqual(0, main_method.GetParameters().Length);
-
-            main_method.Invoke(null, new object[]{});
+            TestFile(Path.Combine("../../test_executables", "main.exe"));
         }
 
         [Test]
@@ -643,28 +261,9 @@ namespace Expresso.Test
         {
             Console.WriteLine("Test PropertyTests");
 
-            var parser = new Parser(new Scanner("../../sources/for_unit_tests/property_tests.exs"));
-            parser.DoPostParseProcessing = true;
-            parser.Parse();
+            GenerateAssembly("../../sources/for_unit_tests/property_tests.exs");
 
-            var ast = parser.TopmostAst;
-
-            var options = new ExpressoCompilerOptions{
-                OutputPath = "../../test_executables",
-                BuildType = BuildType.Debug | BuildType.Executable,
-                ExecutableName = "main"
-            };
-            var generator = new CodeGenerator(parser, options);
-            ast.AcceptWalker(generator, null);
-
-            var asm = generator.AssemblyBuilder;
-            var main_method = asm.EntryPoint;
-            Assert.AreEqual(main_method.Name, "main");
-            Assert.IsTrue(main_method.IsStatic);
-            Assert.AreEqual(typeof(void), main_method.ReturnType);
-            Assert.AreEqual(0, main_method.GetParameters().Length);
-
-            main_method.Invoke(null, new object[]{});
+            TestFile(Path.Combine("../../test_executables", "main.exe"));
         }
 
         [Test]
@@ -672,28 +271,9 @@ namespace Expresso.Test
         {
             Console.WriteLine("Test TestEnumInCSharp");
 
-            var parser = new Parser(new Scanner("../../sources/for_unit_tests/test_enum_in_csharp.exs"));
-            parser.DoPostParseProcessing = true;
-            parser.Parse();
+            GenerateAssembly("../../sources/for_unit_tests/test_enum_in_csharp.exs");
 
-            var ast = parser.TopmostAst;
-
-            var options = new ExpressoCompilerOptions{
-                OutputPath = "../../test_executables",
-                BuildType = BuildType.Debug | BuildType.Executable,
-                ExecutableName = "main"
-            };
-            var generator = new CodeGenerator(parser, options);
-            ast.AcceptWalker(generator, null);
-
-            var asm = generator.AssemblyBuilder;
-            var main_method = asm.EntryPoint;
-            Assert.AreEqual(main_method.Name, "main");
-            Assert.IsTrue(main_method.IsStatic);
-            Assert.AreEqual(typeof(void), main_method.ReturnType);
-            Assert.AreEqual(0, main_method.GetParameters().Length);
-
-            main_method.Invoke(null, new object[]{});
+            TestFile(Path.Combine("../../test_executables", "main.exe"));
         }
 
         [Test]
@@ -701,28 +281,9 @@ namespace Expresso.Test
         {
             Console.WriteLine("Test TestReference");
 
-            var parser = new Parser(new Scanner("../../sources/for_unit_tests/test_reference.exs"));
-            parser.DoPostParseProcessing = true;
-            parser.Parse();
+            GenerateAssembly("../../sources/for_unit_tests/test_reference.exs");
 
-            var ast = parser.TopmostAst;
-
-            var options = new ExpressoCompilerOptions{
-                OutputPath = "../../test_executables",
-                BuildType = BuildType.Debug | BuildType.Executable,
-                ExecutableName = "main"
-            };
-            var generator = new CodeGenerator(parser, options);
-            ast.AcceptWalker(generator, null);
-
-            var asm = generator.AssemblyBuilder;
-            var main_method = asm.EntryPoint;
-            Assert.AreEqual(main_method.Name, "main");
-            Assert.IsTrue(main_method.IsStatic);
-            Assert.AreEqual(typeof(void), main_method.ReturnType);
-            Assert.AreEqual(0, main_method.GetParameters().Length);
-
-            main_method.Invoke(null, new object[]{});
+            TestFile(Path.Combine("../../test_executables", "main.exe"));
         }
 
         [Test]
@@ -730,28 +291,16 @@ namespace Expresso.Test
         {
             Console.WriteLine("Test Attributes");
 
-            var parser = new Parser(new Scanner("../../sources/for_unit_tests/attributes.exs"));
-            parser.DoPostParseProcessing = true;
-            parser.Parse();
+            GenerateAssembly("../../sources/for_unit_tests/attributes.exs");
 
-            var ast = parser.TopmostAst;
-
-            var options = new ExpressoCompilerOptions{
-                OutputPath = "../../test_executables",
-                BuildType = BuildType.Debug | BuildType.Executable,
-                ExecutableName = "main"
-            };
-            var generator = new CodeGenerator(parser, options);
-            ast.AcceptWalker(generator, null);
-
-            var asm = generator.AssemblyBuilder;
+            var asm = Assembly.LoadFrom(Path.Combine("../../test_executables", "main.exe"));
             var main_method = asm.EntryPoint;
             Assert.AreEqual(main_method.Name, "main");
             Assert.IsTrue(main_method.IsStatic);
             Assert.AreEqual(typeof(void), main_method.ReturnType);
             Assert.AreEqual(0, main_method.GetParameters().Length);
 
-            var attribute1 = asm.GetCustomAttribute<AssemblyDescriptionAttribute>();
+            var attribute1 = asm.GetCustomAttributes(true).First();
             var type1 = attribute1.GetType();
             Assert.IsNotNull(attribute1);
             Assert.AreEqual(type1.Name, "AssemblyDescriptionAttribute");
@@ -760,7 +309,7 @@ namespace Expresso.Test
             var module = asm.GetModule("main.exe");
 #else
             var module = asm.GetModule("main");
-            #endif
+#endif
             var author_attribute_type = module.GetType("AuthorAttribute");
             var attribute2 = module.GetCustomAttributes(true).First();
             var type2 = attribute2.GetType();
@@ -818,28 +367,9 @@ namespace Expresso.Test
         {
             Console.WriteLine("Test Enum1");
 
-            var parser = new Parser(new Scanner("../../sources/for_unit_tests/enum1.exs"));
-            parser.DoPostParseProcessing = true;
-            parser.Parse();
+            GenerateAssembly("../../sources/for_unit_tests/enum1.exs");
 
-            var ast = parser.TopmostAst;
-
-            var options = new ExpressoCompilerOptions{
-                OutputPath = "../../test_executables",
-                BuildType = BuildType.Debug | BuildType.Executable,
-                ExecutableName = "main"
-            };
-            var generator = new CodeGenerator(parser, options);
-            ast.AcceptWalker(generator, null);
-
-            var asm = generator.AssemblyBuilder;
-            var main_method = asm.EntryPoint;
-            Assert.AreEqual(main_method.Name, "main");
-            Assert.IsTrue(main_method.IsStatic);
-            Assert.AreEqual(typeof(void), main_method.ReturnType);
-            Assert.AreEqual(0, main_method.GetParameters().Length);
-
-            main_method.Invoke(null, new object[]{});
+            TestFile(Path.Combine("../../test_executables", "main.exe"));
         }
 
         [Test]
@@ -847,28 +377,9 @@ namespace Expresso.Test
         {
             Console.WriteLine("Test Enum2");
 
-            var parser = new Parser(new Scanner("../../sources/for_unit_tests/enum2.exs"));
-            parser.DoPostParseProcessing = true;
-            parser.Parse();
+            GenerateAssembly("../../sources/for_unit_tests/enum2.exs");
 
-            var ast = parser.TopmostAst;
-
-            var options = new ExpressoCompilerOptions{
-                OutputPath = "../../test_executables",
-                BuildType = BuildType.Debug | BuildType.Executable,
-                ExecutableName = "main"
-            };
-            var generator = new CodeGenerator(parser, options);
-            ast.AcceptWalker(generator, null);
-
-            var asm = generator.AssemblyBuilder;
-            var main_method = asm.EntryPoint;
-            Assert.AreEqual(main_method.Name, "main");
-            Assert.IsTrue(main_method.IsStatic);
-            Assert.AreEqual(typeof(void), main_method.ReturnType);
-            Assert.AreEqual(0, main_method.GetParameters().Length);
-
-            main_method.Invoke(null, new object[]{});
+            TestFile(Path.Combine("../../test_executables", "main.exe"));
         }
 
         [Test]
@@ -876,28 +387,9 @@ namespace Expresso.Test
         {
             Console.WriteLine("Test GenericClass");
 
-            var parser = new Parser(new Scanner("../../sources/for_unit_tests/generic_class.exs"));
-            parser.DoPostParseProcessing = true;
-            parser.Parse();
+            GenerateAssembly("../../sources/for_unit_tests/generic_class.exs");
 
-            var ast = parser.TopmostAst;
-
-            var options = new ExpressoCompilerOptions{
-                OutputPath = "../../test_executables",
-                BuildType = BuildType.Debug | BuildType.Executable,
-                ExecutableName = "main"
-            };
-            var generator = new CodeGenerator(parser, options);
-            ast.AcceptWalker(generator, null);
-
-            var asm = generator.AssemblyBuilder;
-            var main_method = asm.EntryPoint;
-            Assert.AreEqual(main_method.Name, "main");
-            Assert.IsTrue(main_method.IsStatic);
-            Assert.AreEqual(typeof(void), main_method.ReturnType);
-            Assert.AreEqual(0, main_method.GetParameters().Length);
-
-            main_method.Invoke(null, new object[]{});
+            TestFile(Path.Combine("../../test_executables", "main.exe"));
         }
 
         [Test]
@@ -905,28 +397,9 @@ namespace Expresso.Test
         {
             Console.WriteLine("Test ConditionalXXOperators");
 
-            var parser = new Parser(new Scanner("../../sources/for_unit_tests/conditional_xx_operators.exs"));
-            parser.DoPostParseProcessing = true;
-            parser.Parse();
+            GenerateAssembly("../../sources/for_unit_tests/conditional_xx_operators.exs");
 
-            var ast = parser.TopmostAst;
-
-            var options = new ExpressoCompilerOptions{
-                OutputPath = "../../test_executables",
-                BuildType = BuildType.Debug | BuildType.Executable,
-                ExecutableName = "main"
-            };
-            var generator = new CodeGenerator(parser, options);
-            ast.AcceptWalker(generator, null);
-
-            var asm = generator.AssemblyBuilder;
-            var main_method = asm.EntryPoint;
-            Assert.AreEqual(main_method.Name, "main");
-            Assert.IsTrue(main_method.IsStatic);
-            Assert.AreEqual(typeof(void), main_method.ReturnType);
-            Assert.AreEqual(0, main_method.GetParameters().Length);
-
-            main_method.Invoke(null, new object[]{});
+            TestFile(Path.Combine("../../test_executables", "main.exe"));
         }
 
         [Test]
@@ -934,28 +407,9 @@ namespace Expresso.Test
         {
             Console.WriteLine("Test HelloWorld");
 
-            var parser = new Parser(new Scanner("../../sources/for_unit_tests/hello_world.exs"));
-            parser.DoPostParseProcessing = true;
-            parser.Parse();
+            GenerateAssembly("../../sources/for_unit_tests/hello_world.exs");
 
-            var ast = parser.TopmostAst;
-
-            var options = new ExpressoCompilerOptions{
-                OutputPath = "../../test_executables",
-                BuildType = BuildType.Debug | BuildType.Executable,
-                ExecutableName = "main"
-            };
-            var generator = new CodeGenerator(parser, options);
-            ast.AcceptWalker(generator, null);
-
-            var asm = generator.AssemblyBuilder;
-            var main_method = asm.EntryPoint;
-            Assert.AreEqual(main_method.Name, "main");
-            Assert.IsTrue(main_method.IsStatic);
-            Assert.AreEqual(typeof(void), main_method.ReturnType);
-            Assert.AreEqual(0, main_method.GetParameters().Length);
-
-            main_method.Invoke(null, new object[]{});
+            TestFile(Path.Combine("../../test_executables", "main.exe"));
         }
     }
 }

@@ -13,6 +13,10 @@ namespace Expresso.CodeGen
             get; set;
         }
 
+        public int SameNameMethodIndex{
+            get; set;
+        }
+
         public ImportScopeHandle ImportScope{
             get; set;
         }
@@ -33,9 +37,10 @@ namespace Expresso.CodeGen
             get; set;
         }
 
-        public LocalScopeInformation(string funcName, ImportScopeHandle importScope, int startOffset)
+        public LocalScopeInformation(string funcName, int index, ImportScopeHandle importScope, int startOffset)
         {
             FuncName = funcName;
+            SameNameMethodIndex = index;
             ImportScope = importScope;
             LocalVariables = new List<LocalVariableInformation>();
             LocalConstants = new List<LocalConstantHandle>();

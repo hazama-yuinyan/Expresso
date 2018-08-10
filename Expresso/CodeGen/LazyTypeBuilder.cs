@@ -130,7 +130,7 @@ namespace Expresso.CodeGen
                                           CSharpEmitterContext context = null, Ast.FunctionDeclaration funcDecl = null)
         {
             var method = interface_type_builder.DefineMethod(name, attr, returnType, parameterTypes);
-            /*if(funcDecl != null){
+            if(funcDecl != null){
                 var return_value_builder = method.DefineParameter(0, ParameterAttributes.Retval, null);
                 context.CustomAttributeSetter = return_value_builder.SetCustomAttribute;
                 context.AttributeTarget = AttributeTargets.ReturnValue;
@@ -149,7 +149,7 @@ namespace Expresso.CodeGen
                     context.AttributeTarget = AttributeTargets.Parameter;
                     pair.ParameterDeclaration.Attribute.AcceptWalker(generator, context);
                 }
-            }*/
+            }
 
             var il = method.GetILGenerator();
             // Emit call to the implementation method no matter whether we actually need it.

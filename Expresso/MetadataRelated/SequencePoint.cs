@@ -6,7 +6,7 @@ namespace Expresso.CodeGen
     /// </summary>
     public struct SequencePoint
     {
-        public int IlOffset{
+        public int ILOffset{
             get; set;
         }
 
@@ -28,7 +28,7 @@ namespace Expresso.CodeGen
 
         public SequencePoint(int ilOffset, int startLine, int startColumn, int endLine, int endColumn)
         {
-            IlOffset = ilOffset;
+            ILOffset = ilOffset;
             StartLine = startLine;
             StartColumn = startColumn;
             EndLine = endLine;
