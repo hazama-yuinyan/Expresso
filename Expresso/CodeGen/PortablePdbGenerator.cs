@@ -46,6 +46,19 @@ namespace Expresso.CodeGen
             SetSequencePoints(funcName);
         }
 
+        public List<SequencePoint> StartClosureDefinition()
+        {
+            var tmp = sequence_points;
+            sequence_points = new List<SequencePoint>();
+            return tmp;
+        }
+
+        public void EndClosureDefinition(List<SequencePoint> sequencePoints)
+        {
+            SetSequencePoints("__Apply");
+            sequence_points = sequencePoints;
+        }
+
         public void AddMethodDefinition(string name, MethodDefinitionHandle methodDefinitionHandle)
         {
             if(impl_method_handles.TryGetValue(name, out var method_handles))

@@ -263,7 +263,7 @@ namespace Expresso.CodeGen
             var assembly_name = options.BuildType.HasFlag(BuildType.Assembly) ? ast.Name : options.ExecutableName;
             var name = new AssemblyName(assembly_name);
 
-            var asm_builder = Thread.GetDomain().DefineDynamicAssembly(name, AssemblyBuilderAccess.RunAndSave, options.OutputPath);
+            var asm_builder = AppDomain.CurrentDomain.DefineDynamicAssembly(name, AssemblyBuilderAccess.RunAndSave, options.OutputPath);
             var file_name = options.BuildType.HasFlag(BuildType.Assembly) ? assembly_name + ".dll" : assembly_name + ".exe";
 
             if(options.BuildType.HasFlag(BuildType.Debug)){
@@ -666,7 +666,7 @@ namespace Expresso.CodeGen
             foreach(var @catch in tryStmt.CatchClauses)
                 VisitCatchClause(@catch, context);
 
-            var finally_clause = tryStmt.FinallyClause.AcceptWalker(this, context);
+            tryStmt.FinallyClause.AcceptWalker(this, context);
             il_generator.EndExceptionBlock();
 
             return null;
@@ -958,7 +958,9 @@ namespace Expresso.CodeGen
             var closure_method_builder = closure_type_builder.GetMethodBuilder(ClosureMethodName);
             var prev_il_generator = il_generator;
             il_generator = closure_method_builder.GetILGenerator();
+            var parent_seq_points = context.PDBGenerator.StartClosureDefinition();
             VisitBlock(closure.Body, context);
+            context.PDBGenerator.EndClosureDefinition(parent_seq_points);
             if(!(closure.Body.Statements.Last() is ReturnStatement))
                 il_generator.Emit(OpCodes.Ret);
 

@@ -677,9 +677,7 @@ namespace Expresso.Test
             var expected_ast = AstNode.MakeModuleDef("main", new List<EntityDeclaration>{
                 EntityDeclaration.MakeFunc(
                     "main",
-                    Helpers.MakeSeq(
-                        EntityDeclaration.MakeParameter("args", Helpers.MakeGenericType("array", Helpers.MakePrimitiveType("string")))
-                    ),
+                    Enumerable.Empty<ParameterDeclaration>(),
                     Statement.MakeBlock(
                         Statement.MakeVarDecl(
                             Helpers.MakeSeq(
@@ -1256,7 +1254,7 @@ namespace Expresso.Test
                         ),
                         Statement.MakeExprStmt(
                             Helpers.MakeCallExpression(
-                                Helpers.SomeWellKnownExpressions.Print,
+                                Helpers.SomeWellKnownExpressions.Println,
                                 Helpers.MakeCallExpression(
                                     Helpers.SomeWellKnownExpressions.StringFormatN,
                                     Expression.MakeConstant("string", "{0}, {1}, {2}, {3}"),

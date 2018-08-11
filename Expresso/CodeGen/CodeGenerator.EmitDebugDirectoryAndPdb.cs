@@ -204,6 +204,7 @@ namespace Expresso.CodeGen
             var method_body = methodBodies.AddMethodBody(contents.Length, old_method_body.MaxStack, old_method_body.ExceptionRegions.Length, localVariablesSignature: old_method_body.LocalSignature, attributes: method_body_attributes);
 
             WriteInstructions(method_body.Instructions, contents);
+            SerializeMethodBodyExceptionHandlerTable(method_body.ExceptionRegions, old_method_body.ExceptionRegions);
             return method_body.Offset;
         }
 
@@ -287,6 +288,12 @@ namespace Expresso.CodeGen
             return metadata_builder.GetOrAddUserString(str);
         }
         #endregion
+
+        void SerializeMethodBodyExceptionHandlerTable(ExceptionRegionEncoder encoder, ImmutableArray<ExceptionRegion> regions)
+        {
+            foreach(var region in regions)
+                encoder.Add(region.Kind, region.TryOffset, region.TryLength, region.HandlerOffset, region.HandlerLength, region.CatchType, region.FilterOffset);
+        }
 
         public void EmitDebugDirectoryAndPdb(string assemblyFileName, string pdbName, BlobContentId pdbId, PortablePDBGenerator pdbGenerator)
         {

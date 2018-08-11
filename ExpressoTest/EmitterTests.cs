@@ -2,7 +2,6 @@
 using Expresso.CodeGen;
 using NUnit.Framework;
 using System.Reflection;
-using Expresso.Ast;
 using System.Linq;
 using System.Diagnostics;
 using System.IO;
@@ -12,7 +11,8 @@ namespace Expresso.Test
     [TestFixture]
     public class EmitterTests
     {
-        void GenerateAssembly(string filePath)
+        static int index = 0;
+        static void GenerateAssembly(string filePath)
         {
             var parser = new Parser(new Scanner(filePath));
             parser.DoPostParseProcessing = true;
@@ -22,15 +22,16 @@ namespace Expresso.Test
             var options = new ExpressoCompilerOptions{
                 OutputPath = "../../test_executables",
                 BuildType = BuildType.Debug | BuildType.Executable,
-                ExecutableName = "main"
+                ExecutableName = "main" + index.ToString("D2")
             };
+
             var generator = new CodeGenerator(parser, options);
             ast.AcceptWalker(generator, null);
         }
 
-        void TestFile(string path)
+        static void TestFile()
         {
-            var asm = Assembly.LoadFrom(path);
+            var asm = Assembly.LoadFile(string.Format(@"../../test_executables/main{0:D2}.exe", index));
             var main_method = asm.EntryPoint;
             Assert.AreEqual(main_method.Name, "main");
             Assert.IsTrue(main_method.IsStatic);
@@ -38,6 +39,7 @@ namespace Expresso.Test
             Assert.AreEqual(0, main_method.GetParameters().Length);
 
             main_method.Invoke(null, new object[]{});
+            ++index;
         }
 
         [TearDown]
@@ -53,7 +55,7 @@ namespace Expresso.Test
 
             GenerateAssembly("../../sources/for_unit_tests/simple_literals.exs");
 
-            TestFile(Path.Combine("../../test_executables", "main.exe"));
+            TestFile();
         }
 
         [Test]
@@ -63,7 +65,7 @@ namespace Expresso.Test
 
             GenerateAssembly("../../sources/for_unit_tests/simple_arithmetic.exs");
 
-            TestFile(Path.Combine("../../test_executables", "main.exe"));
+            TestFile();
         }
 
         [Test]
@@ -73,7 +75,7 @@ namespace Expresso.Test
 
             GenerateAssembly("../../sources/for_unit_tests/general_expressions.exs");
 
-            TestFile(Path.Combine("../../test_executables", "main.exe"));
+            TestFile();
         }
 
         [Test]
@@ -83,7 +85,7 @@ namespace Expresso.Test
 
             GenerateAssembly("../../sources/for_unit_tests/basic_statements.exs");
 
-            TestFile(Path.Combine("../../test_executables", "main.exe"));
+            TestFile();
         }
 
         [Test]
@@ -93,7 +95,7 @@ namespace Expresso.Test
 
             GenerateAssembly("../../sources/for_unit_tests/complex_expressions.exs");
 
-            TestFile(Path.Combine("../../test_executables", "main.exe"));
+            TestFile();
         }
 
         [Test]
@@ -103,7 +105,7 @@ namespace Expresso.Test
 
             GenerateAssembly("../../sources/for_unit_tests/match_statements.exs");
 
-            TestFile(Path.Combine("../../test_executables", "main.exe"));
+            TestFile();
         }
 
         [Test]
@@ -113,7 +115,7 @@ namespace Expresso.Test
 
             GenerateAssembly("../../sources/for_unit_tests/functions.exs");
 
-            TestFile(Path.Combine("../../test_executables", "main.exe"));
+            TestFile();
         }
 
         [Test]
@@ -123,7 +125,7 @@ namespace Expresso.Test
 
             GenerateAssembly("../../sources/for_unit_tests/class.exs");
 
-            TestFile(Path.Combine("../../test_executables", "main.exe"));
+            TestFile();
         }
 
         [Test]
@@ -133,7 +135,7 @@ namespace Expresso.Test
 
             GenerateAssembly("../../sources/for_unit_tests/module.exs");
 
-            TestFile(Path.Combine("../../test_executables", "main.exe"));
+            TestFile();
         }
 
         [Test]
@@ -143,7 +145,7 @@ namespace Expresso.Test
 
             GenerateAssembly("../../sources/for_unit_tests/closures.exs");
 
-            TestFile(Path.Combine("../../test_executables", "main.exe"));
+            TestFile();
         }
 
         [Test]
@@ -153,7 +155,7 @@ namespace Expresso.Test
 
             GenerateAssembly("../../sources/for_unit_tests/closures_with_compound_statements.exs");
 
-            TestFile(Path.Combine("../../test_executables", "main.exe"));
+            TestFile();
         }
 
         [Test]
@@ -163,7 +165,7 @@ namespace Expresso.Test
 
             GenerateAssembly("../../sources/for_unit_tests/try_statements.exs");
 
-            TestFile(Path.Combine("../../test_executables", "main.exe"));
+            TestFile();
         }
 
         [Test]
@@ -173,7 +175,7 @@ namespace Expresso.Test
 
             GenerateAssembly("../../sources/for_unit_tests/builtin_objects.exs");
 
-            TestFile(Path.Combine("../../test_executables", "main.exe"));
+            TestFile();
         }
 
         [Test]
@@ -183,7 +185,7 @@ namespace Expresso.Test
 
             GenerateAssembly("../../sources/for_unit_tests/interface.exs");
 
-            TestFile(Path.Combine("../../test_executables", "main.exe"));
+            TestFile();
         }
 
         [Test]
@@ -193,7 +195,7 @@ namespace Expresso.Test
 
             GenerateAssembly("../../sources/for_unit_tests/slices.exs");
 
-            TestFile(Path.Combine("../../test_executables", "main.exe"));
+            TestFile();
         }
 
         [Test]
@@ -203,7 +205,7 @@ namespace Expresso.Test
 
             GenerateAssembly("../../sources/for_unit_tests/type_cast.exs");
 
-            TestFile(Path.Combine("../../test_executables", "main.exe"));
+            TestFile();
         }
 
         [Test]
@@ -213,7 +215,7 @@ namespace Expresso.Test
 
             GenerateAssembly("../../sources/for_unit_tests/use_of_the_standard_library.exs");
 
-            TestFile(Path.Combine("../../test_executables", "main.exe"));
+            TestFile();
         }
 
         [Test]
@@ -223,7 +225,7 @@ namespace Expresso.Test
 
             GenerateAssembly("../../sources/for_unit_tests/various_strings.exs");
 
-            TestFile(Path.Combine("../../test_executables", "main.exe"));
+            TestFile();
         }
 
         [Test]
@@ -233,7 +235,7 @@ namespace Expresso.Test
 
             GenerateAssembly("../../sources/for_unit_tests/module2.exs");
 
-            TestFile(Path.Combine("../../test_executables", "main.exe"));
+            TestFile();
         }
 
         [Test]
@@ -243,7 +245,7 @@ namespace Expresso.Test
 
             GenerateAssembly("../../sources/for_unit_tests/interoperability_test_with_csharp.exs");
 
-            TestFile(Path.Combine("../../test_executables", "main.exe"));
+            TestFile();
         }
 
         [Test]
@@ -253,7 +255,7 @@ namespace Expresso.Test
 
             GenerateAssembly("../../sources/for_unit_tests/advanced_for_loops.exs");
 
-            TestFile(Path.Combine("../../test_executables", "main.exe"));
+            TestFile();
         }
 
         [Test]
@@ -263,7 +265,7 @@ namespace Expresso.Test
 
             GenerateAssembly("../../sources/for_unit_tests/property_tests.exs");
 
-            TestFile(Path.Combine("../../test_executables", "main.exe"));
+            TestFile();
         }
 
         [Test]
@@ -273,7 +275,7 @@ namespace Expresso.Test
 
             GenerateAssembly("../../sources/for_unit_tests/test_enum_in_csharp.exs");
 
-            TestFile(Path.Combine("../../test_executables", "main.exe"));
+            TestFile();
         }
 
         [Test]
@@ -283,7 +285,7 @@ namespace Expresso.Test
 
             GenerateAssembly("../../sources/for_unit_tests/test_reference.exs");
 
-            TestFile(Path.Combine("../../test_executables", "main.exe"));
+            TestFile();
         }
 
         [Test]
@@ -293,23 +295,24 @@ namespace Expresso.Test
 
             GenerateAssembly("../../sources/for_unit_tests/attributes.exs");
 
-            var asm = Assembly.LoadFrom(Path.Combine("../../test_executables", "main.exe"));
+            var asm = Assembly.LoadFrom(string.Format("../../test_executables/main{0:D2}.exe", index));
             var main_method = asm.EntryPoint;
             Assert.AreEqual(main_method.Name, "main");
             Assert.IsTrue(main_method.IsStatic);
             Assert.AreEqual(typeof(void), main_method.ReturnType);
             Assert.AreEqual(0, main_method.GetParameters().Length);
 
-            var attribute1 = asm.GetCustomAttributes(true).First();
+            var attribute1 = asm.GetCustomAttribute<AssemblyDescriptionAttribute>();
             var type1 = attribute1.GetType();
             Assert.IsNotNull(attribute1);
             Assert.AreEqual(type1.Name, "AssemblyDescriptionAttribute");
 
 #if WINDOWS
-            var module = asm.GetModule("main.exe");
+            var module = asm.GetModule(string.Format("main{0:D2}.exe", index));
 #else
-            var module = asm.GetModule("main");
+            var module = asm.GetModule(string.Format("main{0:D2}", index));
 #endif
+            ++index;
             var author_attribute_type = module.GetType("AuthorAttribute");
             var attribute2 = module.GetCustomAttributes(true).First();
             var type2 = attribute2.GetType();
@@ -369,7 +372,7 @@ namespace Expresso.Test
 
             GenerateAssembly("../../sources/for_unit_tests/enum1.exs");
 
-            TestFile(Path.Combine("../../test_executables", "main.exe"));
+            TestFile();
         }
 
         [Test]
@@ -379,7 +382,7 @@ namespace Expresso.Test
 
             GenerateAssembly("../../sources/for_unit_tests/enum2.exs");
 
-            TestFile(Path.Combine("../../test_executables", "main.exe"));
+            TestFile();
         }
 
         [Test]
@@ -389,7 +392,7 @@ namespace Expresso.Test
 
             GenerateAssembly("../../sources/for_unit_tests/generic_class.exs");
 
-            TestFile(Path.Combine("../../test_executables", "main.exe"));
+            TestFile();
         }
 
         [Test]
@@ -399,7 +402,7 @@ namespace Expresso.Test
 
             GenerateAssembly("../../sources/for_unit_tests/conditional_xx_operators.exs");
 
-            TestFile(Path.Combine("../../test_executables", "main.exe"));
+            TestFile();
         }
 
         [Test]
@@ -409,7 +412,7 @@ namespace Expresso.Test
 
             GenerateAssembly("../../sources/for_unit_tests/hello_world.exs");
 
-            TestFile(Path.Combine("../../test_executables", "main.exe"));
+            TestFile();
         }
     }
 }

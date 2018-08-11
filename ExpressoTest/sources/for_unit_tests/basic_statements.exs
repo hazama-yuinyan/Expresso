@@ -9,7 +9,7 @@ def main()
 	let x = 100, y = 20, z = 300, w = 400;
 	var flag (- bool;
 
-	print("${x}, ${y}, ${z}, ${w}");
+	println("${x}, ${y}, ${z}, ${w}");
 
 	if x == 100 {
 		flag = true;
