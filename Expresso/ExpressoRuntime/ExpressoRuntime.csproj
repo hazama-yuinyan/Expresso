@@ -34,20 +34,10 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Runtime\Exceptions\AssertionFailedException.cs" />
-    <Compile Include="Runtime\Exceptions\ImportException.cs" />
-    <Compile Include="Runtime\Exceptions\InvalidTypeException.cs" />
-    <Compile Include="Runtime\Exceptions\InvalidValueException.cs" />
-    <Compile Include="Runtime\Exceptions\ReferenceException.cs" />
-    <Compile Include="Runtime\Exceptions\SystemException.cs" />
-    <Compile Include="Runtime\Exceptions\TypeNotFoundException.cs" />
     <Compile Include="BuiltIns\ExpressoIntegerSequence.cs" />
     <Compile Include="BuiltIns\Fraction.cs" />
     <Compile Include="BuiltIns\Library.cs" />
-    <Compile Include="NativeDebugger\CollectionDebugView.cs" />
-    <Compile Include="Runtime\ExpressoRuntimeHelper.cs" />
     <Compile Include="Runtime\TypeMapper.cs" />
-    <Compile Include="Runtime\Exceptions\PanickedException.cs" />
     <Compile Include="BuiltIns\Slice.cs" />
     <Compile Include="BuiltIns\DictionaryEnumerator.cs" />
     <Compile Include="Utilities.cs" />
@@ -60,5 +50,15 @@
     <None Include="Runtime\Operations\ExpressoOps.cs" />
     <None Include="Runtime\Operations\ExpressoTypeOps.cs" />
     <None Include="Interpreter\Interpreter.cs" />
+    <None Include="NativeDebugger\CollectionDebugView.cs" />
+    <None Include="Runtime\Exceptions\AssertionFailedException.cs" />
+    <None Include="Runtime\Exceptions\ImportException.cs" />
+    <None Include="Runtime\Exceptions\InvalidTypeException.cs" />
+    <None Include="Runtime\Exceptions\InvalidValueException.cs" />
+    <None Include="Runtime\Exceptions\PanickedException.cs" />
+    <None Include="Runtime\Exceptions\ReferenceException.cs" />
+    <None Include="Runtime\Exceptions\SystemException.cs" />
+    <None Include="Runtime\Exceptions\TypeNotFoundException.cs" />
+    <None Include="Runtime\ExpressoRuntimeHelper.cs" />
   </ItemGroup>
 </Project>

@@ -119,20 +119,6 @@ namespace Expresso.CodeGen
         }
 
         /// <summary>
-        /// Current context expression. That is, a C# expression we are constructing.
-        /// </summary>
-        public System.Linq.Expressions.Expression ContextExpression{
-            get; set;
-        }
-
-        /// <summary>
-        /// Represents the current context block.
-        /// </summary>
-        public System.Linq.Expressions.BlockExpression ContextBlock{
-            get; set;
-        }
-
-        /// <summary>
         /// Current context ast node.
         /// </summary>
         public AstNode ContextAst{
@@ -197,30 +183,10 @@ namespace Expresso.CodeGen
         }
 
         /// <summary>
-        /// It will be set to an Expression that represents the temporary expression.
-        /// </summary>
-        /// <value>The temporary expression.</value>
-        public System.Linq.Expressions.Expression TemporaryExpression{
-            get; set;
-        }
-
-        /// <summary>
         /// Represents the local variables that the current expression refers to.
         /// </summary>
         /// <value>The additional parameters.</value>
         public List<LocalBuilder> Parameters{
-            get; set;
-        }
-
-        /// <summary>
-        /// Additional temporary expressions.
-        /// Used in expressions that need complicated transformation.
-        /// Usually set to null. Not being null indicates that the child nodes should add their results
-        /// to this property(usually parameters).
-        /// Its element type is object because some expression types aren't derived from
-        /// <see cref="System.Linq.Expressions.Expression"/>.
-        /// </summary>
-        public List<object> Additionals{
             get; set;
         }
 

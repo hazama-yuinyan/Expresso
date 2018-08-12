@@ -618,7 +618,6 @@ namespace Expresso.CodeGen
 
             //var parameters = ExpandTuple(target_type, tmp_var);
             context.TemporaryVariable = tmp_var;
-            context.ContextExpression = null;
             var context_ast = context.ContextAst;
             context.ContextAst = matchStmt;
 

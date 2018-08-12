@@ -206,7 +206,7 @@ almost the same as that of ranges. We'll come back later to this topic again.
 
 ### The `dictionary` Type
 
-The dictionary type, which is sometimes called a HashMap or simply an object, is a collection of several keys and values.
+The `dictionary` type, which is sometimes called a `HashMap` or simply an `object`, is a collection of several keys and values.
 
 ```expresso
 let dict = {"a": 10, "b": 20};
@@ -233,7 +233,7 @@ The `intseq` type has the corresponding literal form and it is written as follow
     println(series); // print "[1, 2, 3, 4, 5, 6, 7, 8, 9]"
 ```
 
-<span class="caption">Listing 11: An intseq turns into an array</span>
+<span class="caption">Listing 11: An `intseq` turns into an array</span>
 
 An integer sequence expression does not create a vector of integers by itself. Instead, it creates a new object that is ready
 to produce integers that are in the range specified in the expression. Note in Listing 11 that the intseq expression initializes
@@ -247,8 +247,8 @@ at where the expression is written.
     let to_negative = 0..-10:-1;                    // The compiler checks whether it is correct. That means that if you wrote it as `-10..0:-1`,
     println("Legend: (f(x) = x - 10, g(x) = -x)");  // it would issue a warning that tells you it doesn't seem to be correct.
     for let (x, to_n) in Enumerable.Zip(negative_seq, to_negative, |l, r| => (l, r)) {
-        print("(f(x), g(x)) = (${x}, ${to_n}),");  // print "(f(x), g(x)) = (-10, 0),(f(x), g(x)) = (-9, -1)" and so on
-        if x == to_n {      // and when it reaches (-5, -5), it also prints "Crossed over!"
+        print("(f(x), g(x)) = (${x}, ${to_n}),");   // print "(f(x), g(x)) = (-10, 0),(f(x), g(x)) = (-9, -1)" and so on
+        if x == to_n {                              // and when it reaches (-5, -5), it also prints "Crossed over!"
             println("Crossed over!");
         }
     }
@@ -317,7 +317,7 @@ println("${result}");
 <span class="caption">Listing 14: A use of the `while` loop</span>
 
 Look at the above code. You may be familliar with it. This is the `while` loop in Expresso and it is the same as that of other programming languages.
-What the above code does is first declare two variables and use one of them as a counter and the other for calculating the result. Then it prints the result
+What the above code does is to first declare two variables and use one of them as a counter and the other for calculating the result. Then it prints the result
 to the console. We use the string interpolation where we print it, but for now, don't worry about it. Just assume that it's a handy way to print some variables.
 When you run this code, it should print 1024.
 Let's look at another example.
@@ -464,7 +464,7 @@ class Rectangle
 This class should also be self-explanatory. It has the x, y coordinates and the width and the height.
 Then let's say we need to calculate the area of the two shapes. Of course, we could just add another method that does that, but there's something that prevents you
 from doing so.
-You can calculate the area for both the shapes. Would it be nice if we can abstract it away and make it a common interface? So I'll introduce the interface.
+You can calculate the area for both the shapes. Would it be nice if we can abstract it away and make it a common interface? So we'll introduce the interface.
 
 ### Interfaces
 
@@ -645,13 +645,46 @@ import test_module.{TestClass, pair} as {TestClass, pair};
 <span class="caption">Listing 32: Another import statement that imports only parts of the items</span>
 
 This statement states that we will import `TestClass` and `pair`. Then you can construct a `TestClass` object like writing `let a = TestClass{x: 1, y: 2}`.
-Even though the names are matched, you can't omit the as clause. I may change this in the future.
+Even though the names are matched, you can't omit the as clause. It might be changed in the future.
 
 ## Error Handling
 
+An error is a sign of life. Errors should happen when they should and the key is whether you would handle them, not whether they happen.
 Like most other programming languages, Expresso has exceptions. But that's not the end of the story. Here, we'll look at exceptions and the `Result<T, E>` type.
 
-### Unrecoverable Errors with Exceptions
+### Popped up Errors with Exceptions
+
+Exceptions are a common concept in programming languages, so you may be familliar with it already. The essence in exceptions is that you handle errors by delegating it
+to the functions that call the current function.
+
+### Unpopped up Errors with `Result<T, E>`
+
+Sometimes, you may just need to know the result of some operation and the operation may be successful or in failure. Exceptions aren't the best choice in this scinario
+because it unwind the call stack and therefore implies some performance overhead.
+
+## String Interpolation
+
+While programming, you often want to output some values to the console. Imagine the following situation.
+
+```expresso
+module main;
+
+import System.Console as Console;
+
+def main()
+{
+    let number = Console.ReadLine();
+    println();  //you want to output number here
+}
+```
+
+<span class="caption">Listing (placeholder): A situation where you want to output some value</span>
+
+How can we do that? The answer is simple. Use the string interpolation like so.
+
+```expresso
+println("You entered ${number}");
+```
 
 
 
@@ -753,11 +786,11 @@ What do you think of the above code? Ugh, the null literal! It's the null litera
 I know, I know that you hate it. But fortunately, or maybe unfortunately, you usually don't see `null` in Expresso in source codes.
 This is because Expresso doesn't allow `null`, but there are places where `null` is allowed, which is unfortunate to most people.
 That's in contexts that involve foreign codes, including .NET.
-In Listing 11, we use `null` in `if writer != null` to check whether `writer` is successfully created and then we dispose of `writer` if it is created.
+In Listing (placeholder), we use `null` in `if writer != null` to check whether `writer` is successfully created and then we dispose of `writer` if it is created.
 Because `writer` is an instance of `FileStream` and `FileStream` is defined in .NET, we can use `null`. Other use cases include call expressions to foreign functions.
 In any other contexts, you can't use `null`. 
 
-Returning to Listing 12, it is intended to initialize an instance variable, but it won't compile because `SomeExpressoType` is a type defiend in Expresso and
+Returning to Listing (placeholder), it is intended to initialize an instance variable, but it won't compile because `SomeExpressoType` is a type defiend in Expresso and
 therefore the use of `null` is prohibited in that context. In such a case, use the `Option<T>` type defined in Expresso standard library, which isn't currently provided.
 
 ## Interoperability with Other .NET Languages
@@ -865,7 +898,7 @@ namespace OtherLanguageWorld
 }
 ```
 
-<span class="caption">Listing : C# code to import</span>
+<span class="caption">Listing (placeholder): C# code to import</span>
 
 When we run the code in Listing (placeholder for the number), we'll see outputs from Console.WriteLine statements, `100`, `[0..1000:1]`, `true` and a list of 
 `[1, 2, 3, 4, 5, ...]` on the console. Note that because we're currently defining the `ExpressoIntegerSequence` type in C#, we also can return it from C#.
