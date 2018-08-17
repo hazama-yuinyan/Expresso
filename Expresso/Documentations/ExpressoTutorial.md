@@ -660,7 +660,7 @@ to the functions that call the current function.
 ### Unpopped up Errors with `Result<T, E>`
 
 Sometimes, you may just need to know the result of some operation and the operation may be successful or in failure. Exceptions aren't the best choice in this scinario
-because it unwind the call stack and therefore implies some performance overhead.
+because it unwinds the call stack and therefore implies some performance overhead.
 
 ## String Interpolation
 
@@ -674,19 +674,39 @@ import System.Console as Console;
 def main()
 {
     let number = Console.ReadLine();
-    println();  //you want to output number here
+    println();  //you want to output `number` here
 }
 ```
 
 <span class="caption">Listing (placeholder): A situation where you want to output some value</span>
 
-How can we do that? The answer is simple. Use the string interpolation like so.
+How can we do that? One way to do that is as follows.
+
+```expresso
+Console.WriteLine("You entered {0}", number);
+```
+
+<span class="caption">Listing (placeholder): A solution with `Console.WriteLine`</span>
+
+Using the `Console.WriteLine` method instead of `println`. Yes, that's enough but it is somewhat inconvinient because you need to first import the `Console` class.
+It is also obscure because the string is separated from the variable name. With that in mind, we have a clear and concise tool in the toolbox: the string interpolation.
 
 ```expresso
 println("You entered ${number}");
 ```
 
+<span class="caption">Listing (placeholder): Using string interpolation</span>
 
+With string interpolation, you don't need to import additional classes and the variable name is now part of the string. Wouldn't it be clearer and more concise than 
+the previous solution?
+In addition, you can use any expressions in placeholders.
+
+```expresso
+let ary = [1, 1, 2, 3, 5, 8];
+println("The 6th fibonacci number is ${ary[5]}");
+```
+
+<span class="caption">Listing (placeholder): An advanced use of string interpolation</span>
 
 The main policy for Expresso is that "Programming languages must allow programmers to write what it does, not how it does something".
 In traditional C, we often end up writing something like the following:
@@ -699,7 +719,7 @@ for(int i = 0; i < sizeof(array) / sizeof(int); ++i){
 }
 ```
 
-Even though the for loop has long long history, I think that it doesn't express one's intension very clearly especially
+Even though the for loop has long long history, I think that it doesn't express your intension very clearly especially
 when you want to process an array. Instead, I recommend you to use functional style. In functional programming languages,
 we define the work flow as a chain of functions. So in Expresso, you can rewrite the above example like this:
 

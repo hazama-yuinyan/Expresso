@@ -40,9 +40,9 @@ namespace Expresso.CodeGen
 
     /// <summary>
     /// Expressoの構文木を解釈してReflection.Emitでコード生成をするクラス。
-    /// It emitts IL codes from the AST of Expresso.
+    /// It emits IL codes from the AST of Expresso.
     /// Assumes we are all OK with syntax and semantics since this class is considered
-    /// to belong to the backend part in compiler theory.
+    /// to belong to the backend part in the compiler theory.
     /// </summary>
     /// <remarks>
     /// While emitting, we don't check the semantics and validity because the type check and
@@ -606,9 +606,6 @@ namespace Expresso.CodeGen
             // Match statement semantics: First we evaluate the target expression
             // and assign the result to a temporary variable that's alive within the whole statement.
             // All the pattern clauses must meet the same condition.
-            // If context.ContextExpression is an ExprTree.ConditionalExpression
-            // we know that we're at least at the second branch.
-            // If it is null, then we're at the first branch so just set it to the context expression.
             var prev_op_type = context.OperationTypeOnIdentifier;
             context.OperationTypeOnIdentifier = OperationType.Load;
             var target_type = matchStmt.Target.AcceptWalker(this, context);

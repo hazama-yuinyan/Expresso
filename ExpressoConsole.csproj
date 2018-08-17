@@ -63,6 +63,16 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
+    <Reference Include="ICSharpCode.NRefactory">
+      <HintPath>packages\ICSharpCode.NRefactory.5.5.1\lib\Net40\ICSharpCode.NRefactory.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Expresso">
+      <HintPath>..\..\..\lib\Expresso.dll</HintPath>
+    </Reference>
+    <Reference Include="ExpressoRuntime">
+      <HintPath>..\..\..\lib\ExpressoRuntime.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AssemblyInfo.cs" />
@@ -70,20 +80,7 @@
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
-    <ProjectReference Include="Expresso\ExpressoRuntime\ExpressoRuntime.csproj">
-      <Project>{D60E49D6-6CBA-4D54-A009-6A0528181C88}</Project>
-      <Name>ExpressoRuntime</Name>
-    </ProjectReference>
-    <ProjectReference Include="Expresso\Expresso.csproj">
-      <Project>{4E28200A-5808-419F-8A57-F504842991AF}</Project>
-      <Name>Expresso</Name>
-    </ProjectReference>
-    <ProjectReference Include="Libraries\NRefactory\ICSharpCode.NRefactory\ICSharpCode.NRefactory.csproj">
-      <Project>{3B2A5653-EC97-4001-BB9B-D90F1AF2C371}</Project>
-      <Name>ICSharpCode.NRefactory</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
     <None Include="app.config" />
+    <None Include="packages.config" />
   </ItemGroup>
 </Project>
