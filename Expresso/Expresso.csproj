@@ -9,7 +9,6 @@
     <RootNamespace>Expresso</RootNamespace>
     <AssemblyName>Expresso</AssemblyName>
     <NoWin32Manifest>False</NoWin32Manifest>
-    <SignAssembly>true</SignAssembly>
     <RunPostBuildEvent>OnBuildSuccess</RunPostBuildEvent>
     <AllowUnsafeBlocks>False</AllowUnsafeBlocks>
     <NoStdLib>False</NoStdLib>

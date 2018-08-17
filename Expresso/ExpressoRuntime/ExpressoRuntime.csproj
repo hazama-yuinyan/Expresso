@@ -9,7 +9,6 @@
     <RootNamespace>ExpressoRuntime</RootNamespace>
     <AssemblyName>ExpressoRuntime</AssemblyName>
     <TargetFrameworkVersion>v4.7</TargetFrameworkVersion>
-    <SignAssembly>true</SignAssembly>
     <AssemblyOriginatorKeyFile>sgKey.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">

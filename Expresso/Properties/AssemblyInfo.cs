@@ -34,4 +34,4 @@ using System.Runtime.InteropServices;
 // [assembly: AssemblyVersion("1.0.*")]
 [assembly: AssemblyVersion("0.9.*")]
 
-[assembly: AssemblyKeyFile("sgKey.snk")]
+//[assembly: AssemblyKeyFile("sgKey.snk")]
