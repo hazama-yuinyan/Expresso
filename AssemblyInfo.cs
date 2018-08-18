@@ -7,9 +7,9 @@ using System.Runtime.CompilerServices;
 [assembly: AssemblyTitle("ExpressoConsole")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("exsgo")]
+[assembly: AssemblyCompany("")]
 [assembly: AssemblyProduct("")]
-[assembly: AssemblyCopyright("train12")]
+[assembly: AssemblyCopyright("train12(Ryouta Ozaki)")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 

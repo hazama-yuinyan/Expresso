@@ -8,9 +8,9 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyTitle("Expresso")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("exsgo")]
+[assembly: AssemblyCompany("")]
 [assembly: AssemblyProduct("Expresso")]
-[assembly: AssemblyCopyright("train12")]
+[assembly: AssemblyCopyright("train12(Ryouta Ozaki)")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 

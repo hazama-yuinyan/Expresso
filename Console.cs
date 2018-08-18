@@ -12,8 +12,8 @@ namespace Expresso.Terminal
 				Console.WriteLine(
 @"Welcome to the Expresso Console!
 I can read Expresso source files and compile them into assembly files that mono can execute.
-Usage: mono exsc.exe source_file_name -o target_path -e executable_name
-To execute the resulting binary: mono the_name_of_the_executable"
+Usage: exsc source_file_name -o target_path -e executable_name
+To execute the resulting binary: mono <the name of the executable>"
                 );
 				return;
 			}

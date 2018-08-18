@@ -6,9 +6,9 @@ using System.Runtime.CompilerServices;
 [assembly: AssemblyTitle("ExpressoRuntime")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("exsgo")]
+[assembly: AssemblyCompany("")]
 [assembly: AssemblyProduct("")]
-[assembly: AssemblyCopyright("train12")]
+[assembly: AssemblyCopyright("train12(Ryouta Ozaki)")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 // The assembly version has the format "{Major}.{Minor}.{Build}.{Revision}".
