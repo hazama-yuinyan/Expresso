@@ -1,7 +1,7 @@
 .PHONY: Expresso.sln
 
 DEST_BIN = /usr/bin
-DEST = /usr/lib
+DEST = /usr/lib/exsc
 EXE_SH = ./exsc
 EXE = bin/Release/exsc.exe
 EXPRESSO_DLL = bin/Release/Expresso.dll
@@ -19,6 +19,7 @@ exsc.exe: $(SOLUTION)
 	msbuild $(SOLUTION) /p:Configuration=Release /p:Platform="x86"
 
 install: $(EXE)
+	mkdir $(DEST)
 	install -s $(EXE) $(DEST)
 	install -s $(EXPRESSO_DLL) $(DEST)
 	install -s $(EXPRESSO_RUNTIME_DLL) $(DEST)
