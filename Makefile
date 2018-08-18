@@ -10,12 +10,13 @@ NREFACTORY_DLL = bin/Release/ICSharpCode.NRefactory.dll
 COLLECTIONS_DLL = bin/Release/Microsoft.Experimental.Collections.dll
 IMMUTABLE_DLL = bin/Release/System.Collections.Immutable.dll
 METADATA_DLL = bin/Release/Sysmtem.Reflection.Metadata.dll
+SOLUTION = ./Expresso.sln
 
 all: exsc.exe
 
-exsc.exe: Expresso.sln
-	nuget restore
-	msbuild Expresso.sln /p:Configuration=Release /p:Platform="x86"
+exsc.exe: $(SOLUTION)
+	nuget restore $(SOLUTION)
+	msbuild $(SOLUTION) /p:Configuration=Release /p:Platform="x86"
 
 install: $(EXE)
 	install -s $(EXE) $(DEST)
