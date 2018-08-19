@@ -32,4 +32,4 @@ install: $(EXE)
 	install $(METADATA_DLL) $(DEST)
 	install $(EXE_CONFIG) $(DEST)
 	install $(EXE_SH) $(DEST_BIN)
-	export MONO_PATH=~/lib
+	echo "export MONO_PATH=~/lib" >> ~/.bashrc
