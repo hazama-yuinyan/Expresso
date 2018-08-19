@@ -88,6 +88,9 @@
   <ItemGroup>
     <None Include="app.config" />
     <None Include="packages.config" />
+    <None Include="Makefile" />
+    <None Include="LICENSE" />
+    <None Include="exsc" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="Expresso\Expresso.csproj">

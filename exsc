@@ -1,2 +1,2 @@
 #! /bin/sh
-exec /usr/bin/mono /usr/lib/exsc/exsc.exe "$@"
+exec mono /usr/local/lib/exsc/exsc.exe "$@"
