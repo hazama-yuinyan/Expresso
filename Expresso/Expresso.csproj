@@ -306,4 +306,5 @@
       <Name>ExpressoRuntime</Name>
     </ProjectReference>
   </ItemGroup>
+  <Import Project="..\packages\MSBuild.Extension.Pack.1.9.1\build\net40\MSBuild.Extension.Pack.targets" Condition="Exists('..\packages\MSBuild.Extension.Pack.1.9.1\build\net40\MSBuild.Extension.Pack.targets')" />
 </Project>
