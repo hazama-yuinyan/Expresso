@@ -660,7 +660,9 @@ to the functions that call the current function.
 ### Unpopped up Errors with `Result<T, E>`
 
 Sometimes, you may just need to know the result of some operation and the operation may be successful or in failure. Exceptions aren't the best choice in this scinario
-because it unwinds the call stack and therefore implies some performance overhead.
+because it unwinds the call stack and therefore implies some performance overhead. For such situations we have the `Result<T, E>` type. Technically, it's a generic type
+that takes 2 type parameters. One is called `T` standing for "type" and the other is `E` standing for "Error" and the former represents the type of the result value, while
+the latter represents the type of the error.
 
 ## String Interpolation
 
