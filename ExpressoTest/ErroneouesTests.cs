@@ -7,15 +7,33 @@ namespace Expresso.Test
     public class ErroneouesTests
     {
         [Test]
-        public void Literals()
+        public void Literals1()
         {
-            var parser = new Parser(new Scanner("../../sources/for_unit_tests/erroneous/literals.exs")){
+            var parser = new Parser(new Scanner("../../sources/for_unit_tests/erroneous/literals1.exs")){
                 DoPostParseProcessing = true
             };
-            parser.Parse();
 
-            //Assert.That(() => parser.Parse(), Throws.TypeOf<FatalError>().With.Message.Contains("Invalid syntax found"));
-            Assert.AreEqual(9, parser.errors.count);
+#if DEBUG
+            Assert.That(() => parser.Parse(), Throws.TypeOf<ParserException>().With.Message.Contains("ES0003"));
+#else
+            Assert.That(() => parser.Parse(), Throws.TypeOf<FatalError>().With.Message.Contains("Invalid syntax found"));
+#endif
+            Assert.AreEqual(2, parser.errors.count);
+        }
+
+        [Test]
+        public void Literals2()
+        {
+            var parser = new Parser(new Scanner("../../sources/for_unit_tests/erroneous/literals2.exs")) {
+                DoPostParseProcessing = true
+            };
+
+#if DEBUG
+            Assert.That(() => parser.Parse(), Throws.TypeOf<ParserException>().With.Message.Contains("ES0003"));
+#else
+            Assert.That(() => parser.Parse(), Throws.TypeOf<FatalError>().With.Message.Contains("Invalid syntax found"));
+#endif
+            Assert.AreEqual(3, parser.errors.count);
         }
 
         [Test]
@@ -444,14 +462,14 @@ namespace Expresso.Test
                 DoPostParseProcessing = true
             };
 
-            Assert.That(() => parser.Parse(), Throws.TypeOf<ParserException>().With.Message.Contains("ES1911"));
+            Assert.That(() => parser.Parse(), Throws.TypeOf<ParserException>().With.Message.Contains("ES1913"));
             Assert.AreEqual(1, parser.errors.count);
         }
 
         [Test]
-        public void CantBeDerivedFromAPrimitiveType()
+        public void CantBeDerivedFromVectorType()
         {
-            var parser = new Parser(new Scanner("../../sources/for_unit_tests/erroneous/cant_be_derived_from_a_primitive_type.exs")){
+            var parser = new Parser(new Scanner("../../sources/for_unit_tests/erroneous/cant_be_derived_from_vector_type.exs")){
                 DoPostParseProcessing = true
             };
 
