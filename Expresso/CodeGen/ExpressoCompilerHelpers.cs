@@ -237,6 +237,11 @@ namespace Expresso.CodeGen
                 Console.WriteLine("With explicit casting, it may pass compilation.");
                 break;
 
+            case "0120":
+                Console.WriteLine("Unlike Python, Ruby and JavaScript etc. Expresso doesn't allow you to use variables or functions before they are declared.");
+                Console.WriteLine("Make sure that the item is declared before use.");
+                break;
+
             case "0200":
                 Console.WriteLine("Please make sure that the variable is initialized.");
                 break;

@@ -806,7 +806,7 @@ namespace Expresso.Ast.Analysis
                 if(referenced != null || symbol != null){
                     parser.ReportSemanticError(
                         "You can't use '{0}' before defined or declared!",
-                        "ES0122",
+                        "ES0120",
                         ident,
                         ident.Name
                     );

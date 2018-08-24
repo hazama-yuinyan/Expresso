@@ -86,13 +86,13 @@ namespace Expresso.Test
         }
 
         [Test]
-        public void FunctionAfterMainFunction()
+        public void CantCallFunctionBeforeDeclared()
         {
-            var parser = new Parser(new Scanner("../../sources/for_unit_tests/erroneous/function_after_main_function.exs")){
+            var parser = new Parser(new Scanner("../../sources/for_unit_tests/erroneous/cant_call_function_before_declared.exs")){
                 DoPostParseProcessing = true
             };
 
-            Assert.That(() => parser.Parse(), Throws.TypeOf<ParserException>().With.Message.Contains("ES0102"));
+            Assert.That(() => parser.Parse(), Throws.TypeOf<ParserException>().With.Message.Contains("ES0120"));
             Assert.AreEqual(1, parser.errors.count);
         }
 

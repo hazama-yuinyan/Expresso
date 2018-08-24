@@ -264,7 +264,7 @@ static uint ScopeId = 1;
     }
 
     /// <summary>
-    /// Creates a new <see ref="ICSharpCode.NRefactory.TextLocation">
+    /// Creates a new <see ref="ICSharpCode.NRefactory.TextLocation" />
     /// that points to the location n characters before the current.
     /// </summary>
     /// <remarks>

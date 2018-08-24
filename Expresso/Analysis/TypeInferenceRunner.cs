@@ -133,6 +133,7 @@ namespace Expresso.Ast.Analysis
 
             public AstType VisitBinaryExpression(BinaryExpression binaryExpr)
             {
+                binaryExpr.AcceptWalker(checker);
                 return checker.FigureOutCommonType(binaryExpr.Left.AcceptWalker(this), binaryExpr.Right.AcceptWalker(this));
             }
 

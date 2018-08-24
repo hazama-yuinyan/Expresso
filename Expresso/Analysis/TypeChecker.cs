@@ -1415,7 +1415,15 @@ namespace Expresso.Ast.Analysis
 
             foreach(var super_type in typeDecl.BaseTypes){
                 super_type.AcceptWalker(this);
-                if(super_type is SimpleType simple){
+                if(super_type is PrimitiveType || super_type is SimpleType simple && (simple.Name == "vector" || simple.Name == "tuple" || simple.Name == "dictionary"
+                                                                                      || simple.Name == "array")){
+                    throw new ParserException(
+                        "`{0}` can't be derived.",
+                        "ES1913",
+                        super_type,
+                        super_type.Name
+                    );
+                }else if (super_type is SimpleType){
                     var super_type_name = !super_type.IdentifierNode.Type.IsNull ? super_type.IdentifierNode.Type.Name : super_type.Name;
                     var super_type_table = symbols.GetTypeTable(super_type_name);
                     if(super_type_table == null){
@@ -1429,13 +1437,6 @@ namespace Expresso.Ast.Analysis
 
                     if(super_type_table.TypeKind == ClassType.Interface)
                         require_methods.AddRange(super_type_table.Symbols.Select(s => s.Name));
-                }else if(super_type is PrimitiveType){
-                    throw new ParserException(
-                        "`{0}` can't be derived.",
-                        "ES1913",
-                        super_type,
-                        super_type.Name
-                    );
                 }else{
                     throw new ParserException(
                         "A class can't be derived from `{0}`",
