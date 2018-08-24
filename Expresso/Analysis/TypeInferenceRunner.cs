@@ -294,6 +294,7 @@ namespace Expresso.Ast.Analysis
 
             public AstType VisitConditionalExpression(ConditionalExpression condExpr)
             {
+                condExpr.AcceptWalker(checker);
                 return checker.FigureOutCommonType(condExpr.TrueExpression.AcceptWalker(this), condExpr.FalseExpression.AcceptWalker(this));
             }
 
@@ -697,6 +698,7 @@ namespace Expresso.Ast.Analysis
 
             public AstType VisitNullReferenceExpression(NullReferenceExpression nullRef)
             {
+                nullRef.AcceptWalker(checker);
                 return SimpleType.Null;
             }
 

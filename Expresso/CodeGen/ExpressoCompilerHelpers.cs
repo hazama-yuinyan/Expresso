@@ -133,6 +133,8 @@ namespace Expresso.CodeGen
         internal static void DisplayHelp(ParserException e)
         {
             var error_number = e.ErrorCode.Substring(2);
+            // I have no idea of why I ignore these errors
+            // Maybe they have no additional information?
             if(error_number == "1000" || error_number == "1022" || error_number == "2000")
                 return;
             

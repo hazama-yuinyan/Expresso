@@ -647,14 +647,14 @@ namespace Expresso.Test
         }
 
         [Test]
-        public void TupleField()
+        public void FieldOfTuple()
         {
-            var parser = new Parser(new Scanner("../../sources/for_unit_tests/erroneous/tuple_field.exs")){
+            var parser = new Parser(new Scanner("../../sources/for_unit_tests/erroneous/field_of_tuple.exs")){
                 DoPostParseProcessing = true
             };
 
             Assert.That(() => parser.Parse(), Throws.TypeOf<ParserException>().With.Message.Contains("ES0021"));
-            Assert.AreEqual(3, parser.errors.count);
+            Assert.AreEqual(2, parser.errors.count);
         }
 
         [Test]
@@ -719,7 +719,7 @@ namespace Expresso.Test
                 DoPostParseProcessing = true
             };
 
-            Assert.That(() => parser.Parse(), Throws.TypeOf<ParserException>().With.Message.Contains("ES0102"));
+            Assert.That(() => parser.Parse(), Throws.TypeOf<ParserException>().With.Message.Contains("ES0120"));
             Assert.AreEqual(1, parser.errors.count);
         }
 

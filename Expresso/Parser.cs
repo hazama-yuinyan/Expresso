@@ -877,7 +877,7 @@ static uint ScopeId = 1;
 		} else SynErr(123);
 		VarDef(out typed_pattern, out rhs);
 		if(!(typed_pattern.Pattern is IdentifierPattern))
-		  SemanticError("ES0021", "A field can only contain an identifier pattern; actual: `{0}`", typed_pattern.Pattern);
+		  SemanticError("ES0021", "A field declaration can only contain identifier patterns; actual: `{0}`", typed_pattern.Pattern);
 		
 		patterns.Add(typed_pattern);
 		exprs.Add(rhs);
@@ -886,7 +886,7 @@ static uint ScopeId = 1;
 			Get();
 			VarDef(out typed_pattern, out rhs);
 			if(!(typed_pattern.Pattern is IdentifierPattern))
-			  SemanticError("ES0021", "A field can only contain an indentifier pattern; actual: `{0}`", typed_pattern.Pattern);
+			  SemanticError("ES0021", "A field declaration can only contain an indentifier patterns; actual: `{0}`", typed_pattern.Pattern);
 			
 			patterns.Add(typed_pattern);
 			exprs.Add(rhs);
