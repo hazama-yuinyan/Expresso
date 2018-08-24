@@ -31,7 +31,7 @@ namespace Expresso.Test
 
         static void TestFile()
         {
-            var asm = Assembly.LoadFile(string.Format(@"../../test_executables/main{0:D2}.exe", index));
+            var asm = Assembly.LoadFile(Path.GetFullPath(string.Format(@"../../test_executables/main{0:D2}.exe", index)));
             var main_method = asm.EntryPoint;
             Assert.AreEqual(main_method.Name, "main");
             Assert.IsTrue(main_method.IsStatic);
@@ -295,7 +295,7 @@ namespace Expresso.Test
 
             GenerateAssembly("../../sources/for_unit_tests/attributes.exs");
 
-            var asm = Assembly.LoadFrom(string.Format("../../test_executables/main{0:D2}.exe", index));
+            var asm = Assembly.LoadFrom(Path.GetFullPath(string.Format("../../test_executables/main{0:D2}.exe", index)));
             var main_method = asm.EntryPoint;
             Assert.AreEqual(main_method.Name, "main");
             Assert.IsTrue(main_method.IsStatic);
