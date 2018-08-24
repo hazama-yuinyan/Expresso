@@ -378,6 +378,10 @@ static uint ScopeId = 1;
 
     bool IsGenericTypeSignature()
     {
+        var t = la;
+        if(t.kind != _langle_bracket)
+            return false;
+
         var x = scanner.Peek();
         bool closing_bracket_found = false;
         while(x.kind != _semicolon){

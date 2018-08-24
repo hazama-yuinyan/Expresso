@@ -1429,6 +1429,13 @@ namespace Expresso.Ast.Analysis
 
                     if(super_type_table.TypeKind == ClassType.Interface)
                         require_methods.AddRange(super_type_table.Symbols.Select(s => s.Name));
+                }else if(super_type is PrimitiveType){
+                    throw new ParserException(
+                        "`{0}` can't be derived.",
+                        "ES1913",
+                        super_type,
+                        super_type.Name
+                    );
                 }else{
                     throw new ParserException(
                         "A class can't be derived from `{0}`",

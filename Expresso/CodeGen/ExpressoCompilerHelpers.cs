@@ -416,6 +416,10 @@ namespace Expresso.CodeGen
                 Console.WriteLine("So consider adding the `export` modifier to the type.");
                 break;
 
+            case "1913":
+                Console.WriteLine("Primitive types can't be derived.");
+                break;
+
             case "2000":
                 break;
 

@@ -1,1 +1,2 @@
-
+Can't reference other files on Windows
+Can't set break points on programs generated on Windows

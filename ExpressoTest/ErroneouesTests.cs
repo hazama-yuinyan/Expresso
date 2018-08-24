@@ -449,13 +449,13 @@ namespace Expresso.Test
         }
 
         [Test]
-        public void CantBeDerivedFromStandardLibrariesType()
+        public void CantBeDerivedFromAPrimitiveType()
         {
-            var parser = new Parser(new Scanner("../../sources/for_unit_tests/erroneous/cant_be_derived_from_standard_libraries_type.exs")){
+            var parser = new Parser(new Scanner("../../sources/for_unit_tests/erroneous/cant_be_derived_from_a_primitive_type.exs")){
                 DoPostParseProcessing = true
             };
 
-            Assert.That(() => parser.Parse(), Throws.TypeOf<ParserException>().With.Message.Contains("ES1912"));
+            Assert.That(() => parser.Parse(), Throws.TypeOf<ParserException>().With.Message.Contains("ES1913"));
             Assert.AreEqual(1, parser.errors.count);
         }
 
